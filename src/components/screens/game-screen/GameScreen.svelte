@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { Seat } from "../../../service";
   import type { Call } from "../../../service";
+  import { getSystemConfig, buildConventionCard } from "../../../service";
   import { getGameStore, getAppStore, setLayoutConfig, getService } from "../../../stores/context";
   import type { SessionConfig } from "../../../service";
 
@@ -13,6 +14,7 @@
   import DeclarerPromptPhase from "./DeclarerPromptPhase.svelte";
   import PlayingPhase from "./PlayingPhase.svelte";
   import ExplanationPhase from "./ExplanationPhase.svelte";
+  import ConventionCard from "../../game/ConventionCard.svelte";
   import DebugDrawer from "../../game/DebugDrawer.svelte";
 
   const DEV = import.meta.env.DEV;
@@ -214,6 +216,13 @@
     tableBaseH,
   });
 
+  // Convention card — static for the drill, derived from appStore.baseSystemId
+  const systemConfig = $derived(getSystemConfig(appStore.baseSystemId));
+  const conventionCards = $derived([
+    buildConventionCard(systemConfig, "N-S"),
+    buildConventionCard(systemConfig, "E-W"), // same system for now
+  ] as const);
+
   function handleBackToMenu() {
     gameStore.reset();
     appStore.navigateToMenu();
@@ -264,6 +273,7 @@
           {phaseInfo.label}
         </span>
         <span class="sr-only" aria-live="polite">Phase: {phaseInfo.label}</span>
+        <ConventionCard cards={conventionCards} />
       </div>
       <div class="flex items-center gap-3 shrink-0">
         <span class="text-text-secondary text-[--text-body]">Deal #{dealNumber}</span>

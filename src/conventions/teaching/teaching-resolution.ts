@@ -1,6 +1,6 @@
 import { callsMatch } from "../../engine/call-helpers";
 import type { Call } from "../../engine/types";
-import type { BidResult } from "../../strategy/bidding/bidding-types";
+import type { BidResult } from "../core/strategy-types";
 import type { ResolvedCandidateDTO } from "../pipeline/tree-evaluation";
 import type { SurfaceGroup } from "./teaching-types";
 import { BidGrade } from "./teaching-types";

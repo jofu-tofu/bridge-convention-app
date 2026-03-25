@@ -21,16 +21,16 @@ import type {
   Card,
 } from "../engine/types";
 import type { ConventionSpec, ConventionBundle } from "../conventions";
-import type { BiddingContext, BidHistoryEntry } from "../strategy/bidding/bidding-types";
-import type { BiddingStrategy } from "../strategy/bidding/bidding-types";
-import type { OpponentMode } from "../bootstrap/drill-types";
-import type { DrillSettings } from "../bootstrap/drill-types";
-import { DEFAULT_DRILL_TUNING } from "../bootstrap/drill-types";
+import type { BiddingContext, BidHistoryEntry } from "../service";
+import type { BiddingStrategy } from "../service";
+import type { OpponentMode } from "../session/drill-types";
+import type { DrillSettings } from "../session/drill-types";
+import { DEFAULT_DRILL_TUNING } from "../session/drill-types";
 import type { BaseSystemId } from "../conventions/definitions/system-config";
 import { BASE_SYSTEM_SAYC, BASE_SYSTEM_ACOL } from "../conventions/definitions/system-config";
 import { getSystemConfig } from "../conventions/definitions/system-config";
 import type { BiddingViewport } from "../service/response-types";
-import { buildBiddingViewport } from "../service/build-viewport";
+import { buildBiddingViewport } from "../session/build-viewport";
 
 // ── Re-exports for convenience ──────────────────────────────────────
 

@@ -6,7 +6,7 @@ Retained type definitions for `ConventionSpec` and related protocol frame types.
 
 | File | Role |
 |------|------|
-| `types.ts` | Declarative expression types (`BoolExpr`, `Ref`, `EffectSpec`) with helpers (`and`, `or`, `not`, `exists`, `eq`, `reg`, `activeTag`, `cap`). Public semantic schema (`RegisterSpec`, `CapabilitySpec`, `PublicSemanticSchema`). Event patterns (`EventPattern`). Transition types (`TransitionSpec`, `ReactionSpec`). Surface composition (`SurfaceFragment`, `SurfaceRelation`). Top-level `ConventionSpec` (`{ id, name, modules }`). Used by strategy and bootstrap layers. |
+| `types.ts` | Declarative expression types (`BoolExpr`, `Ref`, `EffectSpec`) with helpers (`and`, `or`, `not`, `exists`, `eq`, `reg`, `activeTag`, `cap`). Public semantic schema (`RegisterSpec`, `CapabilitySpec`, `PublicSemanticSchema`). Event patterns (`EventPattern`). Transition types (`TransitionSpec`, `ReactionSpec`). Surface composition (`SurfaceFragment`, `SurfaceRelation`). Top-level `ConventionSpec` (`{ id, name, modules }`). Used by strategy and service layers. |
 
 ---
 

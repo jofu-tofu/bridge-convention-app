@@ -11,7 +11,7 @@ import type { Hand } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
 import { makeSimpleTestDeal, makeDrillSession, makeContract } from "../../test-support/fixtures";
-import type { DrillSession } from "../../bootstrap/types";
+import type { DrillSession } from "../../session/drill-types";
 import type { EnginePort } from "../../engine/port";
 import type { InferenceConfig } from "../../inference/types";
 import { createLocalService } from "../../service";

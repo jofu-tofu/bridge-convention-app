@@ -51,32 +51,32 @@ const componentImports = [
     message: "Module boundary violation: no component imports",
   },
 ];
-const strategyImports = [
+const sessionImports = [
   {
-    name: "../strategy/*",
-    message: "Module boundary violation: no strategy imports",
+    name: "../session/*",
+    message: "Module boundary violation: no session imports",
   },
   {
-    name: "../../strategy/*",
-    message: "Module boundary violation: no strategy imports",
+    name: "../../session/*",
+    message: "Module boundary violation: no session imports",
   },
   {
-    name: "../../../strategy/*",
-    message: "Module boundary violation: no strategy imports",
+    name: "../../../session/*",
+    message: "Module boundary violation: no session imports",
   },
 ];
-const bootstrapImports = [
+const serviceImports = [
   {
-    name: "../bootstrap/*",
-    message: "Module boundary violation: no bootstrap imports",
+    name: "../service/*",
+    message: "Module boundary violation: session/ must not import from service/",
   },
   {
-    name: "../../bootstrap/*",
-    message: "Module boundary violation: no bootstrap imports",
+    name: "../../service/*",
+    message: "Module boundary violation: session/ must not import from service/",
   },
   {
-    name: "../../../bootstrap/*",
-    message: "Module boundary violation: no bootstrap imports",
+    name: "../../../service/*",
+    message: "Module boundary violation: session/ must not import from service/",
   },
 ];
 const inferenceImports = [
@@ -220,7 +220,7 @@ export default tseslint.config(
             ...svelteImports,
             ...storeImports,
             ...componentImports,
-            ...strategyImports,
+            ...sessionImports,
           ],
         },
       ],
@@ -252,16 +252,12 @@ export default tseslint.config(
               message: "UI boundary: components must import from service/, not conventions/ directly.",
             },
             {
-              group: ["**/strategy/**", "*/strategy/**"],
-              message: "UI boundary: components must import from service/, not strategy/ directly.",
+              group: ["**/session/**", "*/session/**"],
+              message: "UI boundary: components must import from service/, not session/ directly.",
             },
             {
               group: ["**/inference/**", "*/inference/**"],
               message: "UI boundary: components must import from service/, not inference/ directly.",
-            },
-            {
-              group: ["**/bootstrap/**", "*/bootstrap/**"],
-              message: "UI boundary: components must import from service/, not bootstrap/ directly.",
             },
           ],
         },
@@ -285,8 +281,8 @@ export default tseslint.config(
           ],
           patterns: [
             {
-              group: ["**/strategy/**"],
-              message: "Agent-facing commands must use service/ facade, not strategy/ directly",
+              group: ["**/session/**"],
+              message: "Agent-facing commands must use service/ facade, not session/ directly",
             },
             {
               group: ["**/teaching/**"],
@@ -362,14 +358,6 @@ export default tseslint.config(
               message: "stores/ must not import cli/",
             },
             {
-              name: "../bootstrap/*",
-              message: "stores must use service layer, not bootstrap directly",
-            },
-            {
-              name: "../../bootstrap/*",
-              message: "stores must use service layer, not bootstrap directly",
-            },
-            {
               name: "../conventions/*",
               message: "stores must use service layer, not conventions directly",
             },
@@ -378,12 +366,12 @@ export default tseslint.config(
               message: "stores must use service layer, not conventions directly",
             },
             {
-              name: "../strategy/*",
-              message: "stores must use service layer, not strategy directly",
+              name: "../session/*",
+              message: "stores must use service layer, not session directly",
             },
             {
-              name: "../../strategy/*",
-              message: "stores must use service layer, not strategy directly",
+              name: "../../session/*",
+              message: "stores must use service layer, not session directly",
             },
             {
               name: "../inference/*",
@@ -426,12 +414,7 @@ export default tseslint.config(
             ...svelteImports,
             ...storeImports,
             ...componentImports,
-            ...strategyImports,
-            { name: "../bootstrap/*", message: "engine/ must not import bootstrap/" },
-            {
-              name: "../../bootstrap/*",
-              message: "engine/ must not import bootstrap/",
-            },
+            ...sessionImports,
             {
               name: "../inference/*",
               message: "engine/ must not import inference/",
@@ -462,14 +445,6 @@ export default tseslint.config(
             ...svelteImports,
             ...storeImports,
             ...componentImports,
-            {
-              name: "../bootstrap/*",
-              message: "conventions/ must not import bootstrap/",
-            },
-            {
-              name: "../../bootstrap/*",
-              message: "conventions/ must not import bootstrap/",
-            },
           ],
         },
       ],
@@ -594,36 +569,17 @@ export default tseslint.config(
             ...svelteImports,
             ...storeImports,
             ...componentImports,
-            ...bootstrapImports,
           ],
         },
       ],
     },
   },
 
-  // ── Module boundary: strategy/ ──
+  // ── Module boundary: session/ ──
+  // session/ is the domain layer — it must never import from service/ (the port above it)
   {
-    files: ["src/strategy/**/*.ts"],
-    ignores: ["src/strategy/__tests__/**", "src/strategy/**/*.test.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            ...svelteImports,
-            ...storeImports,
-            ...componentImports,
-            ...bootstrapImports,
-          ],
-        },
-      ],
-    },
-  },
-
-  // ── Module boundary: bootstrap/ ──
-  {
-    files: ["src/bootstrap/**/*.ts"],
-    ignores: ["src/bootstrap/__tests__/**", "src/bootstrap/**/*.test.ts"],
+    files: ["src/session/**/*.ts"],
+    ignores: ["src/session/__tests__/**", "src/session/**/*.test.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -675,7 +631,7 @@ export default tseslint.config(
           paths: [
             ...storeImports,
             ...componentImports,
-            ...strategyImports,
+            ...sessionImports,
             {
               name: "../conventions/*",
               message: "test-support/ must not import conventions/",

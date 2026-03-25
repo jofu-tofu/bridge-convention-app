@@ -7,7 +7,7 @@ import {
 } from "../deal-spec-generator";
 import type { WitnessGeneratorResult } from "../deal-spec-generator";
 import { Seat, Suit, Vulnerability } from "../../../engine/types";
-import type { DealSpec, UnsatisfiableResult } from "../../../bootstrap/deal-spec-types";
+import type { DealSpec, UnsatisfiableResult } from "../../core/deal-spec-types";
 import type { HandPredicate } from "../../core/agreement-module";
 import { CAP_OPENING_1NT } from "../../definitions/capability-vocabulary";
 

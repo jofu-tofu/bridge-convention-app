@@ -4,7 +4,7 @@ import type { SystemProfile, PublicConstraint } from "../../agreement-module";
 import type { PublicSnapshot } from "../../module-surface";
 import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
-import { ForcingState } from "../../../../strategy/bidding/bidding-types";
+import { ForcingState } from "../../strategy-types";
 import { BASE_SYSTEM_SAYC } from "../../../definitions/system-config";
 
 /** Minimal PublicSnapshot for testing — only publicRegisters and publicCommitments matter. */

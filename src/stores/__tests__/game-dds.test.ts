@@ -4,7 +4,7 @@ import type { DDSolution } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
 import { makeDrillSession, makeSimpleTestDeal, createTestServiceSession } from "../../test-support/fixtures";
-import type { DrillBundle } from "../../bootstrap/types";
+import type { DrillBundle } from "../../session/drill-types";
 import { createLocalService } from "../../service";
 
 const fakeDDSolution: DDSolution = {

@@ -8,7 +8,7 @@
 
 import type { PublicSnapshot } from "../../../conventions/core/module-surface";
 import type { PublicConstraint } from "../../../conventions/core/agreement-module";
-import { ForcingState } from "../../../strategy/bidding/bidding-types";
+import { ForcingState } from "../../../conventions";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand, Card } from "../../../engine/types";
 

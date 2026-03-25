@@ -10,10 +10,10 @@ import { callsMatch } from "../../engine/call-helpers";
 import { getLegalCalls } from "../../engine/auction";
 import { generateDeal } from "../../engine/deal-generator";
 import { mulberry32 } from "../../engine/seeded-rng";
-import { buildBiddingViewport } from "../build-viewport";
+import { buildBiddingViewport } from "../../session/build-viewport";
 import { Seat } from "../../engine/types";
 import type { Auction, Deal, Hand, DealConstraints , Vulnerability } from "../../engine/types";
-import type { BiddingStrategy, BidHistoryEntry } from "../../strategy/bidding/bidding-types";
+import type { BiddingStrategy, BidHistoryEntry } from "../../conventions";
 import type { ConventionBundle } from "../../conventions";
 import type { BiddingViewport } from "../response-types";
 

@@ -4,7 +4,7 @@ import { buildPublicSnapshot } from "../module-surface";
 import type { PublicEvent } from "../agreement-module";
 import type { BidMeaning } from "../../pipeline/meaning";
 import type { MachineRegisters } from "./machine-types";
-import { ForcingState } from "../../../strategy/bidding/bidding-types";
+import { ForcingState } from "../strategy-types";
 import { callKey } from "../../../engine/call-helpers";
 import { extractCommitments } from "./commitment-extractor";
 

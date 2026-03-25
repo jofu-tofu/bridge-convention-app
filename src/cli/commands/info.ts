@@ -3,7 +3,7 @@
 import { enumerateRuleAtoms, generateRuleCoverageManifest, listBundleInputs, resolveBundle as resolveBundleFn } from "../../conventions";
 import { SAYC_SYSTEM_CONFIG } from "../../conventions/definitions/system-config";
 import { AVAILABLE_BASE_SYSTEMS } from "../../conventions/definitions/system-config";
-import { createSpecStrategy } from "../../bootstrap/strategy-factory";
+import { createSpecStrategy } from "../../session/strategy-factory";
 
 import type { Flags, Vulnerability, BaseSystemId } from "../shared";
 import {

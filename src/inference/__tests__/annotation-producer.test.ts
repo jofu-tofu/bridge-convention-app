@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Seat } from "../../engine/types";
 import type { AuctionEntry, Auction } from "../../engine/types";
 import type { HandInference } from "../inference-types";
-import type { BidAlert } from "../../strategy/bidding/bidding-types";
+import type { BidAlert } from "../../conventions";
 import type { FactConstraint } from "../../conventions/core/agreement-module";
 import type { InferenceExtractor, InferenceExtractorInput, InferenceProvider } from "../types";
 import { produceAnnotation } from "../annotation-producer";

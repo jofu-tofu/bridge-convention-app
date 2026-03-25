@@ -6,7 +6,7 @@
  */
 
 import type { MachineRegisters } from "../core/module-surface";
-import { ForcingState } from "../../strategy/bidding/bidding-types";
+import { ForcingState } from "../core/strategy-types";
 import type { NegotiationState, NegotiationDelta } from "../core/committed-step";
 import type { BidSuitName } from "./bid-action";
 

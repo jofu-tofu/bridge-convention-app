@@ -18,7 +18,7 @@ Convention teaching resolution, projection building, and parse-tree construction
 ## Boundary Rules
 
 - **Allowed imports:** `../../engine/`, sibling `../core/` (convention types), sibling `../pipeline/` (evidence-bundle, provenance, pipeline-types)
-- **Blocked imports:** `components/`, `stores/`, `service/display/`, `strategy/`, `bootstrap/`, `inference/`
+- **Blocked imports:** `components/`, `stores/`, `service/display/`, `strategy/`, `inference/`
 - **Circular import warning:** Teaching files must use direct sibling imports (e.g., `../pipeline/pipeline-types`), never the conventions barrel (`../index` or `../../conventions`). Importing the barrel from inside conventions creates a circular dependency. This matches the pattern used by `pipeline/` and `core/` files.
 
 ## Public API

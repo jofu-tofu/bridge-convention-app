@@ -113,6 +113,24 @@ export { PRIMITIVE_FACTS, BRIDGE_DERIVED_FACTS, POSTERIOR_DERIVED_FACTS, SHARED_
 export { buildPublicSnapshot } from "./module-surface";
 export type { MachineRegisters as ModuleSurfaceMachineRegisters, PublicSnapshot } from "./module-surface";
 
+// ── Strategy Contract Types (moved from strategy/) ──────────────────────
+export {
+  ForcingState,
+} from "./strategy-types";
+export type {
+  BiddingContext,
+  BidAlert,
+  BidResult,
+  BidHistoryEntry,
+  BiddingStrategy,
+  PlayContext,
+  PlayResult,
+  PlayStrategy,
+  PosteriorSummary,
+  PracticalScoreBreakdown,
+  PracticalRecommendation,
+} from "./strategy-types";
+
 // ── Committed Step (moved from core/contracts/) ─────────────────────────
 export { INITIAL_NEGOTIATION } from "./committed-step";
 export type {

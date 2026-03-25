@@ -1,6 +1,6 @@
 import type { Auction, AuctionEntry } from "../engine/types";
 import type { Seat } from "../engine/types";
-import type { BidResult } from "../strategy/bidding/bidding-types";
+import type { BidResult } from "../conventions";
 import type { PublicBeliefs } from "./inference-types";
 import type { InferenceEngine } from "./inference-engine";
 import type { InferenceExtractor, InferenceExtractorInput, InferenceSnapshot, PublicBeliefState } from "./types";
@@ -8,6 +8,7 @@ import { createInitialBeliefState, applyAnnotation } from "./belief-accumulator"
 import { produceAnnotation } from "./annotation-producer";
 import { noopExtractor } from "./noop-extractor";
 import { createNaturalInferenceProvider } from "./natural-inference";
+import type { SystemConfig } from "../conventions/definitions/system-config";
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -64,11 +65,12 @@ export interface InferenceCoordinator {
  */
 export function createInferenceCoordinator(
   extractor: InferenceExtractor = noopExtractor,
+  systemConfig?: SystemConfig,
 ): InferenceCoordinator {
   let nsEngine: InferenceEngine | null = null;
   let ewEngine: InferenceEngine | null = null;
   let beliefState: PublicBeliefState = createInitialBeliefState();
-  const naturalProvider = createNaturalInferenceProvider();
+  const naturalProvider = createNaturalInferenceProvider(systemConfig);
 
   return {
     initialize(ns, ew) {

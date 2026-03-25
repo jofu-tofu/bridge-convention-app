@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Seat, Suit, Vulnerability } from "../../../../engine/types";
-import type { SeatRole } from "../../../../bootstrap/deal-spec-types";
+import type { SeatRole } from "../../deal-spec-types";
 import { compileDealSpec } from "../deal-spec-compiler";
 import { makeSpec } from "./witness-test-helpers";
 

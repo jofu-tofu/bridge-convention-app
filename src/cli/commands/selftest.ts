@@ -3,7 +3,7 @@
 import { enumerateRuleAtoms, listBundleInputs, resolveBundle } from "../../conventions";
 import type { RuleAtom } from "../../conventions";
 import { SAYC_SYSTEM_CONFIG } from "../../conventions/definitions/system-config";
-import { createSpecStrategy } from "../../bootstrap/strategy-factory";
+import { createSpecStrategy } from "../../session/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 
 import type { Flags, ConventionSpec, ConventionBundle, Vulnerability, Auction, Call, Seat, Deal, BaseSystemId } from "../shared";

@@ -1,6 +1,6 @@
 import type { Seat, AuctionEntry, Call } from "../engine/types";
 import type { PublicBeliefs, InferenceProvider } from "./inference-types";
-import type { BidAlert } from "../strategy/bidding/bidding-types";
+import type { BidAlert } from "../conventions";
 import type { FactConstraint } from "../conventions/core/agreement-module";
 
 // ConditionInference — structured inference metadata for condition → HandInference mapping.

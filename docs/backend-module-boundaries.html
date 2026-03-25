@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Backend Module Boundaries — Bridge Convention App</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        engine: '#3b82f6',
+        conventions: '#8b5cf6',
+        inference: '#06b6d4',
+        strategy: '#f59e0b',
+        bootstrap: '#10b981',
+        service: '#ef4444',
+        cli: '#6b7280',
+      }
+    }
+  }
+}
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+  .prose { max-width: 75ch; }
+  pre.mermaid { background: transparent !important; text-align: center; }
+  .mermaid svg { margin: 0 auto; }
+  code { font-size: 0.875em; }
+  #toc a.active { font-weight: 700; color: #ef4444; }
+  @media (max-width: 1024px) { #toc { display: none; } }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-900 leading-relaxed">
+
+<!-- Sticky ToC -->
+<nav id="toc" class="fixed top-0 left-0 w-56 h-screen overflow-y-auto bg-white border-r border-gray-200 p-4 text-sm z-50">
+  <p class="font-bold text-xs uppercase tracking-wide text-gray-400 mb-3">Contents</p>
+  <ul class="space-y-2">
+    <li><a href="#overview" class="text-gray-600 hover:text-red-600">Architecture Overview</a></li>
+    <li><a href="#dep-graph" class="text-gray-600 hover:text-red-600">Dependency Graph</a></li>
+    <li><a href="#contracts" class="text-gray-600 hover:text-red-600">Interface Contracts</a></li>
+    <li><a href="#enforcement" class="text-gray-600 hover:text-red-600">Boundary Enforcement</a></li>
+    <li><a href="#data-flow" class="text-gray-600 hover:text-red-600">Data Flow: A Bid</a></li>
+    <li><a href="#convention-isolation" class="text-gray-600 hover:text-red-600">Convention Isolation</a></li>
+    <li><a href="#type-ownership" class="text-gray-600 hover:text-red-600">Type Ownership</a></li>
+  </ul>
+</nav>
+
+<!-- Main Content -->
+<main class="lg:ml-56 px-6 py-10 max-w-4xl mx-auto">
+
+  <!-- Title -->
+  <h1 class="text-3xl font-bold mb-2">Backend Module Boundaries</h1>
+  <p class="text-gray-500 text-sm mb-8">Bridge Convention App &mdash; <code>dissolve-core</code> branch</p>
+
+  <!-- Section 1: Overview -->
+  <section id="overview" class="mb-12">
+    <h2 class="text-2xl font-semibold mb-3 border-b pb-2">Architecture Overview</h2>
+    <p class="mb-4"><strong>7 backend modules form an acyclic dependency graph, enforced at three levels: TypeScript interfaces, barrel exports, and ESLint rules.</strong> The <code>service/</code> module is the sole hexagonal port &mdash; the only gateway the UI and CLI may use to reach backend logic.</p>
+    <p class="mb-4">Think of it like an embassy: all communication between citizens (UI components) and the foreign government (game engine, conventions, inference) passes through official diplomatic channels (<code>ServicePort</code>). Citizens never contact foreign departments directly.</p>
+
+    <pre class="mermaid">
+graph TB
+  subgraph UI["UI Layer"]
+    direction LR
+    COMP["components/"]
+    STORES["stores/"]
+  end
+
+  subgraph BACKEND["Backend Modules"]
+    direction TB
+    SVC["service/\n(hexagonal port)"]
+    BOOT["bootstrap/"]
+    STRAT["strategy/"]
+    INF["inference/"]
+    CONV["conventions/"]
+    ENG["engine/\n(leaf)"]
+  end
+
+  CLI["cli/"]
+
+  COMP -->|"imports"| SVC
+  STORES -->|"imports"| SVC
+  CLI -->|"imports"| SVC
+  SVC --> BOOT
+  SVC --> STRAT
+  SVC --> INF
+  SVC --> CONV
+  SVC --> ENG
+  BOOT --> STRAT
+  BOOT --> INF
+  BOOT --> CONV
+  BOOT --> ENG
+  STRAT --> INF
+  STRAT --> CONV
+  STRAT --> ENG
+  INF --> CONV
+  INF --> ENG
+  CONV --> ENG
+
+  style ENG fill:#dbeafe,stroke:#3b82f6,stroke-width:2px
+  style CONV fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px
+  style INF fill:#cffafe,stroke:#06b6d4,stroke-width:2px
+  style STRAT fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
+  style BOOT fill:#d1fae5,stroke:#10b981,stroke-width:2px
+  style SVC fill:#fee2e2,stroke:#ef4444,stroke-width:2px
+  style CLI fill:#f3f4f6,stroke:#6b7280,stroke-width:2px
+  style UI fill:#f9fafb,stroke:#d1d5db,stroke-width:1px
+  style BACKEND fill:#f9fafb,stroke:#d1d5db,stroke-width:1px
+    </pre>
+
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-3 my-4 text-sm">
+      <strong>Key invariant:</strong> No circular dependencies exist. The graph is a strict DAG. Engine is a leaf &mdash; it imports nothing from other backend modules.
+    </div>
+  </section>
+
+  <!-- Section 2: Dependency Graph -->
+  <section id="dep-graph" class="mb-12">
+    <h2 class="text-2xl font-semibold mb-3 border-b pb-2">Dependency Graph</h2>
+    <p class="mb-4"><strong>Each module has explicit allowed and blocked imports, enforced by ESLint <code>no-restricted-imports</code> rules in <code>eslint.config.js</code>.</strong></p>
+
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm border-collapse">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="text-left p-2 border">Module</th>
+          <th class="text-left p-2 border">Path</th>
+          <th class="text-left p-2 border">Imports From</th>
+          <th class="text-left p-2 border">Blocked</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="p-2 border font-mono text-engine font-semibold">engine</td>
+          <td class="p-2 border font-mono text-xs">src/engine/</td>
+          <td class="p-2 border"><em>none (leaf)</em></td>
+          <td class="p-2 border text-xs">svelte, stores, components, strategy, conventions, inference, bootstrap</td>
+        </tr>
+        <tr class="bg-gray-50">
+          <td class="p-2 border font-mono text-conventions font-semibold">conventions</td>
+          <td class="p-2 border font-mono text-xs">src/conventions/</td>
+          <td class="p-2 border">engine</td>
+          <td class="p-2 border text-xs">svelte, stores, components, bootstrap</td>
+        </tr>
+        <tr>
+          <td class="p-2 border font-mono text-inference font-semibold">inference</td>
+          <td class="p-2 border font-mono text-xs">src/inference/</td>
+          <td class="p-2 border">engine, conventions</td>
+          <td class="p-2 border text-xs">svelte, stores, components, bootstrap</td>
+        </tr>
+        <tr class="bg-gray-50">
+          <td class="p-2 border font-mono text-strategy font-semibold">strategy</td>
+          <td class="p-2 border font-mono text-xs">src/strategy/</td>
+          <td class="p-2 border">engine, conventions, inference</td>
+          <td class="p-2 border text-xs">svelte, stores, components, bootstrap</td>
+        </tr>
+        <tr>
+          <td class="p-2 border font-mono text-bootstrap font-semibold">bootstrap</td>
+          <td class="p-2 border font-mono text-xs">src/bootstrap/</td>
+          <td class="p-2 border">engine, conventions, strategy, inference</td>
+          <td class="p-2 border text-xs">svelte, stores, components</td>
+        </tr>
+        <tr class="bg-gray-50">
+          <td class="p-2 border font-mono text-service font-semibold">service</td>
+          <td class="p-2 border font-mono text-xs">src/service/</td>
+          <td class="p-2 border">engine, conventions, strategy, inference, bootstrap</td>
+          <td class="p-2 border text-xs">svelte, stores, components</td>
+        </tr>
+        <tr>
+          <td class="p-2 border font-mono text-cli font-semibold">cli</td>
+          <td class="p-2 border font-mono text-xs">src/cli/</td>
+          <td class="p-2 border">service <em>only</em></td>
+          <td class="p-2 border text-xs">everything except service</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p class="mt-3 text-sm text-gray-600">The dependency direction is strictly downward: <code>cli</code> &rarr; <code>service</code> &rarr; <code>bootstrap</code> &rarr; <code>strategy</code> &rarr; <code>inference</code> &rarr; <code>conventions</code> &rarr; <code>engine</code>. No upward arrows exist.</p>
+  </section>
+
+  <!-- Section 3: Interface Contracts -->
+  <section id="contracts" class="mb-12">
+    <h2 class="text-2xl font-semibold mb-3 border-b pb-2">Interface Contracts</h2>
+    <p class="mb-4"><strong>Five key interfaces define the contracts between modules.</strong> Each sits at a boundary where one module's implementation meets another's expectations.</p>
+
+    <!-- ServicePort -->
+    <h3 id="serviceport" class="text-lg font-semibold mt-6 mb-2">
+      <span class="inline-block w-3 h-3 rounded-full bg-service mr-2"></span>
+      ServicePort <span class="text-sm font-normal text-gray-500">&mdash; src/service/port.ts</span>
+    </h3>
+    <p class="mb-2">The hexagonal boundary between UI/CLI and all backend logic. Every user action enters here.</p>
+    <pre class="bg-gray-800 text-green-300 text-sm rounded-lg p-4 overflow-x-auto font-mono"><code>interface ServicePort {
+  createSession(config: SessionConfig): Promise&lt;SessionHandle&gt;
+  destroySession(handle: SessionHandle): Promise&lt;void&gt;
+  startDrill(handle: SessionHandle): Promise&lt;DrillStartResult&gt;
+  submitBid(handle: SessionHandle, call: Call): Promise&lt;BidSubmitResult&gt;
+  acceptPrompt(handle: SessionHandle): Promise&lt;PromptAcceptResult&gt;
+  playCard(handle: SessionHandle, card: Card): Promise&lt;PlayCardResult&gt;
+  getViewport(handle: SessionHandle): Promise&lt;SessionViewport&gt;
+}
+
+interface DevServicePort extends ServicePort {
+  getExpectedBid(handle): Promise&lt;{ call: Call } | null&gt;
+  getDebugSnapshot(handle): Promise&lt;ServiceDebugSnapshot&gt;
+}</code></pre>
+
+    <!-- EnginePort -->
+    <h3 id="engineport" class="text-lg font-semibold mt-6 mb-2">
+      <span class="inline-block w-3 h-3 rounded-full bg-engine mr-2"></span>
+      EnginePort <span class="text-sm font-normal text-gray-500">&mdash; src/engine/port.ts</span>
+    </h3>
+    <p class="mb-2">Async boundary allowing multiple transports (WASM for browser, Tauri IPC for desktop). All methods return <code>Promise&lt;T&gt;</code>.</p>
+    <pre class="bg-gray-800 text-green-300 text-sm rounded-lg p-4 overflow-x-auto font-mono"><code>interface EnginePort {
+  generateDeal(constraints: DealConstraints): Promise&lt;Deal&gt;
+  evaluateHand(hand: Hand): Promise&lt;HandEvaluation&gt;
+  solveDDS(deal: Deal): Promise&lt;DDSolution&gt;
+}</code></pre>
+
+    <!-- BiddingStrategy -->
+    <h3 id="biddingstrategy" class="text-lg font-semibold mt-6 mb-2">
+      <span class="inline-block w-3 h-3 rounded-full bg-strategy mr-2"></span>
+      BiddingStrategy <span class="text-sm font-normal text-gray-500">&mdash; src/strategy/bidding/bidding-types.ts</span>
+    </h3>
+    <p class="mb-2">Strategy pattern. Multiple implementations (meaning-based, natural fallback, pragmatic) are chained via <code>createStrategyChain()</code>.</p>
+    <pre class="bg-gray-800 text-green-300 text-sm rounded-lg p-4 overflow-x-auto font-mono"><code>interface BiddingStrategy {
+  suggest(context: BiddingContext): Promise&lt;BidResult | null&gt;
+}
+
+interface BiddingContext {
+  readonly hand: Hand
+  readonly auction: Auction
+  readonly seat: Seat
+  readonly evaluation: HandEvaluation
+  readonly vulnerability?: Vulnerability
+}</code></pre>
+
+    <!-- ConventionModule -->
+    <h3 id="conventionmodule" class="text-lg font-semibold mt-6 mb-2">
+      <span class="inline-block w-3 h-3 rounded-full bg-conventions mr-2"></span>
+      ConventionModule <span class="text-sm font-normal text-gray-500">&mdash; src/conventions/core/convention-module.ts</span>
+    </h3>
+    <p class="mb-2">The unit of convention authoring. Modules are like LEGO bricks &mdash; portable, self-contained, composable into any bundle. They receive <code>SystemConfig</code> via factory parameter, never import concrete configs.</p>
+    <pre class="bg-gray-800 text-green-300 text-sm rounded-lg p-4 overflow-x-auto font-mono"><code>interface ConventionModule {
+  readonly moduleId: string
+  readonly facts: FactCatalogExtension
+  readonly explanationEntries: Record&lt;string, ExplanationEntry&gt;
+  readonly local: LocalFsm
+  readonly states: StateEntry[]
+}
+
+// Factory pattern: system-agnostic creation
+const moduleFactory = (sys: SystemConfig): ConventionModule =&gt; ({ ... })</code></pre>
+
+    <!-- InferenceEngine -->
+    <h3 id="inferenceengine" class="text-lg font-semibold mt-6 mb-2">
+      <span class="inline-block w-3 h-3 rounded-full bg-inference mr-2"></span>
+      InferenceEngine <span class="text-sm font-normal text-gray-500">&mdash; src/inference/inference-engine.ts</span>
+    </h3>
+    <p class="mb-2">Incremental per-bid processing with per-partnership information asymmetry. An <code>InferenceCoordinator</code> coordinates NS and EW engines.</p>
+    <pre class="bg-gray-800 text-green-300 text-sm rounded-lg p-4 overflow-x-auto font-mono"><code>interface InferenceEngine {
+  processBid(entry: AuctionEntry, hand?: Hand): InferenceSnapshot
+  getPublicBeliefState(): PublicBeliefState
+}
+
+interface InferenceSnapshot {
+  readonly entry: AuctionEntry
+  readonly newConstraints: readonly FactConstraint[]
+  readonly cumulativeBeliefs: Record&lt;Seat, PublicBeliefs&gt;
+}</code></pre>
+  </section>
+
+  <!-- Section 4: Enforcement -->
+  <section id="enforcement" class="mb-12">
+    <h2 class="text-2xl font-semibold mb-3 border-b pb-2">Boundary Enforcement</h2>
+    <p class="mb-4"><strong>Three enforcement layers prevent boundary violations.</strong></p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <!-- Layer 1 -->
+      <div class="bg-white rounded-lg shadow-sm border p-4">
+        <h4 class="font-semibold text-sm mb-1">1. TypeScript Interfaces</h4>
+        <p class="text-sm text-gray-600">Port interfaces (<code>ServicePort</code>, <code>EnginePort</code>) define method contracts. Callers depend on the interface, not the implementation.</p>
+      </div>
+      <!-- Layer 2 -->
+      <div class="bg-white rounded-lg shadow-sm border p-4">
+        <h4 class="font-semibold text-sm mb-1">2. Barrel Exports</h4>
+        <p class="text-sm text-gray-600">Each module exposes a single <code>index.ts</code> barrel. Deep imports into <code>conventions/core/</code>, <code>service/evaluation/</code>, etc. are forbidden.</p>
+      </div>
+      <!-- Layer 3 -->
+      <div class="bg-white rounded-lg shadow-sm border p-4">
+        <h4 class="font-semibold text-sm mb-1">3. ESLint Rules</h4>
+        <p class="text-sm text-gray-600"><code>no-restricted-imports</code> rules in <code>eslint.config.js</code> block cross-boundary imports at lint time. ~250 lines of boundary rules.</p>
+      </div>
+    </div>
+
+    <h3 class="text-lg font-semibold mb-2">Viewport Boundary</h3>
+    <p class="mb-2">The service layer translates internal types into <strong>viewport-safe types</strong> that never leak implementation details to the UI. This is what the UI sees vs. what stays hidden:</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <h4 class="font-semibold text-green-800 text-sm mb-2">Crosses the boundary</h4>
+        <ul class="text-sm space-y-1 text-green-700">
+          <li><code>BiddingViewport</code>, <code>PlayingViewport</code></li>
+          <li><code>ViewportBidFeedback</code>, <code>TeachingDetail</code></li>
+          <li><code>Call</code>, <code>Card</code>, <code>Seat</code>, <code>Hand</code></li>
+          <li><code>GamePhase</code>, <code>SessionHandle</code></li>
+        </ul>
+      </div>
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <h4 class="font-semibold text-red-800 text-sm mb-2">Never crosses</h4>
+        <ul class="text-sm space-y-1 text-red-700">
+          <li><code>Deal</code> (opponent hands hidden)</li>
+          <li><code>BidResult</code>, <code>ArbitrationResult</code></li>
+          <li><code>ConventionStrategy</code>, <code>StrategyEvaluation</code></li>
+          <li><code>DrillSession</code>, <code>InferenceEngine</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Data Flow -->
+  <section id="data-flow" class="mb-12">
+    <h2 class="text-2xl font-semibold mb-3 border-b pb-2">Data Flow: A Bid</h2>
+    <p class="mb-4"><strong>A single user bid touches 5 modules before the UI updates.</strong> Here is the path from button click to viewport refresh:</p>
+
+    <pre class="mermaid">
+sequenceDiagram
+    participant UI as UI (store)
+    participant SVC as service
+    participant BOOT as bootstrap
+    participant STRAT as strategy
+    participant CONV as conventions
+    participant INF as inference
+    participant ENG as engine
+
+    UI->>SVC: submitBid(handle, Call)
+    SVC->>ENG: evaluateHand(hand)
+    ENG-->>SVC: HandEvaluation
+    SVC->>STRAT: strategy.suggest(BiddingContext)
+    STRAT->>CONV: runPipeline(facts, surfaces)
+    CONV->>ENG: fact evaluation (HCP, shape)
+    CONV-->>STRAT: PipelineResult
+    STRAT-->>SVC: BidResult
+    SVC->>BOOT: assembleBidFeedback()
+    BOOT-->>SVC: BidFeedbackDTO
+    SVC->>INF: coordinator.processBid()
+    INF-->>SVC: InferenceSnapshot
+    SVC->>SVC: buildViewport() + buildTeachingDetail()
+    SVC-->>UI: BidSubmitResult (viewport-safe)
+    </pre>
+
+    <div class="mt-4 bg-amber-50 border-l-4 border-amber-400 p-3 text-sm">
+      <strong>Phase transitions:</strong> After the auction completes (3 consecutive passes), the service transitions through <code>BIDDING &rarr; DECLARER_PROMPT &rarr; PLAYING &rarr; EXPLANATION</code>. Each phase builds its own viewport type.
+    </div>
+  </section>
+
+  <!-- Section 6: Convention Isolation -->
+  <section id="convention-isolation" class="mb-12">
+    <h2 class="text-2xl font-semibold mb-3 border-b pb-2">Convention Module Isolation</h2>
+    <p class="mb-4"><strong>Convention modules (Stayman, Jacoby Transfers, Bergen, etc.) are portable building blocks that cannot reference each other.</strong> Cross-module relationships emerge from shared vocabulary tags, not direct imports.</p>
+
+    <pre class="mermaid">
+graph LR
+    subgraph MODULES["Convention Modules"]
+      direction TB
+      ST["stayman"]
+      JT["jacoby-transfers"]
+      BG["bergen"]
+      WT["weak-twos"]
+      DN["dont"]
+      SM["smolen"]
+    end
+
+    subgraph SHARED["Shared Infrastructure"]
+      SFV["shared-fact-vocabulary"]
+      SC["SystemConfig (param)"]
+      FC["FactCatalog"]
+    end
+
+    ST -.->|"reads"| SFV
+    JT -.->|"reads"| SFV
+    BG -.->|"reads"| SFV
+    WT -.->|"reads"| SFV
+    DN -.->|"reads"| SFV
+    SM -.->|"reads"| SFV
+
+    SC -.->|"injected"| ST
+    SC -.->|"injected"| JT
+    SC -.->|"injected"| BG
+
+    ST -.-x|"blocked"| JT
+    BG -.-x|"blocked"| DN
+
+    style ST fill:#ede9fe,stroke:#8b5cf6
+    style JT fill:#ede9fe,stroke:#8b5cf6
+    style BG fill:#ede9fe,stroke:#8b5cf6
+    style WT fill:#ede9fe,stroke:#8b5cf6
+    style DN fill:#ede9fe,stroke:#8b5cf6
+    style SM fill:#ede9fe,stroke:#8b5cf6
+    style SHARED fill:#f3f4f6,stroke:#d1d5db
+    style MODULES fill:#faf5ff,stroke:#d8b4fe
+    </pre>
+
+    <div class="mt-4 space-y-2 text-sm">
+      <p><strong>Factory pattern:</strong> Each module exports a <code>moduleFactory(sys: SystemConfig): ConventionModule</code>. The same module works with SAYC, 2/1, or Acol without code changes.</p>
+      <p><strong>ESLint enforcement:</strong> <code>no-restricted-imports</code> blocks sibling-module imports (e.g., <code>bergen/</code> importing from <code>../dont/</code>). This is in <code>eslint.config.js</code> lines 479-532.</p>
+      <p><strong>Registration:</strong> Bundles register via <code>registerConvention()</code> in <code>conventions/registration.ts</code>. No hardcoded switch statements.</p>
+    </div>
+  </section>
+
+  <!-- Section 7: Type Ownership -->
+  <section id="type-ownership" class="mb-12">
+    <h2 class="text-2xl font-semibold mb-3 border-b pb-2">Type Ownership</h2>
+    <p class="mb-4"><strong>After the <code>dissolve-core</code> refactoring, every type lives in its owning module.</strong> The former <code>src/core/contracts/</code> directory was eliminated; types were distributed to the modules that define their semantics.</p>
+
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm border-collapse">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="text-left p-2 border">Types</th>
+          <th class="text-left p-2 border">Owner</th>
+          <th class="text-left p-2 border">Crosses Service Boundary?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="p-2 border"><code>Card, Hand, Deal, Suit, Rank, Seat, Call, Auction, Contract</code></td>
+          <td class="p-2 border font-mono text-engine">engine/types.ts</td>
+          <td class="p-2 border text-green-700">Yes (universal vocabulary)</td>
+        </tr>
+        <tr class="bg-gray-50">
+          <td class="p-2 border"><code>BidMeaning, MeaningClause, PipelineResult, ArbitrationResult</code></td>
+          <td class="p-2 border font-mono text-conventions">conventions/pipeline/</td>
+          <td class="p-2 border text-red-700">No</td>
+        </tr>
+        <tr>
+          <td class="p-2 border"><code>FactCatalog, FactConstraint, ConventionModule, SystemProfile</code></td>
+          <td class="p-2 border font-mono text-conventions">conventions/core/</td>
+          <td class="p-2 border text-red-700">No</td>
+        </tr>
+        <tr class="bg-gray-50">
+          <td class="p-2 border"><code>TeachingProjection, BidGrade, ParseTreeView</code></td>
+          <td class="p-2 border font-mono text-conventions">conventions/teaching/</td>
+          <td class="p-2 border text-amber-700">Partially (BidGrade yes, projections no)</td>
+        </tr>
+        <tr>
+          <td class="p-2 border"><code>BiddingStrategy, BidResult, BiddingContext</code></td>
+          <td class="p-2 border font-mono text-strategy">strategy/bidding/</td>
+          <td class="p-2 border text-red-700">No</td>
+        </tr>
+        <tr class="bg-gray-50">
+          <td class="p-2 border"><code>InferenceSnapshot, PublicBeliefState, FactorGraph</code></td>
+          <td class="p-2 border font-mono text-inference">inference/</td>
+          <td class="p-2 border text-amber-700">Partially (PublicBeliefState yes)</td>
+        </tr>
+        <tr>
+          <td class="p-2 border"><code>DrillConfig, DrillSession, DrillBundle, DrillTuning</code></td>
+          <td class="p-2 border font-mono text-bootstrap">bootstrap/</td>
+          <td class="p-2 border text-red-700">No</td>
+        </tr>
+        <tr class="bg-gray-50">
+          <td class="p-2 border"><code>BiddingViewport, PlayingViewport, ViewportBidFeedback, TeachingDetail</code></td>
+          <td class="p-2 border font-mono text-service">service/</td>
+          <td class="p-2 border text-green-700">Yes (viewport-safe by design)</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- Back to top -->
+  <a href="#" class="fixed bottom-6 right-6 bg-gray-800 text-white text-sm px-3 py-2 rounded-full shadow-lg hover:bg-gray-700 transition-colors">Top</a>
+
+</main>
+
+<!-- Active section highlighting -->
+<script>
+mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+
+const sections = document.querySelectorAll('section[id]');
+const tocLinks = document.querySelectorAll('#toc a');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      tocLinks.forEach(link => link.classList.remove('active'));
+      const active = document.querySelector(`#toc a[href="#${entry.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -75% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

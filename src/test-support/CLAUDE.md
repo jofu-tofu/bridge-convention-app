@@ -16,7 +16,7 @@ Shared test factories and stubs used across module boundaries (stores, component
 - **Convention factories:** Canonical source for `makeSurface`, `makeRanking`, `buildMachine`, `makeCall`, `makePass`. Pipeline/runtime/strategy test-helpers re-export these to preserve backward compatibility.
 - **Engine stub:** Creates minimal `EnginePort` with safe defaults (pass-only, balanced hand). Override per test.
 - **Fixtures:** Create minimal valid domain objects. No test-specific logic.
-- **Dependency rule:** Imports from `engine/`, `bootstrap/`, `contracts/` only — never from `components/`, `stores/`, or `conventions/`.
+- **Dependency rule:** Imports from `engine/`, `service/` only — never from `components/`, `stores/`, or `conventions/`.
 
 ## Gotchas
 

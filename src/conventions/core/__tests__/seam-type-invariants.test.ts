@@ -7,7 +7,7 @@ import { describe, it, expect } from "vitest";
 import type { SystemProfile } from "../agreement-module";
 import type { EvaluationResult, RuntimeModule } from "../runtime/types";
 import type { PublicSnapshot } from "../module-surface";
-import { ForcingState } from "../../../strategy/bidding/bidding-types";
+import { ForcingState } from "../../core/strategy-types";
 import { BASE_SYSTEM_SAYC } from "../../definitions/system-config";
 
 // Helper: assert a value structurally satisfies the interface at compile time

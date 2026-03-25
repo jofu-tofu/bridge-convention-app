@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Seat } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
-import type { PlayStrategy, PlayContext, PlayResult } from "../../strategy/play/play-types";
+import type { PlayStrategy, PlayContext, PlayResult } from "../../service";
 import { makeDrillSession, makeSimpleTestDeal } from "../../test-support/fixtures";
 import { createLocalService } from "../../service";
 

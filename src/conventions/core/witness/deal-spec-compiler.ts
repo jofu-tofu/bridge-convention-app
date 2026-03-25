@@ -2,7 +2,7 @@ import type { Suit, Seat, DealConstraints, SeatConstraint } from "../../../engin
 import type {
   DealSpec,
   TeachingControls,
-} from "../../../bootstrap/deal-spec-types";
+} from "../deal-spec-types";
 import type { HandPredicate } from "../agreement-module";
 import { resolveRole } from "../../pipeline/deal-spec-generator";
 import { VULNERABILITY_MAP } from "../../pipeline/witness-constants";

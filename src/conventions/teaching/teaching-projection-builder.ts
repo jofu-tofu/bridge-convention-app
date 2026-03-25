@@ -30,7 +30,7 @@ import type {
   MeaningExplanationEntry,
 } from "../core/explanation-catalog";
 
-import type { PosteriorSummary } from "../../strategy/recommendation-types";
+import type { PosteriorSummary } from "../core/strategy-types";
 
 import type { SurfaceGroup } from "./teaching-types";
 

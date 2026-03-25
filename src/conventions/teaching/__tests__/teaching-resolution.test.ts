@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { BidSuit } from "../../../engine/types";
-import type { BidResult } from "../../../strategy/bidding/bidding-types";
+import type { BidResult } from "../../core/strategy-types";
 import type { ResolvedCandidateDTO } from "../../pipeline/tree-evaluation";
 import type { SurfaceGroup } from "../teaching-types";
 import { BidGrade, gradeBid, resolveTeachingAnswer } from "../teaching-resolution";

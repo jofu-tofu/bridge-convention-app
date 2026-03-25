@@ -15,11 +15,11 @@ Auction inference system — extracts hand information from bids with per-partne
 |------|------|
 | `inference-types.ts` | Cross-boundary inference types (moved from `core/contracts/inference.ts`): `HandInference`, `SuitInference`, `PublicBeliefs`, `DerivedRanges`, `QualitativeConstraint`, `BeliefData`, `InferenceProvider` |
 | `types.ts` | Core interfaces: `ConditionInference`, `InferenceExtractorInput`, `InferenceExtractor`, `InferenceProvider`, `InferenceConfig`, `BidAnnotation`, `PublicBeliefState`. `ConditionInference` is now owned locally (no conventions/core dependency). |
-| `natural-inference.ts` | SAYC-default natural bidding theory inference (no convention knowledge) |
+| `natural-inference.ts` | System-parameterized natural bidding theory inference (accepts `SystemConfig`, defaults to SAYC) |
 | `condition-mapper.ts` | `conditionToHandInference()`, `invertInference()`, `resolveDisjunction()` — maps `ConditionInference` → `HandInference` |
 | `inference-engine.ts` | `createInferenceEngine(config, observerSeat)` — incremental per-bid processing |
 | `derive-beliefs.ts` | `derivePublicBeliefs()` — derives `PublicBeliefs` from accumulated `FactConstraint[]`. Replaces old `mergeInferences()` with lossless constraint-first model. Source of truth is always the raw constraints array; ranges and qualitative labels are computed from it. |
-| `inference-coordinator.ts` | `InferenceCoordinator` — coordinates NS and EW inference engines for a drill. Adapts `BidResult` → `InferenceExtractorInput`, manages belief state accumulation per deal. |
+| `inference-coordinator.ts` | `InferenceCoordinator` — coordinates NS and EW inference engines for a drill. Accepts optional `SystemConfig` for system-aware natural inference. Adapts `BidResult` → `InferenceExtractorInput`, manages belief state accumulation per deal. |
 | `belief-accumulator.ts` | `createInitialBeliefState()`, `applyAnnotation()` — public belief state management |
 | `annotation-producer.ts` | `produceAnnotation()` — creates `BidAnnotation` from auction entry + rule result |
 | `noop-extractor.ts` | `noopExtractor` — no-op `InferenceExtractor` used by the store |

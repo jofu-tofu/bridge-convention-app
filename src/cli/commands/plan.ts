@@ -2,7 +2,7 @@
 
 import { enumerateRuleAtoms } from "../../conventions";
 import type { RuleAtom } from "../../conventions";
-import { createSpecStrategy } from "../../bootstrap/strategy-factory";
+import { createSpecStrategy } from "../../session/strategy-factory";
 import { callsMatch } from "../../engine/call-helpers";
 
 import type { Flags, OpponentMode, Vulnerability, Call, ScenarioConfig, Auction, Seat, Deal, ConventionBundle, ConventionSpec, BaseSystemId } from "../shared";

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { BidSuit, Seat } from "../../engine/types";
-import type { BidResult } from "../../strategy/bidding/bidding-types";
+import type { BidResult } from "../../service";
 import { noopExtractor } from "../../inference/noop-extractor";
 
 /**

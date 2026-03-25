@@ -9,4 +9,4 @@
 
 import type { MachineRegisters } from "../module-surface";
 export type { MachineRegisters };
-export { ForcingState } from "../../../strategy/bidding/bidding-types";
+export { ForcingState } from "../strategy-types";

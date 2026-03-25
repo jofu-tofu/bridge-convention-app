@@ -4,7 +4,7 @@ import type { Card, Contract, Hand } from "../../engine/types";
 import { createGameStore, seatController } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
 import { makeCard, makeSimpleTestDeal, makeDrillSession } from "../../test-support/fixtures";
-import type { DrillSession } from "../../bootstrap/types";
+import type { DrillSession } from "../../session/drill-types";
 import type { EnginePort } from "../../engine/port";
 import { createLocalService } from "../../service";
 
@@ -254,7 +254,7 @@ describe("play concurrency fixes", () => {
 
 describe("randomPlayStrategy", () => {
   it("returns a card from the legal plays array", async () => {
-    const { randomPlayStrategy } = await import("../../strategy/play/random-play");
+    const { randomPlayStrategy } = await import("../../session/heuristics/random-play");
     const cards: Card[] = [
       makeCard(Suit.Hearts, Rank.Ace),
       makeCard(Suit.Spades, Rank.King),
@@ -272,7 +272,7 @@ describe("randomPlayStrategy", () => {
   });
 
   it("throws on empty legal plays", async () => {
-    const { randomPlayStrategy } = await import("../../strategy/play/random-play");
+    const { randomPlayStrategy } = await import("../../session/heuristics/random-play");
     expect(() => randomPlayStrategy.suggest({
       hand: { cards: [] },
       currentTrick: [],

@@ -25,7 +25,7 @@ import { collectMatchingClaims } from "../../pipeline/rule-interpreter";
 import { createFactCatalog } from "../../core/fact-catalog";
 import { createBiddingContext } from "../../core/context-factory";
 import { runPipeline } from "../../pipeline/run-pipeline";
-import { buildObservationLogViaRules } from "../../../strategy/bidding/protocol-adapter";
+import { buildObservationLogViaRules } from "../../adapter/protocol-adapter";
 import type { AuctionContext } from "../../core/committed-step";
 import type { PublicSnapshot } from "../../core/module-surface";
 import type { ConventionModule } from "../../core/convention-module";

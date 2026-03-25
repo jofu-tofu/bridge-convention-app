@@ -1,4 +1,4 @@
-import type { ForcingState } from "../../strategy/bidding/bidding-types";
+import type { ForcingState } from "./strategy-types";
 import type { PublicEvent, PublicConstraint } from "./agreement-module";
 import type { LatentBranchSet } from "../../inference/posterior/posterior-types";
 

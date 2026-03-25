@@ -1,4 +1,4 @@
-import type { BidAlert } from "../../strategy/bidding/bidding-types";
+import type { BidAlert } from "../core/strategy-types";
 import type { BidMeaningClause } from "./meaning";
 
 // ─── Disclosure-based conventionality derivation ─────────────────────

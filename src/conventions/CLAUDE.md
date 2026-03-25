@@ -6,15 +6,16 @@ Convention definitions for bridge bidding practice. Each convention is authored 
 
 - **Designed for 100+ modules.** The module/bundle system scales to hundreds of convention modules composed into arbitrary bundles. Adding a module never requires editing existing modules or core infrastructure. Registries, derivation, and composition are all O(N).
 - **Registry pattern.** All conventions register via `registerBundle()` in `core/`, which auto-derives and registers `ConventionConfig`. No separate `registerConvention()` calls needed. Never hardcode convention logic in switch statements.
-- **Contract boundary.** Cross-module DTOs live in their owning subsystems (conventions/core/, inference/, strategy/, etc.); convention internals must not leak across the service boundary.
-- **Four-way split.** `core/` contains stable infrastructure (runtime, registry). `pipeline/` contains the meaning pipeline (surfaces → facts → evaluation → arbitration). `teaching/` contains teaching resolution, projection, and parse-tree builders — derived views over pipeline results. `definitions/` contains convention modules and bundles. Convention-specific logic belongs in `definitions/`, never in `core/`, `pipeline/`, or `teaching/`.
+- **Contract boundary.** Cross-module DTOs live in their owning subsystems (conventions/core/, inference/, etc.); convention internals must not leak across the service boundary.
+- **Five-way split.** `core/` contains stable infrastructure (runtime, registry, strategy contract types). `pipeline/` contains the meaning pipeline (surfaces → facts → evaluation → arbitration). `teaching/` contains teaching resolution, projection, and parse-tree builders — derived views over pipeline results. `definitions/` contains convention modules and bundles. `adapter/` bridges convention pipeline → BiddingStrategy interface (meaning-strategy, protocol-adapter, practical-scorer). Convention-specific logic belongs in `definitions/`, never in `core/`, `pipeline/`, `teaching/`, or `adapter/`.
 - **Bounded-context barrel.** `index.ts` is the single public API for external consumers. Import from the barrel, not deep paths (e.g., `conventions/core/registry` or `conventions/pipeline/meaning-evaluator`). ESLint enforces this boundary.
 - **Auto-registration.** `index.ts` imports each convention and calls `registerBundle()`, which auto-derives `ConventionConfig`. No `convention-config.ts` wrappers needed.
 
 **Context tree:**
-- `core/CLAUDE.md` — rule interpreter, runtime, witness, test architecture
+- `core/CLAUDE.md` — rule interpreter, runtime, witness, strategy contract types, test architecture
 - `pipeline/CLAUDE.md` — meaning pipeline (fact evaluation, surface evaluation, arbitration, encoding)
 - `teaching/CLAUDE.md` — teaching resolution, projection builder, parse-tree builder
+- `adapter/CLAUDE.md` — convention→strategy bridge (meaning-strategy, protocol-adapter, practical-scorer)
 
 ## Convention Authoring (Meaning Pipeline)
 

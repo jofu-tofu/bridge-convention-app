@@ -7,7 +7,7 @@ import type {
 import type { PosteriorQuery } from "../posterior-boundary";
 import type { FactorGraph, FactorOrigin } from "../posterior-boundary";
 import type { PublicSnapshot } from "../../../conventions/core/module-surface";
-import { ForcingState } from "../../../strategy/bidding/bidding-types";
+import { ForcingState } from "../../../conventions";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";
 

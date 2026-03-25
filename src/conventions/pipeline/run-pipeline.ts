@@ -1,4 +1,4 @@
-import type { BiddingContext } from "../../strategy/bidding/bidding-types";
+import type { BiddingContext } from "../core/strategy-types";
 import type { BidMeaning, ConstraintDimension } from "./meaning";
 import type { EvaluatedFacts, FactCatalog } from "../core/fact-catalog";
 import type { PosteriorFactProvider } from "../../inference/posterior/posterior-types";

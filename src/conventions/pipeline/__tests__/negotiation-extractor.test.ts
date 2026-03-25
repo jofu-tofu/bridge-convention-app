@@ -3,7 +3,7 @@ import { extractKernelState, computeKernelDelta } from "../negotiation-extractor
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import type { NegotiationState } from "../../core/committed-step";
 import type { MachineRegisters } from "../../core/module-surface";
-import { ForcingState } from "../../../strategy/bidding/bidding-types";
+import { ForcingState } from "../../core/strategy-types";
 
 function makeRegisters(
   overrides: Partial<MachineRegisters> = {},

@@ -2,7 +2,7 @@ import type {
   DealSpec,
   UnsatisfiableResult,
   SeatRole,
-} from "../../../bootstrap/deal-spec-types";
+} from "../deal-spec-types";
 
 /** Maximum HCP a single 13-card hand can hold (AKQJ x 4 suits = 37). */
 const MAX_HAND_HCP = 37;

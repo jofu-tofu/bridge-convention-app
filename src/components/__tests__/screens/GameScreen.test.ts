@@ -14,7 +14,7 @@ describe("GameScreen", () => {
   });
 
   it("startDrill calls engine.generateDeal", async () => {
-    const { startDrill } = await import("../../../bootstrap/start-drill");
+    const { startDrill } = await import("../../../session/start-drill");
     const deal = makeDeal();
     const generateDeal = vi.fn().mockResolvedValue(deal);
     const engine = createStubEngine({ generateDeal });
@@ -31,7 +31,7 @@ describe("GameScreen", () => {
   });
 
   it("startDrill returns bundle with deal and session", async () => {
-    const { startDrill } = await import("../../../bootstrap/start-drill");
+    const { startDrill } = await import("../../../session/start-drill");
     const deal = makeDeal();
     const engine = createStubEngine({
       generateDeal: vi.fn().mockResolvedValue(deal),

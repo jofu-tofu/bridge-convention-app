@@ -73,7 +73,7 @@ The following types were absorbed from the dissolved `src/core/contracts/` direc
 ## Boundary Rules
 
 - **Allowed imports:** `engine/`, `conventions/core/` (for `ConventionModule`, `rule-module` types)
-- **Blocked imports:** `conventions/definitions/`, `components/`, `stores/`, `strategy/`, `bootstrap/`, `service/`, `teaching/`
+- **Blocked imports:** `conventions/definitions/`, `components/`, `stores/`, `strategy/`, `service/`, `teaching/`
 
 ---
 

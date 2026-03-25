@@ -2,9 +2,13 @@ import type { InferenceProvider, HandInference } from "./types";
 import type { Auction, AuctionEntry, Seat, ContractBid } from "../engine/types";
 import { BidSuit, Suit } from "../engine/types";
 import { partnerSeat } from "../engine/constants";
+import type { SystemConfig } from "../conventions/definitions/system-config";
+import { SAYC_SYSTEM_CONFIG } from "../conventions/definitions/system-config";
 
-/** SAYC-based natural bidding inference provider. */
-export function createNaturalInferenceProvider(): InferenceProvider {
+/** Natural bidding inference provider parameterized by system config. */
+export function createNaturalInferenceProvider(
+  systemConfig: SystemConfig = SAYC_SYSTEM_CONFIG,
+): InferenceProvider {
   return {
     id: "natural",
     name: "Natural Bidding Theory",
@@ -25,10 +29,10 @@ export function createNaturalInferenceProvider(): InferenceProvider {
       );
 
       if (!hasContractBid) {
-        return inferFromOpening(call, seat);
+        return inferFromOpening(call, seat, systemConfig);
       }
 
-      return inferFromResponse(call, auctionBefore, seat);
+      return inferFromResponse(call, auctionBefore, seat, systemConfig);
     },
   };
 }
@@ -37,6 +41,7 @@ export function createNaturalInferenceProvider(): InferenceProvider {
 function inferFromOpening(
   call: ContractBid,
   seat: Seat,
+  systemConfig: SystemConfig,
 ): HandInference | null {
   const { level, strain } = call;
 
@@ -45,7 +50,7 @@ function inferFromOpening(
       case BidSuit.Clubs:
         return {
           seat,
-          minHcp: 12,
+          minHcp: 12, // system-invariant opening HCP minimum
           suits: { [Suit.Clubs]: { minLength: 3 } },
           source: "natural:1C-opening",
         };
@@ -73,8 +78,8 @@ function inferFromOpening(
       case BidSuit.NoTrump:
         return {
           seat,
-          minHcp: 15,
-          maxHcp: 17,
+          minHcp: systemConfig.ntOpening.minHcp,
+          maxHcp: systemConfig.ntOpening.maxHcp,
           isBalanced: true,
           suits: {},
           source: "natural:1NT-opening",
@@ -82,12 +87,13 @@ function inferFromOpening(
     }
   }
 
+  // 2-level openings: same across SAYC/2-over-1/Acol
   if (level === 2) {
     switch (strain) {
       case BidSuit.Clubs:
         return {
           seat,
-          minHcp: 22,
+          minHcp: 22, // system-invariant: strong 2C
           suits: {},
           source: "natural:2C-opening",
         };
@@ -116,6 +122,8 @@ function inferFromOpening(
           source: "natural:weak-2D-opening",
         };
       case BidSuit.NoTrump:
+        // 2NT range (20-21) is system-invariant across SAYC/2-over-1/Acol.
+        // Revisit if adding a system with different 2NT range.
         return {
           seat,
           minHcp: 20,
@@ -170,15 +178,16 @@ function inferFromResponse(
   call: ContractBid,
   auctionBefore: Auction,
   seat: Seat,
+  systemConfig: SystemConfig,
 ): HandInference | null {
   const { level, strain } = call;
 
-  // 1NT response: 6-10 HCP
+  // 1NT response: system-dependent range (SAYC 6-10, 2/1 6-12, Acol 6-9)
   if (level === 1 && strain === BidSuit.NoTrump) {
     return {
       seat,
-      minHcp: 6,
-      maxHcp: 10,
+      minHcp: systemConfig.oneNtResponseAfterMajor.minHcp,
+      maxHcp: systemConfig.oneNtResponseAfterMajor.maxHcp,
       suits: {},
       source: "natural:1NT-response",
     };
