@@ -9,8 +9,9 @@ Infrastructure for the meaning-centric convention system: registry, rule interpr
 ```
 core/
   index.ts              Public API barrel — external consumers import from here (ESLint-enforced)
-  convention-module.ts  Unified ConventionModule interface — the single module type (moduleId, facts, explanationEntries, local: LocalFsm, states: StateEntry[]). Exports `moduleSurfaces()` helper (extracts deduplicated surfaces from a module's states). Re-exports `ResolvedSurface`, `LocalFsm`, `StateEntry` from `rule-module.ts` for convenience.
+  convention-module.ts  Unified ConventionModule interface — the single module type (moduleId, facts, explanationEntries, teaching?: ModuleTeaching, local: LocalFsm, states: StateEntry[]). `ModuleTeaching` carries strategic content orthogonal to structure (tradeoffs, principles, common mistakes). Exports `moduleSurfaces()` helper (extracts deduplicated surfaces from a module's states). Re-exports `ResolvedSurface`, `LocalFsm`, `StateEntry` from `rule-module.ts` for convenience.
   rule-module.ts        Pattern primitives for rule-based surface selection: `LocalFsm`, `StateEntry` (phase + turn + surfaces + negotiationDelta), `ResolvedSurface` (surface + negotiationDelta), `TurnRole`, `ObsPattern`, `RouteExpr`, `NegotiationExpr`, `PhaseTransition`. `StateEntry` groups surfaces by conversation state — activation context stays in `conventions/core/`, not on `BidMeaning` in `contracts/`.
+  strategy-types.ts     Shared strategy contract types: BiddingStrategy, BidResult, BiddingContext, PlayStrategy, PlayContext, PlayResult, PosteriorSummary, PracticalRecommendation (moved from former strategy/bidding/bidding-types.ts, strategy/play/play-types.ts, strategy/recommendation-types.ts). Lives here because conventions/ imports these types heavily — placing them in service/ would create circular deps.
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry
   shared-explanation-catalog.ts  Platform shared-fact explanation catalog — FactExplanationEntry for every shared fact (primitive, bridge-derived, posterior) and system fact. Exports PLATFORM_EXPLANATION_ENTRIES. Owns explanations for all IDs in `shared-fact-vocabulary.ts` and `system-fact-vocabulary.ts`. Module-owned facts (including template-form `$suit` IDs) are NOT covered here — they belong in per-module `explanation-catalog.ts` files.
@@ -30,7 +31,7 @@ core/
     fact-compiler.ts      FactConstraint compilation from surface conditions
     types.ts              RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic
   protocol/             Convention protocol types (retained for ConventionSpec — narrowing from 20+ bundle fields to 4 strategy-facing fields)
-    types.ts              ConventionSpec ({ id, name, modules, systemConfig? }), declarative expression types (BoolExpr, Ref, EffectSpec), SurfaceFragment — used by strategy and bootstrap layers
+    types.ts              ConventionSpec ({ id, name, modules, systemConfig? }), declarative expression types (BoolExpr, Ref, EffectSpec), SurfaceFragment — used by strategy and service layers
   witness/              Deal witness system
     deal-spec-compiler.ts   compileDealSpec() — DealSpec → deal generation constraints
     deal-spec-unsat.ts      detectUnsat() — satisfiability checking

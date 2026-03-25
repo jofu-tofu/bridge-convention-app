@@ -85,6 +85,14 @@ export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "smolen",
   description: "Smolen — jump to 3H/3S after Stayman denial to show 5-4 in majors game-forcing",
   purpose: "Handle the 5-4 major hand with game values after Stayman gets a 2D denial — let opener choose the fit while keeping the strong hand as declarer",
+  teaching: {
+    tradeoff: "Smolen uses jump bids (3H/3S) that could otherwise be used as natural invitational bids.",
+    principle: "Bid the shorter major at the 3-level — this tells opener about both majors and lets the strong hand declare.",
+    commonMistakes: [
+      "Smolen bids show the SHORT major — 3H shows 4 hearts and 5 spades, not the other way around",
+      "Only use Smolen with game-forcing values — with invitational hands, use a different approach after Stayman denial",
+    ],
+  },
   ...createSmolenDeclarations(sys),
   local: smolenLocal,
   states: createSmolenStates(sys),

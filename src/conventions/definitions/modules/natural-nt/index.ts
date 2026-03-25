@@ -48,6 +48,13 @@ export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "natural-nt",
   description: "Natural NT responses — raise to 2NT (invite) or 3NT (game) with no major fit",
   purpose: "Place the notrump contract at the right level when no major-suit fit is worth exploring",
+  teaching: {
+    principle: "When no major fit exists, raise notrump to the level your combined HCP supports — 25 total for game.",
+    commonMistakes: [
+      "Don't jump to 3NT with a worthless doubleton — consider if a suit contract might be safer",
+      "With a flat 8-9 HCP hand, 2NT (invite) is correct — don't stretch to game with marginal values",
+    ],
+  },
   ...createNaturalNtDeclarations(sys),
   local: naturalNtLocal,
   states: createNaturalNtStates(sys),

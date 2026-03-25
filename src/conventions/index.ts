@@ -1,6 +1,6 @@
 // ── conventions/ public API barrel ──────────────────────────────────────
 // This is the ONLY public import path for external consumers
-// (strategy/, evaluation/, cli/, bootstrap/, service/, stores/, components/).
+// (strategy/, evaluation/, cli/, service/, stores/, components/).
 // ESLint enforces no deep imports into conventions/core/, conventions/pipeline/,
 // conventions/teaching/, or conventions/definitions/.
 
@@ -89,12 +89,15 @@ export type { ConventionBundle, BundleInput } from "./core/bundle";
 export type { RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic, EvaluationResult } from "./core/runtime/types";
 export type { MachineRegisters } from "./core/runtime/machine-types";
 export type { ConventionSpec } from "./core/protocol/types";
-export type { ConventionModule, ResolvedSurface, LocalFsm, StateEntry } from "./core/convention-module";
+export type { ConventionModule, ModuleTeaching, ResolvedSurface, LocalFsm, StateEntry } from "./core/convention-module";
 export { moduleSurfaces } from "./core/convention-module";
 export type { ObsPattern, TurnRole, NegotiationExpr, RouteExpr } from "./core/rule-module";
 
 // ── Bundle test helpers ─────────────────────────────────────────────────
 export { registerBundle, clearBundleRegistry, createConventionConfigFromBundle } from "./core/bundle";
+
+// ── Definitions (module registry) ──────────────────────────────────────
+export { getModule, getAllModules, getModuleIds } from "./definitions/module-registry";
 
 // ── Definitions (system registry) ──────────────────────────────────────
 export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle } from "./definitions/system-registry";
@@ -112,6 +115,29 @@ export type { EvaluatedFacts } from "./core/fact-catalog";
 
 // ── Platform explanation catalog ─────────────────────────────────────────
 export { PLATFORM_EXPLANATION_ENTRIES } from "./core/shared-explanation-catalog";
+
+// ── Strategy contract types (shared bidding/play interfaces + DTOs) ──
+export {
+  ForcingState,
+} from "./core/strategy-types";
+export type {
+  BiddingContext,
+  BidAlert,
+  BidResult,
+  BidHistoryEntry,
+  BiddingStrategy,
+  PlayContext,
+  PlayResult,
+  PlayStrategy,
+  PosteriorSummary,
+  PracticalScoreBreakdown,
+  PracticalRecommendation,
+} from "./core/strategy-types";
+
+// ── Adapter (convention→strategy bridge) ─────────────────────────────
+export { protocolSpecToStrategy, buildObservationLogViaRules, findMatchingClaimForCall } from "./adapter/protocol-adapter";
+export { meaningToStrategy } from "./adapter/meaning-strategy";
+export { scoreCandidatePractically, buildPracticalRecommendation, LEVEL_HCP_TABLE } from "./adapter/practical-scorer";
 
 // ── Teaching (resolution, projection, parse-tree) ─────────────────────
 export { resolveTeachingAnswer, gradeBid, BidGrade } from "./teaching/teaching-resolution";

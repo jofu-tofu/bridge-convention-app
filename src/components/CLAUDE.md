@@ -11,7 +11,7 @@ Svelte 5 UI components for the drill workflow. Consumer of stores, lib, and engi
 - **Context for DI.** Engine, game store, and app store provided via Svelte context (set in App.svelte, retrieved via `src/stores/context.ts` helpers).
 - **Tailwind CSS + design tokens.** Tailwind utility classes augmented with CSS custom properties defined via `@theme` in `src/app.css`. Midnight Table dark theme. No `<style>` blocks in new components except for CSS that Tailwind can't express (e.g., HandFan overlap/rotation).
 - **Typography tokens for game screens.** All text sizing in game-screen components uses `--text-*` CSS custom properties (via `text-[--text-label]` Tailwind syntax or `font-size: var(--text-label)`) instead of hardcoded Tailwind size classes (`text-xs`, `text-sm`, etc.). `TextToken` type in `src/components/shared/tokens.ts`.
-- **Pure function extraction.** Complex logic extracted to `src/components/shared/` and `src/bootstrap/` for testability: `sortCards`, `computeTableScale` (shared/), `startDrill` (bootstrap/). `filterConventions` lives in `src/components/screens/filter-conventions.ts`.
+- **Pure function extraction.** Complex logic extracted to `src/components/shared/` and `src/service/` for testability: `sortCards`, `computeTableScale` (shared/), `startDrill` (service/). `filterConventions` lives in `src/components/screens/filter-conventions.ts`.
 - **Companion `.ts` files.** Components with non-trivial logic co-locate a PascalCase `.ts` file next to the `.svelte` file (e.g., `DecisionTree.ts` + `DecisionTree.svelte`). The `.ts` file holds pure functions and types; the `.svelte` file handles rendering. If a second component needs the same logic, move the `.ts` file to `components/shared/` or `teaching/`. Tests go in `__tests__/game/` with the original descriptive name (e.g., `DecisionTree.test.ts`).
 
 ## Typography & Responsive Sizing
@@ -65,7 +65,7 @@ App.svelte                           Root — creates engine/stores, sets contex
 components/
   screens/
     ConventionSelectScreen.svelte    Convention picker with search + category filter + learn buttons
-    LearningScreen.svelte            Learning screen with sidebar, decision tree with layered depth modes (compact/study/learn), convention teaching header
+    LearningScreen.svelte            Module-centric learning screen: sidebar lists modules (filterable by bundle), main content shows module teaching (principle/tradeoff/mistakes) + surfaces grouped by conversation phase
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     game-screen/
       GameScreen.svelte              Phase router + responsive layout + drill lifecycle (~280 LOC)
@@ -83,6 +83,7 @@ components/
     BridgeTable.svelte               800x650 table with 4 seats, absolute positioning
     HandFan.svelte                   Overlapping visual card fan (horizontal/vertical)
     TrickArea.svelte                 Center trick display with NSEW card positions and trick count
+    ConventionCard.svelte            Phase-independent convention card showing system thresholds (NT range, major length, forcing level)
     AuctionTable.svelte              4-column N/E/S/W grid, suit-colored
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
     BidFeedbackPanel.svelte          Three-branch bid feedback (Correct green/Acceptable teal/Incorrect red) with show-answer toggle, tree fork display, acceptable badges on siblings, optional amber practical note, convention contribution badges, WhyNot grade distinction, multi-rationale indicator, meaning landscape section, encoding explanation, partner hand space summary, elimination stage annotations
@@ -126,7 +127,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → [optional DECLARER_PROMPT → optional PLAYING →] EXPLANATION) | ConventionSelectScreen → LearningScreen (browse convention rules with layered depth: compact/study/learn) | ConventionSelectScreen → CoverageScreen (bundle picker → target drill-down)
+**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → [optional DECLARER_PROMPT → optional PLAYING →] EXPLANATION) | ConventionSelectScreen → LearningScreen (module-centric: sidebar lists modules, main content shows teaching + phase-grouped surfaces) | ConventionSelectScreen → CoverageScreen (bundle picker → target drill-down)
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 

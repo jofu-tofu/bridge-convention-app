@@ -1,10 +1,10 @@
 import type { ConventionConfig } from "../conventions";
-import type { OpponentMode, VulnerabilityDistribution, DrillSettings } from "../bootstrap/drill-types";
-import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../bootstrap/drill-types";
+import type { OpponentMode, VulnerabilityDistribution, DrillSettings } from "../session/drill-types";
+import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../session/drill-types";
 import type { BaseSystemId } from "../conventions";
 import { AVAILABLE_BASE_SYSTEMS } from "../conventions";
-import type { PracticePreferences, DisplayPreferences } from "../service/practice-preferences";
-import { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service/practice-preferences";
+import type { PracticePreferences, DisplayPreferences } from "../session/practice-preferences";
+import { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../session/practice-preferences";
 
 export type Screen = "select" | "game" | "learning" | "settings" | "coverage";
 
@@ -78,6 +78,8 @@ export function createAppStore() {
   let engineStatus = $state<string | null>(null);
   let engineError = $state<string | null>(null);
   let learningConvention = $state<ConventionConfig | null>(null);
+  let learningModuleId = $state<string | null>(null);
+  let learningBundleFilter = $state<string | null>(null);
   let autoplay = $state(false);
   let targetState = $state<string | null>(null);
   let targetSurface = $state<string | null>(null);
@@ -106,6 +108,12 @@ export function createAppStore() {
     get learningConvention() {
       return learningConvention;
     },
+    get learningModuleId() {
+      return learningModuleId;
+    },
+    get learningBundleFilter() {
+      return learningBundleFilter;
+    },
     get devSeed() {
       return devSeed;
     },
@@ -122,12 +130,31 @@ export function createAppStore() {
     navigateToLearning(config: ConventionConfig) {
       learningConvention = config;
       selectedConvention = null;
+      learningBundleFilter = config.id;
+      // Auto-select first module from the bundle's member ordering
+      const firstModuleId = config.moduleDescriptions?.keys().next().value ?? null;
+      learningModuleId = firstModuleId ?? null;
       currentScreen = "learning";
+    },
+
+    /** Navigate directly to a specific module's learning page. */
+    navigateToLearningModule(moduleId: string, bundleFilter?: string) {
+      learningModuleId = moduleId;
+      learningBundleFilter = bundleFilter ?? null;
+      learningConvention = null;
+      selectedConvention = null;
+      currentScreen = "learning";
+    },
+
+    selectLearningModule(moduleId: string) {
+      learningModuleId = moduleId;
     },
 
     navigateToMenu() {
       selectedConvention = null;
       learningConvention = null;
+      learningModuleId = null;
+      learningBundleFilter = null;
       currentScreen = "select";
     },
 

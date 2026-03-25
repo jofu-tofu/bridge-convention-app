@@ -212,6 +212,14 @@ export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "weak-twos",
   description: "Weak Twos — open 2D/2H/2S with 6+ cards and 5-11 HCP, responses include Ogust",
   purpose: "Preempt opponents with a descriptive opening while giving partner enough information to judge game prospects via Ogust",
+  teaching: {
+    tradeoff: "Using 2D/2H/2S as weak openings means you can't use them for strong two-bids.",
+    principle: "Preemption works by consuming bidding space — make opponents guess at a high level with incomplete information.",
+    commonMistakes: [
+      "Don't open a weak two with a void or a strong 4-card side suit — your hand may play better in the other suit",
+      "Ogust 2NT asks opener to describe hand quality — memorize the step responses (3C=weak/weak through 3S=strong/strong)",
+    ],
+  },
   ...createWeakTwosModule(sys),
   local: weakTwosLocal,
   states: createWeakTwosStates(),

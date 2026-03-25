@@ -74,6 +74,17 @@ describe("module conventions", () => {
     expect(modules.length).toBeGreaterThanOrEqual(7);
   });
 
+  describe("every module has teaching content", () => {
+    for (const mod of modules) {
+      it(`${mod.moduleId}: has teaching defined with at least one field`, () => {
+        expect(mod.teaching).toBeDefined();
+        const t = mod.teaching!;
+        const hasContent = !!(t.tradeoff || t.principle || (t.commonMistakes && t.commonMistakes.length > 0));
+        expect(hasContent).toBe(true);
+      });
+    }
+  });
+
   describe("numeric clause values use named constants or module-derived facts", () => {
     for (const mod of modules) {
       const allSurfaces = moduleSurfaces(mod);

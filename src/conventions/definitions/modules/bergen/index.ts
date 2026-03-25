@@ -322,6 +322,14 @@ export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "bergen",
   description: "Bergen Raises — use 3C/3D as artificial raises after 1M to show different strength levels",
   purpose: "Distinguish between weak, constructive, limit, and game-forcing raises of partner's major so opener can judge the right level",
+  teaching: {
+    tradeoff: "Uses 3C and 3D as conventional raises, giving up natural minor bids over 1M.",
+    principle: "Immediately show trump support and strength — the Law of Total Tricks says bid to the level of your combined trump length.",
+    commonMistakes: [
+      "Remember 3C is constructive (7-10) and 3D is limit (10-12) — don't confuse the order",
+      "With 4+ trump support and 12+ HCP with a shortage, bid the short suit as a splinter instead of using Bergen",
+    ],
+  },
   ...createBergenModule(sys),
   local: bergenLocal,
   states: createBergenStates(sys),

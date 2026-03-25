@@ -116,6 +116,14 @@ export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "jacoby-transfers",
   description: "Jacoby Transfers — bid 2D/2H over 1NT to show a 5+ card major and let opener declare",
   purpose: "Right-side the contract so the strong 1NT hand stays hidden, while guaranteeing a trump fit when responder has a 5+ card major",
+  teaching: {
+    tradeoff: "Using 2D and 2H as transfers means you can't play in a natural 2D or 2H contract.",
+    principle: "Transfer principle: let the strong hand be declarer to protect tenaces from the opening lead.",
+    commonMistakes: [
+      "Remember to complete the transfer — after opener bids 2H/2S, you must rebid to show your strength and shape",
+      "With exactly 5 cards in the major and invitational values, bid 2NT after the transfer to give opener a choice",
+    ],
+  },
   ...createJacobyTransfersDeclarations(sys),
   local: jacobyTransfersLocal,
   states: createJacobyTransfersStates(sys),

@@ -33,6 +33,10 @@
     appStore.navigateToLearning(config);
   }
 
+  function handleLearnModule(moduleId: string, bundleId: string) {
+    appStore.navigateToLearningModule(moduleId, bundleId);
+  }
+
   function toggleCategory(cat: ConventionCategory) {
     activeCategory = activeCategory === cat ? null : cat;
   }
@@ -247,9 +251,16 @@
                     <div class="mt-2 space-y-1">
                       <p class="text-xs font-medium text-text-secondary">Conventions in this bundle:</p>
                       {#each [...convention.moduleDescriptions.entries()] as [moduleId, desc] (moduleId)}
-                        <p class="text-xs text-text-muted pl-2">
-                          <span class="text-text-secondary">{formatModuleName(moduleId)}</span> — {desc}
-                        </p>
+                        <div class="flex items-center gap-2 pl-2">
+                          <button
+                            class="text-xs text-accent-primary hover:underline cursor-pointer"
+                            data-testid="learn-module-{moduleId}"
+                            onclick={() => handleLearnModule(moduleId, convention.id)}
+                          >
+                            {formatModuleName(moduleId)}
+                          </button>
+                          <span class="text-xs text-text-muted">— {desc}</span>
+                        </div>
                       {/each}
                     </div>
                   {/if}

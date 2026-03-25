@@ -21,6 +21,23 @@ import type { LocalFsm, StateEntry } from "./rule-module";
 // part of rule-module.ts but frequently needed alongside ConventionModule).
 export type { ResolvedSurface, LocalFsm, StateEntry } from "./rule-module";
 
+/** Teaching content orthogonal to module structure.
+ *  Entry transitions express "when to use." Surface clauses express constraints.
+ *  Teaching adds strategic insight the structure can't express.
+ *  Must be self-contained — no references to other modules (scales to 100+). */
+export interface ModuleTeaching {
+  /** What you give up by playing this convention — strategic tradeoff.
+   *  E.g., "Using 2C as Stayman means you can't play in a 2C contract." */
+  readonly tradeoff?: string;
+  /** The broader bridge principle this module embodies.
+   *  E.g., "Transfer principle: let the strong hand be declarer to protect
+   *  tenaces from the opening lead." */
+  readonly principle?: string;
+  /** Common mistakes or misconceptions — things the structure can't warn about.
+   *  E.g., "Don't use Stayman with 4-3-3-3 shape — prefer a quantitative raise." */
+  readonly commonMistakes?: readonly string[];
+}
+
 export interface ConventionModule<Phase extends string = string> {
   /** Unique module identifier (kebab-case). */
   readonly moduleId: string;
@@ -28,6 +45,8 @@ export interface ConventionModule<Phase extends string = string> {
   readonly description: string;
   /** Why this module exists — the problem it solves for the partnership. */
   readonly purpose: string;
+  /** Strategic teaching content orthogonal to structure (tradeoffs, principles, mistakes). */
+  readonly teaching?: ModuleTeaching;
 
   // ── Declaration ─────────────────────────────────────────────
   /** Module-derived fact definitions and evaluators. */

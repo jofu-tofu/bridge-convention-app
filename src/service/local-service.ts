@@ -14,15 +14,15 @@
 import type { Call, Card, Seat } from "../engine/types";
 import type { EnginePort } from "../engine/port";
 import type { BiddingViewport } from "./response-types";
-import { buildBiddingViewport } from "./build-viewport";
-import type { LearningViewport } from "./response-types";
-import { buildLearningViewport } from "./learning-viewport";
-import type { GamePhase } from "./phase-machine";
-import { isValidTransition } from "./phase-machine";
+import { buildBiddingViewport } from "../session/build-viewport";
+import type { ModuleCatalogEntry, ModuleLearningViewport } from "./response-types";
+import { buildModuleCatalog, buildModuleLearningViewport } from "../session/learning-viewport";
+import type { GamePhase } from "../session/phase-machine";
+import { isValidTransition } from "../session/phase-machine";
 import { createInferenceCoordinator } from "../inference/inference-coordinator";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { createBiddingContext } from "../conventions";
-import { startDrill as bootstrapStartDrill } from "../bootstrap/start-drill";
+import { startDrill as assembleNewDrill } from "../session/start-drill";
 import { getConvention, listConventions as listConventionConfigs } from "../conventions";
 import { getBundle, resolveConventionForSystem } from "../conventions";
 import type { ConventionConfig } from "../conventions";
@@ -42,25 +42,27 @@ import type {
   SessionViewport,
   DDSolutionResult,
   ConventionInfo,
-  ServiceDebugSnapshot,
-  ServiceDebugLogEntry,
   ServiceInferenceSnapshot,
 } from "./response-types";
+import type {
+  ServiceDebugSnapshot,
+  ServiceDebugLogEntry,
+} from "./debug-types";
 import type { AtomGradeResult } from "./evaluation/types";
-import { SessionManager, createHandle } from "./session-manager";
-import { SessionState, getCurrentTurn as getCurrentTurnFromState } from "./session-state";
-import { DDSController } from "./dds-controller";
+import { SessionManager, createHandle } from "../session/session-manager";
+import { SessionState, getCurrentTurn as getCurrentTurnFromState } from "../session/session-state";
+import { DDSController } from "../session/dds-controller";
 import {
   processBid,
   runInitialAiBids,
   initializeAuction,
-} from "./bidding-controller";
+} from "../session/bidding-controller";
 import {
   processPlayCard,
-} from "./play-controller";
+} from "../session/play-controller";
 import { partnerSeat } from "../engine/constants";
 
-import type { DrillBundle } from "../bootstrap/types";
+import type { DrillBundle } from "../session/drill-types";
 
 /**
  * Create a local (in-process) service.
@@ -91,7 +93,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       }
 
       const baseSystemId = (config.baseSystemId as BaseSystemId) ?? BASE_SYSTEM_SAYC;
-      const bundle = await bootstrapStartDrill(
+      const bundle = await assembleNewDrill(
         engine,
         convention,
         userSeat,
@@ -101,7 +103,8 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         baseSystemId,
       );
 
-      const coordinator = createInferenceCoordinator();
+      const activeSystemConfig = getSystemConfig(baseSystemId);
+      const coordinator = createInferenceCoordinator(undefined, activeSystemConfig);
       const state = new SessionState(bundle, coordinator, convention.name);
       manager.set(handle, state);
       ddsControllers.set(handle, new DDSController());
@@ -249,10 +252,12 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
     // ── Learning ──────────────────────────────────────────────────
 
-    async getLearningViewport(conventionId: string): Promise<LearningViewport | null> {
-      const bundle = getBundle(conventionId);
-      if (!bundle) return null;
-      return buildLearningViewport(bundle);
+    async listModules(): Promise<readonly ModuleCatalogEntry[]> {
+      return buildModuleCatalog();
+    },
+
+    async getModuleLearningViewport(moduleId: string): Promise<ModuleLearningViewport | null> {
+      return buildModuleLearningViewport(moduleId);
     },
 
     // ── Dev methods ───────────────────────────────────────────────

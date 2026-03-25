@@ -30,9 +30,10 @@ describe("LearningScreen", () => {
     return { appStore };
   }
 
-  it("renders the convention name in the heading", async () => {
+  it("renders the selected module name in the heading", async () => {
     renderLearningScreen();
-    expect(await screen.findByRole("heading", { name: "1NT Responses", level: 1 })).toBeTruthy();
+    // navigateToLearning auto-selects the first module (natural-nt)
+    expect(await screen.findByRole("heading", { name: /Natural NT/, level: 1 })).toBeTruthy();
   });
 
   it("has a back button", () => {
@@ -42,21 +43,31 @@ describe("LearningScreen", () => {
     ).toBeTruthy();
   });
 
-  it("sidebar renders multiple convention names", () => {
+  it("sidebar renders module list", async () => {
     renderLearningScreen();
-    const nav = screen.getByRole("navigation", { name: /convention list/i });
+    const nav = screen.getByRole("navigation", { name: /module list/i });
     expect(nav).toBeTruthy();
-    expect(screen.getByRole("button", { name: "1NT Responses" })).toBeTruthy();
+    // NT bundle modules should be listed
+    expect(await screen.findByTestId("module-stayman")).toBeTruthy();
+    expect(await screen.findByTestId("module-jacoby-transfers")).toBeTruthy();
   });
 
-  it("shows convention description", async () => {
+  it("shows module description", async () => {
     renderLearningScreen();
-    expect(await screen.findByText(/Full 1NT response system/i)).toBeTruthy();
+    // First module (natural-nt) description should appear
+    expect(await screen.findByText(/Natural NT responses/i)).toBeTruthy();
   });
 
-  it("shows convention purpose", async () => {
+  it("shows teaching content", async () => {
     renderLearningScreen();
-    expect(await screen.findByText(/Find the best contract after partner opens 1NT/i)).toBeTruthy();
+    // natural-nt has a principle
+    expect(await screen.findByText(/Principle/)).toBeTruthy();
+  });
+
+  it("shows surfaces grouped by phase", async () => {
+    renderLearningScreen();
+    // natural-nt has phases: idle, opened
+    expect(await screen.findByText(/Bidding Conversation/i)).toBeTruthy();
   });
 
   it("has a practice button", async () => {
@@ -64,17 +75,13 @@ describe("LearningScreen", () => {
     expect(await screen.findByRole("button", { name: /^practice$/i })).toBeTruthy();
   });
 
-  it("practice button navigates to game screen", async () => {
-    const { appStore } = renderLearningScreen();
-    const btn = await screen.findByRole("button", { name: /^practice$/i });
-    await fireEvent.click(btn);
-    expect(appStore.screen).toBe("game");
-  });
-
-  it("shows module cards for multi-module bundles", async () => {
+  it("clicking a module in sidebar shows its content", async () => {
     renderLearningScreen();
-    expect(await screen.findByText("Conventions in this bundle")).toBeTruthy();
-    expect(await screen.findByRole("heading", { name: /Stayman/, level: 3 })).toBeTruthy();
-    expect(await screen.findByRole("heading", { name: /Jacoby Transfers/, level: 3 })).toBeTruthy();
+    const staymanBtn = await screen.findByTestId("module-stayman");
+    await fireEvent.click(staymanBtn);
+    // Stayman module content should now show
+    expect(await screen.findByRole("heading", { name: /Stayman/, level: 1 })).toBeTruthy();
+    // Stayman has teaching tradeoff
+    expect(await screen.findByText(/Tradeoff/)).toBeTruthy();
   });
 });

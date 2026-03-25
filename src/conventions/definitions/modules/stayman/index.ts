@@ -72,6 +72,14 @@ export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "stayman",
   description: "Stayman — bid 2C over 1NT to find a 4-4 major-suit fit",
   purpose: "Discover whether opener holds a 4-card major so the partnership can play in an 8-card major fit instead of notrump",
+  teaching: {
+    tradeoff: "Using 2C as Stayman means you can't play in a natural 2C contract.",
+    principle: "Always check for a 4-4 major fit before settling in notrump — majors score better and play easier with a trump suit.",
+    commonMistakes: [
+      "Don't use Stayman with 4-3-3-3 shape — prefer a quantitative raise since you have no ruffing value",
+      "With 5-4 in the majors, transfers are usually better than Stayman — transfer first to guarantee the 5-card suit is shown",
+    ],
+  },
   ...createStaymanDeclarations(sys),
   local: staymanLocal,
   states: createStaymanStates(sys),

@@ -11,6 +11,24 @@ export type {
 
 // Boundary types — responses
 export type {
+  ServiceGamePhase,
+  ViewportBidGrade,
+  ServiceEncoderKind,
+  ServiceExplanationNode,
+  ServiceWhyNotEntry,
+  ServiceConventionContribution,
+  ServiceConditionEvidence,
+  ServiceMeaningView,
+  ServiceCallProjection,
+  ServiceParseTreeView,
+  ServiceParseTreeModuleNode,
+  ServiceParseTreeCondition,
+  ServiceBidHistoryEntry,
+  ServiceFactConstraint,
+  ServicePublicBeliefs,
+  ServicePublicBeliefState,
+  ServiceBidAnnotation,
+  ServiceInferenceSnapshot,
   DrillStartResult,
   BidSubmitResult,
   AiBidEntry,
@@ -21,9 +39,7 @@ export type {
   SessionViewport,
   DDSolutionResult,
   ConventionInfo,
-  ServiceDebugSnapshot,
-  ServiceDebugLogEntry,
-  ServiceInferenceSnapshot,
+  ConventionCardView,
 } from "./response-types";
 
 // Evaluation facade (CLI + stateless grading)
@@ -38,14 +54,17 @@ export { createLocalService } from "./local-service";
 export { createInferenceCoordinator } from "../inference/inference-coordinator";
 export type { PublicBeliefState, InferenceSnapshot } from "../inference/types";
 export { createBiddingContext } from "../conventions";
-export { assembleBidFeedback } from "../bootstrap/bid-feedback-builder";
-export type { BidFeedbackDTO } from "../bootstrap/bid-feedback-builder";
-export { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "./build-viewport";
-export type { BuildBiddingViewportInput, BuildDeclarerPromptViewportInput, BuildPlayingViewportInput, BuildExplanationViewportInput } from "./build-viewport";
-export type { BiddingViewport, ViewportBidFeedback, ViewportBidGrade, TeachingDetail, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, HandEvaluationView, AuctionEntryView, BiddingOptionView, ConditionView, AlternativeView, NearMissView, ConventionView, LearningViewport, ModuleView, SurfaceView, ConstraintView } from "./response-types";
-export type { EvaluationOracle, OracleGradingResult } from "./evaluation-oracle";
-export { randomPlayStrategy } from "../strategy/play/random-play";
-export type { DrillSession, DrillBundle } from "../bootstrap/types";
+export { assembleBidFeedback } from "../session/bid-feedback-builder";
+export type { BidFeedbackDTO } from "../session/bid-feedback-builder";
+export { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "../session/build-viewport";
+export type { BuildBiddingViewportInput, BuildDeclarerPromptViewportInput, BuildPlayingViewportInput, BuildExplanationViewportInput } from "../session/build-viewport";
+export type { BiddingViewport, ViewportBidFeedback, TeachingDetail, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, HandEvaluationView, AuctionEntryView, BiddingOptionView, ConditionView, AlternativeView, NearMissView, ConventionView } from "./response-types";
+export type { ServiceDebugSnapshot, ServiceDebugLogEntry, DebugSnapshotBase } from "./debug-types";
+export type { ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView, SurfaceDetailView } from "./response-types";
+export { buildModuleCatalog, buildModuleLearningViewport } from "../session/learning-viewport";
+export type { EvaluationOracle, OracleGradingResult } from "../session/evaluation-oracle";
+export { randomPlayStrategy } from "../session/heuristics/random-play";
+export type { DrillSession, DrillBundle } from "../session/drill-types";
 
 // ── Engine domain primitives (universal vocabulary, acceptable to re-export) ──
 
@@ -68,12 +87,17 @@ export { ConventionCategory } from "../conventions/core/convention-types";
 export type { ConventionConfig } from "../conventions/core/convention-types";
 export type { ConventionContribution, ParseTreeView, TeachingProjection, CallProjection, MeaningView, WhyNotEntry } from "../conventions/teaching/teaching-types";
 export type { EncoderKind } from "../conventions/pipeline/provenance";
-export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS } from "../conventions/definitions/system-config";
+export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../conventions/definitions/system-config";
+export type { BaseSystemId } from "../conventions/definitions/system-config";
+
+// ── Convention card ──
+export { buildConventionCard } from "./display/convention-card";
 
 // ── Strategy re-exports ──
 
-export type { BidResult, BiddingContext, BidHistoryEntry } from "../strategy/bidding/bidding-types";
-export type { PosteriorSummary } from "../strategy/recommendation-types";
+export type { BidResult, BiddingContext, BidHistoryEntry, BiddingStrategy } from "../conventions";
+export type { PlayStrategy, PlayContext, PlayResult } from "../conventions";
+export type { PosteriorSummary } from "../conventions";
 
 // ── Inference re-exports ──
 
@@ -81,8 +105,8 @@ export type { PosteriorFactValue } from "../inference/posterior/posterior-types"
 
 // ── Bootstrap re-exports ──
 
-export type { OpponentMode, VulnerabilityDistribution } from "../bootstrap/drill-types";
-export { DEFAULT_DRILL_TUNING } from "../bootstrap/drill-types";
+export type { OpponentMode, VulnerabilityDistribution } from "../session/drill-types";
+export { DEFAULT_DRILL_TUNING } from "../session/drill-types";
 
 // ── Debug-only re-exports (for debug drawer components) ──
 

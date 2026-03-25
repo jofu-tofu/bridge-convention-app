@@ -29,7 +29,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 
 ## Dev Tools (dev server only)
 
-- **URL routing:** `?convention=nt-bundle` jumps to game screen with that convention (IDs: `nt-bundle`, `nt-stayman`, `nt-transfers`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`). `?learn=nt-bundle` jumps to learning screen.
+- **URL routing:** `?convention=nt-bundle` jumps to game screen with that convention (IDs: `nt-bundle`, `nt-stayman`, `nt-transfers`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`). `?learn=stayman` resolves module-first (direct to Stayman module learning). `?learn=nt-bundle` resolves as bundle filter (shows that bundle's modules, auto-selects first).
 - **Deterministic seed:** `?seed=42` seeds the PRNG for reproducible deals. Seed advances per deal (42, 43, 44...). Reload resets.
 - **Autoplay:** `?autoplay=true` auto-bids correct calls, dismisses feedback, and skips declarer prompts to reach Review phase instantly. Combine with convention: `?convention=nt-bundle&autoplay=true`
 - **Target surface:** `?targetSurface=Z` exercises a specific meaning surface at target state
@@ -42,12 +42,12 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 
 - **Fix all lint errors and warnings you encounter** — even if they weren't caused by your changes. If `npm run lint` or a hook reports errors/warnings in files you touched, fix them before finishing.
 - **Lint is scoped to app code, tests, and root JS/TS config files.** `npm run lint` is not a workspace-wide sweep; it excludes generated/tooling directories outside the app surface.
-- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `inference/`, `conventions/`, `strategy/`, `bootstrap/`, `stores/`, `cli/`, `components/`), the UI/backend boundary (components/ cannot import from any backend module -- must use service/), design token usage in game components (`no-hardcoded-style-classes`), and protocol trigger scope (`no-full-scope-trigger`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
+- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `inference/`, `conventions/`, `strategy/`, `stores/`, `cli/`, `components/`), the UI/backend boundary (components/ cannot import from any backend module -- must use service/), design token usage in game components (`no-hardcoded-style-classes`), and protocol trigger scope (`no-full-scope-trigger`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
 
 ## Conventions
 
-- **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs, or `strategy/`.
-- **Backend modules import from each other's barrels freely.** `engine/`, `conventions/`, `inference/`, `strategy/`, `service/`, `bootstrap/` can all import from each other's `index.ts`. Deep imports into subfolders are still blocked for external consumers (conventions barrel enforcement stays). Frontend (`components/`, `stores/`) imports backend types only through `service/`. The service port wire format is the only frontend/backend boundary.
+- **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs, or `session/`.
+- **Backend modules import from each other's barrels freely.** `engine/`, `conventions/`, `inference/`, `session/`, `service/` can all import from each other's `index.ts`. Deep imports into subfolders are still blocked for external consumers (conventions barrel enforcement stays). Frontend (`components/`, `stores/`) imports backend types only through `service/`. The service port wire format is the only frontend/backend boundary.
 - **Registry pattern.** Use registries for conventions and strategies, not hardcoded switch statements
 - **EnginePort abstraction.** UI communicates with engine through `EnginePort` interface; engine never imports UI
 - **Svelte 5 runes.** Use `$state`, `$derived`, `$effect` — no legacy `$:` reactive statements
@@ -55,8 +55,9 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **No `const enum`** — breaks Vite/isolatedModules; use regular `enum`
 - **No `any` without comment** — annotate with `// any: <reason>`
 - **No mocking own modules** — use dependency injection instead
-- **PlayerViewport boundary.** Game phase components never access raw `Deal`. Everything the player sees flows through viewport types: `BiddingViewport` (bidding), `DeclarerPromptViewport` (declarer prompt), `PlayingViewport` (play), `ExplanationViewport` (review). Viewport builders and `EvaluationOracle` live in `src/service/`. Builders filter hands through faceUpSeats. `EvaluationOracle` is the answer key — only grading code touches it.
-- **Service is the sole interface for UI and CLI.** All UI components (`components/`, `stores/`) and CLI commands (`cli/`) must import exclusively from `service/` — never directly from `engine/`, `conventions/`, `inference/`, `strategy/`, or `bootstrap/`. `service/evaluation/` is an internal subfolder containing stateless CLI grading logic. ESLint enforces this for CLI commands; UI enforcement is in progress. When adding new functionality the UI needs, expose it through `ServicePort` or as a re-export from `service/index.ts` — do not add direct imports from backend modules.
+- **PlayerViewport boundary.** Game phase components never access raw `Deal`. Everything the player sees flows through viewport types: `BiddingViewport` (bidding), `DeclarerPromptViewport` (declarer prompt), `PlayingViewport` (play), `ExplanationViewport` (review). Viewport builders and `EvaluationOracle` live in `src/session/`. Builders filter hands through faceUpSeats. `EvaluationOracle` is the answer key — only grading code touches it.
+- **Service is the sole interface for UI and CLI.** All UI components (`components/`, `stores/`) and CLI commands (`cli/`) must import exclusively from `service/` — never directly from `engine/`, `conventions/`, `inference/`, or `session/`. `service/evaluation/` is an internal subfolder containing stateless CLI grading logic. ESLint enforces this for CLI commands; UI enforcement is in progress. When adding new functionality the UI needs, expose it through `ServicePort` or as a re-export from `service/index.ts` — do not add direct imports from backend modules.
+- **Strategy contract types live in `conventions/core/strategy-types.ts`.** `BiddingStrategy`, `BidResult`, `BiddingContext`, `PlayStrategy`, `PlayContext`, `PlayResult`, `PosteriorSummary`, `PracticalRecommendation` — NOT in service/ or engine/ — because conventions/ imports them and placing them elsewhere creates circular dependencies.
 - **Callers own their types.** Service defines its own viewport/response types (`BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`, etc.) rather than exposing internal types from backend modules. Engine domain primitives (`Call`, `Card`, `Seat`, `Hand`) are acceptable to re-export since they are universal vocabulary. Convention pipeline internals (`PipelineResult`, `ArbitrationResult`, `MachineDebugSnapshot`, `EvaluatedFacts`) must NOT cross the service boundary — create service-owned viewport types instead.
 - **Coverage optimization.** Tree LP computes minimal test sessions; two-phase algorithm (leaf sweep + gap fill) covers all (state, surface) pairs efficiently. Module interference detection uses static prefix-overlap analysis.
 
@@ -80,28 +81,27 @@ Multi-system support (SAYC, 2/1, Acol). Modules are system-agnostic — differen
 
 **Dependency direction (hexagonal boundary):**
 ```
-components/ → stores/ → service/ → {bootstrap, engine, conventions, strategy, inference}
+components/ → stores/ → service/ (thin port) → session/ → {engine, conventions, inference}
 cli/commands/ → service/
 ```
-UI layers (`components/`, `stores/`) import ONLY from `service/`. Backend modules behind service import freely from each other. Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
+UI layers (`components/`, `stores/`) import ONLY from `service/`. `session/` is the domain layer — it must never import from `service/` (ESLint enforced). `service/` is a thin hexagonal port: `ServicePort`, barrel, `display/`, `util/`, `evaluation/`. Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
 
 ```
 src/
   engine/          Pure TS game logic (zero platform deps, includes seeded-rng.ts)
   conventions/     Convention system
-    core/            Registry, context factory, bundle registry, runtime — public API via index.ts barrel
+    core/            Registry, context factory, bundle registry, runtime, strategy contract types — public API via index.ts barrel
     pipeline/        Meaning pipeline (surfaces → facts → evaluation → arbitration → encoding)
     teaching/        Teaching resolution, projection builder, parse-tree builder, teaching graph
     definitions/     Convention bundles + system config + system fact vocabulary
+    adapter/         Convention→strategy bridge (meaning-strategy, protocol-adapter, practical-scorer)
   inference/       Auction inference system (natural inference, posterior engine, belief accumulator)
-  strategy/        AI strategies
-    bidding/         Meaning-pipeline strategy adapter, pass strategy, natural fallback, practical recommender
-    play/            Play strategies (random, heuristic; future: DDS, signal/discard)
-  service/         Session-handle-oriented service layer — owns game state, exposes viewport-only data
+  session/         Domain logic: game state, controllers, drill lifecycle, viewport builders, grading
+    heuristics/    Convention-independent bidding/play heuristics (natural fallback, strategy chain, random/heuristic play)
+  service/         Thin hexagonal port: ServicePort, barrel, display/, util/, evaluation/
     evaluation/    Stateless CLI grading logic (atom evaluation, playthrough evaluation) — internal to service
     display/       Call/contract/card formatting, hand summary (moved from core/display/)
     util/          Pure utilities: delay (moved from core/util/)
-  bootstrap/       Dependency assembly (session, config, start-drill, DrillBundle)
   cli/             Headless coverage test runner (modular: main.ts + shared.ts + commands/)
   test-support/    Shared test factories (engine stub, deal/session fixtures)
   stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI, dev-params)
@@ -123,13 +123,13 @@ tests/
 | Subsystem | Entry | Summary |
 |-----------|-------|---------|
 | Engine | `src/engine/types.ts` | Pure TS game logic |
-| Conventions | `src/conventions/index.ts` | Convention system (core/ + pipeline/ + teaching/ + definitions/) |
+| Conventions | `src/conventions/index.ts` | Convention system (core/ + pipeline/ + teaching/ + definitions/ + adapter/) |
 | Pipeline | `src/conventions/pipeline/run-pipeline.ts` | Meaning pipeline (surfaces → facts → evaluation → arbitration → encoding) |
+| Adapter | `src/conventions/adapter/protocol-adapter.ts` | Convention→strategy bridge (meaning-strategy, protocol-adapter, practical-scorer) |
 | Teaching | `src/conventions/teaching/teaching-resolution.ts` | Teaching resolution and projection (inside conventions/) |
 | Inference | `src/inference/inference-engine.ts` | Auction inference |
-| Strategy | `src/strategy/bidding/meaning-strategy.ts` | AI strategies (meaning pipeline; `runPipeline()` in `conventions/pipeline/run-pipeline.ts`) |
-| Service | `src/service/index.ts` | Session-handle service layer + evaluation facade (local-service, bidding/play/dds controllers, evaluation/, display/) |
-| Bootstrap | `src/bootstrap/types.ts` | Dependency assembly + drill lifecycle |
+| Session | `src/session/session-state.ts` | Domain: game state, controllers, drill lifecycle, viewport builders, heuristics |
+| Service | `src/service/index.ts` | Thin hexagonal port + barrel + evaluation facade + display/ + util/ |
 | CLI | `src/cli/main.ts` | Headless coverage test runner (modular) |
 | Test Support | `src/test-support/engine-stub.ts` | Shared test factories |
 | Stores | `src/stores/app.svelte.ts` | Svelte stores + game coordinator |
@@ -251,10 +251,11 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/conventions/definitions/CLAUDE.md` — convention bundle authoring guide, system config, system fact vocabulary
 - `src/inference/CLAUDE.md` — inference architecture, posterior engine, new posterior boundary
 - `src/inference/posterior/CLAUDE.md` — posterior subsystem: factor compiler, backend, query port, migration status
-- `src/strategy/CLAUDE.md` — meaning-strategy pattern, play heuristics, bidding/play type ownership
-- `src/service/CLAUDE.md` — session-handle service layer, viewport-only boundary, controllers, display/, util/
+- `src/session/CLAUDE.md` — domain logic: game state, controllers, drill lifecycle, viewport builders, heuristics
+- `src/session/heuristics/CLAUDE.md` — convention-independent bidding/play heuristics
+- `src/conventions/adapter/CLAUDE.md` — convention→strategy bridge (meaning-strategy, protocol-adapter, practical-scorer)
+- `src/service/CLAUDE.md` — thin hexagonal port, display/, util/, evaluation/
 - `src/service/evaluation/CLAUDE.md` — stateless CLI grading logic
-- `src/bootstrap/CLAUDE.md` — DrillConfig, DrillSession, DrillBundle, drill lifecycle
 - `src/cli/CLAUDE.md` — headless coverage test runner
 - `src/conventions/teaching/CLAUDE.md` — convention evaluation for teaching
 - `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns

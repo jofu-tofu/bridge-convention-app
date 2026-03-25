@@ -1,25 +1,220 @@
 /**
  * Service response types — shapes the service returns to the client.
  *
- * Only viewport-safe types cross this boundary.
+ * Service-owned types (zero backend imports except engine vocabulary).
+ * All types that cross the service boundary are defined here as explicit
+ * interfaces — never re-exported from backend modules.
  *
  * ALLOWED to cross: BiddingViewport, ViewportBidFeedback, TeachingDetail,
- *   Call, Card, Seat, Vulnerability, BidGrade, BidHistoryEntry, GamePhase,
- *   SessionHandle, session config DTOs.
+ *   Call, Card, Seat, Vulnerability, SessionHandle, session config DTOs.
  *
  * NEVER crosses: Deal, BidResult, DrillSession, DrillBundle,
  *   ConventionStrategy, StrategyEvaluation, ArbitrationResult,
  *   BidMeaning, InferenceEngine.
  */
 
-import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Suit, DDSolution } from "../engine/types";
-import type { BidHistoryEntry } from "../strategy/bidding/bidding-types";
-import type { BidGrade } from "../conventions/teaching/teaching-types";
-import type { ExplanationNode, WhyNotEntry, ConventionContribution, MeaningView, CallProjection, ParseTreeView } from "../conventions/teaching/teaching-types";
-import type { EncoderKind } from "../conventions/pipeline/provenance";
-import type { GamePhase } from "./phase-machine";
-import type { DebugSnapshot, DebugLogEntry } from "../stores/game.svelte";
-import type { InferenceSnapshot } from "../inference/types";
+import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Suit, DDSolution, AuctionEntry, NumberRange } from "../engine/types";
+
+// ── Service-owned type replacements ─────────────────────────────────
+//
+// These types mirror their backend counterparts exactly (bidirectional
+// structural compatibility). Defining them here makes the service boundary
+// explicit: backend changes require a conscious mapping update, and this
+// file is readable without chasing imports across 7 modules.
+
+/** Game phase — service-owned mirror of session/phase-machine GamePhase. */
+export type ServiceGamePhase =
+  | "BIDDING"
+  | "DECLARER_PROMPT"
+  | "PLAYING"
+  | "EXPLANATION";
+
+/** Bid grade — service-owned string union (mirror of BidGrade enum values). */
+export type ViewportBidGrade =
+  | "correct"
+  | "correct-not-preferred"
+  | "acceptable"
+  | "near-miss"
+  | "incorrect";
+
+/** Encoder kind — service-owned mirror of pipeline/provenance EncoderKind. */
+export type ServiceEncoderKind =
+  | "default-call"
+  | "resolver"
+  | "alternate-encoding"
+  | "frontier-step"
+  | "relay-map";
+
+/** Fact operator — service-owned mirror of pipeline/meaning FactOperator. */
+export type ServiceFactOperator = "gte" | "lte" | "eq" | "range" | "boolean" | "in";
+
+// ── Service-owned teaching types ────────────────────────────────────
+
+/** Condition role — service-owned mirror of pipeline/evidence-bundle ConditionRole. */
+export type ServiceConditionRole = "semantic" | "inferential" | "pedagogical" | "routing";
+
+/** Condition evidence — service-owned mirror of pipeline/evidence-bundle ConditionEvidence.
+ *  Flattened from ConditionResult + ConditionEvidence inheritance. */
+export interface ServiceConditionEvidence {
+  readonly conditionId: string;
+  readonly factId?: string;
+  readonly satisfied: boolean;
+  readonly description?: string;
+  readonly observedValue?: unknown;
+  readonly threshold?: unknown;
+  readonly conditionRole?: ServiceConditionRole;
+  readonly params?: Readonly<Record<string, unknown>>;
+}
+
+/** Explanation node — service-owned mirror of teaching-types ExplanationNode. */
+export interface ServiceExplanationNode {
+  readonly kind: "text" | "condition" | "call-reference" | "convention-reference";
+  readonly content: string;
+  readonly passed?: boolean;
+  readonly explanationId?: string;
+  readonly templateKey?: string;
+}
+
+/** Why-not entry — service-owned mirror of teaching-types WhyNotEntry. */
+export interface ServiceWhyNotEntry {
+  readonly call: Call;
+  readonly grade: "near-miss" | "wrong";
+  readonly explanation: readonly ServiceExplanationNode[];
+  readonly eliminationStage: string;
+}
+
+/** Convention contribution — service-owned mirror of teaching-types ConventionContribution. */
+export interface ServiceConventionContribution {
+  readonly moduleId: string;
+  readonly role: "primary" | "alternative" | "suppressed";
+  readonly meaningsProposed: readonly string[];
+}
+
+/** Meaning view — service-owned mirror of teaching-types MeaningView. */
+export interface ServiceMeaningView {
+  readonly meaningId: string;
+  readonly semanticClassId?: string;
+  readonly displayLabel: string;
+  readonly status: "live" | "eliminated" | "not-applicable";
+  readonly eliminationReason?: string;
+  readonly supportingEvidence: readonly ServiceConditionEvidence[];
+}
+
+/** Call projection — service-owned mirror of teaching-types CallProjection. */
+export interface ServiceCallProjection {
+  readonly call: Call;
+  readonly status: "truth" | "acceptable" | "wrong";
+  readonly supportingMeanings: readonly string[];
+  readonly primaryMeaning?: string;
+  readonly projectionKind: "single-rationale" | "merged-equivalent" | "multi-rationale-same-call";
+}
+
+/** Parse tree module verdict — service-owned mirror. */
+export type ServiceParseTreeModuleVerdict = "selected" | "applicable" | "eliminated";
+
+/** Parse tree condition — service-owned mirror of teaching-types ParseTreeCondition. */
+export interface ServiceParseTreeCondition {
+  readonly factId: string;
+  readonly description: string;
+  readonly satisfied: boolean;
+  readonly observedValue?: unknown;
+}
+
+/** Parse tree module node — service-owned mirror of teaching-types ParseTreeModuleNode. */
+export interface ServiceParseTreeModuleNode {
+  readonly moduleId: string;
+  readonly displayLabel: string;
+  readonly verdict: ServiceParseTreeModuleVerdict;
+  readonly conditions: readonly ServiceParseTreeCondition[];
+  readonly meanings: readonly {
+    readonly meaningId: string;
+    readonly displayLabel: string;
+    readonly matched: boolean;
+    readonly call?: Call;
+  }[];
+  readonly eliminationReason?: string;
+}
+
+/** Parse tree view — service-owned mirror of teaching-types ParseTreeView. */
+export interface ServiceParseTreeView {
+  readonly modules: readonly ServiceParseTreeModuleNode[];
+  readonly selectedPath: {
+    readonly moduleId: string;
+    readonly meaningId: string;
+    readonly call: Call;
+  } | null;
+}
+
+// ── Service-owned viewport-safe bid history ─────────────────────────
+
+/** Bid history entry — viewport-safe subset of conventions/core BidHistoryEntry.
+ *  Omits deep backend types (BidResult, TeachingProjection) that must not cross
+ *  the service boundary. Structurally compatible in both directions because the
+ *  omitted fields are all optional on the backend type. */
+export interface ServiceBidHistoryEntry {
+  readonly seat: Seat;
+  readonly call: Call;
+  readonly meaning?: string;
+  readonly isUser: boolean;
+  readonly isCorrect?: boolean;
+  readonly alertLabel?: string;
+  readonly annotationType?: "alert" | "announce" | "educational";
+}
+
+// ── Service-owned inference types ───────────────────────────────────
+
+/** Fact constraint — service-owned mirror of conventions/core FactConstraint. */
+export interface ServiceFactConstraint {
+  readonly factId: string;
+  readonly operator: ServiceFactOperator;
+  readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
+  readonly isPublic?: boolean;
+}
+
+/** Qualitative constraint — service-owned mirror of inference/inference-types QualitativeConstraint. */
+export interface ServiceQualitativeConstraint {
+  readonly factId: string;
+  readonly label: string;
+  readonly operator: string;
+  readonly value: unknown;
+}
+
+/** Derived ranges — service-owned mirror of inference/inference-types DerivedRanges. */
+export interface ServiceDerivedRanges {
+  readonly hcp: NumberRange;
+  readonly suitLengths: Record<Suit, NumberRange>;
+  readonly isBalanced: boolean | undefined;
+}
+
+/** Public beliefs — service-owned mirror of inference/inference-types PublicBeliefs. */
+export interface ServicePublicBeliefs {
+  readonly seat: Seat;
+  readonly constraints: readonly ServiceFactConstraint[];
+  readonly ranges: ServiceDerivedRanges;
+  readonly qualitative: readonly ServiceQualitativeConstraint[];
+}
+
+/** Bid annotation — service-owned mirror of inference/types BidAnnotation. */
+export interface ServiceBidAnnotation {
+  readonly call: Call;
+  readonly seat: Seat;
+  readonly conventionId: string | null;
+  readonly meaning: string;
+  readonly constraints: readonly ServiceFactConstraint[];
+}
+
+/** Public belief state — service-owned mirror of inference/types PublicBeliefState. */
+export interface ServicePublicBeliefState {
+  readonly beliefs: Record<Seat, ServicePublicBeliefs>;
+  readonly annotations: readonly ServiceBidAnnotation[];
+}
+
+/** Inference snapshot — service-owned mirror of inference/types InferenceSnapshot. */
+export interface ServiceInferenceSnapshot {
+  readonly entry: AuctionEntry;
+  readonly newConstraints: readonly ServiceFactConstraint[];
+  readonly cumulativeBeliefs: Record<Seat, ServicePublicBeliefs>;
+}
 
 // ── Result DTOs ─────────────────────────────────────────────────────
 
@@ -36,7 +231,7 @@ export interface DrillStartResult {
 export interface AiBidEntry {
   readonly seat: Seat;
   readonly call: Call;
-  readonly historyEntry: BidHistoryEntry;
+  readonly historyEntry: ServiceBidHistoryEntry;
 }
 
 /** Result of submitting a user bid. */
@@ -50,18 +245,18 @@ export interface BidSubmitResult {
   readonly nextViewport: BiddingViewport | null;
   readonly phaseTransition: PhaseTransition | null;
   /** History entry for the user's accepted bid (null when rejected). */
-  readonly userHistoryEntry: BidHistoryEntry | null;
+  readonly userHistoryEntry: ServiceBidHistoryEntry | null;
 }
 
 /** Phase transition notification. */
 export interface PhaseTransition {
-  readonly from: GamePhase;
-  readonly to: GamePhase;
+  readonly from: ServiceGamePhase;
+  readonly to: ServiceGamePhase;
 }
 
 /** Result of accepting a prompt (play/skip). */
 export interface PromptAcceptResult {
-  readonly phase: GamePhase;
+  readonly phase: ServiceGamePhase;
 }
 
 /** Result of playing a card. */
@@ -87,7 +282,7 @@ export interface AiPlayEntry {
 
 /** Current session viewport. */
 export interface SessionViewport {
-  readonly phase: GamePhase;
+  readonly phase: ServiceGamePhase;
   readonly biddingViewport: BiddingViewport | null;
 }
 
@@ -105,52 +300,53 @@ export interface ConventionInfo {
   readonly category?: string;
 }
 
-// ── Learning viewport ───────────────────────────────────────────────
+// ── Module-Centric Learning Viewport ─────────────────────────────────
 
-/** Top-level learning viewport for a convention bundle. */
-export interface LearningViewport {
-  readonly id: string;
-  readonly name: string;
-  readonly description: string;
-  readonly category: string;
-
-  /** Bundle-level teaching metadata. */
-  readonly purpose: string | null;
-  readonly whenToUse: string | null;
-  readonly whenNotToUse: readonly string[];
-  readonly tradeoff: string | null;
-  readonly principle: string | null;
-  readonly roles: string | null;
-
-  /** Module summaries — one per convention module in the bundle. */
-  readonly modules: readonly ModuleView[];
-}
-
-/** Summary of a single convention module. */
-export interface ModuleView {
+/** Module catalog entry for sidebar listing. */
+export interface ModuleCatalogEntry {
   readonly moduleId: string;
   readonly displayName: string;
   readonly description: string;
   readonly purpose: string;
   readonly surfaceCount: number;
-  readonly surfaces: readonly SurfaceView[];
+  readonly bundleIds: readonly string[];
 }
 
-/** A single bid surface visible in the learning view. */
-export interface SurfaceView {
+/** Full learning viewport for a single module. */
+export interface ModuleLearningViewport {
+  readonly moduleId: string;
+  readonly displayName: string;
+  readonly description: string;
+  readonly purpose: string;
+  /** Authored teaching content (orthogonal to structure, self-contained). */
+  readonly teaching: {
+    readonly tradeoff: string | null;
+    readonly principle: string | null;
+    readonly commonMistakes: readonly string[];
+  };
+  /** Surfaces grouped by conversation phase. */
+  readonly phases: readonly PhaseGroupView[];
+  readonly bundleIds: readonly string[];
+}
+
+/** Surfaces grouped by conversation phase. */
+export interface PhaseGroupView {
+  readonly phase: string;
+  /** Human-readable, e.g., "Asked — Opener". */
+  readonly phaseDisplay: string;
+  readonly turn: string | null;
+  readonly surfaces: readonly SurfaceDetailView[];
+}
+
+/** Surface detail with explanation text. */
+export interface SurfaceDetailView {
   readonly meaningId: string;
   readonly teachingLabel: string;
   readonly call: Call;
   readonly callDisplay: string;
   readonly disclosure: "alert" | "announcement" | "natural" | "standard";
   readonly recommendation: "must" | "should" | "may" | "avoid" | null;
-  readonly constraints: readonly ConstraintView[];
-}
-
-/** A human-readable constraint on a bid surface. */
-export interface ConstraintView {
-  readonly factId: string;
-  readonly description: string;
+  readonly explanationText: string | null;
 }
 
 // ── Player Viewport ─────────────────────────────────────────────────
@@ -243,8 +439,6 @@ export interface BiddingOptionView {
 // projection of the engine's BidFeedback — same information a human
 // player would see in the UI feedback panel.
 
-export type ViewportBidGrade = `${BidGrade}`;
-
 /** Feedback shown to the player after bidding. */
 export interface ViewportBidFeedback {
   readonly grade: ViewportBidGrade;
@@ -325,15 +519,15 @@ export interface TeachingDetail {
 
   // ── Teaching projection data ──────────────────────────────────
   /** Primary explanation nodes (conditions with pass/fail). */
-  readonly primaryExplanation?: readonly ExplanationNode[];
+  readonly primaryExplanation?: readonly ServiceExplanationNode[];
   /** Why-not entries for alternative bids. */
-  readonly whyNot?: readonly WhyNotEntry[];
+  readonly whyNot?: readonly ServiceWhyNotEntry[];
   /** Convention contributions (which modules were evaluated). */
-  readonly conventionsApplied?: readonly ConventionContribution[];
+  readonly conventionsApplied?: readonly ServiceConventionContribution[];
   /** Meaning views: all meanings with live/eliminated status. */
-  readonly meaningViews?: readonly MeaningView[];
+  readonly meaningViews?: readonly ServiceMeaningView[];
   /** Call views: how each call was projected (truth/acceptable/wrong). */
-  readonly callViews?: readonly CallProjection[];
+  readonly callViews?: readonly ServiceCallProjection[];
 
   // ── Partner hand space ────────────────────────────────────────
   /** Partner summary from hand space analysis. */
@@ -347,7 +541,7 @@ export interface TeachingDetail {
 
   // ── Encoding trace ────────────────────────────────────────────
   /** How the meaning was encoded into a concrete call (null for trivial). */
-  readonly encoderKind?: EncoderKind;
+  readonly encoderKind?: ServiceEncoderKind;
 
   // ── Practical recommendation ──────────────────────────────────
   /** Expert-level practical recommendation (when different from textbook). */
@@ -401,7 +595,7 @@ export interface TeachingDetail {
   /** Post-bid parse tree showing the full decision chain:
    *  which conventions were considered, why each was accepted/rejected,
    *  and the path to the correct bid. */
-  readonly parseTree?: ParseTreeView;
+  readonly parseTree?: ServiceParseTreeView;
 
   // ── Observation history ────────────────────────────────────
   /** Viewport-safe projection of the observation log from the rule interpreter.
@@ -478,7 +672,7 @@ export interface PlayingViewport {
   readonly declarerTricksWon: number;
   readonly defenderTricksWon: number;
   readonly auctionEntries?: readonly AuctionEntryView[];
-  readonly bidHistory?: readonly BidHistoryEntry[];
+  readonly bidHistory?: readonly ServiceBidHistoryEntry[];
 }
 
 /** Viewport for the explanation/review phase. All hands are visible. */
@@ -491,18 +685,66 @@ export interface ExplanationViewport {
   readonly contract: Contract | null;
   readonly score: number | null;
   readonly declarerTricksWon: number;
-  readonly bidHistory: readonly BidHistoryEntry[];
+  readonly bidHistory: readonly ServiceBidHistoryEntry[];
 }
 
-// ── Debug types ─────────────────────────────────────────────────────
+// ── Module-Centric Learning Viewport ─────────────────────────────────
 
-/** Debug snapshot visible through DevServicePort. */
-export interface ServiceDebugSnapshot extends DebugSnapshot {
-  readonly sessionPhase: GamePhase;
+/** Module catalog entry for sidebar listing. */
+export interface ModuleCatalogEntry {
+  readonly moduleId: string;
+  readonly displayName: string;
+  readonly description: string;
+  readonly purpose: string;
+  readonly surfaceCount: number;
+  readonly bundleIds: readonly string[];
 }
 
-/** Debug log visible through DevServicePort. */
-export type ServiceDebugLogEntry = DebugLogEntry;
+/** Full learning viewport for a single module. */
+export interface ModuleLearningViewport {
+  readonly moduleId: string;
+  readonly displayName: string;
+  readonly description: string;
+  readonly purpose: string;
+  /** Authored teaching content (orthogonal to structure, self-contained). */
+  readonly teaching: {
+    readonly tradeoff: string | null;
+    readonly principle: string | null;
+    readonly commonMistakes: readonly string[];
+  };
+  /** Surfaces grouped by conversation phase. */
+  readonly phases: readonly PhaseGroupView[];
+  readonly bundleIds: readonly string[];
+}
 
-/** Inference snapshot visible through DevServicePort. */
-export type ServiceInferenceSnapshot = InferenceSnapshot;
+/** Surfaces grouped by conversation phase. */
+export interface PhaseGroupView {
+  readonly phase: string;
+  /** Human-readable, e.g., "Asked — Opener". */
+  readonly phaseDisplay: string;
+  readonly turn: string | null;
+  readonly surfaces: readonly SurfaceDetailView[];
+}
+
+/** Surface detail with explanation text. */
+export interface SurfaceDetailView {
+  readonly meaningId: string;
+  readonly teachingLabel: string;
+  readonly call: Call;
+  readonly callDisplay: string;
+  readonly disclosure: "alert" | "announcement" | "natural" | "standard";
+  readonly recommendation: "must" | "should" | "may" | "avoid" | null;
+  readonly explanationText: string | null;
+}
+
+// ── Convention Card ──────────────────────────────────────────────────
+
+/** Convention card summary — mirrors the physical card at the table. */
+export interface ConventionCardView {
+  readonly partnership: string;      // "N-S" or "E-W"
+  readonly systemName: string;       // "SAYC", "2/1", "Acol"
+  readonly ntRange: string;          // "15–17" or "12–14"
+  readonly twoLevelForcing: string;  // "1 round" or "Game forcing"
+  readonly oneNtResponse: string;    // "Non-forcing 6–10" or "Semi-forcing 6–12"
+  readonly majorLength: string;      // "5-card majors" or "4-card majors"
+}

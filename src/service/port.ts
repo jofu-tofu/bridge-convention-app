@@ -7,15 +7,16 @@
  */
 
 import type { Call, Card, Seat } from "../engine/types";
-import type { BiddingViewport } from "./response-types";
-import type { LearningViewport } from "./response-types";
-import type { GamePhase } from "./phase-machine";
-import type { DrillBundle } from "../bootstrap/types";
+import type { DrillBundle } from "../session/drill-types";
 import type {
   SessionHandle,
   SessionConfig,
 } from "./request-types";
 import type {
+  ServiceGamePhase,
+  BiddingViewport,
+  ModuleCatalogEntry,
+  ModuleLearningViewport,
   DrillStartResult,
   BidSubmitResult,
   PromptAcceptResult,
@@ -23,10 +24,12 @@ import type {
   SessionViewport,
   DDSolutionResult,
   ConventionInfo,
-  ServiceDebugSnapshot,
-  ServiceDebugLogEntry,
   ServiceInferenceSnapshot,
 } from "./response-types";
+import type {
+  ServiceDebugSnapshot,
+  ServiceDebugLogEntry,
+} from "./debug-types";
 import type { AtomGradeResult } from "./evaluation/types";
 
 /** Production service interface — all methods return Promise<T>. */
@@ -50,7 +53,7 @@ export interface ServicePort {
 
   // ── Query ───────────────────────────────────────────────────────
   getViewport(handle: SessionHandle): Promise<SessionViewport>;
-  getPhase(handle: SessionHandle): Promise<GamePhase>;
+  getPhase(handle: SessionHandle): Promise<ServiceGamePhase>;
 
   // ── DDS analysis ────────────────────────────────────────────────
   getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult>;
@@ -63,8 +66,10 @@ export interface ServicePort {
   listConventions(): Promise<ConventionInfo[]>;
 
   // ── Learning ──────────────────────────────────────────────────
-  /** Build a learning viewport for a convention bundle by ID. */
-  getLearningViewport(conventionId: string): Promise<LearningViewport | null>;
+  /** List all registered modules with catalog metadata. */
+  listModules(): Promise<readonly ModuleCatalogEntry[]>;
+  /** Build a learning viewport for a single module by ID. */
+  getModuleLearningViewport(moduleId: string): Promise<ModuleLearningViewport | null>;
 }
 
 /** Extends ServicePort with dev/debug methods.

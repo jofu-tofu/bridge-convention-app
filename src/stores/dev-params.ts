@@ -1,5 +1,5 @@
 import type { createAppStore } from "./app.svelte";
-import { getConvention } from "../conventions";
+import { getConvention, getModule } from "../conventions";
 
 export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const params = new URLSearchParams(window.location.search);
@@ -32,11 +32,17 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const targetStateParam = params.get("targetState");
 
   if (learnParam) {
-    try {
-      const config = getConvention(learnParam);
-      store.navigateToLearning(config);
-    } catch {
-      // Invalid param — silently ignore
+    // Module-first resolution: try module ID first, then bundle ID
+    const mod = getModule(learnParam);
+    if (mod) {
+      store.navigateToLearningModule(learnParam);
+    } else {
+      try {
+        const config = getConvention(learnParam);
+        store.navigateToLearning(config);
+      } catch {
+        // Invalid param — silently ignore
+      }
     }
   } else if (conventionParam) {
     try {

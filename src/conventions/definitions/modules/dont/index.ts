@@ -129,6 +129,14 @@ export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "dont",
   description: "DONT — Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns",
   purpose: "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
+  teaching: {
+    tradeoff: "DONT overcalls commit to the 2-level immediately — if partner has a misfit, you may go down.",
+    principle: "Against a strong 1NT, disrupting their communication is more valuable than finding your own perfect contract.",
+    commonMistakes: [
+      "Double shows a single long suit (not penalty) — advancer must relay to 2C to discover which suit",
+      "2H shows hearts AND a higher suit (spades) — it's not a single-suited overcall",
+    ],
+  },
   ...createDontModule(sys),
   local: dontLocal,
   states: createDontStates(),
