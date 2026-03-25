@@ -4,10 +4,9 @@
 // convention specs.  Both CLI and stores use these instead of reaching
 // directly into strategy/bidding/ internals.
 
-import type { ConventionSpec, ConventionStrategy } from "../conventions";
-import type { BiddingStrategy } from "../conventions";
+import type { ConventionSpec, ConventionStrategy, BiddingStrategy } from "../conventions";
 import type { OpponentMode } from "./drill-types";
-import { protocolSpecToStrategy } from "../conventions/adapter/protocol-adapter";
+import { protocolSpecToStrategy } from "../conventions";
 import { createStrategyChain } from "../session/heuristics/strategy-chain";
 import { naturalFallbackStrategy } from "../session/heuristics/natural-fallback";
 import { passStrategy } from "../session/heuristics/pass-strategy";

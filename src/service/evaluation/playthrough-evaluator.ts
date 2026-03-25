@@ -5,17 +5,12 @@
 //
 // Internal strategy/teaching/convention access is encapsulated here.
 
-import type { BaseSystemId } from "../../conventions/definitions/system-config";
-import { BASE_SYSTEM_SAYC } from "../../conventions/definitions/system-config";
-import { getSystemConfig } from "../../conventions/definitions/system-config";
-import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle } from "../../conventions";
-import { enumerateRuleAtoms } from "../../conventions";
-import { protocolSpecToStrategy } from "../../conventions/adapter/protocol-adapter";
+import { getBundleInput, resolveBundle as resolveBundleFn, specFromBundle, BASE_SYSTEM_SAYC, getSystemConfig } from "../../conventions";
+import { enumerateRuleAtoms, protocolSpecToStrategy } from "../../conventions";
 import { naturalFallbackStrategy } from "../../session/heuristics/natural-fallback";
 import { createStrategyChain } from "../../session/heuristics/strategy-chain";
-import { resolveTeachingAnswer, gradeBid } from "../../conventions";
-import { BidGrade } from "../../conventions/teaching/teaching-types";
-import type { BidResult } from "../../conventions";
+import { resolveTeachingAnswer, gradeBid, BidGrade } from "../../conventions";
+import type { BaseSystemId, BidResult } from "../../conventions";
 import { buildViewportFeedback, buildTeachingDetail, projectObservationHistory } from "../../session/build-viewport";
 import type { BiddingViewport } from "../response-types";
 import { callKey } from "../../engine/call-helpers";

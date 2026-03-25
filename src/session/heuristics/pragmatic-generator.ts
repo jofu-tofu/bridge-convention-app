@@ -1,14 +1,13 @@
 // Pragmatic candidate generator — heuristic tactical bids beyond convention surfaces.
 // Import boundary: engine/ types, inference/ PrivateBeliefState, and BiddingContext type only.
-// NO runtime imports from conventions/core/ — only type imports.
 
 import { BidSuit } from "../../engine/types";
 import type { Auction, Call, ContractBid, Seat } from "../../engine/types";
 import { isLegalCall } from "../../engine/auction";
 import { SUIT_ORDER, partnerSeat } from "../../engine/constants";
 import { callKey } from "../../engine/call-helpers";
-import type { BiddingContext } from "../../conventions/core/strategy-types";
-import { LEVEL_HCP_TABLE } from "../../conventions/adapter/practical-scorer";
+import type { BiddingContext } from "../../conventions";
+import { LEVEL_HCP_TABLE } from "../../conventions";
 
 export enum DistortionType {
   ConservativeNTDowngrade = "conservative-nt-downgrade",

@@ -4,8 +4,7 @@
 // All verify subcommands produce JSON output using these types.
 
 import type { Seat } from "../../engine/types";
-import type { NegotiationState, CommittedStep } from "../../conventions/core/committed-step";
-import type { ModuleSurfaceResult } from "../../conventions";
+import type { NegotiationState, CommittedStep, ModuleSurfaceResult } from "../../conventions";
 
 // ── Lint ─────────────────────────────────────────────────────────────
 

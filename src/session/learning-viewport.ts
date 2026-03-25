@@ -7,12 +7,8 @@
  * imports this file — it calls service methods.
  */
 
-import type { ConventionModule } from "../conventions/core/convention-module";
-import { moduleSurfaces } from "../conventions/core/convention-module";
-import type { LocalFsm } from "../conventions/core/rule-module";
-import type { ExplanationEntry } from "../conventions/core/explanation-catalog";
-import { getModule, getAllModules } from "../conventions/definitions/module-registry";
-import { listBundleInputs } from "../conventions/definitions/system-registry";
+import type { ConventionModule, LocalFsm, ExplanationEntry, BidMeaningClause } from "../conventions";
+import { moduleSurfaces, getModule, getAllModules, listBundleInputs } from "../conventions";
 import { formatCall } from "../service/display/format";
 import type {
   ModuleCatalogEntry,
@@ -21,7 +17,6 @@ import type {
   SurfaceDetailView,
   SurfaceClauseView,
 } from "../service/response-types";
-import type { BidMeaningClause } from "../conventions/pipeline/meaning";
 
 /** Known bridge abbreviations that should be fully uppercased. */
 const BRIDGE_ABBREVIATIONS = new Set(["nt", "sayc", "hcp"]);

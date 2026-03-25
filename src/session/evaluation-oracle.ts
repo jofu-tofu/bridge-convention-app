@@ -7,10 +7,7 @@
 //   3. Aggregate reporting (accuracy metrics)
 
 import type { Call, Hand, Seat } from "../engine/types";
-import type { BidResult, BidAlert } from "../conventions";
-import type { TeachingResolution } from "../conventions/teaching/teaching-types";
-import type { TeachingProjection } from "../conventions/teaching/teaching-types";
-import type { StrategyEvaluation } from "../conventions";
+import type { BidResult, BidAlert, TeachingResolution, TeachingProjection, StrategyEvaluation } from "../conventions";
 
 /** The answer key for a single bidding decision point. */
 export interface EvaluationOracle {

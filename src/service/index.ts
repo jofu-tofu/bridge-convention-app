@@ -83,14 +83,8 @@ export { evaluateHand, calculateHcp } from "../engine/hand-evaluator";
 
 // ── Convention system re-exports ──
 
-export { ConventionCategory } from "../conventions/core/convention-types";
-export type { ConventionConfig } from "../conventions/core/convention-types";
-export { getConvention } from "../conventions";
-export { getModule } from "../conventions";
-export type { ConventionContribution, ParseTreeView, TeachingProjection, CallProjection, MeaningView, WhyNotEntry } from "../conventions/teaching/teaching-types";
-export type { EncoderKind } from "../conventions/pipeline/provenance";
-export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../conventions/definitions/system-config";
-export type { BaseSystemId, SystemConfig } from "../conventions/definitions/system-config";
+export { ConventionCategory, getConvention, getModule, SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../conventions";
+export type { ConventionConfig, ConventionContribution, ParseTreeView, TeachingProjection, CallProjection, MeaningView, WhyNotEntry, EncoderKind, BaseSystemId, SystemConfig } from "../conventions";
 
 // ── Convention card ──
 export { buildConventionCard } from "./display/convention-card";

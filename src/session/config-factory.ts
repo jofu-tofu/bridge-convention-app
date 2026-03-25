@@ -1,14 +1,16 @@
 import { Seat } from "../engine/types";
-import type { BiddingStrategy } from "../conventions";
+import type { BiddingStrategy, BaseSystemId } from "../conventions";
 import type { DrillConfig } from "./drill-types";
 import type { OpponentMode } from "./drill-types";
-import type { BaseSystemId } from "../conventions/definitions/system-config";
-import { getSystemConfig } from "../conventions/definitions/system-config";
+import { getSystemConfig } from "../conventions";
 import type { InferenceConfig } from "../inference/types";
 import { createSpecStrategyWithFallback, createOpponentStrategy } from "./strategy-factory";
 import { createHeuristicPlayStrategy } from "../session/heuristics/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
 import { getBundleInput, specFromBundle } from "../conventions";
+import type { PlayProfileId } from "./heuristics/play-profiles";
+import { PLAY_PROFILES, BEGINNER_PROFILE } from "./heuristics/play-profiles";
+import { createProfileStrategyProvider } from "./heuristics/profile-play-strategy";
 
 // User always bids as South. N/S = user partnership, E/W = opponents.
 const NS_SEATS = new Set([Seat.North, Seat.South]);
@@ -22,7 +24,7 @@ const NS_SEATS = new Set([Seat.North, Seat.South]);
 export function createProtocolDrillConfig(
   conventionId: string,
   userSeat: Seat,
-  options: { opponentMode?: OpponentMode; baseSystem: BaseSystemId },
+  options: { opponentMode?: OpponentMode; baseSystem: BaseSystemId; playProfileId?: PlayProfileId },
 ): DrillConfig {
   const input = getBundleInput(conventionId);
   if (!input) {
@@ -68,11 +70,17 @@ export function createProtocolDrillConfig(
     opponentPartnership: createNaturalInferenceProvider(systemConfig),
   };
 
+  const profile = options.playProfileId
+    ? PLAY_PROFILES[options.playProfileId]
+    : BEGINNER_PROFILE;
+  const playStrategyProvider = createProfileStrategyProvider(profile);
+
   return {
     conventionId,
     userSeat,
     seatStrategies,
     playStrategy: createHeuristicPlayStrategy(),
+    playStrategyProvider,
     nsInferenceConfig,
     ewInferenceConfig,
   };

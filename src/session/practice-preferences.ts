@@ -6,10 +6,10 @@
  * reactive state; this file defines the shape.
  */
 
-import type { BaseSystemId } from "../conventions/definitions/system-config";
+import type { BaseSystemId } from "../conventions";
 import type { DrillSettings } from "./drill-types";
 import { DEFAULT_DRILL_SETTINGS } from "./drill-types";
-import { BASE_SYSTEM_SAYC } from "../conventions/definitions/system-config";
+import { BASE_SYSTEM_SAYC } from "../conventions";
 
 // ─── Display preferences ────────────────────────────────────
 //

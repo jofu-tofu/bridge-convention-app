@@ -3,15 +3,8 @@
 // Generates deals, runs strategy-driven auctions, and checks invariants
 // at each step. Reports coverage and violations.
 
-import type { ConventionModule, ConventionBundle } from "../../conventions";
-import type { AuctionContext } from "../../conventions/core/committed-step";
-import type { PublicSnapshot } from "../../conventions/core/module-surface";
-import { INITIAL_NEGOTIATION } from "../../conventions/core/committed-step";
-import { collectMatchingClaims, advanceLocalFsm, specFromBundle } from "../../conventions";
-import { buildObservationLogViaRules, protocolSpecToStrategy } from "../../conventions/adapter/protocol-adapter";
-import type { BaseSystemId } from "../../conventions/definitions/system-config";
-import { BASE_SYSTEM_SAYC } from "../../conventions/definitions/system-config";
-import { getSystemConfig } from "../../conventions/definitions/system-config";
+import type { ConventionModule, ConventionBundle, AuctionContext, PublicSnapshot, BaseSystemId } from "../../conventions";
+import { INITIAL_NEGOTIATION, collectMatchingClaims, advanceLocalFsm, specFromBundle, buildObservationLogViaRules, protocolSpecToStrategy, BASE_SYSTEM_SAYC, getSystemConfig } from "../../conventions";
 import { callKey } from "../../engine/call-helpers";
 import type { Call, Seat } from "../../engine/types";
 

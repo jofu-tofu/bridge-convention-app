@@ -24,11 +24,8 @@ import { evaluateHand } from "../engine/hand-evaluator";
 import { createBiddingContext } from "../conventions";
 import { startDrill as assembleNewDrill } from "../session/start-drill";
 import { getConvention, listConventions as listConventionConfigs } from "../conventions";
-import { getBundle, resolveConventionForSystem } from "../conventions";
-import type { ConventionConfig } from "../conventions";
-import { getSystemConfig } from "../conventions/definitions/system-config";
-import { BASE_SYSTEM_SAYC } from "../conventions/definitions/system-config";
-import type { BaseSystemId } from "../conventions/definitions/system-config";
+import { getBundle, resolveConventionForSystem, getSystemConfig, BASE_SYSTEM_SAYC } from "../conventions";
+import type { ConventionConfig, BaseSystemId } from "../conventions";
 import type { DevServicePort } from "./port";
 import type {
   SessionHandle,

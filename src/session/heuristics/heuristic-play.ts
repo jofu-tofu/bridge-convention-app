@@ -1,14 +1,14 @@
-import type { PlayStrategy, PlayContext, PlayResult } from "../../conventions/core/strategy-types";
+import type { PlayStrategy, PlayContext, PlayResult } from "../../conventions";
 import type { Card, Suit, Seat, PlayedCard, Trick } from "../../engine/types";
 import { Rank } from "../../engine/types";
 import { RANK_INDEX, partnerSeat } from "../../engine/constants";
 
-type PlayHeuristic = {
+export type PlayHeuristic = {
   readonly name: string;
   apply(context: PlayContext): Card | null;
 };
 
-function isHonor(rank: Rank): boolean {
+export function isHonor(rank: Rank): boolean {
   return (
     rank === Rank.Jack ||
     rank === Rank.Queen ||
@@ -17,7 +17,7 @@ function isHonor(rank: Rank): boolean {
   );
 }
 
-function rankBeats(a: Rank, b: Rank): boolean {
+export function rankBeats(a: Rank, b: Rank): boolean {
   return RANK_INDEX[a] > RANK_INDEX[b];
 }
 
@@ -57,11 +57,11 @@ function getTrickWinnerSoFar(
   return winner;
 }
 
-function sortByRankAsc(cards: readonly Card[]): Card[] {
+export function sortByRankAsc(cards: readonly Card[]): Card[] {
   return [...cards].sort((a, b) => RANK_INDEX[a.rank] - RANK_INDEX[b.rank]);
 }
 
-function sortByRankDesc(cards: readonly Card[]): Card[] {
+export function sortByRankDesc(cards: readonly Card[]): Card[] {
   return [...cards].sort((a, b) => RANK_INDEX[b.rank] - RANK_INDEX[a.rank]);
 }
 
@@ -94,7 +94,7 @@ function topOfTouchingHonors(suitCards: Card[]): Card | null {
   return null;
 }
 
-function isDefender(seat: Seat, declarer: Seat): boolean {
+export function isDefender(seat: Seat, declarer: Seat): boolean {
   return seat !== declarer && seat !== partnerSeat(declarer);
 }
 
@@ -104,7 +104,7 @@ function isLegalPlay(card: Card, legalPlays: readonly Card[]): boolean {
 }
 
 /** Group hand cards by suit. */
-function groupBySuit(cards: readonly Card[]): Record<string, Card[]> {
+export function groupBySuit(cards: readonly Card[]): Record<string, Card[]> {
   const groups: Record<string, Card[]> = {};
   for (const c of cards) {
     if (!groups[c.suit]) groups[c.suit] = [];
@@ -219,7 +219,7 @@ function leadShortSuit(
 
 // ── Heuristics ─────────────────────────────────────────────────────
 
-const openingLeadHeuristic: PlayHeuristic = {
+export const openingLeadHeuristic: PlayHeuristic = {
   name: "opening-lead",
   apply(context: PlayContext): Card | null {
     const { currentTrick, previousTricks, seat, contract, legalPlays, hand } =
@@ -288,7 +288,7 @@ const openingLeadHeuristic: PlayHeuristic = {
   },
 };
 
-const midGameLeadHeuristic: PlayHeuristic = {
+export const midGameLeadHeuristic: PlayHeuristic = {
   name: "mid-game-lead",
   apply(context: PlayContext): Card | null {
     const { currentTrick, previousTricks, seat, contract, legalPlays, trumpSuit } =
@@ -343,7 +343,7 @@ const midGameLeadHeuristic: PlayHeuristic = {
   },
 };
 
-const secondHandLowHeuristic: PlayHeuristic = {
+export const secondHandLowHeuristic: PlayHeuristic = {
   name: "second-hand-low",
   apply(context: PlayContext): Card | null {
     if (context.currentTrick.length !== 1) return null;
@@ -374,7 +374,7 @@ const secondHandLowHeuristic: PlayHeuristic = {
   },
 };
 
-const thirdHandHighHeuristic: PlayHeuristic = {
+export const thirdHandHighHeuristic: PlayHeuristic = {
   name: "third-hand-high",
   apply(context: PlayContext): Card | null {
     if (context.currentTrick.length !== 2) return null;
@@ -421,7 +421,7 @@ const thirdHandHighHeuristic: PlayHeuristic = {
   },
 };
 
-const fourthHandPlayHeuristic: PlayHeuristic = {
+export const fourthHandPlayHeuristic: PlayHeuristic = {
   name: "fourth-hand-play",
   apply(context: PlayContext): Card | null {
     if (context.currentTrick.length !== 3) return null;
@@ -468,7 +468,7 @@ const fourthHandPlayHeuristic: PlayHeuristic = {
   },
 };
 
-const coverHonorHeuristic: PlayHeuristic = {
+export const coverHonorHeuristic: PlayHeuristic = {
   name: "cover-honor-with-honor",
   apply(context: PlayContext): Card | null {
     if (context.currentTrick.length === 0) return null;
@@ -492,7 +492,7 @@ const coverHonorHeuristic: PlayHeuristic = {
   },
 };
 
-const trumpManagementHeuristic: PlayHeuristic = {
+export const trumpManagementHeuristic: PlayHeuristic = {
   name: "trump-management",
   apply(context: PlayContext): Card | null {
     if (context.trumpSuit === undefined) return null;
@@ -542,7 +542,7 @@ const trumpManagementHeuristic: PlayHeuristic = {
   },
 };
 
-const discardManagementHeuristic: PlayHeuristic = {
+export const discardManagementHeuristic: PlayHeuristic = {
   name: "discard-management",
   apply(context: PlayContext): Card | null {
     if (context.currentTrick.length === 0) return null;

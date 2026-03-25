@@ -3,9 +3,7 @@
 // Reuses exploreBundle infrastructure but focuses on a specific module pair,
 // tracking co-activation and pair-specific conflicts.
 
-import type { ConventionModule, ConventionBundle } from "../../conventions";
-
-import type { BaseSystemId } from "../../conventions/definitions/system-config";
+import type { ConventionModule, ConventionBundle, BaseSystemId } from "../../conventions";
 import { exploreBundle } from "./explore";
 import type { MotifResult, InvariantViolation } from "./types";
 

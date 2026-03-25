@@ -12,11 +12,8 @@ import type { VulnerabilityDistribution, DrillSettings } from "./drill-types";
 import { DEFAULT_DRILL_TUNING } from "./drill-types";
 import { createProtocolDrillConfig } from "./config-factory";
 import { createDrillSession } from "./drill-session";
-import type { BaseSystemId } from "../conventions/definitions/system-config";
-import { BASE_SYSTEM_SAYC } from "../conventions/definitions/system-config";
-import { getSystemConfig } from "../conventions/definitions/system-config";
-import { getBundleInput, specFromBundle } from "../conventions";
-import { protocolSpecToStrategy } from "../conventions/adapter/protocol-adapter";
+import { getBundleInput, specFromBundle, BASE_SYSTEM_SAYC, getSystemConfig, protocolSpecToStrategy } from "../conventions";
+import type { BaseSystemId } from "../conventions";
 import { createInferenceEngine } from "../inference/inference-engine";
 import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";
 import { mulberry32 } from "../engine/seeded-rng";
@@ -87,6 +84,7 @@ export async function startDrill(
   const config = createProtocolDrillConfig(convention.id, userSeat, {
     opponentMode: options?.opponentMode,
     baseSystem: resolvedSystem,
+    playProfileId: options?.playProfileId,
   });
   const session = createDrillSession(config);
 

@@ -1,4 +1,4 @@
-import type { PlayStrategy, PlayResult } from "../../conventions/core/strategy-types";
+import type { PlayStrategy, PlayResult } from "../../conventions";
 
 export function createRandomPlayStrategy(
   rng: () => number = Math.random,

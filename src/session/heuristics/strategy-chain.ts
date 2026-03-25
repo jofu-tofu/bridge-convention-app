@@ -1,6 +1,5 @@
-import type { BiddingStrategy, BidResult } from "../../conventions/core/strategy-types";
-import type { BiddingContext } from "../../conventions/core/strategy-types";
-import { TraceCollector } from "../../conventions/adapter/trace-collector";
+import type { BiddingStrategy, BidResult, BiddingContext } from "../../conventions";
+import { TraceCollector } from "../../conventions";
 
 export interface StrategyChainOptions {
   /** When provided, results failing this predicate are treated as "declined". */

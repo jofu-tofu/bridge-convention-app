@@ -5,18 +5,11 @@
 // Both the Svelte UI and the CLI harness call this same function.
 
 import { type Seat, type Call, type Hand, type Deal, type Auction, type Contract, type PlayedCard, type Trick, type Card, type Suit } from "../engine/types";
-import type { AuctionContext } from "../conventions/core/committed-step";
-import type { BidAction } from "../conventions/pipeline/bid-action";
+import type { AuctionContext, BidAction, BidHistoryEntry, BidResult, BidMeaning, TeachingProjection, TeachingResolution, BidGrade, PracticalScoreBreakdown } from "../conventions";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { formatCall } from "../service/display/format";
 import { formatHandSummary } from "../service/display/hand-summary";
-import type { BidHistoryEntry, BidResult } from "../conventions";
-import type { BidMeaning } from "../conventions/pipeline/meaning";
 import { isAlertable } from "../conventions";
-import type { TeachingProjection } from "../conventions/teaching/teaching-types";
-import type { TeachingResolution } from "../conventions/teaching/teaching-types";
-import type { BidGrade } from "../conventions/teaching/teaching-types";
-import type { PracticalScoreBreakdown } from "../conventions";
 // Minimal interface matching BidFeedback from stores/bidding.svelte.ts.
 // Defined here to avoid importing the Svelte store in CLI context.
 interface BidFeedbackLike {

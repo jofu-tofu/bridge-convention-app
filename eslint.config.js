@@ -222,6 +222,14 @@ export default tseslint.config(
             ...componentImports,
             ...sessionImports,
           ],
+          patterns: [{
+            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
+                      "*/conventions/definitions/**", "**/conventions/definitions/**",
+                      "*/conventions/core/**", "**/conventions/core/**",
+                      "*/conventions/teaching/**", "**/conventions/teaching/**",
+                      "*/conventions/adapter/**", "**/conventions/adapter/**"],
+            message: "Import from 'conventions' barrel instead of deep paths",
+          }],
         },
       ],
     },
@@ -386,7 +394,8 @@ export default tseslint.config(
             group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
                       "*/conventions/definitions/**", "**/conventions/definitions/**",
                       "*/conventions/core/**", "**/conventions/core/**",
-                      "*/conventions/teaching/**", "**/conventions/teaching/**"],
+                      "*/conventions/teaching/**", "**/conventions/teaching/**",
+                      "*/conventions/adapter/**", "**/conventions/adapter/**"],
             message: "Import from 'conventions' barrel instead of deep paths",
           }],
         },
@@ -589,6 +598,14 @@ export default tseslint.config(
             ...storeImports,
             ...componentImports,
           ],
+          patterns: [{
+            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
+                      "*/conventions/definitions/**", "**/conventions/definitions/**",
+                      "*/conventions/core/**", "**/conventions/core/**",
+                      "*/conventions/teaching/**", "**/conventions/teaching/**",
+                      "*/conventions/adapter/**", "**/conventions/adapter/**"],
+            message: "Import from 'conventions' barrel instead of deep paths",
+          }],
         },
       ],
     },
@@ -607,15 +624,22 @@ export default tseslint.config(
             ...storeImports,
             ...componentImports,
           ],
+          patterns: [{
+            group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
+                      "*/conventions/definitions/**", "**/conventions/definitions/**",
+                      "*/conventions/core/**", "**/conventions/core/**",
+                      "*/conventions/teaching/**", "**/conventions/teaching/**",
+                      "*/conventions/adapter/**", "**/conventions/adapter/**"],
+            message: "Import from 'conventions' barrel instead of deep paths",
+          }],
         },
       ],
     },
   },
 
   // ── Barrel enforcement: conventions/ ──
-  // REMOVED after core/ dissolution. Types now live in their owning modules
-  // (conventions/core/, conventions/pipeline/, etc.) and all consumers import
-  // from those modules directly. No barrel re-export indirection needed.
+  // Enforced per-module above (stores/, session/, service/, cli/).
+  // All external consumers must import from the conventions/ barrel.
 
   // ── Module boundary: test-support/ ──
   {

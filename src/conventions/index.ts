@@ -1,8 +1,8 @@
 // ── conventions/ public API barrel ──────────────────────────────────────
 // This is the ONLY public import path for external consumers
-// (strategy/, evaluation/, cli/, service/, stores/, components/).
+// (cli/, service/, session/, stores/, components/).
 // ESLint enforces no deep imports into conventions/core/, conventions/pipeline/,
-// conventions/teaching/, or conventions/definitions/.
+// conventions/adapter/, conventions/teaching/, or conventions/definitions/.
 
 // ── Side-effect registration (must be first — registers bundles before any consumer access) ──
 import "./registration";
@@ -22,8 +22,8 @@ export type {
   ConstraintDimension,
   FactOperator,
   EvaluationEvidence,
-} from "./pipeline/meaning";
-export { compareRanking, BAND_PRIORITY } from "./pipeline/meaning";
+} from "./pipeline/evaluation/meaning";
+export { compareRanking, BAND_PRIORITY } from "./pipeline/evaluation/meaning";
 
 export type {
   DecisionProvenance,
@@ -35,7 +35,7 @@ export type {
   LegalityTrace,
   HandoffTrace,
   EncoderKind,
-} from "./pipeline/provenance";
+} from "./pipeline/evaluation/provenance";
 
 export type {
   CandidateEligibility,
@@ -58,22 +58,23 @@ export type {
 // ── Pipeline types (moved from contracts) ───────────────────────────────
 export type { PipelineResult, PipelineCarrier, ArbitrationResult, EncodedProposal, EliminationRecord } from "./pipeline/pipeline-types";
 export type { StrategyEvaluation, ConventionStrategy, MachineDebugSnapshot } from "./pipeline/strategy-evaluation";
-export { resolveAlert, isAlertable } from "./pipeline/alert";
-export type { AlertResolvable } from "./pipeline/alert";
+export { resolveAlert, isAlertable } from "./pipeline/evaluation/alert";
+export type { AlertResolvable } from "./pipeline/evaluation/alert";
+export type { BidAction } from "./pipeline/bid-action";
 
 // ── Pipeline functions (moved in Phase 1) ───────────────────────────────
-export { evaluateFacts } from "./pipeline/fact-evaluator";
-export type { RelationalFactContext, EvaluateFactsOptions } from "./pipeline/fact-evaluator";
-export { createSharedFactCatalog } from "./pipeline/shared-fact-catalog";
-export { createSystemFactCatalog } from "./pipeline/system-fact-catalog";
-export { createHandFactResolver } from "./pipeline/hand-fact-resolver";
-export { evaluateAllBidMeanings } from "./pipeline/meaning-evaluator";
-export { arbitrateMeanings, zipProposalsWithSurfaces } from "./pipeline/meaning-arbitrator";
-export { collectMatchingClaims, collectMatchingClaimsWithPhases, deriveTurnRole, flattenSurfaces } from "./pipeline/rule-interpreter";
-export type { ModuleSurfaceResult } from "./pipeline/rule-interpreter";
-export { normalizeIntent } from "./pipeline/normalize-intent";
-export { matchObs } from "./pipeline/route-matcher";
-export { advanceLocalFsm } from "./pipeline/local-fsm";
+export { evaluateFacts } from "./pipeline/facts/fact-evaluator";
+export type { RelationalFactContext, EvaluateFactsOptions } from "./pipeline/facts/fact-evaluator";
+export { createSharedFactCatalog } from "./pipeline/facts/shared-fact-catalog";
+export { createSystemFactCatalog } from "./pipeline/facts/system-fact-catalog";
+export { createHandFactResolver } from "./pipeline/facts/hand-fact-resolver";
+export { evaluateAllBidMeanings } from "./pipeline/evaluation/meaning-evaluator";
+export { arbitrateMeanings, zipProposalsWithSurfaces } from "./pipeline/evaluation/meaning-arbitrator";
+export { collectMatchingClaims, collectMatchingClaimsWithPhases, deriveTurnRole, flattenSurfaces } from "./pipeline/observation/rule-interpreter";
+export type { ModuleSurfaceResult } from "./pipeline/observation/rule-interpreter";
+export { normalizeIntent } from "./pipeline/observation/normalize-intent";
+export { matchObs } from "./pipeline/observation/route-matcher";
+export { advanceLocalFsm } from "./pipeline/observation/local-fsm";
 export { enumerateRuleAtoms, generateRuleCoverageManifest } from "./pipeline/rule-enumeration";
 export type { RuleAtom, RuleCoverageManifest } from "./pipeline/rule-enumeration";
 export { runPipeline } from "./pipeline/run-pipeline";
@@ -92,6 +93,11 @@ export type { ConventionSpec } from "./core/protocol/types";
 export type { ConventionModule, ModuleTeaching, ResolvedSurface, LocalFsm, StateEntry } from "./core/convention-module";
 export { moduleSurfaces } from "./core/convention-module";
 export type { ObsPattern, TurnRole, NegotiationExpr, RouteExpr } from "./core/rule-module";
+export { INITIAL_NEGOTIATION } from "./core/committed-step";
+export type { AuctionContext, NegotiationState, NegotiationDelta, ClaimRef, CommittedStep } from "./core/committed-step";
+export type { PublicSnapshot } from "./core/module-surface";
+export type { ExplanationEntry, ExplanationCatalog } from "./core/explanation-catalog";
+export type { TeachingControls } from "./core/deal-spec-types";
 
 // ── Bundle test helpers ─────────────────────────────────────────────────
 export { registerBundle, clearBundleRegistry, createConventionConfigFromBundle } from "./core/bundle";
@@ -103,8 +109,8 @@ export { getModule, getAllModules, getModuleIds } from "./definitions/module-reg
 export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle } from "./definitions/system-registry";
 
 // ── Definitions (system config) ──────────────────────────────────────────
-export type { BaseSystemId } from "./definitions/system-config";
-export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS } from "./definitions/system-config";
+export type { BaseSystemId, SystemConfig } from "./definitions/system-config";
+export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, BASE_SYSTEM_SAYC, BASE_SYSTEM_ACOL, getSystemConfig } from "./definitions/system-config";
 
 // ── Definitions (concrete bundles — for test setup) ─────────────────────
 export { ntBundle } from "./definitions/nt-bundle";
@@ -138,6 +144,7 @@ export type {
 export { protocolSpecToStrategy, buildObservationLogViaRules, findMatchingClaimForCall } from "./adapter/protocol-adapter";
 export { meaningToStrategy } from "./adapter/meaning-strategy";
 export { scoreCandidatePractically, buildPracticalRecommendation, LEVEL_HCP_TABLE } from "./adapter/practical-scorer";
+export { TraceCollector } from "./adapter/trace-collector";
 
 // ── Teaching (resolution, projection, parse-tree) ─────────────────────
 export { resolveTeachingAnswer, gradeBid, BidGrade } from "./teaching/teaching-resolution";

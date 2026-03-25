@@ -1,4 +1,4 @@
-import type { BiddingStrategy, BidResult } from "../../conventions/core/strategy-types";
+import type { BiddingStrategy, BidResult } from "../../conventions";
 
 export const passStrategy: BiddingStrategy = {
   id: "pass",

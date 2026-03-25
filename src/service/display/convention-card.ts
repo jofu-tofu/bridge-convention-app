@@ -1,4 +1,4 @@
-import type { SystemConfig } from "../../conventions/definitions/system-config";
+import type { SystemConfig } from "../../conventions";
 import type { ConventionCardView } from "../response-types";
 
 /** Short system label for UI display. */

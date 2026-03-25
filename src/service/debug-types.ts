@@ -10,8 +10,7 @@
  */
 
 import type { Call, Seat } from "../engine/types";
-import type { StrategyEvaluation } from "../conventions/pipeline/strategy-evaluation";
-import type { BidResult } from "../conventions/core/strategy-types";
+import type { StrategyEvaluation, BidResult } from "../conventions";
 import type { BidFeedbackDTO } from "../session/bid-feedback-builder";
 import type { ServiceGamePhase } from "./response-types";
 
@@ -23,9 +22,7 @@ export type { ServiceInferenceSnapshot } from "./response-types";
 // Debug drawer components need these deep backend types. Re-exporting
 // them here (not from the main barrel) keeps the production API surface clean.
 
-export type { EvaluatedFacts } from "../conventions/core/fact-catalog";
-export type { PipelineResult } from "../conventions/pipeline/pipeline-types";
-export type { MachineDebugSnapshot } from "../conventions/pipeline/strategy-evaluation";
+export type { EvaluatedFacts, PipelineResult, MachineDebugSnapshot } from "../conventions";
 
 /** Debug snapshot visible through DevServicePort.
  *  Extends StrategyEvaluation with session-level debug fields. */
