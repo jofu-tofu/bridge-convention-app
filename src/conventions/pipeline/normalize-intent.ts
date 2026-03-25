@@ -70,6 +70,7 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
   ["Invite", (p) => [{ act: "raise", strain: strain(p), strength: "invitational" }]],
   ["AcceptInvite", () => [{ act: "accept", feature: "strength", strength: "invitational" }]],
   ["DeclineInvite", () => [{ act: "decline", feature: "strength" }]],
+  ["SignoffWithFit", (p) => [{ act: "signoff", strain: strain(p) }]],
   ["PlacementCorrection", (p) => [{ act: "place", strain: strain(p) }]],
   ["PlacementPass", () => [{ act: "pass" }]],
 

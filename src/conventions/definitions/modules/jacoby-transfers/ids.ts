@@ -58,8 +58,10 @@ export const TRANSFER_MEANING_IDS = {
 
   // R4 — opener invite acceptance after responder's 2NT invite
   ACCEPT_INVITE_HEARTS: "transfer:accept-invite-hearts",
+  SIGNOFF_WITH_FIT_HEARTS: "transfer:signoff-with-fit-hearts",
   DECLINE_INVITE_HEARTS: "transfer:decline-invite-hearts",
   ACCEPT_INVITE_SPADES: "transfer:accept-invite-spades",
+  SIGNOFF_WITH_FIT_SPADES: "transfer:signoff-with-fit-spades",
   DECLINE_INVITE_SPADES: "transfer:decline-invite-spades",
 
   // R4 — opener invite-raise acceptance after responder's 3M invite raise
@@ -96,5 +98,6 @@ export const OPENER_PLACE_CLASSES = {
   CORRECT_TO_MAJOR: "transfer:correct-to-major",
   PASS_3NT: "transfer:pass-3nt",
   ACCEPT_INVITE: "transfer:accept-invite",
+  SIGNOFF_WITH_FIT: "transfer:signoff-with-fit",
   DECLINE_INVITE: "transfer:decline-invite",
 } as const;
