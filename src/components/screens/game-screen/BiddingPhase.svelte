@@ -36,7 +36,7 @@
 
 <div class={PHASE_CONTAINER_CLASS}>
   <ScaledTableArea scale={layout.tableScale} origin={layout.tableOrigin} tableWidth={layout.tableBaseW} tableHeight={layout.tableBaseH}>
-    <BridgeTable visibleHands={viewport.visibleHands} vulnerability={viewport.vulnerability}>
+    <BridgeTable visibleHands={viewport.visibleHands} handEvaluation={viewport.handEvaluation} vulnerability={viewport.vulnerability}>
       <div
         class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
       >
