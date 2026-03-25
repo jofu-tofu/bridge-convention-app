@@ -57,9 +57,11 @@ export const TRANSFER_MEANING_IDS = {
   PASS_3NT_SPADES: "transfer:pass-3nt-spades",
 
   // R4 — opener invite acceptance after responder's 2NT invite
+  ACCEPT_INVITE_GAME_HEARTS: "transfer:accept-invite-game-hearts",
   ACCEPT_INVITE_HEARTS: "transfer:accept-invite-hearts",
   SIGNOFF_WITH_FIT_HEARTS: "transfer:signoff-with-fit-hearts",
   DECLINE_INVITE_HEARTS: "transfer:decline-invite-hearts",
+  ACCEPT_INVITE_GAME_SPADES: "transfer:accept-invite-game-spades",
   ACCEPT_INVITE_SPADES: "transfer:accept-invite-spades",
   SIGNOFF_WITH_FIT_SPADES: "transfer:signoff-with-fit-spades",
   DECLINE_INVITE_SPADES: "transfer:decline-invite-spades",

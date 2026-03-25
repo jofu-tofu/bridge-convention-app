@@ -214,11 +214,19 @@ const MEANING_EXPLANATIONS: Record<TransferMeaningId, MeaningExplanationEntry> =
   },
 
   // R4 — opener invite acceptance after responder's 2NT invite
+  "transfer:accept-invite-game-hearts": {
+    explanationId: "nt.transfer.acceptInviteGameHearts",
+    meaningId: "transfer:accept-invite-game-hearts",
+    templateKey: "nt.transfer.acceptInviteGameHearts.semantic",
+    displayText: "Accept heart invite: bid 4\u2665 with maximum and heart fit",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
   "transfer:accept-invite-hearts": {
     explanationId: "nt.transfer.acceptInviteHearts",
     meaningId: "transfer:accept-invite-hearts",
     templateKey: "nt.transfer.acceptInviteHearts.semantic",
-    displayText: "Accept heart invite: bid 3NT with maximum",
+    displayText: "Accept heart invite: bid 3NT with maximum but no heart fit",
     preferredLevel: "semantic",
     roles: ["pedagogical"],
   },
@@ -238,11 +246,19 @@ const MEANING_EXPLANATIONS: Record<TransferMeaningId, MeaningExplanationEntry> =
     preferredLevel: "semantic",
     roles: ["pedagogical"],
   },
+  "transfer:accept-invite-game-spades": {
+    explanationId: "nt.transfer.acceptInviteGameSpades",
+    meaningId: "transfer:accept-invite-game-spades",
+    templateKey: "nt.transfer.acceptInviteGameSpades.semantic",
+    displayText: "Accept spade invite: bid 4\u2660 with maximum and spade fit",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
   "transfer:accept-invite-spades": {
     explanationId: "nt.transfer.acceptInviteSpades",
     meaningId: "transfer:accept-invite-spades",
     templateKey: "nt.transfer.acceptInviteSpades.semantic",
-    displayText: "Accept spade invite: bid 3NT with maximum",
+    displayText: "Accept spade invite: bid 3NT with maximum but no spade fit",
     preferredLevel: "semantic",
     roles: ["pedagogical"],
   },
