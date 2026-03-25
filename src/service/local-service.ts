@@ -11,10 +11,10 @@
 
 /* eslint-disable @typescript-eslint/require-await -- ServicePort methods are async for future network compat; local impl is synchronous */
 
-import type { Call, Card, Seat } from "../engine/types";
+import { type Call, type Card, Seat } from "../engine/types";
 import type { EnginePort } from "../engine/port";
-import type { BiddingViewport } from "./response-types";
-import { buildBiddingViewport } from "../session/build-viewport";
+import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport } from "./response-types";
+import { buildBiddingViewport, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "../session/build-viewport";
 import type { ModuleCatalogEntry, ModuleLearningViewport } from "./response-types";
 import { buildModuleCatalog, buildModuleLearningViewport } from "../session/learning-viewport";
 import type { GamePhase } from "../session/phase-machine";
@@ -60,7 +60,7 @@ import {
 import {
   processPlayCard,
 } from "../session/play-controller";
-import { partnerSeat } from "../engine/constants";
+import { partnerSeat, areSamePartnership } from "../engine/constants";
 
 import type { DrillBundle } from "../session/drill-types";
 
@@ -211,6 +211,26 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       return state.phase;
     },
 
+    async getBiddingViewport(handle: SessionHandle): Promise<BiddingViewport | null> {
+      const state = manager.get(handle);
+      return buildBiddingViewportFromState(state);
+    },
+
+    async getDeclarerPromptViewport(handle: SessionHandle): Promise<DeclarerPromptViewport | null> {
+      const state = manager.get(handle);
+      return buildDeclarerPromptViewportFromState(state);
+    },
+
+    async getPlayingViewport(handle: SessionHandle): Promise<PlayingViewport | null> {
+      const state = manager.get(handle);
+      return buildPlayingViewportFromState(state, engine);
+    },
+
+    async getExplanationViewport(handle: SessionHandle): Promise<ExplanationViewport | null> {
+      const state = manager.get(handle);
+      return buildExplanationViewportFromState(state);
+    },
+
     // ── DDS analysis ──────────────────────────────────────────────
 
     async getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult> {
@@ -348,5 +368,122 @@ function buildBiddingViewportFromState(state: SessionState): BiddingViewport | n
     conventionName: state.conventionId,
     isUserTurn: state.isUserSeat(currentTurn) && state.phase === "BIDDING",
     currentBidder: currentTurn,
+  });
+}
+
+/** Determine the prompt mode from session state. */
+function getPromptMode(state: SessionState): "defender" | "south-declarer" | "declarer-swap" | null {
+  if (state.phase !== "DECLARER_PROMPT" || !state.contract) return null;
+  const userSeat = state.userSeat;
+  if (state.contract.declarer !== userSeat && partnerSeat(state.contract.declarer) !== userSeat) return "defender";
+  if (state.contract.declarer === userSeat) return "south-declarer";
+  return "declarer-swap";
+}
+
+/** Compute face-up seats for the declarer prompt phase. */
+function getDeclarerPromptFaceUpSeats(state: SessionState): Set<Seat> {
+  const seat = state.effectiveUserSeat ?? state.userSeat;
+  const seats = new Set<Seat>([seat]);
+
+  if (state.contract) {
+    const mode = getPromptMode(state);
+    if (mode === "south-declarer") {
+      seats.add(partnerSeat(state.contract.declarer));
+    } else if (mode === "declarer-swap") {
+      seats.add(state.contract.declarer);
+    }
+  }
+
+  return seats;
+}
+
+/** Build a DeclarerPromptViewport from session state. */
+function buildDeclarerPromptViewportFromState(state: SessionState): DeclarerPromptViewport | null {
+  if (!state.contract || state.phase !== "DECLARER_PROMPT") return null;
+
+  const mode = getPromptMode(state);
+  if (!mode) return null;
+
+  return buildDeclarerPromptViewport({
+    deal: state.deal,
+    userSeat: state.userSeat,
+    faceUpSeats: getDeclarerPromptFaceUpSeats(state),
+    auction: state.auction,
+    bidHistory: state.bidHistory,
+    contract: state.contract,
+    promptMode: mode,
+  });
+}
+
+/** Build a PlayingViewport from session state. Requires engine for legal plays. */
+async function buildPlayingViewportFromState(state: SessionState, engine: EnginePort): Promise<PlayingViewport | null> {
+  if (state.phase !== "PLAYING") return null;
+
+  const effectiveSeat = state.effectiveUserSeat ?? state.userSeat;
+  const contract = state.contract;
+
+  // Compute face-up seats: user + dummy if on same partnership
+  const faceUpSeats = new Set<Seat>([effectiveSeat]);
+  if (contract) {
+    const dummy = partnerSeat(contract.declarer);
+    if (areSamePartnership(dummy, effectiveSeat)) {
+      faceUpSeats.add(dummy);
+    }
+  }
+
+  // Compute user-controlled seats
+  const userControlledSeats: Seat[] = [effectiveSeat];
+  if (contract && state.effectiveUserSeat) {
+    const dummy = partnerSeat(contract.declarer);
+    if (dummy !== state.effectiveUserSeat && contract.declarer === state.effectiveUserSeat) {
+      userControlledSeats.push(dummy);
+    }
+  }
+
+  // Compute remaining cards per seat
+  const remainingCards: Partial<Record<Seat, readonly Card[]>> = {};
+  for (const s of [Seat.North, Seat.East, Seat.South, Seat.West] as Seat[]) {
+    remainingCards[s] = state.getRemainingCards(s);
+  }
+
+  // Compute legal plays for the current player
+  let legalPlays: readonly Card[] = [];
+  if (state.currentPlayer) {
+    const remaining = state.getRemainingCards(state.currentPlayer);
+    legalPlays = await engine.getLegalPlays({ cards: remaining }, state.getLeadSuit());
+  }
+
+  return buildPlayingViewport({
+    deal: state.deal,
+    userSeat: effectiveSeat,
+    faceUpSeats,
+    auction: state.auction,
+    bidHistory: state.bidHistory,
+    rotated: state.effectiveUserSeat === Seat.North,
+    contract,
+    currentPlayer: state.currentPlayer,
+    currentTrick: state.currentTrick,
+    trumpSuit: state.trumpSuit,
+    legalPlays,
+    userControlledSeats,
+    remainingCards,
+    tricks: state.tricks,
+    declarerTricksWon: state.declarerTricksWon,
+    defenderTricksWon: state.defenderTricksWon,
+  });
+}
+
+/** Build an ExplanationViewport from session state. */
+function buildExplanationViewportFromState(state: SessionState): ExplanationViewport | null {
+  if (state.phase !== "EXPLANATION") return null;
+
+  return buildExplanationViewport({
+    deal: state.deal,
+    userSeat: state.userSeat,
+    auction: state.auction,
+    bidHistory: state.bidHistory,
+    contract: state.contract,
+    score: state.playScore,
+    declarerTricksWon: state.declarerTricksWon,
   });
 }

@@ -15,6 +15,9 @@ import type {
 import type {
   ServiceGamePhase,
   BiddingViewport,
+  DeclarerPromptViewport,
+  PlayingViewport,
+  ExplanationViewport,
   ModuleCatalogEntry,
   ModuleLearningViewport,
   DrillStartResult,
@@ -54,6 +57,10 @@ export interface ServicePort {
   // ── Query ───────────────────────────────────────────────────────
   getViewport(handle: SessionHandle): Promise<SessionViewport>;
   getPhase(handle: SessionHandle): Promise<ServiceGamePhase>;
+  getBiddingViewport(handle: SessionHandle): Promise<BiddingViewport | null>;
+  getDeclarerPromptViewport(handle: SessionHandle): Promise<DeclarerPromptViewport | null>;
+  getPlayingViewport(handle: SessionHandle): Promise<PlayingViewport | null>;
+  getExplanationViewport(handle: SessionHandle): Promise<ExplanationViewport | null>;
 
   // ── DDS analysis ────────────────────────────────────────────────
   getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult>;

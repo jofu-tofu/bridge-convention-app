@@ -1,4 +1,4 @@
-<!-- context-layer: service | version: 4 | last-audited: 2026-03-24 -->
+<!-- context-layer: service | version: 5 | last-audited: 2026-03-25 -->
 
 # Service
 
@@ -51,7 +51,6 @@ Nothing imports from `service/` except `stores/`, `components/`, and `cli/comman
 
 ## Known Gaps
 
-- Stores call viewport builders (`buildDeclarerPromptViewport`, etc.) directly instead of through `ServicePort` methods
 - Stores create `InferenceCoordinator` directly instead of through service
 - `DevServicePort.getSessionBundle()` leaks `DrillBundle` across the boundary (transitional)
 

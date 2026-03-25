@@ -28,12 +28,7 @@ import type { PublicBeliefState, InferenceSnapshot } from "../service";
 import { createInferenceCoordinator } from "../service";
 import { randomPlayStrategy } from "../service";
 import { nextSeat, partnerSeat, areSamePartnership } from "../service";
-import {
-  buildBiddingViewport,
-  buildDeclarerPromptViewport,
-  buildPlayingViewport,
-  buildExplanationViewport,
-} from "../service";
+
 import type {
   BiddingViewport,
   ViewportBidFeedback,
@@ -209,6 +204,30 @@ export function createGameStore(
   let playInferences = $state<Record<Seat, ServicePublicBeliefs> | null>(null);
   let publicBeliefState = $state<PublicBeliefState>(inference.getPublicBeliefState());
 
+  // ── Cached viewports ───────────────────────────────────────────
+  let cachedBiddingViewport = $state<BiddingViewport | null>(null);
+  let cachedDeclarerPromptViewport = $state<DeclarerPromptViewport | null>(null);
+  let cachedPlayingViewport = $state<PlayingViewport | null>(null);
+  let cachedExplanationViewport = $state<ExplanationViewport | null>(null);
+
+  async function refreshViewport() {
+    if (!activeHandle) return;
+    switch (phase) {
+      case "BIDDING":
+        cachedBiddingViewport = await activeService.getBiddingViewport(activeHandle);
+        break;
+      case "DECLARER_PROMPT":
+        cachedDeclarerPromptViewport = await activeService.getDeclarerPromptViewport(activeHandle);
+        break;
+      case "PLAYING":
+        cachedPlayingViewport = await activeService.getPlayingViewport(activeHandle);
+        break;
+      case "EXPLANATION":
+        cachedExplanationViewport = await activeService.getExplanationViewport(activeHandle);
+        break;
+    }
+  }
+
   // ── Derived ───────────────────────────────────────────────────
 
   const userSeat = $derived<Seat | null>(
@@ -246,6 +265,7 @@ export function createGameStore(
     if (deal && contract) {
       void triggerDDSSolve(deal, contract);
     }
+    void refreshViewport();
   }
 
   /** Determine the current prompt mode from game state. */
@@ -549,6 +569,8 @@ export function createGameStore(
         currentPlayer = null;
         onPlayComplete?.(result.score);
       }
+
+      await refreshViewport();
     } finally {
       playProcessing = false;
       await tick();
@@ -619,6 +641,8 @@ export function createGameStore(
         playProcessing = false;
       });
     }
+
+    void refreshViewport();
   }
 
   // ── Bidding helpers ───────────────────────────────────────────
@@ -752,7 +776,10 @@ export function createGameStore(
 
       if (result.nextViewport) {
         legalCalls = [...result.nextViewport.legalCalls];
+        cachedBiddingViewport = result.nextViewport;
       }
+
+      await refreshViewport();
     } catch (e) {
       biddingError = e instanceof Error ? e.message : "Unknown error during bid";
     } finally {
@@ -768,6 +795,7 @@ export function createGameStore(
     if (result) {
       effectiveUserSeat = userSeat;
       transitionTo("DECLARER_PROMPT");
+      await refreshViewport();
     } else {
       transitionToExplanation();
     }
@@ -966,6 +994,12 @@ export function createGameStore(
     // DDS
     resetDDS();
 
+    // Cached viewports
+    cachedBiddingViewport = null;
+    cachedDeclarerPromptViewport = null;
+    cachedPlayingViewport = null;
+    cachedExplanationViewport = null;
+
     // Inference
     inference.reset();
     playInferences = null;
@@ -1051,21 +1085,7 @@ export function createGameStore(
     get faceUpSeats(): ReadonlySet<Seat> { return getFaceUpSeats(); },
 
     // ── Viewport getters ──────────────────────────────────────
-    get biddingViewport(): BiddingViewport | null {
-      if (!deal || !currentTurn) return null;
-      const seat = userSeat ?? Seat.South;
-      return buildBiddingViewport({
-        deal,
-        userSeat: seat,
-        auction,
-        bidHistory,
-        legalCalls,
-        faceUpSeats: getFaceUpSeats(),
-        conventionName,
-        isUserTurn,
-        currentBidder: currentTurn,
-      });
-    },
+    get biddingViewport() { return cachedBiddingViewport; },
     get viewportFeedback(): ViewportBidFeedback | null {
       const fb = bidFeedback;
       if (!fb) return null;
@@ -1076,57 +1096,9 @@ export function createGameStore(
       if (!fb) return null;
       return fb.teaching;
     },
-    get declarerPromptViewport(): DeclarerPromptViewport | null {
-      if (!deal || !contract || phase !== "DECLARER_PROMPT") return null;
-      const seat = userSeat ?? Seat.South;
-      const mode = getPromptMode();
-      if (!mode) return null;
-      return buildDeclarerPromptViewport({
-        deal,
-        userSeat: seat,
-        faceUpSeats: getFaceUpSeats(),
-        auction,
-        bidHistory,
-        contract,
-        promptMode: mode,
-      });
-    },
-    get playingViewport(): PlayingViewport | null {
-      if (!deal || phase !== "PLAYING") return null;
-      const seat = effectiveUserSeat ?? userSeat;
-      if (!seat) return null;
-      return buildPlayingViewport({
-        deal,
-        userSeat: seat,
-        faceUpSeats: getFaceUpSeats(),
-        auction,
-        bidHistory,
-        rotated: effectiveUserSeat === Seat.North,
-        contract,
-        currentPlayer,
-        currentTrick,
-        trumpSuit,
-        legalPlays: legalPlaysForCurrentPlayer,
-        userControlledSeats: getUserControlledSeats(),
-        remainingCards: getRemainingCardsPerSeat(),
-        tricks,
-        declarerTricksWon,
-        defenderTricksWon,
-      });
-    },
-    get explanationViewport(): ExplanationViewport | null {
-      if (!deal || phase !== "EXPLANATION") return null;
-      const seat = userSeat ?? Seat.South;
-      return buildExplanationViewport({
-        deal,
-        userSeat: seat,
-        auction,
-        bidHistory,
-        contract,
-        score,
-        declarerTricksWon,
-      });
-    },
+    get declarerPromptViewport() { return cachedDeclarerPromptViewport; },
+    get playingViewport() { return cachedPlayingViewport; },
+    get explanationViewport() { return cachedExplanationViewport; },
 
     // Namespaced sub-store accessors (backward compat)
     get bidding() {
@@ -1216,6 +1188,7 @@ export function createGameStore(
       effectiveUserSeat = userSeat;
       resetDDS();
       transitionTo("DECLARER_PROMPT");
+      void refreshViewport();
     },
 
     async startDrill(bundle: DrillBundle, drillService?: DevServicePort, handle?: SessionHandle) {
@@ -1248,9 +1221,11 @@ export function createGameStore(
         initialAiBids = startResult.aiBids;
         initialLegalCalls = startResult.viewport.legalCalls;
         initialAuctionComplete = startResult.auctionComplete;
+        cachedBiddingViewport = startResult.viewport;
       }
 
       await initBidding(bundle, initialAiBids, initialLegalCalls, initialAuctionComplete);
+      await refreshViewport();
 
       // Populate debug drawer with pre-bid snapshot from the service
       if (import.meta.env.DEV && activeHandle) {

@@ -8,7 +8,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - **Object-with-getters pattern.** `$state` inside factory, exported as object properties via getters. Preserves Svelte 5 reactivity.
 - **Named exports only.** `export function createGameStore`, `export function createAppStore`.
 - **Minimal engine imports.** Stores import `EnginePort` type, `nextSeat`/`partnerSeat` from constants, and `evaluateHand` from hand-evaluator (for bid correctness checking). Never import `auction`, `scoring`, etc.
-- **Minimal conventions/core imports.** `bidding.svelte.ts` imports `createBiddingContext`, `assembleBidFeedback`, `buildViewportFeedback`, `buildTeachingDetail` via the service barrel. `app.svelte.ts` imports type `ConventionConfig`. `game.svelte.ts` imports `createInferenceCoordinator` and viewport builders via the service barrel.
+- **Minimal conventions/core imports.** `app.svelte.ts` imports type `ConventionConfig`. `game.svelte.ts` imports `createInferenceCoordinator` via the service barrel. Viewport building delegated entirely to `ServicePort` methods — no direct `buildXxxViewport` calls.
 
 ## Architecture
 
@@ -27,7 +27,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Sub-store accessors:** `gameStore.bidding` (auction, bidHistory, bidFeedback, legalCalls, currentTurn, isUserTurn), `gameStore.play` (tricks, currentTrick, currentPlayer, declarerTricksWon, defenderTricksWon, dummySeat, score, trumpSuit), `gameStore.dds` (solution, solving, error).
 
-**Viewport getters:** `gameStore.biddingViewport` — `$derived` `BiddingViewport` computed from current state (see `src/service/`). `gameStore.viewportFeedback` — `$derived` `ViewportBidFeedback` computed after grading. `gameStore.declarerPromptViewport` — `$derived` `DeclarerPromptViewport` for DECLARER_PROMPT phase. `gameStore.playingViewport` — `$derived` `PlayingViewport` for PLAYING phase. `gameStore.explanationViewport` — `$derived` `ExplanationViewport` for EXPLANATION phase. All enforce the player information boundary: components consume these instead of raw deal/engine state.
+**Viewport getters:** `gameStore.biddingViewport` — cached `BiddingViewport` from `ServicePort.getBiddingViewport()`. `gameStore.viewportFeedback` — `ViewportBidFeedback` from bid grading. `gameStore.declarerPromptViewport` — cached `DeclarerPromptViewport` from `ServicePort.getDeclarerPromptViewport()`. `gameStore.playingViewport` — cached `PlayingViewport` from `ServicePort.getPlayingViewport()`. `gameStore.explanationViewport` — cached `ExplanationViewport` from `ServicePort.getExplanationViewport()`. All viewports are `$state` variables refreshed via service calls after state changes. Components consume these instead of raw deal/engine state.
 
 **Exported types:** `BidFeedback` (viewport-safe: `grade: ViewportBidGrade` (string), `viewportFeedback: ViewportBidFeedback`, `teaching: TeachingDetail | null`). `BidHistoryEntry` (re-exported from `service/`), `TeachingResolution` (re-exported from `service/`), `GamePhase`, `PlayLogEntry`, `seatController()`.
 

@@ -56,7 +56,7 @@ export type { PublicBeliefState, InferenceSnapshot } from "../inference/types";
 export { createBiddingContext } from "../conventions";
 export { assembleBidFeedback } from "../session/bid-feedback-builder";
 export type { BidFeedbackDTO } from "../session/bid-feedback-builder";
-export { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "../session/build-viewport";
+export { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail } from "../session/build-viewport";
 export type { BuildBiddingViewportInput, BuildDeclarerPromptViewportInput, BuildPlayingViewportInput, BuildExplanationViewportInput } from "../session/build-viewport";
 export type { BiddingViewport, ViewportBidFeedback, TeachingDetail, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, HandEvaluationView, AuctionEntryView, BiddingOptionView, ConditionView, AlternativeView, NearMissView, ConventionView } from "./response-types";
 export type { ServiceDebugSnapshot, ServiceDebugLogEntry, DebugSnapshotBase } from "./debug-types";
