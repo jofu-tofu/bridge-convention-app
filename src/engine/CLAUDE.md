@@ -41,9 +41,9 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `constraint-utils.ts` | `cleanConstraints()` / `cleanSeatConstraint()` — strips non-serializable fields          |
 | `tauri-ipc-engine.ts` | `TauriIpcEngine` — EnginePort via Tauri `invoke()` (desktop)                              |
 | `wasm-engine.ts`      | `WasmEngine` + `initWasm()` — EnginePort via WASM bindings (browser)                     |
-| `dds-wasm.ts`         | DDS PBN conversion, struct pack/unpack, `solveWithModule()` — pure logic, no DOM/Worker  |
-| `dds-worker.ts`       | Classic Web Worker — loads DDS WASM via `importScripts`, solves deals on request          |
-| `dds-client.ts`       | Main thread API — `initDDS()`, `isDDSAvailable()`, `solveDealWasm()` via Worker messages |
+| `dds-wasm.ts`         | DDS PBN conversion, struct pack/unpack, `solveWithModule()` (table), `solveBoardWithModule()` (per-card) — pure logic, no DOM/Worker. Exports `handsToPBN()`, `cardsToPBNHand()`, DDS index helpers (`trumpToDdsIndex`, `seatToDdsIndex`, `rankToDdsValue`), and index mapping constants (`DDS_STRAIN_MAP`, `DDS_SEAT_MAP`, `DDS_SUIT_MAP_PLAY`, `DDS_RANK_MAP`). |
+| `dds-worker.ts`       | Classic Web Worker — loads DDS WASM via `importScripts`, handles `CalcAllTablesPBN` and `SolveBoardPBN` requests |
+| `dds-client.ts`       | Main thread API — `initDDS()`, `isDDSAvailable()`, `solveDealWasm()`, `solveBoardWasm()` via Worker messages |
 
 ## Gotchas
 
@@ -66,7 +66,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 - **Engine transports:** `TauriIpcEngine` (desktop) and `WasmEngine` (browser). Both use `cleanConstraints()` from `constraint-utils.ts` to strip non-serializable fields. **There is no pure-TS `EnginePort` implementation.** If `initWasm()` fails in the browser, the app shows an error screen — no fallback. The TS modules (`deal-generator.ts`, `auction.ts`, `scoring.ts`, `play.ts`) contain all the logic but are not wired into an `EnginePort` adapter.
 - **`initWasm()` required:** Must be called once before creating `WasmEngine`. Called by `App.svelte` during async engine init. On Vercel (no wasm-pack), WASM stubs let the build succeed but the app is non-functional at runtime.
 - **RNG incompatibility:** Same seed produces different deals in Rust (ChaCha8Rng) vs TS (mulberry32). Seeds are not cross-engine portable.
-- **DDS browser support:** `WasmEngine.solveDeal()` delegates to a DDS Web Worker (Emscripten-compiled C++ DDS). `initDDS()` fires in background; `isDDSAvailable()` gates calls. Par is always null in browser (mode=-1). `suggestPlay()` still throws in WASM builds.
+- **DDS browser support:** `WasmEngine.solveDeal()` delegates to a DDS Web Worker (Emscripten-compiled C++ DDS). `initDDS()` fires in background; `isDDSAvailable()` gates calls. Par is always null in browser (mode=-1). `suggestPlay()` still throws in WASM builds. `solveBoardWasm()` exposes per-card optimal play via `SolveBoardPBN` (requires WASM rebuild with `npm run dds:build` to include the export).
 - Both transports strip `customCheck` and `rng` from constraints before serialization. Preserves `seed` field for Rust-side deterministic generation (`seed: Option<u64>`).
 
 ---

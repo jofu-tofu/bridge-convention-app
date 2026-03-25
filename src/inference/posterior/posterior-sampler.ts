@@ -12,7 +12,7 @@ export interface WeightedDealSample {
 }
 
 /** Fisher-Yates shuffle using provided RNG. */
-function shuffle(arr: Card[], rng: () => number): void {
+export function shuffle(arr: Card[], rng: () => number): void {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     const temp = arr[i]!;
@@ -22,7 +22,7 @@ function shuffle(arr: Card[], rng: () => number): void {
 }
 
 /** Built-in fact resolver for primitive facts (fallback when no catalog resolver provided). */
-function resolveFactValueBuiltin(hand: Hand, factId: string): number | boolean | undefined {
+export function resolveFactValueBuiltin(hand: Hand, factId: string): number | boolean | undefined {
   if (factId === "hand.hcp") {
     return calculateHcp(hand);
   }
@@ -61,7 +61,7 @@ function resolveFactValueWithFallback(
 }
 
 /** Check one clause of a HandPredicate against a hand. */
-function checkClause(
+export function checkClause(
   hand: Hand,
   clause: {
     readonly factId: string;
@@ -98,7 +98,7 @@ function checkClause(
 }
 
 /** Check all constraints of a HandPredicate against a hand. */
-function checkPredicate(hand: Hand, predicate: HandPredicate, resolver?: HandFactResolverFn): boolean {
+export function checkPredicate(hand: Hand, predicate: HandPredicate, resolver?: HandFactResolverFn): boolean {
   if (predicate.conjunction === "all") {
     return predicate.clauses.every((c) => checkClause(hand, c, resolver));
   }
@@ -107,7 +107,7 @@ function checkPredicate(hand: Hand, predicate: HandPredicate, resolver?: HandFac
 }
 
 /** Check if a hand satisfies all constraints for a given seat. */
-function satisfiesSpace(hand: Hand, space: PublicHandSpace, resolver?: HandFactResolverFn): boolean {
+export function satisfiesSpace(hand: Hand, space: PublicHandSpace, resolver?: HandFactResolverFn): boolean {
   return space.constraints.every((predicate) => checkPredicate(hand, predicate, resolver));
 }
 

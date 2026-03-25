@@ -36,15 +36,15 @@ describe("createRandomPlayStrategy", () => {
     );
   });
 
-  it("returns the only legal card when one is available", () => {
+  it("returns the only legal card when one is available", async () => {
     const strategy = createRandomPlayStrategy();
     const only = card(Suit.Hearts, Rank.Ace);
-    const result = strategy.suggest(makeContext({ legalPlays: [only] }));
+    const result = await strategy.suggest(makeContext({ legalPlays: [only] }));
     expect(result.card).toEqual(only);
     expect(result.reason).toBe("random");
   });
 
-  it("selects deterministically with a seeded rng", () => {
+  it("selects deterministically with a seeded rng", async () => {
     const cards = [
       card(Suit.Spades, Rank.Two),
       card(Suit.Hearts, Rank.King),
@@ -53,28 +53,28 @@ describe("createRandomPlayStrategy", () => {
     ];
     // rng returns 0.5 → floor(0.5 * 4) = index 2
     const strategy = createRandomPlayStrategy(() => 0.5);
-    const result = strategy.suggest(makeContext({ legalPlays: cards }));
+    const result = await strategy.suggest(makeContext({ legalPlays: cards }));
     expect(result.card).toEqual(cards[2]);
   });
 
-  it("selects first card when rng returns 0", () => {
+  it("selects first card when rng returns 0", async () => {
     const cards = [
       card(Suit.Spades, Rank.Ace),
       card(Suit.Hearts, Rank.King),
     ];
     const strategy = createRandomPlayStrategy(() => 0);
-    const result = strategy.suggest(makeContext({ legalPlays: cards }));
+    const result = await strategy.suggest(makeContext({ legalPlays: cards }));
     expect(result.card).toEqual(cards[0]);
   });
 
-  it("selects last card when rng returns 0.999", () => {
+  it("selects last card when rng returns 0.999", async () => {
     const cards = [
       card(Suit.Spades, Rank.Ace),
       card(Suit.Hearts, Rank.King),
       card(Suit.Diamonds, Rank.Queen),
     ];
     const strategy = createRandomPlayStrategy(() => 0.999);
-    const result = strategy.suggest(makeContext({ legalPlays: cards }));
+    const result = await strategy.suggest(makeContext({ legalPlays: cards }));
     expect(result.card).toEqual(cards[2]);
   });
 });
@@ -85,12 +85,12 @@ describe("randomPlayStrategy (default instance)", () => {
     expect(randomPlayStrategy.name).toBe("Random Play");
   });
 
-  it("returns a card from legal plays", () => {
+  it("returns a card from legal plays", async () => {
     const cards = [
       card(Suit.Spades, Rank.Two),
       card(Suit.Hearts, Rank.King),
     ];
-    const result = randomPlayStrategy.suggest(
+    const result = await randomPlayStrategy.suggest(
       makeContext({ legalPlays: cards }),
     );
     expect(cards).toContainEqual(result.card);

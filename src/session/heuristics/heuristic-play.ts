@@ -611,7 +611,7 @@ export function createHeuristicPlayStrategy(): PlayStrategy {
   return {
     id: "heuristic",
     name: "Heuristic Play",
-    suggest(context: PlayContext): PlayResult {
+    suggest(context: PlayContext): Promise<PlayResult> {
       if (context.legalPlays.length === 0) {
         throw new Error("No legal plays available");
       }
@@ -625,14 +625,14 @@ export function createHeuristicPlayStrategy(): PlayStrategy {
               (c) => c.suit === card.suit && c.rank === card.rank,
             )
           ) {
-            return { card, reason: h.name };
+            return Promise.resolve({ card, reason: h.name });
           }
         }
       }
       // Fallback: lowest legal card (legalPlays is non-empty per guard above)
       const sorted = sortByRankAsc(context.legalPlays);
       const fallback = sorted[0] ?? context.legalPlays[0]!;
-      return { card: fallback, reason: "default-lowest" };
+      return Promise.resolve({ card: fallback, reason: "default-lowest" });
     },
   };
 }

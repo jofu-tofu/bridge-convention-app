@@ -5,7 +5,7 @@
  * compiled to WASM via Emscripten. Struct layouts from vendor/dds/include/dll.h (v2.9.0).
  */
 
-import type { Deal, DDSolution, Seat, BidSuit } from "./types";
+import type { Deal, DDSolution, Seat, BidSuit, Hand, Card } from "./types";
 import {
   Seat as SeatEnum,
   Suit,
@@ -34,7 +34,7 @@ const ALL_PAR_SIZE = 11520;
 const RETURN_NO_FAULT = 1;
 
 // Rank characters in DDS PBN format, descending order
-const RANK_CHARS: Record<Rank, string> = {
+export const RANK_CHARS: Record<Rank, string> = {
   [Rank.Ace]: "A",
   [Rank.King]: "K",
   [Rank.Queen]: "Q",
@@ -51,7 +51,7 @@ const RANK_CHARS: Record<Rank, string> = {
 };
 
 // Rank ordering for descending sort
-const RANK_ORDER: Record<Rank, number> = {
+export const RANK_ORDER: Record<Rank, number> = {
   [Rank.Ace]: 14,
   [Rank.King]: 13,
   [Rank.Queen]: 12,
@@ -68,7 +68,7 @@ const RANK_ORDER: Record<Rank, number> = {
 };
 
 // DDS strain index mapping (dll.h): 0=S, 1=H, 2=D, 3=C, 4=NT
-const DDS_STRAIN_MAP: BidSuit[] = [
+export const DDS_STRAIN_MAP: BidSuit[] = [
   BidSuitEnum.Spades,
   BidSuitEnum.Hearts,
   BidSuitEnum.Diamonds,
@@ -77,7 +77,7 @@ const DDS_STRAIN_MAP: BidSuit[] = [
 ];
 
 // DDS seat index mapping (dll.h): 0=N, 1=E, 2=S, 3=W
-const DDS_SEAT_MAP: Seat[] = [
+export const DDS_SEAT_MAP: Seat[] = [
   SeatEnum.North,
   SeatEnum.East,
   SeatEnum.South,
@@ -131,6 +131,66 @@ export function dealToPBN(deal: Deal): string {
 }
 
 /**
+ * Convert remaining hands to DDS PBN format string.
+ * Accepts partial hands (<13 cards) for mid-play positions.
+ * Hands with no cards produce empty suit strings.
+ * Output: "N:AK.QT.7.2 QJ.K6.A4.75 T9.3.QJ.AT J5.A7.T9.KQ"
+ */
+export function handsToPBN(hands: Record<Seat, Hand>): string {
+  const handStrs = PBN_SEAT_ORDER.map((seat) => {
+    const hand = hands[seat];
+    return cardsToPBNHand(hand.cards);
+  });
+  return "N:" + handStrs.join(" ");
+}
+
+/** Convert a set of cards to a PBN hand string (S.H.D.C ranks descending). */
+export function cardsToPBNHand(cards: readonly Card[]): string {
+  const bySuit = new Map<Suit, string[]>([
+    [Suit.Spades, []],
+    [Suit.Hearts, []],
+    [Suit.Diamonds, []],
+    [Suit.Clubs, []],
+  ]);
+
+  for (const card of cards) {
+    bySuit.get(card.suit)!.push(RANK_CHARS[card.rank]);
+  }
+
+  const charToRank = new Map(
+    Object.entries(RANK_CHARS).map(([r, c]) => [c, r as Rank]),
+  );
+  for (const suit of PBN_SUIT_ORDER) {
+    bySuit.get(suit)!.sort(
+      (a, b) => RANK_ORDER[charToRank.get(b)!] - RANK_ORDER[charToRank.get(a)!],
+    );
+  }
+
+  return PBN_SUIT_ORDER.map((suit) => bySuit.get(suit)!.join("")).join(".");
+}
+
+/** Map Suit to DDS suit index (0=S, 1=H, 2=D, 3=C). */
+export function suitToDdsIndex(suit: Suit): number {
+  return DDS_SUIT_MAP_PLAY.indexOf(suit);
+}
+
+/** Map trump Suit|undefined to DDS strain index (0=S, 1=H, 2=D, 3=C, 4=NT). */
+export function trumpToDdsIndex(trumpSuit: Suit | undefined): number {
+  if (trumpSuit === undefined) return 4; // NT
+  return suitToDdsIndex(trumpSuit);
+}
+
+/** Map Seat to DDS seat index (N=0, E=1, S=2, W=3). */
+export function seatToDdsIndex(seat: Seat): number {
+  return DDS_SEAT_MAP.indexOf(seat);
+}
+
+/** Map Rank to DDS rank value (2-14). */
+export function rankToDdsValue(rank: Rank): number {
+  return RANK_ORDER[rank];
+}
+
+/**
  * Pack a PBN string into the ddTableDealsPBN struct layout.
  * Writes noOfTables=1 at byte 0, PBN string at byte 4.
  */
@@ -171,6 +231,50 @@ export function unpackResults(
   return result;
 }
 
+// ── SolveBoard struct constants from dll.h ──────────────────────────
+// struct dealPBN: int trump(4) + int first(4) + int currentTrickSuit[3](12) +
+//                 int currentTrickRank[3](12) + char remainCards[80] = 112 bytes
+const DEAL_PBN_SIZE = 112;
+
+// struct futureTricks: int nodes(4) + int cards(4) + int suit[13](52) +
+//                      int rank[13](52) + int equals[13](52) + int score[13](52) = 216 bytes
+const FUTURE_TRICKS_SIZE = 216;
+
+// DDS suit index mapping for play: 0=S, 1=H, 2=D, 3=C
+export const DDS_SUIT_MAP_PLAY: Suit[] = [
+  Suit.Spades,
+  Suit.Hearts,
+  Suit.Diamonds,
+  Suit.Clubs,
+];
+
+// DDS rank value to Rank enum (2-14)
+export const DDS_RANK_MAP: Record<number, Rank> = {
+  2: Rank.Two,
+  3: Rank.Three,
+  4: Rank.Four,
+  5: Rank.Five,
+  6: Rank.Six,
+  7: Rank.Seven,
+  8: Rank.Eight,
+  9: Rank.Nine,
+  10: Rank.Ten,
+  11: Rank.Jack,
+  12: Rank.Queen,
+  13: Rank.King,
+  14: Rank.Ace,
+};
+
+/** Result of SolveBoard — per-card optimal trick counts. */
+export interface SolveBoardResult {
+  readonly cards: ReadonlyArray<{
+    readonly suit: Suit;
+    readonly rank: Rank;
+    readonly score: number;
+    readonly equals: number;
+  }>;
+}
+
 /** Emscripten module interface for DDS WASM. */
 export interface DDSModule {
   _SetResources(maxMemoryMB: number, maxThreads: number): void;
@@ -180,6 +284,14 @@ export interface DDSModule {
     filterPtr: number,
     resPtr: number,
     parPtr: number,
+  ): number;
+  _SolveBoardPBN(
+    dealPtr: number,
+    target: number,
+    solutions: number,
+    mode: number,
+    futPtr: number,
+    thrId: number,
   ): number;
   _malloc(size: number): number;
   _free(ptr: number): void;
@@ -258,5 +370,73 @@ export function solveWithModule(
     module._free(filterPtr);
     module._free(resPtr);
     module._free(parPtr);
+  }
+}
+
+// ── SolveBoard ──────────────────────────────────────────────────────
+
+/**
+ * Solve a board position — returns per-card trick counts for all legal plays.
+ *
+ * @param trump             Trump suit index (0=S, 1=H, 2=D, 3=C, 4=NT)
+ * @param first             Seat on lead (0=N, 1=E, 2=S, 3=W)
+ * @param currentTrickSuit  Suits of cards already played this trick (up to 3)
+ * @param currentTrickRank  Ranks (2-14) of cards already played this trick
+ * @param remainCardsPBN    PBN string of remaining cards in all hands
+ */
+export function solveBoardWithModule(
+  module: DDSModule,
+  trump: number,
+  first: number,
+  currentTrickSuit: number[],
+  currentTrickRank: number[],
+  remainCardsPBN: string,
+): SolveBoardResult {
+  const dealPtr = module._malloc(DEAL_PBN_SIZE);
+  const futPtr = module._malloc(FUTURE_TRICKS_SIZE);
+  try {
+    // Pack dealPBN struct
+    module.setValue(dealPtr, trump, "i32");           // trump
+    module.setValue(dealPtr + 4, first, "i32");       // first (seat on lead)
+    for (let i = 0; i < 3; i++) {
+      module.setValue(dealPtr + 8 + i * 4, currentTrickSuit[i] ?? 0, "i32");
+      module.setValue(dealPtr + 20 + i * 4, currentTrickRank[i] ?? 0, "i32");
+    }
+    module.stringToUTF8(remainCardsPBN, dealPtr + 32, 80);
+
+    // Zero futureTricks struct
+    for (let i = 0; i < FUTURE_TRICKS_SIZE; i += 4) {
+      module.setValue(futPtr + i, 0, "i32");
+    }
+
+    // target=-1: find all optimal plays
+    // solutions=3: return ALL legal cards with their scores
+    // mode=1: reuse TT from previous solves
+    // thrId=0: single-threaded WASM
+    const ret = module._SolveBoardPBN(dealPtr, -1, 3, 1, futPtr, 0);
+    if (ret !== RETURN_NO_FAULT) {
+      throw new Error(`DDS SolveBoardPBN failed with code ${ret}`);
+    }
+
+    // Unpack futureTricks struct
+    // Layout: nodes(4) + cards(4) + suit[13](52) + rank[13](52) + equals[13](52) + score[13](52)
+    const numCards = module.getValue(futPtr + 4, "i32");
+    const cards: SolveBoardResult["cards"][number][] = [];
+    for (let i = 0; i < numCards; i++) {
+      const suitIdx = module.getValue(futPtr + 8 + i * 4, "i32");
+      const rankVal = module.getValue(futPtr + 60 + i * 4, "i32");   // rank at offset 8+52=60
+      const equals = module.getValue(futPtr + 112 + i * 4, "i32");   // equals at offset 60+52=112
+      const score = module.getValue(futPtr + 164 + i * 4, "i32");    // score at offset 112+52=164
+
+      const suit = DDS_SUIT_MAP_PLAY[suitIdx];
+      const rank = DDS_RANK_MAP[rankVal];
+      if (suit !== undefined && rank !== undefined) {
+        cards.push({ suit, rank, score, equals });
+      }
+    }
+    return { cards };
+  } finally {
+    module._free(dealPtr);
+    module._free(futPtr);
   }
 }

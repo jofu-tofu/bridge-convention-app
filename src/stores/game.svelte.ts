@@ -1,5 +1,5 @@
 import { tick } from "svelte";
-import type { EnginePort } from "../engine/port";
+import type { EnginePort } from "../service";
 import type {
   Deal,
   Auction,
@@ -11,8 +11,8 @@ import type {
   Trick,
   Hand,
   DDSolution,
-} from "../engine/types";
-import { BidSuit, Suit, Seat } from "../engine/types";
+} from "../service";
+import { BidSuit, Suit, Seat } from "../service";
 import type {
   DrillSession,
   DrillBundle,
@@ -22,8 +22,8 @@ import type {
 } from "../service";
 import type { BidResult, BidHistoryEntry } from "../service";
 import type { PlayStrategy, PlayContext } from "../service";
-import type { ServicePublicBeliefs } from "../service/response-types";
-import type { StrategyEvaluation } from "../conventions";
+import type { ServicePublicBeliefs } from "../service";
+import type { StrategyEvaluation } from "../service";
 import type { PublicBeliefState, InferenceSnapshot } from "../service";
 import { createInferenceCoordinator } from "../service";
 import { randomPlayStrategy } from "../service";
@@ -40,14 +40,14 @@ import type {
 } from "../service";
 import type { ViewportBidGrade } from "../service";
 import type { BidFeedbackDTO } from "../service";
-import { isValidTransition } from "../session/phase-machine";
-import type { GamePhase } from "../session/phase-machine";
-import { delay } from "../service/util/delay";
+import { isValidTransition } from "../service";
+import type { GamePhase } from "../service";
+import { delay } from "../service";
 import { TRICK_PAUSE, AI_PLAY_DELAY } from "./animate";
 
 // ── Re-exports ──────────────────────────────────────────────────────
 
-export type { ServiceGamePhase as GamePhase } from "../service/response-types";
+export type { ServiceGamePhase as GamePhase } from "../service";
 export type { BidHistoryEntry } from "../service";
 
 // ── Exported types (previously in sub-stores) ───────────────────────

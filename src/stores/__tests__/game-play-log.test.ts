@@ -9,8 +9,8 @@ import { createLocalService } from "../../service";
 const testPlayStrategy: PlayStrategy = {
   id: "test-play",
   name: "Test Play",
-  suggest(ctx: PlayContext): PlayResult {
-    return { card: ctx.legalPlays[0]!, reason: "test-heuristic" };
+  suggest(ctx: PlayContext): Promise<PlayResult> {
+    return Promise.resolve({ card: ctx.legalPlays[0]!, reason: "test-heuristic" });
   },
 };
 

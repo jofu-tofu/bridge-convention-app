@@ -125,7 +125,7 @@ export interface PlayResult {
 export interface PlayStrategy {
   readonly id: string;
   readonly name: string;
-  suggest(context: PlayContext): PlayResult;
+  suggest(context: PlayContext): Promise<PlayResult>;
 }
 
 // ── Recommendation types ────────────────────────────────────────────────

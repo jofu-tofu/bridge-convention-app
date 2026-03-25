@@ -33,7 +33,7 @@ const strategy = createHeuristicPlayStrategy();
 
 describe("createHeuristicPlayStrategy", () => {
   describe("second hand low", () => {
-    it("plays lowest card when second to play", () => {
+    it("plays lowest card when second to play", async () => {
       const ctx = makeContext({
         currentTrick: [playedCard(Seat.North, Suit.Hearts, Rank.King)],
         seat: Seat.East,
@@ -44,14 +44,14 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       expect(result.card.rank).toBe(Rank.Three);
       expect(result.reason).toBe("second-hand-low");
     });
   });
 
   describe("third hand high", () => {
-    it("plays high enough to beat current winner when partner is not winning", () => {
+    it("plays high enough to beat current winner when partner is not winning", async () => {
       const ctx = makeContext({
         currentTrick: [
           playedCard(Seat.South, Suit.Hearts, Rank.Four),
@@ -67,13 +67,13 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // Should play Queen (just high enough to beat Jack)
       expect(result.card.rank).toBe(Rank.Queen);
       expect(result.reason).toBe("third-hand-high");
     });
 
-    it("plays low when partner is already winning", () => {
+    it("plays low when partner is already winning", async () => {
       // North leads Ace, East plays 5, South (partner of North) is 3rd
       // Actually: partner of South is North. Let's set up correctly.
       // Trick: West leads 4H, North plays AH, East is 3rd hand
@@ -95,7 +95,7 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // Partner (South) is winning with Ace, play low
       expect(result.card.rank).toBe(Rank.Three);
       expect(result.reason).toBe("third-hand-high");
@@ -103,7 +103,7 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("opening lead vs NT", () => {
-    it("leads 4th best from longest suit", () => {
+    it("leads 4th best from longest suit", async () => {
       const handCards = [
         // Spades: 5 cards (longest)
         card(Suit.Spades, Rank.King),
@@ -134,7 +134,7 @@ describe("createHeuristicPlayStrategy", () => {
         legalPlays: handCards, // On opening lead, all cards are legal
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // 4th best from Spades (K, J, 8, 6, 3) → 4th from top = 6
       expect(result.card.suit).toBe(Suit.Spades);
       expect(result.card.rank).toBe(Rank.Six);
@@ -143,7 +143,7 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("opening lead with touching honors", () => {
-    it("leads top of touching honors sequence", () => {
+    it("leads top of touching honors sequence", async () => {
       const handCards = [
         card(Suit.Hearts, Rank.King),
         card(Suit.Hearts, Rank.Queen),
@@ -170,7 +170,7 @@ describe("createHeuristicPlayStrategy", () => {
         legalPlays: handCards,
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       expect(result.card.suit).toBe(Suit.Hearts);
       expect(result.card.rank).toBe(Rank.King);
       expect(result.reason).toBe("opening-lead");
@@ -178,7 +178,7 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("trump ruff", () => {
-    it("ruffs when void in led suit and has trump", () => {
+    it("ruffs when void in led suit and has trump", async () => {
       const ctx = makeContext({
         currentTrick: [playedCard(Seat.North, Suit.Hearts, Rank.King)],
         seat: Seat.East,
@@ -193,13 +193,13 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       expect(result.card.suit).toBe(Suit.Spades);
       expect(result.card.rank).toBe(Rank.Three); // lowest trump
       expect(result.reason).toBe("trump-management");
     });
 
-    it("does not ruff partner's winning trick", () => {
+    it("does not ruff partner's winning trick", async () => {
       // West leads, North (partner of South) plays high, East plays low
       // South is void in led suit but partner North is winning
       const ctx = makeContext({
@@ -218,7 +218,7 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // Partner North winning with Ace — should NOT ruff
       // Should discard instead
       expect(result.card.suit).not.toBe(Suit.Diamonds);
@@ -227,7 +227,7 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("discard management", () => {
-    it("discards from shortest non-trump suit when void in led suit", () => {
+    it("discards from shortest non-trump suit when void in led suit", async () => {
       const ctx = makeContext({
         currentTrick: [playedCard(Seat.North, Suit.Hearts, Rank.King)],
         seat: Seat.East,
@@ -242,7 +242,7 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // Should discard from shortest suit (Clubs, 1 card)
       expect(result.card.suit).toBe(Suit.Clubs);
       expect(result.card.rank).toBe(Rank.Six);
@@ -251,7 +251,7 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("mid-game lead", () => {
-    it("leads low from longest non-trump suit when declarer leads mid-game", () => {
+    it("leads low from longest non-trump suit when declarer leads mid-game", async () => {
       const ctx = makeContext({
         currentTrick: [],
         previousTricks: [
@@ -271,12 +271,12 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       expect(result.card.rank).toBe(Rank.Three);
       expect(result.reason).toBe("mid-game-lead");
     });
 
-    it("returns partner's suit on defense", () => {
+    it("returns partner's suit on defense", async () => {
       const ctx = makeContext({
         currentTrick: [],
         previousTricks: [
@@ -304,7 +304,7 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // West's partner (East) never led — North led hearts in the only trick
       // So no partner suit found, falls to longest non-trump: hearts (2) or diamonds (2)
       expect(result.reason).toBe("mid-game-lead");
@@ -312,7 +312,7 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("cover honor with honor", () => {
-    it("covers an honor led with a higher honor in 2nd seat", () => {
+    it("covers an honor led with a higher honor in 2nd seat", async () => {
       const ctx = makeContext({
         currentTrick: [playedCard(Seat.North, Suit.Diamonds, Rank.Queen)],
         seat: Seat.East,
@@ -325,13 +325,13 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // When an honor is led and we hold a covering honor, cover-honor takes priority
       expect(result.card.rank).toBe(Rank.King);
       expect(result.reason).toBe("cover-honor-with-honor");
     });
 
-    it("plays low in 2nd seat when no covering honor available", () => {
+    it("plays low in 2nd seat when no covering honor available", async () => {
       const ctx = makeContext({
         currentTrick: [playedCard(Seat.North, Suit.Diamonds, Rank.Queen)],
         seat: Seat.East,
@@ -343,13 +343,13 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // No covering honor — second-hand-low applies
       expect(result.card.rank).toBe(Rank.Two);
       expect(result.reason).toBe("second-hand-low");
     });
 
-    it("wins cheaply in 4th seat when opponent is winning", () => {
+    it("wins cheaply in 4th seat when opponent is winning", async () => {
       // In 4th seat, fourthHandPlayHeuristic fires before cover-honor
       const ctx = makeContext({
         currentTrick: [
@@ -366,7 +366,7 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // Wins with King (cheapest card that beats Queen)
       expect(result.card.rank).toBe(Rank.King);
       expect(result.reason).toBe("fourth-hand-play");
@@ -374,19 +374,19 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("always returns a result", () => {
-    it("never returns undefined even with a single legal play", () => {
+    it("never returns undefined even with a single legal play", async () => {
       const ctx = makeContext({
         legalPlays: [card(Suit.Clubs, Rank.Two)],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       expect(result).toBeDefined();
       expect(result.card).toEqual(card(Suit.Clubs, Rank.Two));
     });
   });
 
   describe("empty legalPlays guard", () => {
-    it("throws when legalPlays is empty", () => {
+    it("throws when legalPlays is empty", async () => {
       const ctx = makeContext({
         legalPlays: [],
       });
@@ -396,7 +396,7 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("opening lead characterization", () => {
-    it("leads ace from AK combination in suit contract", () => {
+    it("leads ace from AK combination in suit contract", async () => {
       const handCards = [
         // Hearts: AK combination (side suit)
         card(Suit.Hearts, Rank.Ace),
@@ -427,13 +427,13 @@ describe("createHeuristicPlayStrategy", () => {
         legalPlays: handCards,
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       expect(result.card.suit).toBe(Suit.Hearts);
       expect(result.card.rank).toBe(Rank.Ace);
       expect(result.reason).toBe("opening-lead");
     });
 
-    it("leads top of touching honors (KQ)", () => {
+    it("leads top of touching honors (KQ)", async () => {
       const handCards = [
         card(Suit.Diamonds, Rank.King),
         card(Suit.Diamonds, Rank.Queen),
@@ -460,13 +460,13 @@ describe("createHeuristicPlayStrategy", () => {
         legalPlays: handCards,
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       expect(result.card.suit).toBe(Suit.Diamonds);
       expect(result.card.rank).toBe(Rank.King);
       expect(result.reason).toBe("opening-lead");
     });
 
-    it("leads fourth best from longest suit vs NT", () => {
+    it("leads fourth best from longest suit vs NT", async () => {
       const handCards = [
         // Hearts: 5 cards, longest, no touching honors
         card(Suit.Hearts, Rank.Jack),
@@ -497,14 +497,14 @@ describe("createHeuristicPlayStrategy", () => {
         legalPlays: handCards,
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // Hearts sorted desc: J, 9, 7, 5, 3 → 4th best = 5
       expect(result.card.suit).toBe(Suit.Hearts);
       expect(result.card.rank).toBe(Rank.Five);
       expect(result.reason).toBe("opening-lead");
     });
 
-    it("leads singleton in suit contract", () => {
+    it("leads singleton in suit contract", async () => {
       const handCards = [
         // Diamonds: singleton (not trump)
         card(Suit.Diamonds, Rank.Seven),
@@ -535,13 +535,13 @@ describe("createHeuristicPlayStrategy", () => {
         legalPlays: handCards,
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       expect(result.card.suit).toBe(Suit.Diamonds);
       expect(result.card.rank).toBe(Rank.Seven);
       expect(result.reason).toBe("opening-lead");
     });
 
-    it("leads 4th best from longest non-trump suit in suit contract fallback", () => {
+    it("leads 4th best from longest non-trump suit in suit contract fallback", async () => {
       const handCards = [
         // Clubs: 5 cards (longest non-trump), no touching honors, no AK, no singleton
         card(Suit.Clubs, Rank.Jack),
@@ -572,7 +572,7 @@ describe("createHeuristicPlayStrategy", () => {
         legalPlays: handCards,
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // Clubs sorted desc: J, 9, 7, 5, 3 → 4th best = 5
       expect(result.card.suit).toBe(Suit.Clubs);
       expect(result.card.rank).toBe(Rank.Five);
@@ -581,7 +581,7 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("fourth hand play", () => {
-    it("plays low when partner is winning", () => {
+    it("plays low when partner is winning", async () => {
       const ctx = makeContext({
         currentTrick: [
           playedCard(Seat.South, Suit.Hearts, Rank.Five),
@@ -597,12 +597,12 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       expect(result.card.rank).toBe(Rank.Two);
       expect(result.reason).toBe("fourth-hand-play");
     });
 
-    it("wins as cheaply as possible when opponent is winning", () => {
+    it("wins as cheaply as possible when opponent is winning", async () => {
       // West leads, North (dummy) plays low, East wins with Jack, South is 4th
       const ctx = makeContext({
         currentTrick: [
@@ -620,7 +620,7 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // East (opponent) winning with Jack — play Queen (cheapest that beats Jack)
       expect(result.card.rank).toBe(Rank.Queen);
       expect(result.reason).toBe("fourth-hand-play");
@@ -628,7 +628,7 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("overruff", () => {
-    it("overruffs opponent's trump with cheapest winning trump", () => {
+    it("overruffs opponent's trump with cheapest winning trump", async () => {
       const ctx = makeContext({
         currentTrick: [
           playedCard(Seat.North, Suit.Hearts, Rank.King),
@@ -646,14 +646,14 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // Should overruff with 7 (cheapest trump that beats 5)
       expect(result.card.suit).toBe(Suit.Spades);
       expect(result.card.rank).toBe(Rank.Seven);
       expect(result.reason).toBe("trump-management");
     });
 
-    it("discards when cannot overruff", () => {
+    it("discards when cannot overruff", async () => {
       const ctx = makeContext({
         currentTrick: [
           playedCard(Seat.North, Suit.Hearts, Rank.King),
@@ -670,7 +670,7 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // Can't overruff Queen — should discard rather than waste trump
       expect(result.card.suit).toBe(Suit.Clubs);
       expect(result.reason).toBe("discard-management");
@@ -678,7 +678,7 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("discard honor protection", () => {
-    it("avoids baring an honor when discarding", () => {
+    it("avoids baring an honor when discarding", async () => {
       const ctx = makeContext({
         currentTrick: [playedCard(Seat.North, Suit.Hearts, Rank.Ace)],
         seat: Seat.East,
@@ -694,7 +694,7 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // Should discard from clubs (no honors) rather than diamonds (would bare King)
       expect(result.card.suit).toBe(Suit.Clubs);
       expect(result.card.rank).toBe(Rank.Three);
@@ -703,7 +703,7 @@ describe("createHeuristicPlayStrategy", () => {
   });
 
   describe("third hand void", () => {
-    it("defers to trump management when void in 3rd seat", () => {
+    it("defers to trump management when void in 3rd seat", async () => {
       const ctx = makeContext({
         currentTrick: [
           playedCard(Seat.West, Suit.Hearts, Rank.Five),
@@ -720,7 +720,7 @@ describe("createHeuristicPlayStrategy", () => {
         ],
       });
 
-      const result = strategy.suggest(ctx);
+      const result = await strategy.suggest(ctx);
       // Should ruff (not "play highest legal" as old code did)
       expect(result.card.suit).toBe(Suit.Spades);
       expect(result.card.rank).toBe(Rank.Three);

@@ -14,21 +14,21 @@ service/ (thin port) → session/ → {engine/, conventions/, inference/}
 
 | File | Role |
 |------|------|
-| `session-state.ts` | Per-session mutable state (deal, auction, strategy, inference, phase, play state) |
+| `session-state.ts` | Per-session mutable state (deal, auction, strategy, inference, phase, play state). Stores `PlayStrategyProvider` and calls `onAuctionComplete()` at auction end via `capturePlayInferences()`. |
 | `session-manager.ts` | Map<SessionHandle, SessionState>, createHandle() |
 | `drill-session.ts` | createDrillSession() — DrillSession implementation |
 | `phase-machine.ts` | GamePhase state machine (BIDDING → DECLARER_PROMPT → PLAYING → EXPLANATION) |
 | `bidding-controller.ts` | Pure bidding logic: processBid(), runInitialAiBids(), initializeAuction() |
-| `play-controller.ts` | Pure play logic: processPlayCard(), trick scoring, AI play loop |
+| `play-controller.ts` | Pure play logic: processPlayCard(), trick scoring, AI play loop. `selectAiCard()` is async (awaits `PlayStrategy.suggest()`). |
 | `dds-controller.ts` | DDS solve logic with timeout and stale-result guard |
 | `build-viewport.ts` | Viewport builders: buildBiddingViewport(), buildDeclarerPromptViewport(), etc. |
 | `learning-viewport.ts` | buildModuleCatalog(), buildModuleLearningViewport() — module-centric learning viewport builders |
 | `evaluation-oracle.ts` | EvaluationOracle (answer key, internal only) |
 | `bid-feedback-builder.ts` | assembleBidFeedback() — grades bids, builds feedback DTOs |
 | `start-drill.ts` | startDrill() + pickVulnerability() + rotation utilities |
-| `config-factory.ts` | createProtocolDrillConfig() — builds DrillConfig from convention ID + user seat. Threads SystemConfig to natural inference providers for system-aware inference. |
+| `config-factory.ts` | createProtocolDrillConfig() — builds DrillConfig from convention ID + user seat. Threads SystemConfig to natural inference providers for system-aware inference. Creates `PlayStrategyProvider` from `playProfileId` option. Accepts optional `engine` for world-class profile (MC+DDS). |
 | `strategy-factory.ts` | Strategy composition: createSpecStrategy(), createSpecStrategyWithFallback(), createOpponentStrategy() |
-| `drill-types.ts` | DrillConfig, DrillSession, DrillBundle, DrillTuning, DrillSettings, OpponentMode |
+| `drill-types.ts` | DrillConfig, DrillSession, DrillBundle, DrillTuning, DrillSettings, OpponentMode. `DrillSettings.playProfileId` selects opponent play difficulty; `DrillConfig.playStrategyProvider` carries the DI provider. |
 | `teaching-weighting.ts` | computeScenarioDistribution() — pedagogical weighting for deal generation |
 | `practice-preferences.ts` | User preference DTOs (PracticePreferences, DisplayPreferences) |
 | `heuristics/` | Convention-independent bidding and play heuristics (see heuristics/CLAUDE.md) |

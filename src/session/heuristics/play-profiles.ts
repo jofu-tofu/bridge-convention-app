@@ -4,7 +4,7 @@ import type { Seat } from "../../engine/types";
 
 // ── Profile identity ────────────────────────────────────────────────
 
-export type PlayProfileId = "beginner" | "club-player" | "expert";
+export type PlayProfileId = "beginner" | "club-player" | "expert" | "world-class";
 
 // ── Profile configuration ───────────────────────────────────────────
 
@@ -76,8 +76,21 @@ export const EXPERT_PROFILE: PlayProfile = {
   useCardCounting: true,
 };
 
+export const WORLD_CLASS_PROFILE: PlayProfile = {
+  id: "world-class",
+  name: "World Class",
+  description: "Monte Carlo sampling + DDS solving. Plays optimally given available information.",
+  heuristicSkipRate: 0,
+  skippableHeuristics: [],
+  useInferences: true,
+  inferenceNoise: 0,
+  usePosterior: true,
+  useCardCounting: true,
+};
+
 export const PLAY_PROFILES: Record<PlayProfileId, PlayProfile> = {
   beginner: BEGINNER_PROFILE,
   "club-player": CLUB_PLAYER_PROFILE,
   expert: EXPERT_PROFILE,
+  "world-class": WORLD_CLASS_PROFILE,
 };

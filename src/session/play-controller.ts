@@ -193,11 +193,13 @@ function buildPlayContext(state: SessionState, seat: Seat, legalCards: readonly 
   };
 }
 
-/** Select a card using the play strategy or fall back to random. */
-function selectAiCard(state: SessionState, seat: Seat, legalCards: readonly Card[]): { card: Card; reason: string } {
+/** Select a card using the play strategy provider, play strategy, or fall back to random. */
+async function selectAiCard(state: SessionState, seat: Seat, legalCards: readonly Card[]): Promise<{ card: Card; reason: string }> {
   const ctx = buildPlayContext(state, seat, legalCards);
-  const strategy = state.playStrategy ?? randomPlayStrategy;
-  const result = strategy.suggest(ctx);
+  const strategy = state.playStrategyProvider?.getStrategy()
+    ?? state.playStrategy
+    ?? randomPlayStrategy;
+  const result = await strategy.suggest(ctx);
   return { card: result.card, reason: result.reason };
 }
 
@@ -226,7 +228,7 @@ async function runAiPlayLoop(
 
     if (legalPlays.length === 0) break;
 
-    const { card, reason } = selectAiCard(state, seat, legalPlays);
+    const { card, reason } = await selectAiCard(state, seat, legalPlays);
     addCardToTrick(state, card, seat);
     aiPlays.push({ seat, card, reason });
 

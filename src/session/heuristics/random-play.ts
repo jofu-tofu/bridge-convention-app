@@ -6,12 +6,12 @@ export function createRandomPlayStrategy(
   return {
     id: "random",
     name: "Random Play",
-    suggest(context): PlayResult {
+    suggest(context): Promise<PlayResult> {
       if (context.legalPlays.length === 0) {
         throw new Error("No legal cards to play");
       }
       const index = Math.floor(rng() * context.legalPlays.length);
-      return { card: context.legalPlays[index]!, reason: "random" };
+      return Promise.resolve({ card: context.legalPlays[index]!, reason: "random" });
     },
   };
 }

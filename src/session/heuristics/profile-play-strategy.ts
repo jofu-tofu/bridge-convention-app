@@ -8,6 +8,7 @@
 
 import type { PlayStrategy, PlayContext, PlayResult } from "../../conventions";
 import type { Card, Seat } from "../../engine/types";
+import type { EnginePort } from "../../engine/port";
 import type { PublicBeliefs } from "../../inference/inference-types";
 import type { PosteriorBackend } from "../../inference/posterior/posterior-boundary";
 import type { PlayProfile, PlayStrategyProvider } from "./play-profiles";
@@ -28,6 +29,7 @@ import {
 } from "./heuristic-play";
 import { inferenceHeuristics } from "./inference-play";
 import { partnerSeat } from "../../engine/constants";
+import { createWorldClassProvider } from "./montecarlo-play";
 
 // ── Base heuristic chain (L0) ───────────────────────────────────────
 
@@ -174,7 +176,7 @@ function buildPlayStrategy(
   return {
     id,
     name,
-    suggest(context: PlayContext): PlayResult {
+    suggest(context: PlayContext): Promise<PlayResult> {
       if (context.legalPlays.length === 0) {
         throw new Error("No legal plays available");
       }
@@ -183,7 +185,7 @@ function buildPlayStrategy(
         const card = h.apply(context);
         if (card) {
           if (context.legalPlays.some((c) => c.suit === card.suit && c.rank === card.rank)) {
-            return { card, reason: h.name };
+            return Promise.resolve({ card, reason: h.name });
           }
         }
       }
@@ -191,7 +193,7 @@ function buildPlayStrategy(
       // Fallback: lowest legal card
       const sorted = sortByRankAsc(context.legalPlays);
       const fallback = sorted[0] ?? context.legalPlays[0]!;
-      return { card: fallback, reason: "default-lowest" };
+      return Promise.resolve({ card: fallback, reason: "default-lowest" });
     },
   };
 }
@@ -268,6 +270,7 @@ function createExpertProvider(
 export interface ProfileStrategyOptions {
   readonly posteriorBackend?: PosteriorBackend;
   readonly rng?: () => number;
+  readonly engine?: EnginePort;
 }
 
 /**
@@ -276,6 +279,7 @@ export interface ProfileStrategyOptions {
  * - Beginner: base heuristics with skip probability on selected heuristics
  * - Club Player: inference heuristics + base heuristics (no skips)
  * - Expert: inference + posterior + expert heuristics + base heuristics
+ * - World Class: Monte Carlo + DDS (requires engine for solveBoard)
  */
 export function createProfileStrategyProvider(
   profile: PlayProfile,
@@ -290,5 +294,11 @@ export function createProfileStrategyProvider(
       return createClubPlayerProvider(profile, rng);
     case "expert":
       return createExpertProvider(profile, rng, options?.posteriorBackend);
+    case "world-class":
+      if (!options?.engine) {
+        // Fall back to expert when no engine provided (DDS requires engine)
+        return createExpertProvider(profile, rng, options?.posteriorBackend);
+      }
+      return createWorldClassProvider(options.engine, rng);
   }
 }

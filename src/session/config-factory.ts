@@ -1,5 +1,6 @@
 import { Seat } from "../engine/types";
 import type { BiddingStrategy, BaseSystemId } from "../conventions";
+import type { EnginePort } from "../engine/port";
 import type { DrillConfig } from "./drill-types";
 import type { OpponentMode } from "./drill-types";
 import { getSystemConfig } from "../conventions";
@@ -24,7 +25,7 @@ const NS_SEATS = new Set([Seat.North, Seat.South]);
 export function createProtocolDrillConfig(
   conventionId: string,
   userSeat: Seat,
-  options: { opponentMode?: OpponentMode; baseSystem: BaseSystemId; playProfileId?: PlayProfileId },
+  options: { opponentMode?: OpponentMode; baseSystem: BaseSystemId; playProfileId?: PlayProfileId; engine?: EnginePort },
 ): DrillConfig {
   const input = getBundleInput(conventionId);
   if (!input) {
@@ -73,7 +74,9 @@ export function createProtocolDrillConfig(
   const profile = options.playProfileId
     ? PLAY_PROFILES[options.playProfileId]
     : BEGINNER_PROFILE;
-  const playStrategyProvider = createProfileStrategyProvider(profile);
+  const playStrategyProvider = createProfileStrategyProvider(profile, {
+    engine: options.engine,
+  });
 
   return {
     conventionId,
