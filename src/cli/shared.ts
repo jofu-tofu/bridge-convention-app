@@ -25,7 +25,6 @@ import type { BiddingContext, BidHistoryEntry } from "../service";
 import type { BiddingStrategy } from "../service";
 import type { OpponentMode } from "../session/drill-types";
 import type { DrillSettings } from "../session/drill-types";
-import { DEFAULT_DRILL_TUNING } from "../session/drill-types";
 import type { BaseSystemId } from "../conventions/definitions/system-config";
 import { BASE_SYSTEM_SAYC, BASE_SYSTEM_ACOL } from "../conventions/definitions/system-config";
 import { getSystemConfig } from "../conventions/definitions/system-config";
@@ -123,32 +122,6 @@ export function parseOpponentMode(args: Flags): OpponentMode {
   if (val === "natural" || val === "none") return val;
   console.error(`Invalid --opponents value: "${val}" (expected: natural, none)`);
   process.exit(2);
-}
-
-/** Build a DrillSettings from CLI flags.
- *  Converts a fixed --vuln value into a single-value distribution
- *  so the CLI can share the same domain type as the UI store. */
-export function buildDrillSettings(args: Flags): DrillSettings {
-  const vuln = parseVulnerability(args);
-  return {
-    opponentMode: parseOpponentMode(args),
-    tuning: {
-      ...DEFAULT_DRILL_TUNING,
-      vulnerabilityDistribution: vulnerabilityToDistribution(vuln),
-    },
-  };
-}
-
-/** Convert a fixed Vulnerability into a degenerate single-value distribution. */
-export function vulnerabilityToDistribution(
-  v: Vulnerability,
-): { none: number; ours: number; theirs: number; both: number } {
-  return {
-    none: v === Vulnerability.None ? 1 : 0,
-    ours: v === Vulnerability.NorthSouth ? 1 : 0,
-    theirs: v === Vulnerability.EastWest ? 1 : 0,
-    both: v === Vulnerability.Both ? 1 : 0,
-  };
 }
 
 // ── Per-seed scenario config (plan command) ─────────────────────────
