@@ -11,13 +11,13 @@
  * With N ≤ 20 steps and 4 modules, this is ~80 phase transition checks (negligible).
  */
 
-import type { Seat } from "../../engine/types";
-import { partnerSeat } from "../../engine/constants";
-import type { BidMeaning } from "./meaning";
-import type { AuctionContext, CommittedStep, NegotiationState } from "../core/committed-step";
-import { INITIAL_NEGOTIATION } from "../core/committed-step";
-import type { ConventionModule } from "../core/convention-module";
-import type { TurnRole, ResolvedSurface, StateEntry } from "../core/rule-module";
+import type { Seat } from "../../../engine/types";
+import { partnerSeat } from "../../../engine/constants";
+import type { BidMeaning } from "../evaluation/meaning";
+import type { AuctionContext, CommittedStep, NegotiationState } from "../../core/committed-step";
+import { INITIAL_NEGOTIATION } from "../../core/committed-step";
+import type { ConventionModule } from "../../core/convention-module";
+import type { TurnRole, ResolvedSurface, StateEntry } from "../../core/rule-module";
 import { advanceLocalFsm } from "./local-fsm";
 import { matchKernel } from "./negotiation-matcher";
 import { matchRoute } from "./route-matcher";
@@ -34,7 +34,7 @@ export function flattenSurfaces(results: readonly ModuleSurfaceResult[]): readon
 }
 
 // Re-export TurnRole from its canonical home in rule-module.ts
-export type { TurnRole } from "../core/rule-module";
+export type { TurnRole } from "../../core/rule-module";
 
 /**
  * Derive the turn role for the next bidder.

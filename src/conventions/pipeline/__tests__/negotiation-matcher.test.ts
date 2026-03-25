@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { matchKernel } from "../negotiation-matcher";
+import { matchKernel } from "../observation/negotiation-matcher";
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import type { NegotiationState } from "../../core/committed-step";
 import type { NegotiationExpr } from "../../core/rule-module";

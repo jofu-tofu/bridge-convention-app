@@ -1,4 +1,4 @@
-import type { BidMeaning } from "../../../pipeline/meaning";
+import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
 import type { SystemConfig } from "../../system-config";
 import {
   SYSTEM_RESPONDER_WEAK_HAND,

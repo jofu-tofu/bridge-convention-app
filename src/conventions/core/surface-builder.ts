@@ -2,9 +2,9 @@ import type {
   BidMeaning,
   BidMeaningClause,
   RecommendationBand,
-} from "../pipeline/meaning";
+} from "../pipeline/evaluation/meaning";
 import type { Call } from "../../engine/types";
-import { deriveClauseId, deriveClauseDescription } from "../pipeline/clause-derivation";
+import { deriveClauseId, deriveClauseDescription } from "../pipeline/evaluation/clause-derivation";
 
 /**
  * Simplified clause input for the surface builder.

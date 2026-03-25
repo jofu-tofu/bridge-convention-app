@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { matchRoute, matchObs } from "../route-matcher";
+import { matchRoute, matchObs } from "../observation/route-matcher";
 import type { RouteExpr } from "../../core/rule-module";
 import type { CommittedStep } from "../../core/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";

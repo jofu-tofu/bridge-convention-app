@@ -11,13 +11,13 @@ import type {
 
 import type {
   DecisionProvenance,
-} from "../pipeline/provenance";
+} from "../pipeline/evaluation/provenance";
 
 import type {
   MeaningView,
 } from "./teaching-types";
 
-import type { MeaningClause } from "../pipeline/meaning";
+import type { MeaningClause } from "../pipeline/evaluation/meaning";
 
 import type { ConditionEvidence } from "../pipeline/evidence-bundle";
 

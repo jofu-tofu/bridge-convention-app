@@ -166,7 +166,7 @@ describe("sampleDeals with fact resolver", () => {
 
   it("with createHandFactResolver, enforces bridge.hasFourCardMajor from shared catalog", async () => {
     // This test imports from conventions/pipeline — it's a TEST file so that's OK
-    const { createHandFactResolver } = await import("../../../conventions/pipeline/hand-fact-resolver");
+    const { createHandFactResolver } = await import("../../../conventions/pipeline/facts/hand-fact-resolver");
     const resolver = createHandFactResolver();
 
     const spaces: PublicHandSpace[] = [{
@@ -192,7 +192,7 @@ describe("sampleDeals with fact resolver", () => {
   });
 
   it("with createHandFactResolver, enforces bridge.hasShortage from shared catalog", async () => {
-    const { createHandFactResolver } = await import("../../../conventions/pipeline/hand-fact-resolver");
+    const { createHandFactResolver } = await import("../../../conventions/pipeline/facts/hand-fact-resolver");
     const resolver = createHandFactResolver();
 
     const spaces: PublicHandSpace[] = [{

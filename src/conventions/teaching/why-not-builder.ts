@@ -15,7 +15,7 @@ import type {
 import type {
   DecisionProvenance,
   EliminationTrace,
-} from "../pipeline/provenance";
+} from "../pipeline/evaluation/provenance";
 
 import type {
   WhyNotEntry,

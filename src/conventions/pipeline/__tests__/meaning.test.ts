@@ -5,7 +5,7 @@ import {
   type MeaningProposal,
   type RankingMetadata,
   type RecommendationBand,
-} from "../meaning";
+} from "../evaluation/meaning";
 
 function makeRanking(overrides: Partial<RankingMetadata> = {}): RankingMetadata {
   return {

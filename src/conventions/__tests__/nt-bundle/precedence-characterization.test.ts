@@ -6,7 +6,7 @@
  * tests prove that band + specificity resolve all critical cases.
  */
 import { describe, it, expect } from "vitest";
-import { compareRanking, type RankingMetadata } from "../../pipeline/meaning";
+import { compareRanking, type RankingMetadata } from "../../pipeline/evaluation/meaning";
 
 function ranking(
   band: "must" | "should" | "may",

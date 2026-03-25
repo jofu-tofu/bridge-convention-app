@@ -2,7 +2,7 @@ import type { Auction, Seat } from "../../../engine/types";
 import type { PublicSnapshot } from "../module-surface";
 import { buildPublicSnapshot } from "../module-surface";
 import type { PublicEvent } from "../agreement-module";
-import type { BidMeaning } from "../../pipeline/meaning";
+import type { BidMeaning } from "../../pipeline/evaluation/meaning";
 import type { MachineRegisters } from "./machine-types";
 import { ForcingState } from "../strategy-types";
 import { callKey } from "../../../engine/call-helpers";

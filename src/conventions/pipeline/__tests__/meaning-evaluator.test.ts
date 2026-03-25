@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   evaluateBidMeaning,
   evaluateAllBidMeanings,
-} from "../meaning-evaluator";
-import type { BidMeaning } from "../meaning";
+} from "../evaluation/meaning-evaluator";
+import type { BidMeaning } from "../evaluation/meaning";
 import type { EvaluatedFacts, FactValue } from "../../core/fact-catalog";
 import { BidSuit } from "../../../engine/types";
 

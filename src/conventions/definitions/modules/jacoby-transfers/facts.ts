@@ -4,7 +4,7 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/fact-catalog";
-import { num, bool, fv } from "../../../pipeline/fact-helpers";
+import { num, bool, fv } from "../../../pipeline/facts/fact-helpers";
 import type { SystemConfig } from "../../system-config";
 import { TRANSFER_FACT_IDS } from "./ids";
 

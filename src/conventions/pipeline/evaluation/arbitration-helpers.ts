@@ -1,18 +1,18 @@
 import type {
   PipelineCarrier,
-} from "./pipeline-types";
-import type { CandidateEligibility } from "./tree-evaluation";
+} from "../pipeline-types";
+import type { CandidateEligibility } from "../tree-evaluation";
 import type {
   EliminationTrace,
   LegalityTrace,
   EncodingTrace,
 } from "./provenance";
-import type { Call } from "../../engine/types";
+import type { Call } from "../../../engine/types";
 import { BAND_PRIORITY } from "./meaning";
 import { evaluateGates, type GateId } from "./gate-order";
 import type { ArbitrationInput } from "./meaning-arbitrator";
 import { resolveEncoding } from "./encoder-resolver";
-import type { DeclaredEncoderKind } from "../core/agreement-module";
+import type { DeclaredEncoderKind } from "../../core/agreement-module";
 
 /** Result of evaluating a single proposal through the gate pipeline. */
 export interface ProposalResult {

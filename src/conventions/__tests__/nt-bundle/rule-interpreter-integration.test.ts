@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { collectMatchingClaims } from "../../pipeline/rule-interpreter";
+import { collectMatchingClaims } from "../../pipeline/observation/rule-interpreter";
 import type { ConventionModule } from "../../core/convention-module";
 import type { AuctionContext, CommittedStep, NegotiationState } from "../../core/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";

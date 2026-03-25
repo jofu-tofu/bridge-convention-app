@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { advanceLocalFsm } from "../local-fsm";
+import { advanceLocalFsm } from "../observation/local-fsm";
 import type { PhaseTransition } from "../../core/rule-module";
 import type { CommittedStep } from "../../core/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";

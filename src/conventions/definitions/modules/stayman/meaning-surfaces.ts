@@ -1,4 +1,4 @@
-import type { BidMeaning } from "../../../pipeline/meaning";
+import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
 
 import { BidSuit } from "../../../../engine/types";
 import type { SystemConfig } from "../../system-config";

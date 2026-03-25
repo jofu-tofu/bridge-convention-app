@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractKernelState, computeKernelDelta } from "../negotiation-extractor";
+import { extractKernelState, computeKernelDelta } from "../observation/negotiation-extractor";
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import type { NegotiationState } from "../../core/committed-step";
 import type { MachineRegisters } from "../../core/module-surface";

@@ -11,7 +11,7 @@ import type { ExplanationEntry } from "../../../core/explanation-catalog";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 import type { NegotiationDelta } from "../../../core/committed-step";
-import type { BidMeaning } from "../../../pipeline/meaning";
+import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
 import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";

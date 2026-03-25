@@ -4,7 +4,7 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/fact-catalog";
-import { num, fv } from "../../../pipeline/fact-helpers";
+import { num, fv } from "../../../pipeline/facts/fact-helpers";
 
 import type { SystemConfig } from "../../system-config";
 import { SMOLEN_FACT_IDS } from "./ids";

@@ -12,13 +12,13 @@
 import { describe, it, expect } from "vitest";
 import { generateDeal } from "../../../engine/deal-generator";
 import { evaluateHand } from "../../../engine/hand-evaluator";
-import { evaluateFacts } from "../../pipeline/fact-evaluator";
-import { evaluateBidMeaning } from "../../pipeline/meaning-evaluator";
-import { createSharedFactCatalog } from "../../pipeline/shared-fact-catalog";
-import { createSystemFactCatalog } from "../../pipeline/system-fact-catalog";
+import { evaluateFacts } from "../../pipeline/facts/fact-evaluator";
+import { evaluateBidMeaning } from "../../pipeline/evaluation/meaning-evaluator";
+import { createSharedFactCatalog } from "../../pipeline/facts/shared-fact-catalog";
+import { createSystemFactCatalog } from "../../pipeline/facts/system-fact-catalog";
 import { createFactCatalog } from "../../core/fact-catalog";
 import type { FactCatalog } from "../../core/fact-catalog";
-import type { BidMeaning } from "../../pipeline/meaning";
+import type { BidMeaning } from "../../pipeline/evaluation/meaning";
 import type { ConventionBundle } from "../../core/bundle/bundle-types";
 import { getBundleInput, resolveBundle } from "../system-registry";
 import { SAYC_SYSTEM_CONFIG } from "../system-config";

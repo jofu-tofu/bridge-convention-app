@@ -15,7 +15,7 @@ import { evaluateHand } from "../../../engine/hand-evaluator";
 import { createBiddingContext, specFromBundle, ntBundle } from "../..";
 import type { ConventionModule, ConventionSpec } from "../..";
 import { makeSurface, makeRanking } from "../../../test-support/convention-factories";
-import type { BidMeaning } from "../../pipeline/meaning";
+import type { BidMeaning } from "../../pipeline/evaluation/meaning";
 import type { FactCatalogExtension } from "../../core/fact-catalog";
 import {
   protocolSpecToStrategy,

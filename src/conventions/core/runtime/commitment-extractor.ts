@@ -2,9 +2,9 @@ import type { Auction, Seat } from "../../../engine/types";
 import type {
   PublicConstraint,
 } from "../agreement-module";
-import type { BidMeaning } from "../../pipeline/meaning";
+import type { BidMeaning } from "../../pipeline/evaluation/meaning";
 import { callsMatch, callKey } from "../../../engine/call-helpers";
-import { resolveClause } from "../../pipeline/binding-resolver";
+import { resolveClause } from "../../pipeline/evaluation/binding-resolver";
 
 /**
  * Extract public commitments from an auction by matching each entry

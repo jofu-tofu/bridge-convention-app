@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { deriveSpecificity } from "../specificity-deriver";
-import type { BidMeaning } from "../meaning";
+import { deriveSpecificity } from "../evaluation/specificity-deriver";
+import type { BidMeaning } from "../evaluation/meaning";
 import type { FactCatalogExtension } from "../../core/fact-catalog";
 import { SHARED_FACTS } from "../../core/shared-facts";
 

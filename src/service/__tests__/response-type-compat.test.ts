@@ -12,7 +12,7 @@ import { describe, it, expect } from "vitest";
 
 // ── Backend types ──────────────────────────────────────────────────
 import type { GamePhase } from "../../session/phase-machine";
-import type { EncoderKind } from "../../conventions/pipeline/provenance";
+import type { EncoderKind } from "../../conventions/pipeline/evaluation/provenance";
 import type { BidGrade } from "../../conventions/teaching/teaching-types";
 import type {
   ExplanationNode,

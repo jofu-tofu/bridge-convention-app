@@ -11,7 +11,7 @@ import { describe, it, expect } from "vitest";
 
 import { getAllModules } from "../../definitions/module-registry";
 import { moduleSurfaces } from "../../core/convention-module";
-import type { BidMeaning } from "../../pipeline/meaning";
+import type { BidMeaning } from "../../pipeline/evaluation/meaning";
 import { BERGEN_THRESHOLDS } from "../../definitions/modules/bergen/meaning-surfaces";
 import { WEAK_TWO_THRESHOLDS } from "../../definitions/modules/weak-twos/meaning-surfaces";
 

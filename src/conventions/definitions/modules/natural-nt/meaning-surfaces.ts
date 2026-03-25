@@ -1,6 +1,6 @@
-import type { BidMeaning } from "../../../pipeline/meaning";
+import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
 import { BidSuit } from "../../../../engine/types";
-import { BRIDGE_SEMANTIC_CLASSES } from "../../../pipeline/meaning";
+import { BRIDGE_SEMANTIC_CLASSES } from "../../../pipeline/evaluation/meaning";
 import type { SystemConfig } from "../../system-config";
 import {
   SYSTEM_RESPONDER_INVITE_VALUES,

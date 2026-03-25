@@ -16,7 +16,7 @@ import type {
   HandStrength,
 } from "../pipeline/bid-action";
 import type { NegotiationState, NegotiationDelta } from "./committed-step";
-import type { BidMeaning } from "../pipeline/meaning";
+import type { BidMeaning } from "../pipeline/evaluation/meaning";
 // FactCatalogExtension import removed — facts now live on ConventionModule, not here.
 
 // ── TurnRole ─────────────────────────────────────────────────────────

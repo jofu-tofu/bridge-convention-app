@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { evaluateGates } from "../gate-order";
-import type { GateId } from "../gate-order";
+import { evaluateGates } from "../evaluation/gate-order";
+import type { GateId } from "../evaluation/gate-order";
 
 describe("evaluateGates", () => {
   it("returns passedAll: true with 4 results when all gates pass", () => {

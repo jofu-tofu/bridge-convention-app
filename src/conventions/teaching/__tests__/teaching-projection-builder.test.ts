@@ -8,7 +8,7 @@ import type {
   PipelineResult,
   PipelineCarrier,
 } from "../../pipeline/pipeline-types";
-import type { DecisionProvenance } from "../../pipeline/provenance";
+import type { DecisionProvenance } from "../../pipeline/evaluation/provenance";
 import type { ExplanationCatalog, FactExplanationEntry, MeaningExplanationEntry } from "../../core/explanation-catalog";
 import { createExplanationCatalog } from "../../core/explanation-catalog";
 import type { SurfaceGroup } from "../teaching-types";

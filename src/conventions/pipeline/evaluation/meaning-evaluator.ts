@@ -12,8 +12,8 @@ import type {
   EvaluatedFacts,
   FactValue,
   FactCatalogExtension,
-} from "../core/fact-catalog";
-import { getFactValue } from "../core/fact-catalog";
+} from "../../core/fact-catalog";
+import { getFactValue } from "../../core/fact-catalog";
 import { resolveAlert } from "./alert";
 import { resolveFactId } from "./binding-resolver";
 import type { ConstraintDimension } from "./meaning";

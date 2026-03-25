@@ -5,15 +5,15 @@
  * and kernel state (via extractKernelState) into a single observation record.
  */
 
-import type { Seat, Call } from "../../engine/types";
+import type { Seat, Call } from "../../../engine/types";
 import type {
   NegotiationState,
   ClaimRef,
   CommittedStep,
-} from "../core/committed-step";
-import type { PipelineResult } from "./pipeline-types";
-import type { MachineRegisters } from "../core/module-surface";
-import type { BidAction } from "./bid-action";
+} from "../../core/committed-step";
+import type { PipelineResult } from "../pipeline-types";
+import type { MachineRegisters } from "../../core/module-surface";
+import type { BidAction } from "../bid-action";
 import { extractKernelState, computeKernelDelta } from "./negotiation-extractor";
 import { normalizeIntent } from "./normalize-intent";
 

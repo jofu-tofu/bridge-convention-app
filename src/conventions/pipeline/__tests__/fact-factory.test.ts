@@ -4,8 +4,8 @@ import {
   definePerSuitFacts,
   defineHcpRangeFact,
   buildExtension,
-} from "../fact-factory";
-import type { FactEntry } from "../fact-factory";
+} from "../facts/fact-factory";
+import type { FactEntry } from "../facts/fact-factory";
 import type { FactValue } from "../../core/fact-catalog";
 import { FactLayer } from "../../core/fact-layer";
 import { hand } from "../../../engine/__tests__/fixtures";

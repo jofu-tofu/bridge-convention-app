@@ -1,6 +1,6 @@
 import type { Call, NumberRange } from "../../engine/types";
 import type { ConditionEvidence } from "../pipeline/evidence-bundle";
-import type { EncoderKind } from "../pipeline/provenance";
+import type { EncoderKind } from "../pipeline/evaluation/provenance";
 
 // ── Teaching Grading Types ──────────────────────────────────────────────
 

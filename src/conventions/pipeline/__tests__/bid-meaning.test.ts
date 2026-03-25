@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { BidMeaning, BidMeaningClause } from "../meaning";
+import type { BidMeaning, BidMeaningClause } from "../evaluation/meaning";
 import type { Call } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   evaluateProposal,
   classifyIntoSets,
-} from "../arbitration-helpers";
+} from "../evaluation/arbitration-helpers";
 import type { PipelineCarrier } from "../pipeline-types";
 import { BidSuit } from "../../../engine/types";
 import {

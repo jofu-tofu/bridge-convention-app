@@ -1,4 +1,4 @@
-import type { Hand, HandEvaluation } from "../../engine/types";
+import type { Hand, HandEvaluation } from "../../../engine/types";
 import type {
   FactDefinition,
   FactValue,
@@ -6,9 +6,9 @@ import type {
   FactCatalog,
   FactEvaluatorFn,
   RelationalFactEvaluatorFn,
-} from "../core/fact-catalog";
-import type { PosteriorFactProvider, PosteriorFactRequest } from "../../inference/posterior/posterior-types";
-import type { PublicConstraint } from "../core/agreement-module";
+} from "../../core/fact-catalog";
+import type { PosteriorFactProvider, PosteriorFactRequest } from "../../../inference/posterior/posterior-types";
+import type { PublicConstraint } from "../../core/agreement-module";
 import { createSharedFactCatalog, SHARED_EVALUATORS } from "./shared-fact-catalog";
 import { topologicalSort } from "./fact-utils";
 

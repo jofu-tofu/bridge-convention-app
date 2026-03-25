@@ -5,7 +5,7 @@ import {
   resolveEncoding,
   type FrontierStepConfig,
   type RelayMapConfig,
-} from "../encoder-resolver";
+} from "../evaluation/encoder-resolver";
 
 function bid(level: 1 | 2 | 3 | 4 | 5 | 6 | 7, strain: BidSuit): Call {
   return { type: "bid", level, strain };

@@ -12,9 +12,9 @@
  * - `not` → skipped (negation doesn't contribute useful constraints for deal generation)
  */
 
-import type { Suit } from "../../engine/types";
-import type { FactComposition, PrimitiveClause } from "../core/fact-catalog";
-import { SUIT_FACT_MAP } from "../core/runtime/fact-compiler";
+import type { Suit } from "../../../engine/types";
+import type { FactComposition, PrimitiveClause } from "../../core/fact-catalog";
+import { SUIT_FACT_MAP } from "../../core/runtime/fact-compiler";
 
 // ── Result type ─────────────────────────────────────────────────────
 

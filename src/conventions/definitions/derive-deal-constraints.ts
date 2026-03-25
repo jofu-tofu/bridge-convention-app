@@ -16,14 +16,14 @@ import { Seat, Suit } from "../../engine/types";
 import type { SystemConfig } from "./system-config";
 import type { ConventionModule } from "../core/convention-module";
 import type { StateEntry, TurnRole } from "../core/rule-module";
-import type { BidMeaning } from "../pipeline/meaning";
+import type { BidMeaning } from "../pipeline/evaluation/meaning";
 import type { FactComposition } from "../core/fact-catalog";
 import type { BundleInput } from "../core/bundle/bundle-types";
 
 import { getArchetype, getPrimaryCapability } from "./capability-constraint-registry";
 import type { CapabilityArchetype } from "./capability-constraint-registry";
 import { compileFactClause, SUIT_FACT_MAP, type MutableSeatConstraint } from "../core/runtime/fact-compiler";
-import { invertComposition, type InvertedConstraint } from "../pipeline/fact-inversion";
+import { invertComposition, type InvertedConstraint } from "../pipeline/facts/fact-inversion";
 import {
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,

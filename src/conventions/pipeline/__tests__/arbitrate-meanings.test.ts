@@ -1,7 +1,7 @@
 // Characterization tests for arbitrateMeanings() — provenance, multi-proposal, and type guards.
 
 import { describe, it, expect } from "vitest";
-import { arbitrateMeanings } from "../meaning-arbitrator";
+import { arbitrateMeanings } from "../evaluation/meaning-arbitrator";
 import { BidSuit } from "../../../engine/types";
 import { makeArbitrationInput, makeCall } from "./pipeline-test-helpers";
 

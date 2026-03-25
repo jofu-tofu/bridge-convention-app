@@ -6,12 +6,12 @@
 import { describe, it, expect } from "vitest";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
-import { evaluateFacts } from "../../pipeline/fact-evaluator";
-import { createSharedFactCatalog } from "../../pipeline/shared-fact-catalog";
+import { evaluateFacts } from "../../pipeline/facts/fact-evaluator";
+import { createSharedFactCatalog } from "../../pipeline/facts/shared-fact-catalog";
 import { createFactCatalog } from "../../core/fact-catalog";
 import { createStaymanFacts } from "../../definitions/modules/stayman";
 import { createTransferFacts } from "../../definitions/modules/jacoby-transfers";
-import { createSystemFactCatalog } from "../../pipeline/system-fact-catalog";
+import { createSystemFactCatalog } from "../../pipeline/facts/system-fact-catalog";
 import { SAYC_SYSTEM_CONFIG } from "../../definitions/system-config";
 
 const staymanFacts = createStaymanFacts(SAYC_SYSTEM_CONFIG);

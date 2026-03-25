@@ -1,7 +1,7 @@
 import type { Hand, HandEvaluation } from "../../engine/types";
 import type { PublicConstraint } from "./agreement-module";
 import type { PosteriorFactProvider, PosteriorFactRequest } from "../../inference/posterior/posterior-types";
-import type { ConstraintDimension } from "../pipeline/meaning";
+import type { ConstraintDimension } from "../pipeline/evaluation/meaning";
 import type { FactLayer } from "./fact-layer";
 
 

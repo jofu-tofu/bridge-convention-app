@@ -3,7 +3,7 @@ import { BidSuit, Seat } from "../../../engine/types";
 import { INITIAL_NEGOTIATION } from "../../../conventions/core/committed-step";
 import type { VerificationSnapshot } from "../types";
 import type { NegotiationState, CommittedStep } from "../../../conventions/core/committed-step";
-import type { BidMeaning } from "../../../conventions/pipeline/meaning";
+import type { BidMeaning } from "../../../conventions/pipeline/evaluation/meaning";
 import type { BidAction } from "../../../conventions/pipeline/bid-action";
 import {
   checkArbitrationTotality,

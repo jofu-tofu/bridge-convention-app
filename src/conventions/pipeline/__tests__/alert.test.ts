@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { resolveAlert, isAlertable } from "../alert";
-import type { AlertResolvable } from "../alert";
+import { resolveAlert, isAlertable } from "../evaluation/alert";
+import type { AlertResolvable } from "../evaluation/alert";
 
 function makeSurface(overrides: Partial<AlertResolvable> = {}): AlertResolvable {
   return {

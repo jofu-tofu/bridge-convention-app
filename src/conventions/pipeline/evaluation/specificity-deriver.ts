@@ -18,7 +18,7 @@
 
 import type { BidMeaning, ConstraintDimension, SpecificityBasis } from "./meaning";
 import type { BidMeaningClause } from "./meaning";
-import type { FactCatalogExtension, FactDefinition } from "../core/fact-catalog";
+import type { FactCatalogExtension, FactDefinition } from "../../core/fact-catalog";
 import { classifySpecificityBasis } from "./specificity-classifier";
 
 /**

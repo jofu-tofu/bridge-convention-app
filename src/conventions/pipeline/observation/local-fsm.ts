@@ -7,8 +7,8 @@
  * in the step matches a transition's `on` pattern.
  */
 
-import type { CommittedStep } from "../core/committed-step";
-import type { PhaseTransition } from "../core/rule-module";
+import type { CommittedStep } from "../../core/committed-step";
+import type { PhaseTransition } from "../../core/rule-module";
 import { matchObs } from "./route-matcher";
 
 /**

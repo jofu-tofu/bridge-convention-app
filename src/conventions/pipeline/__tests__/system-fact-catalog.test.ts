@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createSystemFactCatalog } from "../system-fact-catalog";
+import { createSystemFactCatalog } from "../facts/system-fact-catalog";
 import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../definitions/system-config";
 import type { SystemConfig } from "../../definitions/system-config";
 import {

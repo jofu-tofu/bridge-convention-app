@@ -192,7 +192,7 @@ describe("createTsBackend", () => {
   });
 
   it("with factResolver, derived facts are enforced during sampling", async () => {
-    const { createHandFactResolver } = await import("../../../conventions/pipeline/hand-fact-resolver");
+    const { createHandFactResolver } = await import("../../../conventions/pipeline/facts/hand-fact-resolver");
     const resolver = createHandFactResolver();
 
     // Add a hasFourCardMajor constraint alongside the 1NT constraints

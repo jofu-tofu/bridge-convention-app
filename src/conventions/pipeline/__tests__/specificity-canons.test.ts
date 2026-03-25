@@ -3,8 +3,8 @@ import {
   compareByCanons,
   CANON_DIMENSIONAL_COUNT,
   CANON_DIMENSION_PRIORITY,
-} from "../specificity-canons";
-import type { ConstraintDimension } from "../meaning";
+} from "../evaluation/specificity-canons";
+import type { ConstraintDimension } from "../evaluation/meaning";
 
 // ─── Helpers ────────────────────────────────────────────────
 

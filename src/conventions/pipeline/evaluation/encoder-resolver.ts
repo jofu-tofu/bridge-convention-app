@@ -1,7 +1,7 @@
-import type { Call } from "../../engine/types";
-import type { DeclaredEncoderKind } from "../core/agreement-module";
+import type { Call } from "../../../engine/types";
+import type { DeclaredEncoderKind } from "../../core/agreement-module";
 import type { EncoderKind } from "./provenance";
-import { callsMatch } from "../../engine/call-helpers";
+import { callsMatch } from "../../../engine/call-helpers";
 
 // ─── Encoder configuration types ────────────────────────────
 

@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { collectMatchingClaims } from "../rule-interpreter";
+import { collectMatchingClaims } from "../observation/rule-interpreter";
 import type { ConventionModule } from "../../core/convention-module";
 import type { AuctionContext, CommittedStep } from "../../core/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import type { NegotiationState } from "../../core/committed-step";
-import type { BidMeaning } from "../meaning";
+import type { BidMeaning } from "../evaluation/meaning";
 import type { PublicSnapshot } from "../../core/module-surface";
 import { Seat } from "../../../engine/types";
 

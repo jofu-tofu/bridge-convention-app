@@ -3,7 +3,7 @@ import { extractCommitments } from "../commitment-extractor";
 import { callKey } from "../../../../engine/call-helpers";
 import type { Auction, Call } from "../../../../engine/types";
 import { Seat } from "../../../../engine/types";
-import type { BidMeaning } from "../../../pipeline/meaning";
+import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
 
 describe("callKey", () => {
   it("formats contract bids as level+strain", () => {

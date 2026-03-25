@@ -1,12 +1,12 @@
 import type { BiddingContext } from "../core/strategy-types";
-import type { BidMeaning, ConstraintDimension } from "./meaning";
+import type { BidMeaning, ConstraintDimension } from "./evaluation/meaning";
 import type { EvaluatedFacts, FactCatalog } from "../core/fact-catalog";
 import type { PosteriorFactProvider } from "../../inference/posterior/posterior-types";
 import type { PipelineResult } from "./pipeline-types";
-import type { RelationalFactContext } from "./fact-evaluator";
-import { evaluateFacts } from "./fact-evaluator";
-import { evaluateAllBidMeanings } from "./meaning-evaluator";
-import { arbitrateMeanings, zipProposalsWithSurfaces } from "./meaning-arbitrator";
+import type { RelationalFactContext } from "./facts/fact-evaluator";
+import { evaluateFacts } from "./facts/fact-evaluator";
+import { evaluateAllBidMeanings } from "./evaluation/meaning-evaluator";
+import { arbitrateMeanings, zipProposalsWithSurfaces } from "./evaluation/meaning-arbitrator";
 import { getLegalCalls } from "../../engine/auction";
 import { partnerSeat } from "../../engine/constants";
 import { isVulnerable } from "../../engine/scoring";

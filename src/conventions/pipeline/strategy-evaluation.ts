@@ -1,7 +1,7 @@
 import type { BiddingStrategy } from "../core/strategy-types";
 import type { MachineRegisters } from "../core/module-surface";
 import type { PipelineResult } from "./pipeline-types";
-import type { HandoffTrace } from "./provenance";
+import type { HandoffTrace } from "./evaluation/provenance";
 import type { TeachingProjection } from "../teaching/teaching-types";
 import type { PracticalRecommendation, PosteriorSummary } from "../core/strategy-types";
 import type { SurfaceGroup } from "../teaching/teaching-types";

@@ -94,6 +94,9 @@ src/
   conventions/     Convention system
     core/            Registry, context factory, bundle registry, runtime, strategy contract types — public API via index.ts barrel
     pipeline/        Meaning pipeline (surfaces → facts → evaluation → arbitration → encoding)
+      facts/           Fact evaluation: hand → facts (primitive, bridge-derived, module-derived)
+      evaluation/      Meaning evaluation + arbitration: surfaces × facts → ranked result
+      observation/     Surface selection (FSM/route/negotiation) + observation log construction
     teaching/        Teaching resolution, projection builder, parse-tree builder, teaching graph
     definitions/     Convention bundles + system config + system fact vocabulary
     adapter/         Convention→strategy bridge (meaning-strategy, protocol-adapter, practical-scorer)
@@ -126,7 +129,7 @@ tests/
 |-----------|-------|---------|
 | Engine | `src/engine/types.ts` | Pure TS game logic |
 | Conventions | `src/conventions/index.ts` | Convention system (core/ + pipeline/ + teaching/ + definitions/ + adapter/) |
-| Pipeline | `src/conventions/pipeline/run-pipeline.ts` | Meaning pipeline (surfaces → facts → evaluation → arbitration → encoding) |
+| Pipeline | `src/conventions/pipeline/run-pipeline.ts` | Meaning pipeline (facts/ → evaluation/ → observation/) with cross-cutting types at root |
 | Adapter | `src/conventions/adapter/protocol-adapter.ts` | Convention→strategy bridge (meaning-strategy, protocol-adapter, practical-scorer) |
 | Teaching | `src/conventions/teaching/teaching-resolution.ts` | Teaching resolution and projection (inside conventions/) |
 | Inference | `src/inference/inference-engine.ts` | Auction inference |

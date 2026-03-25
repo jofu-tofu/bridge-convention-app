@@ -12,7 +12,7 @@
  * module state structure (each state entry with 2+ surfaces).
  */
 
-import type { BidMeaning } from "../pipeline/meaning";
+import type { BidMeaning } from "../pipeline/evaluation/meaning";
 import type { FactCatalogExtension } from "./fact-catalog";
 import type { ExplanationEntry } from "./explanation-catalog";
 import type { LocalFsm, StateEntry } from "./rule-module";

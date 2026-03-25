@@ -3,10 +3,10 @@ import type {
   FactEvaluatorFn,
   FactValue,
   FactComposition,
-} from "../core/fact-catalog";
-import { FactLayer } from "../core/fact-layer";
-import type { ConstraintDimension } from "./meaning";
-import type { Hand } from "../../engine/types";
+} from "../../core/fact-catalog";
+import { FactLayer } from "../../core/fact-layer";
+import type { ConstraintDimension } from "../evaluation/meaning";
+import type { Hand } from "../../../engine/types";
 import { num, fv } from "./fact-helpers";
 
 // ─── Uniform return type ─────────────────────────────────────

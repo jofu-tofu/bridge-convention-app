@@ -2,59 +2,124 @@
 
 Meaning pipeline: surfaces → facts → evaluation → arbitration → encoding. Convention-agnostic infrastructure that transforms `BidMeaning[]` surfaces and hand facts into a ranked `PipelineResult`. All stages operate on generic types; convention-specific data flows in from `definitions/` via `ConventionBundle`.
 
-## Module Graph
+## Directory Structure
+
+```
+pipeline/
+  index.ts                    Root barrel (re-exports from subfolders + root files)
+  run-pipeline.ts             Orchestrator — imports from all 3 subfolders
+  pipeline-types.ts           PipelineResult, PipelineCarrier, ArbitrationResult
+  strategy-evaluation.ts      StrategyEvaluation, MachineDebugSnapshot
+  tree-evaluation.ts          CandidateEligibility, ResolvedCandidateDTO
+  evidence-bundle.ts          ConditionEvidence, ConditionResult (cross-cutting)
+  bid-action.ts               BidAction discriminated union
+  rule-enumeration.ts         CLI utility (atom enumeration)
+  deal-constraint-evaluator.ts CLI utility (deal constraint eval)
+  deal-spec-generator.ts      CLI utility (DealSpec compilation)
+  witness-constants.ts        CLI utility (seat/suit/vuln mappings)
+
+  facts/                      8 files — "evaluate facts" step
+  evaluation/                 13 files — "evaluate meanings" + "arbitrate" steps
+  observation/                8 files — surface selection + observation log
+  __tests__/                  32 test files (flat, shared helpers)
+```
+
+### Why 3 subfolders
+
+| Folder | What it does | Entry points |
+|--------|-------------|--------------|
+| `facts/` | Evaluates hand → facts (primitive, bridge-derived, module-derived). Catalogs + factories + utilities. | `fact-evaluator.ts` |
+| `evaluation/` | Evaluates surfaces' clauses against facts, resolves encoding, runs gates, arbitrates winner. Types: `meaning.ts`, `provenance.ts`. | `meaning-evaluator.ts`, `meaning-arbitrator.ts` |
+| `observation/` | Pre-pipeline: selects matching surfaces via FSM/route/negotiation. Post-pipeline: builds observation log. | `rule-interpreter.ts`, `observation-log-builder.ts` |
+
+### Layering rules
+
+- **Subfolders → root:** Allowed. Subfolders import from root-level pipeline files (`pipeline-types.ts`, `tree-evaluation.ts`, `evidence-bundle.ts`, `bid-action.ts`).
+- **Root → subfolders:** Only `run-pipeline.ts` (orchestrator) and `index.ts` (barrel). Root type files (`pipeline-types.ts`, `tree-evaluation.ts`, `strategy-evaluation.ts`) use `import type` from `evaluation/` for cross-cutting types — this is acceptable since it creates no runtime dependency.
+- **Subfolder → subfolder:** Avoided. Each subfolder depends only on root pipeline files + `engine/` + `conventions/core/`. Exception: `facts/fact-factory.ts` uses `import type { ConstraintDimension }` from `evaluation/meaning.ts`.
+- **Tests stay flat:** All in `__tests__/` — `npx vitest run src/conventions/pipeline/` works unchanged.
+
+### What stays at root (and why)
+
+Root files are cross-cutting — imported by 2+ subfolders or by many external consumers:
+- `pipeline-types.ts` — used by all 3 subfolders
+- `tree-evaluation.ts` — used by evaluation/ AND adapter/ AND teaching/
+- `evidence-bundle.ts` — `tree-evaluation.ts` (root) imports `ConditionResult`; placing in evaluation/ would invert layering
+- `bid-action.ts` — used by observation/ AND core/
+- `strategy-evaluation.ts` — consumes types from evaluation/ AND teaching/
+- CLI utilities (`rule-enumeration.ts`, `deal-spec-generator.ts`, etc.) — depend heavily on pipeline internals
+
+## Module Graph (Root)
 
 | File | Role |
 | ---- | ---- |
-| `run-pipeline.ts` | `runPipeline()` entry point — orchestrates the 4-step core pipeline (evaluate facts → evaluate meanings → arbitrate). Extracted from `strategy/`. Caller handles surface selection before and result mapping after. |
-| `pipeline-types.ts` | `PipelineResult` (complete pipeline output with per-surface carriers and cross-surface provenance), `PipelineCarrier` (surface + traces through entire pipeline), `ArbitrationResult` (post-gate/dedup arbitration), `EncodedProposal` (meaning after call assignment), `EliminationRecord` (gate attribution for eliminated candidates) |
-| `strategy-evaluation.ts` | `StrategyEvaluation` (unified snapshot of all pipeline outputs from a `suggest()` call), `MachineDebugSnapshot` (lightweight DTO for convention machine state), `ConventionStrategy` |
-| `alert.ts` | `resolveAlert()` (derives alertability from `disclosure` field), `isAlertable()`. Natural disclosure produces no alert; everything else defaults to conventional. Constraints carry `isPublic` on `FactConstraint` itself — no separate publicConstraints pipeline. |
-| `fact-evaluator.ts` | `evaluateFacts()` — 3-tier evaluation: primitive (hand → fact), bridge-derived (fact → fact), module-derived (convention-specific). Optional relational + posterior tiers. `RelationalFactContext` for binding-aware evaluation. |
-| `meaning-evaluator.ts` | `evaluateBidMeaning()`, `evaluateAllBidMeanings()` — clause evaluation against `EvaluatedFacts`, producing `MeaningProposal[]`. Resolves `$suit` bindings via `binding-resolver.ts`, derives specificity, fills clause defaults. |
-| `meaning-arbitrator.ts` | `arbitrateMeanings()` — tiered selection (band ranking → specificity → precedence → deduplication), producing `PipelineResult`. `zipProposalsWithSurfaces()` pairs proposals with their source surfaces. |
-| `arbitration-helpers.ts` | `evaluateProposal()` (runs single proposal through gate pipeline), `classifyIntoSets()` (buckets carriers into truth/acceptable sets) |
-| `encoder-resolver.ts` | `resolveEncoding()` — resolves encoding for non-direct encoders (choice-set, frontier-step, relay-map). `EncoderConfig`, `FrontierStepConfig`, `ChoiceSetConfig`. |
-| `gate-order.ts` | `evaluateGates()` — 4-gate sequence: semantic-applicability → obligation-satisfaction → encoder-availability → concrete-legality. `GateId` type. |
-| `rule-interpreter.ts` | `collectMatchingClaims()` — collects matching surfaces from `ConventionModule[]` against `AuctionContext`. Replays local FSMs, checks turn/phase/kernel/route constraints. `ModuleSurfaceResult`, `flattenSurfaces()`, `deriveTurnRole()`. |
-| `rule-enumeration.ts` | `enumerateRuleAtoms()`, `generateRuleCoverageManifest()` — walks `ConventionModule[].states[].surfaces[]` for CLI coverage commands. Atom ID format: `moduleId/meaningId`. |
-| `local-fsm.ts` | `advanceLocalFsm()` — advances a module's local phase based on `CommittedStep` observations. Actor-agnostic by design. |
-| `route-matcher.ts` | `matchRoute()` — evaluates `RouteExpr` patterns (subseq, last, contains, and/or/not) against `CommittedStep[]`. `matchObs()` for single observation matching. Supports `ObsPattern.actor` for actor-aware filtering. |
-| `negotiation-matcher.ts` | `matchKernel()` — evaluates `NegotiationExpr` predicates (fit, forcing, captain, competition, combinators) against `NegotiationState` |
-| `negotiation-extractor.ts` | `extractKernelState()` (MachineRegisters → NegotiationState), `computeKernelDelta()` (diff between kernel states) |
-| `committed-step-builder.ts` | `buildCommittedStep()` — constructs one `CommittedStep` from arbitration result + registers + `normalizeIntent` |
-| `observation-log-builder.ts` | `buildObservationLog()` — single-pass O(n) construction of `CommittedStep[]` from per-step data, threading kernel state. Current bid is NOT in the log. |
-| `normalize-intent.ts` | `normalizeIntent()` — translates convention-shaped `sourceIntent` strings into canonical `BidAction[]`. Migration bridge until modules emit observations directly. Unknown intents return `[]`. |
-| `binding-resolver.ts` | `resolveFactId()`, `resolveClause()` — canonical `$suit` placeholder resolution in fact IDs and clauses |
-| `clause-derivation.ts` | `deriveClauseId()`, `deriveClauseDescription()`, `fillClauseDefaults()` — auto-derive clause metadata from factId/operator/value |
-| `specificity-deriver.ts` | `deriveSpecificity()` — counts unique communicative constraint dimensions. Source of truth for surface specificity values. Handles inherited dimensions, `$suit` bindings, exclusion gates. |
-| `specificity-classifier.ts` | `classifySpecificityBasis()` — classifies how a surface's specificity was determined: "derived" (transparent chain to primitives), "asserted" (opaque module-derived fact), or "partial" (mix) |
-| `specificity-canons.ts` | Linearization canons for resolving specificity between incomparable surfaces. Canon numbering is stable (append-only). |
-| `fact-inversion.ts` | `invertComposition()` — converts `FactComposition` trees into `InvertedConstraint` (partial `SeatConstraint`). Used by deal constraint derivation to convert module-derived fact compositions into engine-level constraints. |
-| `fact-factory.ts` | `defineBooleanFact()`, `definePerSuitFacts()`, `defineHcpRangeFact()`, `buildExtension()` — factory helpers for module-derived fact definitions |
+| `run-pipeline.ts` | `runPipeline()` entry point — orchestrates the 4-step core pipeline. |
+| `pipeline-types.ts` | `PipelineResult`, `PipelineCarrier`, `ArbitrationResult`, `EncodedProposal`, `EliminationRecord` |
+| `strategy-evaluation.ts` | `StrategyEvaluation`, `MachineDebugSnapshot`, `ConventionStrategy` |
+| `tree-evaluation.ts` | `CandidateEligibility`, `ResolvedCandidateDTO`, `isDtoSelectable()`, `isDtoTeachingAcceptable()` |
+| `evidence-bundle.ts` | `EvidenceBundle`, `ConditionEvidence`, `ConditionResult` |
+| `bid-action.ts` | `BidAction` discriminated union |
+| `rule-enumeration.ts` | `enumerateRuleAtoms()`, `generateRuleCoverageManifest()` — CLI coverage |
+| `deal-constraint-evaluator.ts` | `evaluateDealConstraint()` — fit-check, combined-hcp, custom |
+| `deal-spec-generator.ts` | `resolveRole()`, `compileDealSpec()`, `generateDealSpec()` |
+| `witness-constants.ts` | Witness generation constants |
+
+## Module Graph (facts/)
+
+| File | Role |
+| ---- | ---- |
+| `fact-evaluator.ts` | `evaluateFacts()` — 3-tier evaluation: primitive, bridge-derived, module-derived. Optional relational + posterior tiers. |
+| `shared-fact-catalog.ts` | `createSharedFactCatalog()`, `SHARED_EVALUATORS` — shared fact catalog |
+| `system-fact-catalog.ts` | System-level fact definitions (HCP thresholds, forcing durations) per bidding system |
+| `hand-fact-resolver.ts` | `createHandFactResolver()` — bridge between fact catalog and posterior sampler |
+| `fact-factory.ts` | `defineBooleanFact()`, `definePerSuitFacts()`, `defineHcpRangeFact()`, `buildExtension()` |
 | `fact-helpers.ts` | Re-exports `num`, `bool`, `fv` fact constraint builder helpers |
-| `fact-utils.ts` | `topologicalSort()` — dependency-ordered sort of `FactDefinition[]` by `derivesFrom` edges |
-| `hand-fact-resolver.ts` | `createHandFactResolver()` — bridge between fact catalog and posterior sampler. Evaluates any factId against a hand using catalog evaluators in dependency order. |
-| `shared-fact-catalog.ts` | `createSharedFactCatalog()`, `SHARED_EVALUATORS` — shared (non-module) fact catalog with primitive and bridge-derived evaluators |
-| `system-fact-catalog.ts` | System-level fact definitions and evaluators for system-semantic facts (HCP thresholds, forcing durations) whose meaning varies by bidding system (SAYC, 2/1, Acol) |
-| `deal-constraint-evaluator.ts` | `evaluateDealConstraint()` — fit-check, combined-hcp, custom constraint evaluation for deal generation |
-| `deal-spec-generator.ts` | `resolveRole()`, `compileDealSpec()`, `generateDealSpec()` — compiles `DealSpec` into engine-level `DealConstraints` for rejection-sampling deal generation |
-| `witness-constants.ts` | Witness generation constants (seat ordering, suit/vulnerability mappings) |
+| `fact-utils.ts` | `topologicalSort()` — dependency-ordered sort of `FactDefinition[]` |
+| `fact-inversion.ts` | `invertComposition()` — converts `FactComposition` to `InvertedConstraint` |
+
+## Module Graph (evaluation/)
+
+| File | Role |
+| ---- | ---- |
+| `meaning.ts` | `BidMeaning`, `MeaningProposal`, `MeaningClause`, `BidMeaningClause` types |
+| `meaning-evaluator.ts` | `evaluateBidMeaning()`, `evaluateAllBidMeanings()` — clause evaluation |
+| `binding-resolver.ts` | `resolveFactId()`, `resolveClause()` — `$suit` placeholder resolution |
+| `clause-derivation.ts` | `deriveClauseId()`, `deriveClauseDescription()`, `fillClauseDefaults()` |
+| `specificity-deriver.ts` | `deriveSpecificity()` — counts unique communicative constraint dimensions |
+| `specificity-classifier.ts` | `classifySpecificityBasis()` — derived/asserted/partial classification |
+| `specificity-canons.ts` | Linearization canons for specificity tiebreaking (stable numbering) |
+| `alert.ts` | `resolveAlert()`, `isAlertable()` — disclosure-based alertability derivation |
+| `meaning-arbitrator.ts` | `arbitrateMeanings()` — tiered selection producing `PipelineResult` |
+| `arbitration-helpers.ts` | `evaluateProposal()`, `classifyIntoSets()` — gate pipeline + bucketing |
+| `encoder-resolver.ts` | `resolveEncoding()` — non-direct encoder resolution |
+| `gate-order.ts` | `evaluateGates()` — 4-gate sequence |
+| `provenance.ts` | `DecisionProvenance`, trace types |
+
+## Module Graph (observation/)
+
+| File | Role |
+| ---- | ---- |
+| `rule-interpreter.ts` | `collectMatchingClaims()` — surface selection via local FSM replay |
+| `local-fsm.ts` | `advanceLocalFsm()` — advances module's local phase |
+| `route-matcher.ts` | `matchRoute()`, `matchObs()` — `RouteExpr` pattern matching |
+| `negotiation-matcher.ts` | `matchKernel()` — `NegotiationExpr` predicate evaluation |
+| `negotiation-extractor.ts` | `extractKernelState()`, `computeKernelDelta()` |
+| `committed-step-builder.ts` | `buildCommittedStep()` — constructs one `CommittedStep` |
+| `observation-log-builder.ts` | `buildObservationLog()` — O(n) `CommittedStep[]` construction |
+| `normalize-intent.ts` | `normalizeIntent()` — intent→`BidAction[]` migration bridge |
 
 ## Pipeline Flow
 
 The core pipeline is a 4-step pure transformation orchestrated by `runPipeline()`:
 
-1. **Surface selection** (`rule-interpreter.ts`) — `collectMatchingClaims()` replays local FSMs per `ConventionModule`, checks turn/phase/kernel/route constraints, returns matching claims (converted to `BidMeaning[]` via `flattenSurfaces()`). This step runs BEFORE `runPipeline()` — the caller provides surfaces.
-2. **Fact evaluation** (`fact-evaluator.ts`) — `evaluateFacts()` runs 3-tier evaluation: primitive (hand → fact), bridge-derived (fact → fact), module-derived (convention-specific). Optional relational and posterior tiers.
-3. **Surface evaluation** (`meaning-evaluator.ts`) — `evaluateAllBidMeanings()` checks each surface's clauses against `EvaluatedFacts`, resolving `$suit` bindings, deriving specificity, and producing `MeaningProposal[]`.
-4. **Encoding + gates + arbitration** (`arbitration-helpers.ts`, `encoder-resolver.ts`, `gate-order.ts`, `meaning-arbitrator.ts`) — Each proposal gets encoding resolved, passes through the 4-gate sequence (semantic → obligation → encoder → legality), then `arbitrateMeanings()` selects the best proposal via band ranking → specificity → precedence → deduplication, producing the final `PipelineResult`.
-
-Everything before the pipeline (surface selection) and after it (result mapping, teaching projection) is handled by the caller (typically `meaning-strategy.ts`).
+1. **Surface selection** (`observation/rule-interpreter.ts`) — replays local FSMs, checks constraints, returns matching claims. Runs BEFORE `runPipeline()`.
+2. **Fact evaluation** (`facts/fact-evaluator.ts`) — 3-tier: primitive → bridge-derived → module-derived.
+3. **Surface evaluation** (`evaluation/meaning-evaluator.ts`) — checks clauses against facts, resolves bindings, derives specificity.
+4. **Encoding + gates + arbitration** (`evaluation/arbitration-helpers.ts`, `evaluation/encoder-resolver.ts`, `evaluation/gate-order.ts`, `evaluation/meaning-arbitrator.ts`) — encode, gate-check, rank, select.
 
 ## Test Architecture
 
-Tests live in `__tests__/` and use:
+Tests live in `__tests__/` (flat) and use:
 - Inline synthetic data (factory functions with `Partial<T>` override pattern)
 - Shared helpers in `__tests__/pipeline-test-helpers.ts`
 - **Zero imports from `conventions/definitions/`** — enforced by design
@@ -63,11 +128,10 @@ Convention-specific integration tests belong in `conventions/__tests__/<bundle-n
 
 ## Absorbed Types (from former core/contracts/)
 
-The following types were absorbed from the dissolved `src/core/contracts/` directory:
-- `meaning.ts` — BidMeaning, MeaningProposal, and meaning-related types
+- `evaluation/meaning.ts` — BidMeaning, MeaningProposal, and meaning-related types
 - `bid-action.ts` — BidAction, intent types
 - `tree-evaluation.ts` — EvaluatedFacts, clause evaluation types
-- `provenance.ts` — DecisionProvenance, ActivationTrace
+- `evaluation/provenance.ts` — DecisionProvenance, ActivationTrace
 - `evidence-bundle.ts` — EvidenceBundle, evidence types
 
 ## Boundary Rules
@@ -88,6 +152,6 @@ the code, and it belongs at this scope.
 **Remove** any entry that fails the falsifiability test: if removing it would not change
 how an agent acts here, remove it.
 
-**Staleness anchor:** This file assumes `run-pipeline.ts` and `meaning-evaluator.ts` exist. If they don't, this file is stale — update or regenerate before relying on it.
+**Staleness anchor:** This file assumes `run-pipeline.ts` and `evaluation/meaning-evaluator.ts` exist. If they don't, this file is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-03-22 | last-audited=2026-03-22 | version=1 | dir-commits-at-audit=70 -->
+<!-- context-layer: generated=2026-03-25 | last-audited=2026-03-25 | version=2 | dir-commits-at-audit=75 -->

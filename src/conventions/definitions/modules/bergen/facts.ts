@@ -2,9 +2,9 @@ import { FactLayer } from "../../../core/fact-layer";
 import type {
   FactCatalogExtension,
 } from "../../../core/fact-catalog";
-import { num, fv } from "../../../pipeline/fact-helpers";
-import { buildExtension } from "../../../pipeline/fact-factory";
-import type { FactEntry } from "../../../pipeline/fact-factory";
+import { num, fv } from "../../../pipeline/facts/fact-helpers";
+import { buildExtension } from "../../../pipeline/facts/fact-factory";
+import type { FactEntry } from "../../../pipeline/facts/fact-factory";
 import { BERGEN_FACT_IDS, BERGEN_CLAUSE_FACT_IDS } from "./ids";
 
 // ─── Bergen module facts (factory-based) ─────────────────────

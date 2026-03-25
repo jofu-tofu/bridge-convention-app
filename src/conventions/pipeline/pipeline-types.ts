@@ -1,7 +1,7 @@
 import type { Call } from "../../engine/types";
 import type { CandidateEligibility } from "./tree-evaluation";
-import type { MeaningProposal } from "./meaning";
-import type { DecisionProvenance } from "./provenance";
+import type { MeaningProposal } from "./evaluation/meaning";
+import type { DecisionProvenance } from "./evaluation/provenance";
 import type {
   ApplicabilityEvidence,
   ActivationTrace,
@@ -10,7 +10,7 @@ import type {
   HandoffTrace,
   LegalityTrace,
   EliminationTrace,
-} from "./provenance";
+} from "./evaluation/provenance";
 import type { EvidenceBundle } from "./evidence-bundle";
 
 /** Meaning after call assignment. */

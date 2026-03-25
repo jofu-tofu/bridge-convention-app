@@ -7,10 +7,10 @@
 
 import { BidSuit } from "../engine/types";
 import type { Call } from "../engine/types";
-import type { BidMeaning, AuthoredRankingMetadata, RankingMetadata, MeaningClause, MeaningProposal } from "../conventions/pipeline/meaning";
+import type { BidMeaning, AuthoredRankingMetadata, RankingMetadata, MeaningClause, MeaningProposal } from "../conventions/pipeline/evaluation/meaning";
 import type { ArbitrationResult, EncodedProposal, PipelineCarrier, PipelineResult } from "../conventions";
 import type { CandidateEligibility } from "../conventions/pipeline/tree-evaluation";
-import type { DecisionProvenance, EncodingTrace, LegalityTrace } from "../conventions/pipeline/provenance";
+import type { DecisionProvenance, EncodingTrace, LegalityTrace } from "../conventions/pipeline/evaluation/provenance";
 import type { FactExplanationEntry, MeaningExplanationEntry } from "../conventions/core/explanation-catalog";
 /** Create a minimal BidMeaning with override support. */
 export function makeSurface(overrides: Partial<BidMeaning> & { meaningId?: string; moduleId?: string } = {}): BidMeaning {

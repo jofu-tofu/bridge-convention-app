@@ -1,4 +1,4 @@
-import type { FactOperator } from "../pipeline/meaning";
+import type { FactOperator } from "../pipeline/evaluation/meaning";
 
 // ─── Auction pattern matching ───────────────────────────────
 export type AuctionPattern =

@@ -1,6 +1,6 @@
 import type { Call } from "../../engine/types";
 import type { ConditionResult } from "./evidence-bundle";
-import type { RecommendationBand } from "./meaning";
+import type { RecommendationBand } from "./evaluation/meaning";
 
 export interface SiblingConditionDetail extends Omit<ConditionResult, "satisfied"> {
   readonly name: string;

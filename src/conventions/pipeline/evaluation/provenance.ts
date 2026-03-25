@@ -1,5 +1,5 @@
-import type { Call } from "../../engine/types";
-import type { ConditionEvidence } from "./evidence-bundle";
+import type { Call } from "../../../engine/types";
+import type { ConditionEvidence } from "../evidence-bundle";
 
 /** Kind of encoder used for call assignment. */
 export type EncoderKind = "default-call" | "resolver" | "alternate-encoding" | "frontier-step" | "relay-map";

@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { normalizeIntent } from "../normalize-intent";
+import { normalizeIntent } from "../observation/normalize-intent";
 import type { BidAction } from "../bid-action";
 import { getAllModules } from "../../definitions/module-registry";
 import { moduleSurfaces } from "../../core/convention-module";

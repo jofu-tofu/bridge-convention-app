@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
-import { evaluateFacts } from "../fact-evaluator";
-import { createSharedFactCatalog } from "../shared-fact-catalog";
+import { evaluateFacts } from "../facts/fact-evaluator";
+import { createSharedFactCatalog } from "../facts/shared-fact-catalog";
 import { createFactCatalog } from "../../core/fact-catalog";
 import { SHARED_FACTS } from "../../core/shared-facts";
 import type { PublicConstraint } from "../../core/agreement-module";
-import type { RelationalFactContext } from "../fact-evaluator";
+import type { RelationalFactContext } from "../facts/fact-evaluator";
 import { FactLayer } from "../../core/fact-layer";
 
 function sharedFactsFor(...notations: string[]) {

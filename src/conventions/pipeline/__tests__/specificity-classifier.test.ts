@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { classifySpecificityBasis } from "../specificity-classifier";
+import { classifySpecificityBasis } from "../evaluation/specificity-classifier";
 import { makeSurface } from "../../../test-support/convention-factories";
 import { FactLayer } from '../../core/fact-layer';
 import type { FactCatalogExtension, FactDefinition } from "../../core/fact-catalog";
-import type { BidMeaningClause } from "../meaning";
+import type { BidMeaningClause } from "../evaluation/meaning";
 
 // ─── Helpers ────────────────────────────────────────────────
 

@@ -1,8 +1,8 @@
 import type {
   PipelineCarrier,
   PipelineResult,
-} from "./pipeline-types";
-import type { Call } from "../../engine/types";
+} from "../pipeline-types";
+import type { Call } from "../../../engine/types";
 import type { BidMeaning } from "./meaning";
 import type {
   ArbitrationTrace,
@@ -17,10 +17,10 @@ import type {
   ConditionEvidence,
   RejectionEvidence,
   AlternativeEvidence,
-} from "./evidence-bundle";
-import type { DeclaredEncoderKind } from "../core/agreement-module";
+} from "../evidence-bundle";
+import type { DeclaredEncoderKind } from "../../core/agreement-module";
 import type { EncoderConfig } from "./encoder-resolver";
-import { formatCallForEvidence } from "../../engine/call-helpers";
+import { formatCallForEvidence } from "../../../engine/call-helpers";
 
 /** Input to the arbitrator: a proposal paired with the surface it came from. */
 export interface ArbitrationInput {

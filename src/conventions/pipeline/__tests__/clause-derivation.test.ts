@@ -3,7 +3,7 @@ import {
   deriveClauseId,
   deriveClauseDescription,
   fillClauseDefaults,
-} from "../clause-derivation";
+} from "../evaluation/clause-derivation";
 
 describe("deriveClauseId", () => {
   it("produces deterministic ID for number + gte", () => {

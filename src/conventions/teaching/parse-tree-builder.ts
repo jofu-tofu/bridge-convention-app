@@ -9,7 +9,7 @@
  */
 
 import type { ArbitrationResult } from "../pipeline/pipeline-types";
-import type { DecisionProvenance } from "../pipeline/provenance";
+import type { DecisionProvenance } from "../pipeline/evaluation/provenance";
 import type { Call } from "../../engine/types";
 import type {
   ParseTreeView,

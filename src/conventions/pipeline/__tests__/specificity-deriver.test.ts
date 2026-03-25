@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { deriveSpecificity } from "../specificity-deriver";
+import { deriveSpecificity } from "../evaluation/specificity-deriver";
 import { makeSurface } from "../../../test-support/convention-factories";
 import { FactLayer } from '../../core/fact-layer';
 import type { FactCatalogExtension, FactDefinition } from "../../core/fact-catalog";
-import type { BidMeaningClause } from "../meaning";
+import type { BidMeaningClause } from "../evaluation/meaning";
 
 // ─── Helpers ────────────────────────────────────────────────
 

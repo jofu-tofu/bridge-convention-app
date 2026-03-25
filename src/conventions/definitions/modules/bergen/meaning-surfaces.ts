@@ -1,4 +1,4 @@
-import type { BidMeaning } from "../../../pipeline/meaning";
+import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
 import { BidSuit } from "../../../../engine/types";
 import { BERGEN_CLASSES, BERGEN_MEANING_BY_SUIT, BERGEN_MEANING_IDS, BERGEN_CLAUSE_FACT_IDS } from "./ids";
 import { bid, suitToBidSuit, otherMajorBidSuit } from "../../../core/surface-helpers";

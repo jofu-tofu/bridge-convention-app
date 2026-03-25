@@ -17,7 +17,7 @@ import type { ConventionModule } from "../../core/convention-module";
 import { getModules } from "../../definitions/module-registry";
 
 import { buildObservationLogViaRules } from "../../adapter/protocol-adapter";
-import { collectMatchingClaims } from "../../pipeline/rule-interpreter";
+import { collectMatchingClaims } from "../../pipeline/observation/rule-interpreter";
 
 const allRuleModules: readonly ConventionModule[] = getModules([
   "natural-nt",

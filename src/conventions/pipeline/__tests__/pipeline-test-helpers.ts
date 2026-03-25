@@ -2,8 +2,8 @@
 
 import type { Call } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
-import type { MeaningProposal } from "../meaning";
-import type { ArbitrationInput } from "../meaning-arbitrator";
+import type { MeaningProposal } from "../evaluation/meaning";
+import type { ArbitrationInput } from "../evaluation/meaning-arbitrator";
 import type { CandidateEligibility } from "../tree-evaluation";
 import { makeCall, makePass, makeRanking } from "../../../test-support/convention-factories";
 
