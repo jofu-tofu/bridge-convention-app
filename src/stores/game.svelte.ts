@@ -799,11 +799,13 @@ export function createGameStore(
     } else {
       transitionToExplanation();
     }
+    await tick();
   }
 
   async function handleSkipToExplanation(finalAuction: Auction) {
     contract = await engine.getContract(finalAuction);
     transitionToExplanation();
+    await tick();
   }
 
   async function initBidding(bundle: DrillBundle, initialAiBids?: readonly AiBidEntry[], initialLegalCalls?: readonly Call[], initialAuctionComplete?: boolean) {
@@ -1232,6 +1234,11 @@ export function createGameStore(
         const log = await activeService.getDebugLog(activeHandle);
         debugLog = [...log] as DebugLogEntry[];
       }
+      // Ensure all pending state changes are flushed — without this,
+      // the Svelte batch system can get stuck after async initialization,
+      // preventing subsequent reactive updates (clicks, timers) from
+      // reaching the DOM.
+      await tick();
     },
 
     // Bidding actions

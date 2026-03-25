@@ -42,7 +42,6 @@
   } as const;
 
   let dealNumber = $state(0);
-
   // Refresh legal plays when current player changes during PLAYING phase
   $effect(() => {
     const player = gameStore.currentPlayer;
