@@ -913,10 +913,6 @@ exports[`deal constraint baseline > nt-stayman > 2/1 > dealConstraints snapshot 
       "seat": "N",
     },
     {
-      "maxLength": {
-        "H": 4,
-        "S": 4,
-      },
       "minHcp": 8,
       "minLengthAny": {
         "H": 4,
@@ -946,10 +942,7 @@ exports[`deal constraint baseline > nt-stayman > 2/1 > dealConstraints structura
   "balanced": undefined,
   "hasCustomCheck": false,
   "maxHcp": undefined,
-  "maxLength": {
-    "H": 4,
-    "S": 4,
-  },
+  "maxLength": undefined,
   "minHcp": 8,
   "minLength": undefined,
   "minLengthAny": {
@@ -1015,10 +1008,6 @@ exports[`deal constraint baseline > nt-stayman > Acol > dealConstraints snapshot
       "seat": "N",
     },
     {
-      "maxLength": {
-        "H": 4,
-        "S": 4,
-      },
       "minHcp": 10,
       "minLengthAny": {
         "H": 4,
@@ -1048,10 +1037,7 @@ exports[`deal constraint baseline > nt-stayman > Acol > dealConstraints structur
   "balanced": undefined,
   "hasCustomCheck": false,
   "maxHcp": undefined,
-  "maxLength": {
-    "H": 4,
-    "S": 4,
-  },
+  "maxLength": undefined,
   "minHcp": 10,
   "minLength": undefined,
   "minLengthAny": {
@@ -1117,10 +1103,6 @@ exports[`deal constraint baseline > nt-stayman > SAYC > dealConstraints snapshot
       "seat": "N",
     },
     {
-      "maxLength": {
-        "H": 4,
-        "S": 4,
-      },
       "minHcp": 8,
       "minLengthAny": {
         "H": 4,
@@ -1150,10 +1132,7 @@ exports[`deal constraint baseline > nt-stayman > SAYC > dealConstraints structur
   "balanced": undefined,
   "hasCustomCheck": false,
   "maxHcp": undefined,
-  "maxLength": {
-    "H": 4,
-    "S": 4,
-  },
+  "maxLength": undefined,
   "minHcp": 8,
   "minLength": undefined,
   "minLengthAny": {

@@ -51,6 +51,10 @@ export const STAYMAN_MEANING_IDS = {
   // R3 after 2D denial: Responder continuation
   NT_GAME_AFTER_DENIAL: "stayman:nt-game-after-denial",
   NT_INVITE_AFTER_DENIAL: "stayman:nt-invite-after-denial",
+
+  // R3 after 2D denial: Show 5-card major (5-4 in majors, invitational)
+  SHOW_FIVE_HEARTS_AFTER_DENIAL: "stayman:show-five-hearts-after-denial",
+  SHOW_FIVE_SPADES_AFTER_DENIAL: "stayman:show-five-spades-after-denial",
 } as const;
 
 export type StaymanMeaningId =
@@ -74,4 +78,5 @@ export const STAYMAN_R3_CLASSES = {
   NT_INVITE_NO_FIT: "stayman:nt-invite-no-fit",
   NT_GAME_DENIAL: "stayman:nt-game-denial",
   NT_INVITE_DENIAL: "stayman:nt-invite-denial",
+  SHOW_FIVE_CARD_MAJOR: "stayman:show-five-card-major",
 } as const;

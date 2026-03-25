@@ -53,6 +53,7 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
   // ── Stayman ──────────────────────────────────────────────────────
   ["StaymanAsk", () => [{ act: "inquire", feature: "majorSuit" }]],
   ["ShowHeldSuit", (p) => [{ act: "show", feature: "heldSuit", suit: suit(p) }]],
+  ["ShowFiveCardMajor", (p) => [{ act: "show", feature: "heldSuit", suit: suit(p) }]],
   ["DenyMajor", () => [{ act: "deny", feature: "majorSuit" }]],
   ["RaiseGame", (p) => [{ act: "raise", strain: strain(p), strength: "game" }]],
   ["RaiseInvite", (p) => [{ act: "raise", strain: strain(p), strength: "invitational" }]],

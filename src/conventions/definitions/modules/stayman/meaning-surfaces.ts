@@ -51,7 +51,51 @@ export function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
     declarationOrder: 0,
     sourceIntent: { type: "StaymanAsk", params: {} },
     disclosure: "standard",
-    teachingLabel: "Stayman 2♣",
+    teachingLabel: "Stayman 2\u2663",
+  }, STAYMAN_CTX);
+}
+
+/** Factory: creates the Stayman R1 entry for 5-4 major invitational hands. */
+export function createStaymanR1FiveFourSurface(sys: SystemConfig): BidMeaning {
+  return createSurface({
+    meaningId: STAYMAN_MEANING_IDS.ASK_MAJOR,
+    semanticClassId: STAYMAN_CLASSES.ASK,
+    encoding: bid(2, BidSuit.Clubs),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
+        operator: "boolean",
+        value: true,
+        description: `Invite values (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.hearts",
+        operator: "gte",
+        value: 4,
+        description: "4+ hearts",
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.spades",
+        operator: "gte",
+        value: 4,
+        description: "4+ spades",
+        isPublic: true,
+      },
+      {
+        factId: "bridge.hasFiveCardMajor",
+        operator: "boolean",
+        value: true,
+        description: "5-4 in majors (use Stayman to find the 4-4 fit)",
+        isPublic: true,
+      },
+    ],
+    band: "should",
+    declarationOrder: 1,
+    sourceIntent: { type: "StaymanAsk", params: { reason: "five-four-majors" } },
+    disclosure: "standard",
+    teachingLabel: "Stayman 2\u2663 (5-4 majors, invitational)",
   }, STAYMAN_CTX);
 }
 
@@ -375,6 +419,74 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
   }, STAYMAN_CTX),
 
   createSurface({
+    meaningId: STAYMAN_MEANING_IDS.SHOW_FIVE_HEARTS_AFTER_DENIAL,
+    semanticClassId: STAYMAN_R3_CLASSES.SHOW_FIVE_CARD_MAJOR,
+    encoding: bid(2, BidSuit.Hearts),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
+        operator: "boolean",
+        value: true,
+        description: `Invite values (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.hearts",
+        operator: "gte",
+        value: 5,
+        description: "5+ hearts (show the 5-card major after denial)",
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.spades",
+        operator: "gte",
+        value: 4,
+        description: "4+ spades (had 5-4 pattern for Stayman entry)",
+        isPublic: true,
+      },
+    ],
+    band: "should",
+    declarationOrder: 1,
+    sourceIntent: { type: "ShowFiveCardMajor", params: { suit: "hearts" } },
+    disclosure: "alert",
+    teachingLabel: "2\u2665 (5 hearts, 4 spades, invitational)",
+  }, STAYMAN_CTX),
+
+  createSurface({
+    meaningId: STAYMAN_MEANING_IDS.SHOW_FIVE_SPADES_AFTER_DENIAL,
+    semanticClassId: STAYMAN_R3_CLASSES.SHOW_FIVE_CARD_MAJOR,
+    encoding: bid(2, BidSuit.Spades),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
+        operator: "boolean",
+        value: true,
+        description: `Invite values (${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP)`,
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.spades",
+        operator: "gte",
+        value: 5,
+        description: "5+ spades (show the 5-card major after denial)",
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.hearts",
+        operator: "gte",
+        value: 4,
+        description: "4+ hearts (had 5-4 pattern for Stayman entry)",
+        isPublic: true,
+      },
+    ],
+    band: "should",
+    declarationOrder: 2,
+    sourceIntent: { type: "ShowFiveCardMajor", params: { suit: "spades" } },
+    disclosure: "alert",
+    teachingLabel: "2\u2660 (5 spades, 4 hearts, invitational)",
+  }, STAYMAN_CTX),
+
+  createSurface({
     meaningId: STAYMAN_MEANING_IDS.NT_INVITE_AFTER_DENIAL,
     semanticClassId: STAYMAN_R3_CLASSES.NT_INVITE_DENIAL,
     encoding: bid(2, BidSuit.NoTrump),
@@ -388,7 +500,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
       },
     ],
     band: "should",
-    declarationOrder: 1,
+    declarationOrder: 3,
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "denial" } },
     disclosure: "alert",
     teachingLabel: "2NT invite after denial",

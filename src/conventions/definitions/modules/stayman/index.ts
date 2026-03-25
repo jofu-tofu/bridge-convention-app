@@ -5,6 +5,7 @@ import type { SystemConfig } from "../../system-config";
 
 import {
   createStaymanR1Surface,
+  createStaymanR1FiveFourSurface,
   OPENER_STAYMAN_SURFACES,
   createStaymanR3After2HSurfaces,
   createStaymanR3After2SSurfaces,
@@ -18,6 +19,7 @@ import { STAYMAN_EXPLANATION_ENTRIES } from "./explanation-catalog";
 export { STAYMAN_CLASSES, STAYMAN_R3_CLASSES } from "./ids";
 export {
   createStaymanR1Surface,
+  createStaymanR1FiveFourSurface,
   OPENER_STAYMAN_SURFACES,
   createStaymanR3After2HSurfaces,
   createStaymanR3After2SSurfaces,
@@ -48,7 +50,7 @@ export const staymanLocal: LocalFsm<StaymanPhase> = {
 
 export function createStaymanStates(sys: SystemConfig): readonly StateEntry<StaymanPhase>[] {
   return [
-    { phase: "idle", turn: "responder" as const, negotiationDelta: STAYMAN_ASK_DELTA, surfaces: [createStaymanR1Surface(sys)] },
+    { phase: "idle", turn: "responder" as const, negotiationDelta: STAYMAN_ASK_DELTA, surfaces: [createStaymanR1Surface(sys), createStaymanR1FiveFourSurface(sys)] },
     { phase: "asked", turn: "opener" as const, negotiationDelta: STAYMAN_RESPONSE_DELTA, surfaces: OPENER_STAYMAN_SURFACES },
     { phase: "shown-hearts", turn: "responder" as const, surfaces: createStaymanR3After2HSurfaces(sys) },
     { phase: "shown-spades", turn: "responder" as const, surfaces: createStaymanR3After2SSurfaces(sys) },
@@ -77,7 +79,7 @@ export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
     principle: "Always check for a 4-4 major fit before settling in notrump — majors score better and play easier with a trump suit.",
     commonMistakes: [
       "Don't use Stayman with 4-3-3-3 shape — prefer a quantitative raise since you have no ruffing value",
-      "With 5-4 in the majors, transfers are usually better than Stayman — transfer first to guarantee the 5-card suit is shown",
+      "With 5-4 in the majors, start with Stayman to find the 4-4 fit — after a 2D denial, bid your 5-card major at the 2-level (invitational, non-forcing)",
     ],
   },
   ...createStaymanDeclarations(sys),

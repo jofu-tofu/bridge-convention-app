@@ -53,9 +53,9 @@ const STAYMAN_FACTS: readonly FactDefinition[] = [
     id: STAYMAN_FACT_IDS.PREFERRED,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
-    description: "Stayman preferred (eligible AND no 5-card major)",
+    description: "Stayman preferred (eligible AND either no 5-card major OR 5-4 in both majors)",
     valueType: "boolean",
-    derivesFrom: [STAYMAN_FACT_IDS.ELIGIBLE, "bridge.hasFiveCardMajor"],
+    derivesFrom: [STAYMAN_FACT_IDS.ELIGIBLE, "bridge.hasFiveCardMajor", "hand.suitLength.hearts", "hand.suitLength.spades"],
     constrainsDimensions: ["suitIdentity"],
   },
 ];
@@ -66,8 +66,16 @@ function createStaymanEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn
   return new Map<string, FactEvaluatorFn>([
     [STAYMAN_FACT_IDS.ELIGIBLE, (_h, _ev, m) =>
       fv(STAYMAN_FACT_IDS.ELIGIBLE, bool(m, "bridge.hasFourCardMajor") && num(m, "hand.hcp") >= minHcp)],
-    [STAYMAN_FACT_IDS.PREFERRED, (_h, _ev, m) =>
-      fv(STAYMAN_FACT_IDS.PREFERRED, bool(m, STAYMAN_FACT_IDS.ELIGIBLE) && !bool(m, "bridge.hasFiveCardMajor"))],
+    [STAYMAN_FACT_IDS.PREFERRED, (_h, _ev, m) => {
+      const eligible = bool(m, STAYMAN_FACT_IDS.ELIGIBLE);
+      if (!eligible) return fv(STAYMAN_FACT_IDS.PREFERRED, false);
+      const hasFiveMajor = bool(m, "bridge.hasFiveCardMajor");
+      if (!hasFiveMajor) return fv(STAYMAN_FACT_IDS.PREFERRED, true);
+      // Has a 5-card major — prefer Stayman only with 5-4 in both majors
+      const hearts = num(m, "hand.suitLength.hearts");
+      const spades = num(m, "hand.suitLength.spades");
+      return fv(STAYMAN_FACT_IDS.PREFERRED, hearts >= 4 && spades >= 4);
+    }],
   ]);
 }
 

@@ -168,6 +168,22 @@ const MEANING_EXPLANATIONS: Record<StaymanMeaningId, MeaningExplanationEntry> = 
     preferredLevel: "semantic",
     roles: ["pedagogical"],
   },
+  [STAYMAN_MEANING_IDS.SHOW_FIVE_HEARTS_AFTER_DENIAL]: {
+    explanationId: "nt.stayman.showFiveHeartsAfterDenial",
+    meaningId: STAYMAN_MEANING_IDS.SHOW_FIVE_HEARTS_AFTER_DENIAL,
+    templateKey: "nt.stayman.showFiveHeartsAfterDenial.semantic",
+    displayText: "Bid 2\u2665 showing 5 hearts and 4 spades (invitational, non-forcing)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [STAYMAN_MEANING_IDS.SHOW_FIVE_SPADES_AFTER_DENIAL]: {
+    explanationId: "nt.stayman.showFiveSpadesAfterDenial",
+    meaningId: STAYMAN_MEANING_IDS.SHOW_FIVE_SPADES_AFTER_DENIAL,
+    templateKey: "nt.stayman.showFiveSpadesAfterDenial.semantic",
+    displayText: "Bid 2\u2660 showing 5 spades and 4 hearts (invitational, non-forcing)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
 };
 
 // ─── Composed export ────────────────────────────────────────

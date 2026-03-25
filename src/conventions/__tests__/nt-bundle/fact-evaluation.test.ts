@@ -88,7 +88,7 @@ describe("NT bundle fact evaluation", () => {
     );
     expect(val(result, "hand.hcp")).toBe(10);
     expect(val(result, "module.stayman.eligible")).toBe(true);
-    expect(val(result, "module.stayman.preferred")).toBe(false);
+    expect(val(result, "module.stayman.preferred")).toBe(true);
     expect(val(result, "module.transfer.eligible")).toBe(true);
     expect(val(result, "module.transfer.targetSuit")).toBe("hearts");
   });

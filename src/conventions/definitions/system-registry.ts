@@ -87,7 +87,7 @@ const ntBundleInput: BundleInput = {
     whenNotToUse: [
       "0-7 HCP with no 5-card major — pass",
       "5+ card major with no 4-card in the other major — use transfer, not Stayman",
-      "5-4 in majors with only invite values (8-9 HCP) — transfer to the 5-card major",
+      "5-4 in majors with invite values (8-9 HCP) — use Stayman, then show the 5-card major after 2D denial",
       "4333 shape with 8-9 HCP — 2NT invite may be better than Stayman",
     ],
     tradeoff:
