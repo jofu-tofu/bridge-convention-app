@@ -9,6 +9,7 @@
   import LearningScreen from "./components/screens/LearningScreen.svelte";
   import SettingsScreen from "./components/screens/SettingsScreen.svelte";
   import CoverageScreen from "./components/screens/CoverageScreen.svelte";
+  import ProfilesScreen from "./components/screens/ProfilesScreen.svelte";
 
   interface Props {
     engine: EnginePort;
@@ -36,6 +37,8 @@
     <SettingsScreen />
   {:else if props.appStore.screen === "coverage"}
     <CoverageScreen />
+  {:else if props.appStore.screen === "profiles"}
+    <ProfilesScreen />
   {:else}
     <div class="flex h-screen items-center justify-center text-red-400">
       <p>Unknown screen: {props.appStore.screen}</p>

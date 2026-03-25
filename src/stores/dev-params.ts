@@ -17,6 +17,13 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     return;
   }
 
+  // Profiles page — view base system profiles
+  const profilesParam = params.get("profiles");
+  if (profilesParam === "true") {
+    store.navigateToProfiles();
+    return;
+  }
+
   // Seed parameter works in all modes — enables reproducible deals for sharing/debugging
   const seedParam = params.get("seed");
   if (seedParam !== null) {

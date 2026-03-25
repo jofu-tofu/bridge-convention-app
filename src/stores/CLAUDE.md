@@ -14,7 +14,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 | File                 | Role                                                                                               |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
-| `app.svelte.ts`      | `createAppStore()` — screen navigation (`select`/`game`/`learning`/`coverage`), selected convention, `learningConvention` / `learningModuleId` / `learningBundleFilter` state (module-centric learning), `coverageBundle` state, dev seed state, autoplay flag, `drillTuning` state (`DrillTuning` from `service/drill-types`, persisted to localStorage — vulnerability distribution, off-convention toggle/rate) |
+| `app.svelte.ts`      | `createAppStore()` — screen navigation (`select`/`game`/`learning`/`coverage`/`profiles`), selected convention, `learningConvention` / `learningModuleId` / `learningBundleFilter` state (module-centric learning), `coverageBundle` state, dev seed state, autoplay flag, `drillTuning` state (`DrillTuning` from `service/drill-types`, persisted to localStorage — vulnerability distribution, off-convention toggle/rate) |
 | `game.svelte.ts`     | `createGameStore(engine)` — coordinator/facade, phase machine, drill lifecycle, delegates to sub-stores |
 | `bidding.svelte.ts`  | Bidding sub-store — auction state, bid history, feedback, AI bid loop, convention strategy          |
 | `play.svelte.ts`     | Play sub-store — trick state, AI play loop, score calculation, legal plays                         |

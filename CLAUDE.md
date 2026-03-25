@@ -34,6 +34,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **Autoplay:** `?autoplay=true` auto-bids correct calls, dismisses feedback, and skips declarer prompts to reach Review phase instantly. Combine with convention: `?convention=nt-bundle&autoplay=true`
 - **Target surface:** `?targetSurface=Z` exercises a specific meaning surface at target state
 - **Coverage screen:** `?coverage=true&convention=X` opens coverage screen for a specific bundle
+- **Profiles screen:** `?profiles=true` opens the base system profiles screen (SAYC/2-1/Acol comparison)
 - **CLI coverage:** `npx tsx src/cli/main.ts list --bundle=nt-bundle` runs headless coverage tests. Subcommands: `list` (enumerate atoms), `eval` (per-atom evaluation), `play` (playthrough evaluation), `selftest` (CI mode), `plan` (evaluation plan). Same seed = same deal across `eval`/`eval --bid`.
 - **Compositional verification:** `npx tsx src/cli/main.ts verify preflight --bundle=nt-bundle --budget=fast` runs full structural health check (lint + interference + exploration + fuzz). Individual runtime stages: `verify explore`, `verify motif`, `verify fuzz`. Static checks (lint, interference) run as vitest tests and internally as part of preflight.
 - **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-P` (pass), `bid-X` (double), `bid-XX` (redouble). Container test IDs: `level-bids` (contract grid), `special-bids` (pass/dbl/rdbl row).
@@ -70,6 +71,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 - **Semantic ownership: fields belong where they mean something.** Before adding a field to a type, ask: "does this describe what this type IS, or is it metadata about how something else uses it?" Derive what you can from existing data; don't store what can be computed.
 - **No backwards compatibility during migrations.** When refactoring types or interfaces, delete the old versions immediately. Do not keep deprecated shims or backward-compat aliases — removing them lets the compiler surface every call site that needs updating, ensuring the migration is completed fully rather than left half-done.
 - **Hexagonal architecture: service as the port.** The system is moving toward a clean front-end / back-end split. `ServicePort` is the hexagonal port — all game logic lives behind it, and all UI consumers (stores, components) call through it. This enables: (1) server-side deployment of convention logic, (2) tiered WASM builds, (3) a remote service adapter replacing `local-service.ts`. When evaluating any change, ask: "does this work if service runs on a different machine?" If it requires the UI to import backend types directly, it's wrong.
+- **Refactor before feature work.** When a new feature would be cleaner with a structural change, do the refactor first as a separate step — then build the feature on the clean foundation. The codebase must stay clean at all times; never bolt a feature onto messy code when a refactor would make the integration natural.
 - **Bundle-specific knowledge stays in the bundle.** Infrastructure modules (`inference/`, `conventions/core/`, `conventions/pipeline/`) must not contain convention-specific fact IDs, heuristics, or special-case logic. If a behavior differs between conventions, the bundle declares it (e.g., `isPublic` on clauses) and the framework reads the declaration.
 - **System-agnostic modules, system-aware facts.** Modules never import concrete system configs or branch on system identity. System-level differences (HCP thresholds, forcing durations) are expressed as `SystemConfig` fields, surfaced as system facts via `system-fact-vocabulary.ts` (in `conventions/definitions/`), and referenced in surface clauses. See `src/conventions/definitions/CLAUDE.md` for the module author guide.
 
@@ -157,6 +159,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 - **Mandatory explanation entries.** Every module-derived fact and meaning must have an explanation entry. Compile-time enforcement via `Record<ModuleFactId, FactExplanationEntry>` and `Record<ModuleMeaningId, MeaningExplanationEntry>` in per-module `explanation-catalog.ts` files. The platform explanation catalog (`shared-explanation-catalog.ts` in `conventions/core/`) covers shared and system fact IDs. Per-module typed ID constants (in `ids.ts`) ensure compile-time tracking of all IDs across the codebase.
 - **Grading is deterministic.** Same hand + same auction = same grade. No probabilistic scoring in V1.
 - **Opponent modes:** "none" (opponents always pass) or "natural" (opponents bid with 6+ HCP and 5+ suit). Configurable via settings dropdown, persisted in localStorage.
+- **Play profiles:** Opponent card play difficulty via `PlayProfileId` ("beginner" | "club-player" | "expert") in `DrillSettings`. Beginner uses heuristic chain with skip errors, Club Player adds inference-enhanced heuristics from `PlayContext.inferences`, Expert adds card counting and restricted choice. `PlayStrategyProvider` DI interface wired through `config-factory` → `SessionState` → `play-controller`. Expert provider's `onAuctionComplete()` called at auction end. UI selector not yet built.
 
 ## Roadmap
 
@@ -165,7 +168,7 @@ The app separates two concerns: **deterministic convention teaching** and **prob
 **Upcoming (all blocked on design work or specs):**
 
 1. **User Learning Enhancements** — learning screen needs rebuild + design spec.
-2. **Difficulty Configuration** — blocked on design spec (posterior consumer migration complete).
+2. **Difficulty Configuration** — play profiles implemented (beginner/club-player/expert), UI selector needed. Blocked on UI design spec.
 3. **Convention Migration** — Lebensohl (blocked on relay encoding spec), Negative Doubles (blocked on host-attachment exercise), SAYC (full base system).
 
 ## Architecture Spec & Alignment

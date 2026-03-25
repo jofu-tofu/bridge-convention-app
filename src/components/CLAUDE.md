@@ -67,6 +67,10 @@ components/
     ConventionSelectScreen.svelte    Convention picker with search + category filter + learn buttons
     LearningScreen.svelte            Module-centric learning screen: sidebar lists modules (filterable by bundle), main content shows module teaching (principle/tradeoff/mistakes) + surfaces grouped by conversation phase
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
+    ProfilesScreen.svelte            Read-only base system profiles (SAYC/2-1/Acol) with detail + compare views
+    SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards
+    SystemCompareView.svelte         Side-by-side 4-column comparison table with diff highlighting
+    profile-display.ts               Pure display logic: category definitions, value formatting, comparison helpers
     game-screen/
       GameScreen.svelte              Phase router + responsive layout + drill lifecycle (~280 LOC)
       BiddingPhase.svelte            Bidding phase template (pure — data via props)
@@ -127,7 +131,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → [optional DECLARER_PROMPT → optional PLAYING →] EXPLANATION) | ConventionSelectScreen → LearningScreen (module-centric: sidebar lists modules, main content shows teaching + phase-grouped surfaces) | ConventionSelectScreen → CoverageScreen (bundle picker → target drill-down)
+**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → [optional DECLARER_PROMPT → optional PLAYING →] EXPLANATION) | ConventionSelectScreen → LearningScreen (module-centric: sidebar lists modules, main content shows teaching + phase-grouped surfaces) | ConventionSelectScreen → CoverageScreen (bundle picker → target drill-down) | ConventionSelectScreen → ProfilesScreen (system detail tabs + compare toggle)
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 

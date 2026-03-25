@@ -90,7 +90,7 @@ export { getModule } from "../conventions";
 export type { ConventionContribution, ParseTreeView, TeachingProjection, CallProjection, MeaningView, WhyNotEntry } from "../conventions/teaching/teaching-types";
 export type { EncoderKind } from "../conventions/pipeline/provenance";
 export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../conventions/definitions/system-config";
-export type { BaseSystemId } from "../conventions/definitions/system-config";
+export type { BaseSystemId, SystemConfig } from "../conventions/definitions/system-config";
 
 // ── Convention card ──
 export { buildConventionCard } from "./display/convention-card";
@@ -109,6 +109,8 @@ export type { PosteriorFactValue } from "../inference/posterior/posterior-types"
 
 export type { OpponentMode, VulnerabilityDistribution } from "../session/drill-types";
 export { DEFAULT_DRILL_TUNING } from "../session/drill-types";
+export type { PlayProfileId } from "../session/heuristics/play-profiles";
+export { PLAY_PROFILES } from "../session/heuristics/play-profiles";
 
 // ── Debug-only types — import from service/debug-types instead ──
 // EvaluatedFacts, PipelineResult, MachineDebugSnapshot moved to debug-types.ts

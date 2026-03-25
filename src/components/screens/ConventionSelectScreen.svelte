@@ -103,6 +103,20 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
     </button>
 
+    <!-- System profiles -->
+    <button
+      class="w-full flex items-center gap-3 mb-5 p-3 rounded-[--radius-lg] bg-bg-card border border-border-subtle hover:border-border-default transition-colors cursor-pointer text-left group"
+      onclick={() => appStore.navigateToProfiles()}
+      data-testid="profiles-summary"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" aria-hidden="true"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>
+      <div class="flex-1 min-w-0">
+        <span class="text-sm font-medium text-text-primary">Base Profiles</span>
+        <p class="text-xs text-text-muted truncate">Compare SAYC, 2/1, and Acol</p>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+
     <!-- Search -->
     <div class="mb-4">
       <div

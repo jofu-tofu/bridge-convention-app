@@ -5,8 +5,9 @@ import type { BaseSystemId } from "../conventions";
 import { AVAILABLE_BASE_SYSTEMS } from "../conventions";
 import type { PracticePreferences, DisplayPreferences } from "../session/practice-preferences";
 import { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../session/practice-preferences";
+import type { PlayProfileId } from "../session/heuristics/play-profiles";
 
-export type Screen = "select" | "game" | "learning" | "settings" | "coverage";
+export type Screen = "select" | "game" | "learning" | "settings" | "coverage" | "profiles";
 
 // ─── Persistence ────────────────────────────────────────────
 
@@ -34,6 +35,13 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
     opponentMode = DEFAULT_DRILL_SETTINGS.opponentMode;
   }
 
+  // Validate playProfileId
+  const VALID_PROFILES = new Set<string>(["beginner", "club-player", "expert"]);
+  let playProfileId: PlayProfileId | undefined = drill?.playProfileId;
+  if (playProfileId && !VALID_PROFILES.has(playProfileId)) {
+    playProfileId = undefined;
+  }
+
   // Validate vulnerability distribution
   const vd = tuningRaw?.vulnerabilityDistribution;
   const validVd = vd &&
@@ -50,6 +58,7 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
     baseSystemId,
     drill: {
       opponentMode,
+      ...(playProfileId ? { playProfileId } : {}),
       tuning: {
         ...DEFAULT_DRILL_TUNING,
         ...tuningRaw,
@@ -166,6 +175,10 @@ export function createAppStore() {
       currentScreen = "coverage";
     },
 
+    navigateToProfiles() {
+      currentScreen = "profiles";
+    },
+
     setDevSeed(seed: number | null) {
       devSeed = seed;
       devDealCount = 0;
@@ -217,6 +230,14 @@ export function createAppStore() {
 
     setOpponentMode(mode: OpponentMode) {
       updateDrill({ opponentMode: mode });
+    },
+
+    get playProfileId(): PlayProfileId | undefined {
+      return prefs.drill.playProfileId;
+    },
+
+    setPlayProfileId(id: PlayProfileId) {
+      updateDrill({ playProfileId: id });
     },
 
     get baseSystemId() {
