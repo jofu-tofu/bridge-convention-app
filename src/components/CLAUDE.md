@@ -41,6 +41,7 @@ components/
       BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
       PlaySidePanel.svelte           Contract, trick counts, skip-to-review
       ReviewSidePanel.svelte         Tabbed review: Bidding + Analysis, next deal / back to menu
+      SettingsDialog.svelte          Reusable settings dialog (readonly prop for non-bidding phases)
       ContractDisplay.svelte         Formatted contract with doubled/redoubled indicators
       ScaledTableArea.svelte         Responsive table wrapper with transform-origin
   game/

@@ -16,6 +16,9 @@
 
   const disabled = $derived(!gameStore.isUserTurn || gameStore.isFeedbackBlocking || !!gameStore.bidFeedback);
   const hasFeedback = $derived(gameStore.viewportFeedback !== null);
+  const feedbackReplacesBidTable = $derived(
+    gameStore.viewportFeedback !== null && gameStore.isFeedbackBlocking
+  );
 </script>
 
 <div class="flex flex-col h-full min-h-0">
@@ -30,16 +33,24 @@
       Waiting...
     {/if}
   </h2>
-  <BidPanel legalCalls={gameStore.legalCalls} onBid={(call) => gameStore.userBid(call)} {disabled} compact />
-  <div class="mt-3" class:hidden={!hasFeedback}>
-    {#if gameStore.viewportFeedback}
-      <BidFeedbackPanel
-        feedback={gameStore.viewportFeedback}
-        teaching={gameStore.teachingDetail}
-        onRetry={() => gameStore.retryBid()}
-      />
-    {/if}
-  </div>
+  {#if feedbackReplacesBidTable}
+    <BidFeedbackPanel
+      feedback={gameStore.viewportFeedback!}
+      teaching={gameStore.teachingDetail}
+      onRetry={() => gameStore.retryBid()}
+    />
+  {:else}
+    <BidPanel legalCalls={gameStore.legalCalls} onBid={(call) => gameStore.userBid(call)} {disabled} compact />
+    <div class="mt-3" class:hidden={!hasFeedback}>
+      {#if gameStore.viewportFeedback}
+        <BidFeedbackPanel
+          feedback={gameStore.viewportFeedback}
+          teaching={gameStore.teachingDetail}
+          onRetry={() => gameStore.retryBid()}
+        />
+      {/if}
+    </div>
+  {/if}
 </div>
 
   <div class="shrink-0 pt-3 mt-auto border-t border-border-subtle flex flex-col gap-2">

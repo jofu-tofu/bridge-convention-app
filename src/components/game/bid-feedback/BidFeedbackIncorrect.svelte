@@ -105,7 +105,9 @@
     showContributions ||
     otherWhyNotEntries.length > 0 ||
     (parseTree != null && parseTree.modules.length > 0) || // eslint-disable-line eqeqeq -- intentional nullish check
-    showDecisionSpaceToggle,
+    showDecisionSpaceToggle ||
+    !!teaching?.handSummary ||
+    hasPartnerInfo,
   );
 
   // Reset showAnswer and expanded state when feedback changes (new wrong bid)
@@ -212,95 +214,8 @@
         {#if ambiguityNote}
           <p class="text-[--text-annotation] text-fb-incorrect-text/40 mt-1 italic">{ambiguityNote}</p>
         {/if}
-      </div>
-
-      <!-- ═══ SECTION 2: What went wrong (key takeaway) ═══ -->
-      {#if failingConditions.length > 0}
-        <div class="bg-fb-incorrect-surface/30 rounded px-3 py-2 border border-accent-danger/20">
-          <p class="text-[--text-annotation] text-accent-danger/80 uppercase tracking-wide mb-1.5">
-            Why this doesn't work
-          </p>
-          <ul class="space-y-1" role="list" aria-label="Why this bid doesn't work">
-            {#each failingConditions as node, ci (node.content + '-fail-' + ci)}
-              <li class="flex items-start gap-1.5">
-                <span class="text-accent-danger shrink-0 mt-0.5" aria-hidden="true">✗</span>
-                <span class="sr-only">Failed:</span>
-                <span class="text-fb-incorrect-dim break-words text-[--text-label]">{node.content}</span>
-              </li>
-            {/each}
-          </ul>
-        </div>
-      {:else if teaching?.fallbackExplanation}
-        <div class="bg-fb-incorrect-surface/30 rounded px-3 py-2 border border-fb-incorrect/20">
-          <p class="text-fb-incorrect-dim/60 text-[--text-label] leading-tight">
-            {teaching.fallbackExplanation}
-          </p>
-        </div>
-      {/if}
-
-      <!-- ═══ SECTION 3: Why not YOUR bid? (the user's mental question) ═══ -->
-      {#if userBidWhyNot && userBidWhyNot.explanation.length > 0}
-        <div class="bg-fb-incorrect-surface/30 rounded px-3 py-2 border border-fb-incorrect/20">
-          <p class="text-[--text-annotation] text-fb-incorrect-text/60 uppercase tracking-wide mb-1.5">
-            Why not <span class="font-mono font-semibold normal-case">{formatCall(feedback.userCall)}</span>?
-          </p>
-          <ul class="space-y-1" role="list" aria-label="Why your bid doesn't work">
-            {#each userBidWhyNot.explanation as expNode, ei (expNode.content + '-user-' + ei)}
-              <li class="flex items-start gap-1.5">
-                {#if expNode.kind === "condition"}
-                  <span
-                    class="{expNode.passed ? 'text-accent-success' : 'text-accent-danger'} shrink-0 mt-0.5"
-                    aria-hidden="true"
-                  >{expNode.passed ? "✓" : "✗"}</span>
-                {:else}
-                  <span class="text-fb-incorrect-text/30 shrink-0 mt-0.5" aria-hidden="true">·</span>
-                {/if}
-                <span class="text-fb-incorrect-dim/80 text-[--text-label]">{expNode.content}</span>
-              </li>
-            {/each}
-          </ul>
-          {#if userBidWhyNot.eliminationStage}
-            <p class="text-[--text-annotation] text-fb-incorrect-text/40 mt-1.5 italic">
-              {formatEliminationStage(userBidWhyNot.eliminationStage)}
-            </p>
-          {/if}
-        </div>
-      {/if}
-
-      <!-- ═══ SECTION 4: Your hand + partner context (quick reference) ═══ -->
-      {#if teaching?.handSummary || hasPartnerInfo}
-        <div class="rounded px-3 py-2 border border-fb-incorrect/15 space-y-2">
-          {#if teaching?.handSummary}
-            <div>
-              <p class="text-[--text-annotation] text-fb-incorrect-text/50 uppercase tracking-wide mb-0.5">Your hand</p>
-              <p class="font-mono text-[--text-detail] text-fb-incorrect-dim">{teaching.handSummary}</p>
-            </div>
-          {/if}
-          {#if hasPartnerInfo && teaching}
-            <div>
-              <p class="text-[--text-annotation] text-fb-incorrect-text/50 uppercase tracking-wide mb-0.5">Partner's hand</p>
-              <p class="text-[--text-label] text-fb-incorrect-dim/70">{teaching.partnerSummary}</p>
-              {#if teaching.archetypes && teaching.archetypes.length > 0}
-                <div class="mt-1 space-y-0.5">
-                  {#each teaching.archetypes as archetype (archetype.label)}
-                    <p class="text-[--text-annotation] text-fb-incorrect-text/50 font-mono">
-                      {archetype.label}: {archetype.hcpRange.min}-{archetype.hcpRange.max} HCP, {archetype.shapePattern}
-                    </p>
-                  {/each}
-                </div>
-              {/if}
-            </div>
-          {/if}
-        </div>
-      {/if}
-
-      <!-- ═══ SECTION 5: Requirements for the correct bid (passing conditions) ═══ -->
-      {#if passingConditions.length > 0}
-        <div class="rounded px-3 py-2 border border-fb-incorrect/15">
-          <p class="text-[--text-annotation] text-fb-incorrect-text/50 uppercase tracking-wide mb-1.5">
-            What the correct bid needs
-          </p>
-          <ul class="space-y-0.5" role="list" aria-label="Requirements for the correct bid">
+        {#if passingConditions.length > 0}
+          <ul class="mt-2 space-y-0.5 border-t border-fb-incorrect/20 pt-2" role="list" aria-label="Requirements for the correct bid">
             {#each passingConditions as node, ci (node.content + '-pass-' + ci)}
               <li class="flex items-start gap-1.5">
                 <span class="text-accent-success/60 shrink-0 mt-0.5" aria-hidden="true">✓</span>
@@ -309,10 +224,53 @@
               </li>
             {/each}
           </ul>
+        {/if}
+      </div>
+
+      <!-- ═══ SECTION 2: Why not YOUR bid? (merged with failing conditions) ═══ -->
+      {#if (userBidWhyNot && userBidWhyNot.explanation.length > 0) || failingConditions.length > 0 || (teaching?.fallbackExplanation && teaching.fallbackExplanation !== meaningLabel)}
+        {@const userExplanationNodes = (userBidWhyNot?.explanation ?? []).filter(n => n.kind !== "text" || !n.content.startsWith("Your hand doesn't meet"))}
+        <div class="bg-fb-incorrect-surface/30 rounded px-3 py-2 border border-fb-incorrect/20">
+          <p class="text-[--text-annotation] text-fb-incorrect-text/60 uppercase tracking-wide mb-1.5">
+            Why not <span class="font-mono font-semibold normal-case">{formatCall(feedback.userCall)}</span>?
+          </p>
+          {#if teaching?.fallbackExplanation && teaching.fallbackExplanation !== meaningLabel && failingConditions.length === 0 && userExplanationNodes.length === 0}
+            <p class="text-fb-incorrect-dim/60 text-[--text-label] leading-tight">
+              {teaching.fallbackExplanation}
+            </p>
+          {:else}
+            <ul class="space-y-1" role="list" aria-label="Why your bid doesn't work">
+              {#each failingConditions as node, ci (node.content + '-fail-' + ci)}
+                <li class="flex items-start gap-1.5">
+                  <span class="text-accent-danger shrink-0 mt-0.5" aria-hidden="true">✗</span>
+                  <span class="sr-only">Failed:</span>
+                  <span class="text-fb-incorrect-dim break-words text-[--text-label]">{node.content}</span>
+                </li>
+              {/each}
+              {#each userExplanationNodes as expNode, ei (expNode.content + '-user-' + ei)}
+                <li class="flex items-start gap-1.5">
+                  {#if expNode.kind === "condition"}
+                    <span
+                      class="{expNode.passed ? 'text-accent-success' : 'text-accent-danger'} shrink-0 mt-0.5"
+                      aria-hidden="true"
+                    >{expNode.passed ? "✓" : "✗"}</span>
+                  {:else}
+                    <span class="text-fb-incorrect-text/30 shrink-0 mt-0.5" aria-hidden="true">·</span>
+                  {/if}
+                  <span class="text-fb-incorrect-dim/80 text-[--text-label]">{expNode.content}</span>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+          {#if userBidWhyNot?.eliminationStage}
+            <p class="text-[--text-annotation] text-fb-incorrect-text/40 mt-1.5 italic">
+              {formatEliminationStage(userBidWhyNot.eliminationStage)}
+            </p>
+          {/if}
         </div>
       {/if}
 
-      <!-- ═══ SECTION 6: More details (collapsed — technical deep dive) ═══ -->
+      <!-- ═══ SECTION 3: More details (collapsed — hand context + technical deep dive) ═══ -->
       {#if hasMoreDetails}
         <div class="border-t border-fb-incorrect/15 pt-1">
           <button
@@ -327,6 +285,33 @@
 
           {#if showMoreDetails}
             <div class="mt-2 space-y-2 ml-1">
+
+              <!-- Hand + partner context -->
+              {#if teaching?.handSummary || hasPartnerInfo}
+                <div class="rounded px-3 py-2 border border-fb-incorrect/15 space-y-2">
+                  {#if teaching?.handSummary}
+                    <div>
+                      <p class="text-[--text-annotation] text-fb-incorrect-text/50 uppercase tracking-wide mb-0.5">Your hand</p>
+                      <p class="font-mono text-[--text-detail] text-fb-incorrect-dim">{teaching.handSummary}</p>
+                    </div>
+                  {/if}
+                  {#if hasPartnerInfo && teaching}
+                    <div>
+                      <p class="text-[--text-annotation] text-fb-incorrect-text/50 uppercase tracking-wide mb-0.5">Partner's hand</p>
+                      <p class="text-[--text-label] text-fb-incorrect-dim/70">{teaching.partnerSummary}</p>
+                      {#if teaching.archetypes && teaching.archetypes.length > 0}
+                        <div class="mt-1 space-y-0.5">
+                          {#each teaching.archetypes as archetype (archetype.label)}
+                            <p class="text-[--text-annotation] text-fb-incorrect-text/50 font-mono">
+                              {archetype.label}: {archetype.hcpRange.min}-{archetype.hcpRange.max} HCP, {archetype.shapePattern}
+                            </p>
+                          {/each}
+                        </div>
+                      {/if}
+                    </div>
+                  {/if}
+                </div>
+              {/if}
 
               <!-- Convention contributions -->
               {#if showContributions}
@@ -371,15 +356,11 @@
                               {gradeStyle.label}
                             </span>
                           {/if}
-                          {#if entry.eliminationStage}
-                            <span class="text-[--text-annotation] text-note-elimination/50">
-                              ({formatEliminationStage(entry.eliminationStage)})
-                            </span>
-                          {/if}
                         </button>
                         {#if expandedWhyNot.has(wi) && entry.explanation.length > 0}
+                          {@const otherExplanationNodes = entry.explanation.filter(n => n.kind !== "text" || !n.content.startsWith("Your hand doesn't meet"))}
                           <ul class="ml-4 mt-0.5 space-y-0.5" role="list" aria-label="Why not this bid">
-                            {#each entry.explanation as expNode, ei (expNode.content + '-' + ei)}
+                            {#each otherExplanationNodes as expNode, ei (expNode.content + '-' + ei)}
                               <li class="flex items-center gap-1.5 text-fb-incorrect-text/50">
                                 {#if expNode.kind === "condition"}
                                   <span class={expNode.passed ? "text-accent-success" : "text-accent-danger"} aria-hidden="true">{expNode.passed ? "✓" : "✗"}</span>
