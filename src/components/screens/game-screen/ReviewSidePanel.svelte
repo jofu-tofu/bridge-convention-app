@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SvelteMap } from "svelte/reactivity";
-  import type { Contract, Vulnerability } from "../../../service";
+  import type { Contract, Vulnerability, Trick, PlayRecommendation, Seat } from "../../../service";
   import { Vulnerability as Vul } from "../../../service";
   import type { BidHistoryEntry } from "../../../service";
   import type { ConventionContribution } from "../../../service";
@@ -10,12 +10,14 @@
   import ContractDisplay from "./ContractDisplay.svelte";
   import BiddingReview from "../../game/BiddingReview.svelte";
   import AnalysisPanel from "../../game/AnalysisPanel.svelte";
+  import TrickReviewPanel from "../../game/TrickReviewPanel.svelte";
   import Button from "../../shared/Button.svelte";
 
   interface Props extends DDSAnalysisProps {
     contract: Contract | null;
     score: number | null;
     declarerTricksWon: number;
+    defenderTricksWon: number;
     bidHistory: readonly BidHistoryEntry[];
     vulnerability: Vulnerability;
     dealNumber: number;
@@ -23,12 +25,18 @@
     onBackToMenu: () => void;
     onPlayHand?: (() => void) | undefined;
     onOpenSettings?: (() => void) | undefined;
+    tricks?: readonly Trick[];
+    playRecommendations?: readonly PlayRecommendation[];
+    userSeat?: Seat;
+    selectedTrickIndex?: number | null;
+    onSelectTrick?: (index: number | null) => void;
   }
 
   let {
     contract,
     score,
     declarerTricksWon,
+    defenderTricksWon,
     bidHistory,
     ddsSolution,
     ddsSolving,
@@ -39,9 +47,16 @@
     onBackToMenu,
     onPlayHand,
     onOpenSettings,
+    tricks = [],
+    playRecommendations = [],
+    userSeat,
+    selectedTrickIndex = null,
+    onSelectTrick,
   }: Props = $props();
 
-  let activeTab = $state<"bidding" | "analysis">("bidding");
+  const hasPlayData = $derived(tricks.length > 0 && contract !== null);
+
+  let activeTab = $state<"bidding" | "play" | "analysis">("bidding");
 
   // Reset to bidding tab on new deal
   $effect(() => {
@@ -117,6 +132,20 @@
   >
     Bidding
   </button>
+  {#if hasPlayData}
+    <button
+      type="button"
+      role="tab"
+      aria-selected={activeTab === "play"}
+      aria-controls="review-panel-play"
+      class="flex-1 px-3 py-1.5 text-[--text-detail] font-medium rounded-[--radius-md] transition-colors cursor-pointer {activeTab === 'play'
+        ? 'bg-bg-elevated text-text-primary'
+        : 'text-text-muted hover:text-text-secondary'}"
+      onclick={() => (activeTab = "play")}
+    >
+      Play
+    </button>
+  {/if}
   <button
     type="button"
     role="tab"
@@ -190,6 +219,21 @@
           {/each}
         </div>
       </div>
+    {/if}
+  </div>
+{:else if activeTab === "play"}
+  <div id="review-panel-play" role="tabpanel" aria-label="Play review">
+    {#if hasPlayData && contract && userSeat && onSelectTrick}
+      <TrickReviewPanel
+        {tricks}
+        recommendations={playRecommendations}
+        {contract}
+        {userSeat}
+        {declarerTricksWon}
+        {defenderTricksWon}
+        {selectedTrickIndex}
+        {onSelectTrick}
+      />
     {/if}
   </div>
 {:else if activeTab === "analysis"}

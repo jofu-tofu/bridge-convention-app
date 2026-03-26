@@ -40,7 +40,7 @@ components/
       layout-props.ts                (moved to src/components/shared/layout-props.ts)
       BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
       PlaySidePanel.svelte           Contract, trick counts, restart play, skip-to-review
-      ReviewSidePanel.svelte         Tabbed review: Bidding + Analysis, next deal / back to menu
+      ReviewSidePanel.svelte         Tabbed review: Bidding + Play (when tricks exist) + Analysis, next deal / back to menu
       SettingsDialog.svelte          Reusable settings dialog (readonly prop for non-bidding phases)
       ContractDisplay.svelte         Formatted contract with doubled/redoubled indicators
       ScaledTableArea.svelte         Responsive table wrapper with transform-origin
@@ -48,6 +48,8 @@ components/
     BridgeTable.svelte               800x650 table with 4 seats, absolute positioning
     HandFan.svelte                   Overlapping visual card fan (horizontal/vertical)
     TrickArea.svelte                 Center trick display with NSEW card positions and trick count
+    TrickOverlay.svelte              Display-only trick overlay for review phase (no interaction logic)
+    TrickReviewPanel.svelte          Trick-by-trick review panel with recommendation badges and trick stepper
     ConventionCard.svelte            Phase-independent convention card showing system thresholds (NT range, major length, forcing level)
     AuctionTable.svelte              4-column N/E/S/W grid, suit-colored
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons

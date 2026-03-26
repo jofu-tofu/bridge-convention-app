@@ -8,6 +8,7 @@
   import type { DDSAnalysisProps } from "./shared-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
+  import TrickOverlay from "../../game/TrickOverlay.svelte";
   import HandFan from "../../game/HandFan.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
   import ReviewSidePanel from "./ReviewSidePanel.svelte";
@@ -39,10 +40,27 @@
 
   let showAllCards = $state(false);
   let settingsDialogRef = $state<ReturnType<typeof SettingsDialog>>();
+  let selectedTrickIndex = $state<number | null>(null);
+
+  function handleSelectTrick(index: number | null) {
+    selectedTrickIndex = index;
+  }
 
   const trumpSuit = $derived(
     viewport.contract && viewport.contract.strain !== BidSuit.NoTrump
       ? (viewport.contract.strain as unknown as Suit)
+      : undefined,
+  );
+
+  const selectedTrick = $derived(
+    selectedTrickIndex !== null && selectedTrickIndex < viewport.tricks.length
+      ? viewport.tricks[selectedTrickIndex]
+      : null,
+  );
+
+  const selectedTrickRec = $derived(
+    selectedTrickIndex !== null
+      ? viewport.playRecommendations.find((r) => r.trickIndex === selectedTrickIndex)
       : undefined,
   );
 </script>
@@ -101,28 +119,36 @@
       tableHeight={layout.tableBaseH}
     >
       <BridgeTable visibleHands={viewport.allHands} vulnerability={viewport.vulnerability} {trumpSuit}>
-        <div class="flex flex-col items-center gap-2">
-          <div
-            class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
-          >
-            <AuctionTable
-              entries={viewport.auctionEntries}
-              dealer={viewport.dealer}
-              bidHistory={viewport.bidHistory}
-              showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
-              compact
-            />
+        {#if selectedTrick && viewport.contract}
+          <TrickOverlay
+            trick={selectedTrick}
+            recommendation={selectedTrickRec}
+            contract={viewport.contract}
+          />
+        {:else}
+          <div class="flex flex-col items-center gap-2">
+            <div
+              class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
+            >
+              <AuctionTable
+                entries={viewport.auctionEntries}
+                dealer={viewport.dealer}
+                bidHistory={viewport.bidHistory}
+                showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
+                compact
+              />
+            </div>
+            <button
+              type="button"
+              class="text-text-primary hover:text-accent-primary border-border-subtle bg-bg-card/80 min-h-[--size-touch-target] rounded-[--radius-md] border px-3 py-2 text-[--text-detail] transition-colors"
+              onclick={() => (showAllCards = !showAllCards)}
+              aria-expanded={showAllCards}
+              aria-label="Toggle all hands visibility"
+            >
+              Show All Hands
+            </button>
           </div>
-          <button
-            type="button"
-            class="text-text-primary hover:text-accent-primary border-border-subtle bg-bg-card/80 min-h-[--size-touch-target] rounded-[--radius-md] border px-3 py-2 text-[--text-detail] transition-colors"
-            onclick={() => (showAllCards = !showAllCards)}
-            aria-expanded={showAllCards}
-            aria-label="Toggle all hands visibility"
-          >
-            Show All Hands
-          </button>
-        </div>
+        {/if}
       </BridgeTable>
     </ScaledTableArea>
   {/if}
@@ -132,6 +158,7 @@
       contract={viewport.contract}
       score={viewport.score}
       declarerTricksWon={viewport.declarerTricksWon}
+      defenderTricksWon={viewport.defenderTricksWon}
       bidHistory={viewport.bidHistory}
       {ddsSolution}
       {ddsSolving}
@@ -142,6 +169,11 @@
       {onBackToMenu}
       {onPlayHand}
       onOpenSettings={() => settingsDialogRef?.open()}
+      tricks={viewport.tricks}
+      playRecommendations={viewport.playRecommendations}
+      userSeat={viewport.userSeat}
+      {selectedTrickIndex}
+      onSelectTrick={handleSelectTrick}
     />
   </aside>
 </div>
