@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { OpponentMode, PlayProfileId, VulnerabilityDistribution } from "../../service";
-  import { DEFAULT_DRILL_TUNING, PLAY_PROFILES } from "../../service";
+  import { AVAILABLE_BASE_SYSTEMS, DEFAULT_DRILL_TUNING, PLAY_PROFILES } from "../../service";
   import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../shared/vulnerability-labels";
   import type { VulnKey } from "../shared/vulnerability-labels";
   import { getAppStore } from "../../stores/context";
@@ -75,6 +75,33 @@
   </div>
 
   <div class="flex-1 overflow-y-auto pb-6 space-y-6">
+    <!-- Base System -->
+    <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
+      <h2 class="text-base font-semibold text-text-primary mb-1">
+        Base System
+      </h2>
+      <p class="text-sm text-text-secondary mb-3">
+        The bidding system framework that sets HCP ranges and conventions.
+      </p>
+      <div class="flex gap-2" role="group" aria-label="Base bidding system">
+        {#each AVAILABLE_BASE_SYSTEMS as sys (sys.id)}
+          {@const active = appStore.baseSystemId === sys.id}
+          <button
+            class="flex-1 px-3 py-2.5 rounded-[--radius-md] border text-sm font-medium cursor-pointer transition-colors
+              {active
+                ? 'bg-accent-primary/10 border-accent-primary text-accent-primary'
+                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}"
+            onclick={() => appStore.setBaseSystemId(sys.id)}
+            aria-pressed={active}
+            title={sys.label}
+            data-testid="settings-system-{sys.id}"
+          >
+            {sys.shortLabel}
+          </button>
+        {/each}
+      </div>
+    </section>
+
     <!-- Vulnerability Distribution -->
     <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
       <div class="flex items-center justify-between mb-1">
