@@ -340,6 +340,7 @@ export function createGameStore(
     handle: SessionHandle,
     aiPlays: readonly { seat: Seat; card: Card; reason: string; trickComplete?: boolean }[],
     baseTrick: readonly PlayedCard[],
+    options?: { keepFinalTrick?: boolean },
   ): Promise<boolean> {
     if (aiPlays.length === 0) return true;
     // Start with the cards already visible in the current trick
@@ -364,6 +365,14 @@ export function createGameStore(
         isShowingTrickResult = true;
         await delayFn(TRICK_PAUSE);
         if (activeHandle !== handle || playAborted) return false;
+
+        // Keep the final trick visible when play is about to complete
+        const isLastAiPlay = aiPlay === aiPlays[aiPlays.length - 1];
+        if (options?.keepFinalTrick && isLastAiPlay) {
+          // Leave trick buffer and isShowingTrickResult as-is
+          break;
+        }
+
         isShowingTrickResult = false;
         // Clear the trick buffer for the next trick
         trickBuffer.length = 0;
@@ -371,7 +380,9 @@ export function createGameStore(
       }
     }
 
-    animatedTrickOverride = null;
+    if (!options?.keepFinalTrick) {
+      animatedTrickOverride = null;
+    }
     return true;
   }
 
@@ -392,9 +403,12 @@ export function createGameStore(
 
       if (!result.accepted) return;
 
-      // Fetch updated viewport (includes user's card + all AI plays already applied)
-      cachedPlayingViewport = await activeService.getPlayingViewport(handle);
-      if (activeHandle !== handle) return;
+      // When play completes, skip viewport refresh to keep hands visible during
+      // the last trick animation (otherwise all hands show as empty)
+      if (!result.playComplete) {
+        cachedPlayingViewport = await activeService.getPlayingViewport(handle);
+        if (activeHandle !== handle) return;
+      }
 
       // Build the base trick: cards that were visible + the user's card
       const baseTrick: PlayedCard[] = [...trickBeforePlay, { card, seat }];
@@ -405,20 +419,20 @@ export function createGameStore(
         isShowingTrickResult = true;
         await delayFn(TRICK_PAUSE);
         if (activeHandle !== handle || playAborted) return;
-        isShowingTrickResult = false;
-        animatedTrickOverride = null;
-        // Start fresh for AI plays in the next trick
-        const ok = await animateAiPlays(handle, result.aiPlays, []);
-        if (!ok) return;
+
+        if (!result.playComplete) {
+          isShowingTrickResult = false;
+          animatedTrickOverride = null;
+          // Start fresh for AI plays in the next trick
+          const ok = await animateAiPlays(handle, result.aiPlays, []);
+          if (!ok) return;
+        }
+        // When play completes, keep the last trick visible on the table
       } else {
         // User's card didn't complete the trick — animate AI plays continuing from the base
-        const ok = await animateAiPlays(handle, result.aiPlays, baseTrick);
+        const ok = await animateAiPlays(handle, result.aiPlays, baseTrick, { keepFinalTrick: result.playComplete });
         if (!ok) return;
       }
-
-      // Refresh viewport for final state
-      cachedPlayingViewport = await activeService.getPlayingViewport(handle);
-      if (activeHandle !== handle) return;
 
       // Handle play completion
       if (result.playComplete) {
@@ -426,6 +440,9 @@ export function createGameStore(
         playSuggestions = [];
         transitionToExplanation();
       } else {
+        // Refresh viewport for final state
+        cachedPlayingViewport = await activeService.getPlayingViewport(handle);
+        if (activeHandle !== handle) return;
         await fetchPlaySuggestions(handle);
       }
     } finally {
