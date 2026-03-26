@@ -58,7 +58,7 @@ export async function processBid(
 
   // No convention strategy — no correctness checking, let any bid through
   if (!strategy) {
-    return applyBidAndRunAi(state, currentTurn, call, null, engine);
+    return applyBidAndRunAi(state, currentTurn, call, null, engine, null);
   }
 
   // Grade the bid
@@ -77,7 +77,10 @@ export async function processBid(
 
   const strategyEval = strategy.getLastEvaluation();
   const feedback = assembleBidFeedback(call, effectiveResult, strategyEval);
-  const isCorrect = feedback.grade === BidGrade.Correct;
+
+  // Grade-acceptance policy: Correct/CorrectNotPreferred/Acceptable advance;
+  // NearMiss/Incorrect block and require retry.
+  const shouldReject = feedback.grade === BidGrade.NearMiss || feedback.grade === BidGrade.Incorrect;
 
   // Capture debug log entry
   const snap = state.captureSnapshot();
@@ -90,8 +93,7 @@ export async function processBid(
     feedback,
   });
 
-  // Correct-path-only: wrong bids are never applied to the auction
-  if (!isCorrect) {
+  if (shouldReject) {
     const viewportFeedback = buildViewportFeedback(feedback);
     const teaching = buildTeachingDetail(feedback);
     return {
@@ -107,7 +109,7 @@ export async function processBid(
     };
   }
 
-  return applyBidAndRunAi(state, currentTurn, call, effectiveResult, engine);
+  return applyBidAndRunAi(state, currentTurn, call, effectiveResult, engine, feedback);
 }
 
 /**
@@ -173,6 +175,11 @@ async function applyBidAndRunAi(
   call: Call,
   expectedResult: BidResult | null,
   engine: EnginePort,
+  // IMPORTANT: feedback must be pre-computed before AI bids run.
+  // After runAiBidLoop(), strategy.getLastEvaluation() returns the last
+  // AI bid's evaluation, not the user's — so re-evaluating here would
+  // produce incorrect grades for non-Correct accepted bids.
+  preFeedback: BidFeedbackDTO | null,
 ): Promise<BidProcessResult> {
   // Apply user's bid to auction
   const userBidEntry = { seat, call };
@@ -199,23 +206,21 @@ async function applyBidAndRunAi(
   // Check if auction is complete
   const complete = await engine.isAuctionComplete(newAuction);
   if (complete) {
-    return handleAuctionComplete(state, engine, userHistoryEntry);
+    return handleAuctionComplete(state, engine, userHistoryEntry, preFeedback);
   }
 
   // Run AI bids
   const nextTurn = nextSeat(seat);
   const aiResult = await runAiBidLoop(state, nextTurn, engine);
 
-  // Build viewport feedback for correct bid
+  // Use pre-computed feedback — getLastEvaluation() is stale after AI bids
   let viewportFeedback: ViewportBidFeedback | null = null;
   let teaching: TeachingDetail | null = null;
   let grade: ViewportBidGrade | null = null;
-  if (expectedResult) {
-    const strategyEval = state.strategy?.getLastEvaluation() ?? null;
-    const feedback = assembleBidFeedback(call, expectedResult, strategyEval);
-    viewportFeedback = buildViewportFeedback(feedback);
-    teaching = buildTeachingDetail(feedback);
-    grade = `${feedback.grade}`;
+  if (preFeedback) {
+    viewportFeedback = buildViewportFeedback(preFeedback);
+    teaching = buildTeachingDetail(preFeedback);
+    grade = `${preFeedback.grade}` as ViewportBidGrade;
   }
 
   return {
@@ -238,6 +243,7 @@ async function handleAuctionComplete(
   state: SessionState,
   engine: EnginePort,
   userHistoryEntry: BidHistoryEntry,
+  preFeedback: BidFeedbackDTO | null,
 ): Promise<BidProcessResult> {
   state.capturePlayInferences();
   const contract = await engine.getContract(state.auction);
@@ -257,9 +263,9 @@ async function handleAuctionComplete(
   return {
     accepted: true,
     feedback: null,
-    viewportFeedback: null,
-    teaching: null,
-    grade: null,
+    viewportFeedback: preFeedback ? buildViewportFeedback(preFeedback) : null,
+    teaching: preFeedback ? buildTeachingDetail(preFeedback) : null,
+    grade: preFeedback ? `${preFeedback.grade}` as ViewportBidGrade : null,
     aiBids: [],
     auctionComplete: true,
     phaseTransition: { from: "BIDDING", to: state.phase },

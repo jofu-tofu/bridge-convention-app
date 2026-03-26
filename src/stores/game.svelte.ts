@@ -229,9 +229,11 @@ export function createGameStore(
     cachedBiddingViewport?.seat ?? cachedDeclarerPromptViewport?.userSeat ?? cachedPlayingViewport?.userSeat ?? cachedExplanationViewport?.userSeat ?? null,
   );
 
+  // Grade-acceptance policy: only near-miss/incorrect block.
+  // Acceptable/correct-not-preferred show non-blocking feedback below bid table.
   const isFeedbackBlocking = $derived(
     bidFeedback !== null &&
-      bidFeedback.grade !== "correct",
+      (bidFeedback.grade === "near-miss" || bidFeedback.grade === "incorrect"),
   );
 
   // ── Phase helpers ─────────────────────────────────────────────
@@ -440,6 +442,11 @@ export function createGameStore(
     if (biddingProcessing) return;
     if (!displayedIsUserTurn) return;
 
+    // Clear non-blocking feedback from previous bid (acceptable/correct-not-preferred)
+    if (bidFeedback && !isFeedbackBlocking) {
+      bidFeedback = null;
+    }
+
     const handle = activeHandle;
     biddingProcessing = true;
     try {
@@ -462,7 +469,16 @@ export function createGameStore(
         return;
       }
 
-      bidFeedback = null;
+      // Show non-blocking feedback for accepted bids with non-correct grades
+      if (result.grade && result.grade !== "correct" && result.feedback) {
+        bidFeedback = {
+          grade: result.grade,
+          viewportFeedback: result.feedback,
+          teaching: result.teaching,
+        };
+      } else {
+        bidFeedback = null;
+      }
 
       // Update viewport — always non-null for accepted bids (PR 0 fix)
       if (result.nextViewport) {

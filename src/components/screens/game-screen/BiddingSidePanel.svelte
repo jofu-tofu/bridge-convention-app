@@ -14,7 +14,9 @@
 
   const gameStore = getGameStore();
 
-  const disabled = $derived(!gameStore.isUserTurn || gameStore.isFeedbackBlocking || !!gameStore.bidFeedback);
+  // Grade-acceptance policy: isFeedbackBlocking covers near-miss/incorrect;
+  // acceptable/correct-not-preferred show non-blocking feedback with bids enabled.
+  const disabled = $derived(!gameStore.isUserTurn || gameStore.isFeedbackBlocking);
   const hasFeedback = $derived(gameStore.viewportFeedback !== null);
   const feedbackReplacesBidTable = $derived(
     gameStore.viewportFeedback !== null && gameStore.isFeedbackBlocking

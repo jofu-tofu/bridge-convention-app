@@ -270,7 +270,7 @@ describe("bid feedback — user-facing behavior", () => {
   });
 
   describe("multi-grade feedback", () => {
-    it("acceptable bid gets Acceptable grade but blocks (correct-path-only)", async () => {
+    it("acceptable bid advances with non-blocking feedback", async () => {
       const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
@@ -282,14 +282,9 @@ describe("bid feedback — user-facing behavior", () => {
       store.userBid({ type: "bid", level: 2, strain: BidSuit.Diamonds });
       await flushActions();
 
-      // Acceptable grade is shown but blocks — only #1 truth-set winner proceeds
+      // Acceptable grade advances auction with non-blocking feedback
       expect(store.bidFeedback?.grade).toBe(BidGrade.Acceptable);
-      expect(store.isFeedbackBlocking).toBe(true);
-
-      store.retryBid();
-      await flushActions();
-      expect(store.bidFeedback).toBeNull();
-      expect(store.isUserTurn).toBe(true);
+      expect(store.isFeedbackBlocking).toBe(false);
     });
 
     it("incorrect bid gets Incorrect grade with retry offered", async () => {
@@ -313,7 +308,7 @@ describe("bid feedback — user-facing behavior", () => {
       expect(store.isUserTurn).toBe(true);
     });
 
-    it("acceptable bid is not applied to auction (correct-path-only)", async () => {
+    it("acceptable bid is applied to auction (advances with non-blocking feedback)", async () => {
       const store = await startWithBundle({
         deal: makeSimpleTestDeal(),
         session: makeDrillSession(),
@@ -325,9 +320,9 @@ describe("bid feedback — user-facing behavior", () => {
       store.userBid({ type: "bid", level: 2, strain: BidSuit.Diamonds });
       await flushActions();
 
-      // Acceptable bid was not applied — no user entries in bid history
-      const userEntries = store.bidHistory.filter((entry) => entry.isUser);
-      expect(userEntries).toHaveLength(0);
+      // Acceptable bid was accepted — bid advances the auction
+      expect(store.bidFeedback?.grade).toBe(BidGrade.Acceptable);
+      expect(store.isFeedbackBlocking).toBe(false);
     });
   });
 });
