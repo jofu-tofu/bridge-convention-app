@@ -344,6 +344,12 @@ export interface PhaseGroupView {
   readonly surfaces: readonly SurfaceDetailView[];
 }
 
+/** Per-system description of a clause that varies by bidding system. */
+export interface ClauseSystemVariant {
+  readonly systemLabel: string;
+  readonly description: string;
+}
+
 /** A single fact requirement on a learning surface. */
 export interface SurfaceClauseView {
   readonly factId: string;
@@ -353,6 +359,11 @@ export interface SurfaceClauseView {
   readonly description: string;
   /** True if this clause is disclosed to opponents (communicative). */
   readonly isPublic: boolean;
+  /** Present when this clause differs across bidding systems.
+   *  Contains the per-system description for each known system (SAYC, 2/1, Acol).
+   *  For value-parameterized clauses, shows the per-system threshold.
+   *  For system-fact clauses, shows the concrete meaning in each system. */
+  readonly systemVariants?: readonly ClauseSystemVariant[];
 }
 
 /** Surface detail with explanation text. */

@@ -157,3 +157,71 @@ describe("formatModuleName", () => {
     expect(formatModuleName("")).toBe("");
   });
 });
+
+describe("clause system variance", () => {
+  describe("stayman viewport", () => {
+    const viewport = buildModuleLearningViewport("stayman")!;
+
+    it("system.* fact clause uses neutral description (no concrete values)", () => {
+      const shownPhase = viewport.phases.find((p) => p.phase === "shown-hearts")!;
+      const systemFactClause = shownPhase.surfaces
+        .flatMap((s) => s.clauses)
+        .find((c) => c.factId.startsWith("system."))!;
+
+      // Should not contain raw factId or concrete numbers — uses rationale
+      expect(systemFactClause.description).not.toContain("system.");
+      expect(systemFactClause.description).not.toMatch(/^\d/);
+    });
+
+    it("bridge-intrinsic clauses do NOT have systemVariants", () => {
+      const idlePhase = viewport.phases.find((p) => p.phase === "idle")!;
+      const askMajor = idlePhase.surfaces.find((s) => s.meaningId.includes("ask-major"))!;
+      const majorClause = askMajor.clauses.find((c) => c.factId === "bridge.hasFourCardMajor")!;
+
+      expect(majorClause.systemVariants).toBeUndefined();
+    });
+
+    it("hand.* clauses do NOT have systemVariants", () => {
+      const idlePhase = viewport.phases.find((p) => p.phase === "idle")!;
+      const askMajor = idlePhase.surfaces.find((s) => s.meaningId.includes("ask-major"))!;
+      const hcpClause = askMajor.clauses.find((c) => c.factId === "hand.hcp")!;
+
+      expect(hcpClause.systemVariants).toBeUndefined();
+    });
+
+    it("system.* fact clauses have systemVariants with concrete thresholds", () => {
+      // Stayman R3 surfaces use system.responder.inviteValues / gameValues
+      const shownPhase = viewport.phases.find((p) => p.phase === "shown-hearts")!;
+      const systemFactClause = shownPhase.surfaces
+        .flatMap((s) => s.clauses)
+        .find((c) => c.factId.startsWith("system."))!;
+
+      expect(systemFactClause.systemVariants).toBeDefined();
+      expect(systemFactClause.systemVariants!.length).toBe(3);
+      // Verify concrete per-system descriptions (should show HCP ranges, not raw boolean)
+      for (const variant of systemFactClause.systemVariants!) {
+        expect(variant.systemLabel).toBeTruthy();
+        expect(variant.description).toBeTruthy();
+        expect(variant.description).toContain("HCP");
+      }
+    });
+  });
+
+  it("natural-nt system.* clauses have systemVariants", () => {
+    const viewport = buildModuleLearningViewport("natural-nt")!;
+
+    // natural-nt uses SYSTEM_RESPONDER_INVITE_VALUES and SYSTEM_RESPONDER_GAME_VALUES
+    const systemClauses = viewport.phases
+      .flatMap((p) => p.surfaces)
+      .flatMap((s) => s.clauses)
+      .filter((c) => c.factId.startsWith("system."));
+
+    expect(systemClauses.length).toBeGreaterThan(0);
+    for (const clause of systemClauses) {
+      expect(clause.systemVariants).toBeDefined();
+      expect(clause.systemVariants!.length).toBe(3);
+      // Neutral description should not contain concrete numbers
+      expect(clause.description).not.toMatch(/^\d/);
+    }
+  });
+});

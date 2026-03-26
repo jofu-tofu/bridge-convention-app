@@ -181,10 +181,4 @@ export function normalizeIntent(intent: SourceIntent): readonly BidAction[] {
   return mapper(intent.params);
 }
 
-/**
- * Check whether a given intent type has a normalization mapping.
- * Useful for CI drift detection.
- */
-export function hasNormalization(intentType: string): boolean {
-  return INTENT_MAP.has(intentType);
-}
+

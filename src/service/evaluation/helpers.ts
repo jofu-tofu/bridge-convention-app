@@ -61,7 +61,7 @@ export function buildContext(hand: Hand, auction: Auction, seat: Seat, vulnerabi
   });
 }
 
-export function buildBidHistory(
+function buildBidHistory(
   auction: Auction, deal: Deal, userSeat: Seat,
   strategy: BiddingStrategy, vulnerability: Vulnerability,
 ): BidHistoryEntry[] {

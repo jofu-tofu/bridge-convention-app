@@ -44,9 +44,16 @@ import { inferenceHeuristics } from "./inference-play";
 const DEFAULT_SAMPLE_COUNT = 30;
 const MAX_ATTEMPTS_MULTIPLIER = 20;
 
+// ── Batched evaluation constants ─────────────────────────────
+
+/** 3 batches of 30 → 2 early-termination checkpoints */
+const BATCH_SIZE = 10;
+/** 0.5 trick gap = strong edge in bridge; conservative threshold */
+const EARLY_TERM_MARGIN = 0.5;
+
 // ── Play-phase deal sampling ──────────────────────────────────
 
-export interface SamplePlayDealsParams {
+interface SamplePlayDealsParams {
   /** Known remaining hands (own + dummy if visible). */
   readonly knownHands: Partial<Record<Seat, Hand>>;
   /** Cards already played by each seat (from completed tricks + current trick). */
@@ -306,7 +313,7 @@ export function createWorldClassProvider(
         return expertFallback(context);
       }
 
-      // 8. DDS solve each sample
+      // 8. DDS solve in batches with early termination
       const scores = new Map<string, { total: number; count: number }>();
       for (const c of context.legalPlays) {
         scores.set(cardKey(c), { total: 0, count: 0 });
@@ -327,34 +334,57 @@ export function createWorldClassProvider(
         currentTrickRank.push(rankToDdsValue(play.card.rank));
       }
 
-      let successCount = 0;
-      for (const sample of samples) {
-        try {
-          const pbn = handsToPBN(sample);
-          const result: SolveBoardResult = await engine.solveBoard(
+      let cumulativeSuccessCount = 0;
+      const batches = chunk(samples, BATCH_SIZE);
+
+      for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
+        const batch = batches[batchIdx]!;
+
+        // Fire all DDS calls in batch concurrently
+        const promises = batch.map((sample) =>
+          engine.solveBoard(
             trump,
             first,
             currentTrickSuit,
             currentTrickRank,
-            pbn,
-          );
+            handsToPBN(sample),
+          ),
+        );
+        const results = await Promise.allSettled(promises);
 
-          for (const entry of result.cards) {
-            const key = cardKey({ suit: entry.suit, rank: entry.rank });
-            const existing = scores.get(key);
-            if (existing) {
-              existing.total += entry.score;
-              existing.count++;
+        // Accumulate scores from fulfilled results
+        for (const result of results) {
+          if (result.status === "fulfilled") {
+            for (const entry of result.value.cards) {
+              const key = cardKey({ suit: entry.suit, rank: entry.rank });
+              const existing = scores.get(key);
+              if (existing) {
+                existing.total += entry.score;
+                existing.count++;
+              }
             }
+            cumulativeSuccessCount++;
           }
-          successCount++;
-        } catch {
-          // Individual solve failure — skip this sample
+        }
+
+        // Early termination: need ≥BATCH_SIZE cumulative successful results
+        // for meaningful averages, and skip check on last batch (already done)
+        if (
+          cumulativeSuccessCount >= BATCH_SIZE &&
+          batchIdx < batches.length - 1
+        ) {
+          const topTwo = computeTopTwo(scores, context.legalPlays);
+          if (topTwo && topTwo.bestAvg - topTwo.secondBestAvg >= EARLY_TERM_MARGIN) {
+            return {
+              card: topTwo.bestCard,
+              reason: `mc-dds (${cumulativeSuccessCount} samples, avg ${topTwo.bestAvg.toFixed(1)} tricks, early-stop)`,
+            };
+          }
         }
       }
 
       // 9. All solves failed → expert fallback
-      if (successCount === 0) {
+      if (cumulativeSuccessCount === 0) {
         return expertFallback(context);
       }
 
@@ -375,7 +405,7 @@ export function createWorldClassProvider(
 
       return {
         card: bestCard,
-        reason: `mc-dds (${successCount} samples, avg ${bestAvg.toFixed(1)} tricks)`,
+        reason: `mc-dds (${cumulativeSuccessCount} samples, avg ${bestAvg.toFixed(1)} tricks)`,
       };
     },
   };
@@ -391,6 +421,42 @@ export function createWorldClassProvider(
 }
 
 // ── Helpers ───────────────────────────────────────────────────
+
+/** Split array into chunks of at most `size` elements. */
+function chunk<T>(arr: readonly T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size) as T[]);
+  }
+  return result;
+}
+
+/** Compute top-two average scores from accumulated DDS results. */
+function computeTopTwo(
+  scores: Map<string, { total: number; count: number }>,
+  legalPlays: readonly Card[],
+): { bestCard: Card; bestAvg: number; secondBestAvg: number } | undefined {
+  let bestCard: Card | undefined;
+  let bestAvg = -1;
+  let secondBestAvg = -1;
+
+  for (const c of legalPlays) {
+    const entry = scores.get(cardKey(c));
+    if (entry && entry.count > 0) {
+      const avg = entry.total / entry.count;
+      if (avg > bestAvg) {
+        secondBestAvg = bestAvg;
+        bestAvg = avg;
+        bestCard = c;
+      } else if (avg > secondBestAvg) {
+        secondBestAvg = avg;
+      }
+    }
+  }
+
+  if (!bestCard || secondBestAvg < 0) return undefined;
+  return { bestCard, bestAvg, secondBestAvg };
+}
 
 function findDummySeat(context: PlayContext): Seat | undefined {
   if (!context.dummyHand) return undefined;

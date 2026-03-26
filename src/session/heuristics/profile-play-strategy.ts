@@ -267,7 +267,7 @@ function createExpertProvider(
 
 // ── Public factory ──────────────────────────────────────────────────
 
-export interface ProfileStrategyOptions {
+interface ProfileStrategyOptions {
   readonly posteriorBackend?: PosteriorBackend;
   readonly rng?: () => number;
   readonly engine?: EnginePort;

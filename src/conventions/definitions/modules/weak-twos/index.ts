@@ -51,7 +51,7 @@ const OGUST_RESPONSE_DELTA: NegotiationDelta = { forcing: "none" };
 
 // ── Local FSM ───────────────────────────────────────────────────
 
-export const weakTwosLocal: LocalFsm<Phase> = {
+const weakTwosLocal: LocalFsm<Phase> = {
   initial: "idle",
   transitions: [
     // Opening observations
@@ -96,7 +96,7 @@ export const weakTwosLocal: LocalFsm<Phase> = {
 // ── State entries ───────────────────────────────────────────────
 
 /** Creates Weak Twos state entries (declarative surface selection). */
-export function createWeakTwosStates(): readonly StateEntry<Phase>[] {
+function createWeakTwosStates(): readonly StateEntry<Phase>[] {
   return [
     // R0: Weak Two opening (opener bids 2H/2S/2D)
     {
@@ -189,7 +189,7 @@ export function createWeakTwosStates(): readonly StateEntry<Phase>[] {
 // ── Module declarations ─────────────────────────────────────────
 
 /** Module parts returned by createWeakTwosModule (declaration-only — no local/rules). */
-export interface WeakTwosModuleParts {
+interface WeakTwosModuleParts {
   readonly facts: FactCatalogExtension;
   readonly explanationEntries: readonly ExplanationEntry[];
 }
@@ -200,7 +200,7 @@ export interface WeakTwosModuleParts {
  * Returns facts and explanations only. Full ConventionModule assembly
  * (adding local FSM + rules/states) happens in module-registry.ts.
  */
-export function createWeakTwosModule(_sys: SystemConfig): WeakTwosModuleParts {
+function createWeakTwosModule(_sys: SystemConfig): WeakTwosModuleParts {
   return {
     facts: weakTwoFacts,
     explanationEntries: WEAK_TWO_ENTRIES,

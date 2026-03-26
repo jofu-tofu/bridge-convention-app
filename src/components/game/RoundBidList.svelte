@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { BidHistoryEntry } from "../../service";
   import { groupBidsByRound } from "./RoundBidList";
-  import { formatCall } from "../../service/display/format";
+  import { formatCall } from "../../service";
   import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";
   import type { BidSuit, Call } from "../../service";
   import { Seat } from "../../service";

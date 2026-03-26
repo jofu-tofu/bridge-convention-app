@@ -31,7 +31,7 @@ export interface RelationalFactContext {
 }
 
 /** Optional parameters for evaluateFacts(), grouped to reduce positional parameter count. */
-export interface EvaluateFactsOptions {
+interface EvaluateFactsOptions {
   readonly relationalContext?: RelationalFactContext;
   readonly posterior?: PosteriorFactProvider;
   /** Seat ID to query posterior facts about (e.g. partner seat). Required when posterior is provided. */

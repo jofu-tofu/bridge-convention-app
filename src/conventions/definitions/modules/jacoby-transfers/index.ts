@@ -20,15 +20,7 @@ import {
   createOpenerAcceptInviteRaiseSpadesSurfaces,
 } from "./meaning-surfaces";
 
-export { TRANSFER_CLASSES, TRANSFER_R3_CLASSES, OPENER_PLACE_CLASSES } from "./ids";
 export { createTransferFacts } from "./facts";
-export {
-  TRANSFER_R1_SURFACES,
-  OPENER_TRANSFER_HEARTS_SURFACES,
-  OPENER_TRANSFER_SPADES_SURFACES,
-  OPENER_PLACE_HEARTS_SURFACES,
-  OPENER_PLACE_SPADES_SURFACES,
-} from "./meaning-surfaces";
 
 // ─── Local FSM + States ──────────────────────────────────────────────
 
@@ -41,7 +33,7 @@ const ACCEPT_HEARTS_DELTA: NegotiationDelta = { forcing: "none", fitAgreed: { st
 const ACCEPT_SPADES_DELTA: NegotiationDelta = { forcing: "none", fitAgreed: { strain: "spades", confidence: "tentative" } };
 const CAPTAIN_TO_OPENER_DELTA: NegotiationDelta = { captain: "opener" };
 
-export const jacobyTransfersLocal: LocalFsm<TransferPhase> = {
+const jacobyTransfersLocal: LocalFsm<TransferPhase> = {
   initial: "idle",
   transitions: [
     { from: "idle", to: "transferred-hearts", on: { act: "transfer", suit: "hearts" } },
@@ -72,7 +64,7 @@ function splitR3(surfaces: readonly BidMeaning[]): { captainTransfer: BidMeaning
   return { captainTransfer, terminal };
 }
 
-export function createJacobyTransfersStates(sys: SystemConfig): readonly StateEntry<TransferPhase>[] {
+function createJacobyTransfersStates(sys: SystemConfig): readonly StateEntry<TransferPhase>[] {
   const r3Hearts = createTransferR3HeartsSurfaces(sys);
   const r3Spades = createTransferR3SpadesSurfaces(sys);
   const r3H = splitR3(r3Hearts);

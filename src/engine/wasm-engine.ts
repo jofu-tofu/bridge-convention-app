@@ -18,7 +18,8 @@ import type {
   Vulnerability,
 } from "./types";
 import { cleanConstraints } from "./constraint-utils";
-import { isDDSAvailable, solveDealWasm } from "./dds-client";
+import type { SolveBoardResult } from "./dds-wasm";
+import { isDDSAvailable, solveDealWasm, solveBoardWasm } from "./dds-client";
 import init, * as wasm from "bridge-wasm";
 
 let wasmInitPromise: Promise<void> | null = null;
@@ -100,5 +101,18 @@ export class WasmEngine implements EnginePort {
     _previousTricks: readonly (readonly Card[])[],
   ): Promise<Card> {
     return Promise.reject(new Error("DDS not available in WASM build"));
+  }
+
+  solveBoard(
+    trump: number,
+    first: number,
+    currentTrickSuit: number[],
+    currentTrickRank: number[],
+    remainCardsPBN: string,
+  ): Promise<SolveBoardResult> {
+    if (!isDDSAvailable()) {
+      return Promise.reject(new Error("DDS not available"));
+    }
+    return solveBoardWasm(trump, first, currentTrickSuit, currentTrickRank, remainCardsPBN);
   }
 }

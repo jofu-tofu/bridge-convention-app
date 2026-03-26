@@ -24,6 +24,7 @@ export type {
   EvaluationEvidence,
 } from "./pipeline/evaluation/meaning";
 export { compareRanking, BAND_PRIORITY } from "./pipeline/evaluation/meaning";
+export { deriveNeutralDescription } from "./pipeline/evaluation/clause-derivation";
 
 export type {
   DecisionProvenance,
@@ -103,7 +104,7 @@ export type { TeachingControls } from "./core/deal-spec-types";
 export { registerBundle, clearBundleRegistry, createConventionConfigFromBundle } from "./core/bundle";
 
 // ── Definitions (module registry) ──────────────────────────────────────
-export { getModule, getAllModules, getModuleIds } from "./definitions/module-registry";
+export { getModule, getAllModules } from "./definitions/module-registry";
 
 // ── Definitions (system registry) ──────────────────────────────────────
 export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle } from "./definitions/system-registry";

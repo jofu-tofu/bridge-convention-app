@@ -1,5 +1,5 @@
 import { setContext, getContext } from "svelte";
-import type { EnginePort } from "../engine/port";
+import type { EnginePort } from "../service";
 import type { GameStore } from "./types";
 import type { createAppStore } from "../stores/app.svelte";
 import type { LayoutProps } from "../components/shared/layout-props";

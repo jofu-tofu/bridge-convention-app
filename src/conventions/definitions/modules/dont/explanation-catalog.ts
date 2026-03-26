@@ -1,7 +1,5 @@
 import {
-  createExplanationCatalog,
   type ExplanationEntry,
-  type ExplanationCatalog,
   type FactExplanationEntry,
   type MeaningExplanationEntry,
 } from "../../../core/explanation-catalog";
@@ -473,6 +471,3 @@ export const DONT_ENTRIES: readonly ExplanationEntry[] = [
   ...Object.values(FACT_EXPLANATIONS),
   ...Object.values(MEANING_EXPLANATIONS),
 ];
-
-export const DONT_EXPLANATION_CATALOG: ExplanationCatalog =
-  createExplanationCatalog([...DONT_ENTRIES]);

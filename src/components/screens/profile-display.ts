@@ -6,19 +6,19 @@ import type { SystemConfig } from "../../service";
 
 // ─── Types ────────────────────────────────────────────────────
 
-export type FieldFormat =
+type FieldFormat =
   | { type: "range"; min: (c: SystemConfig) => number; max: (c: SystemConfig) => number }
   | { type: "threshold"; value: (c: SystemConfig) => number }
   | { type: "enum"; value: (c: SystemConfig) => string; labels: Record<string, string> }
   | { type: "majorLength"; value: (c: SystemConfig) => 4 | 5 };
 
-export interface ProfileField {
+interface ProfileField {
   label: string;
   accessor: (c: SystemConfig) => unknown;
   format: FieldFormat;
 }
 
-export interface ProfileCategory {
+interface ProfileCategory {
   label: string;
   fields: ProfileField[];
 }

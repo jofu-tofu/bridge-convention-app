@@ -63,6 +63,10 @@ function displayName(factId: string): string {
     name = name.slice(5);
   } else if (name.startsWith("bridge.")) {
     name = name.slice(7);
+  } else if (name.startsWith("system.")) {
+    // system.<role>.<concept> — strip first two segments (like module.*)
+    const parts = name.split(".");
+    name = parts.slice(2).join(".");
   } else if (name.startsWith("module.")) {
     // module.<moduleName>.<factName> — strip first two segments
     const parts = name.split(".");
@@ -83,6 +87,11 @@ function isAdjectiveLike(dn: string): boolean {
   return lower === "balanced" || lower === "eligible";
 }
 
+/** Append rationale in parentheses to a base description. */
+function withRationale(base: string, rationale?: string): string {
+  return rationale ? `${base} (${rationale})` : base;
+}
+
 /**
  * Derive a natural-language clause description from fact constraint fields.
  *
@@ -95,38 +104,43 @@ function isAdjectiveLike(dn: string): boolean {
  * - boolean + false:    `"No ${dn}"`                  → `"No 5-card major"`
  * - `in`:               `"${dn} in [${values}]"`
  *
+ * When `rationale` is provided, it is appended in parentheses:
+ *   `"12+ HCP (for Stayman)"`
+ *
  * `$suit` binding references in factId are kept as-is for runtime resolution.
  */
 export function deriveClauseDescription(
   factId: string,
   operator: FactOperator,
   value: number | boolean | string | { min: number; max: number } | readonly string[],
+  rationale?: string,
 ): string {
   const dn = displayName(factId);
+  let base: string;
 
   switch (operator) {
     case "gte":
-      return `${value as number}+ ${dn}`;
+      base = `${value as number}+ ${dn}`; break;
     case "lte":
-      return `At most ${value as number} ${dn}`;
+      base = `At most ${value as number} ${dn}`; break;
     case "eq":
-      return `Exactly ${String(value as number | boolean | string)} ${dn}`;
+      base = `Exactly ${String(value as number | boolean | string)} ${dn}`; break;
     case "range": {
       const range = value as { min: number; max: number };
-      return `${range.min}\u2013${range.max} ${dn}`;
+      base = `${range.min}\u2013${range.max} ${dn}`; break;
     }
     case "boolean":
-      if (value === true) {
-        return isAdjectiveLike(dn)
-          ? dn.charAt(0).toUpperCase() + dn.slice(1)
-          : `Has a ${dn}`;
-      }
-      return `No ${dn}`;
+      base = (value === true)
+        ? (isAdjectiveLike(dn) ? dn.charAt(0).toUpperCase() + dn.slice(1) : `Has a ${dn}`)
+        : `No ${dn}`;
+      break;
     case "in": {
       const arr = value as readonly string[];
-      return `${dn} in [${arr.join(", ")}]`;
+      base = `${dn} in [${arr.join(", ")}]`; break;
     }
   }
+
+  return withRationale(base, rationale);
 }
 
 /**
@@ -143,12 +157,36 @@ export function fillClauseDefaults(clause: BidMeaningClause): BidMeaningClause &
     return clause as BidMeaningClause & { description: string };
   }
 
-  const derived = deriveClauseDescription(clause.factId, clause.operator, clause.value);
-  const description = clause.rationale ? `${derived} (${clause.rationale})` : derived;
+  const description = deriveClauseDescription(clause.factId, clause.operator, clause.value, clause.rationale);
 
   return {
     ...clause,
     clauseId: needsId ? deriveClauseId(clause.factId, clause.operator, clause.value) : clause.clauseId,
     ...(existing === undefined ? { description } : {}),
   } as BidMeaningClause & { description: string };
+}
+
+/**
+ * Derive a value-free, system-neutral description from a factId.
+ * Uses the same display name resolution as `deriveClauseDescription` but omits
+ * concrete threshold values. Suitable for teaching contexts where the specific
+ * value varies by system and should not be hard-coded.
+ *
+ * Examples:
+ * - `("hand.hcp", "for Stayman")`              → `"HCP (for Stayman)"`
+ * - `("system.responder.inviteValues", "invite values opposite 1NT")`
+ *                                                → `"Invite values opposite 1NT"`
+ * - `("hand.suitLength.hearts")`                → `"Hearts"`
+ */
+export function deriveNeutralDescription(factId: string, rationale?: string): string {
+  const dn = displayName(factId);
+  const capitalized = dn.charAt(0).toUpperCase() + dn.slice(1);
+
+  // For system facts, rationale is typically richer context — use it as the
+  // full description to avoid redundancy (e.g., "invite values (invite values)")
+  if (factId.startsWith("system.") && rationale) {
+    return rationale.charAt(0).toUpperCase() + rationale.slice(1);
+  }
+
+  return withRationale(capitalized, rationale);
 }

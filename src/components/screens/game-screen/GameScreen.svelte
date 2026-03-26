@@ -82,8 +82,12 @@
   }
 
   async function startNewDrill() {
+    console.log("[DEBUG] startNewDrill called");
     const baseConvention = appStore.selectedConvention;
-    if (!baseConvention) return;
+    if (!baseConvention) {
+      console.log("[DEBUG] no baseConvention, returning early");
+      return;
+    }
     dealNumber++;
 
     const devSeed = getDevSeed();
@@ -99,8 +103,11 @@
       drill: appStore.drillSettings,
     };
 
+    console.log("[DEBUG] about to createSession", JSON.stringify(config));
     const handle = await service.createSession(config);
+    console.log("[DEBUG] createSession returned, handle:", handle);
     await gameStore.startDrillFromHandle(handle, service);
+    console.log("[DEBUG] startDrillFromHandle done");
   }
 
   // Defer debug drawer mounting — DebugDrawer's $derived computations
@@ -228,97 +235,16 @@
 {#if gameStore.isInitialized}
   <main class="h-full w-full flex flex-row overflow-hidden" aria-label="Bridge drill" style="--game-scale: {tableScale}; --panel-font: {panelFontPx}px; --width-side-panel: {sidePanelW}px;">
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden" style="max-width: {availableW}px;">
-    <a href="#game-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[--z-above-all] focus:p-2 focus:bg-bg-card focus:text-text-primary focus:rounded-[--radius-md]">
-      Skip to game
-    </a>
-    <!-- Header -->
-    <header
-      bind:clientHeight={headerH}
-      class="flex items-center justify-between px-3 sm:px-6 py-3 border-b border-border-subtle shrink-0 bg-bg-base"
-    >
-      <div class="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
-        <button
-          class="shrink-0 min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
-          onclick={handleBackToMenu}
-          aria-label="Back to menu"
-          data-testid="back-to-menu"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-            ><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg
-          >
-        </button>
-        <h1 class="text-[--text-heading] font-semibold text-text-primary truncate min-w-0">
-          {displayConventionName(appStore.selectedConvention?.name ?? "Drill")} Practice
-        </h1>
-        <span
-          class="shrink-0 px-2.5 py-0.5 rounded-full text-[--text-label] font-semibold {phaseInfo.color} {phaseInfo.textColor}"
-          data-testid="game-phase"
-        >
-          {phaseInfo.label}
-        </span>
-        <span class="sr-only" aria-live="polite">Phase: {phaseInfo.label}</span>
-        <ConventionCard cards={conventionCards} />
+      <div id="game-content" class="flex-1 min-h-0 flex flex-col">
+      {#if gameStore.phase === "BIDDING" && gameStore.biddingViewport}
+        <BiddingPhase
+          viewport={gameStore.biddingViewport}
+          onNewDeal={handleNextDeal}
+        />
+      {:else}
+        <p style="color: orange;">Waiting for phase/viewport...</p>
+      {/if}
       </div>
-      <div class="flex items-center gap-3 shrink-0">
-        <span class="text-text-secondary text-[--text-body]">Deal #{dealNumber}</span>
-        {#if DEV}
-          <button
-            class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
-            onclick={() => appStore.toggleDebugPanel()}
-            aria-label="Toggle debug panel"
-            aria-expanded={appStore.debugPanelOpen}
-            data-testid="debug-toggle"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-            </svg>
-          </button>
-        {/if}
-      </div>
-    </header>
-
-    <div id="game-content" class="flex-1 min-h-0 flex flex-col">
-    {#if gameStore.phase === "BIDDING" && gameStore.biddingViewport}
-      <BiddingPhase
-        viewport={gameStore.biddingViewport}
-        onNewDeal={handleNextDeal}
-      />
-    {:else if gameStore.phase === "DECLARER_PROMPT" && gameStore.declarerPromptViewport}
-      <DeclarerPromptPhase
-        viewport={gameStore.declarerPromptViewport}
-        onAccept={() => gameStore.acceptPrompt()}
-        onSkip={() => gameStore.declinePrompt()}
-      />
-    {:else if gameStore.phase === "PLAYING" && gameStore.playingViewport}
-      <PlayingPhase
-        viewport={gameStore.playingViewport}
-        onPlayCard={(card, seat) => gameStore.userPlayCard(card, seat)}
-        onSkipToReview={() => gameStore.skipToReview()}
-      />
-    {:else if gameStore.phase === "EXPLANATION" && gameStore.explanationViewport}
-      <ExplanationPhase
-        viewport={gameStore.explanationViewport}
-        ddsSolution={gameStore.ddsSolution}
-        ddsSolving={gameStore.ddsSolving}
-        ddsError={gameStore.ddsError}
-        {dealNumber}
-        onNextDeal={handleNextDeal}
-        onBackToMenu={handleBackToMenu}
-        onPlayHand={gameStore.contract ? () => gameStore.playThisHand() : undefined}
-        convention={appStore.selectedConvention ?? undefined}
-      />
-    {/if}
-    </div>
     </div>
 
     {#if DEV && debugReady}

@@ -48,7 +48,7 @@ export function makePass(): Call {
 }
 
 /** Create a RankingMetadata (with derived specificity) for teaching tests. */
-export function makeRankingMetadata(overrides: Partial<RankingMetadata> = {}): RankingMetadata {
+function makeRankingMetadata(overrides: Partial<RankingMetadata> = {}): RankingMetadata {
   return {
     recommendationBand: "should",
     specificity: 1,
@@ -186,7 +186,7 @@ export function makePipelineResult(overrides: Partial<PipelineResult> = {}): Pip
 }
 
 /** Create a FactExplanationEntry with defaults. */
-export function makeFactCatalogEntry(overrides: Partial<FactExplanationEntry> = {}): FactExplanationEntry {
+function makeFactCatalogEntry(overrides: Partial<FactExplanationEntry> = {}): FactExplanationEntry {
   return {
     explanationId: "test.entry",
     factId: "hand.hcp",
@@ -194,19 +194,6 @@ export function makeFactCatalogEntry(overrides: Partial<FactExplanationEntry> = 
     displayText: "Test fact explanation",
     preferredLevel: "mechanical",
     roles: ["supporting"],
-    ...overrides,
-  };
-}
-
-/** Create a MeaningExplanationEntry with defaults. */
-export function makeMeaningCatalogEntry(overrides: Partial<MeaningExplanationEntry> = {}): MeaningExplanationEntry {
-  return {
-    explanationId: "test.meaning.entry",
-    meaningId: "test:meaning",
-    templateKey: "test.meaning.entry.template",
-    displayText: "Test meaning explanation",
-    preferredLevel: "semantic",
-    roles: ["pedagogical"],
     ...overrides,
   };
 }

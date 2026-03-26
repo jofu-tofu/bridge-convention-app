@@ -61,8 +61,8 @@ export interface InterferenceThresholds {
 
 // ─── Suit response parameters ───────────────────────────────
 
-export type SuitResponseForcingDuration = "one-round" | "game";
-export type OneNtForcingStatus = "non-forcing" | "forcing" | "semi-forcing";
+type SuitResponseForcingDuration = "one-round" | "game";
+type OneNtForcingStatus = "non-forcing" | "forcing" | "semi-forcing";
 
 export interface SuitResponseConfig {
   /** Minimum HCP for a 2-level new-suit response to a 1-level suit opening.
@@ -194,7 +194,7 @@ export const ACOL_SYSTEM_CONFIG: SystemConfig = {
 // ─── System config registry ─────────────────────────────────
 
 /** UI-friendly metadata for each base system. */
-export interface BaseSystemMeta {
+interface BaseSystemMeta {
   readonly id: BaseSystemId;
   readonly label: string;
   readonly shortLabel: string;

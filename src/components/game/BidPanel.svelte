@@ -4,7 +4,7 @@
 <script lang="ts">
   import type { Call, ContractBid } from "../../service";
   import { BidSuit } from "../../service";
-  import { formatCall } from "../../service/display/format";
+  import { formatCall } from "../../service";
   import { callKey } from "../../service";
   import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";
 

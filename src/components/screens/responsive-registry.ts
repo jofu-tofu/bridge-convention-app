@@ -17,7 +17,7 @@ export type MobileStrategy =
   | "embedded"         // Sub-component embedded inside a parent (not a standalone screen)
   | "full-width";      // Full-width content, no special layout needed
 
-export interface ScreenEntry {
+interface ScreenEntry {
   /** Path relative to src/components/screens/ (e.g. "game-screen/GameScreen.svelte") */
   readonly path: string;
   /** How this component handles mobile layout */

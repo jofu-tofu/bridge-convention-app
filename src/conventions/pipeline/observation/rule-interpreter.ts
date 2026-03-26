@@ -33,9 +33,6 @@ export function flattenSurfaces(results: readonly ModuleSurfaceResult[]): readon
   return results.flatMap(r => r.resolved.map(c => c.surface));
 }
 
-// Re-export TurnRole from its canonical home in rule-module.ts
-export type { TurnRole } from "../../core/rule-module";
-
 /**
  * Derive the turn role for the next bidder.
  *

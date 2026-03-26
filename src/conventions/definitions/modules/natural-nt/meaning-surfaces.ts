@@ -15,7 +15,7 @@ import { NATURAL_NT_MEANING_IDS } from "./ids";
 
 // ─── Module context ──────────────────────────────────────────
 
-export const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt" };
+const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt" };
 
 // ─── R1 surfaces ─────────────────────────────────────────────
 
@@ -30,7 +30,7 @@ export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
           factId: SYSTEM_RESPONDER_INVITE_VALUES,
           operator: "boolean",
           value: true,
-          rationale: `${sys.responderThresholds.inviteMin}-${sys.responderThresholds.inviteMax} HCP`,
+          rationale: "invite values opposite 1NT",
           isPublic: true,
         },
         {
@@ -62,7 +62,7 @@ export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
           factId: SYSTEM_RESPONDER_GAME_VALUES,
           operator: "boolean",
           value: true,
-          rationale: `${sys.responderThresholds.gameMin}+ HCP`,
+          rationale: "game values opposite 1NT",
           isPublic: true,
         },
         {

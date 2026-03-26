@@ -1,10 +1,8 @@
 import type {
   ExplanationEntry,
-  ExplanationCatalog,
   FactExplanationEntry,
   MeaningExplanationEntry,
 } from "../../../core/explanation-catalog";
-import { createExplanationCatalog } from "../../../core/explanation-catalog";
 import { BERGEN_FACT_IDS, BERGEN_MEANING_IDS, type BergenFactId, type BergenMeaningId } from "./ids";
 
 /**
@@ -489,7 +487,3 @@ export const BERGEN_EXPLANATION_ENTRIES: readonly ExplanationEntry[] = [
   ...SHARED_FACT_EXPLANATIONS,
   ...Object.values(MEANING_EXPLANATIONS),
 ];
-
-export const BERGEN_EXPLANATION_CATALOG: ExplanationCatalog = createExplanationCatalog(
-  [...BERGEN_EXPLANATION_ENTRIES],
-);

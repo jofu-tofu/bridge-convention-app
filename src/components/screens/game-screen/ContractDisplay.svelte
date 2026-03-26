@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Contract } from "../../../service";
-  import { formatContractWithDeclarer } from "../../../service/display/format";
+  import { formatContractWithDeclarer } from "../../../service";
 
   interface Props {
     contract: Contract;

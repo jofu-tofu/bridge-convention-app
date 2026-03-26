@@ -1,7 +1,7 @@
 // ── Service module public API ────────────────────────────────────────
 
 // Port interfaces
-export type { ServicePort, DevServicePort } from "./port";
+export type { DevServicePort } from "./port";
 
 // Boundary types — requests
 export type {
@@ -13,37 +13,16 @@ export type {
 export type {
   ServiceGamePhase,
   ViewportBidGrade,
-  ServiceEncoderKind,
-  ServiceExplanationNode,
-  ServiceWhyNotEntry,
-  ServiceConventionContribution,
-  ServiceConditionEvidence,
-  ServiceMeaningView,
-  ServiceCallProjection,
-  ServiceParseTreeView,
-  ServiceParseTreeModuleNode,
-  ServiceParseTreeCondition,
-  ServiceBidHistoryEntry,
-  ServiceFactConstraint,
   ServicePublicBeliefs,
   ServicePublicBeliefState,
-  ServiceBidAnnotation,
   ServiceInferenceSnapshot,
-  DrillStartResult,
-  BidSubmitResult,
   AiBidEntry,
-  PhaseTransition,
-  PromptAcceptResult,
-  PlayCardResult,
   AiPlayEntry,
-  SessionViewport,
-  DDSolutionResult,
-  ConventionInfo,
   ConventionCardView,
 } from "./response-types";
 
 // Evaluation facade (CLI + stateless grading)
-export type { AtomGradeResult, PlaythroughHandle, PlaythroughGradeResult, RevealStep } from "./evaluation/types";
+
 export { buildAtomViewport, gradeAtomBid, validateAtomId, parseAtomId } from "./evaluation/atom-evaluator";
 export { startPlaythrough, getPlaythroughStepViewport, gradePlaythroughBid, getPlaythroughRevealSteps } from "./evaluation/playthrough-evaluator";
 
@@ -54,19 +33,17 @@ export { createLocalService } from "./local-service";
 export type { PublicBeliefState, InferenceSnapshot } from "../inference/types";
 export { createBiddingContext } from "../conventions";
 export type { BidFeedbackDTO } from "../session/bid-feedback-builder";
-export { buildBiddingViewport, buildViewportFeedback, buildTeachingDetail } from "../session/build-viewport";
-export type { BiddingViewport, ViewportBidFeedback, TeachingDetail, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, HandEvaluationView, AuctionEntryView, BiddingOptionView, ConditionView, AlternativeView, NearMissView, ConventionView } from "./response-types";
-export type { ServiceDebugSnapshot, ServiceDebugLogEntry, DebugSnapshotBase } from "./debug-types";
-export type { ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView, SurfaceDetailView, SurfaceClauseView } from "./response-types";
-export { randomPlayStrategy } from "../session/heuristics/random-play";
-export type { DrillSession, DrillBundle } from "../session/drill-types";
+
+export type { BiddingViewport, ViewportBidFeedback, TeachingDetail, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, HandEvaluationView, AuctionEntryView } from "./response-types";
+
+export type { ModuleCatalogEntry, ModuleLearningViewport, ClauseSystemVariant } from "./response-types";
 
 // ── Engine domain primitives (universal vocabulary, acceptable to re-export) ──
 
 // Engine types — enums (value + type)
 export { Seat, Suit, Rank, BidSuit, Vulnerability } from "../engine/types";
 // Engine types — type-only
-export type { Call, Card, Hand, ContractBid, Contract, Auction, AuctionEntry, Trick, PlayedCard, DDSolution, Deal, SuitLength, DistributionPoints } from "../engine/types";
+export type { Call, Card, Hand, ContractBid, Contract, Auction, AuctionEntry, Trick, PlayedCard, DDSolution, Deal } from "../engine/types";
 // Engine port
 export type { EnginePort } from "../engine/port";
 // Engine constants (display/layout concerns)
@@ -79,7 +56,7 @@ export { evaluateHand, calculateHcp } from "../engine/hand-evaluator";
 // ── Convention system re-exports ──
 
 export { ConventionCategory, getConvention, getModule, SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, getSystemConfig, listConventions } from "../conventions";
-export type { ConventionConfig, ConventionContribution, ParseTreeView, TeachingProjection, CallProjection, MeaningView, WhyNotEntry, EncoderKind, BaseSystemId, SystemConfig } from "../conventions";
+export type { ConventionConfig, ConventionContribution, ParseTreeView, TeachingProjection, EncoderKind, BaseSystemId, SystemConfig } from "../conventions";
 
 // ── Convention card ──
 export { buildConventionCard } from "./display/convention-card";
@@ -95,7 +72,7 @@ export type { StrategyEvaluation } from "../conventions";
 // ── Coverage utilities (for coverage screen) ──
 
 export { listBundleInputs, resolveBundle, getBundleInput, enumerateRuleAtoms, generateRuleCoverageManifest } from "../conventions";
-export type { RuleCoverageManifest, ConventionBundle, BundleInput } from "../conventions";
+export type { RuleCoverageManifest, ConventionBundle } from "../conventions";
 
 // ── Inference re-exports ──
 
@@ -121,7 +98,7 @@ export { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../se
 
 // ── Display formatting (UI-facing pure functions) ──
 
-export { displayConventionName, formatCall, formatContract, formatContractWithDeclarer, formatRuleName, displayRank, formatCardLabel, SUIT_SYMBOLS, STRAIN_SYMBOLS } from "./display/format";
+export { displayConventionName, formatCall, formatContractWithDeclarer, formatRuleName, displayRank, formatCardLabel, SUIT_SYMBOLS, STRAIN_SYMBOLS } from "./display/format";
 
 // ── Utility re-exports ──
 

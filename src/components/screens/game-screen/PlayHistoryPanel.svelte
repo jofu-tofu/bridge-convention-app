@@ -5,7 +5,7 @@
   import type { BidHistoryEntry } from "../../../service";
   import { Suit } from "../../../service";
   import { SUIT_ORDER, SEAT_INDEX } from "../../../service";
-  import { SUIT_SYMBOLS, displayRank, formatCall } from "../../../service/display/format";
+  import { SUIT_SYMBOLS, displayRank, formatCall } from "../../../service";
   import { SUIT_COLOR_CLASS, BID_SUIT_COLOR_CLASS } from "../../shared/tokens";
   import { sortCards } from "../../shared/sort-cards";
 

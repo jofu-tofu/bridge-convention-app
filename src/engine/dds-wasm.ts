@@ -34,7 +34,7 @@ const ALL_PAR_SIZE = 11520;
 const RETURN_NO_FAULT = 1;
 
 // Rank characters in DDS PBN format, descending order
-export const RANK_CHARS: Record<Rank, string> = {
+const RANK_CHARS: Record<Rank, string> = {
   [Rank.Ace]: "A",
   [Rank.King]: "K",
   [Rank.Queen]: "Q",
@@ -51,7 +51,7 @@ export const RANK_CHARS: Record<Rank, string> = {
 };
 
 // Rank ordering for descending sort
-export const RANK_ORDER: Record<Rank, number> = {
+const RANK_ORDER: Record<Rank, number> = {
   [Rank.Ace]: 14,
   [Rank.King]: 13,
   [Rank.Queen]: 12,
@@ -68,7 +68,7 @@ export const RANK_ORDER: Record<Rank, number> = {
 };
 
 // DDS strain index mapping (dll.h): 0=S, 1=H, 2=D, 3=C, 4=NT
-export const DDS_STRAIN_MAP: BidSuit[] = [
+const DDS_STRAIN_MAP: BidSuit[] = [
   BidSuitEnum.Spades,
   BidSuitEnum.Hearts,
   BidSuitEnum.Diamonds,

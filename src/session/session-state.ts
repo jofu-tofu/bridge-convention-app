@@ -9,6 +9,7 @@ import { BidSuit, Suit } from "../engine/types";
 import type { DrillSession, DrillBundle } from "./drill-types";
 import type { BidResult, BidHistoryEntry } from "../conventions";
 import type { PlayStrategy } from "../conventions";
+import type { PlayStrategyProvider } from "./heuristics/play-profiles";
 import type { ConventionStrategy, StrategyEvaluation } from "../conventions";
 import type { PublicBeliefs } from "../inference/inference-types";
 import type { InferenceCoordinator } from "../inference/inference-coordinator";
@@ -77,6 +78,7 @@ export class SessionState {
   trumpSuit: Suit | undefined;
   playScore: number | null;
   playStrategy: PlayStrategy | null;
+  playStrategyProvider: PlayStrategyProvider | null;
 
   constructor(
     bundle: DrillBundle,
@@ -115,6 +117,7 @@ export class SessionState {
     this.trumpSuit = undefined;
     this.playScore = null;
     this.playStrategy = bundle.session.config.playStrategy ?? null;
+    this.playStrategyProvider = bundle.session.config.playStrategyProvider ?? null;
 
     // Initialize inference coordinator with engines from bundle
     coordinator.initialize(bundle.nsInferenceEngine, bundle.ewInferenceEngine);
@@ -140,9 +143,12 @@ export class SessionState {
     );
   }
 
-  /** Capture inferences at auction end. */
+  /** Capture inferences at auction end and notify play strategy provider. */
   capturePlayInferences(): void {
     this.playInferences = this.inferenceCoordinator.capturePlayInferences();
+    if (this.playInferences && this.playStrategyProvider?.onAuctionComplete) {
+      this.playStrategyProvider.onAuctionComplete(this.playInferences);
+    }
   }
 
   /** Build a DebugSnapshot from the convention strategy's cached state. */

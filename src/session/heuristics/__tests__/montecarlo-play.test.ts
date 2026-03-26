@@ -291,3 +291,173 @@ describe("createWorldClassProvider", () => {
     expect(result.card).toBeDefined();
   });
 });
+
+// ── Batched evaluation + early termination tests ──────────────
+
+describe("createWorldClassProvider batching", () => {
+  function makeStubEngine(solveBoardFn?: (pbn: string) => SolveBoardResult): EnginePort {
+    const defaultSolve: SolveBoardResult = {
+      cards: [
+        { suit: Suit.Hearts, rank: Rank.Ace, score: 8, equals: 0 },
+        { suit: Suit.Hearts, rank: Rank.King, score: 7, equals: 0 },
+      ],
+    };
+    return {
+      solveBoard: vi.fn().mockImplementation(
+        async (_trump: number, _first: number, _suits: number[], _ranks: number[], pbn: string) =>
+          solveBoardFn ? solveBoardFn(pbn) : defaultSolve,
+      ),
+      generateDeal: vi.fn(),
+      evaluateHand: vi.fn(),
+      getSuitLength: vi.fn(),
+      isBalanced: vi.fn(),
+      getLegalCalls: vi.fn(),
+      addCall: vi.fn(),
+      isAuctionComplete: vi.fn(),
+      getContract: vi.fn(),
+      calculateScore: vi.fn(),
+      getLegalPlays: vi.fn(),
+      getTrickWinner: vi.fn(),
+      solveDeal: vi.fn(),
+      suggestPlay: vi.fn(),
+    } as unknown as EnginePort;
+  }
+
+  function makeCtx(): PlayContext {
+    const deck = createDeck();
+    return {
+      hand: { cards: deck.slice(0, 13) },
+      currentTrick: [],
+      previousTricks: [],
+      contract: makeContract(Seat.South, BidSuit.NoTrump),
+      seat: Seat.West,
+      trumpSuit: undefined,
+      legalPlays: [
+        card(Suit.Hearts, Rank.Ace),
+        card(Suit.Hearts, Rank.King),
+      ],
+      dummyHand: { cards: deck.slice(13, 26) },
+    };
+  }
+
+  it("early-terminates after first batch when margin is large", async () => {
+    // Card A: score 10, Card B: score 3 → gap = 7 >> 0.5
+    const engine = makeStubEngine(() => ({
+      cards: [
+        { suit: Suit.Hearts, rank: Rank.Ace, score: 10, equals: 0 },
+        { suit: Suit.Hearts, rank: Rank.King, score: 3, equals: 0 },
+      ],
+    }));
+
+    const provider = createWorldClassProvider(engine, mulberry32(42));
+    const result = await provider.getStrategy().suggest(makeCtx());
+
+    expect(result.card.rank).toBe(Rank.Ace);
+    expect(result.reason).toContain("early-stop");
+    // Only first batch (10 calls), not all 30
+    expect(engine.solveBoard).toHaveBeenCalledTimes(10);
+  });
+
+  it("runs all batches when scores are close", async () => {
+    // Both cards score 7 → gap = 0 < 0.5
+    const engine = makeStubEngine(() => ({
+      cards: [
+        { suit: Suit.Hearts, rank: Rank.Ace, score: 7, equals: 0 },
+        { suit: Suit.Hearts, rank: Rank.King, score: 7, equals: 0 },
+      ],
+    }));
+
+    const provider = createWorldClassProvider(engine, mulberry32(42));
+    const result = await provider.getStrategy().suggest(makeCtx());
+
+    expect(result.reason).not.toContain("early-stop");
+    expect(engine.solveBoard).toHaveBeenCalledTimes(30);
+  });
+
+  it("early-terminates after second batch when margin widens", async () => {
+    let callCount = 0;
+    const engine = makeStubEngine(() => {
+      callCount++;
+      // First 10 calls: close scores (gap < 0.5)
+      if (callCount <= 10) {
+        return {
+          cards: [
+            { suit: Suit.Hearts, rank: Rank.Ace, score: 7, equals: 0 },
+            { suit: Suit.Hearts, rank: Rank.King, score: 7, equals: 0 },
+          ],
+        };
+      }
+      // Next 10 calls: widen the gap
+      return {
+        cards: [
+          { suit: Suit.Hearts, rank: Rank.Ace, score: 10, equals: 0 },
+          { suit: Suit.Hearts, rank: Rank.King, score: 3, equals: 0 },
+        ],
+      };
+    });
+
+    const provider = createWorldClassProvider(engine, mulberry32(42));
+    const result = await provider.getStrategy().suggest(makeCtx());
+
+    expect(result.card.rank).toBe(Rank.Ace);
+    expect(result.reason).toContain("early-stop");
+    // Two batches = 20 calls
+    expect(engine.solveBoard).toHaveBeenCalledTimes(20);
+  });
+
+  it("handles partial batch failures gracefully", async () => {
+    let callCount = 0;
+    const engine = makeStubEngine(() => {
+      callCount++;
+      // Every 3rd call fails
+      if (callCount % 3 === 0) {
+        throw new Error("DDS failure");
+      }
+      return {
+        cards: [
+          { suit: Suit.Hearts, rank: Rank.Ace, score: 9, equals: 0 },
+          { suit: Suit.Hearts, rank: Rank.King, score: 5, equals: 0 },
+        ],
+      };
+    });
+
+    const provider = createWorldClassProvider(engine, mulberry32(42));
+    const result = await provider.getStrategy().suggest(makeCtx());
+
+    // Should still produce a valid result from successful solves
+    expect(result.card).toBeDefined();
+    expect(result.card.rank).toBe(Rank.Ace);
+    expect(result.reason).toContain("mc-dds");
+  });
+
+  it("reason includes early-stop only when early termination fires", async () => {
+    // Large gap → early stop
+    const engine = makeStubEngine(() => ({
+      cards: [
+        { suit: Suit.Hearts, rank: Rank.Ace, score: 10, equals: 0 },
+        { suit: Suit.Hearts, rank: Rank.King, score: 2, equals: 0 },
+      ],
+    }));
+
+    const provider = createWorldClassProvider(engine, mulberry32(42));
+    const result = await provider.getStrategy().suggest(makeCtx());
+    expect(result.reason).toContain("early-stop");
+    expect(result.reason).toContain("mc-dds");
+    expect(result.reason).toContain("samples");
+  });
+
+  it("reason excludes early-stop when all batches run", async () => {
+    // Equal scores → no early stop
+    const engine = makeStubEngine(() => ({
+      cards: [
+        { suit: Suit.Hearts, rank: Rank.Ace, score: 7, equals: 0 },
+        { suit: Suit.Hearts, rank: Rank.King, score: 7, equals: 0 },
+      ],
+    }));
+
+    const provider = createWorldClassProvider(engine, mulberry32(42));
+    const result = await provider.getStrategy().suggest(makeCtx());
+    expect(result.reason).not.toContain("early-stop");
+    expect(result.reason).toContain("mc-dds");
+  });
+});

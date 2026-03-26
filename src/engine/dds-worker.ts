@@ -11,7 +11,7 @@
 
 import type { Deal } from "./types";
 import type { DDSModule } from "./dds-wasm";
-import { solveWithModule } from "./dds-wasm";
+import { solveWithModule, solveBoardWithModule } from "./dds-wasm";
 
 // Web Worker globals not in default TS lib
 declare function importScripts(...urls: string[]): void;
@@ -42,8 +42,47 @@ init().catch((err) =>
   self.postMessage({ type: "error", message: String(err) }),
 );
 
-self.onmessage = (e: MessageEvent) => {
-  const { id, deal } = e.data as { id: number; deal: Deal };
+/** SolveBoard request message from main thread. */
+interface SolveBoardMessage {
+  type: "solveBoard";
+  id: number;
+  trump: number;
+  first: number;
+  currentTrickSuit: number[];
+  currentTrickRank: number[];
+  remainCardsPBN: string;
+}
+
+/** CalcAllTablesPBN request message from main thread. */
+interface SolveTableMessage {
+  id: number;
+  deal: Deal;
+}
+
+self.onmessage = (e: MessageEvent<SolveBoardMessage | SolveTableMessage>) => {
+  const msg = e.data;
+
+  if ("type" in msg && msg.type === "solveBoard") {
+    // SolveBoard request — per-card optimal play from a mid-deal position
+    const { id, trump, first, currentTrickSuit, currentTrickRank, remainCardsPBN } = msg;
+    try {
+      if (!ddsModule) throw new Error("DDS not initialized");
+      const result = solveBoardWithModule(
+        ddsModule, trump, first, currentTrickSuit, currentTrickRank, remainCardsPBN,
+      );
+      self.postMessage({ type: "solveBoardResult", id, result });
+    } catch (err) {
+      self.postMessage({
+        type: "error",
+        id,
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+    return;
+  }
+
+  // Default: CalcAllTablesPBN request (existing flow)
+  const { id, deal } = msg as SolveTableMessage;
   try {
     if (!ddsModule) throw new Error("DDS not initialized");
     const solution = solveWithModule(ddsModule, deal);

@@ -8,8 +8,6 @@ import { createSmolenFacts } from "./facts";
 import { SMOLEN_EXPLANATION_ENTRIES } from "./explanation-catalog";
 
 // Re-export everything external consumers need
-export { SMOLEN_CLASSES } from "./ids";
-export { createSmolenEntrySurfaces, createSmolenR3Surfaces, OPENER_SMOLEN_HEARTS_SURFACES, OPENER_SMOLEN_SPADES_SURFACES } from "./meaning-surfaces";
 export { createSmolenFacts } from "./facts";
 
 // ─── Local FSM + States ──────────────────────────────────────
@@ -28,7 +26,7 @@ const AFTER_STAYMAN_DENIAL: RouteExpr = {
   ],
 };
 
-export const smolenLocal: LocalFsm<SmolenPhase> = {
+const smolenLocal: LocalFsm<SmolenPhase> = {
   initial: "idle",
   transitions: [
     { from: "idle", to: "post-r1", on: { act: "inquire" } },
@@ -46,7 +44,7 @@ export const smolenLocal: LocalFsm<SmolenPhase> = {
 
 // Smolen R3: per-surface deltas (3H → spade fit, 3S → heart fit)
 
-export function createSmolenStates(sys: SystemConfig): readonly StateEntry<SmolenPhase>[] {
+function createSmolenStates(sys: SystemConfig): readonly StateEntry<SmolenPhase>[] {
   const smolenEntrySurfaces = createSmolenEntrySurfaces(sys);
   const smolenR3Surfaces = createSmolenR3Surfaces(sys);
   const smolenR3Hearts = smolenR3Surfaces.filter(s => s.meaningId === "smolen:bid-short-hearts");

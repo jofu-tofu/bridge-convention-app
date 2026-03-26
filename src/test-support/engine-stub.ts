@@ -71,6 +71,9 @@ export function createStubEngine(
     async suggestPlay(): Promise<Card> {
       throw new Error("Not available in test");
     },
+    async solveBoard(): Promise<never> {
+      throw new Error("Not available in test");
+    },
   };
 
   return { ...defaultEngine, ...overrides };

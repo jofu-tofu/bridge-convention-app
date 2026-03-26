@@ -26,7 +26,7 @@ import { classifySpecificityBasis } from "./specificity-classifier";
  * transparency basis classification, and (for pairwise comparisons)
  * which linearization canon was applied.
  */
-export interface SpecificityDerivationResult {
+interface SpecificityDerivationResult {
   readonly advisorySpecificity: number;
   readonly dimensions: ReadonlySet<ConstraintDimension>;
   readonly basis: SpecificityBasis;

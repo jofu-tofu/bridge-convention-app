@@ -16,6 +16,7 @@ import type {
   Trick,
   Vulnerability,
 } from "./types";
+import type { SolveBoardResult } from "./dds-wasm";
 
 export interface EnginePort {
   // Phase 1 — implemented
@@ -50,4 +51,18 @@ export interface EnginePort {
     trumpSuit: BidSuit | null,
     previousTricks: readonly (readonly Card[])[],
   ): Promise<Card>;
+
+  /**
+   * Solve a board position — returns per-card optimal trick counts.
+   * Used by Monte Carlo play strategies. Transport-agnostic: WASM delegates
+   * to DDS Web Worker, Tauri can delegate to native DDS, remote service
+   * can delegate to server-side solver.
+   */
+  solveBoard(
+    trump: number,
+    first: number,
+    currentTrickSuit: number[],
+    currentTrickRank: number[],
+    remainCardsPBN: string,
+  ): Promise<SolveBoardResult>;
 }

@@ -26,7 +26,7 @@ export function formatCall(call: Call): string {
 }
 
 /** Format a contract as a short string, e.g. "3NT", "4\u2660X", "6\u2665XX". */
-export function formatContract(contract: Contract): string {
+function formatContract(contract: Contract): string {
   return `${contract.level}${STRAIN_SYMBOLS[contract.strain]}${contract.doubled ? "X" : ""}${contract.redoubled ? "XX" : ""}`;
 }
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PlayLogEntry } from "../../../stores/game.svelte";
-  import { SUIT_SYMBOLS } from "../../../service/display/format";
+  import { SUIT_SYMBOLS } from "../../../service";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {

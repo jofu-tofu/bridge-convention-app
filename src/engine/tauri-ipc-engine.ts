@@ -18,6 +18,7 @@ import type {
   Vulnerability,
 } from "./types";
 import type { EnginePort } from "./port";
+import type { SolveBoardResult } from "./dds-wasm";
 import { cleanConstraints } from "./constraint-utils";
 
 export class TauriIpcEngine implements EnginePort {
@@ -89,5 +90,16 @@ export class TauriIpcEngine implements EnginePort {
     _previousTricks: readonly (readonly Card[])[],
   ): Promise<Card> {
     return Promise.reject(new Error("DDS not available in V1"));
+  }
+
+  solveBoard(
+    _trump: number,
+    _first: number,
+    _currentTrickSuit: number[],
+    _currentTrickRank: number[],
+    _remainCardsPBN: string,
+  ): Promise<SolveBoardResult> {
+    // Future: invoke("solve_board", { trump, first, ... }) when Rust DDS is wired
+    return Promise.reject(new Error("DDS SolveBoard not available in Tauri build"));
   }
 }

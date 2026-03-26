@@ -9,7 +9,7 @@ import type { TeachingControls } from "../conventions";
  *
  * Use `createScenarioDistribution()` to construct with invariant enforcement.
  */
-export interface ScenarioDistribution {
+interface ScenarioDistribution {
   /** Fraction of deals where the convention clearly applies (hand meets all conditions).
    *  Derived: 1.0 - nearBoundary - competitive. */
   readonly positive: number;
@@ -21,7 +21,7 @@ export interface ScenarioDistribution {
 
 /** Construct a ScenarioDistribution from the 2 independent parameters.
  *  Enforces the sum-to-1.0 invariant and validates non-negative values. */
-export function createScenarioDistribution(
+function createScenarioDistribution(
   nearBoundary: number,
   competitive: number,
 ): ScenarioDistribution {

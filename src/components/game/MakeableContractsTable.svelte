@@ -2,7 +2,7 @@
   import { Seat, BidSuit } from "../../service";
   import { SEATS } from "../../service";
   import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";
-  import { STRAIN_SYMBOLS } from "../../service/display/format";
+  import { STRAIN_SYMBOLS } from "../../service";
 
   interface Props {
     tricks: Record<Seat, Record<BidSuit, number>>;

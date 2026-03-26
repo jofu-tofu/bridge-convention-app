@@ -22,7 +22,7 @@ import { isVulnerable } from "../../engine/scoring";
 // projection) is handled by the caller.
 
 /** Input to the core meaning pipeline. */
-export interface PipelineInput {
+interface PipelineInput {
   readonly surfaces: readonly BidMeaning[];
   readonly context: BiddingContext;
   readonly catalog: FactCatalog;
@@ -35,7 +35,7 @@ export interface PipelineInput {
 }
 
 /** Output from the core meaning pipeline. */
-export interface PipelineOutput {
+interface PipelineOutput {
   readonly result: PipelineResult;
   readonly facts: EvaluatedFacts;
 }

@@ -71,7 +71,7 @@ type Phase =
 
 // ── Local FSM ─────────────────────────────────────────────────────
 
-export const dontLocal: LocalFsm<Phase> = {
+const dontLocal: LocalFsm<Phase> = {
   initial: "idle",
   transitions: [
       { from: "idle", to: "r1", on: { act: "open", strain: "notrump" } },
@@ -100,7 +100,7 @@ export const dontLocal: LocalFsm<Phase> = {
 // ── State entries ─────────────────────────────────────────────────
 
 /** Creates DONT state entries. No turn matching (see module doc). No negotiationDelta. */
-export function createDontStates(): readonly StateEntry<Phase>[] {
+function createDontStates(): readonly StateEntry<Phase>[] {
   return [
     { phase: "idle", surfaces: [OPPONENT_1NT_SURFACE] },
     { phase: "r1", surfaces: DONT_R1_SURFACES },
@@ -117,7 +117,7 @@ export function createDontStates(): readonly StateEntry<Phase>[] {
 
 // ── Module declarations ───────────────────────────────────────────
 
-export function createDontModule(_sys: SystemConfig) {
+function createDontModule(_sys: SystemConfig) {
   return {
     facts: dontFacts,
     explanationEntries: DONT_ENTRIES,

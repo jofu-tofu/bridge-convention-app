@@ -95,14 +95,14 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext, preceden
 
   // Build clauses with derived clauseId and description (always auto-derived + optional rationale)
   const clauses: readonly BidMeaningClause[] = input.clauses.map((c) => {
-    const derived = deriveClauseDescription(c.factId, c.operator, c.value);
-    const description = c.rationale ? `${derived} (${c.rationale})` : derived;
+    const description = deriveClauseDescription(c.factId, c.operator, c.value, c.rationale);
     return {
       factId: c.factId,
       operator: c.operator,
       value: c.value,
       clauseId: deriveClauseId(c.factId, c.operator, c.value),
       description,
+      ...(c.rationale !== undefined ? { rationale: c.rationale } : {}),
       ...(c.isPublic !== undefined ? { isPublic: c.isPublic } : {}),
     };
   });

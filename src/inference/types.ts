@@ -3,28 +3,10 @@ import type { PublicBeliefs, InferenceProvider } from "./inference-types";
 import type { BidAlert } from "../conventions";
 import type { FactConstraint } from "../conventions/core/agreement-module";
 
-// ConditionInference — structured inference metadata for condition → HandInference mapping.
-// Previously lived in conventions/core/types; now owned by inference layer.
-export interface ConditionInference {
-  readonly type:
-    | "hcp-min"
-    | "hcp-max"
-    | "hcp-range"
-    | "suit-min"
-    | "suit-max"
-    | "balanced"
-    | "not-balanced"
-    | "two-suited";
-  readonly params: Record<string, unknown>;
-}
-
 // Re-export inference DTOs (canonical location: inference-types.ts)
 export type {
-  SuitInference,
   HandInference,
   PublicBeliefs,
-  DerivedRanges,
-  QualitativeConstraint,
   InferenceProvider,
 } from "./inference-types";
 

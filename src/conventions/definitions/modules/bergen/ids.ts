@@ -53,73 +53,73 @@ export const BERGEN_CLAUSE_FACT_IDS = {
 // ─── R1: Responder raises ────────────────────────────────────
 
 // Splinter (12+ HCP, 4-card support, shortage)
-export const BERGEN_SPLINTER_HEARTS = "bergen:splinter-hearts" as const;
-export const BERGEN_SPLINTER_SPADES = "bergen:splinter-spades" as const;
+const BERGEN_SPLINTER_HEARTS = "bergen:splinter-hearts" as const;
+const BERGEN_SPLINTER_SPADES = "bergen:splinter-spades" as const;
 
 // Game raise (13+ HCP, 4-card support)
-export const BERGEN_GAME_RAISE_HEARTS = "bergen:game-raise-hearts" as const;
-export const BERGEN_GAME_RAISE_SPADES = "bergen:game-raise-spades" as const;
+const BERGEN_GAME_RAISE_HEARTS = "bergen:game-raise-hearts" as const;
+const BERGEN_GAME_RAISE_SPADES = "bergen:game-raise-spades" as const;
 
 // Limit raise (10-12 HCP, 4-card support)
-export const BERGEN_LIMIT_RAISE_HEARTS = "bergen:limit-raise-hearts" as const;
-export const BERGEN_LIMIT_RAISE_SPADES = "bergen:limit-raise-spades" as const;
+const BERGEN_LIMIT_RAISE_HEARTS = "bergen:limit-raise-hearts" as const;
+const BERGEN_LIMIT_RAISE_SPADES = "bergen:limit-raise-spades" as const;
 
 // Constructive raise (7-10 HCP, 4-card support)
-export const BERGEN_CONSTRUCTIVE_RAISE_HEARTS = "bergen:constructive-raise-hearts" as const;
-export const BERGEN_CONSTRUCTIVE_RAISE_SPADES = "bergen:constructive-raise-spades" as const;
+const BERGEN_CONSTRUCTIVE_RAISE_HEARTS = "bergen:constructive-raise-hearts" as const;
+const BERGEN_CONSTRUCTIVE_RAISE_SPADES = "bergen:constructive-raise-spades" as const;
 
 // Preemptive raise (0-6 HCP, 4-card support)
-export const BERGEN_PREEMPTIVE_RAISE_HEARTS = "bergen:preemptive-raise-hearts" as const;
-export const BERGEN_PREEMPTIVE_RAISE_SPADES = "bergen:preemptive-raise-spades" as const;
+const BERGEN_PREEMPTIVE_RAISE_HEARTS = "bergen:preemptive-raise-hearts" as const;
+const BERGEN_PREEMPTIVE_RAISE_SPADES = "bergen:preemptive-raise-spades" as const;
 
 // ─── R1: Natural 1NT response ────────────────────────────────
 
-export const BERGEN_NATURAL_1NT_RESPONSE_HEARTS = "bergen:natural-1nt-response-hearts" as const;
-export const BERGEN_NATURAL_1NT_RESPONSE_SPADES = "bergen:natural-1nt-response-spades" as const;
+const BERGEN_NATURAL_1NT_RESPONSE_HEARTS = "bergen:natural-1nt-response-hearts" as const;
+const BERGEN_NATURAL_1NT_RESPONSE_SPADES = "bergen:natural-1nt-response-spades" as const;
 
 // ─── R2: Opener rebids after constructive raise ──────────────
 
-export const BERGEN_OPENER_GAME_AFTER_CONSTRUCTIVE_HEARTS = "bergen:opener-game-after-constructive-hearts" as const;
-export const BERGEN_OPENER_GAME_AFTER_CONSTRUCTIVE_SPADES = "bergen:opener-game-after-constructive-spades" as const;
-export const BERGEN_OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_HEARTS = "bergen:opener-signoff-after-constructive-hearts" as const;
-export const BERGEN_OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_SPADES = "bergen:opener-signoff-after-constructive-spades" as const;
+const BERGEN_OPENER_GAME_AFTER_CONSTRUCTIVE_HEARTS = "bergen:opener-game-after-constructive-hearts" as const;
+const BERGEN_OPENER_GAME_AFTER_CONSTRUCTIVE_SPADES = "bergen:opener-game-after-constructive-spades" as const;
+const BERGEN_OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_HEARTS = "bergen:opener-signoff-after-constructive-hearts" as const;
+const BERGEN_OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_SPADES = "bergen:opener-signoff-after-constructive-spades" as const;
 
 // ─── R2: Opener rebids after limit raise ─────────────────────
 
-export const BERGEN_OPENER_GAME_AFTER_LIMIT_HEARTS = "bergen:opener-game-after-limit-hearts" as const;
-export const BERGEN_OPENER_GAME_AFTER_LIMIT_SPADES = "bergen:opener-game-after-limit-spades" as const;
-export const BERGEN_OPENER_SIGNOFF_AFTER_LIMIT_HEARTS = "bergen:opener-signoff-after-limit-hearts" as const;
-export const BERGEN_OPENER_SIGNOFF_AFTER_LIMIT_SPADES = "bergen:opener-signoff-after-limit-spades" as const;
+const BERGEN_OPENER_GAME_AFTER_LIMIT_HEARTS = "bergen:opener-game-after-limit-hearts" as const;
+const BERGEN_OPENER_GAME_AFTER_LIMIT_SPADES = "bergen:opener-game-after-limit-spades" as const;
+const BERGEN_OPENER_SIGNOFF_AFTER_LIMIT_HEARTS = "bergen:opener-signoff-after-limit-hearts" as const;
+const BERGEN_OPENER_SIGNOFF_AFTER_LIMIT_SPADES = "bergen:opener-signoff-after-limit-spades" as const;
 
 // ─── R2: Opener rebids after preemptive raise ────────────────
 
-export const BERGEN_OPENER_GAME_AFTER_PREEMPTIVE_HEARTS = "bergen:opener-game-after-preemptive-hearts" as const;
-export const BERGEN_OPENER_GAME_AFTER_PREEMPTIVE_SPADES = "bergen:opener-game-after-preemptive-spades" as const;
-export const BERGEN_OPENER_PASS_AFTER_PREEMPTIVE_HEARTS = "bergen:opener-pass-after-preemptive-hearts" as const;
-export const BERGEN_OPENER_PASS_AFTER_PREEMPTIVE_SPADES = "bergen:opener-pass-after-preemptive-spades" as const;
+const BERGEN_OPENER_GAME_AFTER_PREEMPTIVE_HEARTS = "bergen:opener-game-after-preemptive-hearts" as const;
+const BERGEN_OPENER_GAME_AFTER_PREEMPTIVE_SPADES = "bergen:opener-game-after-preemptive-spades" as const;
+const BERGEN_OPENER_PASS_AFTER_PREEMPTIVE_HEARTS = "bergen:opener-pass-after-preemptive-hearts" as const;
+const BERGEN_OPENER_PASS_AFTER_PREEMPTIVE_SPADES = "bergen:opener-pass-after-preemptive-spades" as const;
 
 // ─── R3: Responder continuations ─────────────────────────────
 
 // After opener makes a game try
-export const BERGEN_RESPONDER_TRY_ACCEPT_HEARTS = "bergen:responder-try-accept-hearts" as const;
-export const BERGEN_RESPONDER_TRY_ACCEPT_SPADES = "bergen:responder-try-accept-spades" as const;
-export const BERGEN_RESPONDER_TRY_REJECT_HEARTS = "bergen:responder-try-reject-hearts" as const;
-export const BERGEN_RESPONDER_TRY_REJECT_SPADES = "bergen:responder-try-reject-spades" as const;
+const BERGEN_RESPONDER_TRY_ACCEPT_HEARTS = "bergen:responder-try-accept-hearts" as const;
+const BERGEN_RESPONDER_TRY_ACCEPT_SPADES = "bergen:responder-try-accept-spades" as const;
+const BERGEN_RESPONDER_TRY_REJECT_HEARTS = "bergen:responder-try-reject-hearts" as const;
+const BERGEN_RESPONDER_TRY_REJECT_SPADES = "bergen:responder-try-reject-spades" as const;
 
 // After opener bids game directly (suit-independent)
-export const BERGEN_RESPONDER_ACCEPT_GAME = "bergen:responder-accept-game" as const;
+const BERGEN_RESPONDER_ACCEPT_GAME = "bergen:responder-accept-game" as const;
 
 // After opener signs off (suit-independent)
-export const BERGEN_RESPONDER_ACCEPT_SIGNOFF = "bergen:responder-accept-signoff" as const;
+const BERGEN_RESPONDER_ACCEPT_SIGNOFF = "bergen:responder-accept-signoff" as const;
 
 // ─── R4: Opener final acceptance (suit-independent) ──────────
 
-export const BERGEN_OPENER_ACCEPT_AFTER_TRY = "bergen:opener-accept-after-try" as const;
+const BERGEN_OPENER_ACCEPT_AFTER_TRY = "bergen:opener-accept-after-try" as const;
 
 // ─── Stub openings ───────────────────────────────────────────
 
-export const BERGEN_OPENER_1H = "bergen:opener-1h" as const;
-export const BERGEN_OPENER_1S = "bergen:opener-1s" as const;
+const BERGEN_OPENER_1H = "bergen:opener-1h" as const;
+const BERGEN_OPENER_1S = "bergen:opener-1s" as const;
 
 // ─── Collected constants ─────────────────────────────────────
 

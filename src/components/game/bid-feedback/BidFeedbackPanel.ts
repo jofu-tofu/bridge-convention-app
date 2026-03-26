@@ -6,7 +6,7 @@
  * not by convention-specific checks.
  */
 
-import type { EncoderKind } from "../../../conventions";
+import type { EncoderKind } from "../../../service";
 
 /** Human-readable ambiguity description. Returns null when score is 0 (clear-cut). */
 export function formatAmbiguity(score: number): string | null {

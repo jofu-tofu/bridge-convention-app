@@ -15,7 +15,7 @@ import { resolveEncoding } from "./encoder-resolver";
 import type { DeclaredEncoderKind } from "../../core/agreement-module";
 
 /** Result of evaluating a single proposal through the gate pipeline. */
-export interface ProposalResult {
+interface ProposalResult {
   /** The carrier with all per-surface data and traces attached. */
   carrier: PipelineCarrier;
   /** Whether this carrier passed all gates (eligible for truth/acceptable sets). */

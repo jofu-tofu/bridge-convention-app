@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PipelineResult } from "../../../service/debug-types";
-  import type { TeachingProjection } from "../../../conventions";
+  import type { TeachingProjection } from "../../../service";
   import { fmtCall } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 

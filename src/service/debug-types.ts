@@ -14,9 +14,6 @@ import type { StrategyEvaluation, BidResult } from "../conventions";
 import type { BidFeedbackDTO } from "../session/bid-feedback-builder";
 import type { ServiceGamePhase } from "./response-types";
 
-// Re-export ServiceInferenceSnapshot for convenience (it's defined in response-types.ts)
-export type { ServiceInferenceSnapshot } from "./response-types";
-
 // ── Debug-only backend type re-exports ──────────────────────────────
 //
 // Debug drawer components need these deep backend types. Re-exporting

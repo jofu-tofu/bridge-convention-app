@@ -4,20 +4,23 @@
  */
 
 import type { Deal, DDSolution } from "./types";
+import type { SolveBoardResult } from "./dds-wasm";
 
 /** Messages received from the DDS Web Worker. */
 type DDSWorkerMessage =
   | { type: "ready" }
   | { type: "result"; id: number; solution: DDSolution }
+  | { type: "solveBoardResult"; id: number; result: SolveBoardResult }
   | { type: "error"; id: number; message: string };
 
 let worker: Worker | null = null;
 let ready = false;
 let initPromise: Promise<void> | null = null;
 let nextId = 0;
+// any: union of resolve types — DDSolution for table solves, SolveBoardResult for board solves
 const pending = new Map<
   number,
-  { resolve: (v: DDSolution) => void; reject: (e: Error) => void }
+  { resolve: (v: never) => void; reject: (e: Error) => void }
 >();
 
 /**
@@ -44,11 +47,13 @@ export async function initDDS(): Promise<void> {
       }
 
       // Route solve responses by request ID
-      if (pending.has(msg.id)) {
+      if ("id" in msg && pending.has(msg.id)) {
         const p = pending.get(msg.id)!;
         pending.delete(msg.id);
         if (msg.type === "result") {
-          p.resolve(msg.solution);
+          p.resolve(msg.solution as never);
+        } else if (msg.type === "solveBoardResult") {
+          p.resolve(msg.result as never);
         } else {
           p.reject(new Error(msg.message));
         }
@@ -78,8 +83,8 @@ export function solveDealWasm(deal: Deal): Promise<DDSolution> {
     return Promise.reject(new Error("DDS not ready"));
   }
   const id = nextId++;
-  return new Promise((resolve, reject) => {
-    pending.set(id, { resolve, reject });
+  return new Promise<DDSolution>((resolve, reject) => {
+    pending.set(id, { resolve: resolve as (v: never) => void, reject });
     // Defensive: ensure plain serializable data for postMessage.
     // Svelte 5 $state proxies (or other non-cloneable wrappers) will
     // cause "could not be cloned" errors if passed directly.
@@ -91,3 +96,40 @@ export function solveDealWasm(deal: Deal): Promise<DDSolution> {
     }
   });
 }
+
+/**
+ * Solve a board position — returns per-card trick counts for all legal plays.
+ * Requires DDS SolveBoardPBN to be exported in the WASM build.
+ *
+ * @param trump             Trump suit index (0=S, 1=H, 2=D, 3=C, 4=NT)
+ * @param first             Seat on lead (0=N, 1=E, 2=S, 3=W)
+ * @param currentTrickSuit  Suits of cards already played this trick
+ * @param currentTrickRank  Ranks (2-14) of cards already played this trick
+ * @param remainCardsPBN    PBN string of remaining cards in all hands
+ */
+export function solveBoardWasm(
+  trump: number,
+  first: number,
+  currentTrickSuit: number[],
+  currentTrickRank: number[],
+  remainCardsPBN: string,
+): Promise<SolveBoardResult> {
+  if (!worker || !ready) {
+    return Promise.reject(new Error("DDS not ready"));
+  }
+  const id = nextId++;
+  return new Promise<SolveBoardResult>((resolve, reject) => {
+    pending.set(id, { resolve: resolve as (v: never) => void, reject });
+    worker!.postMessage({
+      type: "solveBoard",
+      id,
+      trump,
+      first,
+      currentTrickSuit,
+      currentTrickRank,
+      remainCardsPBN,
+    });
+  });
+}
+
+export type { SolveBoardResult } from "./dds-wasm";

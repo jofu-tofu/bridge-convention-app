@@ -3,7 +3,7 @@
   import type { BidHistoryEntry } from "../../service";
   import { Seat } from "../../service";
   import { SEAT_INDEX } from "../../service";
-  import { formatCall } from "../../service/display/format";
+  import { formatCall } from "../../service";
   import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";
 
   interface Props {

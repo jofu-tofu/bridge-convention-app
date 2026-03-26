@@ -1,11 +1,18 @@
 <script lang="ts">
-  import type { OpponentMode } from "../../../service";
-  import { AVAILABLE_BASE_SYSTEMS } from "../../../conventions";
+  import type { OpponentMode, PlayProfileId } from "../../../service";
+  import { PLAY_PROFILES, AVAILABLE_BASE_SYSTEMS } from "../../../service";
   import { getAppStore } from "../../../stores/context";
 
   const appStore = getAppStore();
 
   const OFF_CONVENTION_RATE = { MIN: 0.1, MAX: 0.7, STEP: 0.05, DEFAULT: 0.3 } as const;
+
+  const PROFILE_OPTIONS: { id: PlayProfileId; label: string }[] = [
+    { id: "beginner", label: "Beginner" },
+    { id: "club-player", label: "Club" },
+    { id: "expert", label: "Expert" },
+    { id: "world-class", label: "World Class" },
+  ];
 </script>
 
 <div class="space-y-3">
@@ -52,6 +59,31 @@
       </div>
       <p class="text-[--text-annotation] text-text-muted mt-1 px-1">
         {appStore.opponentMode === "natural" ? "Opponents bid naturally" : "Opponents always pass"}
+      </p>
+    </div>
+
+    <!-- Play Difficulty -->
+    <div>
+      <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">Play Skill</h3>
+      <div class="flex gap-1" role="group" aria-label="Opponent play difficulty">
+        {#each PROFILE_OPTIONS as opt (opt.id)}
+          {@const active = (appStore.playProfileId ?? "world-class") === opt.id}
+          <button
+            class="flex-1 px-2 py-1 rounded-[--radius-sm] border text-[--text-label] font-medium cursor-pointer transition-colors
+              {active
+                ? 'bg-accent-primary/10 border-accent-primary text-accent-primary'
+                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}"
+            onclick={() => appStore.setPlayProfileId(opt.id)}
+            aria-pressed={active}
+            title={PLAY_PROFILES[opt.id].description}
+            data-testid="settings-play-{opt.id}"
+          >
+            {opt.label}
+          </button>
+        {/each}
+      </div>
+      <p class="text-[--text-annotation] text-text-muted mt-1 px-1">
+        {PLAY_PROFILES[appStore.playProfileId ?? "world-class"].description}
       </p>
     </div>
 

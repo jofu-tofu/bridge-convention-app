@@ -1,6 +1,6 @@
 import type { Screen } from "../../stores/app.svelte";
 
-export interface LearnSubItem {
+interface LearnSubItem {
   label: string;
   active: boolean;
   onclick: () => void;

@@ -17,16 +17,6 @@ import { Suit, BidSuit } from "../../service";
  * panels and on the CSS-transformed table.
  *─────────────────────────────────────────────────────────────────────────── */
 
-/** Typography token names -- CSS custom property names for the app's type scale. */
-export type TextToken =
-  | "--text-annotation"
-  | "--text-label"
-  | "--text-detail"
-  | "--text-body"
-  | "--text-value"
-  | "--text-heading"
-  | "--text-title";
-
 /** Suit colors for dark backgrounds (panels, trick history). */
 export const SUIT_COLOR_CLASS: Record<Suit, string> = {
   [Suit.Spades]: "text-suit-spades",

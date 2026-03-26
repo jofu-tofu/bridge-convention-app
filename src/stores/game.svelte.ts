@@ -38,12 +38,11 @@ import { TRICK_PAUSE, AI_PLAY_DELAY } from "./animate";
 
 // ── Re-exports ──────────────────────────────────────────────────────
 
-export type { ServiceGamePhase as GamePhase } from "../service";
 export type { BidHistoryEntry } from "../service";
 
 // ── Exported types (previously in sub-stores) ───────────────────────
 
-export interface GameStoreOptions {
+interface GameStoreOptions {
   /** Override the delay function used for AI bid/play timing. Defaults to setTimeout-based delay. */
   delayFn?: (ms: number) => Promise<void>;
 }

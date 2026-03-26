@@ -25,6 +25,7 @@
   import DebugPublicBeliefs from "./debug/DebugPublicBeliefs.svelte";
   import DebugBidLog from "./debug/DebugBidLog.svelte";
   import DebugPlayLog from "./debug/DebugPlayLog.svelte";
+  // import DebugPlaySuggestions from "./debug/DebugPlaySuggestions.svelte";
 
   interface Props {
     open: boolean;
@@ -162,6 +163,7 @@
         <DebugTeaching {feedback} />
         <DebugPublicBeliefs publicBeliefState={gameStore.publicBeliefState} allSeats={ALL_SEATS} />
         <DebugBidLog debugLog={gameStore.debugLog} />
+        <!-- <DebugPlaySuggestions /> -->
         <DebugPlayLog playLog={gameStore.playLog} />
       </div>
     </details>

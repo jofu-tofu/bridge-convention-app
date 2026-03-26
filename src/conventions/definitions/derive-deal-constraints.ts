@@ -37,7 +37,7 @@ import { SUIT_ORDER } from "../../engine/constants";
 
 // ── Types ───────────────────────────────────────────────────────────
 
-export interface DerivedDealConstraints {
+interface DerivedDealConstraints {
   readonly dealConstraints: DealConstraints;
   readonly offConventionConstraints?: DealConstraints;
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;

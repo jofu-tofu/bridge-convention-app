@@ -7,7 +7,7 @@ import { partnerSeat } from "../engine/constants";
 import type { PublicBeliefState } from "./types";
 
 /** Private belief about partner's holdings, conditioned on own hand. */
-export interface PrivateBeliefState {
+interface PrivateBeliefState {
   readonly seat: Seat;
   readonly partnerSeat: Seat;
   readonly partnerHcpRange: { readonly min: number; readonly max: number };

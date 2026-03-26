@@ -10,7 +10,7 @@ import { SMOLEN_FACT_IDS, SMOLEN_MEANING_IDS, SMOLEN_CLASSES } from "./ids";
 
 // ─── Module context ──────────────────────────────────────────
 
-export const SMOLEN_CTX: ModuleContext = { moduleId: "smolen" };
+const SMOLEN_CTX: ModuleContext = { moduleId: "smolen" };
 
 // ─── Entry surfaces (Stayman for Smolen) ─────────────────────
 
@@ -30,7 +30,7 @@ export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeanin
           factId: SYSTEM_RESPONDER_GAME_VALUES,
           operator: "boolean",
           value: true,
-          rationale: `${sys.responderThresholds.gameMin}+ HCP`,
+          rationale: "game values opposite 1NT",
           isPublic: true,
         },
         {
@@ -62,7 +62,7 @@ export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeanin
           factId: SYSTEM_RESPONDER_GAME_VALUES,
           operator: "boolean",
           value: true,
-          rationale: `${sys.responderThresholds.gameMin}+ HCP`,
+          rationale: "game values opposite 1NT",
           isPublic: true,
         },
         {
@@ -100,7 +100,7 @@ export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[]
           factId: SYSTEM_RESPONDER_GAME_VALUES,
           operator: "boolean",
           value: true,
-          rationale: `${sys.responderThresholds.gameMin}+ HCP`,
+          rationale: "game values opposite 1NT",
           isPublic: true,
         },
         {
@@ -134,7 +134,7 @@ export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[]
           factId: SYSTEM_RESPONDER_GAME_VALUES,
           operator: "boolean",
           value: true,
-          rationale: `${sys.responderThresholds.gameMin}+ HCP`,
+          rationale: "game values opposite 1NT",
           isPublic: true,
         },
         {

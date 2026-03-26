@@ -1,7 +1,7 @@
 import type { BiddingStrategy, BidResult, BiddingContext } from "../../conventions";
 import { TraceCollector } from "../../conventions";
 
-export interface StrategyChainOptions {
+interface StrategyChainOptions {
   /** When provided, results failing this predicate are treated as "declined". */
   resultFilter?: (result: BidResult, context: BiddingContext) => boolean;
 }

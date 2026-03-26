@@ -27,7 +27,7 @@ export const CANON_DIMENSIONAL_COUNT = 1;
  *  are more informative (they describe how suits relate to each other).
  *  pointRange > suitIdentity because HCP range is more discriminating
  *  than suit naming in typical bridge contexts. */
-export const DIMENSION_PRIORITY: readonly ConstraintDimension[] = [
+const DIMENSION_PRIORITY: readonly ConstraintDimension[] = [
   "suitRelation",   // Most informative: describes suit relationships
   "shapeClass",     // Distributional shape (two-suited, balanced, shortage)
   "pointRange",     // HCP/point bounds
@@ -42,14 +42,14 @@ export const CANON_DIMENSION_PRIORITY = 2;
  *  dimension count. This canon is a tiebreaker WITHIN the same round,
  *  not across rounds (cross-round conflicts are resolved by activation
  *  context, not specificity). */
-export const CANON_CONVENTION_DEPTH = 3;
+const CANON_CONVENTION_DEPTH = 3;
 
 /** Canon 4: Named Suit Override
  *  When two surfaces constrain the same number of dimensions and have
  *  the same dimension sets, a surface that names specific suits (e.g.,
  *  "hearts and spades") outranks one that uses computed/variable suits
  *  (e.g., "$suit"). This rewards precision of communication. */
-export const CANON_NAMED_SUIT = 4;
+const CANON_NAMED_SUIT = 4;
 
 /**
  * Compare two dimension sets using the linearization canons.

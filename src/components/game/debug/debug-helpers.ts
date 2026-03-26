@@ -1,6 +1,6 @@
 import type { Call, Card } from "../../../service";
 import type { Suit } from "../../../service";
-import { formatCall } from "../../../service/display/format";
+import { formatCall } from "../../../service";
 import { sortCards } from "../../shared/sort-cards";
 
 export function fmtCall(call: Call): string {

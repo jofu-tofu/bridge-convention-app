@@ -49,11 +49,13 @@ export const DEFAULT_DRILL_TUNING: DrillTuning = {
 export interface DrillSettings {
   readonly opponentMode: OpponentMode;
   readonly tuning: DrillTuning;
+  readonly playProfileId?: PlayProfileId;
 }
 
 export const DEFAULT_DRILL_SETTINGS: DrillSettings = {
-  opponentMode: "natural",
+  opponentMode: "none",
   tuning: DEFAULT_DRILL_TUNING,
+  playProfileId: "world-class",
 };
 
 // ─── Drill config ───────────────────────────────────────────
@@ -64,12 +66,14 @@ import type { PlayStrategy } from "../conventions";
 import type { ConventionStrategy } from "../conventions";
 import type { InferenceConfig } from "../inference/types";
 import type { InferenceEngine } from "../inference/inference-engine";
+import type { PlayProfileId, PlayStrategyProvider } from "./heuristics/play-profiles";
 
 export interface DrillConfig {
   readonly conventionId: string;
   readonly userSeat: Seat;
   readonly seatStrategies: Record<Seat, BiddingStrategy | "user">;
   readonly playStrategy?: PlayStrategy;
+  readonly playStrategyProvider?: PlayStrategyProvider;
   readonly nsInferenceConfig?: InferenceConfig;
   readonly ewInferenceConfig?: InferenceConfig;
 }

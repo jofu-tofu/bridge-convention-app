@@ -24,7 +24,7 @@ import { moduleFactory as weakTwos } from "./modules/weak-twos";
 // ── Factory type ────────────────────────────────────────────────────
 
 /** A factory that produces a ConventionModule for a given SystemConfig. */
-export type ModuleFactory = (sys: SystemConfig) => ConventionModule;
+type ModuleFactory = (sys: SystemConfig) => ConventionModule;
 
 // ── Factory registry ────────────────────────────────────────────────
 
@@ -79,7 +79,4 @@ export function getModules(moduleIds: readonly string[], sys: SystemConfig = SAY
   });
 }
 
-/** Get all registered module IDs. */
-export function getModuleIds(): readonly string[] {
-  return [...MODULE_FACTORIES.keys()];
-}
+

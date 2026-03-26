@@ -1,7 +1,5 @@
 import {
-  createExplanationCatalog,
   type ExplanationEntry,
-  type ExplanationCatalog,
   type FactExplanationEntry,
   type MeaningExplanationEntry,
 } from "../../../core/explanation-catalog";
@@ -465,7 +463,3 @@ export const WEAK_TWO_ENTRIES: readonly ExplanationEntry[] = [
   ...Object.values(FACT_EXPLANATIONS),
   ...Object.values(MEANING_EXPLANATIONS),
 ];
-
-export const WEAK_TWO_EXPLANATION_CATALOG: ExplanationCatalog = createExplanationCatalog(
-  [...WEAK_TWO_ENTRIES],
-);

@@ -5,14 +5,11 @@ import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 import { createOpener1NtSurface, createNtR1Surfaces } from "./meaning-surfaces";
 import { NT_EXPLANATION_ENTRIES } from "./explanation-catalog";
 
-// Re-export surface factories for external consumers
-export { createNtR1Surfaces, createOpener1NtSurface } from "./meaning-surfaces";
-
 // ─── Local FSM + States ──────────────────────────────────────
 
 type NaturalNtPhase = "idle" | "opened" | "responded";
 
-export const naturalNtLocal: LocalFsm<NaturalNtPhase> = {
+const naturalNtLocal: LocalFsm<NaturalNtPhase> = {
   initial: "idle",
   transitions: [
     { from: "idle", to: "opened", on: { act: "open", strain: "notrump" } },
@@ -25,7 +22,7 @@ export const naturalNtLocal: LocalFsm<NaturalNtPhase> = {
   ],
 };
 
-export function createNaturalNtStates(sys: SystemConfig): readonly StateEntry<NaturalNtPhase>[] {
+function createNaturalNtStates(sys: SystemConfig): readonly StateEntry<NaturalNtPhase>[] {
   return [
     { phase: "idle", turn: "opener" as const, surfaces: createOpener1NtSurface(sys) },
     { phase: "opened", turn: "responder" as const, surfaces: createNtR1Surfaces(sys) },

@@ -3,8 +3,8 @@
   import type { Contract, Vulnerability } from "../../../service";
   import { Vulnerability as Vul } from "../../../service";
   import type { BidHistoryEntry } from "../../../service";
-  import type { ConventionContribution } from "../../../conventions";
-  import { formatContractWithDeclarer, formatRuleName } from "../../../service/display/format";
+  import type { ConventionContribution } from "../../../service";
+  import { formatContractWithDeclarer, formatRuleName } from "../../../service";
   import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";
   import type { DDSAnalysisProps } from "./shared-props";
   import ContractDisplay from "./ContractDisplay.svelte";

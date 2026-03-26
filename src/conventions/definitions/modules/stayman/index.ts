@@ -16,15 +16,6 @@ import { STAYMAN_EXPLANATION_ENTRIES } from "./explanation-catalog";
 
 // ── Re-exports ────────────────────────────────────────────────────
 
-export { STAYMAN_CLASSES, STAYMAN_R3_CLASSES } from "./ids";
-export {
-  createStaymanR1Surface,
-  createStaymanR1FiveFourSurface,
-  OPENER_STAYMAN_SURFACES,
-  createStaymanR3After2HSurfaces,
-  createStaymanR3After2SSurfaces,
-  createStaymanR3After2DSurfaces,
-} from "./meaning-surfaces";
 export { createStaymanFacts } from "./facts";
 
 // ─── Local FSM + States ──────────────────────────────────────
@@ -34,7 +25,7 @@ type StaymanPhase = "idle" | "asked" | "shown-hearts" | "shown-spades" | "denied
 const STAYMAN_ASK_DELTA: NegotiationDelta = { forcing: "one-round", captain: "responder" };
 const STAYMAN_RESPONSE_DELTA: NegotiationDelta = { forcing: "none" };
 
-export const staymanLocal: LocalFsm<StaymanPhase> = {
+const staymanLocal: LocalFsm<StaymanPhase> = {
   initial: "idle",
   transitions: [
     { from: "idle", to: "asked", on: { act: "inquire", feature: "majorSuit" } },
@@ -48,7 +39,7 @@ export const staymanLocal: LocalFsm<StaymanPhase> = {
   ],
 };
 
-export function createStaymanStates(sys: SystemConfig): readonly StateEntry<StaymanPhase>[] {
+function createStaymanStates(sys: SystemConfig): readonly StateEntry<StaymanPhase>[] {
   return [
     { phase: "idle", turn: "responder" as const, negotiationDelta: STAYMAN_ASK_DELTA, surfaces: [createStaymanR1Surface(sys), createStaymanR1FiveFourSurface(sys)] },
     { phase: "asked", turn: "opener" as const, negotiationDelta: STAYMAN_RESPONSE_DELTA, surfaces: OPENER_STAYMAN_SURFACES },

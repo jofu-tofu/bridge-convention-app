@@ -25,7 +25,7 @@ import type { ViewportBidFeedback, TeachingDetail } from "../service/response-ty
 import type { ViewportBidGrade } from "../service/response-types";
 
 /** Result of processing a user bid — returned by processBid(). */
-export interface BidProcessResult {
+interface BidProcessResult {
   readonly accepted: boolean;
   readonly feedback: BidFeedbackDTO | null;
   readonly viewportFeedback: ViewportBidFeedback | null;

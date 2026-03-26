@@ -59,4 +59,3 @@ export function assembleBidFeedback(
 
 // Re-export grading utilities for callers that need just the grade
 export { BidGrade } from "../conventions";
-export { resolveTeachingAnswer, gradeBid } from "../conventions";

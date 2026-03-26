@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { TeachingDetail } from "../../../service";
-  import { formatCall } from "../../../service/display/format";
+  import { formatCall } from "../../../service";
 
   interface Props {
     practicalRec: NonNullable<TeachingDetail["practicalRecommendation"]>;

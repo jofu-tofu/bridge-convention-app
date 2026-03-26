@@ -7,8 +7,12 @@
  * imports this file — it calls service methods.
  */
 
-import type { ConventionModule, LocalFsm, ExplanationEntry, BidMeaningClause } from "../conventions";
-import { moduleSurfaces, getModule, getAllModules, listBundleInputs } from "../conventions";
+import type { ConventionModule, LocalFsm, ExplanationEntry, BidMeaningClause, SystemConfig } from "../conventions";
+import {
+  moduleSurfaces, getModule, getAllModules, listBundleInputs,
+  AVAILABLE_BASE_SYSTEMS, deriveNeutralDescription,
+} from "../conventions";
+import { getSystemConfig } from "../conventions/definitions/system-config";
 import { formatCall } from "../service/display/format";
 import type {
   ModuleCatalogEntry,
@@ -16,6 +20,7 @@ import type {
   PhaseGroupView,
   SurfaceDetailView,
   SurfaceClauseView,
+  ClauseSystemVariant,
 } from "../service/response-types";
 
 /** Known bridge abbreviations that should be fully uppercased. */
@@ -39,6 +44,62 @@ export function formatModuleName(moduleId: string): string {
 }
 
 // ── Module-centric viewport ──────────────────────────────────────────
+
+// ── System-fact clause helpers ───────────────────────────────────────
+
+/** All system configs, paired with short UI labels. */
+const ALL_SYSTEMS: readonly { sys: SystemConfig; label: string }[] =
+  AVAILABLE_BASE_SYSTEMS.map((meta) => ({
+    sys: getSystemConfig(meta.id),
+    label: meta.shortLabel,
+  }));
+
+/**
+ * Describe what a system-derived fact concretely means for a given SystemConfig.
+ * Returns the human-readable threshold/value, or null for unrecognized facts.
+ */
+function describeSystemFactValue(factId: string, sys: SystemConfig): string | null {
+  switch (factId) {
+    case "system.responder.weakHand":
+      return `< ${sys.responderThresholds.inviteMin} HCP`;
+    case "system.responder.inviteValues":
+      return `${sys.responderThresholds.inviteMin}\u2013${sys.responderThresholds.inviteMax} HCP`;
+    case "system.responder.gameValues":
+      return `${sys.responderThresholds.gameMin}+ HCP`;
+    case "system.responder.slamValues":
+      return `${sys.responderThresholds.slamMin}+ HCP`;
+    case "system.opener.notMinimum":
+      return `${sys.openerRebid.notMinimum}+ HCP`;
+    case "system.responder.twoLevelNewSuit":
+      return `${sys.suitResponse.twoLevelMin}+ HCP`;
+    case "system.suitResponse.isGameForcing":
+      return sys.suitResponse.twoLevelForcingDuration === "game" ? "Game-forcing" : "One-round forcing";
+    case "system.oneNtResponseAfterMajor.forcing":
+      return `1NT is ${sys.oneNtResponseAfterMajor.forcing}`;
+    case "system.responder.oneNtRange":
+      return `${sys.oneNtResponseAfterMajor.minHcp}\u2013${sys.oneNtResponseAfterMajor.maxHcp} HCP`;
+    case "system.dontOvercall.inRange":
+      return `${sys.dontOvercall.minHcp}\u2013${sys.dontOvercall.maxHcp} HCP`;
+    default:
+      return null;
+  }
+}
+
+/** Build system variants for a system.* fact — one entry per known base system. */
+function buildSystemVariants(factId: string): readonly ClauseSystemVariant[] {
+  return ALL_SYSTEMS.map(({ sys, label }) => ({
+    systemLabel: label,
+    description: describeSystemFactValue(factId, sys) ?? factId,
+  }));
+}
+
+/** Read the description runtime-property from a BidMeaningClause (set by createSurface). */
+function readClauseDescription(c: BidMeaningClause): string {
+  return (c as BidMeaningClause & { description?: string }).description
+    ?? `${c.factId} ${c.operator} ${JSON.stringify(c.value)}`;
+}
+
+// ── Module catalog ──────────────────────────────────────────────────
 
 /** Build module catalog entries for all registered modules. */
 export function buildModuleCatalog(): readonly ModuleCatalogEntry[] {
@@ -153,15 +214,24 @@ function findExplanationText(entries: readonly ExplanationEntry[], meaningId: st
   return null;
 }
 
-/** Map raw BidMeaningClause[] to SurfaceClauseView[] for the learning viewport. */
-function mapClauses(clauses: readonly BidMeaningClause[]): readonly SurfaceClauseView[] {
-  return clauses.map((c) => ({
-    factId: c.factId,
-    operator: c.operator,
-    value: c.value,
-    description: (c as BidMeaningClause & { description?: string }).description ?? `${c.factId} ${c.operator} ${JSON.stringify(c.value)}`,
-    isPublic: c.isPublic ?? false,
-  }));
+/** Map raw BidMeaningClause[] to SurfaceClauseView[] for the learning viewport.
+ *  system.* facts automatically get neutral descriptions + per-system variants. */
+function mapClauses(
+  clauses: readonly BidMeaningClause[],
+): readonly SurfaceClauseView[] {
+  return clauses.map((c) => {
+    const isSystemFact = c.factId.startsWith("system.");
+    return {
+      factId: c.factId,
+      operator: c.operator,
+      value: c.value,
+      description: isSystemFact
+        ? deriveNeutralDescription(c.factId, c.rationale)
+        : readClauseDescription(c),
+      isPublic: c.isPublic ?? false,
+      ...(isSystemFact ? { systemVariants: buildSystemVariants(c.factId) } : {}),
+    };
+  });
 }
 
 /** Build PhaseGroupView[] from a module's states, ordered by FSM topology. */

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { ParseTreeView } from "../../../conventions";
-  import { formatCall } from "../../../service/display/format";
-  import { formatRuleName } from "../../../service/display/format";
+  import type { ParseTreeView } from "../../../service";
+  import { formatCall } from "../../../service";
+  import { formatRuleName } from "../../../service";
 
   interface Props {
     parseTree: ParseTreeView;

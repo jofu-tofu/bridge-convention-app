@@ -22,7 +22,7 @@ export function shuffle(arr: Card[], rng: () => number): void {
 }
 
 /** Built-in fact resolver for primitive facts (fallback when no catalog resolver provided). */
-export function resolveFactValueBuiltin(hand: Hand, factId: string): number | boolean | undefined {
+function resolveFactValueBuiltin(hand: Hand, factId: string): number | boolean | undefined {
   if (factId === "hand.hcp") {
     return calculateHcp(hand);
   }
@@ -61,7 +61,7 @@ function resolveFactValueWithFallback(
 }
 
 /** Check one clause of a HandPredicate against a hand. */
-export function checkClause(
+function checkClause(
   hand: Hand,
   clause: {
     readonly factId: string;
@@ -98,7 +98,7 @@ export function checkClause(
 }
 
 /** Check all constraints of a HandPredicate against a hand. */
-export function checkPredicate(hand: Hand, predicate: HandPredicate, resolver?: HandFactResolverFn): boolean {
+function checkPredicate(hand: Hand, predicate: HandPredicate, resolver?: HandFactResolverFn): boolean {
   if (predicate.conjunction === "all") {
     return predicate.clauses.every((c) => checkClause(hand, c, resolver));
   }
@@ -107,7 +107,7 @@ export function checkPredicate(hand: Hand, predicate: HandPredicate, resolver?: 
 }
 
 /** Check if a hand satisfies all constraints for a given seat. */
-export function satisfiesSpace(hand: Hand, space: PublicHandSpace, resolver?: HandFactResolverFn): boolean {
+function satisfiesSpace(hand: Hand, space: PublicHandSpace, resolver?: HandFactResolverFn): boolean {
   return space.constraints.every((predicate) => checkPredicate(hand, predicate, resolver));
 }
 

@@ -3,7 +3,7 @@
   import type { Call } from "../../../service";
   import type { BidFeedbackInteractiveProps } from "./types";
   import type { ViewportBidFeedback } from "../../../service";
-  import { formatCall } from "../../../service/display/format";
+  import { formatCall } from "../../../service";
   import { callsMatch } from "../../../service";
   import {
     formatEliminationStage,
@@ -14,7 +14,7 @@
     formatEncoderKind,
     formatAmbiguity,
   } from "./BidFeedbackPanel";
-  import { formatRuleName } from "../../../service/display/format";
+  import { formatRuleName } from "../../../service";
   import ParseTreePanel from "./ParseTreePanel.svelte";
   import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
 
