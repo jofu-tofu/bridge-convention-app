@@ -9,6 +9,8 @@
     recommendation: PlayRecommendation | undefined;
     contract: Contract;
     rotated?: boolean;
+    /** When set, only render this many plays instead of all 4. */
+    visiblePlays?: number;
   }
 
   let {
@@ -16,7 +18,12 @@
     recommendation,
     contract: _contract,
     rotated = false,
+    visiblePlays,
   }: Props = $props();
+
+  const effectivePlays = $derived(
+    visiblePlays !== undefined ? trick.plays.slice(0, visiblePlays) : trick.plays,
+  );
 
   const seatPositions: Record<Seat, string> = {
     [Seat.North]: "trick-north",
@@ -31,7 +38,7 @@
   aria-label="Trick review overlay"
   data-testid="trick-overlay"
 >
-  {#each trick.plays as play (play.seat)}
+  {#each effectivePlays as play (play.seat)}
     {@const isSuboptimal = recommendation && !recommendation.isOptimal && recommendation.seat === play.seat}
     <div class="absolute {seatPositions[viewSeat(play.seat, rotated)]}">
       <Card card={play.card} faceUp />

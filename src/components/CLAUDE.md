@@ -38,11 +38,11 @@ components/
       BiddingPhase.svelte            Bidding phase template (pure — data via props)
       DeclarerPromptPhase.svelte     Declarer/defender prompt (pure — data via props)
       PlayingPhase.svelte            Play phase template (pure — data via props, legal plays from parent)
-      ExplanationPhase.svelte        Review phase with showAllCards toggle
+      ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping
       layout-props.ts                (moved to src/components/shared/layout-props.ts)
       BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
       PlaySidePanel.svelte           Contract, trick counts, restart play, skip-to-review
-      ReviewSidePanel.svelte         Tabbed review: Bidding + Play (when tricks exist) + Analysis, next deal / back to menu
+      ReviewSidePanel.svelte         Tabbed review: Bidding + Cardplay (when tricks exist) + Analysis, next deal / back to menu
       SettingsDialog.svelte          Reusable settings dialog (readonly prop for non-bidding phases)
       ContractDisplay.svelte         Formatted contract with doubled/redoubled indicators
       ScaledTableArea.svelte         Responsive table wrapper with transform-origin
@@ -50,7 +50,9 @@ components/
     BridgeTable.svelte               800x650 table with 4 seats, absolute positioning
     HandFan.svelte                   Overlapping visual card fan (horizontal/vertical)
     TrickArea.svelte                 Center trick display with NSEW card positions and trick count
-    TrickOverlay.svelte              Display-only trick overlay for review phase (no interaction logic)
+    TrickOverlay.svelte              Display-only trick overlay for review phase (supports partial visiblePlays)
+    ReplayControls.svelte            Forward/back/jump navigation bar for review-phase card-by-card replay
+    replay-state.ts                  Pure replay cursor logic: step↔position conversion, progressive reveal, decision point detection
     TrickReviewPanel.svelte          Trick-by-trick review panel with recommendation badges and trick stepper
     ConventionCard.svelte            Phase-independent convention card showing system thresholds (NT range, major length, forcing level)
     AuctionTable.svelte              4-column N/E/S/W grid, suit-colored
@@ -118,7 +120,7 @@ components/
 - BiddingPhase receives `BiddingViewport` as prop — never accesses raw `Deal` or engine internals. Viewport builders live in `src/service/`.
 - DeclarerPromptPhase receives `DeclarerPromptViewport` as prop — never accesses raw `Deal`. Hands filtered through faceUpSeats.
 - PlayingPhase receives `PlayingViewport` as prop — never accesses raw `Deal`. Hands filtered through faceUpSeats.
-- ExplanationPhase receives `ExplanationViewport` as prop — all 4 hands via `allHands`, no raw `Deal`.
+- ExplanationPhase receives `ExplanationViewport` as prop — all 4 hands via `allHands`, no raw `Deal`. Owns `replayStep` state; `PlayHistoryPanel`, `TrickOverlay`, and `TrickReviewPanel` are all controlled by derived values from this single state. Per-card stepping (not per-trick) surfaces individual decision points.
 - BridgeTable/TrickArea accept `rotated` prop — uses `viewSeat()` from `src/components/shared/seat-mapping.ts`, not CSS rotation.
 - `BidPanel` renders all 35 bids + 3 specials; unavailable bids disabled, not hidden. `data-testid="bid-{callKey}"` on all.
 - User seat hardcoded to `Seat.South` — future: configurable.

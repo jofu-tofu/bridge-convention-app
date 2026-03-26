@@ -20,6 +20,10 @@ export const PHASE_CONTAINER_CLASS =
 export const PLAYING_PHASE_CONTAINER_CLASS =
   "flex-1 flex flex-col lg:grid lg:grid-cols-[var(--width-play-history)_minmax(0,1fr)_var(--width-side-panel)] lg:grid-rows-[minmax(0,1fr)] lg:gap-3 overflow-hidden";
 
+/** 3-column review phase: history (narrow) | table | side panel (grid on desktop, stacked on mobile). */
+export const REVIEW_PHASE_CONTAINER_CLASS =
+  "flex-1 flex flex-col lg:grid lg:grid-cols-[var(--width-play-history)_minmax(0,1fr)_var(--width-side-panel)] lg:grid-rows-[minmax(0,1fr)] lg:gap-3 overflow-hidden";
+
 /** Side panel: stacked with top border on mobile, grid-child with full height on desktop. */
 export const SIDE_PANEL_CLASS =
   "flex-1 lg:flex-none border-t lg:border-t-0 border-border-subtle lg:h-full bg-bg-base p-3 flex flex-col min-h-0 overflow-hidden";

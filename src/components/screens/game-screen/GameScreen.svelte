@@ -202,7 +202,12 @@
   const isDesktop = $derived(windowW >= DESKTOP_MIN);
   const playHistoryW = $derived(Math.round(sidePanelW * 0.8));
   // PLAYING phase has a second panel on the left — account for both in scale
-  const hasTwoPanels = $derived(isDesktop && gameStore.phase === "PLAYING");
+  const hasTwoPanels = $derived(
+    isDesktop && (
+      gameStore.phase === "PLAYING" ||
+      (gameStore.phase === "EXPLANATION" && (gameStore.explanationViewport?.tricks.length ?? 0) > 0)
+    ),
+  );
   const effectiveSidePanelW = $derived(hasTwoPanels ? sidePanelW + playHistoryW : sidePanelW);
   // gap-3 = 0.75rem per gap; 2 gaps in 3-col layout, 1 gap in 2-col layout
   const gridGaps = $derived(isDesktop ? (hasTwoPanels ? 2 : 1) * LAYOUT.GAP_REM * rootFontSize : 0);

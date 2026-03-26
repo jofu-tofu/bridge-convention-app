@@ -16,9 +16,31 @@
     auctionEntries?: readonly AuctionEntryView[];
     dealer?: Seat;
     bidHistory?: readonly BidHistoryEntry[];
+    /** Highlight ring on the selected trick row. */
+    highlightTrickIndex?: number | null;
+    /** Clicking a trick row jumps to it. */
+    onClickTrick?: (index: number) => void;
+    /** Only render tricks up to this count (progressive reveal). */
+    visibleTrickCount?: number;
+    /** Only show this many plays in the last visible trick. */
+    partialTrickPlays?: number;
   }
 
-  let { tricks, declarerSeat, auctionEntries, dealer, bidHistory }: Props = $props();
+  let {
+    tricks,
+    declarerSeat,
+    auctionEntries,
+    dealer,
+    bidHistory,
+    highlightTrickIndex = null,
+    onClickTrick,
+    visibleTrickCount,
+    partialTrickPlays,
+  }: Props = $props();
+
+  const effectiveTricks = $derived(
+    visibleTrickCount !== undefined ? tricks.slice(0, visibleTrickCount) : tricks,
+  );
 
   let scrollContainer: HTMLDivElement | undefined = $state();
 
@@ -35,7 +57,7 @@
   /** Collect all played cards from completed tricks, sorted by suit then rank. */
   const playedBySuit = $derived.by(() => {
     const allPlayed: CardType[] = [];
-    for (const trick of tricks) {
+    for (const trick of effectiveTricks) {
       for (const play of trick.plays) {
         allPlayed.push(play.card);
       }
@@ -103,11 +125,20 @@
       bind:this={scrollContainer}
       class="flex-1 overflow-y-auto space-y-1 min-h-0"
     >
-      {#each tricks as trick, i (i)}
-        <div class="bg-bg-card rounded-[--radius-md] px-1.5 py-0.5 border border-border-subtle">
+      {#each effectiveTricks as trick, i (i)}
+        {@const isLastVisible = visibleTrickCount !== undefined && i === visibleTrickCount - 1}
+        {@const plays = isLastVisible && partialTrickPlays !== undefined ? trick.plays.slice(0, partialTrickPlays) : trick.plays}
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+        <div
+          class="bg-bg-card rounded-[--radius-md] px-1.5 py-0.5 border {highlightTrickIndex === i ? 'border-accent-primary ring-1 ring-accent-primary/40' : 'border-border-subtle'} {onClickTrick ? 'cursor-pointer hover:bg-bg-elevated' : ''}"
+          role={onClickTrick ? "button" : undefined}
+          tabindex={onClickTrick ? 0 : undefined}
+          onclick={() => onClickTrick?.(i)}
+          onkeydown={(e: KeyboardEvent) => { if (onClickTrick && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onClickTrick(i); } }}
+        >
           <div class="flex items-center gap-1">
             <span class="text-text-muted font-mono text-[--text-detail] w-3 shrink-0">{i + 1}</span>
-            {#each trick.plays as play (play.seat)}
+            {#each plays as play (play.seat)}
               <span class="inline-flex items-center gap-0.5 text-[--text-detail] {play.seat === trick.winner ? 'font-bold' : 'opacity-70'}">
                 <span class="text-text-muted">{play.seat}</span>
                 <span class={SUIT_COLOR_CLASS[play.card.suit]}>

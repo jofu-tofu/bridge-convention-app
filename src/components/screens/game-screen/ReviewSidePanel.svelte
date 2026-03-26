@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SvelteMap } from "svelte/reactivity";
-  import type { Contract, Vulnerability, Trick, PlayRecommendation, Seat } from "../../../service";
+  import type { Contract, Vulnerability, Trick, PlayRecommendation, Seat, AuctionEntryView } from "../../../service";
   import { Vulnerability as Vul } from "../../../service";
   import type { BidHistoryEntry } from "../../../service";
   import type { ConventionContribution } from "../../../service";
@@ -8,9 +8,11 @@
   import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";
   import type { DDSAnalysisProps } from "./shared-props";
   import ContractDisplay from "./ContractDisplay.svelte";
-  import BiddingReview from "../../game/BiddingReview.svelte";
+  import AuctionStepPanel from "../../game/AuctionStepPanel.svelte";
+  import RoundBidList from "../../game/RoundBidList.svelte";
   import AnalysisPanel from "../../game/AnalysisPanel.svelte";
   import TrickReviewPanel from "../../game/TrickReviewPanel.svelte";
+  import PlayHistoryPanel from "./PlayHistoryPanel.svelte";
   import Button from "../../shared/Button.svelte";
 
   interface Props extends DDSAnalysisProps {
@@ -30,6 +32,16 @@
     userSeat?: Seat;
     selectedTrickIndex?: number | null;
     onSelectTrick?: (index: number | null) => void;
+    /** Auction entries for mobile trick history panel. */
+    auctionEntries?: readonly AuctionEntryView[];
+    /** Dealer seat for mobile trick history panel. */
+    dealer?: Seat;
+    /** Current auction step (null = show all). */
+    selectedBidStep?: number | null;
+    /** Callback to set auction step. */
+    onSelectBidStep?: (step: number | null) => void;
+    /** Total number of bids in auction. */
+    totalBids?: number;
   }
 
   let {
@@ -52,6 +64,11 @@
     userSeat,
     selectedTrickIndex = null,
     onSelectTrick,
+    auctionEntries,
+    dealer,
+    selectedBidStep = null,
+    onSelectBidStep,
+    totalBids = 0,
   }: Props = $props();
 
   const hasPlayData = $derived(tricks.length > 0 && contract !== null);
@@ -143,7 +160,7 @@
         : 'text-text-muted hover:text-text-secondary'}"
       onclick={() => (activeTab = "play")}
     >
-      Play
+      Cardplay
     </button>
   {/if}
   <button
@@ -203,7 +220,19 @@
       </div>
     {/if}
 
-    <BiddingReview {bidHistory} />
+    {#if onSelectBidStep}
+      <AuctionStepPanel
+        {bidHistory}
+        {selectedBidStep}
+        onSelectBidStep={onSelectBidStep}
+        {totalBids}
+      />
+    {:else}
+      <div class="flex flex-col gap-3">
+        <h3 class="text-[--text-value] font-semibold text-text-secondary">Bidding Review</h3>
+        <RoundBidList {bidHistory} showExpectedResult />
+      </div>
+    {/if}
 
     {#if showConventionSummary}
       <div class="mt-3 bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
@@ -224,6 +253,16 @@
 {:else if activeTab === "play"}
   <div id="review-panel-play" role="tabpanel" aria-label="Play review">
     {#if hasPlayData && contract && userSeat && onSelectTrick}
+      <!-- Mobile-only condensed trick history (desktop has dedicated left panel) -->
+      <div class="lg:hidden mb-3 max-h-40 overflow-y-auto">
+        <PlayHistoryPanel
+          {tricks}
+          declarerSeat={contract.declarer}
+          {auctionEntries}
+          {dealer}
+          {bidHistory}
+        />
+      </div>
       <TrickReviewPanel
         {tricks}
         recommendations={playRecommendations}
