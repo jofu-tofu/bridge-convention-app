@@ -80,10 +80,12 @@ components/
       DebugPlayLog.svelte            Card play history by trick
       debug-helpers.ts               Formatting utilities (fmtCall, formatSuitCards, fmtFactValue, truncate)
   navigation/
-    NavShell.svelte                  Outer layout wrapper — desktop: NavRail (left) + content; mobile: content + BottomTabBar (bottom). Wraps all non-game screens.
-    NavRail.svelte                   Thin left rail (~60px) — Learn (book icon, hover flyout) + Settings (gear icon). Desktop only.
+    NavShell.svelte                  Outer layout wrapper — desktop: NavRail (left) + content; mobile: content + LearnSubNav (when active) + BottomTabBar (bottom). Wraps all non-game screens.
+    NavRail.svelte                   Thin left rail (~80px) — Home/Learn (hover flyout)/Settings icons. Desktop only. Uses shared learn-sub-items.
     NavFlyout.svelte                 Hover flyout menu for NavRail — positioned right of rail icon, keyboard accessible.
-    BottomTabBar.svelte              Mobile bottom tab bar — Learn + Settings tabs. Mobile only.
+    BottomTabBar.svelte              Mobile bottom tab bar — Home + Learn + Settings tabs. Mobile only.
+    LearnSubNav.svelte               Mobile segmented control — Conventions/Systems tabs shown when Learn section is active. Mobile only.
+    learn-sub-items.ts               Shared factory for learn sub-navigation items (used by NavRail flyout and LearnSubNav).
   shared/
     Button.svelte                    Primary/secondary/ghost variants
     Card.svelte                      70x98 visual playing card
@@ -96,7 +98,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** NavShell wraps all non-game screens (ConventionSelectScreen, LearningScreen, SettingsScreen, ProfilesScreen, CoverageScreen). GameScreen is full-viewport, no nav shell. Desktop: thin left rail (NavRail) with Learn/Settings icons. Mobile: bottom tab bar (BottomTabBar). Learn flyout has "Conventions" and "Base Profiles" sub-items.
+**Screen flow:** NavShell wraps all non-game screens (ConventionSelectScreen, LearningScreen, SettingsScreen, ProfilesScreen, CoverageScreen). GameScreen is full-viewport, no nav shell. Desktop: thin left rail (NavRail) with Learn/Settings icons + hover flyout for Learn sub-items. Mobile: bottom tab bar (BottomTabBar) + segmented control (LearnSubNav) when Learn section is active. Both use shared `learn-sub-items.ts` for Conventions/Systems sub-navigation.
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 
