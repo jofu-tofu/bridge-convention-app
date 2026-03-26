@@ -16,7 +16,7 @@ Pure bridge heuristics with no convention pipeline dependency. These are convent
 | `inference-play.ts` | L1 inference-enhanced heuristics: `auctionAwareLeadHeuristic`, `inferenceHonorPlayHeuristic`, `inferenceAwareDiscardHeuristic`. Read `PublicBeliefs` from `PlayContext.inferences`. |
 | `profile-play-strategy.ts` | `createProfileStrategyProvider(profile, options?)` factory. Assembles heuristic chains per profile: beginner (skip wrapper), club player (L1 + L0), expert (L1 + expert + L0), world-class (MC+DDS via engine). |
 | `play-constraint-tracker.ts` | `PlayConstraintTracker` — tracks card play observations (voids, suit counts) for Monte Carlo sampling. Cursor-based update for efficiency. |
-| `montecarlo-play.ts` | `samplePlayDeals()` — play-phase deal sampler with void pre-assignment. `createWorldClassProvider(engine, rng)` — Monte Carlo + DDS strategy provider with batched `Promise.allSettled` dispatch (batch size 10) and margin-based early termination (≥0.5 trick gap after ≥10 successful solves). |
+| `montecarlo-play.ts` | `samplePlayDeals()` — play-phase deal sampler with void pre-assignment. `createMCDDSProvider(engine, rng, opts)` — shared MC+DDS factory with configurable belief constraints. `createWorldClassProvider()` — thin wrapper with beliefs enabled. Batched `Promise.allSettled` dispatch (batch size 10) and margin-based early termination (≥0.5 trick gap after ≥10 successful solves). |
 
 ## Dependency Direction
 
@@ -26,13 +26,15 @@ Heuristics depend only on `engine/` and `conventions/` (for types + LEVEL_HCP_TA
 
 Four named difficulty profiles control AI card play:
 - **Beginner (L0):** Base heuristic chain with 15% skip rate on selected heuristics (cover-honor, trump-management). No inference reading.
-- **Club Player (L0+L1):** Inference-enhanced heuristics (auction-aware lead, inference honor play) + full base chain. Reads `PlayContext.inferences`.
-- **Expert (L0+L1+Expert):** Full inference + card counting + restricted choice + base chain. Posterior queries planned (Phase 3 hook wired).
-- **World Class (MC+DDS):** Monte Carlo deal sampling (30 samples) + DDS solving via `EnginePort.solveBoard()`. Dispatches DDS calls in batches of 10 via `Promise.allSettled`; early-terminates when the best card leads by ≥0.5 tricks after ≥10 successful solves. Falls back to expert heuristics when DDS unavailable or sampling fails. Requires `engine` in `ProfileStrategyOptions`.
+- **Club Player (L0+L1+Expert):** Inference-enhanced heuristics + expert-only heuristics (card counting, restricted choice) + full base chain. Reads `PlayContext.inferences`.
+- **Expert (MC+DDS, no beliefs):** Monte Carlo + DDS solving with void tracking but WITHOUT auction belief constraints. Uses `createMCDDSProvider(engine, rng, { useBeliefConstraints: false })`. Falls back to heuristic chain (L1+Expert+L0) when no engine available. Requires `engine` in `ProfileStrategyOptions`.
+- **World Class (MC+DDS, full):** Monte Carlo deal sampling (30 samples) + DDS solving via `EnginePort.solveBoard()` with void tracking AND auction belief constraints. Dispatches DDS calls in batches of 10 via `Promise.allSettled`; early-terminates when the best card leads by ≥0.5 tricks after ≥10 successful solves. Falls back to expert heuristics when DDS unavailable or sampling fails. Requires `engine` in `ProfileStrategyOptions`.
 
-`PlayStrategy.suggest()` returns `Promise<PlayResult>` (async). All existing profiles wrap sync results in `Promise.resolve()`. World-class profile is truly async (DDS calls).
+`createMCDDSProvider(engine, rng, opts)` is the shared factory for MC+DDS providers. `opts.useBeliefConstraints` controls whether auction-inferred belief constraints (HCP/suit ranges) filter sampled deals. `createWorldClassProvider` is a thin wrapper with `useBeliefConstraints: true`.
 
-`PlayStrategyProvider` is the DI interface: session owns the provider, controller calls `await getStrategy().suggest(ctx)` per play. Expert and world-class providers' `onAuctionComplete()` is called at auction end to condition on completed auction inferences.
+`PlayStrategy.suggest()` returns `Promise<PlayResult>` (async). Beginner and club player wrap sync results in `Promise.resolve()`. Expert and world-class profiles are truly async (DDS calls).
+
+`PlayStrategyProvider` is the DI interface: session owns the provider, controller calls `await getStrategy().suggest(ctx)` per play. Expert (with engine) and world-class providers' `onAuctionComplete()` is called at auction end to condition on completed auction inferences.
 
 ## Heuristic Play Chain
 

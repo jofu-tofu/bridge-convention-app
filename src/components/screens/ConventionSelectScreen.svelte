@@ -31,8 +31,8 @@
     appStore.navigateToLearning(config);
   }
 
-  function handleLearnModule(moduleId: string, bundleId: string) {
-    appStore.navigateToLearningModule(moduleId, bundleId);
+  function handleLearnModule(moduleId: string, bundleId: string, bundleName: string) {
+    appStore.navigateToLearningModule(moduleId, bundleId, bundleName);
   }
 
   function toggleCategory(cat: ConventionCategory) {
@@ -213,7 +213,7 @@
                           <button
                             class="text-xs text-accent-primary hover:underline cursor-pointer"
                             data-testid="learn-module-{moduleId}"
-                            onclick={() => handleLearnModule(moduleId, convention.id)}
+                            onclick={() => handleLearnModule(moduleId, convention.id, convention.name)}
                           >
                             {formatModuleName(moduleId)}
                           </button>

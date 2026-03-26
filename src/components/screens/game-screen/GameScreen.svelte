@@ -289,6 +289,7 @@
     {:else if gameStore.phase === "PLAYING" && gameStore.playingViewport}
       <PlayingPhase
         viewport={gameStore.playingViewport}
+        animatedCurrentTrick={gameStore.currentTrick}
         onPlayCard={(card, seat) => gameStore.userPlayCard(card, seat)}
         onSkipToReview={() => gameStore.skipToReview()}
       />

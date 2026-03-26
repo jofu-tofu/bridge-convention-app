@@ -30,7 +30,7 @@ const pending = new Map<
 export async function initDDS(): Promise<void> {
   if (initPromise) return initPromise;
   initPromise = new Promise<void>((resolve, reject) => {
-    worker = new Worker(new URL("./dds-worker.ts", import.meta.url));
+    worker = new Worker(new URL("./dds-worker.ts", import.meta.url), { type: "module" });
     const timeout = setTimeout(
       () => reject(new Error("DDS init timeout")),
       15000,

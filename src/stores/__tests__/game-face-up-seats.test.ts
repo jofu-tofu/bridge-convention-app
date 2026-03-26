@@ -136,24 +136,24 @@ describe("faceUpSeats", () => {
       expect(store.faceUpSeats).toEqual(new Set([Seat.North, Seat.South]));
     });
 
-    it("defending (East declares): only South face-up", async () => {
+    it("defending (East declares): South + dummy (West) face-up", async () => {
       createEngineWithDeclarer(Seat.East);
       await startDrillWithTimers();
       store.acceptPrompt();
 
       expect(store.phase).toBe("PLAYING");
-      // Dummy is West (partner of East) — opponent, not shown
-      expect(store.faceUpSeats).toEqual(new Set([Seat.South]));
+      // Dummy (West, partner of East) is always visible in bridge
+      expect(store.faceUpSeats).toEqual(new Set([Seat.South, Seat.West]));
     });
 
-    it("defending (West declares): only South face-up", async () => {
+    it("defending (West declares): South + dummy (East) face-up", async () => {
       createEngineWithDeclarer(Seat.West);
       await startDrillWithTimers();
       store.acceptPrompt();
 
       expect(store.phase).toBe("PLAYING");
-      // Dummy is East (partner of West) — opponent, not shown
-      expect(store.faceUpSeats).toEqual(new Set([Seat.South]));
+      // Dummy (East, partner of West) is always visible in bridge
+      expect(store.faceUpSeats).toEqual(new Set([Seat.South, Seat.East]));
     });
   });
 

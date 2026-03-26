@@ -104,14 +104,14 @@ describe("createGameStore play phase", () => {
     expect(store.contract).toStrictEqual(CONTRACT_1NT);
   });
 
-  it("sets opening leader as left of declarer", async () => {
+  it("after initial AI plays, current player is first user-controlled seat", async () => {
     const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
 
     await startDrillWithTimers(store, deal, session);
 
-    // North is declarer -> East leads (nextSeat(North))
-    expect(store.currentPlayer).toBe(Seat.East);
+    // North is declarer, user swapped to North -> East leads (AI), then South (dummy, user-controlled)
+    expect(store.currentPlayer).toBe(Seat.South);
   });
 
   it("sets dummy as partner of declarer", async () => {

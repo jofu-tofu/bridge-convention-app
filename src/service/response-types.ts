@@ -263,6 +263,8 @@ export interface PhaseTransition {
 /** Result of accepting a prompt (play/skip). */
 export interface PromptAcceptResult {
   readonly phase: ServiceGamePhase;
+  /** AI plays that ran immediately after entering the play phase (opening lead by AI, etc.). */
+  readonly aiPlays?: readonly AiPlayEntry[];
 }
 
 /** Result of playing a card. */
@@ -284,6 +286,8 @@ export interface AiPlayEntry {
   readonly seat: Seat;
   readonly card: Card;
   readonly reason: string;
+  /** True when this play completes a trick (4th card). */
+  readonly trickComplete?: boolean;
 }
 
 /** Current session viewport. */

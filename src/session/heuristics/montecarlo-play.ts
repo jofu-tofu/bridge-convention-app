@@ -14,9 +14,9 @@ import type { Card, Hand, Seat, Suit } from "../../engine/types";
 import type { EnginePort } from "../../engine/port";
 import type { SolveBoardResult } from "../../engine/dds-wasm";
 import type { PlayStrategyProvider } from "./play-profiles";
-import type { PublicBeliefs } from "../../inference/inference-types";
+import type { PublicBeliefs, DerivedRanges } from "../../inference/inference-types";
 import { PlayConstraintTracker } from "./play-constraint-tracker";
-import { createDeck, SEATS } from "../../engine/constants";
+import { createDeck, SEATS, SUITS, HCP_VALUES } from "../../engine/constants";
 import {
   handsToPBN,
   trumpToDdsIndex,
@@ -68,6 +68,8 @@ interface SamplePlayDealsParams {
   readonly n: number;
   /** Seeded RNG function. */
   readonly rng: () => number;
+  /** Auction-inferred belief constraints per seat (optional). */
+  readonly beliefConstraints?: Partial<Record<Seat, DerivedRanges>>;
 }
 
 /**
@@ -77,7 +79,7 @@ interface SamplePlayDealsParams {
 export function samplePlayDeals(
   params: SamplePlayDealsParams,
 ): Record<Seat, Hand>[] {
-  const { knownHands, playedCards, voids, unknownSeats, cardsNeeded, n, rng } = params;
+  const { knownHands, playedCards, voids, unknownSeats, cardsNeeded, n, rng, beliefConstraints } = params;
 
   if (unknownSeats.length === 0) return [];
 
@@ -181,6 +183,11 @@ export function samplePlayDeals(
 
     if (!valid) continue;
 
+    // Check belief constraints (auction inferences) on the full original hand
+    if (beliefConstraints && !checkBeliefConstraints(dealt, playedCards, unknownSeats, beliefConstraints)) {
+      continue;
+    }
+
     // Build result
     const result = {} as Record<Seat, Hand>;
     for (const seat of SEATS) {
@@ -196,6 +203,49 @@ export function samplePlayDeals(
   }
 
   return samples;
+}
+
+// ── Belief constraint validation ──────────────────────────────
+
+/**
+ * Check whether a sampled deal is consistent with auction-inferred beliefs.
+ * Reconstructs each unknown seat's full original hand (remaining + played)
+ * and validates HCP and suit lengths against DerivedRanges.
+ */
+function checkBeliefConstraints(
+  dealt: Map<Seat, Card[]>,
+  playedCards: ReadonlyMap<Seat, readonly Card[]>,
+  unknownSeats: readonly Seat[],
+  constraints: Partial<Record<Seat, DerivedRanges>>,
+): boolean {
+  for (const seat of unknownSeats) {
+    const ranges = constraints[seat];
+    if (!ranges) continue;
+
+    // Reconstruct the full original hand: remaining dealt + already played
+    const remaining = dealt.get(seat) ?? [];
+    const played = playedCards.get(seat) ?? [];
+    const fullHand = [...remaining, ...played];
+
+    // HCP check
+    let hcp = 0;
+    for (const c of fullHand) {
+      hcp += HCP_VALUES[c.rank];
+    }
+    if (hcp < ranges.hcp.min || hcp > ranges.hcp.max) return false;
+
+    // Suit length checks
+    for (const suit of SUITS) {
+      const range = ranges.suitLengths[suit];
+      if (!range) continue;
+      let count = 0;
+      for (const c of fullHand) {
+        if (c.suit === suit) count++;
+      }
+      if (count < range.min || count > range.max) return false;
+    }
+  }
+  return true;
 }
 
 // ── Expert fallback chain ─────────────────────────────────────
@@ -250,23 +300,53 @@ function cardKey(c: Card): string {
   return `${c.suit}${c.rank}`;
 }
 
+// ── MC+DDS provider options ──────────────────────────────────
+
+interface MCDDSProviderOptions {
+  /** Whether to filter samples by auction-inferred belief constraints (HCP/suit ranges). */
+  readonly useBeliefConstraints: boolean;
+  /** Number of samples per decision (default 30). */
+  readonly sampleCount?: number;
+  /** Strategy ID override (default "mc-dds"). */
+  readonly id?: string;
+  /** Strategy display name override. */
+  readonly name?: string;
+}
+
 /**
- * Create the "World Class" Monte Carlo + DDS play strategy provider.
+ * Create a Monte Carlo + DDS play strategy provider.
  *
  * @param engine EnginePort for DDS solveBoard calls
  * @param rng Seeded RNG for reproducible sampling
- * @param sampleCount Number of samples per decision (default 30)
+ * @param opts Controls belief constraint usage and sample count
  */
-export function createWorldClassProvider(
+export function createMCDDSProvider(
   engine: EnginePort,
   rng: () => number,
-  sampleCount: number = DEFAULT_SAMPLE_COUNT,
+  opts: MCDDSProviderOptions = { useBeliefConstraints: true },
 ): PlayStrategyProvider {
+  const sampleCount = opts.sampleCount ?? DEFAULT_SAMPLE_COUNT;
   const tracker = new PlayConstraintTracker();
+  let storedBeliefs: Record<Seat, PublicBeliefs> | null = null;
+
+  /** Extract DerivedRanges for unknown seats from stored auction beliefs. */
+  function getBeliefConstraints(unknownSeats: readonly Seat[]): Partial<Record<Seat, DerivedRanges>> | undefined {
+    if (!opts.useBeliefConstraints || !storedBeliefs) return undefined;
+    const result: Partial<Record<Seat, DerivedRanges>> = {};
+    let hasAny = false;
+    for (const seat of unknownSeats) {
+      const beliefs = storedBeliefs[seat];
+      if (beliefs?.ranges) {
+        result[seat] = beliefs.ranges;
+        hasAny = true;
+      }
+    }
+    return hasAny ? result : undefined;
+  }
 
   const strategy: PlayStrategy = {
-    id: "world-class",
-    name: "World Class (MC+DDS)",
+    id: opts.id ?? "mc-dds",
+    name: opts.name ?? "MC+DDS",
 
     async suggest(context: PlayContext): Promise<PlayResult> {
       // 1. Single legal play → return immediately
@@ -297,7 +377,8 @@ export function createWorldClassProvider(
         cardsNeeded[seat] = 13 - played;
       }
 
-      // 6. Sample deals
+      // 6. Sample deals (with belief constraints from auction)
+      const beliefConstraints = getBeliefConstraints(unknownSeats);
       const samples = samplePlayDeals({
         knownHands,
         playedCards,
@@ -306,6 +387,7 @@ export function createWorldClassProvider(
         cardsNeeded,
         n: sampleCount,
         rng,
+        beliefConstraints,
       });
 
       // 7. Fallback if no samples
@@ -388,7 +470,68 @@ export function createWorldClassProvider(
         return expertFallback(context);
       }
 
-      // 10. Pick card with highest average
+      // 10. Close call? Sample + solve more batches (up to 2× default)
+      const topTwoCheck = computeTopTwo(scores, context.legalPlays);
+      if (
+        topTwoCheck &&
+        topTwoCheck.bestAvg - topTwoCheck.secondBestAvg < EARLY_TERM_MARGIN &&
+        cumulativeSuccessCount < sampleCount * 2
+      ) {
+        const extraNeeded = sampleCount * 2 - samples.length;
+        if (extraNeeded > 0) {
+          const extraSamples = samplePlayDeals({
+            knownHands,
+            playedCards,
+            voids: tracker.getVoids(),
+            unknownSeats,
+            cardsNeeded,
+            n: extraNeeded,
+            rng,
+            beliefConstraints,
+          });
+
+          const extraBatches = chunk(extraSamples, BATCH_SIZE);
+          for (const batch of extraBatches) {
+            const promises = batch.map((sample) =>
+              engine.solveBoard(
+                trump,
+                first,
+                currentTrickSuit,
+                currentTrickRank,
+                handsToPBN(sample),
+              ),
+            );
+            const results = await Promise.allSettled(promises);
+
+            for (const result of results) {
+              if (result.status === "fulfilled") {
+                for (const entry of result.value.cards) {
+                  const key = cardKey({ suit: entry.suit, rank: entry.rank });
+                  const existing = scores.get(key);
+                  if (existing) {
+                    existing.total += entry.score;
+                    existing.count++;
+                  }
+                }
+                cumulativeSuccessCount++;
+              }
+            }
+
+            // Early termination in extended batches
+            if (cumulativeSuccessCount >= BATCH_SIZE * 2) {
+              const topTwo = computeTopTwo(scores, context.legalPlays);
+              if (topTwo && topTwo.bestAvg - topTwo.secondBestAvg >= EARLY_TERM_MARGIN) {
+                return {
+                  card: topTwo.bestCard,
+                  reason: `mc-dds (${cumulativeSuccessCount} samples, avg ${topTwo.bestAvg.toFixed(1)} tricks, extended-early-stop)`,
+                };
+              }
+            }
+          }
+        }
+      }
+
+      // 11. Pick card with highest average
       let bestCard = context.legalPlays[0]!;
       let bestAvg = -1;
 
@@ -414,10 +557,27 @@ export function createWorldClassProvider(
     getStrategy() {
       return strategy;
     },
-    onAuctionComplete(_inferences: Record<Seat, PublicBeliefs>) {
-      // Future: store auction inferences for constraint checking during sampling
+    onAuctionComplete(inferences: Record<Seat, PublicBeliefs>) {
+      storedBeliefs = inferences;
     },
   };
+}
+
+/**
+ * Legacy wrapper: creates MC+DDS provider with full belief constraints.
+ * Use createMCDDSProvider directly for fine-grained control.
+ */
+export function createWorldClassProvider(
+  engine: EnginePort,
+  rng: () => number,
+  sampleCount: number = DEFAULT_SAMPLE_COUNT,
+): PlayStrategyProvider {
+  return createMCDDSProvider(engine, rng, {
+    useBeliefConstraints: true,
+    sampleCount,
+    id: "world-class",
+    name: "World Class (MC+DDS)",
+  });
 }
 
 // ── Helpers ───────────────────────────────────────────────────

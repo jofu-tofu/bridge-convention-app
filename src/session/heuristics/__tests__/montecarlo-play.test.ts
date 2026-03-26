@@ -5,8 +5,9 @@ import type { Card, Hand, PlayedCard, Trick, Contract } from "../../../engine/ty
 import type { EnginePort } from "../../../engine/port";
 import type { PlayContext } from "../../../conventions/core/strategy-types";
 import type { SolveBoardResult } from "../../../engine/dds-wasm";
+import type { DerivedRanges, PublicBeliefs } from "../../../inference/inference-types";
 import { mulberry32 } from "../../../engine/seeded-rng";
-import { createDeck } from "../../../engine/constants";
+import { createDeck, HCP_VALUES } from "../../../engine/constants";
 
 function card(suit: Suit, rank: Rank): Card {
   return { suit, rank };
@@ -146,6 +147,185 @@ describe("samplePlayDeals", () => {
     });
 
     expect(samples.length).toBe(0);
+  });
+
+  it("produces valid samples mid-play when dummy has played cards", () => {
+    // Simulate 1 completed trick: each seat played 1 card.
+    // Known hands should be REMAINING cards (original 13 minus played).
+    const deck = createDeck();
+    const rng = mulberry32(42);
+
+    // Assign original 13-card hands
+    const southOriginal = deck.slice(0, 13);
+    const northOriginal = deck.slice(13, 26); // dummy
+
+    // 1 trick: each seat played their first card
+    const playedCards = new Map<Seat, Card[]>();
+    playedCards.set(Seat.South, [southOriginal[0]!]);
+    playedCards.set(Seat.North, [northOriginal[0]!]);
+    playedCards.set(Seat.East, [deck[26]!]);
+    playedCards.set(Seat.West, [deck[39]!]);
+
+    // Remaining cards = original minus played
+    const southRemaining: Hand = { cards: southOriginal.slice(1) };  // 12 cards
+    const northRemaining: Hand = { cards: northOriginal.slice(1) };  // 12 cards (dummy)
+
+    const samples = samplePlayDeals({
+      knownHands: { [Seat.South]: southRemaining, [Seat.North]: northRemaining },
+      playedCards,
+      voids: new Map(),
+      unknownSeats: [Seat.East, Seat.West],
+      cardsNeeded: { [Seat.East]: 12, [Seat.West]: 12 },
+      n: 5,
+      rng,
+    });
+
+    expect(samples.length).toBeGreaterThan(0);
+    for (const sample of samples) {
+      expect(sample[Seat.East].cards.length).toBe(12);
+      expect(sample[Seat.West].cards.length).toBe(12);
+
+      // All 52 cards accounted for: 12+12 remaining known + 4 played + 12+12 sampled
+      const allCards = [
+        ...southRemaining.cards,
+        ...northRemaining.cards,
+        ...playedCards.get(Seat.South)!,
+        ...playedCards.get(Seat.North)!,
+        ...playedCards.get(Seat.East)!,
+        ...playedCards.get(Seat.West)!,
+        ...sample[Seat.East].cards,
+        ...sample[Seat.West].cards,
+      ];
+      const unique = new Set(allCards.map((c) => `${c.suit}${c.rank}`));
+      expect(unique.size).toBe(52);
+    }
+  });
+
+  it("produces incorrect samples when dummy known hand includes played cards", () => {
+    // Bug scenario: passing the ORIGINAL 13-card dummy hand instead of remaining.
+    // Sampling still works (pool deduplication masks the count error), but the
+    // resulting samples include an already-played card in dummy's hand — yielding
+    // a corrupt PBN for DDS.
+    const deck = createDeck();
+    const rng = mulberry32(42);
+
+    const southOriginal = deck.slice(0, 13);
+    const northOriginal = deck.slice(13, 26); // dummy
+
+    const playedCards = new Map<Seat, Card[]>();
+    playedCards.set(Seat.South, [southOriginal[0]!]);
+    playedCards.set(Seat.North, [northOriginal[0]!]);
+    playedCards.set(Seat.East, [deck[26]!]);
+    playedCards.set(Seat.West, [deck[39]!]);
+
+    // BUG: pass original 13-card hand instead of 12 remaining
+    const southRemaining: Hand = { cards: southOriginal.slice(1) }; // 12 — correct
+    const northFull: Hand = { cards: northOriginal };               // 13 — BUG: includes played card
+
+    const samples = samplePlayDeals({
+      knownHands: { [Seat.South]: southRemaining, [Seat.North]: northFull },
+      playedCards,
+      voids: new Map(),
+      unknownSeats: [Seat.East, Seat.West],
+      cardsNeeded: { [Seat.East]: 12, [Seat.West]: 12 },
+      n: 5,
+      rng,
+    });
+
+    // Sampling succeeds (pool deduplication masks the issue)
+    expect(samples.length).toBeGreaterThan(0);
+
+    // But dummy has 13 cards — includes the already-played card
+    for (const sample of samples) {
+      expect(sample[Seat.North].cards.length).toBe(13); // wrong! should be 12
+    }
+  });
+
+  it("produces correct samples when dummy known hand uses remaining cards", () => {
+    const deck = createDeck();
+    const rng = mulberry32(42);
+
+    const southOriginal = deck.slice(0, 13);
+    const northOriginal = deck.slice(13, 26); // dummy
+
+    const playedCards = new Map<Seat, Card[]>();
+    playedCards.set(Seat.South, [southOriginal[0]!]);
+    playedCards.set(Seat.North, [northOriginal[0]!]);
+    playedCards.set(Seat.East, [deck[26]!]);
+    playedCards.set(Seat.West, [deck[39]!]);
+
+    // CORRECT: pass remaining cards
+    const southRemaining: Hand = { cards: southOriginal.slice(1) }; // 12
+    const northRemaining: Hand = { cards: northOriginal.slice(1) }; // 12
+
+    const samples = samplePlayDeals({
+      knownHands: { [Seat.South]: southRemaining, [Seat.North]: northRemaining },
+      playedCards,
+      voids: new Map(),
+      unknownSeats: [Seat.East, Seat.West],
+      cardsNeeded: { [Seat.East]: 12, [Seat.West]: 12 },
+      n: 5,
+      rng,
+    });
+
+    expect(samples.length).toBeGreaterThan(0);
+    for (const sample of samples) {
+      // Dummy has exactly 12 remaining cards
+      expect(sample[Seat.North].cards.length).toBe(12);
+      // No played card appears in dummy's hand
+      const playedKey = `${northOriginal[0]!.suit}${northOriginal[0]!.rank}`;
+      const hasPlayed = sample[Seat.North].cards.some((c) => `${c.suit}${c.rank}` === playedKey);
+      expect(hasPlayed).toBe(false);
+    }
+  });
+
+  it("works mid-play with 3 completed tricks and remaining-card dummy", () => {
+    // After 3 tricks, 12 cards played total. Each seat has 10 remaining.
+    const deck = createDeck();
+    const rng = mulberry32(55);
+
+    const southOriginal = deck.slice(0, 13);
+    const northOriginal = deck.slice(13, 26);
+    const eastOriginal = deck.slice(26, 39);
+    const westOriginal = deck.slice(39, 52);
+
+    // 3 cards played per seat
+    const playedCards = new Map<Seat, Card[]>();
+    playedCards.set(Seat.South, southOriginal.slice(0, 3));
+    playedCards.set(Seat.North, northOriginal.slice(0, 3));
+    playedCards.set(Seat.East, eastOriginal.slice(0, 3));
+    playedCards.set(Seat.West, westOriginal.slice(0, 3));
+
+    // Remaining = original minus played
+    const southRemaining: Hand = { cards: southOriginal.slice(3) };  // 10
+    const northRemaining: Hand = { cards: northOriginal.slice(3) };  // 10
+
+    const samples = samplePlayDeals({
+      knownHands: { [Seat.South]: southRemaining, [Seat.North]: northRemaining },
+      playedCards,
+      voids: new Map(),
+      unknownSeats: [Seat.East, Seat.West],
+      cardsNeeded: { [Seat.East]: 10, [Seat.West]: 10 },
+      n: 10,
+      rng,
+    });
+
+    expect(samples.length).toBeGreaterThan(0);
+    for (const sample of samples) {
+      expect(sample[Seat.East].cards.length).toBe(10);
+      expect(sample[Seat.West].cards.length).toBe(10);
+
+      // No card appears in both an unknown seat's sample and the played/known cards
+      const sampledKeys = new Set([
+        ...sample[Seat.East].cards.map((c) => `${c.suit}${c.rank}`),
+        ...sample[Seat.West].cards.map((c) => `${c.suit}${c.rank}`),
+      ]);
+      for (const [, cards] of playedCards) {
+        for (const c of cards) {
+          expect(sampledKeys.has(`${c.suit}${c.rank}`)).toBe(false);
+        }
+      }
+    }
   });
 });
 
@@ -290,6 +470,98 @@ describe("createWorldClassProvider", () => {
     const result = await provider.getStrategy().suggest(ctx);
     expect(result.card).toBeDefined();
   });
+
+  it("samples correctly mid-play when dummy has played cards", async () => {
+    // After 1 trick, dummyHand should have 12 remaining cards (not original 13).
+    // This tests the fix for the pool/need mismatch bug.
+    const deck = createDeck();
+
+    const southOriginal = deck.slice(0, 13);
+    const northOriginal = deck.slice(13, 26); // dummy
+    const eastOriginal = deck.slice(26, 39);
+    const westOriginal = deck.slice(39, 52);
+
+    const trick1: Trick = {
+      plays: [
+        played(Seat.East, eastOriginal[0]!.suit, eastOriginal[0]!.rank),
+        played(Seat.South, southOriginal[0]!.suit, southOriginal[0]!.rank),
+        played(Seat.West, westOriginal[0]!.suit, westOriginal[0]!.rank),
+        played(Seat.North, northOriginal[0]!.suit, northOriginal[0]!.rank),
+      ],
+      trumpSuit: undefined,
+      winner: Seat.East,
+    };
+
+    // DDS returns scores for legal plays
+    const engine = makeStubEngine(() => ({
+      cards: [
+        { suit: southOriginal[1]!.suit, rank: southOriginal[1]!.rank, score: 8, equals: 0 },
+        { suit: southOriginal[2]!.suit, rank: southOriginal[2]!.rank, score: 6, equals: 0 },
+      ],
+    }));
+
+    const provider = createWorldClassProvider(engine, mulberry32(42));
+
+    const ctx: PlayContext = {
+      hand: { cards: southOriginal.slice(1) },          // 12 remaining
+      currentTrick: [],
+      previousTricks: [trick1],
+      contract: makeContract(Seat.North, BidSuit.NoTrump),
+      seat: Seat.South,
+      trumpSuit: undefined,
+      legalPlays: [southOriginal[1]!, southOriginal[2]!],
+      dummyHand: { cards: northOriginal.slice(1) },      // 12 remaining (not 13!)
+    };
+
+    const result = await provider.getStrategy().suggest(ctx);
+    // Should use MC+DDS, not expert fallback
+    expect(result.reason).toContain("mc-dds");
+    expect(result.card).toBeDefined();
+  });
+
+  it("uses MC+DDS mid-play when dummy hand has remaining cards only", async () => {
+    // After 1 trick, dummyHand must be remaining (12 cards), not original (13).
+    // With correct remaining cards, sampling succeeds and DDS is called.
+    const deck = createDeck();
+
+    const southOriginal = deck.slice(0, 13);
+    const northOriginal = deck.slice(13, 26);
+    const eastOriginal = deck.slice(26, 39);
+    const westOriginal = deck.slice(39, 52);
+
+    const trick1: Trick = {
+      plays: [
+        played(Seat.East, eastOriginal[0]!.suit, eastOriginal[0]!.rank),
+        played(Seat.South, southOriginal[0]!.suit, southOriginal[0]!.rank),
+        played(Seat.West, westOriginal[0]!.suit, westOriginal[0]!.rank),
+        played(Seat.North, northOriginal[0]!.suit, northOriginal[0]!.rank),
+      ],
+      trumpSuit: undefined,
+      winner: Seat.East,
+    };
+
+    const legalCards = [southOriginal[1]!, southOriginal[2]!];
+    const engine = makeStubEngine(() => ({
+      cards: legalCards.map((c) => ({ suit: c.suit, rank: c.rank, score: 7, equals: 0 })),
+    }));
+
+    const provider = createWorldClassProvider(engine, mulberry32(42));
+
+    const ctx: PlayContext = {
+      hand: { cards: southOriginal.slice(1) },          // 12 remaining
+      currentTrick: [],
+      previousTricks: [trick1],
+      contract: makeContract(Seat.North, BidSuit.NoTrump),
+      seat: Seat.South,
+      trumpSuit: undefined,
+      legalPlays: legalCards,
+      dummyHand: { cards: northOriginal.slice(1) },      // 12 remaining (correct)
+    };
+
+    const result = await provider.getStrategy().suggest(ctx);
+    expect(result.reason).toContain("mc-dds");
+    expect(engine.solveBoard).toHaveBeenCalled();
+  });
 });
 
 // ── Batched evaluation + early termination tests ──────────────
@@ -358,8 +630,8 @@ describe("createWorldClassProvider batching", () => {
     expect(engine.solveBoard).toHaveBeenCalledTimes(10);
   });
 
-  it("runs all batches when scores are close", async () => {
-    // Both cards score 7 → gap = 0 < 0.5
+  it("runs all batches when scores are close, then extends to 2× default", async () => {
+    // Both cards score 7 → gap = 0 < 0.5 → triggers dynamic extension to 60
     const engine = makeStubEngine(() => ({
       cards: [
         { suit: Suit.Hearts, rank: Rank.Ace, score: 7, equals: 0 },
@@ -371,7 +643,8 @@ describe("createWorldClassProvider batching", () => {
     const result = await provider.getStrategy().suggest(makeCtx());
 
     expect(result.reason).not.toContain("early-stop");
-    expect(engine.solveBoard).toHaveBeenCalledTimes(30);
+    // Close call: 30 initial + 30 extended = 60 total
+    expect(engine.solveBoard).toHaveBeenCalledTimes(60);
   });
 
   it("early-terminates after second batch when margin widens", async () => {
@@ -447,7 +720,7 @@ describe("createWorldClassProvider batching", () => {
   });
 
   it("reason excludes early-stop when all batches run", async () => {
-    // Equal scores → no early stop
+    // Equal scores → no early stop, but dynamic extension runs
     const engine = makeStubEngine(() => ({
       cards: [
         { suit: Suit.Hearts, rank: Rank.Ace, score: 7, equals: 0 },
@@ -459,5 +732,232 @@ describe("createWorldClassProvider batching", () => {
     const result = await provider.getStrategy().suggest(makeCtx());
     expect(result.reason).not.toContain("early-stop");
     expect(result.reason).toContain("mc-dds");
+    // 60 samples total (30 initial + 30 extended)
+    expect(result.reason).toContain("60 samples");
+  });
+});
+
+// ── Belief constraint tests ───────────────────────────────────
+
+describe("samplePlayDeals with beliefConstraints", () => {
+  it("filters samples by HCP range", () => {
+    const deck = createDeck();
+    const southHand: Hand = { cards: deck.slice(0, 13) };
+    const northHand: Hand = { cards: deck.slice(13, 26) };
+    const rng = mulberry32(42);
+
+    // Require East to have 10-15 HCP
+    const beliefConstraints: Partial<Record<Seat, DerivedRanges>> = {
+      [Seat.East]: {
+        hcp: { min: 10, max: 15 },
+        suitLengths: {
+          [Suit.Spades]: { min: 0, max: 13 },
+          [Suit.Hearts]: { min: 0, max: 13 },
+          [Suit.Diamonds]: { min: 0, max: 13 },
+          [Suit.Clubs]: { min: 0, max: 13 },
+        },
+        isBalanced: undefined,
+      },
+    };
+
+    const samples = samplePlayDeals({
+      knownHands: { [Seat.South]: southHand, [Seat.North]: northHand },
+      playedCards: new Map(),
+      voids: new Map(),
+      unknownSeats: [Seat.East, Seat.West],
+      cardsNeeded: { [Seat.East]: 13, [Seat.West]: 13 },
+      n: 20,
+      rng,
+      beliefConstraints,
+    });
+
+    expect(samples.length).toBeGreaterThan(0);
+
+    // Verify every sample has East HCP in [10, 15]
+    for (const sample of samples) {
+      let hcp = 0;
+      for (const c of sample[Seat.East].cards) {
+        hcp += HCP_VALUES[c.rank];
+      }
+      expect(hcp).toBeGreaterThanOrEqual(10);
+      expect(hcp).toBeLessThanOrEqual(15);
+    }
+  });
+
+  it("filters samples by suit length range", () => {
+    const deck = createDeck();
+    const southHand: Hand = { cards: deck.slice(0, 13) };
+    const northHand: Hand = { cards: deck.slice(13, 26) };
+    const rng = mulberry32(99);
+
+    // Require East to have 5+ spades
+    const beliefConstraints: Partial<Record<Seat, DerivedRanges>> = {
+      [Seat.East]: {
+        hcp: { min: 0, max: 37 },
+        suitLengths: {
+          [Suit.Spades]: { min: 5, max: 13 },
+          [Suit.Hearts]: { min: 0, max: 13 },
+          [Suit.Diamonds]: { min: 0, max: 13 },
+          [Suit.Clubs]: { min: 0, max: 13 },
+        },
+        isBalanced: undefined,
+      },
+    };
+
+    const samples = samplePlayDeals({
+      knownHands: { [Seat.South]: southHand, [Seat.North]: northHand },
+      playedCards: new Map(),
+      voids: new Map(),
+      unknownSeats: [Seat.East, Seat.West],
+      cardsNeeded: { [Seat.East]: 13, [Seat.West]: 13 },
+      n: 20,
+      rng,
+      beliefConstraints,
+    });
+
+    expect(samples.length).toBeGreaterThan(0);
+
+    for (const sample of samples) {
+      const spades = sample[Seat.East].cards.filter((c) => c.suit === Suit.Spades);
+      expect(spades.length).toBeGreaterThanOrEqual(5);
+    }
+  });
+
+  it("returns fewer samples when constraints are tight", () => {
+    const deck = createDeck();
+    const southHand: Hand = { cards: deck.slice(0, 13) };
+    const northHand: Hand = { cards: deck.slice(13, 26) };
+    const rng = mulberry32(42);
+
+    // Very tight: East must have exactly 20-37 HCP (rare in random deals)
+    const beliefConstraints: Partial<Record<Seat, DerivedRanges>> = {
+      [Seat.East]: {
+        hcp: { min: 20, max: 37 },
+        suitLengths: {
+          [Suit.Spades]: { min: 0, max: 13 },
+          [Suit.Hearts]: { min: 0, max: 13 },
+          [Suit.Diamonds]: { min: 0, max: 13 },
+          [Suit.Clubs]: { min: 0, max: 13 },
+        },
+        isBalanced: undefined,
+      },
+    };
+
+    // Without constraints, would get all 20 easily
+    const unconstrained = samplePlayDeals({
+      knownHands: { [Seat.South]: southHand, [Seat.North]: northHand },
+      playedCards: new Map(),
+      voids: new Map(),
+      unknownSeats: [Seat.East, Seat.West],
+      cardsNeeded: { [Seat.East]: 13, [Seat.West]: 13 },
+      n: 20,
+      rng: mulberry32(42),
+    });
+
+    const constrained = samplePlayDeals({
+      knownHands: { [Seat.South]: southHand, [Seat.North]: northHand },
+      playedCards: new Map(),
+      voids: new Map(),
+      unknownSeats: [Seat.East, Seat.West],
+      cardsNeeded: { [Seat.East]: 13, [Seat.West]: 13 },
+      n: 20,
+      rng,
+      beliefConstraints,
+    });
+
+    expect(unconstrained.length).toBe(20);
+    // Tight constraints should reduce yield
+    expect(constrained.length).toBeLessThan(unconstrained.length);
+  });
+
+  it("works without beliefConstraints (backward compatible)", () => {
+    const deck = createDeck();
+    const southHand: Hand = { cards: deck.slice(0, 13) };
+    const northHand: Hand = { cards: deck.slice(13, 26) };
+    const rng = mulberry32(42);
+
+    const samples = samplePlayDeals({
+      knownHands: { [Seat.South]: southHand, [Seat.North]: northHand },
+      playedCards: new Map(),
+      voids: new Map(),
+      unknownSeats: [Seat.East, Seat.West],
+      cardsNeeded: { [Seat.East]: 13, [Seat.West]: 13 },
+      n: 5,
+      rng,
+      // no beliefConstraints
+    });
+
+    expect(samples.length).toBe(5);
+  });
+});
+
+describe("createWorldClassProvider onAuctionComplete", () => {
+  function makeStubEngine(solveBoardFn?: (pbn: string) => SolveBoardResult): EnginePort {
+    const defaultSolve: SolveBoardResult = {
+      cards: [
+        { suit: Suit.Hearts, rank: Rank.Ace, score: 8, equals: 0 },
+        { suit: Suit.Hearts, rank: Rank.King, score: 7, equals: 0 },
+      ],
+    };
+    return {
+      solveBoard: vi.fn().mockImplementation(
+        async (_trump: number, _first: number, _suits: number[], _ranks: number[], pbn: string) =>
+          solveBoardFn ? solveBoardFn(pbn) : defaultSolve,
+      ),
+      generateDeal: vi.fn(),
+      evaluateHand: vi.fn(),
+      getSuitLength: vi.fn(),
+      isBalanced: vi.fn(),
+      getLegalCalls: vi.fn(),
+      addCall: vi.fn(),
+      isAuctionComplete: vi.fn(),
+      getContract: vi.fn(),
+      calculateScore: vi.fn(),
+      getLegalPlays: vi.fn(),
+      getTrickWinner: vi.fn(),
+      solveDeal: vi.fn(),
+      suggestPlay: vi.fn(),
+    } as unknown as EnginePort;
+  }
+
+  it("stores beliefs and uses them during sampling", async () => {
+    const engine = makeStubEngine();
+    const provider = createWorldClassProvider(engine, mulberry32(42));
+
+    // Provide beliefs: constrain East to 10-15 HCP
+    const beliefs: Record<Seat, PublicBeliefs> = {
+      [Seat.North]: { seat: Seat.North, constraints: [], ranges: { hcp: { min: 0, max: 37 }, suitLengths: { [Suit.Spades]: { min: 0, max: 13 }, [Suit.Hearts]: { min: 0, max: 13 }, [Suit.Diamonds]: { min: 0, max: 13 }, [Suit.Clubs]: { min: 0, max: 13 } }, isBalanced: undefined }, qualitative: [] },
+      [Seat.East]: { seat: Seat.East, constraints: [], ranges: { hcp: { min: 10, max: 15 }, suitLengths: { [Suit.Spades]: { min: 0, max: 13 }, [Suit.Hearts]: { min: 0, max: 13 }, [Suit.Diamonds]: { min: 0, max: 13 }, [Suit.Clubs]: { min: 0, max: 13 } }, isBalanced: undefined }, qualitative: [] },
+      [Seat.South]: { seat: Seat.South, constraints: [], ranges: { hcp: { min: 0, max: 37 }, suitLengths: { [Suit.Spades]: { min: 0, max: 13 }, [Suit.Hearts]: { min: 0, max: 13 }, [Suit.Diamonds]: { min: 0, max: 13 }, [Suit.Clubs]: { min: 0, max: 13 } }, isBalanced: undefined }, qualitative: [] },
+      [Seat.West]: { seat: Seat.West, constraints: [], ranges: { hcp: { min: 0, max: 37 }, suitLengths: { [Suit.Spades]: { min: 0, max: 13 }, [Suit.Hearts]: { min: 0, max: 13 }, [Suit.Diamonds]: { min: 0, max: 13 }, [Suit.Clubs]: { min: 0, max: 13 } }, isBalanced: undefined }, qualitative: [] },
+    };
+
+    provider.onAuctionComplete!(beliefs);
+
+    const deck = createDeck();
+    const ctx: PlayContext = {
+      hand: { cards: deck.slice(0, 13) },
+      currentTrick: [],
+      previousTricks: [],
+      contract: makeContract(Seat.South, BidSuit.NoTrump),
+      seat: Seat.West,
+      trumpSuit: undefined,
+      legalPlays: [
+        card(Suit.Hearts, Rank.Ace),
+        card(Suit.Hearts, Rank.King),
+      ],
+      dummyHand: { cards: deck.slice(13, 26) },
+    };
+
+    const result = await provider.getStrategy().suggest(ctx);
+    // Should still produce a valid MC+DDS result (beliefs just filter samples)
+    expect(result.card).toBeDefined();
+    expect(result.reason).toContain("mc-dds");
+  });
+
+  it("onAuctionComplete is defined (not a no-op stub)", () => {
+    const engine = makeStubEngine();
+    const provider = createWorldClassProvider(engine, mulberry32(42));
+    expect(provider.onAuctionComplete).toBeDefined();
   });
 });

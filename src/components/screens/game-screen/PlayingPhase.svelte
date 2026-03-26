@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Seat } from "../../../service";
+  import type { Seat, PlayedCard } from "../../../service";
   import type { Card as CardType } from "../../../service";
   import type { PlayingViewport } from "../../../service";
   import { getLayoutConfig } from "../../../stores/context";
@@ -12,15 +12,20 @@
 
   interface Props {
     viewport: PlayingViewport;
+    /** Animated current trick (incrementally revealed AI plays). */
+    animatedCurrentTrick?: readonly PlayedCard[];
     onPlayCard: (card: CardType, seat: Seat) => void;
     onSkipToReview: () => void;
   }
 
   const {
     viewport,
+    animatedCurrentTrick,
     onPlayCard,
     onSkipToReview,
   }: Props = $props();
+
+  const effectiveCurrentTrick = $derived(animatedCurrentTrick ?? viewport.currentTrick);
 
   const layout = getLayoutConfig();
 </script>
@@ -43,7 +48,7 @@
       rotated={viewport.rotated}
     >
       <TrickArea
-        currentTrick={viewport.currentTrick}
+        currentTrick={effectiveCurrentTrick}
         currentPlayer={viewport.currentPlayer}
         rotated={viewport.rotated}
       />

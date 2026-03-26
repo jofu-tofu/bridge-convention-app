@@ -104,24 +104,17 @@
       class="flex-1 overflow-y-auto space-y-1 min-h-0"
     >
       {#each tricks as trick, i (i)}
-        <div class="bg-bg-card rounded-[--radius-md] px-2 py-1 border border-border-subtle">
-          <div class="flex items-center gap-1.5">
-            <span class="text-text-muted font-mono text-[--text-label] w-3 shrink-0">{i + 1}</span>
-            <div class="flex gap-1 flex-wrap flex-1 text-[--text-detail]">
-              {#each trick.plays as play (play.seat)}
-                <span class="inline-flex items-center gap-0.5 {play.seat === trick.winner ? 'font-bold' : 'opacity-70'}">
-                  <span class="text-text-muted text-[--text-detail]">{play.seat}</span>
-                  <span class={SUIT_COLOR_CLASS[play.card.suit]}>
-                    {displayRank(play.card.rank)}{SUIT_SYMBOLS[play.card.suit]}
-                  </span>
+        <div class="bg-bg-card rounded-[--radius-md] px-1.5 py-0.5 border border-border-subtle">
+          <div class="flex items-center gap-1">
+            <span class="text-text-muted font-mono text-[--text-detail] w-3 shrink-0">{i + 1}</span>
+            {#each trick.plays as play (play.seat)}
+              <span class="inline-flex items-center gap-0.5 text-[--text-detail] {play.seat === trick.winner ? 'font-bold' : 'opacity-70'}">
+                <span class="text-text-muted">{play.seat}</span>
+                <span class={SUIT_COLOR_CLASS[play.card.suit]}>
+                  {displayRank(play.card.rank)}{SUIT_SYMBOLS[play.card.suit]}
                 </span>
-              {/each}
-            </div>
-            {#if trick.winner}
-              <span class="text-[--text-label] text-text-muted shrink-0" title="Winner">
-                {trick.winner === declarerSeat ? 'Decl' : 'Def'}
               </span>
-            {/if}
+            {/each}
           </div>
         </div>
       {/each}

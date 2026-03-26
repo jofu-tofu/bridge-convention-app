@@ -31,6 +31,7 @@ import type {
 } from "../service";
 import type { ViewportBidGrade } from "../service";
 import type { BidFeedbackDTO } from "../service";
+import type { PlaySuggestions } from "../service/debug-types";
 import { isValidTransition } from "../service";
 import type { GamePhase } from "../service";
 import { delay } from "../service";
@@ -140,6 +141,7 @@ export function createGameStore(
   let isShowingTrickResult = $state(false);
   let playProcessing = $state(false);
   let playLog = $state<PlayLogEntry[]>([]);
+  let playSuggestions = $state<PlaySuggestions>([]);
 
   // ── DDS state ─────────────────────────────────────────────────
   let ddsSolution = $state<DDSolution | null>(null);
@@ -194,14 +196,14 @@ export function createGameStore(
   );
 
   // ── Play animation state ─────────────────────────────────────
-  let playAnim = $state<{ totalAiPlays: number; revealed: number } | null>(null);
+  /** When set, overrides the viewport's currentTrick for display during animation. */
+  let animatedTrickOverride = $state<readonly PlayedCard[] | null>(null);
 
   const displayedCurrentTrick = $derived.by((): readonly PlayedCard[] => {
+    if (animatedTrickOverride) return animatedTrickOverride;
     const vp = cachedPlayingViewport;
     if (!vp) return [];
-    if (!playAnim) return vp.currentTrick;
-    const baseCount = vp.currentTrick.length - playAnim.totalAiPlays;
-    return vp.currentTrick.slice(0, baseCount + playAnim.revealed);
+    return vp.currentTrick;
   });
 
   async function refreshViewport() {
@@ -280,10 +282,9 @@ export function createGameStore(
     }
 
     if (phase === "PLAYING" && contract) {
+      // Dummy is always visible to all players in bridge
       const dummy = partnerSeat(contract.declarer);
-      if (areSamePartnership(dummy, seat)) {
-        seats.add(dummy);
-      }
+      seats.add(dummy);
     }
 
     return seats;
@@ -321,6 +322,58 @@ export function createGameStore(
 
   // ── Play helpers ──────────────────────────────────────────────
 
+  async function fetchPlaySuggestions(handle: SessionHandle) {
+    if (!import.meta.env.DEV) return;
+    try {
+      playSuggestions = await activeService.getPlaySuggestions(handle);
+    } catch {
+      playSuggestions = [];
+    }
+  }
+
+  /**
+   * Animate a sequence of AI plays with delays between cards and pauses at trick boundaries.
+   * Builds a local trick buffer that overrides the viewport's currentTrick for display.
+   */
+  async function animateAiPlays(
+    handle: SessionHandle,
+    aiPlays: readonly { seat: Seat; card: Card; reason: string; trickComplete?: boolean }[],
+    baseTrick: readonly PlayedCard[],
+  ): Promise<boolean> {
+    if (aiPlays.length === 0) return true;
+    // Start with the cards already visible in the current trick
+    const trickBuffer: PlayedCard[] = [...baseTrick];
+    animatedTrickOverride = trickBuffer;
+
+    for (const aiPlay of aiPlays) {
+      await delayFn(AI_PLAY_DELAY);
+      if (activeHandle !== handle || playAborted) return false;
+
+      // Add the AI card to the display buffer
+      trickBuffer.push({ card: aiPlay.card, seat: aiPlay.seat });
+      animatedTrickOverride = [...trickBuffer];
+
+      playLog = [...playLog, {
+        seat: aiPlay.seat, card: aiPlay.card, reason: aiPlay.reason,
+        trickIndex: cachedPlayingViewport?.tricks.length ?? 0,
+      }];
+
+      // Pause at trick boundaries (4th card in trick)
+      if (aiPlay.trickComplete) {
+        isShowingTrickResult = true;
+        await delayFn(TRICK_PAUSE);
+        if (activeHandle !== handle || playAborted) return false;
+        isShowingTrickResult = false;
+        // Clear the trick buffer for the next trick
+        trickBuffer.length = 0;
+        animatedTrickOverride = [...trickBuffer];
+      }
+    }
+
+    animatedTrickOverride = null;
+    return true;
+  }
+
   async function userPlayCardViaService(card: Card, seat: Seat) {
     if (!activeHandle) return;
     if (playProcessing || playAborted) return;
@@ -328,77 +381,57 @@ export function createGameStore(
     const handle = activeHandle;
     playProcessing = true;
     try {
+      // Snapshot the current trick before the service processes the play
+      const trickBeforePlay: PlayedCard[] = cachedPlayingViewport
+        ? [...cachedPlayingViewport.currentTrick]
+        : [];
+
       const result = await activeService.playCard(handle, card, seat);
-      if (activeHandle !== handle) return; // cancelled
+      if (activeHandle !== handle) return;
 
       if (!result.accepted) return;
 
-      // Fetch updated viewport (includes user's card + all AI plays)
+      // Fetch updated viewport (includes user's card + all AI plays already applied)
       cachedPlayingViewport = await activeService.getPlayingViewport(handle);
       if (activeHandle !== handle) return;
 
-      // Log AI plays
-      for (const aiPlay of result.aiPlays) {
-        playLog = [...playLog, { seat: aiPlay.seat, card: aiPlay.card, reason: aiPlay.reason, trickIndex: (cachedPlayingViewport?.tricks.length ?? 0) }];
-      }
+      // Build the base trick: cards that were visible + the user's card
+      const baseTrick: PlayedCard[] = [...trickBeforePlay, { card, seat }];
 
-      // Animate AI plays via incremental reveal on currentTrick
-      if (result.aiPlays.length > 0 && cachedPlayingViewport) {
-        playAnim = { totalAiPlays: result.aiPlays.length, revealed: 0 };
-
-        for (let i = 0; i < result.aiPlays.length; i++) {
-          await delayFn(AI_PLAY_DELAY);
-          if (activeHandle !== handle || playAborted) return;
-
-          playAnim = { totalAiPlays: result.aiPlays.length, revealed: i + 1 };
-        }
-        playAnim = null;
-      }
-
-      // Handle trick completion pause
-      if (result.trickComplete && !playAborted) {
+      // If the user's card completed the trick (4th card), pause to show it
+      if (baseTrick.length === 4) {
+        animatedTrickOverride = baseTrick;
         isShowingTrickResult = true;
         await delayFn(TRICK_PAUSE);
-        isShowingTrickResult = false;
         if (activeHandle !== handle || playAborted) return;
-
-        // Refresh viewport for post-trick state
-        cachedPlayingViewport = await activeService.getPlayingViewport(handle);
-        if (activeHandle !== handle) return;
+        isShowingTrickResult = false;
+        animatedTrickOverride = null;
+        // Start fresh for AI plays in the next trick
+        const ok = await animateAiPlays(handle, result.aiPlays, []);
+        if (!ok) return;
+      } else {
+        // User's card didn't complete the trick — animate AI plays continuing from the base
+        const ok = await animateAiPlays(handle, result.aiPlays, baseTrick);
+        if (!ok) return;
       }
+
+      // Refresh viewport for final state
+      cachedPlayingViewport = await activeService.getPlayingViewport(handle);
+      if (activeHandle !== handle) return;
 
       // Handle play completion
       if (result.playComplete) {
         score = result.score;
+        playSuggestions = [];
         transitionToExplanation();
+      } else {
+        await fetchPlaySuggestions(handle);
       }
     } finally {
       playProcessing = false;
+      animatedTrickOverride = null;
       await tick();
     }
-  }
-
-  function startPlayPhaseImpl() {
-    const effectiveContract = contract;
-    if (!effectiveContract) return;
-
-    playAborted = false;
-    playAnim = null;
-    score = null;
-    isShowingTrickResult = false;
-    playProcessing = false;
-    playLog = [];
-
-    // Service path: fetch initial playing viewport + handle AI opening lead
-    void (async () => {
-      try {
-        cachedPlayingViewport = await activeService.getPlayingViewport(activeHandle!);
-      } catch (err) {
-        console.error('Failed to fetch initial playing viewport:', err);
-      }
-    })();
-
-    void refreshViewport();
   }
 
   // ── Bidding helpers ───────────────────────────────────────────
@@ -492,25 +525,45 @@ export function createGameStore(
 
   // ── Play phase transitions ────────────────────────────────────
 
-  function startPlayPhase() {
-    if (!contract) return;
-    if (!activeHandle) return;
-    if (!transitionTo("PLAYING")) return;
-    startPlayPhaseImpl();
-  }
-
   function acceptPlay(seatOverride?: Seat) {
     if (!contract || phase !== "DECLARER_PROMPT") return;
-    const seat = seatOverride ?? effectiveUserSeat ?? userSeat;
+    if (!activeHandle) return;
+    const seat = seatOverride ?? effectiveUserSeat ?? userSeat ?? Seat.South;
     effectiveUserSeat = seat;
+    const handle = activeHandle;
+
+    // Transition to PLAYING immediately for responsive UI
+    if (!transitionTo("PLAYING")) return;
+    playAborted = false;
+    animatedTrickOverride = null;
+    score = null;
+    isShowingTrickResult = false;
+    playProcessing = false;
+    playLog = [];
+
     void (async () => {
       try {
-        await activeService.acceptPrompt(activeHandle!, "play", seat);
+        // Accept prompt on service side (initializes play + runs initial AI plays)
+        const result = await activeService.acceptPrompt(handle, "play", seat);
+        if (activeHandle !== handle) return;
+
+        // Fetch viewport (includes any AI plays already applied)
+        cachedPlayingViewport = await activeService.getPlayingViewport(handle);
+        if (activeHandle !== handle) return;
+
+        // Animate initial AI plays (e.g., opening lead by AI)
+        const aiPlays = result.aiPlays ?? [];
+        if (aiPlays.length > 0) {
+          const ok = await animateAiPlays(handle, aiPlays, []);
+          if (!ok) return;
+        }
+
+        // Fetch play suggestions for the user's first turn
+        await fetchPlaySuggestions(handle);
       } catch (err) {
-        console.error('acceptPrompt failed:', err);
+        console.error('acceptPlay failed:', err);
       }
     })();
-    startPlayPhase();
   }
 
   function declinePlay() {
@@ -571,13 +624,14 @@ export function createGameStore(
     isShowingTrickResult = false;
     playProcessing = false;
     playLog = [];
+    playSuggestions = [];
 
     // DDS
     resetDDS();
 
     // Animation
     biddingAnim = null;
-    playAnim = null;
+    animatedTrickOverride = null;
 
     // Cached viewports
     cachedBiddingViewport = null;
@@ -596,7 +650,7 @@ export function createGameStore(
     isShowingTrickResult = false;
     playProcessing = false;
     playLog = [];
-    playAnim = null;
+    animatedTrickOverride = null;
     cachedPlayingViewport = null;
   }
 
@@ -776,6 +830,7 @@ export function createGameStore(
     // Debug observability
     get debugLog() { return debugLog; },
     get playLog() { return playLog; },
+    get playSuggestions() { return playSuggestions; },
     get playInferences() { return playInferences; },
     get inferenceTimeline(): readonly InferenceSnapshot[] {
       if (!activeHandle) return [];

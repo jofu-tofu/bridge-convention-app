@@ -55,24 +55,24 @@ export const BEGINNER_PROFILE: PlayProfile = {
 export const CLUB_PLAYER_PROFILE: PlayProfile = {
   id: "club-player",
   name: "Club Player",
-  description: "Remembers the auction, counts points but not always cards.",
+  description: "Remembers the auction, counts cards, tracks voids, exploits restricted choice.",
   heuristicSkipRate: 0,
   skippableHeuristics: [],
   useInferences: true,
   inferenceNoise: 0.25,
   usePosterior: false,
-  useCardCounting: false,
+  useCardCounting: true,
 };
 
 export const EXPERT_PROFILE: PlayProfile = {
   id: "expert",
   name: "Expert",
-  description: "Counts every card, exploits all auction inferences.",
+  description: "Monte Carlo + DDS solving with void tracking. No auction belief filtering.",
   heuristicSkipRate: 0,
   skippableHeuristics: [],
   useInferences: true,
   inferenceNoise: 0,
-  usePosterior: true,
+  usePosterior: false,
   useCardCounting: true,
 };
 

@@ -10,7 +10,6 @@
   let searchQuery = $state("");
   let innerW = $state(1024);
   let sidebarOpen = $state(false);
-  let showAllModules = $state(false);
   let expandedClauses = new SvelteSet<string>();
 
   /** Active variance popover state — fixed-positioned to escape overflow containers. */
@@ -65,9 +64,9 @@
   const filteredModules = $derived.by(() => {
     let modules = [...allModules];
 
-    // Filter by bundle if set (and not showing all)
+    // Filter by bundle if set
     const bundleFilter = appStore.learningBundleFilter;
-    if (bundleFilter && !showAllModules) {
+    if (bundleFilter) {
       modules = modules.filter((m) => m.bundleIds.includes(bundleFilter));
     }
 
@@ -184,14 +183,23 @@
             bind:value={searchQuery}
             class="w-full bg-bg-card border border-border-subtle rounded-[--radius-md] px-3 py-2 text-sm text-text-primary placeholder-text-muted"
           />
-          {#if appStore.learningBundleFilter}
-            <button
-              class="mt-2 text-xs cursor-pointer transition-colors
-                {showAllModules ? 'text-accent-primary' : 'text-text-muted hover:text-text-secondary'}"
-              onclick={() => showAllModules = !showAllModules}
-            >
-              {showAllModules ? "Show bundle only" : "Show all conventions"}
-            </button>
+          {#if appStore.learningBundleFilter && appStore.learningBundleFilterName}
+            <div class="mt-2 flex items-center gap-1.5">
+              <span
+                class="inline-flex items-center gap-1.5 pl-2 pr-1 py-0.5 rounded-[--radius-md] bg-accent-primary/10 border border-accent-primary/20 text-accent-primary text-xs"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0 opacity-60"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                {appStore.learningBundleFilterName}
+                <button
+                  data-testid="clear-bundle-filter"
+                  class="inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-accent-primary/25 transition-colors cursor-pointer"
+                  aria-label="Clear bundle filter"
+                  onclick={() => appStore.clearBundleFilter()}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+              </span>
+            </div>
           {/if}
         </div>
         <nav class="flex-1 overflow-y-auto py-2" aria-label="Convention list">
@@ -355,7 +363,7 @@
       style="left: {variancePopover.x}px; top: {variancePopover.flipUp ? 'auto' : `${variancePopover.y}px`}; bottom: {variancePopover.flipUp ? `${window.innerHeight - variancePopover.y + 4}px` : 'auto'}"
       role="tooltip"
     >
-      {#each variancePopover.variants as variant}
+      {#each variancePopover.variants as variant (variant.systemLabel)}
         <span class="block text-[11px] leading-relaxed text-text-muted">
           <span class="font-semibold text-text-secondary">{variant.systemLabel}:</span> {variant.description}
         </span>

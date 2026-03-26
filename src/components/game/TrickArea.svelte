@@ -57,12 +57,12 @@
 
 <style>
   .trick-area {
-    width: calc(var(--card-width) * 3 + 16px);
-    height: calc(var(--card-height) * 2.5);
+    width: calc(var(--card-width) * 3.2 + 24px);
+    height: calc(var(--card-height) * 2.8);
   }
 
   .trick-north {
-    top: 12px;
+    top: 0;
     left: 50%;
     transform: translateX(-50%);
   }

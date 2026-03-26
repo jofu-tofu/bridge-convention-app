@@ -121,6 +121,20 @@ export async function processPlayCard(
   };
 }
 
+/**
+ * Run initial AI plays when entering the play phase.
+ * If the opening leader (or subsequent players) are AI-controlled,
+ * play cards until it's a user-controlled seat's turn.
+ */
+export async function runInitialAiPlays(
+  state: SessionState,
+  engine: EnginePort,
+): Promise<AiPlayEntry[]> {
+  if (!state.currentPlayer || !state.contract) return [];
+  if (state.isUserControlledPlay(state.currentPlayer)) return [];
+  return runAiPlayLoop(state, engine);
+}
+
 // ── Internal helpers ────────────────────────────────────────────────
 
 /** Add a card to the current trick. */
@@ -187,7 +201,7 @@ function buildPlayContext(state: SessionState, seat: Seat, legalCards: readonly 
     trumpSuit: state.trumpSuit,
     legalPlays: legalCards,
     dummyHand: dummyVisible && state.dummySeat
-      ? state.deal.hands[state.dummySeat]
+      ? { cards: state.getRemainingCards(state.dummySeat) }
       : undefined,
     inferences: state.playInferences ?? undefined,
   };
@@ -230,10 +244,11 @@ async function runAiPlayLoop(
 
     const { card, reason } = await selectAiCard(state, seat, legalPlays);
     addCardToTrick(state, card, seat);
-    aiPlays.push({ seat, card, reason });
+    const isTrickComplete = state.currentTrick.length === 4;
+    aiPlays.push({ seat, card, reason, trickComplete: isTrickComplete || undefined });
 
     // Check if trick is complete
-    if (state.currentTrick.length === 4) {
+    if (isTrickComplete) {
       await scoreTrick(state, engine);
 
       if (state.tricks.length === 13) {

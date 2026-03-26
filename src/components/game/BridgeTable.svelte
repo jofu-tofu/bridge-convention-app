@@ -58,6 +58,7 @@
   }));
 
   // Use pre-computed viewport handEvaluation when available
+  const hasEvaluation = $derived(handEvaluation !== undefined);
   const southHcp = $derived(handEvaluation?.hcp ?? 0);
   const southDistPoints = $derived(handEvaluation?.distributionPoints.total ?? 0);
 
@@ -212,12 +213,14 @@
         aria-label={southSeat === Seat.South ? "South" : "North"}
         >{southSeat === Seat.South ? "S" : "N"}</span
       >
-      <span
-        class="text-[--text-label] text-text-secondary bg-bg-elevated/60 px-1.5 py-0.5 rounded-full"
-        data-testid="south-hcp"
-        aria-label="{southHcp} high card points{southDistPoints > 0 ? ` plus ${southDistPoints} distribution` : ''}"
-        >{southHcp} HCP{#if southDistPoints > 0}<span class="text-text-secondary/60"> + {southDistPoints} dist</span>{/if}</span
-      >
+      {#if hasEvaluation}
+        <span
+          class="text-[--text-label] text-text-secondary bg-bg-elevated/60 px-1.5 py-0.5 rounded-full"
+          data-testid="south-hcp"
+          aria-label="{southHcp} high card points{southDistPoints > 0 ? ` plus ${southDistPoints} distribution` : ''}"
+          >{southHcp} HCP{#if southDistPoints > 0}<span class="text-text-secondary/60"> + {southDistPoints} dist</span>{/if}</span
+        >
+      {/if}
     </div>
     <HandFan
       cards={getCards(southSeat)}

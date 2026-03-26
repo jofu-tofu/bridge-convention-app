@@ -83,6 +83,7 @@ export function createAppStore() {
   let learningConvention = $state<ConventionConfig | null>(null);
   let learningModuleId = $state<string | null>(null);
   let learningBundleFilter = $state<string | null>(null);
+  let learningBundleFilterName = $state<string | null>(null);
   let autoplay = $state(false);
   let targetState = $state<string | null>(null);
   let targetSurface = $state<string | null>(null);
@@ -117,6 +118,9 @@ export function createAppStore() {
     get learningBundleFilter() {
       return learningBundleFilter;
     },
+    get learningBundleFilterName() {
+      return learningBundleFilterName;
+    },
     get devSeed() {
       return devSeed;
     },
@@ -134,6 +138,7 @@ export function createAppStore() {
       learningConvention = config;
       selectedConvention = null;
       learningBundleFilter = config.id;
+      learningBundleFilterName = config.name;
       // Auto-select first module from the bundle's member ordering
       const firstModuleId = config.moduleDescriptions?.keys().next().value ?? null;
       learningModuleId = firstModuleId ?? null;
@@ -141,9 +146,10 @@ export function createAppStore() {
     },
 
     /** Navigate directly to a specific module's learning page. */
-    navigateToLearningModule(moduleId: string, bundleFilter?: string) {
+    navigateToLearningModule(moduleId: string, bundleFilter?: string, bundleFilterName?: string) {
       learningModuleId = moduleId;
       learningBundleFilter = bundleFilter ?? null;
+      learningBundleFilterName = bundleFilterName ?? null;
       learningConvention = null;
       selectedConvention = null;
       currentScreen = "learning";
@@ -153,11 +159,17 @@ export function createAppStore() {
       learningModuleId = moduleId;
     },
 
+    clearBundleFilter() {
+      learningBundleFilter = null;
+      learningBundleFilterName = null;
+    },
+
     /** Navigate to learning screen showing all modules, auto-selecting first if none selected. */
     navigateToLearningHome() {
       learningConvention = null;
       selectedConvention = null;
       learningBundleFilter = null;
+      learningBundleFilterName = null;
       currentScreen = "learning";
     },
 
@@ -166,6 +178,7 @@ export function createAppStore() {
       learningConvention = null;
       learningModuleId = null;
       learningBundleFilter = null;
+      learningBundleFilterName = null;
       currentScreen = "conventions";
     },
 

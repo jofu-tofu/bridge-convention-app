@@ -84,11 +84,11 @@ describe("PlayProfile constants", () => {
     expect(CLUB_PLAYER_PROFILE.usePosterior).toBe(false);
   });
 
-  it("expert uses everything with zero noise", () => {
+  it("expert uses MC+DDS without posterior beliefs", () => {
     expect(EXPERT_PROFILE.heuristicSkipRate).toBe(0);
     expect(EXPERT_PROFILE.useInferences).toBe(true);
     expect(EXPERT_PROFILE.inferenceNoise).toBe(0);
-    expect(EXPERT_PROFILE.usePosterior).toBe(true);
+    expect(EXPERT_PROFILE.usePosterior).toBe(false);
     expect(EXPERT_PROFILE.useCardCounting).toBe(true);
   });
 

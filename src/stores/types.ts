@@ -19,6 +19,7 @@ import type {
 import type { DevServicePort, SessionHandle } from "../service";
 import type { ServicePublicBeliefs, ServiceGamePhase, ServiceInferenceSnapshot, ServicePublicBeliefState } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
+import type { PlaySuggestions } from "../service/debug-types";
 import type {
   BidFeedback,
   BidHistoryEntry,
@@ -94,6 +95,7 @@ export interface GameStore {
   // Debug observability
   readonly debugLog: DebugLogEntry[];
   readonly playLog: PlayLogEntry[];
+  readonly playSuggestions: PlaySuggestions;
   readonly playInferences: Record<Seat, ServicePublicBeliefs> | null;
   readonly inferenceTimeline: readonly ServiceInferenceSnapshot[];
   readonly ewInferenceTimeline: readonly ServiceInferenceSnapshot[];

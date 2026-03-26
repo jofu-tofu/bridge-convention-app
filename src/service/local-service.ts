@@ -44,6 +44,8 @@ import type {
 import type {
   ServiceDebugSnapshot,
   ServiceDebugLogEntry,
+  PlaySuggestion,
+  PlaySuggestions,
 } from "./debug-types";
 import type { AtomGradeResult } from "./evaluation/types";
 import { SessionManager, createHandle } from "../session/session-manager";
@@ -56,8 +58,13 @@ import {
 } from "../session/bidding-controller";
 import {
   processPlayCard,
+  runInitialAiPlays,
 } from "../session/play-controller";
 import { partnerSeat, areSamePartnership } from "../engine/constants";
+import type { PlayContext } from "../conventions";
+import type { PlayProfileId } from "../session/heuristics/play-profiles";
+import { PLAY_PROFILES } from "../session/heuristics/play-profiles";
+import { createProfileStrategyProvider } from "../session/heuristics/profile-play-strategy";
 
 import type { DrillBundle } from "../session/drill-types";
 
@@ -186,6 +193,9 @@ export function createLocalService(engine: EnginePort): DevServicePort {
           state.effectiveUserSeat = seatOverride ?? state.userSeat;
           state.initializePlay(state.contract);
           state.phase = "PLAYING";
+          // Run initial AI plays if the opening leader is not user-controlled
+          const aiPlays = await runInitialAiPlays(state, engine);
+          return { phase: state.phase, aiPlays };
         }
       } else if (mode === "replay") {
         // Transition back to DECLARER_PROMPT from EXPLANATION (for "Play this Hand")
@@ -333,6 +343,58 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       return state.getNSTimeline();
     },
 
+    async getPlaySuggestions(handle: SessionHandle): Promise<PlaySuggestions> {
+      const state = manager.get(handle);
+      if (state.phase !== "PLAYING" || !state.currentPlayer || !state.contract) return [];
+
+      const seat = state.currentPlayer;
+      const remaining = state.getRemainingCards(seat);
+      const legalPlays = await engine.getLegalPlays({ cards: remaining }, state.getLeadSuit());
+      if (legalPlays.length === 0) return [];
+
+      const ctx: PlayContext = {
+        hand: { cards: remaining },
+        currentTrick: [...state.currentTrick],
+        previousTricks: [...state.tricks],
+        contract: state.contract,
+        seat,
+        trumpSuit: state.trumpSuit,
+        legalPlays,
+        dummyHand: state.dummySeat ? { cards: state.getRemainingCards(state.dummySeat) } : undefined,
+        inferences: state.playInferences ?? undefined,
+      };
+
+      const suggestions: PlaySuggestion[] = [];
+      // Evaluate non-world-class profiles (sync heuristic chains)
+      const profiles: [PlayProfileId, string][] = [
+        ["beginner", "Beginner"],
+        ["club-player", "Club Player"],
+        ["expert", "Expert"],
+      ];
+      for (const [id, name] of profiles) {
+        const provider = createProfileStrategyProvider(PLAY_PROFILES[id], { engine });
+        if (state.playInferences) provider.onAuctionComplete?.(state.playInferences);
+        try {
+          const result = await provider.getStrategy().suggest(ctx);
+          suggestions.push({ profileId: id, profileName: name, card: result.card, reason: result.reason });
+        } catch {
+          // Skip profile if it fails
+        }
+      }
+
+      // World-class (MC+DDS) — may be slow, try with timeout
+      try {
+        const wcProvider = createProfileStrategyProvider(PLAY_PROFILES["world-class"], { engine });
+        if (state.playInferences) wcProvider.onAuctionComplete?.(state.playInferences);
+        const wcResult = await wcProvider.getStrategy().suggest(ctx);
+        suggestions.push({ profileId: "world-class", profileName: "World Class", card: wcResult.card, reason: wcResult.reason });
+      } catch {
+        // World-class may fail if DDS unavailable
+      }
+
+      return suggestions;
+    },
+
     // ── Transitional methods (removed after Phases 2-4) ───────────
 
     async getConventionName(handle: SessionHandle): Promise<string> {
@@ -437,13 +499,11 @@ async function buildPlayingViewportFromState(state: SessionState, engine: Engine
   const effectiveSeat = state.effectiveUserSeat ?? state.userSeat;
   const contract = state.contract;
 
-  // Compute face-up seats: user + dummy if on same partnership
+  // Compute face-up seats: user + dummy (dummy is always visible in bridge)
   const faceUpSeats = new Set<Seat>([effectiveSeat]);
   if (contract) {
     const dummy = partnerSeat(contract.declarer);
-    if (areSamePartnership(dummy, effectiveSeat)) {
-      faceUpSeats.add(dummy);
-    }
+    faceUpSeats.add(dummy);
   }
 
   // Compute user-controlled seats

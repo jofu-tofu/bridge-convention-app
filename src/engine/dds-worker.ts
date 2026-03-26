@@ -1,6 +1,7 @@
 /**
- * DDS Web Worker — Classic Worker (NOT module worker).
- * Loads DDS WASM via importScripts, solves deals on request.
+ * DDS Web Worker — Module Worker.
+ * Loads DDS WASM via fetch+eval (importScripts unavailable in module workers),
+ * solves deals on request.
  *
  * Protocol:
  *   Worker → Main: { type: "ready" } after init
@@ -13,21 +14,22 @@ import type { Deal } from "./types";
 import type { DDSModule } from "./dds-wasm";
 import { solveWithModule, solveBoardWithModule } from "./dds-wasm";
 
-// Web Worker globals not in default TS lib
-declare function importScripts(...urls: string[]): void;
-
-// any: Emscripten factory function injected by importScripts
-declare const createDDS: (opts: {
-  locateFile: (path: string) => string;
-}) => Promise<DDSModule>;
-
 let ddsModule: DDSModule | null = null;
 
 async function init(): Promise<void> {
-  // Classic worker: importScripts is available
-  importScripts("/dds/dds.js");
+  // Module workers can't use importScripts — fetch and eval the DDS JS instead.
+  // The Emscripten-generated dds.js defines a `createDDS` factory on globalThis.
+  const resp = await fetch("/dds/dds.js");
+  const script = await resp.text();
+  // eslint-disable-next-line no-eval -- Emscripten module must be eval'd to define createDDS on globalThis
+  (0, eval)(script);
 
-  ddsModule = await createDDS({
+  // any: Emscripten factory function defined by eval'd script
+  const factory = (globalThis as Record<string, unknown>).createDDS as (opts: {
+    locateFile: (path: string) => string;
+  }) => Promise<DDSModule>;
+
+  ddsModule = await factory({
     locateFile: (path: string) => `/dds/${path}`,
   });
 
