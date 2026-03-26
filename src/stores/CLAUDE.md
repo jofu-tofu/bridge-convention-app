@@ -4,10 +4,10 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 ## Conventions
 
-- **Factory + DI.** `createGameStore(engine)` takes `EnginePort` as parameter. Tests inject a stub engine. No `vi.mock`.
+- **Factory + DI.** `createGameStore(service)` takes `DevServicePort` as parameter. Tests inject a stub engine via `createLocalService(engine)`. No `vi.mock`.
 - **Object-with-getters pattern.** `$state` inside factory, exported as object properties via getters. Preserves Svelte 5 reactivity.
 - **Named exports only.** `export function createGameStore`, `export function createAppStore`.
-- **Minimal engine imports.** Stores import `EnginePort` type, `nextSeat`/`partnerSeat` from constants, and `evaluateHand` from hand-evaluator (for bid correctness checking). Never import `auction`, `scoring`, etc.
+- **No engine imports.** The game store does not import `EnginePort` — all engine access goes through the service.
 - **Minimal conventions/core imports.** `app.svelte.ts` imports type `ConventionConfig`. Viewport building delegated entirely to `ServicePort` methods — no direct `buildXxxViewport` calls.
 
 ## Architecture
@@ -15,7 +15,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 | File                 | Role                                                                                               |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
 | `app.svelte.ts`      | `createAppStore()` — screen navigation (`conventions`/`game`/`learning`/`settings`/`coverage`/`profiles`), selected convention, `learningConvention` / `learningModuleId` / `learningBundleFilter` state (module-centric learning), `coverageBundle` state, dev seed state, autoplay flag, `drillTuning` state (`DrillTuning` from `service/drill-types`, persisted to localStorage — vulnerability distribution, off-convention toggle/rate) |
-| `game.svelte.ts`     | `createGameStore(engine)` — coordinator/facade, phase machine, drill lifecycle, thin reactive cache over service viewports |
+| `game.svelte.ts`     | `createGameStore(service)` — coordinator/facade, phase machine, drill lifecycle, thin reactive cache over service viewports |
 | `dev-params.ts`      | `applyDevParams()` — reads URL params (?convention, ?seed, ?debug, etc.) and configures the app store. Called from `App.svelte` at startup |
 
 **Game store key methods:** `startDrillFromHandle`, `userBid`, `retryBid`, `getExpectedBid`, `getDebugSnapshot` (bidding); `acceptPlay(seatOverride?)`, `declinePlay()`, `acceptPrompt()`, `declinePrompt()` (declarer prompt); `userPlayCard`, `skipToReview`, `playThisHand` (play). See `game.svelte.ts` for signatures.

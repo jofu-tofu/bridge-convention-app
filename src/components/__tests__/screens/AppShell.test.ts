@@ -18,7 +18,7 @@ describe("AppShell", () => {
   function renderShell() {
     const engine = createStubEngine();
     const service = createLocalService(engine);
-    const gameStore = createGameStore(engine, service);
+    const gameStore = createGameStore(service);
     const appStore = createAppStore();
     render(AppShell, { props: { engine, service, gameStore, appStore } });
     return { appStore, gameStore };
@@ -51,7 +51,7 @@ describe("AppShell", () => {
     appStore.selectConvention(ntBundleConventionConfig);
     expect(appStore.autoplay).toBe(true);
 
-    appStore.navigateToMenu();
+    appStore.navigateToConventions();
     expect(appStore.autoplay).toBe(true);
   });
 });

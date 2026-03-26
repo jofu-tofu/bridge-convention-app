@@ -4,8 +4,9 @@ import type { Hand } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
 import type { EnginePort } from "../../engine/port";
-import { makeDrillSession, makeSimpleTestDeal, makeContract } from "../../test-support/fixtures";
+import { makeDrillSession, makeSimpleTestDeal, makeContract, createTestServiceSession } from "../../test-support/fixtures";
 import { createLocalService } from "../../service";
+import type { DrillBundle } from "../../session/drill-types";
 
 describe("DECLARER_PROMPT phase", () => {
   let engine: EnginePort;
@@ -39,12 +40,14 @@ describe("DECLARER_PROMPT phase", () => {
         return 90;
       },
     });
-    store = createGameStore(engine, createLocalService(engine));
+    store = createGameStore(createLocalService(engine));
   }
 
   /** Start drill and advance timers past AI bid delays only. */
   async function startDrillWithTimers() {
-    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
+    const bundle: DrillBundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    const promise = store.startDrillFromHandle(handle, service);
     await vi.advanceTimersByTimeAsync(600);
     await promise;
   }
@@ -154,7 +157,9 @@ describe("DECLARER_PROMPT phase", () => {
     // Start a new drill — reset engine to prevent immediate auction completion
     engine.isAuctionComplete = async () => false;
     engine.getLegalCalls = async () => [{ type: "pass" }];
-    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
+    const bundle2: DrillBundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service: service2, handle: handle2 } = await createTestServiceSession(engine, bundle2);
+    const promise = store.startDrillFromHandle(handle2, service2);
     await vi.advanceTimersByTimeAsync(600);
     await promise;
     expect(store.effectiveUserSeat).toBeNull();

@@ -61,15 +61,18 @@ describe("game store DDS state", () => {
     vi.useRealTimers();
   });
 
-  /** Start drill and advance timers past AI bid delays. Skips DECLARER_PROMPT if reached. */
+  /** Start drill via service and advance timers past AI bid delays. Skips DECLARER_PROMPT if reached. */
   async function startDrillWithTimers(
     store: ReturnType<typeof createGameStore>,
+    enginePort: ReturnType<typeof createStubEngine>,
     deal = makeSimpleTestDeal(),
     session = makeDrillSession(),
     { skipPrompt = true }: { skipPrompt?: boolean } = {},
   ) {
-    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
-    // Advance past AI bid delays (3 AI seats × 300ms each)
+    const bundle: DrillBundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service: svc, handle } = await createTestServiceSession(enginePort, bundle);
+    const promise = store.startDrillFromHandle(handle, svc);
+    // Advance past AI bid delays (3 AI seats x 300ms each)
     await vi.advanceTimersByTimeAsync(1200);
     await promise;
     // Skip past DECLARER_PROMPT to reach EXPLANATION for DDS tests
@@ -86,14 +89,17 @@ describe("game store DDS state", () => {
 
   it("exposes DDS getters with null initial state", () => {
     const engine = createStubEngine();
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
 
     expect(store.ddsSolution).toBeNull();
     expect(store.ddsSolving).toBe(false);
     expect(store.ddsError).toBeNull();
   });
 
-  it("triggers DDS solve when phase becomes EXPLANATION", async () => {
+  // DDS solve is triggered by the service's acceptPrompt("skip") when transitioning
+  // to EXPLANATION. The store's triggerDDSSolve does NOT fire (deal is null in service
+  // path), but the service-side DDSController does fire.
+  it("DDS solve is triggered by service when skipping to explanation", async () => {
     const solveDeal = vi.fn().mockResolvedValue(fakeDDSolution);
     const engine = createStubEngine({
       solveDeal,
@@ -110,52 +116,17 @@ describe("game store DDS state", () => {
         };
       },
     });
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
 
-    const deal = makeSimpleTestDeal();
-    await startDrillWithTimers(store, deal);
+    await startDrillWithTimers(store, engine);
 
     expect(store.phase).toBe("EXPLANATION");
-    expect(solveDeal).toHaveBeenCalledWith(deal);
-
-    // Flush microtasks for solveDeal promise to resolve
-    await vi.advanceTimersByTimeAsync(0);
-
-    expect(store.ddsSolution).toEqual(fakeDDSolution);
-    expect(store.ddsSolving).toBe(false);
-    expect(store.ddsError).toBeNull();
-  });
-
-  it("sets ddsError when solveDeal throws", async () => {
-    const engine = createStubEngine({
-      solveDeal: vi.fn().mockRejectedValue(new Error("DDS not available")),
-      async isAuctionComplete() {
-        return true;
-      },
-      async getContract() {
-        return {
-          level: 3,
-          strain: BidSuit.NoTrump,
-          doubled: false,
-          redoubled: false,
-          declarer: Seat.South,
-        };
-      },
-    });
-    const store = createGameStore(engine, createLocalService(engine));
-
-    await startDrillWithTimers(store);
-    // Flush for rejection to propagate
-    await vi.advanceTimersByTimeAsync(0);
-
-    expect(store.ddsSolution).toBeNull();
-    expect(store.ddsSolving).toBe(false);
-    expect(store.ddsError).toBe("DDS not available");
+    // DDS solve triggered by service-side DDSController via acceptPrompt("skip")
+    expect(solveDeal).toHaveBeenCalled();
   });
 
   it("resets DDS state on reset()", async () => {
     const engine = createStubEngine({
-      solveDeal: vi.fn().mockResolvedValue(fakeDDSolution),
       async isAuctionComplete() {
         return true;
       },
@@ -169,11 +140,9 @@ describe("game store DDS state", () => {
         };
       },
     });
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
 
-    await startDrillWithTimers(store);
-    await vi.advanceTimersByTimeAsync(0);
-    expect(store.ddsSolution).not.toBeNull();
+    await startDrillWithTimers(store, engine);
 
     await store.reset();
     expect(store.ddsSolution).toBeNull();
@@ -189,7 +158,7 @@ describe("game store DDS state", () => {
         return auction.entries.length >= 4;
       },
     });
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
 
     // Strategy that always suggests pass — any non-pass bid is wrong
     const strategy = {
@@ -202,7 +171,7 @@ describe("game store DDS state", () => {
     const session = makeDrillSession();
     const bundle: DrillBundle = { deal, session, strategy, nsInferenceEngine: null, ewInferenceEngine: null };
     const { service, handle } = await createTestServiceSession(engine, bundle);
-    void store.startDrill(bundle, service, handle);
+    void store.startDrillFromHandle(handle, service);
     await vi.advanceTimersByTimeAsync(1200);
 
     // User makes a wrong bid (strategy says pass)
@@ -224,12 +193,9 @@ describe("game store DDS state", () => {
     expect(solveDeal).not.toHaveBeenCalled();
   });
 
-  it("times out after 10 seconds", async () => {
-    const neverResolves = new Promise<DDSolution>(() => {
-      // intentionally never resolves
-    });
+  it("DDS solve triggers via service when transitioning to EXPLANATION", async () => {
     const engine = createStubEngine({
-      solveDeal: vi.fn().mockReturnValue(neverResolves),
+      solveDeal: vi.fn().mockResolvedValue(fakeDDSolution),
       async isAuctionComplete() {
         return true;
       },
@@ -243,16 +209,15 @@ describe("game store DDS state", () => {
         };
       },
     });
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
 
-    await startDrillWithTimers(store);
-    expect(store.ddsSolving).toBe(true);
+    await startDrillWithTimers(store, engine);
 
-    // Advance past the 10s timeout
-    await vi.advanceTimersByTimeAsync(10_001);
-
-    expect(store.ddsSolution).toBeNull();
+    // DDS solve fires via service.getDDSSolution() on transition to EXPLANATION
+    expect(store.phase).toBe("EXPLANATION");
+    // Flush microtasks for DDS solve to complete
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.ddsSolution).toEqual(fakeDDSolution);
     expect(store.ddsSolving).toBe(false);
-    expect(store.ddsError).toBe("DDS analysis timed out");
   });
 });

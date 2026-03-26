@@ -29,6 +29,7 @@ import type {
   ConventionInfo,
   ServiceInferenceSnapshot,
   ServicePublicBeliefState,
+  ServicePublicBeliefs,
 } from "./response-types";
 import type {
   ServiceDebugSnapshot,
@@ -68,6 +69,9 @@ export interface ServicePort {
    *  Eliminates the need for the store to maintain its own inference coordinator. */
   getPublicBeliefState(handle: SessionHandle): Promise<ServicePublicBeliefState>;
 
+  /** Capture play inferences at auction end. Returns per-seat beliefs or null if no engines. */
+  capturePlayInferences(handle: SessionHandle): Promise<Record<Seat, ServicePublicBeliefs> | null>;
+
   // ── DDS analysis ────────────────────────────────────────────────
   getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult>;
 
@@ -94,11 +98,7 @@ export interface DevServicePort extends ServicePort {
   getDebugLog(handle: SessionHandle): Promise<readonly ServiceDebugLogEntry[]>;
   getInferenceTimeline(handle: SessionHandle): Promise<readonly ServiceInferenceSnapshot[]>;
 
-  /** Transitional: return the DrillBundle so stores can initialize from raw state.
-   *  Will be removed once stores fully delegate to the service (Phases 2-4). */
-  getSessionBundle(handle: SessionHandle): Promise<DrillBundle>;
-
-  /** Transitional: return the resolved convention name for a session. */
+  /** Return the resolved convention name for a session. */
   getConventionName(handle: SessionHandle): Promise<string>;
 
   /** Create a session from a pre-built DrillBundle (for tests using stub engines). */

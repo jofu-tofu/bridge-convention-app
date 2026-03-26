@@ -14,9 +14,9 @@ import type {
   PlayedCard,
   Seat,
   DDSolution,
-} from "../engine/types";
-import type { Suit } from "../engine/types";
-import type { DrillBundle, DevServicePort, SessionHandle } from "../service";
+  Suit,
+} from "../service";
+import type { DevServicePort, SessionHandle } from "../service";
 import type { ServicePublicBeliefs, ServiceGamePhase, ServiceInferenceSnapshot, ServicePublicBeliefState } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import type {
@@ -125,9 +125,6 @@ export interface GameStore {
 
   // Methods
   setConventionName(name: string): void;
-  getLegalPlaysForSeat(seat: Seat): Promise<Card[]>;
-  refreshLegalPlays(): Promise<void>;
-  getRemainingCards(seat: Seat): Card[];
   userPlayCard(card: Card, seat: Seat): void;
   skipToReview(): void;
   acceptPlay(seatOverride?: Seat): void;
@@ -141,7 +138,7 @@ export interface GameStore {
   acceptSouthPlay(): void;
   declineSouthPlay(): void;
   playThisHand(): void;
-  startDrill(bundle: DrillBundle, service?: DevServicePort, handle?: SessionHandle): Promise<void>;
+  startDrillFromHandle(handle: SessionHandle, service?: DevServicePort): Promise<void>;
   userBid(call: Call): void;
   retryBid(): void;
   getExpectedBid(): Promise<{ call: Call } | null>;

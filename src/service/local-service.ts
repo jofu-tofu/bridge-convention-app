@@ -13,7 +13,7 @@
 
 import { type Call, type Card, Seat } from "../engine/types";
 import type { EnginePort } from "../engine/port";
-import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ServicePublicBeliefState } from "./response-types";
+import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ServicePublicBeliefState, ServicePublicBeliefs } from "./response-types";
 import { buildBiddingViewport, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "../session/build-viewport";
 import type { ModuleCatalogEntry, ModuleLearningViewport } from "./response-types";
 import { buildModuleCatalog, buildModuleLearningViewport } from "../session/learning-viewport";
@@ -172,12 +172,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       if (mode === "skip" || !mode) {
         if (isValidTransition(state.phase, "EXPLANATION")) {
           state.phase = "EXPLANATION";
-          // Trigger DDS solve
-          if (state.deal && state.contract) {
-            ddsControllers.get(handle)?.solve(state.deal, state.contract, engine).catch((err) => {
-              console.error("DDS solve failed:", err);
-            });
-          }
+          // DDS solve is triggered by the store via getDDSSolution()
         }
       } else if (mode === "play") {
         if (isValidTransition(state.phase, "PLAYING") && state.contract) {
@@ -234,6 +229,13 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     async getPublicBeliefState(handle: SessionHandle): Promise<ServicePublicBeliefState> {
       const state = manager.get(handle);
       return state.publicBeliefState as ServicePublicBeliefState;
+    },
+
+    async capturePlayInferences(handle: SessionHandle) {
+      const state = manager.get(handle);
+      state.capturePlayInferences();
+      // PublicBeliefs and ServicePublicBeliefs are structurally compatible
+      return state.playInferences as Record<Seat, ServicePublicBeliefs> | null;
     },
 
     // ── DDS analysis ──────────────────────────────────────────────
@@ -319,11 +321,6 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     },
 
     // ── Transitional methods (removed after Phases 2-4) ───────────
-
-    async getSessionBundle(handle: SessionHandle): Promise<DrillBundle> {
-      const state = manager.get(handle);
-      return state.bundle;
-    },
 
     async getConventionName(handle: SessionHandle): Promise<string> {
       const state = manager.get(handle);

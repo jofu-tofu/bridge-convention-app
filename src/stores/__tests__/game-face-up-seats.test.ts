@@ -15,8 +15,9 @@ import { Seat } from "../../engine/types";
 import type { Hand } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
-import { makeSimpleTestDeal, makeDrillSession, makeContract } from "../../test-support/fixtures";
+import { makeSimpleTestDeal, makeDrillSession, makeContract, createTestServiceSession } from "../../test-support/fixtures";
 import type { EnginePort } from "../../engine/port";
+import type { DrillBundle } from "../../session/drill-types";
 import { createLocalService } from "../../service";
 
 describe("faceUpSeats", () => {
@@ -51,13 +52,14 @@ describe("faceUpSeats", () => {
         return 90;
       },
     });
-    store = createGameStore(engine, createLocalService(engine));
+    store = createGameStore(createLocalService(engine));
   }
 
   async function startDrillWithTimers() {
-    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
+    const bundle: DrillBundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    void store.startDrillFromHandle(handle, service);
     await vi.advanceTimersByTimeAsync(600);
-    await promise;
   }
 
   describe("BIDDING phase", () => {
@@ -66,9 +68,10 @@ describe("faceUpSeats", () => {
       // Prevent auction from completing
       engine.isAuctionComplete = async () => false;
       engine.getLegalCalls = async () => [{ type: "pass" }];
-      const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
+      const bundle: DrillBundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+      const { service, handle } = await createTestServiceSession(engine, bundle);
+      void store.startDrillFromHandle(handle, service);
       await vi.advanceTimersByTimeAsync(600);
-      await promise;
 
       expect(store.phase).toBe("BIDDING");
       expect(store.faceUpSeats).toEqual(new Set([Seat.South]));
@@ -198,18 +201,19 @@ describe("promptMode", () => {
         return 90;
       },
     });
-    store = createGameStore(engine, createLocalService(engine));
+    store = createGameStore(createLocalService(engine));
   }
 
   async function startDrillWithTimers() {
-    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
+    const bundle: DrillBundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    void store.startDrillFromHandle(handle, service);
     await vi.advanceTimersByTimeAsync(600);
-    await promise;
   }
 
   it("is null when not in DECLARER_PROMPT phase", () => {
     const eng = createStubEngine();
-    const s = createGameStore(eng, createLocalService(eng));
+    const s = createGameStore(createLocalService(eng));
     expect(s.promptMode).toBeNull();
   });
 
@@ -270,13 +274,14 @@ describe("acceptPrompt / declinePrompt", () => {
         return 90;
       },
     });
-    store = createGameStore(engine, createLocalService(engine));
+    store = createGameStore(createLocalService(engine));
   }
 
   async function startDrillWithTimers() {
-    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
+    const bundle: DrillBundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    void store.startDrillFromHandle(handle, service);
     await vi.advanceTimersByTimeAsync(600);
-    await promise;
   }
 
   it("acceptPrompt for defender keeps effectiveUserSeat as South", async () => {
@@ -312,7 +317,7 @@ describe("acceptPrompt / declinePrompt", () => {
 
   it("acceptPrompt is no-op when not in DECLARER_PROMPT", () => {
     const eng = createStubEngine();
-    const s = createGameStore(eng, createLocalService(eng));
+    const s = createGameStore(createLocalService(eng));
     s.acceptPrompt();
     expect(s.phase).toBe("BIDDING");
   });

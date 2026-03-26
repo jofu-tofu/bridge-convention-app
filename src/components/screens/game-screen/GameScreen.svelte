@@ -7,7 +7,7 @@
   import type { SessionConfig } from "../../../service";
 
   import { computeTableScale } from "../../shared/table-scale";
-  import { displayConventionName } from "../../../service/display/format";
+  import { displayConventionName } from "../../../service";
   import { DESKTOP_MIN } from "../../shared/breakpoints.svelte";
 
   import BiddingPhase from "./BiddingPhase.svelte";
@@ -42,13 +42,6 @@
   } as const;
 
   let dealNumber = $state(0);
-  // Refresh legal plays when current player changes during PLAYING phase
-  $effect(() => {
-    const player = gameStore.currentPlayer;
-    if (gameStore.phase === "PLAYING" && player) {
-      gameStore.refreshLegalPlays();
-    }
-  });
 
   // DEV autoplay: auto-bid correct call, auto-dismiss feedback, auto-skip prompts
   // Uses requestAnimationFrame to defer actions to next frame, avoiding infinite microtask loops
@@ -107,11 +100,7 @@
     };
 
     const handle = await service.createSession(config);
-    const bundle = await service.getSessionBundle(handle);
-    const conventionName = await service.getConventionName(handle);
-
-    await gameStore.startDrill(bundle, service, handle);
-    gameStore.setConventionName(conventionName);
+    await gameStore.startDrillFromHandle(handle, service);
   }
 
   onMount(() => {
@@ -224,7 +213,7 @@
 
   function handleBackToMenu() {
     gameStore.reset();
-    appStore.navigateToMenu();
+    appStore.navigateToConventions();
   }
 </script>
 

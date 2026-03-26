@@ -19,7 +19,7 @@ describe("LearningScreen", () => {
   function renderLearningScreen() {
     const engine = createStubEngine();
     const service = createLocalService(engine);
-    const gameStore = createGameStore(engine, service);
+    const gameStore = createGameStore(service);
     const appStore = createAppStore();
     appStore.navigateToLearning(ntBundleConventionConfig);
 
@@ -36,10 +36,10 @@ describe("LearningScreen", () => {
     expect(await screen.findByRole("heading", { name: /Natural NT/, level: 1 })).toBeTruthy();
   });
 
-  it("has a back button", () => {
+  it("has a Learn header", () => {
     renderLearningScreen();
     expect(
-      screen.getByRole("button", { name: /back/i }),
+      screen.getByText("Learn"),
     ).toBeTruthy();
   });
 

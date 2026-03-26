@@ -51,8 +51,6 @@ Nothing imports from `service/` except `stores/`, `components/`, and `cli/comman
 
 ## Known Gaps
 
-- Stores still initialize local `InferenceCoordinator` for legacy (no-handle) path, but service path uses `getPublicBeliefState(handle)` to fetch inference state from the session
-- `DevServicePort.getSessionBundle()` leaks `DrillBundle` across the boundary (transitional)
 - `submitBid()` always builds `nextViewport` for accepted bids (including auction-completing bids) so the store can animate AI bids before transitioning phases
 
 ---

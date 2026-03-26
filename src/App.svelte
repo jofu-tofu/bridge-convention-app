@@ -23,7 +23,7 @@
         resolvedEngine = eng;
         const svc = createLocalService(eng);
         resolvedService = svc;
-        resolvedGameStore = createGameStore(eng, svc);
+        resolvedGameStore = createGameStore(svc);
         const store = createAppStore();
         appStore = store;
         applyDevParams(store);

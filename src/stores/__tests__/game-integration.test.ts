@@ -11,13 +11,14 @@ import { Seat, BidSuit } from "../../engine/types";
 import type { Auction, AuctionEntry } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
-import { makeSimpleTestDeal, makeDrillSession } from "../../test-support/fixtures";
+import { makeSimpleTestDeal, makeDrillSession, createTestServiceSession } from "../../test-support/fixtures";
 import { createLocalService } from "../../service";
+import type { DrillBundle } from "../../session/drill-types";
 
 describe("Task 1: DEV-mode assertion on uninitialized store", () => {
   it("userBid() is no-op when store not initialized", () => {
     const engine = createStubEngine();
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
 
     // Do NOT call startDrill — store is uninitialized
     // userBid returns void (sync wrapper) — errors silently swallowed
@@ -28,11 +29,12 @@ describe("Task 1: DEV-mode assertion on uninitialized store", () => {
 
   it("runAiBids via startDrill works after proper init", async () => {
     const engine = createStubEngine();
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
 
-    // Calling startDrill initializes the store — should not throw
-    await store.startDrill({ deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
-    expect(store.deal).not.toBeNull();
+    const bundle: DrillBundle = { deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    await store.startDrillFromHandle(handle, service);
+    expect(store.isInitialized).toBe(true);
   });
 });
 
@@ -48,11 +50,13 @@ describe("Task 2: runAiBids() error recovery keeps state consistent", () => {
         return { entries: [...auction.entries, entry], isComplete: false };
       },
     });
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
 
     // Use a deal where North is dealer, so AI bids N, E, then user is S
     // The 2nd addCall (East's bid) will fail
-    await store.startDrill({ deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
+    const bundle: DrillBundle = { deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    await store.startDrillFromHandle(handle, service);
 
     // After error recovery: bidHistory length should match auction entries length
     expect(store.bidHistory.length).toBe(store.auction.entries.length);
@@ -62,7 +66,7 @@ describe("Task 2: runAiBids() error recovery keeps state consistent", () => {
 describe("Task 3: init() replays initialAuction entries into bidHistory", () => {
   it("maps double and redouble calls into bidHistory", async () => {
     const engine = createStubEngine();
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
 
     const initialAuction: Auction = {
       entries: [
@@ -73,7 +77,9 @@ describe("Task 3: init() replays initialAuction entries into bidHistory", () => 
       isComplete: false,
     };
 
-    await store.startDrill({ deal: makeSimpleTestDeal(), session: makeDrillSession(), initialAuction, nsInferenceEngine: null, ewInferenceEngine: null });
+    const bundle: DrillBundle = { deal: makeSimpleTestDeal(), session: makeDrillSession(), initialAuction, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    await store.startDrillFromHandle(handle, service);
 
     const doubleEntry = store.bidHistory.find(
       (e) => e.call.type === "double",
@@ -91,10 +97,12 @@ describe("Task 4: injectable AI_BID_DELAY via delayFn", () => {
   it("AI bids complete without timer advancement when using no-op delay", async () => {
     const engine = createStubEngine();
     // Use a microtask delay (Promise.resolve()) instead of setTimeout to keep Svelte reactive context happy
-    const store = createGameStore(engine, createLocalService(engine), { delayFn: async () => { await Promise.resolve(); } });
+    const store = createGameStore(createLocalService(engine), { delayFn: async () => { await Promise.resolve(); } });
 
     // With no-op delay, startDrill should complete AI bids instantly (no fake timers needed)
-    await store.startDrill({ deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
+    const bundle: DrillBundle = { deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    await store.startDrillFromHandle(handle, service);
 
     // AI bids happened: North (dealer) and East bid before South's turn
     expect(store.bidHistory.length).toBe(2);

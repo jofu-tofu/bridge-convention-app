@@ -157,6 +157,12 @@ export interface ServiceBidHistoryEntry {
   readonly meaning?: string;
   readonly isUser: boolean;
   readonly isCorrect?: boolean;
+  readonly expectedResult?: {
+    readonly call: Call;
+    readonly meaning?: string;
+    readonly explanation: string;
+    readonly ruleName: string | null;
+  };
   readonly alertLabel?: string;
   readonly annotationType?: "alert" | "announce" | "educational";
 }

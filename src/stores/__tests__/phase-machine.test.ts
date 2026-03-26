@@ -9,7 +9,7 @@ import { Seat } from "../../engine/types";
 import type { Hand } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
-import { makeDrillSession, makeSimpleTestDeal, makeContract } from "../../test-support/fixtures";
+import { makeDrillSession, makeSimpleTestDeal, makeContract, createTestServiceSession } from "../../test-support/fixtures";
 import { createLocalService } from "../../service";
 
 describe("phase state machine", () => {
@@ -30,10 +30,12 @@ describe("phase state machine", () => {
       async getTrickWinner() { return Seat.South; },
       async calculateScore() { return 90; },
     });
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
     const session = makeDrillSession();
     const deal = makeSimpleTestDeal();
-    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
+    const bundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    const promise = store.startDrillFromHandle(handle, service);
     await vi.advanceTimersByTimeAsync(1200);
     await promise;
     expect(store.phase).toBe("DECLARER_PROMPT");
@@ -67,8 +69,10 @@ describe("phase state machine", () => {
         async isAuctionComplete() { return true; },
         async getContract() { return null; }, // passout
       });
-      const store = createGameStore(engine, createLocalService(engine));
-      const promise = store.startDrill({ deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null });
+      const store = createGameStore(createLocalService(engine));
+      const bundle = { deal: makeSimpleTestDeal(), session: makeDrillSession(), nsInferenceEngine: null, ewInferenceEngine: null };
+      const { service, handle } = await createTestServiceSession(engine, bundle);
+      const promise = store.startDrillFromHandle(handle, service);
       await vi.advanceTimersByTimeAsync(1200);
       await promise;
       expect(store.phase).toBe("EXPLANATION");

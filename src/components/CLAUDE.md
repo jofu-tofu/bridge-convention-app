@@ -96,7 +96,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** ConventionSelectScreen → GameScreen (BIDDING → [optional DECLARER_PROMPT → optional PLAYING →] EXPLANATION) | ConventionSelectScreen → LearningScreen (module-centric: sidebar lists modules, main content shows teaching + phase-grouped surfaces) | ConventionSelectScreen → CoverageScreen (bundle picker → target drill-down) | ConventionSelectScreen → ProfilesScreen (system detail tabs + compare toggle)
+**Screen flow:** NavShell wraps all non-game screens (ConventionSelectScreen, LearningScreen, SettingsScreen, ProfilesScreen, CoverageScreen). GameScreen is full-viewport, no nav shell. Desktop: thin left rail (NavRail) with Learn/Settings icons. Mobile: bottom tab bar (BottomTabBar). Learn flyout has "Conventions" and "Base Profiles" sub-items.
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 

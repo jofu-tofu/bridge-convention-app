@@ -10,7 +10,7 @@ import { Seat } from "../../engine/types";
 import type { Hand } from "../../engine/types";
 import { createGameStore } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
-import { makeSimpleTestDeal, makeDrillSession, makeContract } from "../../test-support/fixtures";
+import { makeSimpleTestDeal, makeDrillSession, makeContract, createTestServiceSession } from "../../test-support/fixtures";
 import type { DrillSession } from "../../session/drill-types";
 import type { EnginePort } from "../../engine/port";
 import type { InferenceConfig } from "../../inference/types";
@@ -48,12 +48,14 @@ describe("unified acceptPlay / declinePlay API", () => {
         return 90;
       },
     });
-    store = createGameStore(engine, createLocalService(engine));
+    store = createGameStore(createLocalService(engine));
   }
 
   async function startDrillWithTimers() {
-    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
-    await vi.advanceTimersByTimeAsync(600);
+    const bundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    const promise = store.startDrillFromHandle(handle, service);
+    await vi.advanceTimersByTimeAsync(1200);
     await promise;
   }
 
@@ -133,7 +135,7 @@ describe("unified acceptPlay / declinePlay API", () => {
 
   it("acceptPlay is no-op without contract", () => {
     const eng = createStubEngine();
-    const s = createGameStore(eng, createLocalService(eng));
+    const s = createGameStore(createLocalService(eng));
     // No drill started, no contract
     s.acceptPlay();
     expect(s.phase).toBe("BIDDING");
@@ -172,10 +174,12 @@ describe("playThisHand mutation ordering", () => {
         return 90;
       },
     });
-    store = createGameStore(engine, createLocalService(engine));
+    store = createGameStore(createLocalService(engine));
 
-    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
-    await vi.advanceTimersByTimeAsync(600);
+    const bundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    const promise = store.startDrillFromHandle(handle, service);
+    await vi.advanceTimersByTimeAsync(1200);
     await promise;
 
     // Go to EXPLANATION via decline
@@ -190,7 +194,7 @@ describe("playThisHand mutation ordering", () => {
 
   it("playThisHand is no-op from BIDDING phase", async () => {
     engine = createStubEngine();
-    store = createGameStore(engine, createLocalService(engine));
+    store = createGameStore(createLocalService(engine));
 
     // Still in BIDDING phase
     store.playThisHand();
@@ -221,7 +225,7 @@ describe("namespaced sub-store accessors (finding #1)", () => {
         return 90;
       },
     });
-    store = createGameStore(engine, createLocalService(engine));
+    store = createGameStore(createLocalService(engine));
   });
 
   afterEach(() => {
@@ -260,16 +264,18 @@ describe("namespaced sub-store accessors (finding #1)", () => {
   it("bidding sub-store reflects state changes after startDrill", async () => {
     const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
+    const bundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
 
-    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
-    await vi.advanceTimersByTimeAsync(600);
+    const promise = store.startDrillFromHandle(handle, service);
+    await vi.advanceTimersByTimeAsync(1200);
     await promise;
 
     // AI bids should be in bid history via sub-store
     expect(store.bidding.bidHistory.length).toBeGreaterThan(0);
     // Top-level and sub-store should agree
-    expect(store.bidding.bidHistory).toBe(store.bidHistory);
-    expect(store.bidding.auction).toBe(store.auction);
+    expect(store.bidding.bidHistory).toEqual(store.bidHistory);
+    expect(store.bidding.auction).toEqual(store.auction);
   });
 });
 
@@ -356,12 +362,14 @@ describe("E/W inference engine wiring (finding #5)", () => {
         return true;
       },
     });
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
 
     vi.useRealTimers();
     const nsInferenceEngine = createInferenceEngine(nsConfig, Seat.North);
     const ewInferenceEngine = createInferenceEngine(ewConfig, Seat.East);
-    const promise = store.startDrill({ deal: makeSimpleTestDeal(), session, nsInferenceEngine, ewInferenceEngine });
+    const bundle = { deal: makeSimpleTestDeal(), session, nsInferenceEngine, ewInferenceEngine };
+    const { service, handle } = await createTestServiceSession(engine, bundle);
+    const promise = store.startDrillFromHandle(handle, service);
     await promise;
 
     // After auction completes, playInferences should have all 4 seats
@@ -374,7 +382,7 @@ describe("E/W inference engine wiring (finding #5)", () => {
 
   it("ewInferenceTimeline is empty when no ewInferenceConfig", () => {
     const engine = createStubEngine();
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
     expect(store.ewInferenceTimeline).toEqual([]);
   });
 });

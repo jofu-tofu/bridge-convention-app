@@ -63,10 +63,10 @@ function makeEngine() {
 /** Create store + service session, start drill with given bundle. */
 async function startWithBundle(bundle: DrillBundle) {
   const engine = makeEngine();
-  const store = createGameStore(engine, createLocalService(engine));
+  const store = createGameStore(createLocalService(engine));
   const { service, handle } = await createTestServiceSession(engine, bundle);
-  // Fire-and-forget: startDrill uses delayFn() internally which needs fake timer flush
-  void store.startDrill(bundle, service, handle);
+  // Fire-and-forget: startDrillFromHandle uses delayFn() internally which needs fake timer flush
+  void store.startDrillFromHandle(handle, service);
   await flushActions();
   return store;
 }
@@ -155,7 +155,7 @@ describe("bidding characterization — lock existing behavior", () => {
       async isAuctionComplete() { return true; },
       async getContract() { return null; }, // passout → EXPLANATION
     });
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
     const bundle: DrillBundle = {
       deal: makeSimpleTestDeal(),
       session: makeDrillSession(),
@@ -164,7 +164,7 @@ describe("bidding characterization — lock existing behavior", () => {
       ewInferenceEngine: null,
     };
     const { service, handle } = await createTestServiceSession(engine, bundle);
-    void store.startDrill(bundle, service, handle);
+    void store.startDrillFromHandle(handle, service);
     await flushActions();
 
     // isAuctionComplete returns true immediately → first AI bid completes auction

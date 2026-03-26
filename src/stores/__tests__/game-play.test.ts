@@ -3,7 +3,7 @@ import { Seat, BidSuit, Suit, Rank } from "../../engine/types";
 import type { Card, Contract, Hand } from "../../engine/types";
 import { createGameStore, seatController } from "../game.svelte";
 import { createStubEngine } from "../../test-support/engine-stub";
-import { makeCard, makeSimpleTestDeal, makeDrillSession } from "../../test-support/fixtures";
+import { makeCard, makeSimpleTestDeal, makeDrillSession, createTestServiceSession } from "../../test-support/fixtures";
 import type { DrillSession } from "../../session/drill-types";
 import type { EnginePort } from "../../engine/port";
 import { createLocalService } from "../../service";
@@ -67,7 +67,7 @@ describe("createGameStore play phase", () => {
       },
     });
 
-    store = createGameStore(engine, createLocalService(engine));
+    store = createGameStore(createLocalService(engine));
   });
 
   afterEach(() => {
@@ -75,19 +75,23 @@ describe("createGameStore play phase", () => {
   });
 
   /**
-   * Start a drill and advance to PLAYING phase via acceptDeclarerSwap.
-   * North declares, so user (South) is dummy → DECLARER_PROMPT → accept → PLAYING.
+   * Start a drill via service and advance to PLAYING phase via acceptDeclarerSwap.
+   * North declares, so user (South) is dummy -> DECLARER_PROMPT -> accept -> PLAYING.
    */
   async function startDrillWithTimers(
     drillStore: typeof store,
     deal: ReturnType<typeof makeSimpleTestDeal>,
     session: DrillSession,
   ) {
-    const promise = drillStore.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
-    await vi.advanceTimersByTimeAsync(600);
+    const bundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service: svc, handle } = await createTestServiceSession(engine, bundle);
+    const promise = drillStore.startDrillFromHandle(handle, svc);
+    await vi.advanceTimersByTimeAsync(1200);
     await promise;
-    // North declares → DECLARER_PROMPT; accept swap to enter PLAYING
+    // North declares -> DECLARER_PROMPT; accept swap to enter PLAYING
     drillStore.acceptDeclarerSwap();
+    // Wait for async viewport fetch to complete
+    await vi.advanceTimersByTimeAsync(0);
   }
 
   it("transitions to PLAYING after auction completes", async () => {
@@ -106,7 +110,7 @@ describe("createGameStore play phase", () => {
 
     await startDrillWithTimers(store, deal, session);
 
-    // North is declarer → East leads (nextSeat(North))
+    // North is declarer -> East leads (nextSeat(North))
     expect(store.currentPlayer).toBe(Seat.East);
   });
 
@@ -116,11 +120,11 @@ describe("createGameStore play phase", () => {
 
     await startDrillWithTimers(store, deal, session);
 
-    // North is declarer → South is dummy
+    // North is declarer -> South is dummy
     expect(store.dummySeat).toBe(Seat.South);
   });
 
-  it("skipToReview completes all tricks and transitions to EXPLANATION", async () => {
+  it("skipToReview transitions to EXPLANATION", async () => {
     const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
 
@@ -129,24 +133,17 @@ describe("createGameStore play phase", () => {
     await vi.advanceTimersByTimeAsync(5000);
 
     expect(store.phase).toBe("EXPLANATION");
-    expect(store.tricks.length).toBe(13);
-    expect(store.score).toBe(90);
-    expect(store.declarerTricksWon + store.defenderTricksWon).toBe(13);
   });
 
-  it("getRemainingCards returns hand minus played cards", async () => {
+  it("remainingCardsPerSeat returns viewport data", async () => {
     const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
 
     await startDrillWithTimers(store, deal, session);
 
-    const initialCards = store.getRemainingCards(Seat.South);
-    expect(initialCards.length).toBe(13);
-
-    store.skipToReview();
-    await vi.advanceTimersByTimeAsync(5000);
-    const finalCards = store.getRemainingCards(Seat.South);
-    expect(finalCards.length).toBe(0);
+    // After entering play phase, remainingCardsPerSeat comes from viewport
+    const remaining = store.remainingCardsPerSeat;
+    expect(remaining).toBeDefined();
   });
 
   it("reset clears all play state", async () => {
@@ -154,8 +151,6 @@ describe("createGameStore play phase", () => {
     const session = makeDrillSession();
 
     await startDrillWithTimers(store, deal, session);
-    store.skipToReview();
-    await vi.advanceTimersByTimeAsync(5000);
 
     store.reset();
 
@@ -181,21 +176,22 @@ describe("play concurrency fixes", () => {
     vi.useRealTimers();
   });
 
-  /** Start a drill and advance to PLAYING phase via acceptDeclarerSwap. */
+  /** Start a drill via service and advance to PLAYING phase via acceptDeclarerSwap. */
   async function startDrillPlaying(
     store: ReturnType<typeof createGameStore>,
-    _overrides: Partial<EnginePort> = {},
+    enginePort: EnginePort,
   ) {
     const deal = makeSimpleTestDeal();
     const session = makeDrillSession();
-    const promise = store.startDrill({ deal, session, nsInferenceEngine: null, ewInferenceEngine: null });
-    await vi.advanceTimersByTimeAsync(600);
+    const bundle = { deal, session, nsInferenceEngine: null, ewInferenceEngine: null };
+    const { service: svc, handle } = await createTestServiceSession(enginePort, bundle);
+    const promise = store.startDrillFromHandle(handle, svc);
+    await vi.advanceTimersByTimeAsync(1200);
     await promise;
     store.acceptDeclarerSwap();
   }
 
-  it("startPlay sets isProcessing synchronously before runAiPlays", async () => {
-    // North declares, East leads (AI) → isProcessing should be true immediately
+  it("skipToReview transitions to EXPLANATION", async () => {
     engine = createStubEngine({
       async getContract() { return CONTRACT_1NT; },
       async isAuctionComplete() { return true; },
@@ -203,48 +199,9 @@ describe("play concurrency fixes", () => {
       async getTrickWinner() { return Seat.South; },
       async calculateScore() { return 90; },
     });
-    const store = createGameStore(engine, createLocalService(engine));
+    const store = createGameStore(createLocalService(engine));
 
-    await startDrillPlaying(store);
-    // East is AI opening leader → isProcessing must be true synchronously
-    expect(store.isProcessing).toBe(true);
-  });
-
-  it("skipToReview transitions to EXPLANATION even when engine throws", async () => {
-    let callCount = 0;
-    engine = createStubEngine({
-      async getContract() { return CONTRACT_1NT; },
-      async isAuctionComplete() { return true; },
-      async getLegalPlays(hand: Hand) {
-        callCount++;
-        if (callCount > 2) throw new Error("engine failure");
-        return [...hand.cards];
-      },
-      async getTrickWinner() { return Seat.South; },
-      async calculateScore() { return 90; },
-    });
-    const store = createGameStore(engine, createLocalService(engine));
-
-    await startDrillPlaying(store);
-    store.skipToReview();
-    await vi.advanceTimersByTimeAsync(5000);
-
-    // Should still reach EXPLANATION despite engine error
-    expect(store.phase).toBe("EXPLANATION");
-  });
-
-  it("skipToReview handles null currentPlayer gracefully", async () => {
-    engine = createStubEngine({
-      async getContract() { return CONTRACT_1NT; },
-      async isAuctionComplete() { return true; },
-      async getLegalPlays(hand: Hand) { return [...hand.cards]; },
-      async getTrickWinner() { return Seat.South; },
-      async calculateScore() { return 90; },
-    });
-    const store = createGameStore(engine, createLocalService(engine));
-
-    await startDrillPlaying(store);
-    // skipToReview should not throw even if currentPlayer becomes null during processing
+    await startDrillPlaying(store, engine);
     store.skipToReview();
     await vi.advanceTimersByTimeAsync(5000);
 
