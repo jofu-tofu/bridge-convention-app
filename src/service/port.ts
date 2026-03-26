@@ -7,6 +7,7 @@
  */
 
 import type { Call, Card, Seat } from "../engine/types";
+import type { PlayProfileId } from "../session/heuristics/play-profiles";
 import type { DrillBundle } from "../session/drill-types";
 import type {
   SessionHandle,
@@ -56,6 +57,8 @@ interface ServicePort {
 
   // ── Play ────────────────────────────────────────────────────────
   playCard(handle: SessionHandle, card: Card, seat: Seat): Promise<PlayCardResult>;
+  skipToReview(handle: SessionHandle): Promise<void>;
+  updatePlayProfile(handle: SessionHandle, profileId: PlayProfileId): Promise<void>;
 
   // ── Query ───────────────────────────────────────────────────────
   getViewport(handle: SessionHandle): Promise<SessionViewport>;

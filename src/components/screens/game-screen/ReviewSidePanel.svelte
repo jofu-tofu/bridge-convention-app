@@ -22,6 +22,7 @@
     onNextDeal: () => void;
     onBackToMenu: () => void;
     onPlayHand?: (() => void) | undefined;
+    onOpenSettings?: (() => void) | undefined;
   }
 
   let {
@@ -37,6 +38,7 @@
     onNextDeal,
     onBackToMenu,
     onPlayHand,
+    onOpenSettings,
   }: Props = $props();
 
   let activeTab = $state<"bidding" | "analysis">("bidding");
@@ -233,5 +235,8 @@
   {/if}
   <Button variant={onPlayHand ? "secondary" : "primary"} onclick={onNextDeal} testId="next-deal">Next Deal</Button>
   <Button variant="secondary" onclick={onBackToMenu} testId="review-back-to-menu">Back to Menu</Button>
+  {#if onOpenSettings}
+    <Button variant="secondary" onclick={onOpenSettings} testId="review-open-settings">Settings</Button>
+  {/if}
 </div>
 </div>

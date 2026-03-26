@@ -9,6 +9,7 @@
   import ScaledTableArea from "./ScaledTableArea.svelte";
   import PlaySidePanel from "./PlaySidePanel.svelte";
   import PlayHistoryPanel from "./PlayHistoryPanel.svelte";
+  import SettingsDialog from "./SettingsDialog.svelte";
 
   interface Props {
     viewport: PlayingViewport;
@@ -28,6 +29,8 @@
   const effectiveCurrentTrick = $derived(animatedCurrentTrick ?? viewport.currentTrick);
 
   const layout = getLayoutConfig();
+
+  let settingsDialogRef = $state<ReturnType<typeof SettingsDialog>>();
 </script>
 
 <div class={PLAYING_PHASE_CONTAINER_CLASS}>
@@ -46,6 +49,7 @@
       userControlledSeats={viewport.userControlledSeats}
       remainingCards={viewport.remainingCards}
       rotated={viewport.rotated}
+      trumpSuit={viewport.trumpSuit}
     >
       <TrickArea
         currentTrick={effectiveCurrentTrick}
@@ -65,6 +69,9 @@
       declarerTricksWon={viewport.declarerTricksWon}
       defenderTricksWon={viewport.defenderTricksWon}
       {onSkipToReview}
+      onOpenSettings={() => settingsDialogRef?.open()}
     />
   </aside>
 </div>
+
+<SettingsDialog readonly bind:this={settingsDialogRef} />

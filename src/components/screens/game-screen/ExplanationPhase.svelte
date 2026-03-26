@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Seat } from "../../../service";
+  import { Seat, Suit, BidSuit } from "../../../service";
   import type { ExplanationViewport } from "../../../service";
   import type { ConventionConfig } from "../../../service";
   import { getLayoutConfig } from "../../../stores/context";
@@ -11,6 +11,7 @@
   import HandFan from "../../game/HandFan.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
   import ReviewSidePanel from "./ReviewSidePanel.svelte";
+  import SettingsDialog from "./SettingsDialog.svelte";
 
   interface Props extends DDSAnalysisProps {
     viewport: ExplanationViewport;
@@ -30,13 +31,20 @@
     onNextDeal,
     onBackToMenu,
     onPlayHand,
-    convention,
+    convention: _convention,
   }: Props = $props();
 
   const layout = getLayoutConfig();
   const appStore = getAppStore();
 
   let showAllCards = $state(false);
+  let settingsDialogRef = $state<ReturnType<typeof SettingsDialog>>();
+
+  const trumpSuit = $derived(
+    viewport.contract && viewport.contract.strain !== BidSuit.NoTrump
+      ? (viewport.contract.strain as unknown as Suit)
+      : undefined,
+  );
 </script>
 
 <div class={PHASE_CONTAINER_CLASS}>
@@ -80,7 +88,7 @@
                 {seat}
               </span>
             </div>
-            <HandFan cards={viewport.allHands[seat].cards} faceUp />
+            <HandFan cards={viewport.allHands[seat].cards} faceUp {trumpSuit} />
           </section>
         {/each}
       </div>
@@ -92,7 +100,7 @@
       tableWidth={layout.tableBaseW}
       tableHeight={layout.tableBaseH}
     >
-      <BridgeTable visibleHands={viewport.allHands} vulnerability={viewport.vulnerability}>
+      <BridgeTable visibleHands={viewport.allHands} vulnerability={viewport.vulnerability} {trumpSuit}>
         <div class="flex flex-col items-center gap-2">
           <div
             class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
@@ -133,6 +141,9 @@
       {onNextDeal}
       {onBackToMenu}
       {onPlayHand}
+      onOpenSettings={() => settingsDialogRef?.open()}
     />
   </aside>
 </div>
+
+<SettingsDialog readonly bind:this={settingsDialogRef} />

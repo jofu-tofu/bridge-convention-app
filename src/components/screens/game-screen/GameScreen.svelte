@@ -108,6 +108,26 @@
   // in Svelte 5, silently preventing the game from appearing.
   let debugReady = $state(false);
 
+  // DEV autoDismiss: auto-retry wrong bids after a brief pause
+  $effect(() => {
+    if (!DEV || !appStore.autoDismissFeedback) return;
+    const feedback = gameStore.bidFeedback;
+    if (!feedback) return;
+
+    const timer = setTimeout(() => {
+      gameStore.retryBid();
+    }, 100);
+    return () => clearTimeout(timer);
+  });
+
+  // Sync play profile changes to the active session — swaps PlayStrategyProvider mid-game
+  $effect(() => {
+    const profileId = appStore.playProfileId;
+    const handle = gameStore.activeHandle;
+    if (!profileId || !handle) return;
+    void service.updatePlayProfile(handle, profileId);
+  });
+
   onMount(() => {
     // Skip if a deal is already in progress
     if (gameStore.isInitialized && gameStore.phase === "BIDDING") {
@@ -116,7 +136,16 @@
       return;
     }
     // eslint-disable-next-line no-console -- startup error should surface in dev tools
-    startNewDrill().then(() => { debugReady = true; }).catch(console.error);
+    startNewDrill().then(async () => {
+      debugReady = true;
+      // ?phase= skip: instantly advance to target phase after drill starts
+      const target = appStore.skipToPhase;
+      if (target) {
+        await gameStore.skipToPhase(target);
+        // Clear so subsequent drills don't auto-skip
+        appStore.setSkipToPhase(null);
+      }
+    }).catch(console.error);
   });
 
   onDestroy(() => {

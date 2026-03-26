@@ -3,6 +3,11 @@
   import { PLAY_PROFILES, AVAILABLE_BASE_SYSTEMS } from "../../../service";
   import { getAppStore } from "../../../stores/context";
 
+  interface Props {
+    readonly?: boolean;
+  }
+  const { readonly: isReadonly = false }: Props = $props();
+
   const appStore = getAppStore();
 
   const OFF_CONVENTION_RATE = { MIN: 0.1, MAX: 0.7, STEP: 0.05, DEFAULT: 0.3 } as const;
@@ -16,18 +21,23 @@
 </script>
 
 <div class="space-y-3">
+    {#if isReadonly}
+      <p class="text-[--text-annotation] text-text-muted mb-2 px-1">Settings locked for this deal</p>
+    {/if}
     <!-- Base System -->
-    <div>
+    <div class={isReadonly ? 'opacity-50' : ''}>
       <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">System</h3>
       <div class="flex gap-1" role="group" aria-label="Base bidding system">
         {#each AVAILABLE_BASE_SYSTEMS as sys (sys.id)}
           {@const active = appStore.baseSystemId === sys.id}
           <button
-            class="flex-1 px-2 py-1 rounded-[--radius-sm] border text-[--text-label] font-medium cursor-pointer transition-colors
+            class="flex-1 px-2 py-1 rounded-[--radius-sm] border text-[--text-label] font-medium transition-colors
               {active
                 ? 'bg-accent-primary/10 border-accent-primary text-accent-primary'
-                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}"
+                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}
+              {isReadonly ? 'cursor-not-allowed' : 'cursor-pointer'}"
             onclick={() => appStore.setBaseSystemId(sys.id)}
+            disabled={isReadonly}
             aria-pressed={active}
             title={sys.label}
             data-testid="settings-system-{sys.id}"
@@ -39,17 +49,19 @@
     </div>
 
     <!-- Opponent Mode -->
-    <div>
+    <div class={isReadonly ? 'opacity-50' : ''}>
       <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">Opponents</h3>
       <div class="flex gap-1" role="group" aria-label="Opponent mode">
         {#each [["natural", "Natural"], ["none", "Silent"]] as [value, label] (value)}
           {@const active = appStore.opponentMode === value}
           <button
-            class="flex-1 px-2 py-1 rounded-[--radius-sm] border text-[--text-label] font-medium cursor-pointer transition-colors
+            class="flex-1 px-2 py-1 rounded-[--radius-sm] border text-[--text-label] font-medium transition-colors
               {active
                 ? 'bg-accent-primary/10 border-accent-primary text-accent-primary'
-                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}"
+                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}
+              {isReadonly ? 'cursor-not-allowed' : 'cursor-pointer'}"
             onclick={() => appStore.setOpponentMode(value as OpponentMode)}
+            disabled={isReadonly}
             aria-pressed={active}
             data-testid="settings-opp-{value}"
           >
@@ -88,13 +100,14 @@
     </div>
 
     <!-- Off-Convention -->
-    <div>
-      <label class="flex items-center gap-2 cursor-pointer px-1">
+    <div class={isReadonly ? 'opacity-50' : ''}>
+      <label class="flex items-center gap-2 px-1 {isReadonly ? 'cursor-not-allowed' : 'cursor-pointer'}">
         <input
           type="checkbox"
           class="w-3.5 h-3.5 rounded-[--radius-sm] accent-accent-primary"
           checked={appStore.drillTuning.includeOffConvention ?? false}
           onchange={(e) => appStore.setIncludeOffConvention(e.currentTarget.checked)}
+          disabled={isReadonly}
           data-testid="settings-off-conv"
         />
         <span class="text-[--text-detail] text-text-primary">Off-convention deals</span>
@@ -108,7 +121,8 @@
             step={OFF_CONVENTION_RATE.STEP}
             value={appStore.drillTuning.offConventionRate ?? OFF_CONVENTION_RATE.DEFAULT}
             oninput={(e) => appStore.setOffConventionRate(parseFloat(e.currentTarget.value))}
-            class="w-full accent-accent-primary cursor-pointer"
+            class="w-full accent-accent-primary {isReadonly ? 'cursor-not-allowed' : 'cursor-pointer'}"
+            disabled={isReadonly}
             data-testid="settings-off-conv-rate"
           />
           <p class="text-[--text-annotation] text-text-muted">

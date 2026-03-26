@@ -214,6 +214,23 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       return processPlayCard(state, card, seat, engine);
     },
 
+    async skipToReview(handle: SessionHandle): Promise<void> {
+      const state = manager.get(handle);
+      if (isValidTransition(state.phase, "EXPLANATION")) {
+        state.phase = "EXPLANATION";
+      }
+    },
+
+    async updatePlayProfile(handle: SessionHandle, profileId: PlayProfileId): Promise<void> {
+      const state = manager.get(handle);
+      const newProvider = createProfileStrategyProvider(PLAY_PROFILES[profileId], { engine });
+      // Transfer auction inferences so MC+DDS profiles retain belief constraints
+      if (state.playInferences) {
+        newProvider.onAuctionComplete?.(state.playInferences);
+      }
+      state.playStrategyProvider = newProvider;
+    },
+
     // ── Query ─────────────────────────────────────────────────────
 
     async getViewport(handle: SessionHandle): Promise<SessionViewport> {      const state = manager.get(handle);

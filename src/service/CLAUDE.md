@@ -8,7 +8,8 @@ Thin hexagonal port — the **sole interface** between UI/CLI and backend game l
 
 | File | Role |
 |------|------|
-| `index.ts` | Barrel: ServicePort, DevServicePort, createLocalService(), boundary types, store-facing re-exports, evaluation re-exports |
+| `index.ts` | Barrel organized by consumer concern: (1) port & impl, (2) viewports/responses, (3) engine primitives, (4) convention catalog, (5) coverage utils, (6) session config, (7) display, (8) evaluation facade, (9) cross-cutting. Debug types (`StrategyEvaluation`, `BidFeedbackDTO`) route through `debug-types.ts`, not this barrel. |
+| `debug-types.ts` | Debug-only types for DevServicePort — allowed to import backend types by design. Re-exports `StrategyEvaluation`, `BidFeedbackDTO`, `EvaluatedFacts`, `PipelineResult`, `MachineDebugSnapshot`. Future agents must not move these to `index.ts`. |
 | `request-types.ts` | Request DTOs: SessionHandle, SessionConfig |
 | `response-types.ts` | Response DTOs: DrillStartResult, BidSubmitResult, PlayCardResult, viewports, ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView, SurfaceDetailView |
 | `port.ts` | ServicePort + DevServicePort interfaces |
@@ -38,7 +39,9 @@ The `evaluation/` subfolder contains stateless CLI grading logic (atom evaluatio
 
 **Allowed to cross:** `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`, `Call`, `Card`, `Seat`, `Vulnerability`, `BidGrade`, `BidHistoryEntry`, `GamePhase`, `SessionHandle` (opaque string), session config DTOs.
 
-**Never crosses:** `Deal`, `BidResult`, `DrillSession`, `DrillBundle`, `ConventionStrategy`, `StrategyEvaluation`, `ArbitrationResult`, `BidMeaning`, `InferenceEngine`.
+`updatePlayProfile()` — swaps `PlayStrategyProvider` on active session. Must transfer `onAuctionComplete` state to new provider.
+
+**Never crosses (main barrel):** `Deal`, `BidResult`, `DrillSession`, `DrillBundle`, `ConventionStrategy`, `StrategyEvaluation`, `ArbitrationResult`, `BidMeaning`, `InferenceEngine`. Exception: `StrategyEvaluation` and `BidFeedbackDTO` are routed through `debug-types.ts` for debug drawer consumption — this is a deliberate boundary exception, not a barrel re-export.
 
 ## Dependency Direction
 
