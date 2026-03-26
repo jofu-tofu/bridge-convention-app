@@ -25,7 +25,7 @@
   import DebugPublicBeliefs from "./debug/DebugPublicBeliefs.svelte";
   import DebugBidLog from "./debug/DebugBidLog.svelte";
   import DebugPlayLog from "./debug/DebugPlayLog.svelte";
-  // import DebugPlaySuggestions from "./debug/DebugPlaySuggestions.svelte";
+  import DebugPlaySuggestions from "./debug/DebugPlaySuggestions.svelte";
 
   interface Props {
     open: boolean;
@@ -37,6 +37,9 @@
   const appStore = getAppStore();
 
   const ALL_SEATS = [Seat.North, Seat.East, Seat.South, Seat.West] as const;
+
+  // ─── Phase-aware visibility ─────────────────────────────────
+  const isPlayingPhase = $derived(gameStore.phase === "PLAYING");
 
   // ─── Pipeline view toggle ────────────────────────────────────
   type PipelineView = "current" | "last-bid";
@@ -131,39 +134,49 @@
       </div>
     </details>
 
-    <!-- Group 2: Decision Pipeline -->
-    <details open>
-      <summary class="text-[10px] font-bold uppercase tracking-widest text-text-muted cursor-pointer py-0.5 border-b border-border-subtle/30">Decision Pipeline</summary>
-      {#if hasLastBid}
-        <div class="flex gap-0.5 pt-1 pb-0.5">
-          <button
-            class="px-2 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer {pipelineView === 'current' ? 'bg-blue-900/60 text-blue-200' : 'bg-bg-card/40 text-text-muted hover:text-text-secondary'}"
-            onclick={() => pipelineView = "current"}
-          >Current</button>
-          <button
-            class="px-2 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer {pipelineView === 'last-bid' ? 'bg-amber-900/60 text-amber-200' : 'bg-bg-card/40 text-text-muted hover:text-text-secondary'}"
-            onclick={() => pipelineView = "last-bid"}
-          >Last bid</button>
+    <!-- Group 2: Decision Pipeline (hidden during play phase) -->
+    {#if !isPlayingPhase}
+      <details open>
+        <summary class="text-[10px] font-bold uppercase tracking-widest text-text-muted cursor-pointer py-0.5 border-b border-border-subtle/30">Decision Pipeline</summary>
+        {#if hasLastBid}
+          <div class="flex gap-0.5 pt-1 pb-0.5">
+            <button
+              class="px-2 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer {pipelineView === 'current' ? 'bg-blue-900/60 text-blue-200' : 'bg-bg-card/40 text-text-muted hover:text-text-secondary'}"
+              onclick={() => pipelineView = "current"}
+            >Current</button>
+            <button
+              class="px-2 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer {pipelineView === 'last-bid' ? 'bg-amber-900/60 text-amber-200' : 'bg-bg-card/40 text-text-muted hover:text-text-secondary'}"
+              onclick={() => pipelineView = "last-bid"}
+            >Last bid</button>
+          </div>
+        {/if}
+        <div class="pt-1 flex flex-col gap-0.5">
+          <DebugSuggestedBid expectedBid={debugSnap?.expectedBid ?? null} />
+          <DebugPipeline pipelineResult={debugSnap?.pipelineResult ?? null} teachingProjection={debugSnap?.teachingProjection ?? null} />
+          <DebugConventionMachine machineSnapshot={debugSnap?.machineSnapshot ?? null} />
+          <DebugHandFacts facts={debugSnap?.facts ?? null} />
+          <DebugProvenance pipelineResult={debugSnap?.pipelineResult ?? null} />
+          <DebugPosterior posteriorSummary={debugSnap?.posteriorSummary ?? null} />
         </div>
-      {/if}
-      <div class="pt-1 flex flex-col gap-0.5">
-        <DebugSuggestedBid expectedBid={debugSnap?.expectedBid ?? null} />
-        <DebugPipeline pipelineResult={debugSnap?.pipelineResult ?? null} teachingProjection={debugSnap?.teachingProjection ?? null} />
-        <DebugConventionMachine machineSnapshot={debugSnap?.machineSnapshot ?? null} />
-        <DebugHandFacts facts={debugSnap?.facts ?? null} />
-        <DebugProvenance pipelineResult={debugSnap?.pipelineResult ?? null} />
-        <DebugPosterior posteriorSummary={debugSnap?.posteriorSummary ?? null} />
-      </div>
-    </details>
+      </details>
+    {/if}
+
+    <!-- Play suggestions — always visible during play phase -->
+    {#if gameStore.playSuggestions.length > 0}
+      <DebugPlaySuggestions suggestions={gameStore.playSuggestions} />
+    {/if}
 
     <!-- Group 3: Feedback & History -->
     <details>
       <summary class="text-[10px] font-bold uppercase tracking-widest text-text-muted cursor-pointer py-0.5 border-b border-border-subtle/30">Feedback & History</summary>
       <div class="pt-1 flex flex-col gap-0.5">
-        <DebugTeaching {feedback} />
+        {#if !isPlayingPhase}
+          <DebugTeaching {feedback} />
+        {/if}
         <DebugPublicBeliefs publicBeliefState={gameStore.publicBeliefState} allSeats={ALL_SEATS} />
-        <DebugBidLog debugLog={gameStore.debugLog} />
-        <!-- <DebugPlaySuggestions /> -->
+        {#if !isPlayingPhase}
+          <DebugBidLog debugLog={gameStore.debugLog} />
+        {/if}
         <DebugPlayLog playLog={gameStore.playLog} />
       </div>
     </details>
