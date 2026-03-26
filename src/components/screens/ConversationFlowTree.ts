@@ -9,10 +9,10 @@ import type { FlowTreeNode } from "../../service";
 
 // ── Layout constants ─────────────────────────────────────────────────
 
-const NODE_WIDTH = 120;
-const NODE_HEIGHT = 36;
-const H_GAP = 160;
-const V_GAP = 8;
+const NODE_WIDTH = 90;
+const NODE_HEIGHT = 28;
+const H_GAP = 110;
+const V_GAP = 4;
 
 export interface NodePosition {
   readonly x: number;

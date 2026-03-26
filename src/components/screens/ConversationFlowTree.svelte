@@ -44,6 +44,12 @@
   function handleNodeClick(moduleId: string | null) {
     if (moduleId) onNodeClick(moduleId);
   }
+
+  function turnBadge(turn: "opener" | "responder" | null): { letter: string; color: string } | null {
+    if (turn === "opener") return { letter: "O", color: "var(--color-accent-primary)" };
+    if (turn === "responder") return { letter: "R", color: "var(--color-accent-success)" };
+    return null;
+  }
 </script>
 
 <svg
@@ -74,6 +80,7 @@
     {#if pos}
       {@const selected = isSelected(node.moduleId)}
       {@const dimmed = selectedModuleId !== null && !selected}
+      {@const badge = turnBadge(node.turn)}
       <g
         transform="translate({pos.x}, {pos.y})"
         class="cursor-pointer"
@@ -84,12 +91,13 @@
         onclick={() => handleNodeClick(node.moduleId)}
         onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNodeClick(node.moduleId); } }}
       >
+        <title>{node.callDisplay ? `${node.callDisplay} — ` : ''}{node.label}{node.turn ? ` (${node.turn})` : ''}</title>
         <!-- Background rect -->
         <rect
           width={pos.width}
           height={pos.height}
-          rx="6"
-          ry="6"
+          rx="5"
+          ry="5"
           fill="var(--color-bg-card)"
           stroke={selected ? "var(--color-accent-primary)" : getModuleColor(node.moduleId)}
           stroke-width={selected ? 2 : 1}
@@ -99,18 +107,31 @@
         <rect
           x="0"
           y="0"
-          width="4"
+          width="3"
           height={pos.height}
-          rx="2"
+          rx="1.5"
           fill={getModuleColor(node.moduleId)}
         />
+        <!-- Turn badge -->
+        {#if badge}
+          <circle cx={pos.width - 10} cy="10" r="7" fill={badge.color} opacity="0.85" />
+          <text
+            x={pos.width - 10}
+            y="10"
+            text-anchor="middle"
+            dominant-baseline="central"
+            font-size="8"
+            font-weight="700"
+            fill="var(--color-bg-base)"
+          >{badge.letter}</text>
+        {/if}
         <!-- Bid text -->
         {#if node.callDisplay}
           <text
-            x="12"
+            x="9"
             y={pos.height / 2}
             dominant-baseline="central"
-            font-size="12"
+            font-size="10"
             font-weight="700"
             font-family="monospace"
             fill="currentColor"
@@ -121,13 +142,13 @@
         {/if}
         <!-- Label text -->
         <text
-          x={node.callDisplay ? 46 : 12}
+          x={node.callDisplay ? 36 : 9}
           y={pos.height / 2}
           dominant-baseline="central"
-          font-size="10"
+          font-size="8"
           fill="var(--color-text-secondary)"
         >
-          {node.label.length > 12 ? node.label.slice(0, 11) + '\u2026' : node.label}
+          {node.label.length > 10 ? node.label.slice(0, 9) + '\u2026' : node.label}
         </text>
       </g>
     {/if}

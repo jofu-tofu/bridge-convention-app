@@ -64,9 +64,9 @@
     });
   });
 
-  // Fetch flow tree when bundle filter changes
+  // Fetch flow tree when bundle filter or viewport changes
   $effect(() => {
-    const bundleId = appStore.learningBundleFilter;
+    const bundleId = appStore.learningBundleFilter ?? viewport?.bundleIds[0] ?? null;
     if (bundleId) {
       service.getBundleFlowTree(bundleId).then((t) => { flowTree = t; });
     } else {
@@ -256,11 +256,11 @@
             </div>
           </div>
 
-          <!-- Conversation flow tree (desktop only, when bundle filter is active) -->
+          <!-- Conversation flow tree (desktop only) -->
           {#if flowTree && isDesktop}
             <section class="px-4 sm:px-8 py-6">
               <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Conversation Flow</h2>
-              <div class="overflow-x-auto bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
+              <div class="overflow-auto max-h-[320px] bg-bg-card rounded-[--radius-lg] border border-border-subtle p-3">
                 <ConversationFlowTree
                   tree={flowTree}
                   selectedModuleId={appStore.learningModuleId}
