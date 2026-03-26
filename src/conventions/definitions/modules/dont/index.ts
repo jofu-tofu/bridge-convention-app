@@ -127,7 +127,7 @@ function createDontModule(_sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "dont",
-  description: "DONT — Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns",
+  description: "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns",
   purpose: "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
   teaching: {
     tradeoff: "DONT overcalls commit to the 2-level immediately — if partner has a misfit, you may go down.",

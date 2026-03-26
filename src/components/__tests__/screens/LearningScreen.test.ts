@@ -45,7 +45,7 @@ describe("LearningScreen", () => {
 
   it("sidebar renders module list", async () => {
     renderLearningScreen();
-    const nav = screen.getByRole("navigation", { name: /module list/i });
+    const nav = screen.getByRole("navigation", { name: /convention list/i });
     expect(nav).toBeTruthy();
     // NT bundle modules should be listed
     expect(await screen.findByTestId("module-stayman")).toBeTruthy();
@@ -55,7 +55,7 @@ describe("LearningScreen", () => {
   it("shows module description", async () => {
     renderLearningScreen();
     // First module (natural-nt) description should appear
-    expect(await screen.findByText(/Natural NT responses/i)).toBeTruthy();
+    expect(await screen.findByText(/Raise to 2NT \(invite\) or 3NT/i)).toBeTruthy();
   });
 
   it("shows teaching content", async () => {

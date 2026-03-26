@@ -63,7 +63,7 @@ export function createStaymanDeclarations(sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "stayman",
-  description: "Stayman — bid 2C over 1NT to find a 4-4 major-suit fit",
+  description: "Bid 2C over 1NT to find a 4-4 major-suit fit",
   purpose: "Discover whether opener holds a 4-card major so the partnership can play in an 8-card major fit instead of notrump",
   teaching: {
     tradeoff: "Using 2C as Stayman means you can't play in a natural 2C contract.",

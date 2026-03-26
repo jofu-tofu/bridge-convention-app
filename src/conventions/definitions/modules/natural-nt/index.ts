@@ -43,7 +43,7 @@ export function createNaturalNtDeclarations(_sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "natural-nt",
-  description: "Natural NT responses — raise to 2NT (invite) or 3NT (game) with no major fit",
+  description: "Raise to 2NT (invite) or 3NT (game) with no major fit",
   purpose: "Place the notrump contract at the right level when no major-suit fit is worth exploring",
   teaching: {
     principle: "When no major fit exists, raise notrump to the level your combined HCP supports — 25 total for game.",

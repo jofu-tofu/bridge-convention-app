@@ -74,7 +74,7 @@ function deriveSurfaceGroupsFromModules(
 const ntBundleInput: BundleInput = {
   id: "nt-bundle",
   name: "1NT Responses",
-  description: "Full 1NT response system: Stayman + Jacoby Transfers + Smolen + natural bids — practice choosing between conventions",
+  description: "Full 1NT response system with Stayman, Jacoby Transfers, Smolen, and natural bids",
   category: ConventionCategory.Constructive,
   systemProfile: NT_SAYC_PROFILE,
   memberIds: ["natural-nt", "stayman", "jacoby-transfers", "smolen"],
@@ -102,7 +102,7 @@ const ntBundleInput: BundleInput = {
 const ntStaymanInput: BundleInput = {
   id: "nt-stayman",
   name: "Stayman",
-  description: "Stayman convention — find a 4-4 major fit after 1NT opening",
+  description: "Find a 4-4 major fit after 1NT opening",
   category: ConventionCategory.Asking,
   systemProfile: NT_STAYMAN_ONLY_PROFILE,
   memberIds: ["natural-nt", "stayman"],
@@ -127,7 +127,7 @@ const ntStaymanInput: BundleInput = {
 const ntTransfersInput: BundleInput = {
   id: "nt-transfers",
   name: "Jacoby Transfers",
-  description: "Jacoby Transfers — ensure the strong hand declares in a major-suit contract",
+  description: "Ensure the strong hand declares in a major-suit contract",
   category: ConventionCategory.Constructive,
   systemProfile: NT_TRANSFERS_ONLY_PROFILE,
   memberIds: ["natural-nt", "jacoby-transfers"],
@@ -151,7 +151,7 @@ const ntTransfersInput: BundleInput = {
 const bergenInput: BundleInput = {
   id: "bergen-bundle",
   name: "Bergen Raises (Bundle)",
-  description: "Bergen Raises via the meaning pipeline — constructive, limit, game, preemptive, and splinter raises after 1M opening",
+  description: "Constructive, limit, game, preemptive, and splinter raises after a 1M opening",
   category: ConventionCategory.Constructive,
   systemProfile: BERGEN_PROFILE,
   memberIds: ["bergen"],
@@ -178,7 +178,7 @@ const bergenInput: BundleInput = {
 const dontInput: BundleInput = {
   id: "dont-bundle",
   name: "DONT (Bundle)",
-  description: "DONT — Disturbing Opponents' Notrump: competitive overcalls showing distributional hands",
+  description: "Competitive overcalls showing distributional hands against opponent's 1NT",
   category: ConventionCategory.Defensive,
   systemProfile: DONT_PROFILE,
   memberIds: ["dont"],
@@ -205,7 +205,7 @@ const dontInput: BundleInput = {
 const weakTwoInput: BundleInput = {
   id: "weak-twos-bundle",
   name: "Weak Two Bids (Bundle)",
-  description: "Weak Two Bids with Ogust 2NT — preemptive openings at the 2-level with structured hand description",
+  description: "Preemptive openings at the 2-level with Ogust 2NT for structured hand description",
   category: ConventionCategory.Constructive,
   systemProfile: WEAK_TWO_PROFILE,
   memberIds: ["weak-twos"],

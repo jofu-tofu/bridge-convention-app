@@ -320,7 +320,7 @@ function createBergenModule(_sys: SystemConfig): BergenModuleParts {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "bergen",
-  description: "Bergen Raises — use 3C/3D as artificial raises after 1M to show different strength levels",
+  description: "Use 3C/3D as artificial raises after 1M to show different strength levels",
   purpose: "Distinguish between weak, constructive, limit, and game-forcing raises of partner's major so opener can judge the right level",
   teaching: {
     tradeoff: "Uses 3C and 3D as conventional raises, giving up natural minor bids over 1M.",

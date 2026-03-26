@@ -81,7 +81,7 @@ export function createSmolenDeclarations(_sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "smolen",
-  description: "Smolen — jump to 3H/3S after Stayman denial to show 5-4 in majors game-forcing",
+  description: "Jump to 3H/3S after Stayman denial to show 5-4 in majors, game-forcing",
   purpose: "Handle the 5-4 major hand with game values after Stayman gets a 2D denial — let opener choose the fit while keeping the strong hand as declarer",
   teaching: {
     tradeoff: "Smolen uses jump bids (3H/3S) that could otherwise be used as natural invitational bids.",

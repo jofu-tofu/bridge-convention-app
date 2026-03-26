@@ -210,7 +210,7 @@ function createWeakTwosModule(_sys: SystemConfig): WeakTwosModuleParts {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "weak-twos",
-  description: "Weak Twos — open 2D/2H/2S with 6+ cards and 5-11 HCP, responses include Ogust",
+  description: "Open 2D/2H/2S with 6+ cards and 5-11 HCP, responses include Ogust",
   purpose: "Preempt opponents with a descriptive opening while giving partner enough information to judge game prospects via Ogust",
   teaching: {
     tradeoff: "Using 2D/2H/2S as weak openings means you can't use them for strong two-bids.",

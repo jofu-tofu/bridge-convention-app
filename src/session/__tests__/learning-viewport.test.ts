@@ -52,7 +52,7 @@ describe("buildModuleLearningViewport", () => {
     it("has correct identity fields", () => {
       expect(viewport.moduleId).toBe("stayman");
       expect(viewport.displayName).toBe("Stayman");
-      expect(viewport.description).toContain("Stayman");
+      expect(viewport.description).toContain("2C over 1NT");
     });
 
     it("has teaching content", () => {

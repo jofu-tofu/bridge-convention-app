@@ -106,7 +106,7 @@ export function createJacobyTransfersDeclarations(sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "jacoby-transfers",
-  description: "Jacoby Transfers — bid 2D/2H over 1NT to show a 5+ card major and let opener declare",
+  description: "Bid 2D/2H over 1NT to show a 5+ card major and let opener declare",
   purpose: "Right-side the contract so the strong 1NT hand stays hidden, while guaranteeing a trump fit when responder has a 5+ card major",
   teaching: {
     tradeoff: "Using 2D and 2H as transfers means you can't play in a natural 2D or 2H contract.",
