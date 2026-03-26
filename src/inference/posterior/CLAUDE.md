@@ -27,10 +27,6 @@ The redesigned posterior boundary separates concerns:
 
 Consumers call `PosteriorQueryPort` methods (e.g., `marginalHcp()`, `fitProbability()`). The backend is replaceable — a Rust/WASM implementation can swap in without changing consumer code.
 
-## Migration Status
-
-Phase 4B complete — deprecated `PosteriorEngine`, `SeatPosterior`, `LikelihoodModel`, and `createPosteriorFactProvider(SeatPosterior)` have been removed. All consumers use `createTsBackend()` → `createQueryPort()` or `createPosteriorFactProviderFromBackend()`.
-
 ## Gotchas
 
 - `ts-posterior-backend.ts` uses `compilePublicHandSpace()` internally (the sampler expects `PublicHandSpace[]`)

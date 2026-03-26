@@ -55,13 +55,6 @@ Nothing imports from `service/` except `stores/`, `components/`, and `cli/comman
 - `DevServicePort.getSessionBundle()` leaks `DrillBundle` across the boundary (transitional)
 - `submitBid()` always builds `nextViewport` for accepted bids (including auction-completing bids) so the store can animate AI bids before transitioning phases
 
-## IP Protection Affordance
-
-This boundary enables three future strategies:
-- **Server-side evaluation**: Deploy `local-service.ts` on a server; convention definitions never leave the server
-- **Tiered WASM**: Free tier WASM includes only free conventions; paid tier includes all
-- **Hybrid**: Free conventions client-side, premium conventions server-side
-
 ---
 
 ## Context Maintenance

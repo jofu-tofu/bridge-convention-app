@@ -64,16 +64,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 
 ## Design Philosophy
 
-- **Design for 100+ modules.** The system will eventually have 100+ convention modules composed into many bundles. Every interface, registry, and derivation mechanism must scale to that volume. No O(N²) cross-references between modules; no hand-authored wiring that grows with module count. If adding a new module requires editing existing modules or shared files (beyond the vocabulary), the design is wrong.
-- **Modules are portable building blocks.** A module must work correctly when composed into ANY bundle — not just the one it was written for. Modules never import from other modules. Cross-module relationships emerge from shared vocabulary tags, not explicit references to foreign IDs. Test: if you move a module from bundle A to bundle B, does everything still derive correctly?
-- **Convention-universality is the litmus test.** When choosing between design approaches, ask: "does this work for all conventions — including ones we haven't written yet?" If you can imagine a convention where approach A breaks, A is the wrong approach. Never optimize for a single convention at the expense of generality.
-- **Contain complexity through modularity.** Low impact radius (changes to one convention don't ripple), clean module boundaries (runtime/pipeline are separate subsystems), and convention-agnostic infrastructure that never assumes convention-specific structure.
-- **Semantic ownership: fields belong where they mean something.** Before adding a field to a type, ask: "does this describe what this type IS, or is it metadata about how something else uses it?" Derive what you can from existing data; don't store what can be computed.
-- **No backwards compatibility during migrations.** When refactoring types or interfaces, delete the old versions immediately. Do not keep deprecated shims or backward-compat aliases — removing them lets the compiler surface every call site that needs updating, ensuring the migration is completed fully rather than left half-done.
-- **Hexagonal architecture: service as the port.** The system is moving toward a clean front-end / back-end split. `ServicePort` is the hexagonal port — all game logic lives behind it, and all UI consumers (stores, components) call through it. This enables: (1) server-side deployment of convention logic, (2) tiered WASM builds, (3) a remote service adapter replacing `local-service.ts`. When evaluating any change, ask: "does this work if service runs on a different machine?" If it requires the UI to import backend types directly, it's wrong.
-- **Refactor before feature work.** When a new feature would be cleaner with a structural change, do the refactor first as a separate step — then build the feature on the clean foundation. The codebase must stay clean at all times; never bolt a feature onto messy code when a refactor would make the integration natural.
-- **Bundle-specific knowledge stays in the bundle.** Infrastructure modules (`inference/`, `conventions/core/`, `conventions/pipeline/`) must not contain convention-specific fact IDs, heuristics, or special-case logic. If a behavior differs between conventions, the bundle declares it (e.g., `isPublic` on clauses) and the framework reads the declaration.
-- **System-agnostic modules, system-aware facts.** Modules never import concrete system configs or branch on system identity. System-level differences (HCP thresholds, forcing durations) are expressed as `SystemConfig` fields, surfaced as system facts via `system-fact-vocabulary.ts` (in `conventions/definitions/`), and referenced in surface clauses. See `src/conventions/definitions/CLAUDE.md` for the module author guide.
+See `docs/design-philosophy.md` for the full set of 10 design principles and subsystem design rationale.
 
 ## System Parameterization
 
@@ -145,108 +136,19 @@ tests/
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 
-## Typography & Responsive Sizing
-
-Single-source typography system: `--panel-font` base → `--text-*` em-relative tokens → consistent sizing across panels and CSS-transformed table. Z-index hierarchy via `--z-*` tokens. ESLint enforces token usage in game components. Details in `src/components/CLAUDE.md` § Typography & Responsive Sizing.
-
-## Teaching Architecture
-
-The app separates two concerns: **deterministic convention teaching** and **probabilistic realism**.
-
-- **Meaning pipeline** (fact evaluation → surface routing → meaning proposal → arbitration → encoding) defines the canonical answer key. Each `BidMeaning` describes a bidding meaning with clauses evaluated against facts. `semanticClassId` and `teachingLabel` are required on every surface. The pipeline's output types are `PipelineCarrier` (accumulated state through pipeline stages) and `PipelineResult` (the public result containing winning meaning, truth set, and provenance).
-- **Alert system.** `resolveAlert()` derives alertability from `sourceIntent.type` — natural intents (small, well-defined set in `alert.ts`) produce no alert; everything else defaults to conventional (alertable). The pipeline derives alertability in `resolveAlert()`. Public constraints are auto-derived from primitive/bridge-observable clauses via `derivePublicConstraints()`. `annotation-producer.ts` converts `publicConstraints` to `HandInference` for Layer 1 belief updates. Inference model: only hard constraints from chosen bid's clauses. No cross-surface denials.
-- **`TeachingResolution`** (`src/conventions/teaching/teaching-resolution.ts`) wraps `BidResult` with multi-grade feedback: Correct (exact match), CorrectNotPreferred (truth set but not recommended), Acceptable (preferred/alternative tier candidates), NearMiss (same family, fails constraint), Incorrect. `resolveTeachingAnswer(bidResult, surfaceGroups?)` extracts acceptable alternatives and near-miss candidates. `gradeBid()` grades user input with 5-grade cascade.
-- **`TeachingProjection`** (`src/conventions/teaching/teaching-projection-builder.ts`) projects pipeline results into teaching-optimized views for "why not X?" UI. `projectTeaching(result: PipelineResult, options?)` is the single entry point; internally converts to `ArbitrationResult`/`DecisionProvenance` for sub-builders. Surface groups and explanation catalogs flow end-to-end from bundle → config-factory → strategy → projection.
-- **Parse-tree feedback.** After a bid, `buildParseTree()` (`src/conventions/teaching/parse-tree-builder.ts`) shows the full decision chain — which convention modules were considered, why each was accepted or rejected, and the path to the correct bid. Data flows: `PipelineResult` → `ParseTreeView` → `ParseTreePanel.svelte` (integrated into Incorrect and NearMiss feedback panels). Verdict per module: `selected` / `applicable` / `eliminated`.
-- **Off-convention drills.** Generate hands where the convention doesn't apply, training recognition ("does this convention apply?") not just execution. `ConventionBundle.offConventionConstraints` defines the anti-constraints (e.g., South 0–7 HCP for NT). `DrillTuning.includeOffConvention` + `offConventionRate` control frequency (default 30%). `DrillBundle.isOffConvention` flag tells the UI/teaching layer the deal is off-convention.
-- **Mandatory explanation entries.** Every module-derived fact and meaning must have an explanation entry. Compile-time enforcement via `Record<ModuleFactId, FactExplanationEntry>` and `Record<ModuleMeaningId, MeaningExplanationEntry>` in per-module `explanation-catalog.ts` files. The platform explanation catalog (`shared-explanation-catalog.ts` in `conventions/core/`) covers shared and system fact IDs. Per-module typed ID constants (in `ids.ts`) ensure compile-time tracking of all IDs across the codebase.
-- **Grading is deterministic.** Same hand + same auction = same grade. No probabilistic scoring in V1.
-- **Opponent modes:** "none" (opponents always pass) or "natural" (opponents bid with 6+ HCP and 5+ suit). Configurable via settings dropdown, persisted in localStorage.
-- **Play profiles:** Opponent card play difficulty via `PlayProfileId` ("beginner" | "club-player" | "expert" | "world-class") in `DrillSettings`. Beginner uses heuristic chain with skip errors, Club Player adds inference-enhanced heuristics from `PlayContext.inferences`, Expert adds card counting and restricted choice, World Class uses Monte Carlo deal sampling (30 samples) + DDS solving via `EnginePort.solveBoard()`. `PlayStrategy.suggest()` is async (`Promise<PlayResult>`). `PlayStrategyProvider` DI interface wired through `config-factory` → `SessionState` → `play-controller`. World-class requires `engine` in `ProfileStrategyOptions`. Expert/world-class providers' `onAuctionComplete()` called at auction end. UI selector not yet built.
-
-## Roadmap
-
-**Completed:** See `docs/roadmap-history.md`. Phases 4-10 plus Continuation Composition Phases 4-6 are complete. Posterior Engine Consumer Migration (Phase 4B) complete — deprecated types removed. All 4 bundles (NT, Bergen, Weak Twos, DONT) on unified ConventionModule with per-step kernel threading. Old tree/protocol/overlay pipeline and FSM infrastructure fully removed. Dead CandidateTransform system removed. Multi-system backend wired (SAYC, 2/1, Acol base profiles). CLI `--system` flag live.
-
-**Upcoming (all blocked on design work or specs):**
-
-1. **User Learning Enhancements** — learning screen needs rebuild + design spec.
-2. **Difficulty Configuration** — play profiles implemented (beginner/club-player/expert), UI selector needed. Blocked on UI design spec.
-3. **Convention Migration** — Lebensohl (blocked on relay encoding spec), Negative Doubles (blocked on host-attachment exercise), SAYC (full base system).
-
-## Architecture Spec & Alignment
-
-**Design specs** (the authoritative vision for the full architecture):
-
-- `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-convention-protocol.md` — Agreement Module IR: composable convention modules, system profiles, conversation machines, two-phase evaluation, public state layers, DealSpec, FactCatalog
-- `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-candidate-pipeline.md` — Meaning-centric pipeline: BidMeaning as canonical unit, semantic arbitration, TeachingProjection, DecisionProvenance, PedagogicalRelation graph, ExplanationCatalog
-- `docs/posterior-implementation-plan.md` — Posterior engine boundary redesign: 8-phase plan covering FactorGraphIR, PosteriorQueryPort, PosteriorBackend, factor compiler, CI invariant tests, and Rust/WASM upgrade path
-
-**Spec status:** Both specs are `status: active`, `confidence: medium-high`. Most contracts are frozen. The posterior engine boundary has a detailed implementation plan. Do not implement against unresolved areas — resolve the spec first.
-
-**Open questions in the protocol spec:**
-
-| Open Question | Status | Blocks |
-|---|---|---|
-| Posterior consumer migration (Phase 4B) | Complete — deprecated `PosteriorEngine`, `SeatPosterior`, `LikelihoodModel` removed | Inference spectrum / difficulty config |
-| Evidence group correlation model | Design complete; reserved as Phase 7 (soft evidence) | Posterior combiner accuracy |
-| Host-attachment activation | Spec designed, vocabulary resolved (`conventions/definitions/capability-vocabulary.ts`), not yet exercised | Negative Doubles, Fourth Suit Forcing |
-| DealSpec wiring | Types + test code exist; not wired to deal generation | Future deal generation enhancements |
-| Multi-system UI | Backend wired; UI system selector not yet connected | User-facing system choice |
-
-## Test-Driven Development
-
-This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implementations must follow this workflow:
-
-- **Failing test first.** Write a test that fails before writing implementation code. No exceptions for "simple" changes — if it changes behavior, it gets a test first.
-- **Behavior over implementation.** Tests verify WHAT code does, not HOW (Kent Beck / Michael Feathers). A test should pass unchanged if you rewrite the implementation with a different algorithm.
-- **Test through public interfaces.** Don't test private methods or internal state. Test the contract the module exposes.
-- **One concern per test.** Each test verifies one behavior. If it has "and" in the description, split it.
-- **Characterization tests for unknowns.** When modifying code you don't fully understand, write tests that capture current behavior before changing it (Michael Feathers).
-- **No test rewrites on refactor.** If a refactoring breaks tests, the tests were coupled to implementation — fix the tests to test behavior, then refactor.
-
-## Testing Scope
-
-**Run only the tests affected by your changes — not the full suite.** Vitest supports file-pattern filtering:
-
-| Changed files in…              | Test command                      | When to use full suite                 |
-| ------------------------------ | --------------------------------- | -------------------------------------- |
-| `src/components/`              | `npx vitest run src/components/`  | Never for UI-only (CSS, props, layout) |
-| `src/stores/`                  | `npx vitest run src/stores/`      | If store interface changed             |
-| `src/engine/`                  | `npx vitest run src/engine/`      | If types/exports changed               |
-| `src/service/display/`         | `npx vitest run src/service/display/` | If display utility signatures changed  |
-| CSS-only / layout tweaks       | `npm run check` (type-check only) | Never                                  |
-| Cross-cutting (types, exports) | `npm run test:run` (full suite)   | Always for type/interface changes      |
-
-**Rule:** If you only changed `.svelte` files, CSS values, or added optional props — run targeted tests or just type-check. Full suite (`npm run test:run`) only when changing contracts types, store interfaces, or engine logic.
-
 ## Gotchas
 
 - `npm run dev` builds WASM if `pkg/` missing, then starts Vite with HMR — the dev server stays running and reflects file changes instantly. Do NOT restart the server or browser after editing source files; just save and the page updates automatically
 - WASM must build before Vite (`npm run dev` handles this automatically via `wasm:ensure`)
-- **No pure-TS EnginePort exists.** Browser builds require WASM (`WasmEngine`); desktop uses Tauri IPC (`TauriIpcEngine`). If `initWasm()` fails, the app shows an error screen — there is no fallback. The TS engine modules (`deal-generator.ts`, `auction.ts`, etc.) contain all the logic but are not wired into an `EnginePort` adapter. Vercel deploys install Rust + wasm-pack via `scripts/vercel-build.sh` and produce a real WASM build. Stub files (`scripts/ensure-wasm-stubs.sh`) are retained as a fallback if the WASM toolchain is unavailable.
-- DDS `solveDeal()` works in browser via Emscripten-compiled C++ DDS in a Web Worker (`dds-client.ts`). Par is always null in browser (mode=-1). `suggestPlay()` remains desktop-only. DDS WASM artifacts (`static/dds/`) are committed; rebuild with `npm run dds:build` (requires Emscripten).
+- **No pure-TS EnginePort.** Browser=WASM (`WasmEngine`), desktop=Tauri IPC (`TauriIpcEngine`), no fallback. See `docs/gotchas.md` for details.
 - Never build bridge-wasm via `cargo build --workspace`; always use `wasm-pack` to isolate feature resolution and prevent `getrandom/js` from bleeding into native builds
 - Read a subsystem's CLAUDE.md before working in that directory
 - Full testing playbook is in **TESTING.md**, not here
-- `vendor/dds/` is an upstream DDS C++ source checkout and `vendor/dds-patches/` holds local Emscripten/build patches for producing the browser double-dummy WASM bundle (`static/dds/`); app-level bridge logic in `src/` and `src-tauri/` remains clean-room
-- Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
-- Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
-- **Convention imports.** External consumers import from `conventions/index.ts` barrel — deep imports into `conventions/core/`, `conventions/pipeline/`, `conventions/teaching/`, or `conventions/definitions/` are ESLint-blocked. UI components should import convention types only through `service/index.ts`.
-- All conventions use meaning pipeline bundles — no tree/protocol/overlay pipeline remains. `ConventionConfig` is minimal (id, name, description, category, dealConstraints, teaching); convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. Deal constraints are DERIVED from capabilities + R1 surface analysis by `deriveBundleDealConstraints()` — not hand-authored on `BundleInput`. All teaching content (surface groups, alternatives) is auto-derived from module structure — surface groups come from `deriveSurfaceGroupsFromModules()` (state entries with 2+ surfaces), cross-module alternatives from `truthSetCalls` in `teaching-resolution.ts`. No manual tags, scope annotations, or derivation files needed. Modules are portable building blocks that compose into any bundle.
-- **CLI commands use rule enumeration.** All CLI commands (`list`, `plan`, `selftest`, `describe`, `bundles`) use `enumerateRuleAtoms()` / `generateRuleCoverageManifest()` from `conventions/pipeline/rule-enumeration.ts`. Atom ID format: `moduleId/meaningId`. The old FSM-based BFS enumeration (`findPathToState`, `buildTargetedAuction`, `resolveAuction`) has been removed from `cli/shared.ts`. Selftest uses strategy-driven forward auction construction instead of FSM path targeting.
-- Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch
 - Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before svelte() in `vite.config.ts`
 - `vitest.config.ts` has `resolve.conditions: ["browser"]` so Svelte 5 `mount()` works in jsdom tests — don't use `require()` in tests, use ES imports
 - Component tests use `@testing-library/svelte` — components needing context (stores/engine) need wrapper setup in test-helpers.ts
 - Svelte `{#each}` blocks require keyed iteration (`{#each items as item (item.id)}`) per ESLint rule `svelte/require-each-key`
-
-**Reference docs** (detailed architecture, not auto-loaded):
-
-- `docs/architecture-reference.md` — convention constraints, AI heuristics, screen flow, phase details
-- `docs/bridge-rules-sources.md` — authoritative bridge rules sources, ambiguity resolution
-- `docs/conventions/` — per-convention reference docs (bergen-raises.md, dont.md) with sources, rules, edge cases
-- `docs/learning/research-summary.md` — learning screen design vision: four views (guided flow, explorable map, cheat sheet, quiz), learning science principles, what's built vs needed
+- See `docs/gotchas.md` for detailed technical notes (DDS browser, vendor/dds, convention system details, CLI enumeration, deal generation)
 
 **Context tree** (read the relevant one before working in that directory):
 
@@ -254,9 +156,9 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/conventions/CLAUDE.md` — registry pattern, convention bundles
 - `src/conventions/core/CLAUDE.md` — runtime, bundle systems, absorbed types from former core/contracts/
 - `src/conventions/pipeline/CLAUDE.md` — pipeline module graph, 6-stage pipeline flow, test architecture
-- `src/conventions/definitions/CLAUDE.md` — convention bundle authoring guide, system config, system fact vocabulary
-- `src/inference/CLAUDE.md` — inference architecture, posterior engine, new posterior boundary
-- `src/inference/posterior/CLAUDE.md` — posterior subsystem: factor compiler, backend, query port, migration status
+- `src/conventions/definitions/CLAUDE.md` — system config, system fact vocabulary
+- `src/inference/CLAUDE.md` — inference architecture, posterior engine
+- `src/inference/posterior/CLAUDE.md` — posterior subsystem: factor compiler, backend, query port
 - `src/session/CLAUDE.md` — domain logic: game state, controllers, drill lifecycle, viewport builders, heuristics
 - `src/session/heuristics/CLAUDE.md` — convention-independent bidding/play heuristics
 - `src/conventions/adapter/CLAUDE.md` — convention→strategy bridge (meaning-strategy, protocol-adapter, practical-scorer)
@@ -268,6 +170,35 @@ This project follows TDD (Red-Green-Refactor, Kent Beck). All plans and implemen
 - `src/stores/CLAUDE.md` — factory DI pattern, game store methods, race condition handling
 - `src/test-support/CLAUDE.md` — shared test factories, dependency rules
 - `tests/CLAUDE.md` — E2E config, test running
+
+## Reference Knowledge (docs/)
+
+The `docs/` folder contains decision history, design philosophy, architecture specs,
+and detailed guides extracted from CLAUDE.md files. Agents do not need this context
+for routine work. **Read from docs/ when:**
+
+- **Making a design decision** with multiple viable approaches → read `docs/design-philosophy.md`
+  to check if a prior principle already resolves it
+- **Wondering "why is it done this way?"** about a non-obvious pattern → read `docs/gotchas.md`
+  or the relevant subsystem doc
+- **Adding a new convention bundle** → read `docs/convention-authoring.md` for the full
+  checklist, templates, and common pitfalls
+- **Working on inference/posterior** → read `docs/architecture-specs.md` for open questions
+  and spec status before implementing
+- **Planning a large refactor** → read `docs/design-philosophy.md` + `docs/architecture-specs.md`
+  to avoid violating architectural constraints
+- **Touching CLI evaluation pipeline** → read `docs/cli-evaluation.md` for the two-phase
+  design and known gaps
+- **Modifying typography/layout tokens** → read `docs/typography-and-layout.md` for the
+  full token system
+
+**Update docs/ when:**
+
+- A design decision is made that future agents should know about → add to
+  `docs/design-philosophy.md` or `docs/gotchas.md`
+- A spec status changes (open question resolved, phase completed) → update
+  `docs/architecture-specs.md` or `docs/roadmap.md`
+- A non-obvious gotcha is discovered during implementation → add to `docs/gotchas.md`
 
 ---
 
@@ -291,6 +222,10 @@ the code, and applies project-wide (not just one directory).
 how an agent acts, remove it. If a convention here conflicts with the codebase, the
 codebase wins — update this file, do not work around it. Prune aggressively.
 
+**docs/ knowledge base:** When a session makes a design decision, resolves an open question,
+or discovers a non-obvious gotcha, update the relevant file in `docs/`. See § Reference
+Knowledge above for when to read vs. update.
+
 **Track follow-up work:** After modifying files, evaluate whether changes create incomplete
 work, shift a phase status, or break an assumption tracked elsewhere. If so, create a task
 or update the Phase Tracking table before ending the session. Do not leave implicit TODOs.
@@ -305,4 +240,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-23 | version=18 | dir-commits-at-audit=62 | tree-sig=dirs:20,files:150+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-25 | version=19 | dir-commits-at-audit=62 | tree-sig=dirs:20,files:150+ -->

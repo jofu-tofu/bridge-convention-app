@@ -53,75 +53,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `facts.ts` — 1 `FactCatalogExtension`: `bergenFacts` for `module.bergen.hasMajorSupport` (hearts ≥ 4 or spades ≥ 4). Uses `buildExtension()` from fact-factory.
 - `modules/bergen/bergen-rules.ts` — LocalFsm + StateEntry[] for Bergen (15 phases: idle/opened-H/S/after-constructive-H/S/after-limit-H/S/after-preemptive-H/S/after-game/after-signoff/after-game-try-H/S/r4/done). Includes stub 1H/1S opening surfaces with `MajorOpen` intent for phase transitions. Claims carry captain/fitAgreed kernel deltas.
 
-## Convention Quick Reference
-
-- **NT Bundle (1NT Responses):** Stayman (2C ask for 4-card majors) + Jacoby Transfers (2D→hearts, 2H→spades) + Smolen (3H/3S game-forcing after 2D denial with 5-4 majors). 35 meaning surfaces, 4 fact extensions, 15-state hierarchical FSM with per-module scope states (`stayman-scope`, `transfers-scope`, `smolen-scope`) for scoped opponent interrupts + 5-state Smolen submachine (first real convention to use submachine invocation with guard-based routing). Deal constraints: opener 15–17 HCP balanced, responder 6+ HCP with 4+ in any major.
-- **Bergen Bundle (Bergen Raises):** Responder raises after 1M opening. Standard Bergen variant (3C=constructive 7–10, 3D=limit 10–12, 3M=preemptive 0–6, splinter 12+). `$suit` binding factory for DRY heart/spade parameterization. Deal constraints: opener 12–21 HCP with 5+ major, responder 0+ HCP with 4+ major.
-- **Weak Two Bundle:** Weak Two openings (2D/2H/2S) with Ogust responses. `modules/weak-twos/weak-twos-rules.ts` — LocalFsm + StateEntry[] (11 phases: idle/opened-H/S/D/ogust-asked-H/S/D/post-ogust-H/S/D/done). Ogust ask carries `forcing: "one-round"` kernel delta. Deal constraints: opener 5–10 HCP with 6+ in a suit, responder 12+ HCP.
-- **DONT Bundle (Disturbing Opponent's No Trump):** Competitive overcalls after opponent's 1NT. `modules/dont/dont-rules.ts` — LocalFsm + StateEntry[] (11 phases: idle/r1/after-2h/2d/2c/2s/double/wait-reveal/wait-2d-relay/wait-2c-relay/done). **No `match.turn`** — uses phase + route scoping because `deriveTurnRole()` classifies the overcaller as "opponent". Includes stub 1NT opening surface for phase transitions. 9 surface groups, 24 surfaces, 21 facts. Deal constraints: East 15–17 HCP (NT opener), South 8–15 HCP with 5+ in any suit.
-
-## Convention Bundle Completeness Checklist
-
-Every convention bundle must satisfy all items before being considered complete:
-
-1. **`meaningSurfaces` with grouped surfaces.** At least one surface group with `groupId` and `surfaces` array. Every surface needs `meaningId`, `encoding`, `clauses` (with `factId`, `operator`, `value`), and `ranking` (`band`, `declarationOrder`). `modulePrecedence` defaults to 0 — do NOT set it on surfaces. **Specificity is pipeline-derived from the communicative dimensions of the surface's clauses** — do NOT set it on surfaces. All `FactDefinition` objects must declare `constrainsDimensions` (required field).
-2. **`factExtensions` for module-derived facts.** Any fact referenced in surface clauses that isn't in the shared `BRIDGE_DERIVED_FACTS` must be defined in a `FactCatalogExtension` in `facts.ts`. Evaluators must be pure functions of hand/auction state. Use factory helpers (`defineBooleanFact`, `definePerSuitFacts`, `defineHcpRangeFact`, `buildExtension`) from `conventions/pipeline/fact-factory.ts` for common patterns.
-3. **`modules` for surface selection.** `ConventionModule[]` with `local` (LocalFsm: phases + phase transitions) and `states` (StateEntry[]: phase + turn role + optional route/kernel constraints + surfaces). The rule interpreter (`collectMatchingClaims()`) handles surface selection. Modules are resolved by `buildBundle()` from `memberIds` via module-registry.
-4. **`systemProfile` for activation.** Profile-based module activation via `SystemProfile`.
-6. **`declaredCapabilities` for deal constraint derivation.** Declare the bundle's capability (e.g., `CAP_OPENING_1NT`) so `deriveBundleDealConstraints()` can derive opener constraints, default auction, and allowed dealers from the capability archetype registry. Deal constraints are NOT hand-authored — they are derived from capabilities + R1 surface analysis.
-7. **`category` and `description` are required** on `ConventionBundle`. `registerBundle()` auto-derives `ConventionConfig` — no separate wrapper needed.
-8. **`explanationCatalog` entries.** Template-keyed explanations for teaching projections. Each entry links a `factId` to display text and contrastive templates.
-9. **`systemProfile` IR.** Profile-based module activation metadata.
-10. **`semantic-classes.ts` constants.** Module-local semantic class strings. Do not add to central registry — keep them co-located with the surfaces that reference them.
-
-## File Templates
-
-See `docs/convention-templates.md` for skeleton code templates (config.ts, meaning-surfaces.ts, facts.ts, rules.ts, semantic-classes.ts, system-profile.ts, explanation-catalog.ts).
-
-## Adding a New Convention Bundle
-
-1. Create `definitions/{name}-bundle/` folder with the modules listed in the Folder Structure table above.
-2. Define `BidMeaning[]` in `meaning-surfaces.ts`. Each surface needs `meaningId`, `encoding` (the `Call`), `clauses` (fact-based conditions), `semanticClass`, and `ranking`. Use the factory pattern with `$suit` bindings when parameterizing across suits.
-3. Define `FactCatalogExtension`s in `facts.ts` for any module-specific facts referenced by surface clauses. Use factory helpers from `conventions/pipeline/fact-factory.ts` for common patterns.
-4. Define module-local semantic class constants in `semantic-classes.ts`.
-5. Define `LocalFsm` and `StateEntry[]` in `{name}-rules.ts`. Declare phases, phase transitions (observation patterns that advance the local FSM), and state entries (phase + turn + optional route/kernel constraints + surfaces). The module-registry assembles these into a `ConventionModule`.
-6. Define `SystemProfile` in `system-profile.ts`.
-7. Populate `ExplanationCatalog` in `explanation-catalog.ts` with template-keyed explanations.
-8. Wire `config.ts` as a thin re-export from `system-registry.ts`.
-10. Create `index.ts` barrel with re-exports.
-11. Register the module in `module-registry.ts` and define the bundle in `system-registry.ts` via `buildBundle()`.
-12. Create `__tests__/` with at minimum: surface evaluation tests and config/factory E2E tests.
-13. **Verify:** `npm run lint` (boundary violations), `npm run test:run` (all tests), `npx tsx src/cli/main.ts selftest` (pipeline selftest).
-14. Run the completeness checklist above before considering the bundle complete.
-
-## Authoring Rules
-
-- **Use `createSurface()` for all new surfaces.** Import from `conventions/core/surface-builder.ts` with a `ModuleContext`. The builder derives `clauseId` and `description` automatically. Provide `description` only when it adds parenthetical rationale beyond the mechanical constraint (test: contains `(`). `moduleId` is injected from `ModuleContext`. `modulePrecedence` defaults to 0 — not hand-authored.
-- **Modules are portable.** A module must work in any bundle. Never import from other modules. Never reference foreign surface IDs.
-- **Adding a module must not edit existing modules.**
-- **Generalize before specializing.** When a convention needs a capability that doesn't exist in the infrastructure (`conventions/core/`, `conventions/pipeline/`), design the solution to work for any convention — not just yours. If the abstraction only makes sense for one convention, it belongs in `definitions/{name}-bundle/`, not in infrastructure.
-- **Module-derived facts must have `composition`.** All `FactDefinition` objects with `layer: FactLayer.ModuleDerived` must declare a `composition` field describing the loosest constraint under which the fact could be true. The composition is used by deal constraint derivation to derive practitioner seat constraints from R1 surface clauses. Convention authors should write the LOOSEST correct composition — it does not need to be semantically equivalent to the evaluator. Factory helpers (`defineBooleanFact`, `defineHcpRangeFact`) auto-populate composition. Hand-written evaluators must add composition manually.
-- **System-fact-gated surfaces for cross-system modules.** When a bid has different meanings in different systems (e.g., jump shift: strong in SAYC, weak in 2/1), author surfaces for ALL meanings in the same module. Gate each with a system fact clause (`{ factId: SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING, operator: "eq", value: true/false }`). The pipeline evaluates all surfaces and selects only those matching the active `SystemConfig`. Never create system-specific modules or branch on `systemId` in module code.
-- **Mandatory explanation entries.** Every module-derived fact and meaning must have an explanation entry enforced by `Record<ModuleFactId, FactExplanationEntry>` and `Record<ModuleMeaningId, MeaningExplanationEntry>` exhaustiveness in `explanation-catalog.ts`. Adding a fact or meaning ID without a corresponding explanation entry is a compile error.
-- **Typed ID constants per module.** Each module has `ids.ts` with `as const` typed ID constants for both fact IDs and meaning IDs. These typed constants are the keys in the `Record` types, ensuring compile-time tracking of all IDs.
-- **Template-form factIds are module-owned.** Template-form factIds (`$suit`) are module-owned in explanation catalogs. The platform catalog (`shared-explanation-catalog.ts`) covers only concrete shared/system fact IDs.
-- **Non-pedagogical facts use `displayText: 'internal'`.** Facts that exist for pipeline routing but have no teaching value use `displayText: 'internal'` with `roles: []` in their explanation entry.
-
-## Common Pitfalls
-
-1. **Surface clause `factId` not in catalog.** Every `factId` referenced in a surface clause must either be in the shared `BRIDGE_DERIVED_FACTS` or defined in a `FactCatalogExtension` in `facts.ts`. Missing facts cause clauses to fail closed (treated as not satisfied).
-
-2. **Reusing `meaningId` across surfaces.** Each surface must have a unique `meaningId`. Duplicates cause unpredictable surface selection.
-
-3. **`$suit` binding errors in parameterized surfaces.** When using the factory pattern (like Bergen's `createBergenR1Surfaces(suit)`), clauses must reference the binding variable (e.g., `hand.suitLength.$suit`) and the surface must include a `bindings: { suit }` field. Missing bindings cause clause evaluation to fail.
-
-4. **Missing `category` or `description` on bundle.** Both are required on `ConventionBundle`. `registerBundle()` auto-derives `ConventionConfig` from these fields.
-
-5. **Hand-authoring clauseId/description in surfaces.** These are auto-derived by the builder and pipeline. Only provide `description` when adding convention-specific rationale in parentheses.
-
-6. **Semantic class IDs are module-local.** Define them in `{bundle}/semantic-classes.ts`, not in the central `BRIDGE_SEMANTIC_CLASSES`. Adding a convention does NOT require editing the central registry.
-
-7. **Phase transition vs route matching confusion.** Phase transitions (`phaseTransitions` in LocalFsm) advance the local FSM state — they are actor-agnostic and fire on observation shape. Route matching (`RouteExpr` in rules) filters which surfaces are active — it supports actor-aware patterns. Do not conflate the two.
+See `docs/convention-authoring.md` for the full convention authoring guide: quick reference, completeness checklist, step-by-step instructions, file templates, authoring rules, common pitfalls, and per-convention edge cases.
 
 ## Test Organization
 
@@ -174,12 +106,6 @@ Adding a new convention is a **definitions-only** change. The following director
 | `src/conventions/core/` | Pipeline infrastructure is convention-universal (see `core/CLAUDE.md`) |
 
 If any of these need changes to support a new convention, the boundary has leaked and the core architecture should be fixed instead. ESLint import boundaries enforce this at build time -- a convention that compiles and passes lint has respected the contract.
-
-## Design Decisions
-
-- **Why ConventionConfig is kept as a separate DTO:** UI/stores should consume minimal types, not full pipeline bundles with 20+ fields. ConventionConfig is the stable UI contract — auto-derived by `registerBundle()`.
-- **Why explicit registration over auto-discovery:** Explicit `registerBundle()` calls are traceable and debuggable. Auto-discovery adds implicit ordering and makes registration non-obvious.
-- **Why two layers (Bundle → Config) not three:** BiddingSystem added no fields or behavior that ConventionBundle didn't already provide. The indirection created wiring fragility without architectural benefit.
 
 ---
 

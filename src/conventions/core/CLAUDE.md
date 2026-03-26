@@ -82,14 +82,6 @@ Every subsystem here exists because simpler designs failed the convention-univer
 
 **Boundary rule:** When adding new pipeline infrastructure, write tests using synthetic fixtures first. Convention-specific tests go in `conventions/__tests__/<bundle-name>/`.
 
-## Known Gaps (Pattern 2-6 conventions)
-
-| Gap | Impact | Blocks |
-|-----|--------|--------|
-| No `Attachment` for host-state attachment | Add-on modules can't attach to host states | Pattern 4 (Negative Doubles, Drury) |
-| `ActivationTrace` always `[]` in meaning arbitrator | Provenance can't answer "which modules were live and why?" | Diagnostics |
-| `evaluateFacts()` only evaluates `acting-hand` world | No `public` or `full-deal` world facts can be evaluated | Future scope |
-
 ---
 
 ## Context Maintenance

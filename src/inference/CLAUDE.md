@@ -60,16 +60,6 @@ Public belief state = kibitzer view of the auction. Per-seat `InferredHoldings` 
 - **HCP narrowing:** `conditionOnOwnHand()` caps partner HCP max at `40 - ownHcp` (conservative bound). `toBeliefData()` uses narrowed `partnerHcpRange` for partner seat when private override present.
 - **`publicBeliefs` removed from `PublicSnapshot`** (Phase 2). Belief views are now accessed via `PosteriorQueryPort` instead of being eagerly attached to the snapshot. This decouples snapshot construction from posterior inference.
 
-## New Posterior Boundary
-
-The redesigned posterior boundary (Phases 0-5 complete) separates concerns into three layers:
-
-1. **Factor Compiler** (`posterior/factor-compiler.ts`): `PublicSnapshot` → `FactorGraph` — convention-erased compilation. No convention imports cross the boundary.
-2. **Backend** (`posterior/ts-posterior-backend.ts`): `ConditioningContext` → `PosteriorState` — weighted particle generation via Monte Carlo sampling. The backend is replaceable (future Rust/WASM swap).
-3. **Query Port** (`posterior/query-port.ts`): `PosteriorState` → typed queries via `PosteriorQueryPort` — consumer-facing interface (`marginalHcp()`, `fitProbability()`, etc.).
-
-The deprecated `PosteriorEngine` → `SeatPosterior` path has been removed (Phase 4B complete). All consumers use the new boundary: `createTsBackend()` → `createQueryPort()`. See `posterior/CLAUDE.md` for details. Boundary invariant tests in `boundary-invariants.test.ts` enforce: no convention imports, no `publicBeliefs` on snapshot, JSON round-trip, compilation trace integrity.
-
 ## Gotchas
 
 - Inference errors never propagate to callers — `inferFromBid()` returns null, belief derivation clamps contradictions
