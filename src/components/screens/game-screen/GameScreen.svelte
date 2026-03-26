@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { Seat } from "../../../service";
   import type { Call } from "../../../service";
   import { getSystemConfig, buildConventionCard } from "../../../service";
@@ -119,6 +119,10 @@
     startNewDrill().then(() => { debugReady = true; }).catch(console.error);
   });
 
+  onDestroy(() => {
+    gameStore.reset();
+  });
+
   async function handleNextDeal() {
     await startNewDrill();
   }
@@ -151,12 +155,13 @@
   // sidePanelW, tableScale) derive from it. CSS variables (--width-side-panel,
   // --game-scale, --panel-font) are set inline on <main>, NOT in app.css,
   // so they always reflect the actual available space.
-  let innerW = $state(1024);
+  let windowW = $state(1024);
+  let containerW = $state(1024);
   let innerH = $state(768);
   let headerH = $state(0);
 
   const debugPanelW = $derived(DEV && appStore.debugPanelOpen ? LAYOUT.DEBUG_PANEL_W : 0);
-  const availableW = $derived(innerW - debugPanelW);
+  const availableW = $derived(containerW - debugPanelW);
 
   const rootFontSize = $derived(Math.min(LAYOUT.FONT_MAX, Math.max(LAYOUT.FONT_MIN, availableW * LAYOUT.ROOT_FONT_MULTIPLIER)));
   const tableBaseW = 800;
@@ -165,10 +170,11 @@
     Math.min(LAYOUT.SIDE_PANEL_REM_MAX * rootFontSize, Math.max(LAYOUT.SIDE_PANEL_REM_MIN * rootFontSize, availableW * LAYOUT.SIDE_PANEL_WIDTH_RATIO)),
   );
 
-  const isDesktop = $derived(innerW >= DESKTOP_MIN);
+  const isDesktop = $derived(windowW >= DESKTOP_MIN);
+  const playHistoryW = $derived(Math.round(sidePanelW * 0.8));
   // PLAYING phase has a second panel on the left — account for both in scale
   const hasTwoPanels = $derived(isDesktop && gameStore.phase === "PLAYING");
-  const effectiveSidePanelW = $derived(hasTwoPanels ? sidePanelW * 2 : sidePanelW);
+  const effectiveSidePanelW = $derived(hasTwoPanels ? sidePanelW + playHistoryW : sidePanelW);
   // gap-3 = 0.75rem per gap; 2 gaps in 3-col layout, 1 gap in 2-col layout
   const gridGaps = $derived(isDesktop ? (hasTwoPanels ? 2 : 1) * LAYOUT.GAP_REM * rootFontSize : 0);
   // On mobile/tablet, the table and side panel stack vertically, each taking
@@ -223,10 +229,11 @@
   }
 </script>
 
-<svelte:window bind:innerWidth={innerW} bind:innerHeight={innerH} />
+<svelte:window bind:innerWidth={windowW} bind:innerHeight={innerH} />
 
+<div bind:clientWidth={containerW} class="h-full w-full">
 {#if gameStore.isInitialized}
-  <main class="h-full w-full flex flex-row overflow-hidden" aria-label="Bridge drill" style="--game-scale: {tableScale}; --panel-font: {panelFontPx}px; --width-side-panel: {sidePanelW}px;">
+  <main class="h-full w-full flex flex-row overflow-hidden" aria-label="Bridge drill" style="--game-scale: {tableScale}; --panel-font: {panelFontPx}px; --width-side-panel: {sidePanelW}px; --width-play-history: {playHistoryW}px;">
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden" style="max-width: {availableW}px;">
     <a href="#game-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[--z-above-all] focus:p-2 focus:bg-bg-card focus:text-text-primary focus:rounded-[--radius-md]">
       Skip to game
@@ -237,26 +244,6 @@
       class="flex items-center justify-between px-3 sm:px-6 py-3 border-b border-border-subtle shrink-0 bg-bg-base"
     >
       <div class="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
-        <button
-          class="shrink-0 min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
-          onclick={handleBackToMenu}
-          aria-label="Back to menu"
-          data-testid="back-to-menu"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-            ><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg
-          >
-        </button>
         <h1 class="text-[--text-heading] font-semibold text-text-primary truncate min-w-0">
           {displayConventionName(appStore.selectedConvention?.name ?? "Drill")} Practice
         </h1>
@@ -333,6 +320,7 @@
     </div>
   </div>
 {/if}
+</div>
 
 <style>
   .loading-spinner {

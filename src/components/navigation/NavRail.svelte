@@ -7,7 +7,7 @@
 
   const RAIL_WIDTH = 80;
 
-  const isHomeActive = $derived(appStore.screen === "conventions");
+  const isHomeActive = $derived(appStore.screen === "conventions" || appStore.screen === "game");
 
   const isLearnActive = $derived(
     appStore.screen === "learning" ||

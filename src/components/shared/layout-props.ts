@@ -16,9 +16,9 @@ export interface LayoutProps {
 export const PHASE_CONTAINER_CLASS =
   "flex-1 flex flex-col lg:grid lg:grid-cols-[1fr_var(--width-side-panel)] lg:grid-rows-[minmax(0,1fr)] lg:gap-3 overflow-hidden";
 
-/** 3-column playing phase: history | table | controls (grid on desktop, stacked on mobile). */
+/** 3-column playing phase: history (narrow) | table | controls (grid on desktop, stacked on mobile). */
 export const PLAYING_PHASE_CONTAINER_CLASS =
-  "flex-1 flex flex-col lg:grid lg:grid-cols-[var(--width-side-panel)_minmax(0,1fr)_var(--width-side-panel)] lg:grid-rows-[minmax(0,1fr)] lg:gap-3 overflow-hidden";
+  "flex-1 flex flex-col lg:grid lg:grid-cols-[var(--width-play-history)_minmax(0,1fr)_var(--width-side-panel)] lg:grid-rows-[minmax(0,1fr)] lg:gap-3 overflow-hidden";
 
 /** Side panel: stacked with top border on mobile, grid-child with full height on desktop. */
 export const SIDE_PANEL_CLASS =

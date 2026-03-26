@@ -28,25 +28,23 @@
 </script>
 
 <div class="bg-bg-deepest text-text-primary h-screen overflow-hidden font-sans">
-  {#if props.appStore.screen === "game"}
-    <GameScreen />
-  {:else}
-    <NavShell>
-      {#if props.appStore.screen === "conventions"}
-        <ConventionSelectScreen />
-      {:else if props.appStore.screen === "learning"}
-        <LearningScreen />
-      {:else if props.appStore.screen === "settings"}
-        <SettingsScreen />
-      {:else if props.appStore.screen === "coverage"}
-        <CoverageScreen />
-      {:else if props.appStore.screen === "profiles"}
-        <ProfilesScreen />
-      {:else}
-        <div class="flex h-screen items-center justify-center text-red-400">
-          <p>Unknown screen: {props.appStore.screen}</p>
-        </div>
-      {/if}
-    </NavShell>
-  {/if}
+  <NavShell>
+    {#if props.appStore.screen === "game"}
+      <GameScreen />
+    {:else if props.appStore.screen === "conventions"}
+      <ConventionSelectScreen />
+    {:else if props.appStore.screen === "learning"}
+      <LearningScreen />
+    {:else if props.appStore.screen === "settings"}
+      <SettingsScreen />
+    {:else if props.appStore.screen === "coverage"}
+      <CoverageScreen />
+    {:else if props.appStore.screen === "profiles"}
+      <ProfilesScreen />
+    {:else}
+      <div class="flex h-screen items-center justify-center text-red-400">
+        <p>Unknown screen: {props.appStore.screen}</p>
+      </div>
+    {/if}
+  </NavShell>
 </div>

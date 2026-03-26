@@ -66,18 +66,13 @@ test.describe("responsive layout — game screen", () => {
     expect(box!.height).toBeGreaterThanOrEqual(24);
   });
 
-  test("back button is visible and works", async ({ page }) => {
+  test("nav rail is visible during game", async ({ page }) => {
     await page.goto("/?convention=nt-bundle&seed=42");
     const phase = page.getByTestId("game-phase");
     await expect(phase).toHaveText("Bidding", { timeout: 10000 });
-    
-    const backButton = page.getByTestId("back-to-menu");
-    await expect(backButton).toBeVisible();
-    
-    const box = await backButton.boundingBox();
-    expect(box).toBeTruthy();
-    expect(box!.width).toBeGreaterThanOrEqual(24);
-    expect(box!.height).toBeGreaterThanOrEqual(24);
+
+    const homeButton = page.getByRole("button", { name: "Home" }).first();
+    await expect(homeButton).toBeVisible();
   });
 
   test("no horizontal overflow on game screen", async ({ page }) => {

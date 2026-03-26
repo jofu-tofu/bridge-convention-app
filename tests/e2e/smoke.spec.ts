@@ -141,14 +141,14 @@ test.describe("bidding flow", () => {
 });
 
 test.describe("navigation", () => {
-  test("back button returns to home from game", async ({ page }) => {
+  test("nav rail Home returns to convention select from game", async ({ page }) => {
     await page.goto("/?convention=bergen-bundle&seed=1");
 
     await expect(page.getByTestId("game-phase")).toHaveText("Bidding", {
       timeout: 10000,
     });
 
-    await page.getByTestId("back-to-menu").click();
+    await page.getByRole("button", { name: "Home" }).first().click();
     await expect(page.locator("h1")).toHaveText("Bridge Practice", {
       timeout: 10000,
     });

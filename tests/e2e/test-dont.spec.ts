@@ -308,12 +308,12 @@ test.describe("DONT Convention — Navigation and lifecycle", () => {
     await expect(phaseLabel).toHaveText("Bidding", { timeout: 10000 });
   });
 
-  test("back button returns to convention select", async ({ page }) => {
+  test("nav rail Home returns to convention select", async ({ page }) => {
     await page.goto("/?convention=dont-bundle&seed=1");
     const phaseLabel = page.getByTestId("game-phase");
     await expect(phaseLabel).toHaveText("Bidding", { timeout: 10000 });
 
-    await page.getByTestId("back-to-menu").click();
+    await page.getByRole("button", { name: "Home" }).first().click();
     const heading = page.locator("h1");
     await expect(heading).toHaveText("Bridge Practice", { timeout: 5000 });
   });
