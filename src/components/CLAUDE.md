@@ -38,7 +38,7 @@ components/
       BiddingPhase.svelte            Bidding phase template (pure — data via props)
       DeclarerPromptPhase.svelte     Declarer/defender prompt (pure — data via props)
       PlayingPhase.svelte            Play phase template (pure — data via props, legal plays from parent)
-      ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping
+      ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping, auction step-through
       layout-props.ts                (moved to src/components/shared/layout-props.ts)
       BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
       PlaySidePanel.svelte           Contract, trick counts, restart play, skip-to-review
@@ -63,8 +63,10 @@ components/
       BidFeedbackIncorrect.svelte    Incorrect bid feedback panel (integrates ParseTreePanel)
       BidFeedbackNearMiss.svelte     Near-miss bid feedback panel (integrates ParseTreePanel)
       ParseTreePanel.svelte          Post-bid decision chain visualization — shows which convention modules were considered, accepted, or eliminated, with per-module conditions and verdicts (selected/applicable/eliminated)
-    RoundBidList.svelte              Shared round-by-round bid list (configurable expand state, expected result, test IDs)
+    RoundBidList.svelte              Shared round-by-round bid list (configurable expand state, expected result, test IDs, dimming/highlighting/click for stepping)
     BiddingReview.svelte             Thin wrapper over RoundBidList (expanded siblings, shows expected)
+    AuctionStepPanel.svelte          Auction step-through panel: prev/next/show-all controls + RoundBidList with dim/highlight
+    AuctionStepPanel.ts              Companion: computeVisibleSeats pure function for progressive hand reveal
     MakeableContractsTable.svelte    5x4 DDS tricks grid (NT/S/H/D/C × N/E/S/W)
     AnalysisPanel.svelte             DDS analysis: makeable table + actual-vs-optimal + par score
     DecisionTree.svelte              Interactive expand/collapse tree with depth modes (compact/study/learn) for progressive teaching disclosure

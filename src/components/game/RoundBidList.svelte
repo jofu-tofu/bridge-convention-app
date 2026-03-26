@@ -12,15 +12,38 @@
     showExpectedResult?: boolean;
     /** Optional prefix for data-testid attributes. If omitted, no test IDs are added. */
     testIdPrefix?: string;
+    /** Global bid index (0-based) — entries beyond this are dimmed. null = all visible. */
+    visibleUpTo?: number | null;
+    /** Global bid index (0-based) to highlight with accent ring. null = none. */
+    highlightIndex?: number | null;
+    /** Click callback with global bid index. Makes bid entries clickable. */
+    onBidClick?: (globalIndex: number) => void;
   }
 
   let {
     bidHistory,
     showExpectedResult = false,
     testIdPrefix,
+    visibleUpTo = null,
+    highlightIndex = null,
+    onBidClick,
   }: Props = $props();
 
   const rounds = $derived(groupBidsByRound(bidHistory));
+
+  function globalIndex(roundNumber: number, entryIdx: number): number {
+    return (roundNumber - 1) * 4 + entryIdx;
+  }
+
+  function isDimmed(roundNumber: number, entryIdx: number): boolean {
+    if (visibleUpTo === null) return false;
+    return globalIndex(roundNumber, entryIdx) >= visibleUpTo;
+  }
+
+  function isHighlighted(roundNumber: number, entryIdx: number): boolean {
+    if (highlightIndex === null) return false;
+    return globalIndex(roundNumber, entryIdx) === highlightIndex;
+  }
 
   function callColorClass(call: Call): string {
     if (call.type !== "bid") return "text-text-secondary";
@@ -44,8 +67,19 @@
         Round {round.roundNumber}
       </div>
 
-      {#each round.entries as entry (entry.seat + "-" + round.roundNumber)}
-        <div class="flex flex-col gap-0.5 pl-2">
+      {#each round.entries as entry, entryIdx (entry.seat + "-" + round.roundNumber)}
+        {@const dimmed = isDimmed(round.roundNumber, entryIdx)}
+        {@const highlighted = isHighlighted(round.roundNumber, entryIdx)}
+        <div
+          class="flex flex-col gap-0.5 pl-2 rounded-[--radius-sm] transition-opacity
+            {dimmed ? 'opacity-30' : ''}
+            {highlighted ? 'bg-accent-primary-subtle ring-1 ring-accent-primary/40' : ''}
+            {onBidClick ? 'cursor-pointer hover:bg-bg-elevated' : ''}"
+          role={onBidClick ? "button" : undefined}
+          tabindex={onBidClick ? 0 : undefined}
+          onclick={onBidClick ? () => onBidClick(globalIndex(round.roundNumber, entryIdx)) : undefined}
+          onkeydown={onBidClick ? (e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onBidClick(globalIndex(round.roundNumber, entryIdx)); } } : undefined}
+        >
           <!-- Bid line -->
           <div class="flex min-w-0 items-center gap-2">
             <span class="text-text-muted w-4 shrink-0 font-mono text-[--text-label]">{entry.seat}:</span>
