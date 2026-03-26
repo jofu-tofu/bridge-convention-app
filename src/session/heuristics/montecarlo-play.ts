@@ -305,6 +305,8 @@ function cardKey(c: Card): string {
 interface MCDDSProviderOptions {
   /** Whether to filter samples by auction-inferred belief constraints (HCP/suit ranges). */
   readonly useBeliefConstraints: boolean;
+  /** Whether to dynamically extend sampling on close calls (up to 2× sampleCount). */
+  readonly useCloseCallExtension: boolean;
   /** Number of samples per decision (default 30). */
   readonly sampleCount?: number;
   /** Strategy ID override (default "mc-dds"). */
@@ -323,7 +325,7 @@ interface MCDDSProviderOptions {
 export function createMCDDSProvider(
   engine: EnginePort,
   rng: () => number,
-  opts: MCDDSProviderOptions = { useBeliefConstraints: true },
+  opts: MCDDSProviderOptions = { useBeliefConstraints: true, useCloseCallExtension: true },
 ): PlayStrategyProvider {
   const sampleCount = opts.sampleCount ?? DEFAULT_SAMPLE_COUNT;
   const tracker = new PlayConstraintTracker();
@@ -473,6 +475,7 @@ export function createMCDDSProvider(
       // 10. Close call? Sample + solve more batches (up to 2× default)
       const topTwoCheck = computeTopTwo(scores, context.legalPlays);
       if (
+        opts.useCloseCallExtension &&
         topTwoCheck &&
         topTwoCheck.bestAvg - topTwoCheck.secondBestAvg < EARLY_TERM_MARGIN &&
         cumulativeSuccessCount < sampleCount * 2
@@ -574,6 +577,7 @@ export function createWorldClassProvider(
 ): PlayStrategyProvider {
   return createMCDDSProvider(engine, rng, {
     useBeliefConstraints: true,
+    useCloseCallExtension: true,
     sampleCount,
     id: "world-class",
     name: "World Class (MC+DDS)",

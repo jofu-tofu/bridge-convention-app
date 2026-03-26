@@ -30,6 +30,11 @@ import { inferenceHeuristics } from "./inference-play";
 import { partnerSeat } from "../../engine/constants";
 import { createWorldClassProvider, createMCDDSProvider } from "./montecarlo-play";
 
+// ── Expert MC+DDS sample count ──────────────────────────────────────
+
+/** Expert uses fewer samples than World Class (12 vs 30) — good but not optimal. */
+const EXPERT_SAMPLE_COUNT = 12;
+
 // ── Base heuristic chain (L0) ───────────────────────────────────────
 
 const BASE_HEURISTICS: readonly PlayHeuristic[] = [
@@ -243,11 +248,13 @@ function createExpertProvider(
   rng: () => number,
   engine?: EnginePort,
 ): PlayStrategyProvider {
-  // Expert: MC+DDS with void constraints but WITHOUT auction belief constraints.
+  // Expert: MC+DDS with fewer samples, no belief constraints, no close-call extension.
   // Falls back to heuristic chain when no engine is available.
   if (engine) {
     return createMCDDSProvider(engine, rng, {
       useBeliefConstraints: false,
+      useCloseCallExtension: false,
+      sampleCount: EXPERT_SAMPLE_COUNT,
       id: "expert",
       name: "Expert (MC+DDS)",
     });
@@ -281,8 +288,8 @@ interface ProfileStrategyOptions {
  * Creates a PlayStrategyProvider for the given profile.
  * - Beginner: base heuristics with skip probability on selected heuristics
  * - Club Player: inference + expert-only (card counting, restricted choice) + base
- * - Expert: MC+DDS without belief constraints (falls back to heuristic chain if no engine)
- * - World Class: MC+DDS with full belief constraints (requires engine)
+ * - Expert: MC+DDS (12 samples, no beliefs, no close-call extension)
+ * - World Class: MC+DDS (30 samples, belief constraints, 2× extension on close calls)
  */
 export function createProfileStrategyProvider(
   profile: PlayProfile,
