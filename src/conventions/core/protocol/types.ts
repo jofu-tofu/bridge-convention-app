@@ -14,7 +14,7 @@ import type { ConstraintDimension, BidMeaning } from "../../pipeline/evaluation/
 // ── Declarative Expression Types ────────────────────────────────────
 
 /** Reference to a value in the public state. */
-export type Ref =
+type Ref =
   | { readonly kind: "reg"; readonly path: string }
   | { readonly kind: "history"; readonly path: string }
   | { readonly kind: "actor"; readonly path: "party" | "team" | "seat" }
@@ -24,7 +24,7 @@ export type Ref =
   | { readonly kind: "protocol"; readonly protocolId: string; readonly path: "stateId" | "instanceKey" };
 
 /** Boolean expression tree over public state. */
-export type BoolExpr =
+type BoolExpr =
   | { readonly op: "and"; readonly args: readonly BoolExpr[] }
   | { readonly op: "or"; readonly args: readonly BoolExpr[] }
   | { readonly op: "not"; readonly arg: BoolExpr }
@@ -39,7 +39,7 @@ export type BoolExpr =
   | { readonly op: "false" };
 
 /** State effect — writes to public registers or local protocol state. */
-export type EffectSpec =
+type EffectSpec =
   | { readonly op: "setReg"; readonly path: string; readonly value: unknown }
   | { readonly op: "clearReg"; readonly path: string }
   | { readonly op: "setLocal"; readonly path: string; readonly value: unknown }
@@ -47,60 +47,13 @@ export type EffectSpec =
   | { readonly op: "exportTag"; readonly tag: string }
   | { readonly op: "removeTag"; readonly tag: string };
 
-// ── BoolExpr Helpers ────────────────────────────────────────────────
-
-export function and(...args: BoolExpr[]): BoolExpr {
-  return { op: "and", args };
-}
-
-export function or(...args: BoolExpr[]): BoolExpr {
-  return { op: "or", args };
-}
-
-export function not(arg: BoolExpr): BoolExpr {
-  return { op: "not", arg };
-}
-
-export function exists(ref: Ref): BoolExpr {
-  return { op: "exists", ref };
-}
-
-export function eq(ref: Ref, value: unknown): BoolExpr {
-  return { op: "eq", ref, value };
-}
-
-export function neq(ref: Ref, value: unknown): BoolExpr {
-  return { op: "neq", ref, value };
-}
-
-export function activeTag(tag: string): BoolExpr {
-  return { op: "activeTag", tag };
-}
-
-export function reg(path: string): Ref {
-  return { kind: "reg", path };
-}
-
-export function local(path: string): Ref {
-  return { kind: "local", path };
-}
-
-export function tagRef(tag: string): Ref {
-  return { kind: "tag", tag };
-}
-
-export function cap(capabilityId: string): BoolExpr {
-  // Capabilities are derived booleans stored as tags with "cap:" prefix
-  return { op: "activeTag", tag: `cap:${capabilityId}` };
-}
-
 // ── Public Semantic Schema ──────────────────────────────────────────
 
 /** Writer policy for a register — who is allowed to set it. */
-export type RegisterWriterPolicy = "singleLogicalOwner" | "multiWriter";
+type RegisterWriterPolicy = "singleLogicalOwner" | "multiWriter";
 
 /** Specification for a single register in the public semantic contract. */
-export interface RegisterSpec {
+interface RegisterSpec {
   readonly type: string;
   readonly description: string;
   readonly invariants?: readonly string[];
@@ -108,7 +61,7 @@ export interface RegisterSpec {
 }
 
 /** A derived boolean capability — computed from registers + tags + history. */
-export interface CapabilitySpec {
+interface CapabilitySpec {
   readonly id: string;
   readonly when: BoolExpr;
   readonly description: string;
@@ -119,7 +72,7 @@ export interface CapabilitySpec {
  * agree on. Defines the shared vocabulary of registers, capabilities,
  * and coordination points.
  */
-export interface PublicSemanticSchema {
+interface PublicSemanticSchema {
   readonly registers: Readonly<Record<string, RegisterSpec>>;
   readonly capabilities: Readonly<Record<string, CapabilitySpec>>;
 }
@@ -127,7 +80,7 @@ export interface PublicSemanticSchema {
 // ── Event Patterns ──────────────────────────────────────────────────
 
 /** Pattern for matching a single event in a conversation prefix. */
-export interface EventPattern {
+interface EventPattern {
   readonly actor?: "self" | "partner" | "opponent" | "any";
   readonly call?: Call;
   /** Match any call of this type (bid/pass/double/redouble). */
@@ -137,7 +90,7 @@ export interface EventPattern {
 // ── Transition Types ────────────────────────────────────────────────
 
 /** A transition spec within a frame state (base or protocol). */
-export interface TransitionSpec {
+interface TransitionSpec {
   readonly transitionId: string;
   /** Event pattern to match. */
   readonly when: EventPattern;
@@ -156,7 +109,7 @@ export interface TransitionSpec {
 }
 
 /** Zero-event reaction — evaluated in the settle phase after protocol exits. */
-export interface ReactionSpec {
+interface ReactionSpec {
   readonly reactionId: string;
   /** Condition over public state. */
   readonly when: BoolExpr;
@@ -174,13 +127,13 @@ export interface ReactionSpec {
  * - "compete": rules from both layers visible; ranking decides
  * - "shadow": for covered actions, lower layers are hidden/banned
  */
-export type SurfaceRelation = "augment" | "compete" | "shadow";
+type SurfaceRelation = "augment" | "compete" | "shadow";
 
 /**
  * A surface fragment — a set of rules contributed by one frame at one state.
  * Multiple fragments compose into the effective decision surface.
  */
-export interface SurfaceFragment {
+interface SurfaceFragment {
   readonly id: string;
   /** How this fragment interacts with lower layers. */
   readonly relation: SurfaceRelation;

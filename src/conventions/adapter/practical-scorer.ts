@@ -19,7 +19,7 @@ export const WEIGHTS = {
   misunderstandingRisk: -3.0,
 };
 
-export interface ScoringInput {
+interface ScoringInput {
   readonly ownHcp: number;
   readonly partnerMinHcp: number;
   readonly ownSuitLength: number;

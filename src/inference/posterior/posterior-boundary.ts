@@ -28,13 +28,13 @@ export type FactorSpec =
   | FitFactor;
 
 /** Common properties shared by all factor types. */
-export interface BaseFactor {
+interface BaseFactor {
   readonly strength: FactorStrength;
   readonly origin: FactorOrigin;
 }
 
 /** Factor constrained to a single seat. */
-export interface SingleSeatFactor extends BaseFactor {
+interface SingleSeatFactor extends BaseFactor {
   readonly seat: string;
 }
 

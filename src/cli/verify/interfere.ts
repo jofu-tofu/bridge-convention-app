@@ -304,7 +304,7 @@ function collectKernelDeltas(mod: ConventionModule): KernelDeltaEntry[] {
 /**
  * Full pairwise analysis of two modules across all interference dimensions.
  */
-export function analyzeModulePair(a: ConventionModule, b: ConventionModule): InterferenceEdge[] {
+function analyzeModulePair(a: ConventionModule, b: ConventionModule): InterferenceEdge[] {
   return [
     ...detectActivationOverlap(a, b),
     ...detectEncodingCollision(a, b),

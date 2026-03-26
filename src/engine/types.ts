@@ -141,7 +141,7 @@ export interface DealGeneratorResult {
   readonly iterations: number;
 }
 
-export interface ParContract {
+interface ParContract {
   readonly level: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   readonly strain: BidSuit;
   readonly declarer: Seat;

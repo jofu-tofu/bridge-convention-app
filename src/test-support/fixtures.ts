@@ -20,7 +20,7 @@ export function makeCard(suit: Suit, rank: Rank): Card {
 }
 
 /** All 13 ranks in ascending order. */
-export const ALL_RANKS = [
+const ALL_RANKS = [
   Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six,
   Rank.Seven, Rank.Eight, Rank.Nine, Rank.Ten, Rank.Jack,
   Rank.Queen, Rank.King, Rank.Ace,
@@ -98,15 +98,6 @@ export async function flushWithFakeTimers() {
   for (let i = 0; i < 20; i++) {
     await vi.runAllTimersAsync();
   }
-  await tick();
-}
-
-/**
- * Flush all pending async work when using real timers.
- * AI_BID_DELAY is 300ms × up to 4 AI bids = 1200ms max.
- */
-export async function flushWithRealTimers() {
-  await new Promise((r) => setTimeout(r, 1500));
   await tick();
 }
 

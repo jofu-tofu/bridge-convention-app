@@ -9,8 +9,6 @@ import { generateDeal } from "../engine/deal-generator";
 import { mulberry32 } from "../engine/seeded-rng";
 import { evaluateHand } from "../engine/hand-evaluator";
 import { callKey } from "../engine/call-helpers";
-import { parsePatternCall } from "../engine/auction-helpers";
-import { getLegalCalls } from "../engine/auction";
 import { Seat, Vulnerability } from "../engine/types";
 import type {
   Auction,
@@ -21,19 +19,14 @@ import type {
   Card,
 } from "../engine/types";
 import type { ConventionSpec, ConventionBundle, BaseSystemId } from "../conventions";
-import type { BiddingContext, BidHistoryEntry } from "../service";
-import type { BiddingStrategy } from "../service";
+import type { BiddingContext } from "../service";
 import type { OpponentMode } from "../session/drill-types";
-import type { DrillSettings } from "../session/drill-types";
-import type { BiddingViewport } from "../service/response-types";
-import { buildBiddingViewport } from "../session/build-viewport";
 
 // ── Re-exports for convenience ──────────────────────────────────────
 
 export { Seat, Vulnerability };
-export { callKey, parsePatternCall, getLegalCalls, evaluateHand };
-export { buildBiddingViewport };
-export type { Auction, Call, Hand, Deal, Card, ConventionSpec, ConventionBundle, BiddingContext, OpponentMode, BiddingViewport, BidHistoryEntry, DrillSettings, BaseSystemId };
+export { callKey };
+export type { Auction, Call, Deal, ConventionSpec, ConventionBundle, OpponentMode, BaseSystemId };
 
 // ── Flags type ──────────────────────────────────────────────────────
 
@@ -228,7 +221,7 @@ export function resolveSpec(bundleId: string, baseSystem: BaseSystemId = BASE_SY
   return spec;
 }
 
-export function resolveBundle(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionBundle {
+function resolveBundle(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionBundle {
   const input = getBundleInput(bundleId);
   if (!input) {
     console.error(`Unknown bundle: "${bundleId}"`);
@@ -339,96 +332,4 @@ export function resolveBundleWithRules(bundleId: string, baseSystem: BaseSystemI
   return resolveBundle(bundleId, baseSystem);
 }
 
-// ── Viewport construction ───────────────────────────────────────────
-//
-// The CLI must use the SAME viewport boundary as the UI. These helpers
-// bridge CLI-available data into buildBiddingViewport() inputs.
 
-/**
- * Build a BidHistoryEntry[] from auction entries by replaying each
- * convention-player bid through the strategy to extract alert info.
- *
- * Opponent passes get no alert. Convention-player bids get the alert
- * from the strategy's BidResult (same path the UI store uses).
- */
-export function buildCliBidHistory(
-  auction: Auction,
-  deal: Deal,
-  userSeat: Seat,
-  strategy: BiddingStrategy,
-  vulnerability: Vulnerability = Vulnerability.None,
-): BidHistoryEntry[] {
-  const partner = partnerOf(userSeat);
-  const history: BidHistoryEntry[] = [];
-
-  for (let i = 0; i < auction.entries.length; i++) {
-    const entry = auction.entries[i]!;
-    const isConventionPlayer = entry.seat === userSeat || entry.seat === partner;
-
-    if (!isConventionPlayer) {
-      // Opponent bid — no convention alert
-      history.push({
-        seat: entry.seat,
-        call: entry.call,
-        isUser: false,
-      });
-      continue;
-    }
-
-    // Convention player — replay through strategy to get alert info
-    const auctionBefore: Auction = {
-      entries: auction.entries.slice(0, i),
-      isComplete: false,
-    };
-    const hand = deal.hands[entry.seat];
-    const ctx = buildContext(hand, auctionBefore, entry.seat, vulnerability);
-    const result = strategy.suggest(ctx);
-
-    history.push({
-      seat: entry.seat,
-      call: entry.call,
-      meaning: result?.meaning,
-      isUser: entry.seat === userSeat,
-      alertLabel: result?.alert?.teachingLabel,
-      annotationType: result?.alert?.annotationType,
-    });
-  }
-
-  return history;
-}
-
-/**
- * Build a proper BiddingViewport for the CLI using the same
- * buildBiddingViewport() function the UI uses.
- *
- * This is the SINGLE information boundary — the CLI sees exactly
- * what a player would see in the Svelte UI.
- */
-export function buildCliViewport(opts: {
-  deal: Deal;
-  auction: Auction;
-  userSeat: Seat;
-  activeSeat: Seat;
-  strategy: BiddingStrategy;
-  bundleName: string;
-  vulnerability?: Vulnerability;
-}): BiddingViewport {
-  const { deal, auction, userSeat, activeSeat, strategy, bundleName, vulnerability } = opts;
-
-  const bidHistory = buildCliBidHistory(
-    auction, deal, userSeat, strategy,
-    vulnerability ?? deal.vulnerability,
-  );
-
-  return buildBiddingViewport({
-    deal,
-    userSeat: activeSeat,
-    auction,
-    bidHistory,
-    legalCalls: getLegalCalls(auction, activeSeat),
-    faceUpSeats: new Set([activeSeat]),
-    conventionName: bundleName,
-    isUserTurn: true,
-    currentBidder: activeSeat,
-  });
-}

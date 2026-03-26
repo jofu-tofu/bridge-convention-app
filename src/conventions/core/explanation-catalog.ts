@@ -10,10 +10,10 @@
  */
 
 /** Role an explanation plays in a given context. */
-export type ExplanationRole = "supporting" | "blocking" | "inferential" | "pedagogical";
+type ExplanationRole = "supporting" | "blocking" | "inferential" | "pedagogical";
 
 /** Explanation level preference. */
-export type ExplanationLevel = "semantic" | "mechanical";
+type ExplanationLevel = "semantic" | "mechanical";
 
 /** Base fields shared by all explanation entries. */
 interface ExplanationEntryBase {

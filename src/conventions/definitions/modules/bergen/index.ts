@@ -111,7 +111,7 @@ const R4_OPENER_DELTA: NegotiationDelta = { captain: "opener" };
 
 // ── Local FSM ─────────────────────────────────────────────────────
 
-export const bergenLocal: LocalFsm<Phase> = {
+const bergenLocal: LocalFsm<Phase> = {
   initial: "idle",
   transitions: [
     // Opening observations advance to suit-specific opened phase
@@ -175,7 +175,7 @@ export const bergenLocal: LocalFsm<Phase> = {
 // ── State entries ─────────────────────────────────────────────────
 
 /** Factory: creates Bergen state entries. */
-export function createBergenStates(_sys: SystemConfig): readonly StateEntry<Phase>[] {
+function createBergenStates(_sys: SystemConfig): readonly StateEntry<Phase>[] {
   return [
     // Opening stubs (idle, opener turn)
     {
@@ -299,7 +299,7 @@ export function createBergenStates(_sys: SystemConfig): readonly StateEntry<Phas
 // ── Module declarations ───────────────────────────────────────────
 
 /** Module parts returned by createBergenModule (declaration-only — no local/rules). */
-export interface BergenModuleParts {
+interface BergenModuleParts {
   readonly facts: FactCatalogExtension;
   readonly explanationEntries: readonly ExplanationEntry[];
 }
@@ -310,7 +310,7 @@ export interface BergenModuleParts {
  * Returns facts and explanations only. Full ConventionModule assembly
  * (adding local FSM + states) happens in module-registry.ts.
  */
-export function createBergenModule(_sys: SystemConfig): BergenModuleParts {
+function createBergenModule(_sys: SystemConfig): BergenModuleParts {
   return {
     facts: bergenFacts,
     explanationEntries: BERGEN_EXPLANATION_ENTRIES,

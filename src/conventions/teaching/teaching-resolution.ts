@@ -8,7 +8,7 @@ import type { AcceptableBid, TeachingResolution } from "./teaching-types";
 
 // Re-export contract types so existing importers continue to work
 export { BidGrade };
-export type { AcceptableBid, TeachingResolution };
+export type { TeachingResolution };
 
 /** Check if a candidate is eligible for teaching.
  *  Uses eligibility model when available, falls back to legacy fields.

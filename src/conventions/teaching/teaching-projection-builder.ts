@@ -43,7 +43,7 @@ import { buildParseTree } from "./parse-tree-builder";
 // -- Options --
 
 /** Options for teaching projection construction. */
-export interface TeachingProjectionOptions {
+interface TeachingProjectionOptions {
   /** Seat label for the hand space summary (defaults to "South"). */
   readonly seatLabel?: string;
   /** HCP range override for hand space summary. */

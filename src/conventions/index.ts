@@ -10,67 +10,29 @@ import "./registration";
 // ── Pipeline types (re-exported from contracts — physically stay there) ──
 export type {
   BidMeaning,
-  MeaningProposal,
-  MeaningClause,
   BidMeaningClause,
-  MeaningId,
-  SemanticClassId,
-  RankingMetadata,
-  AuthoredRankingMetadata,
-  RecommendationBand,
-  SpecificityBasis,
-  ConstraintDimension,
-  FactOperator,
-  EvaluationEvidence,
 } from "./pipeline/evaluation/meaning";
-export { compareRanking, BAND_PRIORITY } from "./pipeline/evaluation/meaning";
 export { deriveNeutralDescription } from "./pipeline/evaluation/clause-derivation";
 
 export type {
-  DecisionProvenance,
-  ApplicabilityEvidence,
-  EliminationTrace,
-  ActivationTrace,
-  ArbitrationTrace,
-  EncodingTrace,
-  LegalityTrace,
-  HandoffTrace,
   EncoderKind,
 } from "./pipeline/evaluation/provenance";
 
 export type {
-  CandidateEligibility,
-  ResolvedCandidateDTO,
-  EvaluationTrace,
-} from "./pipeline/tree-evaluation";
-export { isDtoSelectable, isDtoTeachingAcceptable } from "./pipeline/tree-evaluation";
-
-export type {
   TeachingProjection,
-  CallProjection,
-  MeaningView,
   ParseTreeView,
-  WhyNotEntry,
   ConventionContribution,
-  ParseTreeModuleNode,
-  ParseTreeCondition,
 } from "./teaching/teaching-types";
 
 // ── Pipeline types (moved from contracts) ───────────────────────────────
-export type { PipelineResult, PipelineCarrier, ArbitrationResult, EncodedProposal, EliminationRecord } from "./pipeline/pipeline-types";
+export type { PipelineResult, PipelineCarrier, ArbitrationResult, EncodedProposal } from "./pipeline/pipeline-types";
 export type { StrategyEvaluation, ConventionStrategy, MachineDebugSnapshot } from "./pipeline/strategy-evaluation";
-export { resolveAlert, isAlertable } from "./pipeline/evaluation/alert";
-export type { AlertResolvable } from "./pipeline/evaluation/alert";
+export { isAlertable } from "./pipeline/evaluation/alert";
 export type { BidAction } from "./pipeline/bid-action";
 
 // ── Pipeline functions (moved in Phase 1) ───────────────────────────────
-export { evaluateFacts } from "./pipeline/facts/fact-evaluator";
-export type { RelationalFactContext, EvaluateFactsOptions } from "./pipeline/facts/fact-evaluator";
 export { createSharedFactCatalog } from "./pipeline/facts/shared-fact-catalog";
 export { createSystemFactCatalog } from "./pipeline/facts/system-fact-catalog";
-export { createHandFactResolver } from "./pipeline/facts/hand-fact-resolver";
-export { evaluateAllBidMeanings } from "./pipeline/evaluation/meaning-evaluator";
-export { arbitrateMeanings, zipProposalsWithSurfaces } from "./pipeline/evaluation/meaning-arbitrator";
 export { collectMatchingClaims, collectMatchingClaimsWithPhases, deriveTurnRole, flattenSurfaces } from "./pipeline/observation/rule-interpreter";
 export type { ModuleSurfaceResult } from "./pipeline/observation/rule-interpreter";
 export { normalizeIntent } from "./pipeline/observation/normalize-intent";
@@ -79,25 +41,22 @@ export { advanceLocalFsm } from "./pipeline/observation/local-fsm";
 export { enumerateRuleAtoms, generateRuleCoverageManifest } from "./pipeline/rule-enumeration";
 export type { RuleAtom, RuleCoverageManifest } from "./pipeline/rule-enumeration";
 export { runPipeline } from "./pipeline/run-pipeline";
-export type { PipelineInput, PipelineOutput } from "./pipeline/run-pipeline";
 
 // ── Core (registry, context, modules, bundles) ─────────────────────────
 export { ConventionCategory } from "./core/convention-types";
-export type { ConventionConfig, ConventionLookup, ConventionTeaching } from "./core/convention-types";
-export { registerConvention, clearRegistry, getConvention, listConventions } from "./core/registry";
+export type { ConventionConfig } from "./core/convention-types";
+export { getConvention, listConventions } from "./core/registry";
 export { createBiddingContext } from "./core/context-factory";
-export { findBundleForConvention, getBundle, listBundles, composeBundles, resolveConventionForSystem } from "./core/bundle";
-export type { ConventionBundle, BundleInput } from "./core/bundle";
-export type { RuntimeModule, DecisionSurfaceEntry, RuntimeDiagnostic, EvaluationResult } from "./core/runtime/types";
-export type { MachineRegisters } from "./core/runtime/machine-types";
+export { getBundle, resolveConventionForSystem } from "./core/bundle";
+export type { ConventionBundle } from "./core/bundle";
 export type { ConventionSpec } from "./core/protocol/types";
-export type { ConventionModule, ModuleTeaching, ResolvedSurface, LocalFsm, StateEntry } from "./core/convention-module";
+export type { ConventionModule, ResolvedSurface, LocalFsm, StateEntry } from "./core/convention-module";
 export { moduleSurfaces } from "./core/convention-module";
 export type { ObsPattern, TurnRole, NegotiationExpr, RouteExpr } from "./core/rule-module";
 export { INITIAL_NEGOTIATION } from "./core/committed-step";
-export type { AuctionContext, NegotiationState, NegotiationDelta, ClaimRef, CommittedStep } from "./core/committed-step";
+export type { AuctionContext, NegotiationState, CommittedStep } from "./core/committed-step";
 export type { PublicSnapshot } from "./core/module-surface";
-export type { ExplanationEntry, ExplanationCatalog } from "./core/explanation-catalog";
+export type { ExplanationEntry } from "./core/explanation-catalog";
 export type { TeachingControls } from "./core/deal-spec-types";
 
 // ── Bundle test helpers ─────────────────────────────────────────────────
@@ -142,14 +101,11 @@ export type {
 } from "./core/strategy-types";
 
 // ── Adapter (convention→strategy bridge) ─────────────────────────────
-export { protocolSpecToStrategy, buildObservationLogViaRules, findMatchingClaimForCall } from "./adapter/protocol-adapter";
-export { meaningToStrategy } from "./adapter/meaning-strategy";
-export { scoreCandidatePractically, buildPracticalRecommendation, LEVEL_HCP_TABLE } from "./adapter/practical-scorer";
+export { protocolSpecToStrategy, buildObservationLogViaRules } from "./adapter/protocol-adapter";
+export { LEVEL_HCP_TABLE } from "./adapter/practical-scorer";
 export { TraceCollector } from "./adapter/trace-collector";
 
 // ── Teaching (resolution, projection, parse-tree) ─────────────────────
 export { resolveTeachingAnswer, gradeBid, BidGrade } from "./teaching/teaching-resolution";
-export type { AcceptableBid, TeachingResolution } from "./teaching/teaching-resolution";
+export type { TeachingResolution } from "./teaching/teaching-resolution";
 export { projectTeaching } from "./teaching/teaching-projection-builder";
-export type { TeachingProjectionOptions } from "./teaching/teaching-projection-builder";
-export { buildParseTree } from "./teaching/parse-tree-builder";

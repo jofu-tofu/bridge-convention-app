@@ -2,7 +2,7 @@ import type { HandPredicate, DealConstraint, PublicGuard } from "./agreement-mod
 
 export type SeatRole = "self" | "partner" | "lho" | "rho" | "openingSide";
 
-export interface DealSeatConstraint {
+interface DealSeatConstraint {
   readonly kind: "seat";
   readonly role: SeatRole;
   readonly predicate: HandPredicate;

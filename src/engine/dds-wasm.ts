@@ -77,7 +77,7 @@ const DDS_STRAIN_MAP: BidSuit[] = [
 ];
 
 // DDS seat index mapping (dll.h): 0=N, 1=E, 2=S, 3=W
-export const DDS_SEAT_MAP: Seat[] = [
+const DDS_SEAT_MAP: Seat[] = [
   SeatEnum.North,
   SeatEnum.East,
   SeatEnum.South,
@@ -145,7 +145,7 @@ export function handsToPBN(hands: Record<Seat, Hand>): string {
 }
 
 /** Convert a set of cards to a PBN hand string (S.H.D.C ranks descending). */
-export function cardsToPBNHand(cards: readonly Card[]): string {
+function cardsToPBNHand(cards: readonly Card[]): string {
   const bySuit = new Map<Suit, string[]>([
     [Suit.Spades, []],
     [Suit.Hearts, []],
@@ -241,7 +241,7 @@ const DEAL_PBN_SIZE = 112;
 const FUTURE_TRICKS_SIZE = 216;
 
 // DDS suit index mapping for play: 0=S, 1=H, 2=D, 3=C
-export const DDS_SUIT_MAP_PLAY: Suit[] = [
+const DDS_SUIT_MAP_PLAY: Suit[] = [
   Suit.Spades,
   Suit.Hearts,
   Suit.Diamonds,
@@ -249,7 +249,7 @@ export const DDS_SUIT_MAP_PLAY: Suit[] = [
 ];
 
 // DDS rank value to Rank enum (2-14)
-export const DDS_RANK_MAP: Record<number, Rank> = {
+const DDS_RANK_MAP: Record<number, Rank> = {
   2: Rank.Two,
   3: Rank.Three,
   4: Rank.Four,

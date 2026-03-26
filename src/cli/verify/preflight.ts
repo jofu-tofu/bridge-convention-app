@@ -13,7 +13,7 @@ import { fuzzBundle } from "./fuzz";
 import type { PreflightOutput } from "./types";
 import { ALL_INVARIANTS } from "./invariants";
 
-export type PreflightBudget = "fast" | "full";
+type PreflightBudget = "fast" | "full";
 
 interface PreflightConfig {
   readonly budget: PreflightBudget;

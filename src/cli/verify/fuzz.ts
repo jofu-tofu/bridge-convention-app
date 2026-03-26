@@ -28,7 +28,7 @@ import type {
 } from "./types";
 import { ALL_INVARIANTS } from "./invariants";
 
-export interface FuzzConfig {
+interface FuzzConfig {
   readonly trials: number;
   readonly seed: number;
   readonly vulnMixed?: boolean;

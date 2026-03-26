@@ -131,5 +131,3 @@ export function solveBoardWasm(
     });
   });
 }
-
-export type { SolveBoardResult } from "./dds-wasm";

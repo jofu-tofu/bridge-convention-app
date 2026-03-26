@@ -16,8 +16,6 @@ export type {
   ServicePublicBeliefs,
   ServicePublicBeliefState,
   ServiceInferenceSnapshot,
-  AiBidEntry,
-  AiPlayEntry,
   ConventionCardView,
 } from "./response-types";
 
@@ -63,7 +61,7 @@ export { buildConventionCard } from "./display/convention-card";
 
 // ── Strategy re-exports ──
 
-export type { BidResult, BiddingContext, BiddingStrategy } from "../conventions";
+export type { BidResult, BiddingContext } from "../conventions";
 export type { ServiceBidHistoryEntry as BidHistoryEntry } from "./response-types";
 export type { PlayStrategy, PlayContext, PlayResult } from "../conventions";
 export type { PosteriorSummary } from "../conventions";

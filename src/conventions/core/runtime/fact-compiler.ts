@@ -14,7 +14,7 @@ import type { Seat } from "../../../engine/types";
 
 // ── Clause value type (union of all representable clause values) ─────
 
-export type ClauseValue =
+type ClauseValue =
   | number
   | boolean
   | string
@@ -44,7 +44,7 @@ export interface MutableSeatConstraint {
 
 // ── Options for compile behaviour ───────────────────────────────────
 
-export interface CompileFactOptions {
+interface CompileFactOptions {
   /**
    * When `"any"`, suit-length `gte` constraints are routed to
    * `minLengthAny` instead of `minLength`. This corresponds to an

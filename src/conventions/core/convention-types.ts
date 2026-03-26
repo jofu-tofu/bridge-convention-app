@@ -59,4 +59,4 @@ export interface ConventionConfig {
 }
 
 /** Resolves a convention config by ID. Must throw on unknown IDs (same as getConvention). */
-export type ConventionLookup = (id: string) => ConventionConfig;
+type ConventionLookup = (id: string) => ConventionConfig;

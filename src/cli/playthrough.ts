@@ -6,14 +6,11 @@
 import { enumerateRuleAtoms } from "../conventions";
 import type { ConventionModule } from "../conventions";
 import { createSpecStrategy, createOpponentStrategy } from "../session/strategy-factory";
-import { assembleBidFeedback, BidGrade } from "../session/bid-feedback-builder";
-import type { BidResult } from "../service";
-import { buildViewportFeedback, buildTeachingDetail } from "../session/build-viewport";
 
-import type { ConventionSpec, ConventionBundle, Auction, Call, OpponentMode, Seat, BiddingViewport, Deal } from "./shared";
+import type { ConventionSpec, ConventionBundle, Auction, Call, OpponentMode, Seat, Deal } from "./shared";
 import { Vulnerability,
   callKey,
-  generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, nextSeatClockwise, partnerOf, buildCliViewport,
+  generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, nextSeatClockwise, partnerOf,
 } from "./shared";
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -21,7 +18,7 @@ import { Vulnerability,
 /** Internal tracking data for each convention-player decision point.
  *  Carries both player-visible data (via BiddingViewport) and internal
  *  metadata (atomId, recommendation) for plan/selftest use. */
-export interface PlaythroughStep {
+interface PlaythroughStep {
   readonly stepIndex: number;
   /** Atom ID from rule enumeration (internal — not exposed to agents). */
   readonly atomId: string | null;
@@ -33,7 +30,7 @@ export interface PlaythroughStep {
   readonly auctionEntries: readonly { seat: Seat; call: Call }[];
 }
 
-export interface PlaythroughResult {
+interface PlaythroughResult {
   readonly seed: number;
   readonly deal: Deal;
   readonly userSeat: Seat;
@@ -157,91 +154,4 @@ export function runSinglePlaythrough(
   return { seed, deal, userSeat, bundleName: bundle.name, steps, atomsCovered };
 }
 
-// ── Step viewport ───────────────────────────────────────────────────
 
-/**
- * Build a proper BiddingViewport for a playthrough step.
- * Uses the same buildBiddingViewport() as the UI — same information boundary.
- */
-export function buildStepViewport(
-  s: PlaythroughStep,
-  result: PlaythroughResult,
-  spec: ConventionSpec,
-  vulnerability: Vulnerability = Vulnerability.None,
-): BiddingViewport {
-  const strategy = createSpecStrategy(spec);
-  const auction: Auction = { entries: [...s.auctionEntries], isComplete: false };
-  return buildCliViewport({
-    deal: result.deal,
-    auction,
-    userSeat: result.userSeat,
-    activeSeat: s.seat,
-    strategy,
-    bundleName: result.bundleName,
-    vulnerability,
-  });
-}
-
-/**
- * Build a reveal-mode step object with internal metadata.
- * Only used by `play --reveal` — includes recommendation and atom IDs.
- */
-export function buildRevealStep(
-  s: PlaythroughStep,
-): Record<string, unknown> {
-  return {
-    stepIndex: s.stepIndex,
-    seat: s.seat,
-    atomId: s.atomId,
-    meaningLabel: s.meaningLabel,
-    auctionSoFar: s.auctionEntries.map((e) => ({ seat: e.seat, call: callKey(e.call) })),
-    recommendation: s.recommendation,
-    isUserStep: s.isUserStep,
-  };
-}
-
-// ── Grading ─────────────────────────────────────────────────────────
-
-export function gradePlaythroughStep(
-  s: PlaythroughStep,
-  submittedCall: Call,
-  spec: ConventionSpec,
-  bundle: ConventionBundle,
-  seed: number,
-  vulnerability: Vulnerability = Vulnerability.None,
-): { viewportFeedback: ReturnType<typeof buildViewportFeedback>; teachingDetail: ReturnType<typeof buildTeachingDetail>; isCorrect: boolean; isAcceptable: boolean } {
-  // Rebuild context for this step to get full teaching feedback
-  const deal = generateSeededDeal(bundle, seed, vulnerability);
-  const activeSeat = s.seat;
-  const hand = deal.hands[activeSeat];
-  const auction: Auction = { entries: [...s.auctionEntries], isComplete: false };
-  const context = buildContext(hand, auction, activeSeat, vulnerability);
-
-  const strategy = createSpecStrategy(spec);
-  const result = strategy.suggest(context);
-
-  if (!result) {
-    const fallbackResult: BidResult = {
-      call: { type: "pass" },
-      ruleName: null,
-      explanation: "No convention applies — pass by default",
-    };
-    const fallbackFeedback = assembleBidFeedback(submittedCall, fallbackResult, null);
-    return {
-      viewportFeedback: buildViewportFeedback(fallbackFeedback),
-      teachingDetail: buildTeachingDetail(fallbackFeedback),
-      isCorrect: false,
-      isAcceptable: false,
-    };
-  }
-
-  const strategyEval = (strategy).getLastEvaluation?.() ?? null;
-  const bidFeedback = assembleBidFeedback(submittedCall, result, strategyEval);
-
-  return {
-    viewportFeedback: buildViewportFeedback(bidFeedback),
-    teachingDetail: buildTeachingDetail(bidFeedback),
-    isCorrect: bidFeedback.grade === BidGrade.Correct || bidFeedback.grade === BidGrade.CorrectNotPreferred,
-    isAcceptable: bidFeedback.grade === BidGrade.Acceptable,
-  };
-}

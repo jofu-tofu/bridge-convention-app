@@ -11,12 +11,12 @@ import type { SuitName } from "../../engine/types";
 
 // ─── Validation types ───────────────────────────────────────
 
-export interface FactorGraphValidation {
+interface FactorGraphValidation {
   readonly valid: boolean;
   readonly contradictions: readonly FactorContradiction[];
 }
 
-export interface FactorContradiction {
+interface FactorContradiction {
   readonly seat: string;
   readonly factId: string;
   readonly lowerBound: number;

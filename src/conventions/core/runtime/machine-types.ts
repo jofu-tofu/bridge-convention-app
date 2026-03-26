@@ -9,4 +9,3 @@
 
 import type { MachineRegisters } from "../module-surface";
 export type { MachineRegisters };
-export { ForcingState } from "../strategy-types";

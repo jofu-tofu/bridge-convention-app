@@ -5,7 +5,7 @@ import type { WeightedDealSample } from "./posterior-sampler";
 /**
  * Per-alternative marginal probability within a latent branch set.
  */
-export interface BranchMarginal {
+interface BranchMarginal {
   readonly branchId: string;
   readonly meaningId: string;
   readonly probability: number;
@@ -16,7 +16,7 @@ export interface BranchMarginal {
  * Resolution of a single LatentBranchSet: per-alternative marginal probabilities
  * computed from sampled deals, plus optional selection when one branch dominates.
  */
-export interface LatentBranchResolution {
+interface LatentBranchResolution {
   readonly setId: string;
   readonly marginals: readonly BranchMarginal[];
   readonly effectiveSampleSize: number;

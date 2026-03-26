@@ -18,10 +18,6 @@ export function setEngine(engine: EnginePort): void {
   setContext(ENGINE_KEY, engine);
 }
 
-export function getEngine(): EnginePort {
-  return getContext<EnginePort>(ENGINE_KEY);
-}
-
 // Game store context
 export function setGameStore(store: GameStore): void {
   setContext(GAME_STORE_KEY, store);

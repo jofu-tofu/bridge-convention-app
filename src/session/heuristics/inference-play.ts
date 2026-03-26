@@ -18,19 +18,6 @@ import {
   groupBySuit,
 } from "./heuristic-play";
 
-// ── Noise helper ────────────────────────────────────────────────────
-
-/** Blur a probability by ±noise. Clamps result to [0, 1]. */
-export function applyInferenceNoise(
-  probability: number,
-  noise: number,
-  rng: () => number = Math.random,
-): number {
-  if (noise <= 0) return probability;
-  const offset = (rng() * 2 - 1) * noise;
-  return Math.max(0, Math.min(1, probability + offset));
-}
-
 // ── Helpers ─────────────────────────────────────────────────────────
 
 function getBeliefs(

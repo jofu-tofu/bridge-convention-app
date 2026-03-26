@@ -26,7 +26,7 @@ import type {
 } from "./types";
 import { ALL_INVARIANTS } from "./invariants";
 
-export interface ExploreConfig {
+interface ExploreConfig {
   readonly depth: number;
   readonly seed: number;
   readonly trials: number;

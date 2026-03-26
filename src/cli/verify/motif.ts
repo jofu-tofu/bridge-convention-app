@@ -7,7 +7,7 @@ import type { ConventionModule, ConventionBundle, BaseSystemId } from "../../con
 import { exploreBundle } from "./explore";
 import type { MotifResult, InvariantViolation } from "./types";
 
-export interface MotifConfig {
+interface MotifConfig {
   readonly depth: number;
   readonly seed: number;
   readonly trials: number;

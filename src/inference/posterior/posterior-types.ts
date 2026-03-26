@@ -28,20 +28,20 @@ export interface PosteriorFactValue {
 // ─── Belief view ────────────────────────────────────────────
 
 /** Reference to the subject of a belief (which seat's hand). */
-export interface SubjectRef {
+interface SubjectRef {
   readonly seatId: string;
   readonly role?: string;
 }
 
 /** Reference to the posterior source that produced this belief. */
-export interface PosteriorSourceRef {
+interface PosteriorSourceRef {
   readonly sourceKind: "posterior-engine" | "announcement" | "inference";
   readonly sampleSize?: number;
   readonly confidence?: number;
 }
 
 /** Opaque identifier for grouping related beliefs. */
-export type EvidenceGroupId = string;
+type EvidenceGroupId = string;
 
 export interface BeliefView {
   readonly seatId: string;

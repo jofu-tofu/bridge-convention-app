@@ -11,7 +11,7 @@ const SUIT_CHAR_MAP: Record<string, Suit> = {
   C: Suit.Clubs,
 };
 
-export type PosteriorFactHandler = (
+type PosteriorFactHandler = (
   request: PosteriorFactRequest,
   samples: ReadonlyMap<string, Hand>[],
   ownHand: Hand,

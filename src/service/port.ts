@@ -38,7 +38,7 @@ import type {
 import type { AtomGradeResult } from "./evaluation/types";
 
 /** Production service interface — all methods return Promise<T>. */
-export interface ServicePort {
+interface ServicePort {
   // ── Session lifecycle ───────────────────────────────────────────
   createSession(config: SessionConfig): Promise<SessionHandle>;
   destroySession(handle: SessionHandle): Promise<void>;
