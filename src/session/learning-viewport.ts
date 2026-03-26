@@ -214,29 +214,20 @@ function findExplanationText(entries: readonly ExplanationEntry[], meaningId: st
   return null;
 }
 
-/** Resolve `$suit` (and any future binding placeholders) in a description string. */
-function resolveBindings(text: string, bindings?: Readonly<Record<string, string>>): string {
-  if (!bindings) return text;
-  return text.replace(/\$(\w+)/g, (match, key) => bindings[key] ?? match);
-}
-
 /** Map raw BidMeaningClause[] to SurfaceClauseView[] for the learning viewport.
- *  system.* facts automatically get neutral descriptions + per-system variants.
- *  Binding placeholders like `$suit` are resolved to concrete values. */
+ *  system.* facts automatically get neutral descriptions + per-system variants. */
 function mapClauses(
   clauses: readonly BidMeaningClause[],
-  bindings?: Readonly<Record<string, string>>,
 ): readonly SurfaceClauseView[] {
   return clauses.map((c) => {
     const isSystemFact = c.factId.startsWith("system.");
-    const rawDesc = isSystemFact
-      ? deriveNeutralDescription(c.factId, c.rationale)
-      : readClauseDescription(c);
     return {
       factId: c.factId,
       operator: c.operator,
       value: c.value,
-      description: resolveBindings(rawDesc, bindings),
+      description: isSystemFact
+        ? deriveNeutralDescription(c.factId, c.rationale)
+        : readClauseDescription(c),
       isPublic: c.isPublic ?? false,
       ...(isSystemFact ? { systemVariants: buildSystemVariants(c.factId) } : {}),
     };
@@ -278,7 +269,7 @@ function buildPhaseGroups(mod: ConventionModule): readonly PhaseGroupView[] {
           disclosure: surface.disclosure,
           recommendation: surface.ranking.recommendationBand ?? null,
           explanationText: findExplanationText(mod.explanationEntries, surface.meaningId),
-          clauses: mapClauses(surface.clauses, surface.surfaceBindings),
+          clauses: mapClauses(surface.clauses),
         });
       }
     }

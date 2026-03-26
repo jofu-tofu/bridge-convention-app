@@ -93,9 +93,15 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext, preceden
       ? input.encoding
       : { defaultCall: input.encoding };
 
-  // Build clauses with derived clauseId and description (always auto-derived + optional rationale)
+  // Build clauses with derived clauseId and description (always auto-derived + optional rationale).
+  // Binding placeholders (e.g., $suit) in descriptions are resolved here at build time
+  // so all downstream consumers get clean display text without coupling to binding logic.
+  const bindings = input.surfaceBindings;
   const clauses: readonly BidMeaningClause[] = input.clauses.map((c) => {
-    const description = deriveClauseDescription(c.factId, c.operator, c.value, c.rationale);
+    let description = deriveClauseDescription(c.factId, c.operator, c.value, c.rationale);
+    if (bindings) {
+      description = description.replace(/\$(\w+)/g, (match, key) => bindings[key] ?? match);
+    }
     return {
       factId: c.factId,
       operator: c.operator,
