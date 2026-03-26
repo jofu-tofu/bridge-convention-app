@@ -1,11 +1,9 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
-  import { listConventions, ConventionCategory } from "../../conventions";
-  import type { ConventionConfig } from "../../conventions";
+  import { listConventions, ConventionCategory, displayConventionName } from "../../service";
+  import type { ConventionConfig } from "../../service";
   import { getAppStore } from "../../stores/context";
   import { filterConventions } from "./filter-conventions";
-  import { displayConventionName } from "../../service/display/format";
-  import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../shared/vulnerability-labels";
 
   const appStore = getAppStore();
 
@@ -55,67 +53,13 @@
       .join(" ");
   }
 
-  const settingsSummary = $derived.by(() => {
-    const parts: string[] = [];
-    const dist = appStore.drillTuning.vulnerabilityDistribution;
-    const active = VULN_KEYS.filter((k) => dist[k] > 0);
-    if (active.length === 4) {
-      parts.push("All vulnerabilities");
-    } else {
-      parts.push(active.map((k) => VULN_LABELS[k]).join(", ") + " vulnerable");
-    }
-    parts.push(appStore.opponentMode === "natural" ? "Natural opponents" : "Silent opponents");
-    if (appStore.drillTuning.includeOffConvention) {
-      const rate = Math.round((appStore.drillTuning.offConventionRate ?? DEFAULT_OFF_CONVENTION_RATE) * 100);
-      parts.push(`${rate}% off-convention`);
-    }
-    return parts.join(" · ");
-  });
 </script>
 
 <main class="max-w-3xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Convention selection">
   <!-- Fixed header: title + search + filters -->
   <div class="shrink-0">
-    <div class="flex items-center justify-between mb-1">
-      <h1 class="text-3xl font-bold tracking-tight text-text-primary">Bridge Practice</h1>
-      <button
-        class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-muted hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
-        onclick={() => appStore.navigateToSettings()}
-        aria-label="Settings"
-        data-testid="settings-button"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-      </button>
-    </div>
-    <p class="text-text-secondary mb-5">Select a convention to begin drilling.</p>
-
-    <!-- Settings summary -->
-    <button
-      class="w-full flex items-center gap-3 mb-5 p-3 rounded-[--radius-lg] bg-bg-card border border-border-subtle hover:border-border-default transition-colors cursor-pointer text-left group"
-      onclick={() => appStore.navigateToSettings()}
-      data-testid="settings-summary"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-      <div class="flex-1 min-w-0">
-        <span class="text-sm font-medium text-text-primary">Settings</span>
-        <p class="text-xs text-text-muted truncate">{settingsSummary}</p>
-      </div>
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-    </button>
-
-    <!-- System profiles -->
-    <button
-      class="w-full flex items-center gap-3 mb-5 p-3 rounded-[--radius-lg] bg-bg-card border border-border-subtle hover:border-border-default transition-colors cursor-pointer text-left group"
-      onclick={() => appStore.navigateToProfiles()}
-      data-testid="profiles-summary"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" aria-hidden="true"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>
-      <div class="flex-1 min-w-0">
-        <span class="text-sm font-medium text-text-primary">Base Profiles</span>
-        <p class="text-xs text-text-muted truncate">Compare SAYC, 2/1, and Acol</p>
-      </div>
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-text-secondary transition-colors shrink-0" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-    </button>
+    <h1 class="text-3xl font-bold tracking-tight text-text-primary mb-1">Bridge Practice</h1>
+    <p class="text-text-secondary mb-5">Select a convention to learn or practice.</p>
 
     <!-- Search -->
     <div class="mb-4">

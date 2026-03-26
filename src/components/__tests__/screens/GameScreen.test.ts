@@ -60,9 +60,9 @@ describe("GameScreen", () => {
 
   it("navigates to menu via appStore", () => {
     const appStore = {
-      navigateToMenu: vi.fn(),
+      navigateToConventions: vi.fn(),
     };
-    appStore.navigateToMenu();
-    expect(appStore.navigateToMenu).toHaveBeenCalledOnce();
+    appStore.navigateToConventions();
+    expect(appStore.navigateToConventions).toHaveBeenCalledOnce();
   });
 });

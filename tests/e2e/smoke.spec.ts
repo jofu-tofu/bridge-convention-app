@@ -154,15 +154,15 @@ test.describe("navigation", () => {
     });
   });
 
-  test("settings screen accessible from home", async ({ page }) => {
+  test("settings screen accessible from nav rail", async ({ page }) => {
     await page.goto("/");
-    await page.getByTestId("settings-button").click();
+    await page.getByRole("button", { name: "Settings" }).first().click();
 
     await expect(page.locator("h1")).toContainText("Settings", {
       timeout: 5000,
     });
 
-    await page.getByTestId("settings-back").click();
+    await page.getByRole("button", { name: "Home" }).first().click();
     await expect(page.locator("h1")).toHaveText("Bridge Practice", {
       timeout: 5000,
     });

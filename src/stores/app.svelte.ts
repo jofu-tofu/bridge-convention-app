@@ -1,13 +1,7 @@
-import type { ConventionConfig } from "../conventions";
-import type { OpponentMode, VulnerabilityDistribution, DrillSettings } from "../session/drill-types";
-import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../session/drill-types";
-import type { BaseSystemId } from "../conventions";
-import { AVAILABLE_BASE_SYSTEMS } from "../conventions";
-import type { PracticePreferences, DisplayPreferences } from "../session/practice-preferences";
-import { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../session/practice-preferences";
-import type { PlayProfileId } from "../session/heuristics/play-profiles";
+import type { ConventionConfig, BaseSystemId, OpponentMode, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences } from "../service";
+import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 
-export type Screen = "select" | "game" | "learning" | "settings" | "coverage" | "profiles";
+export type Screen = "conventions" | "game" | "learning" | "settings" | "coverage" | "profiles";
 
 // ─── Persistence ────────────────────────────────────────────
 
@@ -36,7 +30,7 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
   }
 
   // Validate playProfileId
-  const VALID_PROFILES = new Set<string>(["beginner", "club-player", "expert"]);
+  const VALID_PROFILES = new Set<string>(["beginner", "club-player", "expert", "world-class"]);
   let playProfileId: PlayProfileId | undefined = drill?.playProfileId;
   if (playProfileId && !VALID_PROFILES.has(playProfileId)) {
     playProfileId = undefined;
@@ -79,7 +73,7 @@ function savePreferences(prefs: PracticePreferences) {
 // ─── Store ──────────────────────────────────────────────────
 
 export function createAppStore() {
-  let currentScreen = $state<Screen>("select");
+  let currentScreen = $state<Screen>("conventions");
   let selectedConvention = $state<ConventionConfig | null>(null);
   let devSeed = $state<number | null>(null);
   let devDealCount = $state(0);
@@ -159,12 +153,20 @@ export function createAppStore() {
       learningModuleId = moduleId;
     },
 
-    navigateToMenu() {
+    /** Navigate to learning screen showing all modules, auto-selecting first if none selected. */
+    navigateToLearningHome() {
+      learningConvention = null;
+      selectedConvention = null;
+      learningBundleFilter = null;
+      currentScreen = "learning";
+    },
+
+    navigateToConventions() {
       selectedConvention = null;
       learningConvention = null;
       learningModuleId = null;
       learningBundleFilter = null;
-      currentScreen = "select";
+      currentScreen = "conventions";
     },
 
     navigateToSettings() {

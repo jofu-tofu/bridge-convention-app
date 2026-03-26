@@ -96,14 +96,11 @@ test.describe("responsive layout — game screen", () => {
 test.describe("responsive layout — settings screen", () => {
   test("settings screen elements are visible", async ({ page }) => {
     await page.goto("/");
-    const settingsBtn = page.getByTestId("settings-button");
+    const settingsBtn = page.getByRole("button", { name: "Settings" }).first();
     await expect(settingsBtn).toBeVisible();
     await settingsBtn.click();
-    
+
     const heading = page.locator("h1");
     await expect(heading).toHaveText("Practice Settings", { timeout: 5000 });
-    
-    const backBtn = page.getByTestId("settings-back");
-    await expect(backBtn).toBeVisible();
   });
 });

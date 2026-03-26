@@ -18,11 +18,11 @@ describe("app store learning navigation", () => {
     expect(store.learningConvention?.id).toBe("nt-bundle");
   });
 
-  it("navigateToMenu from learning clears learningConvention", () => {
+  it("navigateToConventions from learning clears learningConvention", () => {
     const store = createAppStore();
     store.navigateToLearning(ntBundleConventionConfig);
-    store.navigateToMenu();
-    expect(store.screen).toBe("select");
+    store.navigateToConventions();
+    expect(store.screen).toBe("conventions");
     expect(store.learningConvention).toBeNull();
   });
 

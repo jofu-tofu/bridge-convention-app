@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
-  import { listBundleInputs, resolveBundle, getBundleInput, enumerateRuleAtoms, generateRuleCoverageManifest, SAYC_SYSTEM_CONFIG } from "../../conventions";
-  import type { RuleCoverageManifest, ConventionBundle } from "../../conventions";
+  import { listBundleInputs, resolveBundle, getBundleInput, enumerateRuleAtoms, generateRuleCoverageManifest, SAYC_SYSTEM_CONFIG } from "../../service";
+  import type { RuleCoverageManifest, ConventionBundle } from "../../service";
 
   const appStore = getAppStore();
 
@@ -33,8 +33,6 @@
   function handleBack() {
     if (selectedBundleId) {
       backToBundles();
-    } else {
-      appStore.navigateToMenu();
     }
   }
 
@@ -54,15 +52,17 @@
   <div class="mx-auto max-w-4xl px-6 py-8">
     <!-- Header -->
     <div class="mb-8 flex items-center gap-4">
-      <button
-        class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
-        onclick={handleBack}
-        aria-label={selectedBundleId ? "Back to conventions" : "Back to menu"}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          aria-hidden="true"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
-      </button>
+      {#if selectedBundleId}
+        <button
+          class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
+          onclick={handleBack}
+          aria-label="Back to conventions"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            aria-hidden="true"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+        </button>
+      {/if}
       <div>
         {#if !selectedBundleId}
           <h1 class="text-2xl font-bold">Coverage</h1>

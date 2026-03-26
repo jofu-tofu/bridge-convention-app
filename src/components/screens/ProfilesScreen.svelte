@@ -17,29 +17,8 @@
 <main class="max-w-3xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Base System Profiles">
   <div class="shrink-0">
     <!-- Header -->
-    <div class="flex items-center gap-4 mb-1">
-      <button
-        class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
-        onclick={() => appStore.navigateToMenu()}
-        aria-label="Back to menu"
-        data-testid="profiles-back"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        ><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
-      </button>
-      <h1 class="text-3xl font-bold tracking-tight text-text-primary">Base Profiles</h1>
-    </div>
-    <p class="text-text-secondary mb-5 ml-[calc(var(--size-touch-target)+1rem)]">System thresholds and bidding parameters.</p>
+    <h1 class="text-3xl font-bold tracking-tight text-text-primary mb-1">Base Profiles</h1>
+    <p class="text-text-secondary mb-5">System thresholds and bidding parameters.</p>
 
     <!-- Tab bar -->
     <div class="flex items-center gap-1 mb-5 p-1 rounded-[--radius-lg] bg-bg-card border border-border-subtle">

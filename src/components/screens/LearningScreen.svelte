@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
   import { getAppStore, getService } from "../../stores/context";
-  import type { ModuleCatalogEntry, ModuleLearningViewport } from "../../service";
+  import type { ModuleCatalogEntry, ModuleLearningViewport, ClauseSystemVariant } from "../../service";
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
 
   const appStore = getAppStore();
@@ -13,9 +13,34 @@
   let showAllModules = $state(false);
   let expandedClauses = new SvelteSet<string>();
 
+  /** Active variance popover state — fixed-positioned to escape overflow containers. */
+  let variancePopover = $state<{
+    variants: readonly ClauseSystemVariant[];
+    x: number;
+    y: number;
+    flipUp: boolean;
+  } | null>(null);
+
   function toggleClauses(meaningId: string) {
     if (expandedClauses.has(meaningId)) expandedClauses.delete(meaningId);
     else expandedClauses.add(meaningId);
+  }
+
+  function showVariance(e: MouseEvent, variants: readonly ClauseSystemVariant[]) {
+    e.stopPropagation();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    // Flip above if near bottom of viewport (rough estimate: 80px for tooltip)
+    const flipUp = rect.bottom + 80 > window.innerHeight;
+    variancePopover = {
+      variants,
+      x: rect.left,
+      y: flipUp ? rect.top : rect.bottom + 4,
+      flipUp,
+    };
+  }
+
+  function hideVariance() {
+    variancePopover = null;
   }
 
   const isDesktop = $derived(innerW >= DESKTOP_MIN);
@@ -26,10 +51,13 @@
   /** Module learning viewport — fetched when selected module changes. */
   let viewport = $state<ModuleLearningViewport | null>(null);
 
-  // Fetch module catalog on mount
+  // Fetch module catalog on mount, auto-select first module if none selected
   $effect(() => {
     service.listModules().then((modules) => {
       allModules = modules;
+      if (!appStore.learningModuleId && modules.length > 0) {
+        appStore.selectLearningModule(modules[0]!.moduleId);
+      }
     });
   });
 
@@ -128,25 +156,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg>
       </button>
     {/if}
-    <button
-      class="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
-      aria-label="Back to convention selection"
-      onclick={() => appStore.navigateToMenu()}
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-      ><path d="m15 18-6-6 6-6" /></svg>
-      <span class="text-sm">Bridge Practice / Learn</span>
-    </button>
+    <h2 class="text-sm font-medium text-text-secondary">Learn</h2>
   </header>
 
   <div class="flex flex-1 min-h-0 relative">
@@ -166,11 +176,11 @@
         ? 'w-[280px] shrink-0 border-r border-border-subtle flex flex-col'
         : 'fixed inset-y-0 left-0 w-[280px] z-[--z-modal] bg-bg-base border-r border-border-subtle flex flex-col'}">
         <div class="p-4 border-b border-border-subtle">
-          <h2 class="text-sm font-semibold text-text-primary mb-3">Modules</h2>
+          <h2 class="text-sm font-semibold text-text-primary mb-3">Conventions</h2>
           <input
             type="text"
             placeholder="Search..."
-            aria-label="Search modules"
+            aria-label="Search conventions"
             bind:value={searchQuery}
             class="w-full bg-bg-card border border-border-subtle rounded-[--radius-md] px-3 py-2 text-sm text-text-primary placeholder-text-muted"
           />
@@ -180,11 +190,11 @@
                 {showAllModules ? 'text-accent-primary' : 'text-text-muted hover:text-text-secondary'}"
               onclick={() => showAllModules = !showAllModules}
             >
-              {showAllModules ? "Show bundle only" : "Show all modules"}
+              {showAllModules ? "Show bundle only" : "Show all conventions"}
             </button>
           {/if}
         </div>
-        <nav class="flex-1 overflow-y-auto py-2" aria-label="Module list">
+        <nav class="flex-1 overflow-y-auto py-2" aria-label="Convention list">
           {#each filteredModules as mod (mod.moduleId)}
             <button
               class="w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer min-h-[--size-touch-target]
@@ -295,8 +305,18 @@
                             {#if expandedClauses.has(surface.meaningId)}
                               <div class="mt-2 ml-4 space-y-1">
                                 {#each surface.clauses as clause, i (i)}
-                                  <div class="text-xs {clause.isPublic ? 'text-text-secondary' : 'text-text-muted italic'}">
-                                    {clause.description}
+                                  <div class="text-xs {clause.isPublic ? 'text-text-secondary' : 'text-text-muted italic'} flex items-center gap-1.5">
+                                    <span>{clause.description}</span>
+                                    {#if clause.systemVariants}
+                                      <button
+                                        class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-400 cursor-pointer hover:bg-amber-500/25 transition-colors"
+                                        aria-label="Show per-system details"
+                                        onclick={(e) => showVariance(e, clause.systemVariants!)}
+                                      >
+                                        varies by system
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-70" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                                      </button>
+                                    {/if}
                                   </div>
                                 {/each}
                               </div>
@@ -313,13 +333,33 @@
         </div>
       {:else if appStore.learningModuleId}
         <div class="text-center py-12 text-text-muted">
-          Loading module data...
+          Loading convention data...
         </div>
       {:else}
         <div class="text-center py-12 text-text-muted">
-          Select a module from the sidebar.
+          Select a convention from the sidebar.
         </div>
       {/if}
     </div>
   </div>
+
+  <!-- Fixed-position variance popover (escapes overflow containers) -->
+  {#if variancePopover}
+    <button
+      class="fixed inset-0 z-[--z-overlay] cursor-default"
+      aria-label="Close popover"
+      onclick={hideVariance}
+    ></button>
+    <div
+      class="fixed z-[--z-modal] rounded-[--radius-md] border border-border-subtle bg-bg-card shadow-lg px-3 py-2 min-w-[140px] w-max max-w-[240px]"
+      style="left: {variancePopover.x}px; top: {variancePopover.flipUp ? 'auto' : `${variancePopover.y}px`}; bottom: {variancePopover.flipUp ? `${window.innerHeight - variancePopover.y + 4}px` : 'auto'}"
+      role="tooltip"
+    >
+      {#each variancePopover.variants as variant}
+        <span class="block text-[11px] leading-relaxed text-text-muted">
+          <span class="font-semibold text-text-secondary">{variant.systemLabel}:</span> {variant.description}
+        </span>
+      {/each}
+    </div>
+  {/if}
 </main>

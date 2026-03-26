@@ -1,11 +1,18 @@
 <script lang="ts">
-  import type { OpponentMode, VulnerabilityDistribution } from "../../service";
-  import { DEFAULT_DRILL_TUNING } from "../../service";
+  import type { OpponentMode, PlayProfileId, VulnerabilityDistribution } from "../../service";
+  import { DEFAULT_DRILL_TUNING, PLAY_PROFILES } from "../../service";
   import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../shared/vulnerability-labels";
   import type { VulnKey } from "../shared/vulnerability-labels";
   import { getAppStore } from "../../stores/context";
 
   const appStore = getAppStore();
+
+  const PROFILE_ENTRIES: { id: PlayProfileId; label: string }[] = [
+    { id: "beginner", label: "Beginner" },
+    { id: "club-player", label: "Club Player" },
+    { id: "expert", label: "Expert" },
+    { id: "world-class", label: "World Class" },
+  ];
 
   function isVulnEnabled(key: VulnKey): boolean {
     return appStore.drillTuning.vulnerabilityDistribution[key] > 0;
@@ -64,29 +71,7 @@
 
 <main class="max-w-3xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Settings">
   <div class="shrink-0">
-    <div class="flex items-center gap-4 mb-6">
-      <button
-        class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
-        onclick={() => appStore.navigateToMenu()}
-        aria-label="Back to menu"
-        data-testid="settings-back"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-          ><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg
-        >
-      </button>
-      <h1 class="text-3xl font-bold text-text-primary">Practice Settings</h1>
-    </div>
+    <h1 class="text-3xl font-bold text-text-primary mb-6">Practice Settings</h1>
   </div>
 
   <div class="flex-1 overflow-y-auto pb-6 space-y-6">
@@ -161,6 +146,30 @@
         {appStore.opponentMode === "natural"
           ? "Opponents bid naturally with 6+ HCP and a 5+ card suit."
           : "Opponents always pass."}
+      </p>
+    </section>
+
+    <!-- Play Difficulty -->
+    <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
+      <label class="block text-base font-semibold text-text-primary mb-1" for="play-profile">
+        Opponent Play Skill
+      </label>
+      <p class="text-sm text-text-secondary mb-3">
+        Controls how skillfully opponents play their cards during the play phase.
+      </p>
+      <select
+        id="play-profile"
+        class="bg-bg-base border border-border-subtle rounded-[--radius-md] px-3 py-2 text-sm text-text-primary cursor-pointer w-full max-w-xs"
+        value={appStore.playProfileId ?? "world-class"}
+        onchange={(e) => appStore.setPlayProfileId(e.currentTarget.value as PlayProfileId)}
+        data-testid="play-profile-select"
+      >
+        {#each PROFILE_ENTRIES as entry (entry.id)}
+          <option value={entry.id}>{entry.label}</option>
+        {/each}
+      </select>
+      <p class="text-xs text-text-muted mt-2">
+        {PLAY_PROFILES[appStore.playProfileId ?? "world-class"].description}
       </p>
     </section>
 
