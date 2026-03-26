@@ -129,6 +129,7 @@ export interface GameStore {
   setConventionName(name: string): void;
   userPlayCard(card: Card, seat: Seat): void;
   skipToReview(): void;
+  restartPlay(): void;
   acceptPlay(seatOverride?: Seat): void;
   declinePlay(): void;
   acceptPrompt(): void;
@@ -141,6 +142,8 @@ export interface GameStore {
   declineSouthPlay(): void;
   playThisHand(): void;
   startDrillFromHandle(handle: SessionHandle, service?: DevServicePort): Promise<void>;
+  /** Instantly auto-complete bidding and advance to target phase. */
+  skipToPhase(targetPhase: "review" | "playing" | "declarer"): Promise<boolean>;
   userBid(call: Call): void;
   retryBid(): void;
   getExpectedBid(): Promise<{ call: Call } | null>;

@@ -28,6 +28,7 @@ import type {
   SessionViewport,
   DDSolutionResult,
   ConventionInfo,
+  BundleFlowTreeViewport,
   ServiceInferenceSnapshot,
   ServicePublicBeliefState,
   ServicePublicBeliefs,
@@ -58,6 +59,7 @@ interface ServicePort {
   // ── Play ────────────────────────────────────────────────────────
   playCard(handle: SessionHandle, card: Card, seat: Seat): Promise<PlayCardResult>;
   skipToReview(handle: SessionHandle): Promise<void>;
+  restartPlay(handle: SessionHandle): Promise<PromptAcceptResult>;
   updatePlayProfile(handle: SessionHandle, profileId: PlayProfileId): Promise<void>;
 
   // ── Query ───────────────────────────────────────────────────────
@@ -91,6 +93,9 @@ interface ServicePort {
   listModules(): Promise<readonly ModuleCatalogEntry[]>;
   /** Build a learning viewport for a single module by ID. */
   getModuleLearningViewport(moduleId: string): Promise<ModuleLearningViewport | null>;
+
+  /** Build a unified conversation flow tree for a bundle. */
+  getBundleFlowTree(bundleId: string): Promise<BundleFlowTreeViewport | null>;
 }
 
 /** Extends ServicePort with dev/debug methods.

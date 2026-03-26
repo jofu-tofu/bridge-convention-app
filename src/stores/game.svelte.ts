@@ -16,9 +16,9 @@ import type {
 } from "../service";
 import type { BidResult, BidHistoryEntry } from "../service";
 import type { ServicePublicBeliefs } from "../service";
-import type { StrategyEvaluation } from "../service";
-import type { PublicBeliefState, InferenceSnapshot } from "../service";
-import { nextSeat, partnerSeat, areSamePartnership } from "../service";
+import type { StrategyEvaluation } from "../service/debug-types";
+import type { ServicePublicBeliefState, ServiceInferenceSnapshot } from "../service";
+import { nextSeat, partnerSeat } from "../service";
 
 import type {
   BiddingViewport,
@@ -30,8 +30,7 @@ import type {
   ExplanationViewport,
 } from "../service";
 import type { ViewportBidGrade } from "../service";
-import type { BidFeedbackDTO } from "../service";
-import type { PlaySuggestions } from "../service/debug-types";
+import type { BidFeedbackDTO, PlaySuggestions } from "../service/debug-types";
 import { isValidTransition } from "../service";
 import type { GamePhase } from "../service";
 import { delay } from "../service";
@@ -150,7 +149,7 @@ export function createGameStore(
 
   // ── Inference state ───────────────────────────────────────────
   let playInferences = $state<Record<Seat, ServicePublicBeliefs> | null>(null);
-  let publicBeliefState = $state<PublicBeliefState>({ beliefs: {} as Record<Seat, ServicePublicBeliefs>, annotations: [] });
+  let publicBeliefState = $state<ServicePublicBeliefState>({ beliefs: {} as Record<Seat, ServicePublicBeliefs>, annotations: [] });
 
   // ── Cached viewports ───────────────────────────────────────────
   let cachedBiddingViewport = $state<BiddingViewport | null>(null);
@@ -825,19 +824,19 @@ export function createGameStore(
     },
 
     // Public belief state
-    get publicBeliefState(): PublicBeliefState { return publicBeliefState; },
+    get publicBeliefState(): ServicePublicBeliefState { return publicBeliefState; },
 
     // Debug observability
     get debugLog() { return debugLog; },
     get playLog() { return playLog; },
     get playSuggestions() { return playSuggestions; },
     get playInferences() { return playInferences; },
-    get inferenceTimeline(): readonly InferenceSnapshot[] {
+    get inferenceTimeline(): readonly ServiceInferenceSnapshot[] {
       if (!activeHandle) return [];
       // Inference timeline is fetched from service when needed — return empty for now
       return [];
     },
-    get ewInferenceTimeline(): readonly InferenceSnapshot[] {
+    get ewInferenceTimeline(): readonly ServiceInferenceSnapshot[] {
       if (!activeHandle) return [];
       return [];
     },
@@ -850,7 +849,48 @@ export function createGameStore(
 
     skipToReview(): void {
       playAborted = true;
-      transitionToExplanation();
+      if (activeHandle) {
+        activeService.skipToReview(activeHandle)
+          .then(() => transitionToExplanation())
+          .catch((err) => { console.error('skipToReview failed:', err); });
+      }
+    },
+
+    restartPlay(): void {
+      if (!contract || phase !== "PLAYING") return;
+      if (!activeHandle) return;
+      const handle = activeHandle;
+
+      // Cancel in-flight animations (keep stale viewport to avoid UI flash)
+      playAborted = true;
+      score = null;
+      isShowingTrickResult = false;
+      playProcessing = false;
+      playLog = [];
+      playSuggestions = [];
+      animatedTrickOverride = null;
+
+      void (async () => {
+        try {
+          playAborted = false;
+          const result = await activeService.restartPlay(handle);
+          if (activeHandle !== handle) return;
+
+          // Replace stale viewport with fresh one
+          cachedPlayingViewport = await activeService.getPlayingViewport(handle);
+          if (activeHandle !== handle) return;
+
+          const aiPlays = result.aiPlays ?? [];
+          if (aiPlays.length > 0) {
+            const ok = await animateAiPlays(handle, aiPlays, []);
+            if (!ok) return;
+          }
+
+          await fetchPlaySuggestions(handle);
+        } catch (err) {
+          console.error('restartPlay failed:', err);
+        }
+      })();
     },
 
     acceptPlay,
@@ -946,6 +986,71 @@ export function createGameStore(
 
       await refreshViewport();
       await tick();
+    },
+
+    /**
+     * Instantly auto-complete bidding and advance to the target phase.
+     * Used by ?phase= URL param to skip animation and reach review/playing/declarer.
+     * Returns true if the target phase was reached.
+     */
+    async skipToPhase(targetPhase: "review" | "playing" | "declarer"): Promise<boolean> {
+      if (!activeHandle) return false;
+      const handle = activeHandle;
+
+      // Auto-bid through the auction instantly (no animation)
+      while (phase === "BIDDING" && activeHandle === handle) {
+        const expected = await activeService.getExpectedBid(handle);
+        if (activeHandle !== handle) return false;
+        if (!expected) break;
+
+        const result = await activeService.submitBid(handle, expected.call);
+        if (activeHandle !== handle) return false;
+
+        if (result.nextViewport) {
+          cachedBiddingViewport = result.nextViewport;
+        }
+
+        // Check if auction completed
+        const servicePhase = await activeService.getPhase(handle);
+        if (activeHandle !== handle) return false;
+
+        if (servicePhase !== "BIDDING") {
+          playInferences = await activeService.capturePlayInferences(handle);
+          if (activeHandle !== handle) return false;
+
+          if (servicePhase === "DECLARER_PROMPT") {
+            const dpvp = await activeService.getDeclarerPromptViewport(handle);
+            if (activeHandle !== handle) return false;
+            cachedDeclarerPromptViewport = dpvp;
+            contract = dpvp?.contract ?? null;
+            effectiveUserSeat = userSeat;
+            transitionTo("DECLARER_PROMPT");
+          } else if (servicePhase === "EXPLANATION") {
+            transitionToExplanation();
+          }
+          break;
+        }
+      }
+
+      // Now advance from DECLARER_PROMPT to target
+      if (targetPhase === "declarer") {
+        // Already there (or explanation if all passed)
+        return phase === "DECLARER_PROMPT";
+      }
+
+      if (targetPhase === "playing" && phase === "DECLARER_PROMPT") {
+        acceptPrompt();
+        return true;
+      }
+
+      if (targetPhase === "review") {
+        if (phase === "DECLARER_PROMPT") {
+          declinePrompt(); // skip to review
+        }
+        return phase === "EXPLANATION";
+      }
+
+      return false;
     },
 
     // Bidding actions

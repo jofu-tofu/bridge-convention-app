@@ -16,7 +16,7 @@ import type { EnginePort } from "../engine/port";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ServicePublicBeliefState, ServicePublicBeliefs } from "./response-types";
 import { buildBiddingViewport, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "../session/build-viewport";
 import type { ModuleCatalogEntry, ModuleLearningViewport } from "./response-types";
-import { buildModuleCatalog, buildModuleLearningViewport } from "../session/learning-viewport";
+import { buildModuleCatalog, buildModuleLearningViewport, buildBundleFlowTree } from "../session/learning-viewport";
 import type { GamePhase } from "../session/phase-machine";
 import { isValidTransition } from "../session/phase-machine";
 import { createInferenceCoordinator } from "../inference/inference-coordinator";
@@ -65,6 +65,7 @@ import type { PlayContext } from "../conventions";
 import type { PlayProfileId } from "../session/heuristics/play-profiles";
 import { PLAY_PROFILES } from "../session/heuristics/play-profiles";
 import { createProfileStrategyProvider } from "../session/heuristics/profile-play-strategy";
+import { createWorldClassProvider } from "../session/heuristics/montecarlo-play";
 
 import type { DrillBundle } from "../session/drill-types";
 
@@ -193,6 +194,13 @@ export function createLocalService(engine: EnginePort): DevServicePort {
           state.effectiveUserSeat = seatOverride ?? state.userSeat;
           state.initializePlay(state.contract);
           state.phase = "PLAYING";
+          // Create world-class advisor for play recommendations (separate from play profile).
+          // Always world-class regardless of the user's chosen play profile.
+          const advisorProvider = createWorldClassProvider(engine, Math.random);
+          if (state.playInferences) {
+            advisorProvider.onAuctionComplete!(state.playInferences);
+          }
+          state.worldClassAdvisor = advisorProvider.getStrategy();
           // Run initial AI plays if the opening leader is not user-controlled
           const aiPlays = await runInitialAiPlays(state, engine);
           return { phase: state.phase, aiPlays };
@@ -219,6 +227,16 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       if (isValidTransition(state.phase, "EXPLANATION")) {
         state.phase = "EXPLANATION";
       }
+    },
+
+    async restartPlay(handle: SessionHandle): Promise<PromptAcceptResult> {
+      const state = manager.get(handle);
+      if (state.phase !== "PLAYING" || !state.contract) {
+        return { phase: state.phase };
+      }
+      state.initializePlay(state.contract);
+      const aiPlays = await runInitialAiPlays(state, engine);
+      return { phase: state.phase, aiPlays };
     },
 
     async updatePlayProfile(handle: SessionHandle, profileId: PlayProfileId): Promise<void> {
@@ -325,6 +343,10 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
     async getModuleLearningViewport(moduleId: string): Promise<ModuleLearningViewport | null> {
       return buildModuleLearningViewport(moduleId);
+    },
+
+    async getBundleFlowTree(bundleId: string) {
+      return buildBundleFlowTree(bundleId);
     },
 
     // ── Dev methods ───────────────────────────────────────────────
@@ -577,5 +599,8 @@ function buildExplanationViewportFromState(state: SessionState): ExplanationView
     contract: state.contract,
     score: state.playScore,
     declarerTricksWon: state.declarerTricksWon,
+    defenderTricksWon: state.defenderTricksWon,
+    tricks: state.tricks,
+    playRecommendations: state.playRecommendations,
   });
 }

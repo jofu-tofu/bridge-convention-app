@@ -321,6 +321,7 @@
         animatedCurrentTrick={gameStore.currentTrick}
         onPlayCard={(card, seat) => gameStore.userPlayCard(card, seat)}
         onSkipToReview={() => gameStore.skipToReview()}
+        onRestartPlay={() => gameStore.restartPlay()}
       />
     {:else if gameStore.phase === "EXPLANATION" && gameStore.explanationViewport}
       <ExplanationPhase

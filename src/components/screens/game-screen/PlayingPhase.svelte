@@ -17,6 +17,7 @@
     animatedCurrentTrick?: readonly PlayedCard[];
     onPlayCard: (card: CardType, seat: Seat) => void;
     onSkipToReview: () => void;
+    onRestartPlay: () => void;
   }
 
   const {
@@ -24,6 +25,7 @@
     animatedCurrentTrick,
     onPlayCard,
     onSkipToReview,
+    onRestartPlay,
   }: Props = $props();
 
   const effectiveCurrentTrick = $derived(animatedCurrentTrick ?? viewport.currentTrick);
@@ -69,6 +71,7 @@
       declarerTricksWon={viewport.declarerTricksWon}
       defenderTricksWon={viewport.defenderTricksWon}
       {onSkipToReview}
+      {onRestartPlay}
       onOpenSettings={() => settingsDialogRef?.open()}
     />
   </aside>

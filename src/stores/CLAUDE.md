@@ -14,11 +14,12 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 | File                 | Role                                                                                               |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
-| `app.svelte.ts`      | `createAppStore()` — screen navigation (`conventions`/`game`/`learning`/`settings`/`coverage`/`profiles`), selected convention, `learningConvention` / `learningModuleId` / `learningBundleFilter` state (module-centric learning), `coverageBundle` state, dev seed state, autoplay flag, `drillTuning` state (`DrillTuning` from `service/drill-types`, persisted to localStorage — vulnerability distribution, off-convention toggle/rate) |
+| `app.svelte.ts`      | `createAppStore()` — screen navigation, selected convention, learning state, coverage state, dev seed, dev flags (`autoplay`, `debugExpanded`, `autoDismissFeedback`, `skipToPhase`), drill tuning (persisted to localStorage) |
 | `game.svelte.ts`     | `createGameStore(service)` — coordinator/facade, phase machine, drill lifecycle, thin reactive cache over service viewports |
-| `dev-params.ts`      | `applyDevParams()` — reads URL params (?convention, ?seed, ?debug, etc.) and configures the app store. Called from `App.svelte` at startup |
+| `dev-params.ts`      | `applyDevParams()` — consolidated URL param API (7 params: `?convention=`, `?learn=`, `?seed=`, `?screen=`, `?phase=`, `?dev=`, `?targetState=/targetSurface=`). Backward compat aliases for legacy params. Called from `App.svelte` at startup |
+| `types.ts`           | `GameStore` interface — explicit facade interface for context DI consumers |
 
-**Game store key methods:** `startDrillFromHandle`, `userBid`, `retryBid`, `getExpectedBid`, `getDebugSnapshot` (bidding); `acceptPlay(seatOverride?)`, `declinePlay()`, `acceptPrompt()`, `declinePrompt()` (declarer prompt); `userPlayCard`, `skipToReview`, `playThisHand` (play). See `game.svelte.ts` for signatures.
+**Game store key methods:** `startDrillFromHandle`, `userBid`, `retryBid`, `getExpectedBid`, `getDebugSnapshot` (bidding); `acceptPlay(seatOverride?)`, `declinePlay()`, `acceptPrompt()`, `declinePrompt()` (declarer prompt); `userPlayCard`, `skipToReview`, `restartPlay`, `skipToPhase`, `playThisHand` (play). See `game.svelte.ts` for signatures.
 
 **Key state:** `effectiveUserSeat` — defaults to South, set to North on declarer swap. Reset by `startDrillFromHandle()`. `isProcessing` + `playAborted` flags guard animation races.
 

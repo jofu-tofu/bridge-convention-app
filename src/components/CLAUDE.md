@@ -39,7 +39,7 @@ components/
       ExplanationPhase.svelte        Review phase with showAllCards toggle
       layout-props.ts                (moved to src/components/shared/layout-props.ts)
       BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
-      PlaySidePanel.svelte           Contract, trick counts, skip-to-review
+      PlaySidePanel.svelte           Contract, trick counts, restart play, skip-to-review
       ReviewSidePanel.svelte         Tabbed review: Bidding + Analysis, next deal / back to menu
       SettingsDialog.svelte          Reusable settings dialog (readonly prop for non-bidding phases)
       ContractDisplay.svelte         Formatted contract with doubled/redoubled indicators
