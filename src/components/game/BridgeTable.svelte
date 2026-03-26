@@ -31,6 +31,8 @@
     rotated?: boolean;
     /** Deal vulnerability for visual indicators on seat labels */
     vulnerability?: Vulnerability;
+    /** During play: trump suit placed leftmost in hand display */
+    trumpSuit?: SuitEnum;
   }
 
   let {
@@ -46,6 +48,7 @@
     remainingCards,
     rotated = false,
     vulnerability,
+    trumpSuit,
   }: Props = $props();
 
   // ── Mode detection: viewport mode when visibleHands is provided ───
@@ -145,6 +148,7 @@
       legalPlays={getSeatLegalPlays(northSeat)}
       onPlayCard={getSeatOnPlayCard(northSeat)}
       mirrored
+      {trumpSuit}
     />
     <div class="text-center mt-2">
       <span
@@ -164,6 +168,7 @@
       vertical
       legalPlays={getSeatLegalPlays(westSeat)}
       onPlayCard={getSeatOnPlayCard(westSeat)}
+      {trumpSuit}
     />
     <span
       class={seatLabelClass(westSeat)}
@@ -201,6 +206,7 @@
       vertical
       legalPlays={getSeatLegalPlays(eastSeat)}
       onPlayCard={getSeatOnPlayCard(eastSeat)}
+      {trumpSuit}
     />
   </div>
 
@@ -227,6 +233,7 @@
       faceUp={isFaceUp(southSeat)}
       legalPlays={getSeatLegalPlays(southSeat)}
       onPlayCard={getSeatOnPlayCard(southSeat)}
+      {trumpSuit}
     />
   </div>
 </div>

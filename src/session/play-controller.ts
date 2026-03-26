@@ -8,7 +8,7 @@
 
 import type { Card, Trick, Seat } from "../engine/types";
 import type { EnginePort } from "../engine/port";
-import type { PlayContext } from "../conventions";
+import type { PlayContext, PlayResult } from "../conventions";
 import { nextSeat, partnerSeat } from "../engine/constants";
 import { randomPlayStrategy } from "../session/heuristics/random-play";
 import type { SessionState } from "./session-state";
@@ -59,6 +59,13 @@ export async function processPlayCard(
     return emptyPlayResult();
   }
 
+  // Capture position BEFORE mutating state, start world-class eval in parallel
+  const trickIndex = state.tricks.length;
+  const playIndex = state.currentTrick.length;
+  const recPromise = (state.worldClassAdvisor && legalPlays.length > 1)
+    ? state.worldClassAdvisor.suggest(buildPlayContext(state, seat, legalPlays))
+    : null;
+
   // Play the user's card
   addCardToTrick(state, card, seat);
 
@@ -68,6 +75,7 @@ export async function processPlayCard(
 
     if (state.tricks.length === 13) {
       await completePlay(state, engine);
+      await resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
       return {
         accepted: true,
         trickComplete: true,
@@ -83,11 +91,13 @@ export async function processPlayCard(
     if (!state.isUserControlledPlay(state.currentPlayer)) {
       // AI leads next trick -- run AI plays
       const aiPlays = await runAiPlayLoop(state, engine);
+      await resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
       return buildResult(state, true, aiPlays);
     }
 
     // User leads next trick
     const nextLegalPlays = await getNextLegalPlays(state, engine);
+    await resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
     return {
       accepted: true,
       trickComplete: true,
@@ -105,11 +115,13 @@ export async function processPlayCard(
   // If next player is AI, run AI plays
   if (!state.isUserControlledPlay(state.currentPlayer)) {
     const aiPlays = await runAiPlayLoop(state, engine);
+    await resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
     return buildResult(state, false, aiPlays);
   }
 
   // Next player is user-controlled
   const nextLegalPlays = await getNextLegalPlays(state, engine);
+  await resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
   return {
     accepted: true,
     trickComplete: false,
@@ -215,6 +227,26 @@ async function selectAiCard(state: SessionState, seat: Seat, legalCards: readonl
     ?? randomPlayStrategy;
   const result = await strategy.suggest(ctx);
   return { card: result.card, reason: result.reason };
+}
+
+/** Resolve a pending world-class recommendation and store it. Non-fatal on failure. */
+async function resolveRecommendation(
+  state: SessionState,
+  recPromise: Promise<PlayResult> | null,
+  trickIndex: number,
+  playIndex: number,
+  seat: Seat,
+  card: Card,
+): Promise<void> {
+  if (!recPromise) return;
+  try {
+    const rec = await recPromise;
+    state.playRecommendations.push({
+      trickIndex, playIndex, seat, cardPlayed: card,
+      recommendedCard: rec.card, reason: rec.reason,
+      isOptimal: card.suit === rec.card.suit && card.rank === rec.card.rank,
+    });
+  } catch { /* MC+DDS failure is non-fatal — trick gets no recommendation */ }
 }
 
 /**

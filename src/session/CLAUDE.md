@@ -14,6 +14,7 @@ service/ (thin port) → session/ → {engine/, conventions/, inference/}
 
 | File | Role |
 |------|------|
+| `index.ts` | Barrel: GamePhase, DrillSettings, PlayProfileId, PracticePreferences, BidFeedbackDTO re-exports for service/ consumption |
 | `session-state.ts` | Per-session mutable state (deal, auction, strategy, inference, phase, play state). Stores `PlayStrategyProvider` and calls `onAuctionComplete()` at auction end via `capturePlayInferences()`. |
 | `session-manager.ts` | Map<SessionHandle, SessionState>, createHandle() |
 | `drill-session.ts` | createDrillSession() — DrillSession implementation |

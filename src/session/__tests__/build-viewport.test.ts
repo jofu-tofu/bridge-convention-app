@@ -322,6 +322,9 @@ describe("buildExplanationViewport", () => {
       contract: makeContract(Seat.South),
       score: 90,
       declarerTricksWon: 7,
+      defenderTricksWon: 6,
+      tricks: [],
+      playRecommendations: [],
       ...overrides,
     };
   }
@@ -445,6 +448,9 @@ describe("information boundary", () => {
       contract: null,
       score: null,
       declarerTricksWon: 0,
+      defenderTricksWon: 0,
+      tricks: [],
+      playRecommendations: [],
     });
     assertNoOracleFields(vp as unknown as Record<string, unknown>, "ExplanationViewport");
     // ExplanationViewport DOES have allHands — that's expected in review phase

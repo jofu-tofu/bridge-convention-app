@@ -23,11 +23,11 @@
   }: Props = $props();
 
   const STRAINS = [
-    BidSuit.Clubs,
-    BidSuit.Diamonds,
-    BidSuit.Hearts,
-    BidSuit.Spades,
     BidSuit.NoTrump,
+    BidSuit.Spades,
+    BidSuit.Hearts,
+    BidSuit.Diamonds,
+    BidSuit.Clubs,
   ] as const;
   const ALL_BIDS: readonly ContractBid[] = Array.from(
     { length: 35 },

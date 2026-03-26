@@ -10,6 +10,7 @@ import type { DrillSession, DrillBundle } from "./drill-types";
 import type { BidResult, BidHistoryEntry } from "../conventions";
 import type { PlayStrategy } from "../conventions";
 import type { PlayStrategyProvider } from "./heuristics/play-profiles";
+import type { PlayRecommendation } from "../service/response-types";
 import type { ConventionStrategy, StrategyEvaluation } from "../conventions";
 import type { PublicBeliefs } from "../inference/inference-types";
 import type { InferenceCoordinator } from "../inference/inference-coordinator";
@@ -79,6 +80,8 @@ export class SessionState {
   playScore: number | null;
   playStrategy: PlayStrategy | null;
   playStrategyProvider: PlayStrategyProvider | null;
+  playRecommendations: PlayRecommendation[];
+  worldClassAdvisor: PlayStrategy | null;
 
   constructor(
     bundle: DrillBundle,
@@ -118,6 +121,8 @@ export class SessionState {
     this.playScore = null;
     this.playStrategy = bundle.session.config.playStrategy ?? null;
     this.playStrategyProvider = bundle.session.config.playStrategyProvider ?? null;
+    this.playRecommendations = [];
+    this.worldClassAdvisor = null;
 
     // Initialize inference coordinator with engines from bundle
     coordinator.initialize(bundle.nsInferenceEngine, bundle.ewInferenceEngine);
@@ -193,6 +198,9 @@ export class SessionState {
   initializePlay(contract: Contract): void {
     this.tricks = [];
     this.currentTrick = [];
+    this.playRecommendations = [];
+    // NOTE: worldClassAdvisor is NOT reset here — it is set by the service layer
+    // in local-service.ts acceptPrompt() AFTER calling initializePlay().
     this.declarerTricksWon = 0;
     this.defenderTricksWon = 0;
     this.dummySeat = partnerSeat(contract.declarer);

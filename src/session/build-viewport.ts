@@ -42,6 +42,7 @@ import type {
   DeclarerPromptViewport,
   PlayingViewport,
   ExplanationViewport,
+  PlayRecommendation,
 } from "../service/response-types";
 
 // ── Build Bidding Viewport ──────────────────────────────────────────
@@ -475,6 +476,9 @@ export interface BuildExplanationViewportInput {
   readonly contract: Contract | null;
   readonly score: number | null;
   readonly declarerTricksWon: number;
+  readonly defenderTricksWon: number;
+  readonly tricks: readonly Trick[];
+  readonly playRecommendations: readonly PlayRecommendation[];
 }
 
 /**
@@ -486,7 +490,7 @@ export interface BuildExplanationViewportInput {
 export function buildExplanationViewport(
   input: BuildExplanationViewportInput,
 ): ExplanationViewport {
-  const { deal, userSeat, auction, bidHistory, contract, score, declarerTricksWon } = input;
+  const { deal, userSeat, auction, bidHistory, contract, score, declarerTricksWon, defenderTricksWon, tricks, playRecommendations } = input;
 
   return {
     userSeat,
@@ -497,6 +501,9 @@ export function buildExplanationViewport(
     contract,
     score,
     declarerTricksWon,
+    defenderTricksWon,
     bidHistory,
+    tricks,
+    playRecommendations,
   };
 }

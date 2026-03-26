@@ -36,6 +36,9 @@
   const gameStore = getGameStore();
   const appStore = getAppStore();
 
+  // When debugExpanded is set (?dev=expanded), all collapsible sections start open
+  const allOpen = $derived(appStore.debugExpanded);
+
   const ALL_SEATS = [Seat.North, Seat.East, Seat.South, Seat.West] as const;
 
   // ─── Phase-aware visibility ─────────────────────────────────
@@ -119,7 +122,7 @@
     <DebugAtAGlance snapshot={currentSnap} {feedback} phase={gameStore.phase} />
 
     <!-- Group 1: Context -->
-    <details>
+    <details open={allOpen}>
       <summary class="text-[10px] font-bold uppercase tracking-widest text-text-muted cursor-pointer py-0.5 border-b border-border-subtle/30">Context</summary>
       <div class="pt-1 flex flex-col gap-0.5">
         <DebugDealInfo
@@ -167,7 +170,7 @@
     {/if}
 
     <!-- Group 3: Feedback & History -->
-    <details>
+    <details open={allOpen}>
       <summary class="text-[10px] font-bold uppercase tracking-widest text-text-muted cursor-pointer py-0.5 border-b border-border-subtle/30">Feedback & History</summary>
       <div class="pt-1 flex flex-col gap-0.5">
         {#if !isPlayingPhase}

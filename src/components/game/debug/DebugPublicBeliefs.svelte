@@ -1,11 +1,11 @@
 <script lang="ts">
   import { Seat, Suit } from "../../../service";
-  import type { PublicBeliefState } from "../../../service";
+  import type { ServicePublicBeliefState } from "../../../service";
   import { fmtCall } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {
-    publicBeliefState: PublicBeliefState;
+    publicBeliefState: ServicePublicBeliefState;
     allSeats: readonly Seat[];
   }
 

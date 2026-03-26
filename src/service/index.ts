@@ -1,15 +1,11 @@
 // ── Service module public API ────────────────────────────────────────
 
-// Port interfaces
+// ── 1. Service Port & Implementation ─────────────────────────────────
 export type { DevServicePort } from "./port";
+export { createLocalService } from "./local-service";
+export type { SessionHandle, SessionConfig } from "./request-types";
 
-// Boundary types — requests
-export type {
-  SessionHandle,
-  SessionConfig,
-} from "./request-types";
-
-// Boundary types — responses
+// ── 2. Viewports & Response Types (service-owned) ────────────────────
 export type {
   ServiceGamePhase,
   ViewportBidGrade,
@@ -17,90 +13,66 @@ export type {
   ServicePublicBeliefState,
   ServiceInferenceSnapshot,
   ConventionCardView,
+  BiddingViewport,
+  ViewportBidFeedback,
+  TeachingDetail,
+  DeclarerPromptViewport,
+  PlayingViewport,
+  ExplanationViewport,
+  PlayRecommendation,
+  HandEvaluationView,
+  AuctionEntryView,
+  ModuleCatalogEntry,
+  ModuleLearningViewport,
+  FlowTreeNode,
+  BundleFlowTreeViewport,
+  ClauseSystemVariant,
+  ServiceBidHistoryEntry as BidHistoryEntry,
 } from "./response-types";
 
-// Evaluation facade (CLI + stateless grading)
-
-export { buildAtomViewport, gradeAtomBid, validateAtomId, parseAtomId } from "./evaluation/atom-evaluator";
-export { startPlaythrough, getPlaythroughStepViewport, gradePlaythroughBid, getPlaythroughRevealSteps } from "./evaluation/playthrough-evaluator";
-
-// Implementation
-export { createLocalService } from "./local-service";
-
-// Re-exported for store/CLI/component consumption
-export type { PublicBeliefState, InferenceSnapshot } from "../inference/types";
-export { createBiddingContext } from "../conventions";
-export type { BidFeedbackDTO } from "../session/bid-feedback-builder";
-
-export type { BiddingViewport, ViewportBidFeedback, TeachingDetail, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, HandEvaluationView, AuctionEntryView } from "./response-types";
-
-export type { ModuleCatalogEntry, ModuleLearningViewport, ClauseSystemVariant } from "./response-types";
-
-// ── Engine domain primitives (universal vocabulary, acceptable to re-export) ──
-
-// Engine types — enums (value + type)
+// ── 3. Game Vocabulary (engine primitives) ───────────────────────────
 export { Seat, Suit, Rank, BidSuit, Vulnerability } from "../engine/types";
-// Engine types — type-only
 export type { Call, Card, Hand, ContractBid, Contract, Auction, AuctionEntry, Trick, PlayedCard, DDSolution, Deal } from "../engine/types";
-// Engine port
 export type { EnginePort } from "../engine/port";
-// Engine constants (display/layout concerns)
 export { SEAT_INDEX, SUIT_ORDER, RANK_INDEX, SEATS, nextSeat, partnerSeat, areSamePartnership } from "../engine/constants";
-// Engine display utilities (pure functions on API contract types)
 export { callKey, callsMatch } from "../engine/call-helpers";
 export { isVulnerable } from "../engine/scoring";
 export { evaluateHand, calculateHcp } from "../engine/hand-evaluator";
 
-// ── Convention system re-exports ──
-
-export { ConventionCategory, getConvention, getModule, SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, getSystemConfig, listConventions } from "../conventions";
+// ── 4. Convention Catalog & Strategy ─────────────────────────────────
+export { ConventionCategory, getConvention, getModule, listConventions } from "../conventions";
+export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../conventions";
 export type { ConventionConfig, ConventionContribution, ParseTreeView, TeachingProjection, EncoderKind, BaseSystemId, SystemConfig } from "../conventions";
-
-// ── Convention card ──
-export { buildConventionCard } from "./display/convention-card";
-
-// ── Strategy re-exports ──
-
+export { createBiddingContext } from "../conventions";
 export type { BidResult, BiddingContext } from "../conventions";
-export type { ServiceBidHistoryEntry as BidHistoryEntry } from "./response-types";
-export type { PlayStrategy, PlayContext, PlayResult } from "../conventions";
-export type { PosteriorSummary } from "../conventions";
-export type { StrategyEvaluation } from "../conventions";
+export type { PlayStrategy, PlayContext, PlayResult, PosteriorSummary } from "../conventions";
 
-// ── Coverage utilities (for coverage screen) ──
-
+// ── 5. Coverage Utilities ────────────────────────────────────────────
 export { listBundleInputs, resolveBundle, getBundleInput, enumerateRuleAtoms, generateRuleCoverageManifest } from "../conventions";
 export type { RuleCoverageManifest, ConventionBundle } from "../conventions";
 
-// ── Inference re-exports ──
+// ── 6. Session Configuration ─────────────────────────────────────────
+export type { OpponentMode, VulnerabilityDistribution, DrillSettings } from "../session";
+export { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../session";
+export type { PlayProfileId } from "../session";
+export { PLAY_PROFILES } from "../session";
+export { isValidTransition } from "../session";
+export type { GamePhase } from "../session";
+export type { PracticePreferences, DisplayPreferences } from "../session";
+export { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../session";
 
+// ── 7. Display & Formatting ─────────────────────────────────────────
+export { displayConventionName, formatCall, formatContractWithDeclarer, formatRuleName, displayRank, formatCardLabel, formatBidReferences, SUIT_SYMBOLS, STRAIN_SYMBOLS } from "./display/format";
+export { buildConventionCard } from "./display/convention-card";
+
+// ── 8. Evaluation Facade (CLI grading) ──────────────────────────────
+export { buildAtomViewport, gradeAtomBid, validateAtomId, parseAtomId } from "./evaluation/atom-evaluator";
+export { startPlaythrough, getPlaythroughStepViewport, gradePlaythroughBid, getPlaythroughRevealSteps } from "./evaluation/playthrough-evaluator";
+
+// ── 9. Cross-cutting ────────────────────────────────────────────────
 export type { PosteriorFactValue } from "../inference/posterior/posterior-types";
-
-// ── Bootstrap re-exports ──
-
-export type { OpponentMode, VulnerabilityDistribution } from "../session/drill-types";
-export type { DrillSettings } from "../session/drill-types";
-export { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../session/drill-types";
-export type { PlayProfileId } from "../session/heuristics/play-profiles";
-export { PLAY_PROFILES } from "../session/heuristics/play-profiles";
-
-// ── Session phase machine (for store consumption) ──
-
-export { isValidTransition } from "../session/phase-machine";
-export type { GamePhase } from "../session/phase-machine";
-
-// ── Practice preferences (for store consumption) ──
-
-export type { PracticePreferences, DisplayPreferences } from "../session/practice-preferences";
-export { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../session/practice-preferences";
-
-// ── Display formatting (UI-facing pure functions) ──
-
-export { displayConventionName, formatCall, formatContractWithDeclarer, formatRuleName, displayRank, formatCardLabel, SUIT_SYMBOLS, STRAIN_SYMBOLS } from "./display/format";
-
-// ── Utility re-exports ──
-
 export { delay } from "./util/delay";
 
 // ── Debug-only types — import from service/debug-types instead ──
-// EvaluatedFacts, PipelineResult, MachineDebugSnapshot moved to debug-types.ts
+// StrategyEvaluation, BidFeedbackDTO, EvaluatedFacts, PipelineResult, MachineDebugSnapshot
+// are routed through debug-types.ts (not this barrel) to keep the production API surface clean.

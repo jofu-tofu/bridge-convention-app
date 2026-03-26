@@ -3,6 +3,7 @@
      optional inline preview text, and nested <details> support. -->
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { getAppStore } from "../../../stores/context";
 
   interface Props {
     title: string;
@@ -25,9 +26,13 @@
     nested = false,
     children,
   }: Props = $props();
+
+  const appStore = getAppStore();
+  // ?dev=expanded forces all debug sections open
+  const effectiveOpen = $derived(open || appStore.debugExpanded);
 </script>
 
-<details {open}>
+<details open={effectiveOpen}>
   <summary
     class="cursor-pointer select-none py-0.5 flex items-center gap-1.5 {nested
       ? 'text-xs text-text-muted font-medium'

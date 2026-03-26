@@ -89,6 +89,12 @@ export function createAppStore() {
   let targetSurface = $state<string | null>(null);
   let coverageBundle = $state<string | null>(null);
 
+  // Dev flags parsed from ?dev= comma-separated param
+  let debugExpanded = $state(false);
+  let autoDismissFeedback = $state(false);
+  /** Target phase for instant skip-to-phase (?phase=review|playing|declarer). */
+  let skipToPhase = $state<"review" | "playing" | "declarer" | null>(null);
+
   // All persisted practice preferences — single blob
   let prefs = $state<PracticePreferences>(loadPreferences());
 
@@ -237,6 +243,30 @@ export function createAppStore() {
 
     setAutoplay(on: boolean) {
       autoplay = on;
+    },
+
+    get debugExpanded() {
+      return debugExpanded;
+    },
+
+    setDebugExpanded(on: boolean) {
+      debugExpanded = on;
+    },
+
+    get autoDismissFeedback() {
+      return autoDismissFeedback;
+    },
+
+    setAutoDismissFeedback(on: boolean) {
+      autoDismissFeedback = on;
+    },
+
+    get skipToPhase() {
+      return skipToPhase;
+    },
+
+    setSkipToPhase(phase: "review" | "playing" | "declarer" | null) {
+      skipToPhase = phase;
     },
 
     get opponentMode() {

@@ -17,7 +17,7 @@ Playwright end-to-end smoke tests for user-facing behavior.
 - Base URL: `http://localhost:1420`
 - Test structural concerns (elements render, navigation works), not specific copy
 - Bid buttons have `data-testid="bid-{callKey}"` selectors (e.g., `bid-1C`, `bid-pass`) — use these instead of unicode suit symbols
-- Dev URL params available: `?convention=nt-bundle&seed=42` for deterministic test scenarios
+- Dev URL params available: `?convention=nt-bundle&seed=42` for deterministic scenarios, `?phase=review` for instant skip-to-phase, `?dev=debug,expanded,autoDismiss` for friction-free debug probing, `?screen=settings|coverage|profiles` for direct screen nav
 
 ## Architecture
 

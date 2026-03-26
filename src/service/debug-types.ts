@@ -11,16 +11,21 @@
 
 import type { Call, Card, Seat } from "../engine/types";
 import type { StrategyEvaluation, BidResult } from "../conventions";
-import type { BidFeedbackDTO } from "../session/bid-feedback-builder";
+import type { BidFeedbackDTO } from "../session";
 import type { ServiceGamePhase } from "./response-types";
-import type { PlayProfileId } from "../session/heuristics/play-profiles";
+import type { PlayProfileId } from "../session";
 
 // ── Debug-only backend type re-exports ──────────────────────────────
 //
 // Debug drawer components need these deep backend types. Re-exporting
 // them here (not from the main barrel) keeps the production API surface clean.
+// StrategyEvaluation and BidFeedbackDTO are intentionally routed through this
+// file (not the main barrel) because they reference deep convention/session
+// internals. This is a deliberate boundary exception.
 
 export type { EvaluatedFacts, PipelineResult, MachineDebugSnapshot } from "../conventions";
+export type { StrategyEvaluation } from "../conventions";
+export type { BidFeedbackDTO } from "../session";
 
 /** Debug snapshot visible through DevServicePort.
  *  Extends StrategyEvaluation with session-level debug fields. */

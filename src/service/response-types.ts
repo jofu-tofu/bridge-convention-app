@@ -6,7 +6,8 @@
  * interfaces — never re-exported from backend modules.
  *
  * ALLOWED to cross: BiddingViewport, ViewportBidFeedback, TeachingDetail,
- *   Call, Card, Seat, Vulnerability, SessionHandle, session config DTOs.
+ *   Call, Card, Seat, Vulnerability, SessionHandle, session config DTOs,
+ *   FlowTreeNode, BundleFlowTreeViewport.
  *
  * NEVER crosses: Deal, BidResult, DrillSession, DrillBundle,
  *   ConventionStrategy, StrategyEvaluation, ArbitrationResult,
@@ -382,6 +383,30 @@ export interface SurfaceDetailView {
   readonly clauses: readonly SurfaceClauseView[];
 }
 
+// ── Bundle Flow Tree ────────────────────────────────────────────────
+
+/** A node in the unified conversation flow tree. */
+export interface FlowTreeNode {
+  readonly id: string;
+  readonly call: Call | null;
+  readonly callDisplay: string | null;
+  readonly turn: "opener" | "responder" | null;
+  readonly label: string;
+  readonly moduleId: string | null;
+  readonly moduleDisplayName: string | null;
+  readonly children: readonly FlowTreeNode[];
+  readonly depth: number;
+}
+
+/** Unified conversation flow tree for a bundle. */
+export interface BundleFlowTreeViewport {
+  readonly bundleId: string;
+  readonly bundleName: string;
+  readonly root: FlowTreeNode;
+  readonly nodeCount: number;
+  readonly maxDepth: number;
+}
+
 // ── Player Viewport ─────────────────────────────────────────────────
 //
 // The explicit information boundary between the engine and the player.
@@ -708,6 +733,17 @@ export interface PlayingViewport {
   readonly bidHistory?: readonly ServiceBidHistoryEntry[];
 }
 
+/** World-class recommendation for a single user card play. */
+export interface PlayRecommendation {
+  readonly trickIndex: number;
+  readonly playIndex: number;       // 0-3 within trick
+  readonly seat: Seat;
+  readonly cardPlayed: Card;
+  readonly recommendedCard: Card;
+  readonly reason: string;
+  readonly isOptimal: boolean;
+}
+
 /** Viewport for the explanation/review phase. All hands are visible. */
 export interface ExplanationViewport {
   readonly userSeat: Seat;
@@ -718,7 +754,10 @@ export interface ExplanationViewport {
   readonly contract: Contract | null;
   readonly score: number | null;
   readonly declarerTricksWon: number;
+  readonly defenderTricksWon: number;
   readonly bidHistory: readonly ServiceBidHistoryEntry[];
+  readonly tricks: readonly Trick[];
+  readonly playRecommendations: readonly PlayRecommendation[];
 }
 
 // ── Convention Card ──────────────────────────────────────────────────

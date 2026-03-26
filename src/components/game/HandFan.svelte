@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Card as CardType } from "../../service";
+  import type { Suit } from "../../service";
   import Card from "../shared/Card.svelte";
   import { sortCards } from "../shared/sort-cards";
 
@@ -12,6 +13,8 @@
     onPlayCard?: (card: CardType) => void;
     /** When true, card text shown at bottom only (for dummy viewed from across table) */
     mirrored?: boolean;
+    /** When set, trump suit is placed leftmost in the hand. */
+    trumpSuit?: Suit;
   }
 
   let {
@@ -22,9 +25,10 @@
     legalPlays = [],
     onPlayCard,
     mirrored = false,
+    trumpSuit,
   }: Props = $props();
 
-  const displayCards = $derived(sorted ? sortCards(cards) : [...cards]);
+  const displayCards = $derived(sorted ? sortCards(cards, trumpSuit) : [...cards]);
 
   function isLegal(card: CardType): boolean {
     return legalPlays.some(
