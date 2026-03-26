@@ -6,7 +6,7 @@ const SETTINGS_KEY = "bridge-app:practice-preferences";
 const DEFAULTS = {
   baseSystemId: "sayc",
   drill: {
-    opponentMode: "natural",
+    opponentMode: "none",
     tuning: { vulnerabilityDistribution: { none: 1, ours: 0, theirs: 0, both: 0 } },
   },
   display: { showEducationalAnnotations: true },
@@ -40,7 +40,7 @@ describe("localStorage persistence", () => {
   it("fresh store uses defaults when localStorage is empty", () => {
     const store = createAppStore();
     expect(store.baseSystemId).toBe("sayc");
-    expect(store.opponentMode).toBe("natural");
+    expect(store.opponentMode).toBe("none");
     expect(store.drillTuning.vulnerabilityDistribution).toEqual({
       none: 1, ours: 0, theirs: 0, both: 0,
     });
@@ -85,11 +85,11 @@ describe("validation via mergePreferences", () => {
     expect(createAppStore().baseSystemId).toBe("sayc");
   });
 
-  it("invalid opponentMode falls back to natural", () => {
+  it("invalid opponentMode falls back to none", () => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({
       ...DEFAULTS, drill: { opponentMode: "aggressive", tuning: DEFAULTS.drill.tuning },
     }));
-    expect(createAppStore().opponentMode).toBe("natural");
+    expect(createAppStore().opponentMode).toBe("none");
   });
 
   it("invalid vulnerabilityDistribution falls back to default", () => {
@@ -174,6 +174,6 @@ describe("SSR safety", () => {
     });
     const store = createAppStore();
     expect(store.baseSystemId).toBe("sayc");
-    expect(store.opponentMode).toBe("natural");
+    expect(store.opponentMode).toBe("none");
   });
 });

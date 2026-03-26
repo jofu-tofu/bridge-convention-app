@@ -188,6 +188,7 @@ describe("playThisHand mutation ordering", () => {
 
     // playThisHand should transition back to DECLARER_PROMPT
     store.playThisHand();
+    await vi.advanceTimersByTimeAsync(100);
     expect(store.phase).toBe("DECLARER_PROMPT");
     expect(store.effectiveUserSeat).toBe(Seat.South);
   });

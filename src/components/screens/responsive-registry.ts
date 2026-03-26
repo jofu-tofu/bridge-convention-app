@@ -58,6 +58,24 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     minWidth: 320,
     mobileNotes: "max-w-4xl centered container, single-column grid",
   },
+  {
+    path: "ProfilesScreen.svelte",
+    mobileStrategy: "centered",
+    minWidth: 320,
+    mobileNotes: "Read-only system profiles with detail and compare views",
+  },
+  {
+    path: "SystemDetailView.svelte",
+    mobileStrategy: "centered",
+    minWidth: 320,
+    mobileNotes: "Single-system detail view with category cards",
+  },
+  {
+    path: "SystemCompareView.svelte",
+    mobileStrategy: "full-width",
+    minWidth: 320,
+    mobileNotes: "Side-by-side comparison table, horizontally scrollable on mobile",
+  },
 
   // --- Game screen orchestrator ---
   {

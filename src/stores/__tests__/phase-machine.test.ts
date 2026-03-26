@@ -98,6 +98,7 @@ describe("phase state machine", () => {
     it("EXPLANATION → DECLARER_PROMPT (play this hand)", async () => {
       const store = await setupToExplanation();
       store.playThisHand();
+      await vi.advanceTimersByTimeAsync(100);
       expect(store.phase).toBe("DECLARER_PROMPT");
     });
   });
