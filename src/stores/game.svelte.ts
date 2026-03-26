@@ -501,12 +501,11 @@ export function createGameStore(
 
   function acceptPlay(seatOverride?: Seat) {
     if (!contract || phase !== "DECLARER_PROMPT") return;
-    if (seatOverride) {
-      effectiveUserSeat = seatOverride;
-    }
+    const seat = seatOverride ?? effectiveUserSeat ?? userSeat;
+    effectiveUserSeat = seat;
     void (async () => {
       try {
-        await activeService.acceptPrompt(activeHandle!, "play");
+        await activeService.acceptPrompt(activeHandle!, "play", seat);
       } catch (err) {
         console.error('acceptPrompt failed:', err);
       }
@@ -813,11 +812,25 @@ export function createGameStore(
     playThisHand() {
       if (!contract) return;
       if (phase !== "EXPLANATION") return;
+      if (!activeHandle) return;
+      const handle = activeHandle;
       resetPlay();
       effectiveUserSeat = userSeat;
       resetDDS();
-      transitionTo("DECLARER_PROMPT");
-      void refreshViewport();
+      // Transition service-side phase back to DECLARER_PROMPT, fetch viewport, then transition store
+      void (async () => {
+        try {
+          await activeService.acceptPrompt(handle, "replay");
+          if (activeHandle !== handle) return;
+          const dpvp = await activeService.getDeclarerPromptViewport(handle);
+          if (activeHandle !== handle) return;
+          cachedDeclarerPromptViewport = dpvp;
+          transitionTo("DECLARER_PROMPT");
+          await tick();
+        } catch (err) {
+          console.error('playThisHand failed:', err);
+        }
+      })();
     },
 
     async startDrillFromHandle(handle: SessionHandle, drillService?: DevServicePort) {

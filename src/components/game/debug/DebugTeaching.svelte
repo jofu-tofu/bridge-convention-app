@@ -33,7 +33,7 @@
       </div>
       {#if tr.acceptableBids.length > 0}
         <DebugSection title="Also acceptable" count={tr.acceptableBids.length} nested>
-          {#each tr.acceptableBids as ab (ab.bidName)}
+          {#each tr.acceptableBids as ab, i (ab.bidName + ':' + i)}
             <div class="text-[10px] leading-tight">
               <span class="text-teal-300">{fmtCall(ab.call)}</span>
               <span class="text-text-primary ml-0.5">{ab.meaning}</span>
@@ -44,7 +44,7 @@
       {/if}
       {#if tr.nearMissCalls && tr.nearMissCalls.length > 0}
         <DebugSection title="Near misses" count={tr.nearMissCalls.length} nested>
-          {#each tr.nearMissCalls as nm (nm.call.type + (nm.call.type === 'bid' ? nm.call.level + nm.call.strain : ''))}
+          {#each tr.nearMissCalls as nm, i (nm.call.type + (nm.call.type === 'bid' ? nm.call.level + nm.call.strain : '') + ':' + i)}
             <div class="text-[10px] leading-tight">
               <span class="text-yellow-400">{fmtCall(nm.call)}</span>
               <span class="text-text-muted ml-0.5">— {nm.reason}</span>

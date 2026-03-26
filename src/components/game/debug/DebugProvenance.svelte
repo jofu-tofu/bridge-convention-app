@@ -50,7 +50,7 @@
             {/if}
             {#if enc.blockedCalls.length > 0}
               <div class="pl-2">
-                {#each enc.blockedCalls as bc (bc.call.type + (bc.call.type === 'bid' ? bc.call.level + bc.call.strain : ''))}
+                {#each enc.blockedCalls as bc, i (bc.call.type + (bc.call.type === 'bid' ? bc.call.level + bc.call.strain : '') + ':' + i)}
                   <span class="text-red-400">{fmtCall(bc.call)} blocked: {bc.reason}</span>
                 {/each}
               </div>
@@ -63,7 +63,7 @@
     <!-- Ranking -->
     {#if pr.arbitration.length > 0}
       <DebugSection title="Ranking" count={pr.arbitration.length} nested>
-        {#each pr.arbitration as at (at.candidateId)}
+        {#each pr.arbitration as at, i (at.candidateId + ':' + i)}
           <div class="text-[10px] leading-tight">
             <span class={at.truthSetMember ? "text-green-300" : "text-text-muted"}>{truncate(at.candidateId, 30)}</span>
             <span class="text-text-muted ml-0.5">band:{at.rankingInputs.recommendationBand} spec:{at.rankingInputs.specificity} mod:{at.rankingInputs.modulePrecedence}</span>

@@ -37,12 +37,12 @@
     <!-- Matched (truth set) — collapsed if >2 -->
     {#if pr.truthSet.length > 0}
       <DebugSection title="Matched" count={pr.truthSet.length} nested open={pr.truthSet.length <= 3}>
-        {#each pr.truthSet as carrier (carrier.proposal.meaningId)}
+        {#each pr.truthSet as carrier, i (carrier.proposal.meaningId + ':' + i)}
           <div class="mb-0.5 border-l-2 border-green-500/40 pl-1.5">
             <span class="text-green-300 font-bold">{fmtCall(carrier.call)}</span>
             <span class="text-text-primary ml-1">{carrier.proposal.teachingLabel ?? carrier.proposal.meaningId}</span>
             <div class="text-[10px] text-text-muted leading-tight">
-              {#each carrier.proposal.clauses as clause (clause.factId + clause.operator)}
+              {#each carrier.proposal.clauses as clause, ci (clause.factId + clause.operator + ':' + ci)}
                 <span class="{clause.satisfied ? 'text-green-400/70' : 'text-red-400/70'}">{clause.satisfied ? '+' : '-'}{clause.description}</span><span class="mx-0.5">|</span>
               {/each}
             </div>
@@ -54,12 +54,12 @@
     <!-- Not this hand (acceptable set) — collapsed by default -->
     {#if pr.acceptableSet.length > 0}
       <DebugSection title="Not this hand" count={pr.acceptableSet.length} nested>
-        {#each pr.acceptableSet as carrier (carrier.proposal.meaningId)}
+        {#each pr.acceptableSet as carrier, i (carrier.proposal.meaningId + ':' + i)}
           <div class="mb-0.5 border-l-2 border-text-muted/30 pl-1.5">
             <span class="text-text-muted font-bold">{fmtCall(carrier.call)}</span>
             <span class="text-text-muted ml-1">{carrier.proposal.teachingLabel ?? carrier.proposal.meaningId}</span>
             <div class="text-[10px]">
-              {#each carrier.proposal.clauses.filter(c => !c.satisfied) as clause (clause.factId + clause.operator)}
+              {#each carrier.proposal.clauses.filter(c => !c.satisfied) as clause, ci (clause.factId + clause.operator + ':' + ci)}
                 <div class="text-red-400/70 leading-tight">
                   {clause.description}
                   {#if clause.observedValue !== undefined}
@@ -76,7 +76,7 @@
     <!-- Eliminated — collapsed by default -->
     {#if pr.eliminated.length > 0}
       <DebugSection title="Eliminated" count={pr.eliminated.length} nested>
-        {#each pr.eliminated as carrier (carrier.proposal.meaningId + (carrier.traces.elimination?.reason ?? ''))}
+        {#each pr.eliminated as carrier, i (carrier.proposal.meaningId + ':' + i)}
           <div class="text-[10px] text-text-muted leading-tight">
             <span class="text-red-400/60">{carrier.proposal.meaningId}</span>
             <span class="ml-0.5">— {carrier.traces.elimination?.reason ?? 'Unknown'}</span>
@@ -88,7 +88,7 @@
     <!-- WhyNot — collapsed by default -->
     {#if tp?.whyNot && tp.whyNot.length > 0}
       <DebugSection title="Why not these?" count={tp.whyNot.length} nested>
-        {#each tp.whyNot as wn (wn.call.type + (wn.call.type === 'bid' ? wn.call.level + wn.call.strain : ''))}
+        {#each tp.whyNot as wn, i (wn.call.type + (wn.call.type === 'bid' ? wn.call.level + wn.call.strain : '') + ':' + i)}
           <div class="text-[10px] leading-tight">
             <span class="text-yellow-400">{fmtCall(wn.call)}</span>
             <span class="text-text-muted ml-0.5">— eliminated at {wn.eliminationStage}</span>

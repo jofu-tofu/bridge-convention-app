@@ -14,7 +14,7 @@
   {#if debugLog.length === 0}
     <div class="text-text-muted italic text-[10px]">No bids yet</div>
   {:else}
-    {#each debugLog as entry (entry.turnIndex)}
+    {#each debugLog as entry, i (entry.kind + ':' + entry.turnIndex)}
       <details class="mb-0.5">
         <summary class="cursor-pointer text-[10px] py-0.5 flex items-center gap-1 flex-wrap">
           <span class="text-text-muted">#{entry.turnIndex}</span>

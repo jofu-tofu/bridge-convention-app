@@ -51,7 +51,7 @@ interface ServicePort {
   submitBid(handle: SessionHandle, call: Call): Promise<BidSubmitResult>;
 
   // ── Phase transitions ───────────────────────────────────────────
-  acceptPrompt(handle: SessionHandle, mode?: "play" | "skip"): Promise<PromptAcceptResult>;
+  acceptPrompt(handle: SessionHandle, mode?: "play" | "skip" | "replay", seatOverride?: Seat): Promise<PromptAcceptResult>;
 
   // ── Play ────────────────────────────────────────────────────────
   playCard(handle: SessionHandle, card: Card, seat: Seat): Promise<PlayCardResult>;

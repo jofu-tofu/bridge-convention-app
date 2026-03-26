@@ -174,7 +174,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
     // ── Phase transitions ─────────────────────────────────────────
 
-    async acceptPrompt(handle: SessionHandle, mode?: "play" | "skip"): Promise<PromptAcceptResult> {
+    async acceptPrompt(handle: SessionHandle, mode?: "play" | "skip" | "replay", seatOverride?: Seat): Promise<PromptAcceptResult> {
       const state = manager.get(handle);
       if (mode === "skip" || !mode) {
         if (isValidTransition(state.phase, "EXPLANATION")) {
@@ -183,8 +183,14 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         }
       } else if (mode === "play") {
         if (isValidTransition(state.phase, "PLAYING") && state.contract) {
+          state.effectiveUserSeat = seatOverride ?? state.userSeat;
           state.initializePlay(state.contract);
           state.phase = "PLAYING";
+        }
+      } else if (mode === "replay") {
+        // Transition back to DECLARER_PROMPT from EXPLANATION (for "Play this Hand")
+        if (isValidTransition(state.phase, "DECLARER_PROMPT")) {
+          state.phase = "DECLARER_PROMPT";
         }
       }
 
