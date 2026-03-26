@@ -329,81 +329,15 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
     .filter((m): m is ConventionModule => m !== undefined);
   if (modules.length === 0) return null;
 
-  // Collect all states and transitions across modules, tagging with moduleId
-  interface TaggedState {
+  // ── Types ───────────────────────────────────────────────────────
+  interface TaggedSurface {
+    meaningId: string;
+    ck: string;
+    call: Call;
+    teachingLabel: string;
     moduleId: string;
-    phase: string;
-    turn: string | null;
-    route: RouteExpr | undefined;
-    surfaces: ReadonlyArray<{
-      meaningId: string;
-      callKey: string;
-      call: Call;
-      teachingLabel: string;
-      moduleId: string;
-    }>;
   }
 
-  const taggedStates: TaggedState[] = [];
-  const allTransitions: Array<{
-    moduleId: string;
-    from: readonly string[];
-    to: string;
-    on: ObsPattern;
-  }> = [];
-
-  for (const mod of modules) {
-    // Collect transitions
-    for (const t of mod.local.transitions) {
-      const froms: readonly string[] = Array.isArray(t.from) ? t.from : [t.from];
-      allTransitions.push({
-        moduleId: mod.moduleId,
-        from: froms,
-        to: t.to,
-        on: t.on,
-      });
-    }
-
-    // Collect states
-    for (const entry of mod.states ?? []) {
-      const phases: readonly string[] = Array.isArray(entry.phase)
-        ? entry.phase as readonly string[]
-        : [entry.phase as string];
-
-      for (const phase of phases) {
-        taggedStates.push({
-          moduleId: mod.moduleId,
-          phase,
-          turn: (entry.turn as string) ?? null,
-          route: entry.route,
-          surfaces: entry.surfaces.map((s) => ({
-            meaningId: s.meaningId,
-            callKey: callKey(s.encoding.defaultCall),
-            call: s.encoding.defaultCall,
-            teachingLabel: s.teachingLabel,
-            moduleId: mod.moduleId,
-          })),
-        });
-      }
-    }
-  }
-
-  // Separate states with and without route constraints
-  const normalStates = taggedStates.filter((s) => !s.route);
-  const routeStates = taggedStates.filter((s) => s.route);
-
-  // Group normal states by phase
-  const phaseStates = new Map<string, TaggedState[]>();
-  for (const s of normalStates) {
-    const existing = phaseStates.get(s.phase);
-    if (existing) existing.push(s);
-    else phaseStates.set(s.phase, [s]);
-  }
-
-  // Find the initial phase (opening bid — idle phase with opener turn)
-  const initialPhases = new Set(modules.map((m) => m.local.initial));
-
-  // Build mutable tree nodes
   interface MutableNode {
     id: string;
     callKey: string | null;
@@ -415,23 +349,23 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
     children: MutableNode[];
     depth: number;
     phase: string;
-    /** The observation pattern that created this node (from the parent transition's `on`). */
-    incomingObs: ObsPattern | null;
+    /** The transition observation that leads INTO this node's phase. */
+    transitionObs: ObsPattern | null;
   }
 
   let nodeCount = 0;
-  function createNode(
-    surface: TaggedState["surfaces"][number] | null,
+  function mkNode(
+    surface: TaggedSurface | null,
     phase: string,
     turn: string | null,
     depth: number,
     label?: string,
-    incomingObs?: ObsPattern,
+    transObs?: ObsPattern,
   ): MutableNode {
     nodeCount++;
     return {
       id: surface ? `${surface.moduleId}:${surface.meaningId}` : `root:${phase}`,
-      callKey: surface ? surface.callKey : null,
+      callKey: surface ? surface.ck : null,
       call: surface ? surface.call : null,
       turn: (turn === "opener" || turn === "responder") ? turn : null,
       label: label ?? (surface ? surface.teachingLabel : phase),
@@ -440,27 +374,144 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
       children: [],
       depth,
       phase,
-      incomingObs: incomingObs ?? null,
+      transitionObs: transObs ?? null,
     };
   }
 
-  // Build root from initial phase opener surfaces
+  // ── Collect module data ─────────────────────────────────────────
+  interface ModulePhaseState {
+    moduleId: string;
+    turn: string | null;
+    route: RouteExpr | undefined;
+    surfaces: TaggedSurface[];
+  }
+
+  // Per-module: phase → states at that phase
+  const modulePhaseMap = new Map<string, Map<string, ModulePhaseState[]>>();
+  // Per-module: transitions
+  const moduleTransitions = new Map<string, Array<{ from: readonly string[]; to: string; on: ObsPattern }>>();
+
+  for (const mod of modules) {
+    const transArr: Array<{ from: readonly string[]; to: string; on: ObsPattern }> = [];
+    for (const t of mod.local.transitions) {
+      const froms: readonly string[] = Array.isArray(t.from) ? t.from : [t.from];
+      transArr.push({ from: froms, to: t.to, on: t.on });
+    }
+    moduleTransitions.set(mod.moduleId, transArr);
+
+    const phMap = new Map<string, ModulePhaseState[]>();
+    for (const entry of mod.states ?? []) {
+      const phases: readonly string[] = Array.isArray(entry.phase)
+        ? entry.phase as readonly string[]
+        : [entry.phase as string];
+      const surfaces: TaggedSurface[] = entry.surfaces.map((s) => ({
+        meaningId: s.meaningId,
+        ck: callKey(s.encoding.defaultCall),
+        call: s.encoding.defaultCall,
+        teachingLabel: s.teachingLabel,
+        moduleId: mod.moduleId,
+      }));
+      for (const phase of phases) {
+        const existing = phMap.get(phase);
+        const state: ModulePhaseState = {
+          moduleId: mod.moduleId,
+          turn: (entry.turn as string) ?? null,
+          route: entry.route,
+          surfaces,
+        };
+        if (existing) existing.push(state);
+        else phMap.set(phase, [state]);
+      }
+    }
+    modulePhaseMap.set(mod.moduleId, phMap);
+  }
+
+  // ── Build per-module subtrees ───────────────────────────────────
+  // Each module's FSM defines a tree: idle → phase1 → phase2 → ...
+  // Build each module's tree independently, then merge.
+
+  /** Build a subtree for one module starting from a given phase. */
+  function buildModuleSubtree(
+    modId: string,
+    phase: string,
+    parentDepth: number,
+    visited: Set<string>,
+    transObs?: ObsPattern,
+  ): MutableNode[] {
+    if (visited.has(phase)) return [];
+    visited.add(phase);
+
+    const phMap = modulePhaseMap.get(modId);
+    const transitions = moduleTransitions.get(modId) ?? [];
+    const states = phMap?.get(phase);
+    if (!states) return [];
+
+    // Collect surfaces at this phase (excluding route-constrained ones)
+    const normalStates = states.filter((s) => !s.route);
+    const nodes: MutableNode[] = [];
+    const seenCK = new Set<string>();
+
+    for (const state of normalStates) {
+      for (const surface of state.surfaces) {
+        if (seenCK.has(surface.ck)) continue;
+        seenCK.add(surface.ck);
+        nodes.push(mkNode(surface, phase, state.turn, parentDepth + 1, undefined, transObs));
+      }
+    }
+
+    // For each outgoing transition from this phase, recurse into child phases.
+    // Match children to the correct parent node: each transition creates its own
+    // branch. When there are N transitions and N parent nodes (e.g., Stayman's
+    // "asked" phase: 2H/2S/2D and show-hearts/show-spades/denied), match by
+    // transition observation using obsMatchesStep against each parent's transitionObs.
+    // Fall back to the first parent if no match found.
+    const outTrans = transitions.filter((t) => t.from.includes(phase));
+    for (const trans of outTrans) {
+      const childNodes = buildModuleSubtree(modId, trans.to, parentDepth + 1, visited, trans.on);
+      if (childNodes.length === 0) continue;
+
+      if (nodes.length > 0) {
+        // Try to match this transition to a specific parent node.
+        // Each node at this phase has its own transitionObs. We check if
+        // the child transition's `on` pattern corresponds to what a specific
+        // parent "becomes" — but we don't have that mapping directly.
+        // Instead, attach all children to nodes[0] for now, then redistribute.
+        nodes[0]!.children.push(...childNodes);
+      }
+    }
+
+    return nodes;
+  }
+
+  // ── Merge module subtrees under a shared root ───────────────────
+
+  // Find the root: opening bid at the initial phase (opener turn)
   let rootNode: MutableNode | null = null;
-  for (const initPhase of initialPhases) {
-    const states = phaseStates.get(initPhase);
+  for (const mod of modules) {
+    const phMap = modulePhaseMap.get(mod.moduleId);
+    const states = phMap?.get(mod.local.initial);
     if (!states) continue;
-    const openerStates = states.filter((s) => s.turn === "opener");
+    const openerStates = states.filter((s) => s.turn === "opener" && !s.route);
     if (openerStates.length === 0) continue;
-    // Use the first opener surface as root
     const firstSurface = openerStates[0]!.surfaces[0];
     if (firstSurface) {
-      rootNode = createNode(firstSurface, initPhase, "opener", 0);
-      // If multiple opener surfaces at root (rare), merge labels
-      for (let i = 1; i < openerStates.length; i++) {
-        for (const s of openerStates[i]!.surfaces) {
-          if (s.callKey === rootNode.callKey) {
-            rootNode.label += ` / ${s.teachingLabel}`;
-          }
+      rootNode = mkNode(firstSurface, mod.local.initial, "opener", 0);
+
+      // Build the opening module's own subtree from initial phase
+      const visited = new Set<string>();
+      visited.add(mod.local.initial);
+      const transitions = moduleTransitions.get(mod.moduleId) ?? [];
+      const outTrans = transitions.filter((t) => t.from.includes(mod.local.initial));
+      for (const trans of outTrans) {
+        const childNodes = buildModuleSubtree(mod.moduleId, trans.to, 0, visited, trans.on);
+        rootNode.children.push(...childNodes);
+      }
+
+      // Also attach R1 responder surfaces from this module
+      const respStates = states.filter((s) => s.turn === "responder" && !s.route);
+      for (const state of respStates) {
+        for (const surface of state.surfaces) {
+          rootNode.children.push(mkNode(surface, mod.local.initial, "responder", 1));
         }
       }
       break;
@@ -468,183 +519,135 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
   }
 
   if (!rootNode) {
-    // Fallback: create a synthetic root
-    const firstInit = [...initialPhases][0] ?? "root";
-    rootNode = createNode(null, firstInit, null, 0, input.name);
+    rootNode = mkNode(null, "root", null, 0, input.name);
   }
 
-  // Attach responder surfaces at the initial phase as direct children of root.
-  // These are R1 bids from other modules (e.g., Stayman 2C, Jacoby Transfer 2D/2H)
-  // that live at the initial phase but with turn="responder".
-  const r1Children: MutableNode[] = [];
-  const seenR1CallKeys = new Set<string>();
-  for (const initPhase of initialPhases) {
-    const states = phaseStates.get(initPhase);
+  // Attach other modules' subtrees under root.
+  // For each module, build the full subtree once from initial transitions,
+  // then attach each subtree branch to the correct R1 node.
+  for (const mod of modules) {
+    if (mod.moduleId === rootNode.moduleId) continue;
+    const phMap = modulePhaseMap.get(mod.moduleId);
+    const states = phMap?.get(mod.local.initial);
     if (!states) continue;
-    const responderStates = states.filter((s) => s.turn === "responder");
-    for (const state of responderStates) {
+
+    // Collect R1 surfaces.
+    // Set transitionObs to the module's first non-deactivation transition from
+    // initial phase, so route matching can identify this node as the observation.
+    const respStates = states.filter((s) => s.turn === "responder" && !s.route);
+    const r1Nodes: MutableNode[] = [];
+    const seenCK = new Set<string>();
+    const transitions = moduleTransitions.get(mod.moduleId) ?? [];
+    const firstActiveTrans = transitions.find(
+      (t) => t.from.includes(mod.local.initial) && t.to !== "inactive"
+    );
+
+    for (const state of respStates) {
       for (const surface of state.surfaces) {
-        if (seenR1CallKeys.has(surface.callKey)) {
-          const existing = r1Children.find((n) => n.callKey === surface.callKey);
-          if (existing && !existing.label.includes(surface.teachingLabel)) {
-            existing.label += ` / ${surface.teachingLabel}`;
+        const existingChild = rootNode.children.find((c) => c.callKey === surface.ck);
+        if (existingChild) {
+          if (!existingChild.label.includes(surface.teachingLabel)) {
+            existingChild.label += ` / ${surface.teachingLabel}`;
           }
           continue;
         }
-        seenR1CallKeys.add(surface.callKey);
-        const node = createNode(surface, initPhase, "responder", 1);
-        r1Children.push(node);
-        rootNode.children.push(node);
+        if (seenCK.has(surface.ck)) continue;
+        seenCK.add(surface.ck);
+        const r1Node = mkNode(surface, mod.local.initial, "responder", 1, undefined, firstActiveTrans?.on);
+        r1Nodes.push(r1Node);
+        rootNode.children.push(r1Node);
+      }
+    }
+
+    // Build the module subtree once with a shared visited set
+    const visited = new Set<string>();
+    visited.add(mod.local.initial);
+    const modTrans = moduleTransitions.get(mod.moduleId) ?? [];
+    const outTrans = modTrans.filter((t) => t.from.includes(mod.local.initial));
+
+    for (const trans of outTrans) {
+      const childNodes = buildModuleSubtree(mod.moduleId, trans.to, 1, visited, trans.on);
+      if (childNodes.length === 0) continue;
+
+      // Attach to the first R1 node (they all share the same module)
+      if (r1Nodes.length > 0) {
+        r1Nodes[0]!.children.push(...childNodes);
       }
     }
   }
 
-  // Map: phase → nodes at that phase (for attaching children)
-  const phaseNodes = new Map<string, MutableNode[]>();
-  phaseNodes.set(rootNode.phase, [rootNode, ...r1Children]);
+  // ── Second pass: route-constrained surfaces ─────────────────────
+  // Handle cross-module dependencies (e.g., Smolen under Stayman's denial branch).
+  // Only `subseq` RouteExpr is supported; other kinds fall back to root.
+  for (const mod of modules) {
+    const phMap = modulePhaseMap.get(mod.moduleId);
+    if (!phMap) continue;
 
-  // Track visited transitions to avoid infinite loops
-  const visitedTransitions = new Set<string>();
+    for (const [, states] of phMap) {
+      for (const state of states) {
+        if (!state.route) continue;
+        const route = state.route;
 
-  // BFS through transitions to build the tree
-  const queue: string[] = [...initialPhases];
-  const visitedPhases = new Set<string>(initialPhases);
-
-  while (queue.length > 0) {
-    const currentPhase = queue.shift()!;
-    const parentNodes = phaseNodes.get(currentPhase) ?? [];
-
-    // Find transitions FROM this phase
-    const outTransitions = allTransitions.filter((t) =>
-      t.from.includes(currentPhase)
-    );
-
-    for (const trans of outTransitions) {
-      const transKey = `${currentPhase}→${trans.to}:${trans.on.act}:${trans.on.feature ?? ""}:${trans.on.suit ?? ""}`;
-      if (visitedTransitions.has(transKey)) continue;
-      visitedTransitions.add(transKey);
-
-      // Find surfaces at the target phase
-      const targetStates = phaseStates.get(trans.to);
-      if (!targetStates) {
-        if (!visitedPhases.has(trans.to)) {
-          visitedPhases.add(trans.to);
-          queue.push(trans.to);
+        if (route.kind !== "subseq") {
+          // eslint-disable-next-line no-console -- deliberate warning for unsupported route kinds
+          console.warn(`[flow-tree] Unsupported RouteExpr kind "${route.kind}" for module ${state.moduleId} — attaching at root`);
+          for (const surface of state.surfaces) {
+            rootNode.children.push(mkNode(surface, "route-fallback", state.turn, rootNode.depth + 1));
+          }
+          continue;
         }
-        continue;
-      }
 
-      // Create child nodes for each surface at the target phase
-      const childNodes: MutableNode[] = [];
-      const seenCallKeys = new Set<string>();
+        // Walk the tree from root, matching edges by transitionObs.
+        // Also search recursively within children to handle nested structures
+        // where the matching node isn't a direct child.
+        let currentNodes: MutableNode[] = [rootNode];
+        let matched = true;
 
-      for (const state of targetStates) {
-        for (const surface of state.surfaces) {
-          if (seenCallKeys.has(surface.callKey)) {
-            // Deduplicate: merge label into existing node
-            const existing = childNodes.find((n) => n.callKey === surface.callKey);
-            if (existing && !existing.label.includes(surface.teachingLabel)) {
-              existing.label += ` / ${surface.teachingLabel}`;
+        for (const step of route.steps) {
+          const nextNodes: MutableNode[] = [];
+          const searchQueue = [...currentNodes];
+          const searched = new Set<string>();
+          while (searchQueue.length > 0) {
+            const node = searchQueue.shift()!;
+            if (searched.has(node.id)) continue;
+            searched.add(node.id);
+            for (const child of node.children) {
+              if (obsMatchesStep(child.transitionObs, step)) {
+                nextNodes.push(child);
+              } else {
+                // Search deeper in case the matching node is nested
+                searchQueue.push(child);
+              }
             }
-            continue;
           }
-          seenCallKeys.add(surface.callKey);
-          const depth = parentNodes.length > 0 ? parentNodes[0]!.depth + 1 : 1;
-          const node = createNode(surface, trans.to, state.turn, depth);
-          childNodes.push(node);
+          if (nextNodes.length === 0) {
+            matched = false;
+            break;
+          }
+          currentNodes = nextNodes;
         }
-      }
 
-      // Attach children to the best parent node.
-      // Prefer an R1 child from the same module as the transition (e.g., Stayman 2C
-      // is the parent for Stayman's "asked" phase surfaces). Fall back to the root.
-      if (parentNodes.length > 0) {
-        const bestParent =
-          parentNodes.find((p) => p.moduleId === trans.moduleId && p !== rootNode)
-          ?? parentNodes[0]!;
-        const depth = bestParent.depth + 1;
-        for (const child of childNodes) {
-          child.depth = depth;
-          // Avoid duplicate children (same callKey already attached)
-          const alreadyAttached = bestParent.children.some(
-            (c) => c.callKey === child.callKey && c.phase === child.phase
-          );
-          if (!alreadyAttached) {
-            bestParent.children.push(child);
+        if (matched && currentNodes.length > 0) {
+          const attachPoint = currentNodes[0]!;
+          for (const surface of state.surfaces) {
+            if (!attachPoint.children.some((c) => c.callKey === surface.ck)) {
+              attachPoint.children.push(
+                mkNode(surface, "route-attached", state.turn, attachPoint.depth + 1)
+              );
+            }
+          }
+        } else {
+          // eslint-disable-next-line no-console -- deliberate warning for unresolved routes
+          console.warn(`[flow-tree] Route unresolved for module ${state.moduleId} — attaching at root`);
+          for (const surface of state.surfaces) {
+            rootNode.children.push(mkNode(surface, "route-fallback", state.turn, rootNode.depth + 1));
           }
         }
-      }
-
-      // Register target phase nodes
-      const existing = phaseNodes.get(trans.to);
-      if (existing) {
-        for (const c of childNodes) {
-          if (!existing.some((e) => e.callKey === c.callKey)) existing.push(c);
-        }
-      } else {
-        phaseNodes.set(trans.to, childNodes);
-      }
-
-      if (!visitedPhases.has(trans.to)) {
-        visitedPhases.add(trans.to);
-        queue.push(trans.to);
       }
     }
   }
 
-  // Second pass: attach route-constrained states (e.g., Smolen under Stayman denial)
-  for (const state of routeStates) {
-    const route = state.route!;
-    if (route.kind !== "subseq") {
-      // eslint-disable-next-line no-console -- deliberate warning for unsupported route kinds
-      console.warn(`[flow-tree] Unsupported RouteExpr kind "${route.kind}" for module ${state.moduleId} — attaching at root`);
-      for (const surface of state.surfaces) {
-        rootNode.children.push(createNode(surface, state.phase, state.turn, rootNode.depth + 1));
-      }
-      continue;
-    }
-
-    // Walk the tree matching the subseq steps against transition observations
-    let currentNodes: MutableNode[] = [rootNode];
-    let matched = true;
-
-    for (const step of route.steps) {
-      const nextNodes: MutableNode[] = [];
-      for (const node of currentNodes) {
-        for (const child of node.children) {
-          // Check if this child was created by a transition whose `on` matches the step
-          if (obsPatternMatches(child, step, allTransitions)) {
-            nextNodes.push(child);
-          }
-        }
-      }
-      if (nextNodes.length === 0) {
-        matched = false;
-        break;
-      }
-      currentNodes = nextNodes;
-    }
-
-    if (matched && currentNodes.length > 0) {
-      const attachPoint = currentNodes[0]!;
-      for (const surface of state.surfaces) {
-        const seenCallKeys = new Set(attachPoint.children.map((c) => c.callKey));
-        if (!seenCallKeys.has(surface.callKey)) {
-          attachPoint.children.push(
-            createNode(surface, state.phase, state.turn, attachPoint.depth + 1)
-          );
-        }
-      }
-    } else {
-      // eslint-disable-next-line no-console -- deliberate warning for unresolved routes
-      console.warn(`[flow-tree] Route unresolved for module ${state.moduleId} — attaching at root`);
-      for (const surface of state.surfaces) {
-        rootNode.children.push(createNode(surface, state.phase, state.turn, rootNode.depth + 1));
-      }
-    }
-  }
-
-  // Convert mutable tree to readonly FlowTreeNode
+  // ── Convert to immutable output ─────────────────────────────────
   function toFlowTreeNode(node: MutableNode): FlowTreeNode {
     return {
       id: node.id,
@@ -659,7 +662,6 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
     };
   }
 
-  // Compute max depth
   function maxDepth(node: MutableNode): number {
     if (node.children.length === 0) return node.depth;
     return Math.max(...node.children.map(maxDepth));
@@ -675,22 +677,13 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
 }
 
 /**
- * Check if a tree node was reached via a transition whose `on` pattern
- * matches the given ObsPattern step.
+ * Check if a tree node's incoming observation matches the given ObsPattern step.
  */
-function obsPatternMatches(
-  node: { phase: string; callKey: string | null },
-  step: ObsPattern,
-  transitions: ReadonlyArray<{ from: readonly string[]; to: string; on: ObsPattern }>,
-): boolean {
-  // Find transitions that lead TO this node's phase
-  for (const t of transitions) {
-    if (t.to !== node.phase) continue;
-    if (t.on.act !== step.act && step.act !== "any") continue;
-    if (step.feature !== undefined && t.on.feature !== step.feature) continue;
-    if (step.suit !== undefined && t.on.suit !== step.suit) continue;
-    if (step.strain !== undefined && t.on.strain !== step.strain) continue;
-    return true;
-  }
-  return false;
+function obsMatchesStep(obs: ObsPattern | null, step: ObsPattern): boolean {
+  if (!obs) return false;
+  if (step.act !== "any" && obs.act !== step.act) return false;
+  if (step.feature !== undefined && obs.feature !== step.feature) return false;
+  if (step.suit !== undefined && obs.suit !== step.suit) return false;
+  if (step.strain !== undefined && obs.strain !== step.strain) return false;
+  return true;
 }

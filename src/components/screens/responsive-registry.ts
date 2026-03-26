@@ -76,6 +76,12 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     minWidth: 320,
     mobileNotes: "Side-by-side comparison table, horizontally scrollable on mobile",
   },
+  {
+    path: "ConversationFlowTree.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Desktop-only SVG tree; hidden on mobile via isDesktop check in LearningScreen",
+  },
 
   // --- Game screen orchestrator ---
   {

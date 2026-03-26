@@ -23,7 +23,7 @@ service/ (thin port) → session/ → {engine/, conventions/, inference/}
 | `play-controller.ts` | Pure play logic: processPlayCard(), trick scoring, AI play loop. `selectAiCard()` is async (awaits `PlayStrategy.suggest()`). |
 | `dds-controller.ts` | DDS solve logic with timeout and stale-result guard |
 | `build-viewport.ts` | Viewport builders: buildBiddingViewport(), buildDeclarerPromptViewport(), etc. |
-| `learning-viewport.ts` | buildModuleCatalog(), buildModuleLearningViewport() — module-centric learning viewport builders |
+| `learning-viewport.ts` | buildModuleCatalog(), buildModuleLearningViewport(), buildBundleFlowTree() — module-centric learning viewport builders + unified conversation flow tree |
 | `evaluation-oracle.ts` | EvaluationOracle (answer key, internal only) |
 | `bid-feedback-builder.ts` | assembleBidFeedback() — grades bids, builds feedback DTOs |
 | `start-drill.ts` | startDrill() + pickVulnerability() + rotation utilities |

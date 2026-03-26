@@ -25,7 +25,9 @@ App.svelte                           Root — creates engine/stores, sets contex
 components/
   screens/
     ConventionSelectScreen.svelte    Convention picker with search + category filter + learn buttons
-    LearningScreen.svelte            Module-centric learning screen: sidebar lists modules (filterable by bundle), main content shows module teaching (principle/tradeoff/mistakes) + surfaces grouped by conversation phase
+    LearningScreen.svelte            Module-centric learning screen: sidebar lists modules (filterable by bundle), main content shows conversation flow tree (desktop) + module teaching (principle/tradeoff/mistakes) + surfaces grouped by conversation phase
+    ConversationFlowTree.svelte      SVG tree visualization of bundle conversation flow — nodes are bids, edges are transitions, color-coded by module
+    ConversationFlowTree.ts          Layout algorithm for ConversationFlowTree: horizontal tree layout, edge paths, module color mapping
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     ProfilesScreen.svelte            Read-only base system profiles (SAYC/2-1/Acol) with detail + compare views
     SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards

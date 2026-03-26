@@ -11,7 +11,7 @@ Thin hexagonal port — the **sole interface** between UI/CLI and backend game l
 | `index.ts` | Barrel organized by consumer concern: (1) port & impl, (2) viewports/responses, (3) engine primitives, (4) convention catalog, (5) coverage utils, (6) session config, (7) display, (8) evaluation facade, (9) cross-cutting. Debug types (`StrategyEvaluation`, `BidFeedbackDTO`) route through `debug-types.ts`, not this barrel. |
 | `debug-types.ts` | Debug-only types for DevServicePort — allowed to import backend types by design. Re-exports `StrategyEvaluation`, `BidFeedbackDTO`, `EvaluatedFacts`, `PipelineResult`, `MachineDebugSnapshot`. Future agents must not move these to `index.ts`. |
 | `request-types.ts` | Request DTOs: SessionHandle, SessionConfig |
-| `response-types.ts` | Response DTOs: DrillStartResult, BidSubmitResult, PlayCardResult, viewports, ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView, SurfaceDetailView |
+| `response-types.ts` | Response DTOs: DrillStartResult, BidSubmitResult, PlayCardResult, viewports, ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView, SurfaceDetailView, FlowTreeNode, BundleFlowTreeViewport |
 | `port.ts` | ServicePort + DevServicePort interfaces |
 | `local-service.ts` | In-process implementation (implements DevServicePort) — delegates to session/ |
 | `display/` | Call/contract/card formatting, hand summary, convention card builder (`convention-card.ts`) |
