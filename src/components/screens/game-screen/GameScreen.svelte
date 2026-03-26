@@ -103,14 +103,20 @@
     await gameStore.startDrillFromHandle(handle, service);
   }
 
+  // Defer debug drawer mounting — DebugDrawer's $derived computations
+  // can interfere with the {#if isInitialized} block's initial render
+  // in Svelte 5, silently preventing the game from appearing.
+  let debugReady = $state(false);
+
   onMount(() => {
     // Skip if a deal is already in progress
     if (gameStore.isInitialized && gameStore.phase === "BIDDING") {
       dealNumber++;
+      debugReady = true;
       return;
     }
     // eslint-disable-next-line no-console -- startup error should surface in dev tools
-    startNewDrill().catch(console.error);
+    startNewDrill().then(() => { debugReady = true; }).catch(console.error);
   });
 
   async function handleNextDeal() {
@@ -315,7 +321,7 @@
     </div>
     </div>
 
-    {#if DEV}
+    {#if DEV && debugReady}
       <DebugDrawer open={appStore.debugPanelOpen} />
     {/if}
   </main>
