@@ -1,156 +1,170 @@
 <script lang="ts">
-  import type { BundleFlowTreeViewport } from "../../service";
+  import type { ModuleFlowTreeViewport, FlowTreeNode, Call } from "../../service";
   import { BidSuit } from "../../service";
   import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";
-  import {
-    layoutTree,
-    computeSvgDimensions,
-    buildEdgePath,
-    collectEdges,
-    flattenNodes,
-    buildModuleColorMap,
-    MODULE_COLORS,
-  } from "./ConversationFlowTree";
 
   interface Props {
-    tree: BundleFlowTreeViewport;
-    selectedModuleId: string | null;
-    onNodeClick: (moduleId: string) => void;
+    tree: ModuleFlowTreeViewport;
   }
 
-  const { tree, selectedModuleId, onNodeClick }: Props = $props();
+  const { tree }: Props = $props();
 
-  const positions = $derived(layoutTree(tree.root));
-  const dimensions = $derived(computeSvgDimensions(positions));
-  const edges = $derived(collectEdges(tree.root));
-  const allNodes = $derived(flattenNodes(tree.root));
-  const moduleColorMap = $derived(buildModuleColorMap(tree.root));
-
-  function getModuleColor(moduleId: string | null): string {
-    if (!moduleId) return "var(--color-text-muted)";
-    const idx = moduleColorMap.get(moduleId) ?? 0;
-    return MODULE_COLORS[idx % MODULE_COLORS.length]!;
-  }
-
-  function getBidColorClass(node: { call: import("../../service").Call | null }): string {
-    if (!node.call || node.call.type !== "bid") return "text-text-primary";
-    return BID_SUIT_COLOR_CLASS[node.call.strain as BidSuit] ?? "text-text-primary";
-  }
-
-  function isSelected(moduleId: string | null): boolean {
-    return moduleId !== null && moduleId === selectedModuleId;
-  }
-
-  function handleNodeClick(moduleId: string | null) {
-    if (moduleId) onNodeClick(moduleId);
-  }
-
-  function turnBadge(turn: "opener" | "responder" | null): { letter: string; color: string } | null {
-    if (turn === "opener") return { letter: "O", color: "var(--color-accent-primary)" };
-    if (turn === "responder") return { letter: "R", color: "var(--color-accent-success)" };
-    return null;
+  function bidColorClass(call: Call | null): string {
+    if (!call || call.type !== "bid") return "text-text-primary";
+    return BID_SUIT_COLOR_CLASS[call.strain as BidSuit] ?? "text-text-primary";
   }
 </script>
 
-<svg
-  width={dimensions.width}
-  height={dimensions.height}
-  class="block"
-  role="img"
-  aria-label="Conversation flow tree showing how bidding branches across convention modules"
->
-  <!-- Edges (behind nodes) -->
-  {#each edges as [parentId, childId] (`${parentId}-${childId}`)}
-    {@const parentPos = positions.get(parentId)}
-    {@const childPos = positions.get(childId)}
-    {#if parentPos && childPos}
-      <path
-        d={buildEdgePath(parentPos, childPos)}
-        fill="none"
-        stroke="var(--color-border-subtle)"
-        stroke-width="1.5"
-        opacity="0.6"
-      />
+{#snippet subtree(node: FlowTreeNode)}
+  <div class="ft-subtree">
+    <div
+      class="ft-node"
+      title="{node.callDisplay ? `${node.callDisplay} — ` : ''}{node.label}{node.turn ? ` (${node.turn})` : ''}"
+    >
+      {#if node.turn}
+        <span
+          class="ft-badge"
+          style:background-color={node.turn === "opener"
+            ? "var(--color-accent-primary)"
+            : "var(--color-accent-success)"}
+        >{node.turn === "opener" ? "O" : "R"}</span>
+      {/if}
+      {#if node.callDisplay}
+        <span class="ft-bid {bidColorClass(node.call)}">{node.callDisplay}</span>
+      {/if}
+      <span class="ft-label">{node.label}</span>
+    </div>
+    {#if node.children.length > 0}
+      <div class="ft-children">
+        {#each node.children as child (child.id)}
+          <div class="ft-child">
+            {@render subtree(child)}
+          </div>
+        {/each}
+      </div>
     {/if}
-  {/each}
+  </div>
+{/snippet}
 
-  <!-- Nodes -->
-  {#each allNodes as node (node.id)}
-    {@const pos = positions.get(node.id)}
-    {#if pos}
-      {@const selected = isSelected(node.moduleId)}
-      {@const dimmed = selectedModuleId !== null && !selected}
-      {@const badge = turnBadge(node.turn)}
-      <g
-        transform="translate({pos.x}, {pos.y})"
-        class="cursor-pointer"
-        opacity={dimmed ? 0.45 : 1}
-        role="button"
-        tabindex="0"
-        aria-label="{node.callDisplay ?? ''} {node.label} — {node.moduleDisplayName ?? 'root'}"
-        onclick={() => handleNodeClick(node.moduleId)}
-        onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleNodeClick(node.moduleId); } }}
-      >
-        <title>{node.callDisplay ? `${node.callDisplay} — ` : ''}{node.label}{node.turn ? ` (${node.turn})` : ''}</title>
-        <!-- Background rect -->
-        <rect
-          width={pos.width}
-          height={pos.height}
-          rx="5"
-          ry="5"
-          fill="var(--color-bg-card)"
-          stroke={selected ? "var(--color-accent-primary)" : getModuleColor(node.moduleId)}
-          stroke-width={selected ? 2 : 1}
-          opacity={selected ? 1 : 0.7}
-        />
-        <!-- Module color indicator -->
-        <rect
-          x="0"
-          y="0"
-          width="3"
-          height={pos.height}
-          rx="1.5"
-          fill={getModuleColor(node.moduleId)}
-        />
-        <!-- Turn badge -->
-        {#if badge}
-          <circle cx={pos.width - 10} cy="10" r="7" fill={badge.color} opacity="0.85" />
-          <text
-            x={pos.width - 10}
-            y="10"
-            text-anchor="middle"
-            dominant-baseline="central"
-            font-size="8"
-            font-weight="700"
-            fill="var(--color-bg-base)"
-          >{badge.letter}</text>
-        {/if}
-        <!-- Bid text -->
-        {#if node.callDisplay}
-          <text
-            x="9"
-            y={pos.height / 2}
-            dominant-baseline="central"
-            font-size="10"
-            font-weight="700"
-            font-family="monospace"
-            fill="currentColor"
-            class={getBidColorClass(node)}
-          >
-            {node.callDisplay}
-          </text>
-        {/if}
-        <!-- Label text -->
-        <text
-          x={node.callDisplay ? 36 : 9}
-          y={pos.height / 2}
-          dominant-baseline="central"
-          font-size="8"
-          fill="var(--color-text-secondary)"
-        >
-          {node.label.length > 10 ? node.label.slice(0, 9) + '\u2026' : node.label}
-        </text>
-      </g>
-    {/if}
-  {/each}
-</svg>
+<div
+  class="ft-root"
+  role="img"
+  aria-label="Conversation flow tree showing bidding structure for this module"
+>
+  {@render subtree(tree.root)}
+</div>
+
+<style>
+  /* ── Tree structure ──────────────────────────────────────── */
+
+  .ft-root {
+    padding: 10px 8px;
+  }
+
+  .ft-subtree {
+    display: flex;
+    align-items: center;
+  }
+
+  .ft-children {
+    display: flex;
+    flex-direction: column;
+    margin-left: 22px;
+    position: relative;
+  }
+
+  .ft-child {
+    position: relative;
+    padding: 3px 0;
+  }
+
+  /* ── Connector lines ─────────────────────────────────────── */
+
+  /* Horizontal stub from vertical bar → child node */
+  .ft-child::before {
+    content: "";
+    position: absolute;
+    left: -22px;
+    top: 50%;
+    width: 22px;
+    border-top: 1.5px solid var(--color-border-subtle);
+    opacity: 0.4;
+  }
+
+  /* Vertical bar segment (each child draws its portion) */
+  .ft-child::after {
+    content: "";
+    position: absolute;
+    left: -22px;
+    top: 0;
+    bottom: 0;
+    border-left: 1.5px solid var(--color-border-subtle);
+    opacity: 0.4;
+  }
+
+  /* First child: vertical starts at midpoint */
+  .ft-child:first-child::after {
+    top: 50%;
+  }
+
+  /* Last child: vertical ends at midpoint */
+  .ft-child:last-child::after {
+    bottom: 50%;
+  }
+
+  /* Only child: no vertical segment needed */
+  .ft-child:only-child::after {
+    display: none;
+  }
+
+  /* ── Node styling ────────────────────────────────────────── */
+
+  .ft-node {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: var(--color-bg-elevated);
+    border: 1px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
+    border-left: 2px solid var(--color-accent-primary);
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 10px;
+    line-height: 1;
+    flex-shrink: 0;
+    cursor: default;
+    transition: border-color 0.15s;
+  }
+
+  .ft-node:hover {
+    border-color: color-mix(in srgb, var(--color-accent-primary) 45%, transparent);
+    border-left-color: var(--color-accent-primary);
+  }
+
+  .ft-bid {
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  .ft-label {
+    color: var(--color-text-secondary);
+    font-size: 9px;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ft-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    font-size: 7px;
+    font-weight: 700;
+    color: var(--color-bg-base);
+    flex-shrink: 0;
+  }
+</style>

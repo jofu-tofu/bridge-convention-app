@@ -26,8 +26,9 @@ components/
   screens/
     ConventionSelectScreen.svelte    Convention picker with search + category filter + learn buttons
     LearningScreen.svelte            Module-centric learning screen: sidebar lists modules (filterable by bundle), main content shows conversation flow tree (desktop) + module teaching (principle/tradeoff/mistakes) + surfaces grouped by conversation phase
-    ConversationFlowTree.svelte      SVG tree visualization of bundle conversation flow — nodes are bids, edges are transitions, color-coded by module
-    ConversationFlowTree.ts          Layout algorithm for ConversationFlowTree: horizontal tree layout, edge paths, module color mapping
+    PracticeModePicker.svelte        Practice mode selection panel: Decision Drill vs Full Auction cards with start buttons
+    ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors
+    ConversationFlowTree.ts          Companion stub (layout is CSS-driven, no computed positions)
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     ProfilesScreen.svelte            Read-only base system profiles (SAYC/2-1/Acol) with detail + compare views
     SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards
@@ -38,11 +39,12 @@ components/
       BiddingPhase.svelte            Bidding phase template (pure — data via props)
       DeclarerPromptPhase.svelte     Declarer/defender prompt (pure — data via props)
       PlayingPhase.svelte            Play phase template (pure — data via props, legal plays from parent)
-      ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping, auction step-through
+      ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping, auction step-through. Defines tab content snippets (bidding/play/analysis) + action buttons passed to ReviewSidePanel.
       layout-props.ts                (moved to src/components/shared/layout-props.ts)
       BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
       PlaySidePanel.svelte           Contract, trick counts, restart play, skip-to-review
-      ReviewSidePanel.svelte         Tabbed review: Bidding + Cardplay (when tricks exist) + Analysis, next deal / back to menu
+      ReviewSidePanel.svelte         Generic tabbed container: receives tab definitions (id, label, snippet) + actions snippet from parent
+      review-helpers.ts              Pure format functions: formatVulnerability, formatResult (extracted from ReviewSidePanel)
       SettingsDialog.svelte          Reusable settings dialog (readonly prop for non-bidding phases)
       ContractDisplay.svelte         Formatted contract with doubled/redoubled indicators
       ScaledTableArea.svelte         Responsive table wrapper with transform-origin

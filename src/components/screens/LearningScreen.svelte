@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
   import { getAppStore, getService } from "../../stores/context";
-  import type { ModuleCatalogEntry, ModuleLearningViewport, ClauseSystemVariant, BundleFlowTreeViewport } from "../../service";
+  import type { ModuleCatalogEntry, ModuleLearningViewport, ClauseSystemVariant, ModuleFlowTreeViewport } from "../../service";
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
   import ConversationFlowTree from "./ConversationFlowTree.svelte";
 
@@ -51,8 +51,8 @@
   /** Module learning viewport — fetched when selected module changes. */
   let viewport = $state<ModuleLearningViewport | null>(null);
 
-  /** Bundle flow tree — fetched when bundle filter changes. */
-  let flowTree = $state<BundleFlowTreeViewport | null>(null);
+  /** Module flow tree — fetched when selected module changes. */
+  let flowTree = $state<ModuleFlowTreeViewport | null>(null);
 
   // Fetch module catalog on mount, auto-select first module if none selected
   $effect(() => {
@@ -64,11 +64,11 @@
     });
   });
 
-  // Fetch flow tree when bundle filter or viewport changes
+  // Fetch module flow tree when selected module changes
   $effect(() => {
-    const bundleId = appStore.learningBundleFilter ?? viewport?.bundleIds[0] ?? null;
-    if (bundleId) {
-      service.getBundleFlowTree(bundleId).then((t) => { flowTree = t; });
+    const modId = appStore.learningModuleId;
+    if (modId) {
+      service.getModuleFlowTree(modId).then((t) => { flowTree = t; });
     } else {
       flowTree = null;
     }
@@ -260,12 +260,8 @@
           {#if flowTree && isDesktop}
             <section class="px-4 sm:px-8 py-6">
               <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Conversation Flow</h2>
-              <div class="overflow-auto max-h-[320px] bg-bg-card rounded-[--radius-lg] border border-border-subtle p-3">
-                <ConversationFlowTree
-                  tree={flowTree}
-                  selectedModuleId={appStore.learningModuleId}
-                  onNodeClick={(moduleId) => appStore.selectLearningModule(moduleId)}
-                />
+              <div class="overflow-x-auto bg-bg-card rounded-[--radius-lg] border border-border-subtle">
+                <ConversationFlowTree tree={flowTree} />
               </div>
             </section>
           {/if}
