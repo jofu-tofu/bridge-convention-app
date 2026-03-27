@@ -1,4 +1,4 @@
-import type { ConventionConfig, BaseSystemId, OpponentMode, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode } from "../service";
+import type { ConventionConfig, BaseSystemId, OpponentMode, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
 import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 
 export type Screen = "conventions" | "practice-picker" | "game" | "learning" | "settings" | "coverage" | "profiles";
@@ -98,6 +98,10 @@ export function createAppStore() {
   let devPracticeMode = $state<PracticeMode | null>(null);
   /** User-selected practice mode from PracticeModePicker. */
   let userPracticeMode = $state<PracticeMode | null>(null);
+  /** Dev-override practice role from URL param (?practiceRole=). */
+  let devPracticeRole = $state<PracticeRole | null>(null);
+  /** User-selected practice role from PracticeModePicker. */
+  let userPracticeRole = $state<PracticeRole | null>(null);
 
   // All persisted practice preferences — single blob
   let prefs = $state<PracticePreferences>(loadPreferences());
@@ -142,6 +146,7 @@ export function createAppStore() {
       selectedConvention = config;
       learningConvention = null;
       userPracticeMode = null;
+      userPracticeRole = null;
       if (devPracticeMode) {
         currentScreen = "game";
       } else {
@@ -149,14 +154,16 @@ export function createAppStore() {
       }
     },
 
-    confirmPracticeMode(mode: PracticeMode) {
+    confirmPracticeMode(mode: PracticeMode, role?: PracticeRole) {
       userPracticeMode = mode;
+      if (role) userPracticeRole = role;
       currentScreen = "game";
     },
 
     cancelPracticeMode() {
       selectedConvention = null;
       userPracticeMode = null;
+      userPracticeRole = null;
       currentScreen = "conventions";
     },
 
@@ -291,6 +298,18 @@ export function createAppStore() {
 
     setPracticeMode(mode: PracticeMode | null) {
       devPracticeMode = mode;
+    },
+
+    get devPracticeRole() {
+      return devPracticeRole;
+    },
+
+    get userPracticeRole() {
+      return userPracticeRole;
+    },
+
+    setDevPracticeRole(role: PracticeRole | null) {
+      devPracticeRole = role;
     },
 
     get skipToPhase() {

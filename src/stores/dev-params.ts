@@ -83,6 +83,18 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     }
   }
 
+  // ── Practice mode ─────────────────────────────────────────
+  const practiceModeParam = params.get("practiceMode");
+  if (practiceModeParam === "decision-drill" || practiceModeParam === "full-auction" || practiceModeParam === "continuation-drill") {
+    store.setPracticeMode(practiceModeParam);
+  }
+
+  // ── Practice role ──────────────────────────────────────────
+  const practiceRoleParam = params.get("practiceRole");
+  if (practiceRoleParam === "opener" || practiceRoleParam === "responder" || practiceRoleParam === "both") {
+    store.setDevPracticeRole(practiceRoleParam);
+  }
+
   // ── Coverage targeting ─────────────────────────────────────
   const targetStateParam = params.get("targetState");
   if (targetStateParam) {

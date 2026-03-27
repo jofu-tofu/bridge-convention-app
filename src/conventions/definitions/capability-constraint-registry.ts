@@ -155,6 +155,15 @@ export function getArchetype(capabilityId: string): CapabilityArchetype | undefi
   return ARCHETYPE_MAP.get(capabilityId);
 }
 
+/** Whether a capability supports role selection (opener vs responder).
+ *  True when opener and practitioner are in the same N/S partnership. */
+export function archetypeSupportsRoleSelection(capabilityId: string): boolean {
+  const arch = ARCHETYPE_MAP.get(capabilityId);
+  if (!arch) return false;
+  const NS = new Set([Seat.North, Seat.South]);
+  return NS.has(arch.openerSeat) && NS.has(arch.practitionerSeat);
+}
+
 /** Get the first declared capability ID from a bundle's declaredCapabilities. */
 export function getPrimaryCapability(
   declaredCapabilities?: Readonly<Record<string, string>>,

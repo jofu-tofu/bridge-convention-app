@@ -7,7 +7,7 @@
  */
 
 import type { Seat } from "../engine/types";
-import type { DrillSettings } from "../session/drill-types";
+import type { DrillSettings, PracticeMode, PracticeRole } from "../session/drill-types";
 
 // ── Session Handle ──────────────────────────────────────────────────
 
@@ -25,4 +25,10 @@ export interface SessionConfig {
   readonly baseSystemId?: string;
   /** Drill execution parameters (opponent behavior + deal generation). */
   readonly drill?: DrillSettings;
+  /** Practice mode — controls auction entry point and play coupling. */
+  readonly practiceMode?: PracticeMode;
+  /** Target module for practice focus derivation (which module is being drilled). */
+  readonly targetModuleId?: string;
+  /** Practice role — opener, responder, or both (random per deal). */
+  readonly practiceRole?: PracticeRole;
 }

@@ -16,8 +16,33 @@ import type { ConventionSpec } from "../core/protocol/types";
 import type { SystemConfig } from "./system-config";
 import type { ConventionModule } from "../core/convention-module";
 import type { SurfaceGroup } from "../teaching/teaching-types";
-import { getModules } from "./module-registry";
+import { getModules, getAllModules } from "./module-registry";
 import { deriveBundleDealConstraints } from "./derive-deal-constraints";
+import { getPrimaryCapability, archetypeSupportsRoleSelection } from "./capability-constraint-registry";
+import type { BaseSystemId } from "./system-config";
+import { getSystemConfig, BASE_SYSTEM_SAYC, BASE_SYSTEM_TWO_OVER_ONE, BASE_SYSTEM_ACOL } from "./system-config";
+
+// ── Base system profiles ────────────────────────────────────────────
+
+/** Declares which modules are always active for a given base system. */
+export interface BaseSystemProfile {
+  readonly baseSystemId: BaseSystemId;
+  /** Module IDs merged into every specFromBundle() call for this system. */
+  readonly baseModuleIds: readonly string[];
+}
+
+const DEFAULT_BASE_MODULE_IDS: readonly string[] = ["natural-open", "stayman", "jacoby-transfers", "blackwood"];
+
+const BASE_SYSTEM_PROFILES: Record<BaseSystemId, BaseSystemProfile> = {
+  [BASE_SYSTEM_SAYC]: { baseSystemId: BASE_SYSTEM_SAYC, baseModuleIds: DEFAULT_BASE_MODULE_IDS },
+  [BASE_SYSTEM_TWO_OVER_ONE]: { baseSystemId: BASE_SYSTEM_TWO_OVER_ONE, baseModuleIds: DEFAULT_BASE_MODULE_IDS },
+  [BASE_SYSTEM_ACOL]: { baseSystemId: BASE_SYSTEM_ACOL, baseModuleIds: DEFAULT_BASE_MODULE_IDS },
+};
+
+/** Get base module IDs for a system. Returns empty array for unknown systems. */
+export function getBaseModuleIds(baseSystemId: BaseSystemId): readonly string[] {
+  return BASE_SYSTEM_PROFILES[baseSystemId]?.baseModuleIds ?? [];
+}
 
 import { ConventionCategory } from "../core/convention-types";
 import { CAP_OPENING_1NT, CAP_OPENING_MAJOR, CAP_OPENING_WEAK_TWO, CAP_OPPONENT_1NT } from "./capability-vocabulary";
@@ -77,7 +102,7 @@ const ntBundleInput: BundleInput = {
   description: "Full 1NT response system with Stayman, Jacoby Transfers, Smolen, and natural bids",
   category: ConventionCategory.Constructive,
   systemProfile: NT_SAYC_PROFILE,
-  memberIds: ["natural-nt", "stayman", "jacoby-transfers", "smolen"],
+  memberIds: ["natural-open", "stayman", "jacoby-transfers", "smolen"],
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   teaching: {
     purpose:
@@ -105,7 +130,7 @@ const ntStaymanInput: BundleInput = {
   description: "Find a 4-4 major fit after 1NT opening",
   category: ConventionCategory.Asking,
   systemProfile: NT_STAYMAN_ONLY_PROFILE,
-  memberIds: ["natural-nt", "stayman"],
+  memberIds: ["natural-open", "stayman"],
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   teaching: {
     purpose:
@@ -130,7 +155,7 @@ const ntTransfersInput: BundleInput = {
   description: "Ensure the strong hand declares in a major-suit contract",
   category: ConventionCategory.Constructive,
   systemProfile: NT_TRANSFERS_ONLY_PROFILE,
-  memberIds: ["natural-nt", "jacoby-transfers"],
+  memberIds: ["natural-open", "jacoby-transfers"],
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   teaching: {
     purpose:
@@ -254,24 +279,49 @@ export function resolveBundle(input: BundleInput, sys: SystemConfig): Convention
   // Derive deal constraints from authored convention data
   const derived = deriveBundleDealConstraints(input, modules, sys);
 
+  // Derive role selection support from archetype partnership membership
+  const primaryCap = getPrimaryCapability(input.declaredCapabilities);
+  const supportsRole = primaryCap ? archetypeSupportsRoleSelection(primaryCap) : false;
+
   return {
     ...input,
     ...derived,
     modules,
     derivedTeaching: { surfaceGroups },
+    supportsRoleSelection: supportsRole || undefined,
   };
 }
 
-/** Derive a ConventionSpec from a BundleInput for a specific system. */
+/** Derive a ConventionSpec from a BundleInput for a specific system.
+ *  Merges base system modules (e.g., Blackwood) into the spec's module list
+ *  so they are always available in the strategy layer. */
 export function specFromBundle(
   input: BundleInput,
   sys: SystemConfig,
 ): ConventionSpec | undefined {
-  const modules = getModules(input.memberIds, sys);
+  const baseIds = getBaseModuleIds(sys.systemId);
+  const allIds = [...new Set([...input.memberIds, ...baseIds])];
+  const modules = getModules(allIds, sys);
   if (modules.length === 0) return undefined;
   return {
     id: input.id,
     name: input.name,
+    modules,
+    systemConfig: sys,
+  };
+}
+
+/**
+ * Build a ConventionSpec from ALL registered modules for a base system,
+ * not just a bundle's modules.
+ */
+export function specFromSystem(baseSystemId: BaseSystemId): ConventionSpec | undefined {
+  const sys = getSystemConfig(baseSystemId);
+  const modules = getAllModules(sys);
+  if (modules.length === 0) return undefined;
+  return {
+    id: `system-${baseSystemId}`,
+    name: `${sys.displayName} (full system)`,
     modules,
     systemConfig: sys,
   };

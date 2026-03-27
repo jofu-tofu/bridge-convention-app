@@ -7,12 +7,13 @@ import {
   type Deal,
   type DealConstraints,
 } from "../engine/types";
-import type { DrillBundle } from "./drill-types";
-import type { VulnerabilityDistribution, DrillSettings } from "./drill-types";
+import type { DrillBundle, PlayPreference, PracticeRole } from "./drill-types";
+import type { VulnerabilityDistribution, DrillSettings, PracticeMode } from "./drill-types";
 import { DEFAULT_DRILL_TUNING } from "./drill-types";
 import { createProtocolDrillConfig } from "./config-factory";
 import { createDrillSession } from "./drill-session";
-import { getBundleInput, specFromBundle, BASE_SYSTEM_SAYC, getSystemConfig, protocolSpecToStrategy } from "../conventions";
+import { derivePracticeFocus } from "./practice-focus";
+import { getBundleInput, specFromBundle, BASE_SYSTEM_SAYC, getSystemConfig, getBaseModuleIds, protocolSpecToStrategy, archetypeSupportsRoleSelection, getPrimaryCapability } from "../conventions";
 import type { BaseSystemId } from "../conventions";
 import { createInferenceEngine } from "../inference/inference-engine";
 import { generateDeal as tsGenerateDeal } from "../engine/deal-generator";
@@ -81,10 +82,35 @@ export async function startDrill(
   baseSystem?: BaseSystemId,
 ): Promise<DrillBundle> {
   const resolvedSystem = baseSystem ?? BASE_SYSTEM_SAYC;
+  const practiceMode: PracticeMode = options?.practiceMode ?? "decision-drill";
+  const targetModuleId = (options as { targetModuleId?: string } | undefined)?.targetModuleId;
+
+  // ── Role enforcement ─────────────────────────────────────────
+  // Coerce invalid role to "responder" for conventions that don't support role selection
+  const bundleInputForRole = getBundleInput(convention.id);
+  const primaryCapId = bundleInputForRole
+    ? getPrimaryCapability(bundleInputForRole.declaredCapabilities)
+    : undefined;
+  const eligibleForRoleSelection = primaryCapId
+    ? archetypeSupportsRoleSelection(primaryCapId)
+    : false;
+  const requestedRole: PracticeRole = options?.practiceRole ?? "responder";
+  const effectiveRole: PracticeRole = eligibleForRoleSelection ? requestedRole : "responder";
+
+  // Resolve "both" to a concrete role
+  let resolvedRole: "opener" | "responder";
+  if (effectiveRole === "both") {
+    const roleRoll = rng ? rng() : Math.random();
+    resolvedRole = roleRoll < 0.5 ? "opener" : "responder";
+  } else {
+    resolvedRole = effectiveRole;
+  }
+
   const config = createProtocolDrillConfig(convention.id, userSeat, {
     opponentMode: options?.opponentMode,
     baseSystem: resolvedSystem,
     playProfileId: options?.playProfileId,
+    practiceMode,
   });
   const session = createDrillSession(config);
 
@@ -136,6 +162,21 @@ export async function startDrill(
     }
   }
 
+  // ── Role-based constraint swapping ──────────────────────────
+  // When practicing as opener, swap N↔S so South gets the opener's hand.
+  if (resolvedRole === "opener") {
+    if (resolvedConstraints.dealer === undefined) {
+      // No explicit dealer — set dealer to South and swap seat constraints
+      resolvedConstraints = {
+        ...resolvedConstraints,
+        dealer: userSeat,
+        seats: resolvedConstraints.seats.map((sc) => ({ ...sc, seat: rotateSeat180(sc.seat) })),
+      };
+    } else if (resolvedConstraints.dealer !== userSeat) {
+      resolvedConstraints = rotateDealConstraints(resolvedConstraints, userSeat);
+    }
+  }
+
   const constraints: DealConstraints = {
     ...resolvedConstraints,
     vulnerability,
@@ -153,9 +194,13 @@ export async function startDrill(
   } else {
     deal = await engine.generateDeal(constraints);
   }
-  let initialAuction = convention.defaultAuction
-    ? convention.defaultAuction(userSeat, deal)
-    : undefined;
+  // For full-auction mode or opener mode, skip the default auction prefix
+  // (opener opens directly — no prefix needed)
+  let initialAuction = (practiceMode === "full-auction" || resolvedRole === "opener")
+    ? undefined
+    : convention.defaultAuction
+      ? convention.defaultAuction(userSeat, deal)
+      : undefined;
   if (initialAuction && dealerRotated) {
     initialAuction = rotateAuction(initialAuction);
   }
@@ -168,6 +213,18 @@ export async function startDrill(
     ? createInferenceEngine(config.ewInferenceConfig, Seat.East)
     : null;
 
+  // Derive practice focus from bundle memberIds + base system modules
+  const baseIds = getBaseModuleIds(resolvedSystem)
+    .filter(id => !bundleInput.memberIds.includes(id));
+  const practiceFocus = derivePracticeFocus(bundleInput.memberIds, targetModuleId, baseIds);
+
+  // Derive default play preference from practice mode
+  const defaultPlayPreference: PlayPreference =
+    practiceMode === "decision-drill" ? "skip"
+      : practiceMode === "full-auction" ? "always"
+        : "prompt";
+  const playPreference = options?.playPreference ?? defaultPlayPreference;
+
   return {
     deal,
     session,
@@ -176,5 +233,9 @@ export async function startDrill(
     nsInferenceEngine,
     ewInferenceEngine,
     isOffConvention,
+    practiceMode,
+    practiceFocus,
+    playPreference,
+    resolvedRole,
   };
 }

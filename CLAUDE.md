@@ -29,7 +29,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 
 ## Dev Tools (dev server only)
 
-**URL params (7 consolidated params):**
+**URL params (9 consolidated params):**
 
 | Param | Values | Effect |
 |-------|--------|--------|
@@ -39,6 +39,8 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 | `?screen=<name>` | `settings`, `coverage`, `profiles` | Direct screen navigation. `?screen=coverage&convention=X` for bundle-specific coverage. |
 | `?phase=<name>` | `review`, `playing`, `declarer` | Skip to game phase instantly (auto-completes bidding, no animation). Requires `?convention=`. |
 | `?dev=<flags>` | comma-separated: `debug`, `expanded`, `autoplay`, `autoDismiss` | DEV-only flags. `debug` opens debug panel. `expanded` opens panel + expands all sections. `autoplay` animates through phases. `autoDismiss` auto-retries wrong bids. |
+| `?practiceMode=<mode>` | `decision-drill`, `full-auction`, `continuation-drill` | Select practice mode (default: `decision-drill`) |
+| `?practiceRole=<role>` | `opener`, `responder`, `both` | Practice as opener, responder, or random per deal (default: `responder`) |
 | `?targetState=<id>`, `?targetSurface=<id>` | FSM state / meaning surface | Coverage targeting (used by coverage tests) |
 
 Backward compat aliases: `?coverage=true` → `?screen=coverage`, `?profiles=true` → `?screen=profiles`, `?debug=true` → `?dev=debug`, `?autoplay=true` → `?dev=autoplay`.
@@ -85,6 +87,8 @@ See `docs/design-philosophy.md` for the full set of 10 design principles and sub
 ## System Parameterization
 
 Multi-system support (SAYC, 2/1, Acol). Modules are system-agnostic — differences flow through `SystemConfig` → system facts → surface clause evaluation. `SystemConfig` and system fact vocabulary live in `conventions/definitions/`.
+
+**Base modules:** Each base system has 4 always-active modules: `["natural-open", "stayman", "jacoby-transfers", "blackwood"]`. These are merged into every `specFromBundle()` call (strategy layer) but NOT into `resolveBundle()` (deal generation/teaching). Base modules affect bidding strategy only — inert modules (e.g., Stayman during Bergen practice) never activate because their FSM triggers never fire.
 
 ## Architecture
 
@@ -149,7 +153,7 @@ tests/
 | Components | — | Svelte UI (screens/game/shared) |
 | Tests | `tests/e2e/` | Vitest + Playwright |
 
-**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION. User always bids as South. Details in `src/stores/CLAUDE.md`.
+**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION. User always bids as South. `playPreference` (from practice mode) controls BIDDING exit: `skip` → EXPLANATION, `always` → PLAYING, `prompt` → DECLARER_PROMPT. Details in `src/stores/CLAUDE.md`.
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 

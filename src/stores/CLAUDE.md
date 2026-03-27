@@ -16,12 +16,20 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 | -------------------- | -------------------------------------------------------------------------------------------------- |
 | `app.svelte.ts`      | `createAppStore()` — screen navigation, selected convention, learning state, coverage state, dev seed, dev flags (`autoplay`, `debugExpanded`, `autoDismissFeedback`, `skipToPhase`), drill tuning (persisted to localStorage) |
 | `game.svelte.ts`     | `createGameStore(service)` — coordinator/facade, phase machine, drill lifecycle, thin reactive cache over service viewports |
-| `dev-params.ts`      | `applyDevParams()` — consolidated URL param API (7 params: `?convention=`, `?learn=`, `?seed=`, `?screen=`, `?phase=`, `?dev=`, `?targetState=/targetSurface=`). Backward compat aliases for legacy params. Called from `App.svelte` at startup |
+| `dev-params.ts`      | `applyDevParams()` — consolidated URL param API (9 params: `?convention=`, `?learn=`, `?seed=`, `?screen=`, `?phase=`, `?dev=`, `?practiceMode=`, `?practiceRole=`, `?targetState=/targetSurface=`). Backward compat aliases for legacy params. Called from `App.svelte` at startup |
 | `types.ts`           | `GameStore` interface — explicit facade interface for context DI consumers |
 
 **Game store key methods:** `startDrillFromHandle`, `userBid`, `retryBid`, `getExpectedBid`, `getDebugSnapshot` (bidding); `acceptPlay(seatOverride?)`, `declinePlay()`, `acceptPrompt()`, `declinePrompt()` (declarer prompt); `userPlayCard`, `skipToReview`, `restartPlay`, `skipToPhase`, `playThisHand` (play). See `game.svelte.ts` for signatures.
 
-**Key state:** `effectiveUserSeat` — defaults to South, set to North on declarer swap. Reset by `startDrillFromHandle()`. `isProcessing` + `playAborted` flags guard animation races.
+**Key state:** `effectiveUserSeat` — defaults to South, set to North on declarer swap. Reset by `startDrillFromHandle()`. `isProcessing` + `play.aborted` flags guard animation races. `practiceMode` and `playPreference` are set from `DrillStartResult` and control phase transitions. `maybeAutoTransitionFromPrompt()` auto-transitions from DECLARER_PROMPT based on `playPreference` (`skip` → EXPLANATION, `always` → PLAYING).
+
+**Grouped phase state.** Internal `$state` variables are grouped into typed objects: `bidding: BiddingPhaseState`, `play: PlayPhaseState`, `dds: DDSState`, `inference: InferenceState`, `viewports: ViewportCache`. Factory functions (`freshBiddingState()`, etc.) handle resets. Individual field updates use direct property mutation (`bidding.processing = true`) which Svelte 5's proxy tracks fine-grained. Full object replacement (`bidding = freshBiddingState()`) is correct for resets only.
+
+**`bidFeedback` stays flat with `$state.raw`.** Deep proxy would break reference equality checks. Do NOT fold into `BiddingPhaseState`.
+
+**Animation fields stay flat.** `biddingAnim` and `animatedTrickOverride` have independent lifecycles and never reset together. Grouping would add no benefit.
+
+**Rejected alternatives:** Discriminated union `PhaseState` (fights Svelte 5 proxy reactivity). Phase-scoped sub-store files (too much churn, moves animation away from transition logic).
 
 **Sub-store accessors:** `gameStore.bidding` (auction, bidHistory, bidFeedback, legalCalls, currentTurn, isUserTurn), `gameStore.play` (tricks, currentTrick, currentPlayer, declarerTricksWon, defenderTricksWon, dummySeat, score, trumpSuit), `gameStore.dds` (solution, solving, error).
 

@@ -65,8 +65,12 @@ export { registerBundle, clearBundleRegistry, createConventionConfigFromBundle }
 // ── Definitions (module registry) ──────────────────────────────────────
 export { getModule, getAllModules } from "./definitions/module-registry";
 
+// ── Definitions (capability constraint registry) ──────────────────────
+export { archetypeSupportsRoleSelection, getPrimaryCapability } from "./definitions/capability-constraint-registry";
+
 // ── Definitions (system registry) ──────────────────────────────────────
-export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle } from "./definitions/system-registry";
+export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle, specFromSystem, getBaseModuleIds } from "./definitions/system-registry";
+export type { BaseSystemProfile } from "./definitions/system-registry";
 
 // ── Definitions (system config) ──────────────────────────────────────────
 export type { BaseSystemId, SystemConfig } from "./definitions/system-config";

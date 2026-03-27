@@ -73,6 +73,8 @@ export interface ConventionBundle extends BundleInput {
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
   /** @derived Allowed dealers from capability archetype. */
   readonly allowedDealers?: readonly Seat[];
+  /** @derived Whether the user can choose to practice as opener or responder. */
+  readonly supportsRoleSelection?: boolean;
 }
 
 /** Checks whether any surface clause in any module references a system-provided fact.
@@ -109,6 +111,7 @@ export function createConventionConfigFromBundle(
     variesBySystem: bundleUsesSystemFacts(bundle.modules) || undefined,
     moduleDescriptions: new Map(bundle.modules.map(m => [m.moduleId, m.description])),
     modulePurposes: new Map(bundle.modules.map(m => [m.moduleId, m.purpose])),
+    supportsRoleSelection: bundle.supportsRoleSelection,
   };
 }
 

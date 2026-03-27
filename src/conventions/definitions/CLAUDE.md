@@ -5,13 +5,23 @@ Convention bundles that each implement a bridge bidding convention using the mea
 ## Folder Structure
 
 **Shared files** (at `definitions/` root):
-- `system-registry.ts` — Bundle registry. Stores `BundleInput` definitions (no modules, no deal constraints). `getBundleInput(id)`, `listBundleInputs()`, `resolveBundle(input, sys)` (resolves modules + derives deal constraints for a SystemConfig), `specFromBundle(input, sys)`. Also contains `deriveSurfaceGroupsFromModules()` which auto-derives `SurfaceGroup`s from module state structure (each state entry with 2+ surfaces = a `mutually_exclusive` group). Pre-resolved bundle constants (`ntBundle`, `bergenBundle`, etc.) live in each bundle's own `config.ts`.
+- `system-registry.ts` — Bundle registry + base system profiles. Stores `BundleInput` definitions (no modules, no deal constraints). `getBundleInput(id)`, `listBundleInputs()`, `resolveBundle(input, sys)` (resolves modules + derives deal constraints for a SystemConfig), `specFromBundle(input, sys)` (merges base system modules into the spec), `specFromSystem(baseSystemId)` (all registered modules for a system). Also contains `BaseSystemProfile`, `getBaseModuleIds()`, and `deriveSurfaceGroupsFromModules()` which auto-derives `SurfaceGroup`s from module state structure. Pre-resolved bundle constants (`ntBundle`, `bergenBundle`, etc.) live in each bundle's own `config.ts`.
 - `derive-deal-constraints.ts` — `deriveBundleDealConstraints(input, modules, sys)` — derives deal constraints from capability archetype + R1 surface clause analysis + complement negation. Called by `resolveBundle()`.
-- `capability-constraint-registry.ts` — Maps each capability ID to a `CapabilityArchetype` defining opener constraints, default auction, allowed dealers, and practitioner turn/seat.
+- `capability-constraint-registry.ts` — Maps each capability ID to a `CapabilityArchetype` defining opener constraints, default auction, allowed dealers, and practitioner turn/seat. `archetypeSupportsRoleSelection()` derives whether a convention supports opener/responder role selection from archetype partnership membership.
 - `module-registry.ts` — Convention module registry.
 - `capability-vocabulary.ts` — Stable host-attachment capability IDs (`CAP_OPENING_1NT`, `CAP_OPENING_MAJOR`, `CAP_OPENING_WEAK_TWO`, `CAP_OPPONENT_1NT`).
 - `system-config.ts` — Merged from former `core/contracts/system-config.ts` + `core/contracts/base-system-vocabulary.ts`. Contains `BaseSystemId`, `BASE_SYSTEM_SAYC`, `BASE_SYSTEM_TWO_OVER_ONE`, `BASE_SYSTEM_ACOL`, `SystemConfig`, concrete system configs (`SAYC_SYSTEM_CONFIG`, etc.), `getSystemConfig()`, `AVAILABLE_BASE_SYSTEMS`.
 - `system-fact-vocabulary.ts` — System-provided fact IDs that modules reference for system-dependent thresholds and properties. Modules import these IDs, never concrete system configs. Moved from former `core/contracts/`.
+
+**Base system modules** (at `definitions/modules/` root, not inside any bundle):
+- `modules/natural-nt/` — Natural openings (1-level suit + 1NT) and notrump responses. Module ID is `"natural-open"` (renamed from `"natural-nt"`). **Gotcha:** Module ID is `"natural-open"` but directory is `modules/natural-nt/` — temporary mismatch, directory rename is a separate follow-up. Files: `ids.ts`, `meaning-surfaces.ts`, `explanation-catalog.ts`, `index.ts`.
+- `modules/blackwood/` — Blackwood 4NT ace-asking convention. Base system module: always active via `BaseSystemProfile`, never a bundle member. Files: `ids.ts`, `meaning-surfaces.ts`, `facts.ts`, `explanation-catalog.ts`, `index.ts`.
+
+**Base module defaults:** Each base system profile includes 4 always-active modules: `["natural-open", "stayman", "jacoby-transfers", "blackwood"]`. These are merged via `specFromBundle()` (strategy layer) using `Set` deduplication. Inert modules are harmless — e.g., Stayman/Jacoby FSMs never activate during Bergen practice because `open(notrump)` never fires.
+
+**Bergen/natural-open interaction:** natural-open provides canonical 1H/1S opening surfaces with real clauses (HCP + suit length → higher specificity). Bergen has stub 1H/1S opening surfaces (zero clauses). Arbitration picks natural-open's surface. Bergen's FSM still advances correctly because `advanceLocalFsm()` matches on observations (`{ act: "open", strain: "hearts" }`), not surface ownership.
+
+**`resolveBundle`/`specFromBundle` asymmetry:** `resolveBundle()` must NOT merge base module IDs. It drives deal constraints via `deriveBundleDealConstraints()` and teaching content via `deriveSurfaceGroupsFromModules()`. Adding base modules there would generate slam-zone deals during Stayman practice and pollute teaching groups. Base modules are merged only in `specFromBundle()` (strategy layer).
 
 **Architectural rule:** Pedagogical content is auto-derived from module structure. Surface groups come from `deriveSurfaceGroupsFromModules()` (state entries with 2+ surfaces). Cross-module alternatives are handled by `truthSetCalls` in `teaching-resolution.ts`. No manual teaching tags, scope annotations, or derivation files needed. Modules are portable building blocks.
 
@@ -36,8 +46,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
   - `stayman.ts` — Stayman convention: facts + explanation entries. Factory returns `{ facts, explanationEntries }`.
   - `jacoby-transfers.ts` — Jacoby Transfers convention: facts + explanation entries. Factory returns `{ facts, explanationEntries }`.
   - `smolen.ts` — Smolen convention: facts + explanation entries. Factory returns `{ facts, explanationEntries }`.
-  - `natural-nt.ts` — Natural NT responses: facts + explanation entries. Factory returns `{ facts, explanationEntries }`.
-  - `natural-nt-rules.ts` — LocalFsm + StateEntry[] for natural-nt (phases: idle/opened/responded). No negotiationDelta needed (INITIAL_NEGOTIATION correct for opening/R1).
+  - `natural-nt/` — Natural openings and NT responses module (module ID: `"natural-open"`, directory rename deferred). Self-contained with `index.ts` (moduleFactory, FSM phases: idle/opened-nt/opened-suit/responded), `meaning-surfaces.ts` (1NT + suit opening surfaces), `ids.ts`, `explanation-catalog.ts`.
   - `stayman-rules.ts` — LocalFsm + StateEntry[] for Stayman (phases: idle/asked/shown-hearts/shown-spades/denied/inactive). Claims carry `negotiationDelta` for forcing/captain effects.
   - `jacoby-transfers-rules.ts` — LocalFsm + StateEntry[] for Jacoby Transfers (phases: idle/inactive/transferred-*/accepted-*/placing-*/invited-*). Claims carry `negotiationDelta` for forcing/fitAgreed/captain effects.
   - `smolen-rules.ts` — LocalFsm + StateEntry[] for Smolen (phases: idle/post-r1/placing-hearts/placing-spades/done). Claims carry `negotiationDelta` for game-forcing/fitAgreed/captain effects. Proof case: uses route pattern `subseq([inquire(majorSuit), deny(majorSuit)])` instead of hookTransitions.

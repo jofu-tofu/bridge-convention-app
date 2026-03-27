@@ -26,8 +26,11 @@ export type {
   ModuleLearningViewport,
   FlowTreeNode,
   BundleFlowTreeViewport,
+  ModuleFlowTreeViewport,
   ClauseSystemVariant,
   ServiceBidHistoryEntry as BidHistoryEntry,
+  BidContext,
+  BaseModuleInfo,
 } from "./response-types";
 
 // ── 3. Game Vocabulary (engine primitives) ───────────────────────────
@@ -48,12 +51,15 @@ export type { BidResult, BiddingContext } from "../conventions";
 export type { PlayStrategy, PlayContext, PlayResult, PosteriorSummary } from "../conventions";
 
 // ── 5. Coverage Utilities ────────────────────────────────────────────
-export { listBundleInputs, resolveBundle, getBundleInput, enumerateRuleAtoms, generateRuleCoverageManifest } from "../conventions";
+export { listBundleInputs, resolveBundle, getBundleInput, specFromSystem, enumerateRuleAtoms, generateRuleCoverageManifest } from "../conventions";
 export type { RuleCoverageManifest, ConventionBundle } from "../conventions";
 
+// ── 5b. Session viewport builders (re-exported for UI consumption) ───
+export { buildBaseModuleInfos } from "../session/learning-viewport";
+
 // ── 6. Session Configuration ─────────────────────────────────────────
-export type { OpponentMode, VulnerabilityDistribution, DrillSettings } from "../session";
-export { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../session";
+export type { OpponentMode, VulnerabilityDistribution, DrillSettings, PracticeMode, PracticeRole, PracticeFocus, PlayPreference } from "../session";
+export { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, ALL_TARGETS_FOCUS } from "../session";
 export type { PlayProfileId } from "../session";
 export { PLAY_PROFILES } from "../session";
 export { isValidTransition } from "../session";

@@ -92,6 +92,7 @@
     // Build session config — service handles convention resolution,
     // RNG creation, deal generation, and strategy assembly internally.
     const practiceMode = appStore.devPracticeMode ?? appStore.userPracticeMode;
+    const practiceRole = appStore.devPracticeRole ?? appStore.userPracticeRole;
     const config: SessionConfig = {
       conventionId: baseConvention.id,
       userSeat,
@@ -99,6 +100,7 @@
       baseSystemId: appStore.baseSystemId,
       drill: appStore.drillSettings,
       ...(practiceMode ? { practiceMode } : {}),
+      ...(practiceRole ? { practiceRole } : {}),
     };
 
     const handle = await service.createSession(config);

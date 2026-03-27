@@ -32,8 +32,9 @@ describe("AppShell", () => {
   it("navigating to game screen does not reset debug panel state", () => {
     const { appStore } = renderShell();
 
-    // Simulate what applyDevParams does: set debug panel on
+    // Simulate what applyDevParams does: set debug panel on + skip practice picker
     appStore.setDebugPanel(true);
+    appStore.setPracticeMode("decision-drill");
     expect(appStore.debugPanelOpen).toBe(true);
 
     // Navigate to game (this is what caused the $effect to re-run)
@@ -48,6 +49,7 @@ describe("AppShell", () => {
     const { appStore } = renderShell();
 
     appStore.setAutoplay(true);
+    appStore.setPracticeMode("decision-drill");
     appStore.selectConvention(ntBundleConventionConfig);
     expect(appStore.autoplay).toBe(true);
 

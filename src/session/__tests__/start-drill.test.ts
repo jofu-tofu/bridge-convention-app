@@ -316,6 +316,91 @@ describe("pickVulnerability", () => {
   });
 });
 
+describe("startDrill practiceRole", () => {
+  beforeEach(() => {
+    clearBundleRegistry();
+    registerBundle(ntBundle);
+  });
+
+  it("defaults to responder when no role specified", async () => {
+    const engine = createStubEngine({
+      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
+    });
+
+    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South);
+
+    expect(bundle.resolvedRole).toBe("responder");
+  });
+
+  it("swaps constraints so South is dealer when role is opener", async () => {
+    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
+    const engine = createStubEngine({ generateDeal });
+
+    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South, undefined, undefined, {
+      practiceRole: "opener",
+    });
+
+    expect(bundle.resolvedRole).toBe("opener");
+    // Deal constraints should have South as dealer (opener)
+    const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
+    expect(constraints.dealer).toBe(Seat.South);
+    // South should have the opener's hand constraints (15-17 HCP balanced for 1NT)
+    const southConstraints = constraints.seats.filter((s: SeatConstraint) => s.seat === Seat.South);
+    expect(southConstraints.length).toBeGreaterThan(0);
+    expect(southConstraints[0]!.minHcp).toBe(15);
+  });
+
+  it("skips initial auction for opener mode", async () => {
+    const engine = createStubEngine({
+      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
+    });
+
+    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South, undefined, undefined, {
+      practiceRole: "opener",
+    });
+
+    expect(bundle.initialAuction).toBeUndefined();
+  });
+
+  it("resolves 'both' using seeded RNG for deterministic results", async () => {
+    const engine = createStubEngine({
+      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
+    });
+
+    // RNG returns < 0.5 → opener
+    const bundle1 = await startDrill(engine, ntBundleConventionConfig, Seat.South, () => 0.3, undefined, {
+      practiceRole: "both",
+    });
+    expect(bundle1.resolvedRole).toBe("opener");
+
+    // RNG returns >= 0.5 → responder
+    const bundle2 = await startDrill(engine, ntBundleConventionConfig, Seat.South, () => 0.7, undefined, {
+      practiceRole: "both",
+    });
+    expect(bundle2.resolvedRole).toBe("responder");
+  });
+
+  it("coerces opener role to responder for opponent conventions", async () => {
+    // Register DONT bundle (opponent convention)
+    const { dontBundle } = await import("../../conventions/definitions/dont-bundle");
+    clearBundleRegistry();
+    registerBundle(ntBundle);
+    registerBundle(dontBundle);
+    const dontConfig = createConventionConfigFromBundle(dontBundle);
+
+    const engine = createStubEngine({
+      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
+    });
+
+    const bundle = await startDrill(engine, dontConfig, Seat.South, undefined, undefined, {
+      practiceRole: "opener",
+    });
+
+    // Should be coerced to responder since DONT is an opponent convention
+    expect(bundle.resolvedRole).toBe("responder");
+  });
+});
+
 describe("startDrill vulnerability", () => {
   beforeEach(() => {
     clearBundleRegistry();

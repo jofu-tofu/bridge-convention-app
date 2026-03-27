@@ -16,7 +16,7 @@ import type { EnginePort } from "../engine/port";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ServicePublicBeliefState, ServicePublicBeliefs } from "./response-types";
 import { buildBiddingViewport, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "../session/build-viewport";
 import type { ModuleCatalogEntry, ModuleLearningViewport } from "./response-types";
-import { buildModuleCatalog, buildModuleLearningViewport, buildBundleFlowTree } from "../session/learning-viewport";
+import { buildModuleCatalog, buildModuleLearningViewport, buildBundleFlowTree, buildModuleFlowTree } from "../session/learning-viewport";
 import type { GamePhase } from "../session/phase-machine";
 import { isValidTransition } from "../session/phase-machine";
 import { createInferenceCoordinator } from "../inference/inference-coordinator";
@@ -60,7 +60,7 @@ import {
   processPlayCard,
   runInitialAiPlays,
 } from "../session/play-controller";
-import { partnerSeat, areSamePartnership } from "../engine/constants";
+import { partnerSeat } from "../engine/constants";
 import type { PlayContext } from "../conventions";
 import type { PlayProfileId } from "../session/heuristics/play-profiles";
 import { PLAY_PROFILES } from "../session/heuristics/play-profiles";
@@ -100,13 +100,19 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
       const baseSystemId = (config.baseSystemId as BaseSystemId) ?? BASE_SYSTEM_SAYC;
       console.log("[DEBUG] about to assembleNewDrill");
+      const drillOptions = {
+        ...config.drill,
+        ...(config.practiceMode ? { practiceMode: config.practiceMode } : {}),
+        ...(config.targetModuleId ? { targetModuleId: config.targetModuleId } : {}),
+        ...(config.practiceRole ? { practiceRole: config.practiceRole } : {}),
+      };
       const bundle = await assembleNewDrill(
         engine,
         convention,
         userSeat,
         undefined,
         config.seed,
-        config.drill,
+        drillOptions,
         baseSystemId,
       );
       console.log("[DEBUG] assembleNewDrill done");
@@ -152,6 +158,8 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         isOffConvention: state.isOffConvention,
         aiBids,
         auctionComplete,
+        practiceMode: state.practiceMode,
+        playPreference: state.playPreference,
       };
     },
 
@@ -166,6 +174,18 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       let nextViewport: BiddingViewport | null = null;
       if (result.accepted) {
         nextViewport = buildBiddingViewportFromState(state);
+      }
+
+      // When playPreference="always", the bidding controller transitions directly
+      // to PLAYING (skipping DECLARER_PROMPT). Set up the world-class advisor
+      // and run initial AI plays, mirroring what acceptPrompt("play") does.
+      if (result.phaseTransition?.to === "PLAYING" && state.contract) {
+        const advisorProvider = createWorldClassProvider(engine, Math.random);
+        if (state.playInferences) {
+          advisorProvider.onAuctionComplete!(state.playInferences);
+        }
+        state.worldClassAdvisor = advisorProvider.getStrategy();
+        await runInitialAiPlays(state, engine);
       }
 
       return {
@@ -279,6 +299,10 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
     async getExplanationViewport(handle: SessionHandle): Promise<ExplanationViewport | null> {
       const state = manager.get(handle);
+      if (state.pendingRecommendation) {
+        await state.pendingRecommendation;
+        state.pendingRecommendation = null;
+      }
       return buildExplanationViewportFromState(state);
     },
 
@@ -349,6 +373,10 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       return buildBundleFlowTree(bundleId);
     },
 
+    async getModuleFlowTree(moduleId: string) {
+      return buildModuleFlowTree(moduleId);
+    },
+
     // ── Dev methods ───────────────────────────────────────────────
 
     async getExpectedBid(handle: SessionHandle): Promise<{ call: Call } | null> {
@@ -391,6 +419,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       const legalPlays = await engine.getLegalPlays({ cards: remaining }, state.getLeadSuit());
       if (legalPlays.length === 0) return [];
 
+      const isDummyPlaying = state.dummySeat !== null && seat === state.dummySeat;
       const ctx: PlayContext = {
         hand: { cards: remaining },
         currentTrick: [...state.currentTrick],
@@ -399,7 +428,11 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         seat,
         trumpSuit: state.trumpSuit,
         legalPlays,
-        dummyHand: state.dummySeat ? { cards: state.getRemainingCards(state.dummySeat) } : undefined,
+        dummyHand: state.dummySeat
+          ? isDummyPlaying && state.contract
+            ? { cards: state.getRemainingCards(state.contract.declarer) }
+            : { cards: state.getRemainingCards(state.dummySeat) }
+          : undefined,
         inferences: state.playInferences ?? undefined,
       };
 
@@ -484,6 +517,7 @@ function buildBiddingViewportFromState(state: SessionState): BiddingViewport | n
     conventionName: state.conventionId,
     isUserTurn: state.isUserSeat(currentTurn) && state.phase === "BIDDING",
     currentBidder: currentTurn,
+    practiceMode: state.practiceMode,
   });
 }
 

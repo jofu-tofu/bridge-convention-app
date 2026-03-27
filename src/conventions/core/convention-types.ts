@@ -56,6 +56,10 @@ export interface ConventionConfig {
   readonly moduleDescriptions?: ReadonlyMap<string, string>;
   /** Per-module purposes from the resolved bundle (moduleId → purpose). */
   readonly modulePurposes?: ReadonlyMap<string, string>;
+  /** Whether the user can choose to practice as opener, responder, or both.
+   *  Derived from archetype partnership membership — true when opener and
+   *  practitioner are in the same N/S partnership. */
+  readonly supportsRoleSelection?: boolean;
 }
 
 /** Resolves a convention config by ID. Must throw on unknown IDs (same as getConvention). */

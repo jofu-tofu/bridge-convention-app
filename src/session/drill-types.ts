@@ -1,6 +1,46 @@
 /** Opponent bidding behavior for drills. */
 export type OpponentMode = "natural" | "none";
 
+// ─── Practice role ─────────────────────────────────────────────
+
+/** Which role the user plays: opener, responder, or both (random per deal). */
+export type PracticeRole = "responder" | "opener" | "both";
+
+// ─── Practice modes ────────────────────────────────────────────
+
+/** Controls what portion of the auction the user bids through. */
+export type PracticeMode =
+  | "decision-drill"       // Drop-in at convention decision point (current behavior)
+  | "full-auction"         // User bids from opening through convention and beyond
+  | "continuation-drill";  // Drop-in at a specific continuation phase
+
+/** Module roles relative to the practice target. Computed at session creation. */
+export interface PracticeFocus {
+  readonly targetModuleIds: readonly string[];
+  readonly prerequisiteModuleIds: readonly string[];
+  readonly followUpModuleIds: readonly string[];
+  /** Base system modules always active but not the practice focus (e.g., Blackwood). */
+  readonly backgroundModuleIds: readonly string[];
+}
+
+/**
+ * Identifies a continuation phase to practice.
+ * No authored metadata — phase and moduleId reference the existing FSM.
+ * Deal constraints and prefix are derived at drill creation time.
+ */
+export interface ContinuationTarget {
+  readonly moduleId: string;
+  readonly phase: string;
+}
+
+/** Default practice focus: all modules are targets, none are prerequisites. */
+export const ALL_TARGETS_FOCUS: PracticeFocus = {
+  targetModuleIds: [],
+  prerequisiteModuleIds: [],
+  followUpModuleIds: [],
+  backgroundModuleIds: [],
+};
+
 // ─── Drill tuning ───────────────────────────────────────────
 //
 // Tunable parameters that shape practice session deal generation.
@@ -45,11 +85,18 @@ export const DEFAULT_DRILL_TUNING: DrillTuning = {
 // Both the UI store and CLI converge on this type — it's the contract
 // that would be sent to a backend API to start a practice session.
 
+/** Play phase behavior after bidding completes. */
+export type PlayPreference = "always" | "prompt" | "skip";
+
 /** Complete drill execution parameters (opponent behavior + deal generation). */
 export interface DrillSettings {
   readonly opponentMode: OpponentMode;
   readonly tuning: DrillTuning;
   readonly playProfileId?: PlayProfileId;
+  readonly practiceMode?: PracticeMode;
+  readonly continuationTarget?: ContinuationTarget;
+  readonly playPreference?: PlayPreference;
+  readonly practiceRole?: PracticeRole;
 }
 
 export const DEFAULT_DRILL_SETTINGS: DrillSettings = {
@@ -94,4 +141,12 @@ export interface DrillBundle {
   /** True when this deal was generated as an off-convention hand
    *  (the convention doesn't apply; user should bid naturally). */
   isOffConvention?: boolean;
+  /** Practice mode — defaults to "decision-drill" when omitted. */
+  readonly practiceMode?: PracticeMode;
+  /** Module roles relative to the practice target. Defaults to all-targets when omitted. */
+  readonly practiceFocus?: PracticeFocus;
+  /** Play phase behavior — defaults to mode-derived preference when omitted. */
+  readonly playPreference?: PlayPreference;
+  /** The resolved practice role for this deal ("opener" or "responder"). */
+  readonly resolvedRole?: "opener" | "responder";
 }

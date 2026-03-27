@@ -45,7 +45,8 @@
     <div class="flex h-full items-center justify-center p-6">
       <PracticeModePicker
         conventionName={props.appStore.selectedConvention?.name ?? ""}
-        onSelect={(mode) => props.appStore.confirmPracticeMode(mode)}
+        supportsRoleSelection={props.appStore.selectedConvention?.supportsRoleSelection}
+        onSelect={(mode, role) => props.appStore.confirmPracticeMode(mode, role)}
         onCancel={() => props.appStore.cancelPracticeMode()}
       />
     </div>

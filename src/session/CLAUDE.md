@@ -23,13 +23,15 @@ service/ (thin port) → session/ → {engine/, conventions/, inference/}
 | `play-controller.ts` | Pure play logic: processPlayCard(), trick scoring, AI play loop. `selectAiCard()` is async (awaits `PlayStrategy.suggest()`). |
 | `dds-controller.ts` | DDS solve logic with timeout and stale-result guard |
 | `build-viewport.ts` | Viewport builders: buildBiddingViewport(), buildDeclarerPromptViewport(), etc. |
-| `learning-viewport.ts` | buildModuleCatalog(), buildModuleLearningViewport(), buildBundleFlowTree() — module-centric learning viewport builders + unified conversation flow tree |
+| `learning-viewport.ts` | buildModuleCatalog(), buildModuleLearningViewport(), buildBundleFlowTree(), buildModuleFlowTree() — module-centric learning viewport builders + conversation flow trees (bundle-wide and module-scoped) |
 | `evaluation-oracle.ts` | EvaluationOracle (answer key, internal only) |
 | `bid-feedback-builder.ts` | assembleBidFeedback() — grades bids, builds feedback DTOs |
-| `start-drill.ts` | startDrill() + pickVulnerability() + rotation utilities |
+| `start-drill.ts` | startDrill() + pickVulnerability() + rotation utilities + practice role enforcement (opener/responder/both) |
 | `config-factory.ts` | createProtocolDrillConfig() — builds DrillConfig from convention ID + user seat. Threads SystemConfig to natural inference providers for system-aware inference. Creates `PlayStrategyProvider` from `playProfileId` option. Accepts optional `engine` for world-class profile (MC+DDS). |
 | `strategy-factory.ts` | Strategy composition: createSpecStrategy(), createSpecStrategyWithFallback(), createOpponentStrategy() |
-| `drill-types.ts` | DrillConfig, DrillSession, DrillBundle, DrillTuning, DrillSettings, OpponentMode. `DrillSettings.playProfileId` selects opponent play difficulty; `DrillConfig.playStrategyProvider` carries the DI provider. |
+| `drill-types.ts` | DrillConfig, DrillSession, DrillBundle, DrillTuning, DrillSettings, OpponentMode, PracticeMode, PracticeRole, PracticeFocus, PlayPreference, ContinuationTarget, BidContext. `PracticeFocus.backgroundModuleIds` holds base system modules (e.g., Blackwood) that are always active but not the practice focus. `DrillSettings.playProfileId` selects opponent play difficulty; `DrillConfig.playStrategyProvider` carries the DI provider. `DrillBundle.resolvedRole` carries the resolved opener/responder role for the deal. |
+| `practice-focus.ts` | `derivePracticeFocus()` — module role derivation for practice targets |
+| `bid-context-resolver.ts` | `resolveBidContext()` — bid context for practice mode feedback |
 | `teaching-weighting.ts` | computeScenarioDistribution() — pedagogical weighting for deal generation |
 | `practice-preferences.ts` | User preference DTOs (PracticePreferences, DisplayPreferences) |
 | `heuristics/` | Convention-independent bidding and play heuristics (see heuristics/CLAUDE.md) |

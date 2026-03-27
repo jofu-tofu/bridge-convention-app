@@ -1,12 +1,15 @@
 <script lang="ts">
-  import type { PracticeMode } from "../../service";
+  import type { PracticeMode, PracticeRole } from "../../service";
 
   interface Props {
     conventionName: string;
-    onSelect: (mode: PracticeMode) => void;
+    supportsRoleSelection?: boolean;
+    onSelect: (mode: PracticeMode, role?: PracticeRole) => void;
     onCancel?: () => void;
   }
-  let { conventionName, onSelect, onCancel }: Props = $props();
+  let { conventionName, supportsRoleSelection = false, onSelect, onCancel }: Props = $props();
+
+  let selectedRole = $state<PracticeRole>("responder");
 
   interface ModeOption {
     mode: PracticeMode;
@@ -29,6 +32,17 @@
       isDefault: false,
     },
   ];
+
+  interface RoleOption {
+    role: PracticeRole;
+    label: string;
+  }
+
+  const roleOptions: RoleOption[] = [
+    { role: "responder", label: "Responder" },
+    { role: "opener", label: "Opener" },
+    { role: "both", label: "Both" },
+  ];
 </script>
 
 <div class="flex flex-col gap-4 max-w-lg w-full">
@@ -39,6 +53,29 @@
     <p class="text-sm text-text-secondary mt-1">Choose a practice mode.</p>
   </div>
 
+  {#if supportsRoleSelection}
+    <div class="flex flex-col gap-2">
+      <span class="text-[--text-detail] font-medium text-text-secondary">Practice as</span>
+      <div class="flex gap-1 p-1 rounded-[--radius-md] bg-bg-elevated w-fit" role="radiogroup" aria-label="Practice role">
+        {#each roleOptions as opt (opt.role)}
+          <button
+            type="button"
+            role="radio"
+            aria-checked={selectedRole === opt.role}
+            class="px-3 py-1.5 rounded-[--radius-sm] text-[--text-detail] font-medium transition-all cursor-pointer
+              {selectedRole === opt.role
+                ? 'bg-bg-card text-text-primary shadow-sm'
+                : 'text-text-muted hover:text-text-secondary'}"
+            data-testid="role-{opt.role}"
+            onclick={() => selectedRole = opt.role}
+          >
+            {opt.label}
+          </button>
+        {/each}
+      </div>
+    </div>
+  {/if}
+
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
     {#each modes as opt (opt.mode)}
       <button
@@ -48,7 +85,7 @@
           border-border-subtle hover:border-accent-primary/40 hover:shadow-md
           bg-bg-card"
         data-testid="mode-{opt.mode}"
-        onclick={() => onSelect(opt.mode)}
+        onclick={() => onSelect(opt.mode, supportsRoleSelection ? selectedRole : undefined)}
       >
         <div class="flex items-center gap-2">
           <span class="text-[--text-body] font-semibold text-text-primary group-hover:text-accent-primary transition-colors">
