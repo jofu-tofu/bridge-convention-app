@@ -1,7 +1,7 @@
-import type { ConventionConfig, BaseSystemId, OpponentMode, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences } from "../service";
+import type { ConventionConfig, BaseSystemId, OpponentMode, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode } from "../service";
 import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 
-export type Screen = "conventions" | "game" | "learning" | "settings" | "coverage" | "profiles";
+export type Screen = "conventions" | "practice-picker" | "game" | "learning" | "settings" | "coverage" | "profiles";
 
 // ─── Persistence ────────────────────────────────────────────
 
@@ -94,6 +94,10 @@ export function createAppStore() {
   let autoDismissFeedback = $state(false);
   /** Target phase for instant skip-to-phase (?phase=review|playing|declarer). */
   let skipToPhase = $state<"review" | "playing" | "declarer" | null>(null);
+  /** Dev-override practice mode from URL param (?practiceMode=). */
+  let devPracticeMode = $state<PracticeMode | null>(null);
+  /** User-selected practice mode from PracticeModePicker. */
+  let userPracticeMode = $state<PracticeMode | null>(null);
 
   // All persisted practice preferences — single blob
   let prefs = $state<PracticePreferences>(loadPreferences());
@@ -137,7 +141,23 @@ export function createAppStore() {
     selectConvention(config: ConventionConfig) {
       selectedConvention = config;
       learningConvention = null;
+      userPracticeMode = null;
+      if (devPracticeMode) {
+        currentScreen = "game";
+      } else {
+        currentScreen = "practice-picker";
+      }
+    },
+
+    confirmPracticeMode(mode: PracticeMode) {
+      userPracticeMode = mode;
       currentScreen = "game";
+    },
+
+    cancelPracticeMode() {
+      selectedConvention = null;
+      userPracticeMode = null;
+      currentScreen = "conventions";
     },
 
     navigateToLearning(config: ConventionConfig) {
@@ -259,6 +279,18 @@ export function createAppStore() {
 
     setAutoDismissFeedback(on: boolean) {
       autoDismissFeedback = on;
+    },
+
+    get devPracticeMode() {
+      return devPracticeMode;
+    },
+
+    get userPracticeMode() {
+      return userPracticeMode;
+    },
+
+    setPracticeMode(mode: PracticeMode | null) {
+      devPracticeMode = mode;
     },
 
     get skipToPhase() {

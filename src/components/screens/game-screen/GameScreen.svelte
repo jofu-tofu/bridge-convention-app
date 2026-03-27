@@ -91,12 +91,14 @@
 
     // Build session config — service handles convention resolution,
     // RNG creation, deal generation, and strategy assembly internally.
+    const practiceMode = appStore.devPracticeMode ?? appStore.userPracticeMode;
     const config: SessionConfig = {
       conventionId: baseConvention.id,
       userSeat,
       seed: devSeed,
       baseSystemId: appStore.baseSystemId,
       drill: appStore.drillSettings,
+      ...(practiceMode ? { practiceMode } : {}),
     };
 
     const handle = await service.createSession(config);
@@ -287,6 +289,11 @@
         >
           {phaseInfo.label}
         </span>
+        {#if gameStore.practiceMode !== "decision-drill"}
+          <span class="text-[--text-annotation] text-text-muted" data-testid="practice-mode-label">
+            {gameStore.practiceMode === "full-auction" ? "Full Auction" : "Continuation"}
+          </span>
+        {/if}
         <span class="sr-only" aria-live="polite">Phase: {phaseInfo.label}</span>
         <ConventionCard cards={conventionCards} />
       </div>

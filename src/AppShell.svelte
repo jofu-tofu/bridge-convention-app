@@ -14,6 +14,7 @@
   import SettingsScreen from "./components/screens/SettingsScreen.svelte";
   import CoverageScreen from "./components/screens/CoverageScreen.svelte";
   import ProfilesScreen from "./components/screens/ProfilesScreen.svelte";
+  import PracticeModePicker from "./components/screens/PracticeModePicker.svelte";
 
   interface Props {
     engine: EnginePort;
@@ -40,6 +41,14 @@
 {#snippet screenRouter()}
   {#if props.appStore.screen === "game"}
     <GameScreen />
+  {:else if props.appStore.screen === "practice-picker"}
+    <div class="flex h-full items-center justify-center p-6">
+      <PracticeModePicker
+        conventionName={props.appStore.selectedConvention?.name ?? ""}
+        onSelect={(mode) => props.appStore.confirmPracticeMode(mode)}
+        onCancel={() => props.appStore.cancelPracticeMode()}
+      />
+    </div>
   {:else if props.appStore.screen === "conventions"}
     <ConventionSelectScreen />
   {:else if props.appStore.screen === "learning"}
