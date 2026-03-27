@@ -102,6 +102,7 @@ export function buildBiddingViewport(input: BuildBiddingViewportInput): BiddingV
       callDisplay: formatCall(entry.call),
       alertLabel: historyEntry?.alertLabel,
       annotationType: historyEntry?.annotationType,
+      meaning: historyEntry?.meaning,
     });
   }
 

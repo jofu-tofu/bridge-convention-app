@@ -26,6 +26,7 @@
     colorClass: string;
     alertLabel?: string;
     annotationType?: "alert" | "announce" | "educational";
+    meaning?: string;
   }
 
   /** Annotation styling per ACBL type:
@@ -62,6 +63,7 @@
         colorClass,
         alertLabel: hidden ? undefined : bidHistory?.[i]?.alertLabel,
         annotationType: hidden ? undefined : type,
+        meaning: bidHistory?.[i]?.meaning,
       });
     }
 
@@ -140,10 +142,28 @@
               <div class="flex flex-col items-center">
                 <span>{cell.text}</span>
                 {#if cell.alertLabel}
-                  <span
-                    class="text-[--text-annotation] {annotationClass(cell.annotationType)} font-sans italic leading-tight"
-                    title={cell.alertLabel}
-                  >{cell.alertLabel}</span>
+                  <div class="relative group/tip inline-flex items-center gap-0.5">
+                    <span
+                      class="text-[--text-annotation] {annotationClass(cell.annotationType)} font-sans italic leading-tight"
+                    >{cell.alertLabel}</span>
+                    {#if cell.meaning && (cell.annotationType === "alert" || cell.annotationType === "announce")}
+                      <svg class="w-2.5 h-2.5 text-text-muted/50 shrink-0" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                      </svg>
+                      <div
+                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-[--z-tooltip]
+                               bg-bg-card border border-border-default rounded-[--radius-md] shadow-lg
+                               p-2 text-left whitespace-normal w-48
+                               opacity-0 group-hover/tip:opacity-100 pointer-events-none
+                               transition-opacity text-[--text-annotation]"
+                        role="tooltip"
+                      >
+                        {cell.meaning}
+                      </div>
+                    {/if}
+                  </div>
                 {/if}
               </div>
             </td>

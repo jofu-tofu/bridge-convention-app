@@ -7,7 +7,7 @@
  */
 
 import type { Call, Auction, Seat } from "../engine/types";
-import { BidSuit } from "../engine/types";
+
 import type { BidResult, BidHistoryEntry } from "../conventions";
 import { BidGrade } from "../conventions";
 import { nextSeat } from "../engine/constants";
@@ -142,16 +142,27 @@ export function initializeAuction(
   initialAuction: Auction,
 ): void {
   state.auction = initialAuction;
-  state.bidHistory = initialAuction.entries.map((entry) => {
-    const is1NT = entry.call.type === "bid" &&
-      entry.call.level === 1 &&
-      entry.call.strain === BidSuit.NoTrump;
+  state.bidHistory = initialAuction.entries.map((entry, i) => {
+    const auctionSoFar: Auction = {
+      entries: initialAuction.entries.slice(0, i),
+      isComplete: false,
+    };
+    const hand = state.deal.hands[entry.seat];
+    const result = state.session.getNextBid(entry.seat, hand, auctionSoFar);
+
+    // Strategy should always agree — deal constraints guarantee valid bids.
+    // Warn as canary for bugs in deal generation.
+    const matches = result && callEquals(result.call, entry.call);
+    if (result && !matches) {
+      console.warn(`initializeAuction: strategy disagreed at index ${i}`);
+    }
     return {
       seat: entry.seat,
       call: entry.call,
       isUser: false,
-      alertLabel: is1NT ? "15 to 17" : undefined,
-      annotationType: is1NT ? "announce" as const : undefined,
+      meaning: matches ? result.meaning : undefined,
+      alertLabel: matches ? result.alert?.teachingLabel : undefined,
+      annotationType: matches ? result.alert?.annotationType : undefined,
     };
   });
 
@@ -164,6 +175,13 @@ export function initializeAuction(
     };
     state.processBid(entry, auctionBefore, null);
   }
+}
+
+/** Compare two Call values for equality. */
+function callEquals(a: Call, b: Call): boolean {
+  if (a.type !== b.type) return false;
+  if (a.type === "bid" && b.type === "bid") return a.level === b.level && a.strain === b.strain;
+  return true; // both special calls with same type
 }
 
 // ── Internal helpers ────────────────────────────────────────────────

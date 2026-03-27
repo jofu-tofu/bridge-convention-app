@@ -198,20 +198,42 @@ describe("bidding controller", () => {
     expect(state.legalCalls.length).toBeGreaterThan(0);
   });
 
-  it("initializeAuction replays entries into bidHistory", () => {
-    const state = makeState({ strategy: make2CStrategy() });
+  it("initializeAuction replays entries into bidHistory with meanings from strategy", () => {
+    const ntCall = { type: "bid" as const, level: 1 as const, strain: BidSuit.NoTrump };
+    const session = makeDrillSession();
+    // Override getNextBid to return 1NT with meaning + alert for North
+    session.getNextBid = (seat) => {
+      if (seat === Seat.South) return null;
+      if (seat === Seat.North) return {
+        call: ntCall,
+        ruleName: "1nt-opening",
+        explanation: "Open 1NT",
+        meaning: "15-17 HCP balanced",
+        alert: { teachingLabel: "15 to 17", annotationType: "announce" as const },
+      };
+      return { call: { type: "pass" }, ruleName: null, explanation: "pass" };
+    };
+    const state = makeState({ session, strategy: make2CStrategy() });
     const initialAuction = {
       entries: [
-        { seat: Seat.North, call: { type: "bid" as const, level: 1 as const, strain: BidSuit.NoTrump } },
+        { seat: Seat.North, call: ntCall },
+        { seat: Seat.East, call: { type: "pass" as const } },
       ],
       isComplete: false,
     };
 
     initializeAuction(state, initialAuction);
 
-    expect(state.bidHistory.length).toBe(1);
-    expect(state.bidHistory[0]!.call).toEqual({ type: "bid", level: 1, strain: BidSuit.NoTrump });
+    expect(state.bidHistory.length).toBe(2);
+    // North's 1NT should have meaning + alert from strategy
+    expect(state.bidHistory[0]!.call).toEqual(ntCall);
     expect(state.bidHistory[0]!.isUser).toBe(false);
+    expect(state.bidHistory[0]!.meaning).toBe("15-17 HCP balanced");
+    expect(state.bidHistory[0]!.alertLabel).toBe("15 to 17");
+    expect(state.bidHistory[0]!.annotationType).toBe("announce");
+    // East's pass has no meaning/alert (pass strategy returns no alert)
+    expect(state.bidHistory[1]!.meaning).toBeUndefined();
+    expect(state.bidHistory[1]!.alertLabel).toBeUndefined();
   });
 
   it("no svelte imports in bidding-controller", async () => {

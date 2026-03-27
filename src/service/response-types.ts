@@ -475,6 +475,8 @@ export interface AuctionEntryView {
   readonly alertLabel?: string;
   /** ACBL annotation type: alert (conventional), announce (spoken), educational (learning). */
   readonly annotationType?: "alert" | "announce" | "educational";
+  /** Full meaning description for tooltip display. */
+  readonly meaning?: string;
 }
 
 /** What a specific legal call means — system-card knowledge. */
