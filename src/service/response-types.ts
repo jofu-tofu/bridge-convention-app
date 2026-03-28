@@ -394,22 +394,27 @@ export interface SurfaceClauseView {
   readonly systemVariants?: readonly ClauseSystemVariant[];
 }
 
+/** Shared teaching surface fields across SurfaceDetailView and FlowTreeNode. */
+interface TeachingSurfaceFields {
+  readonly recommendation: "must" | "should" | "may" | "avoid" | null;
+  readonly disclosure: "alert" | "announcement" | "natural" | "standard" | null;
+  readonly explanationText: string | null;
+  readonly clauses: readonly SurfaceClauseView[];
+}
+
 /** Surface detail with explanation text. */
-export interface SurfaceDetailView {
+export interface SurfaceDetailView extends TeachingSurfaceFields {
   readonly meaningId: string;
   readonly teachingLabel: ServiceTeachingLabel;
   readonly call: Call;
   readonly callDisplay: string;
   readonly disclosure: "alert" | "announcement" | "natural" | "standard";
-  readonly recommendation: "must" | "should" | "may" | "avoid" | null;
-  readonly explanationText: string | null;
-  readonly clauses: readonly SurfaceClauseView[];
 }
 
 // ── Bundle Flow Tree ────────────────────────────────────────────────
 
 /** A node in the unified conversation flow tree. */
-export interface FlowTreeNode {
+export interface FlowTreeNode extends TeachingSurfaceFields {
   readonly id: string;
   readonly call: Call | null;
   readonly callDisplay: string | null;
@@ -419,11 +424,6 @@ export interface FlowTreeNode {
   readonly moduleDisplayName: string | null;
   readonly children: readonly FlowTreeNode[];
   readonly depth: number;
-  /** Tooltip fields — same content shown in the Bidding Conversation section. */
-  readonly recommendation: "must" | "should" | "may" | "avoid" | null;
-  readonly disclosure: "alert" | "announcement" | "natural" | "standard" | null;
-  readonly explanationText: string | null;
-  readonly clauses: readonly SurfaceClauseView[];
 }
 
 /** Unified conversation flow tree for a bundle. */
@@ -456,10 +456,16 @@ export interface ModuleFlowTreeViewport {
 //   1. Svelte UI — renders the viewport as pixels
 //   2. CLI harness — serializes the viewport as JSON for agent evaluation
 
+/** Shared auction context across all game-phase viewports. */
+interface AuctionContextBase {
+  readonly dealer: Seat;
+  readonly vulnerability: Vulnerability;
+}
+
 // ── Bidding Viewport ────────────────────────────────────────────────
 
 /** Complete view of the game state from the player's seat during bidding. */
-export interface BiddingViewport {
+export interface BiddingViewport extends AuctionContextBase {
   // ── Player identity ───────────────────────────────────────────
   readonly seat: Seat;
   readonly conventionName: string;
@@ -476,8 +482,6 @@ export interface BiddingViewport {
 
   // ── Auction state ─────────────────────────────────────────────
   readonly auctionEntries: readonly AuctionEntryView[];
-  readonly dealer: Seat;
-  readonly vulnerability: Vulnerability;
 
   // ── Bidding options ───────────────────────────────────────────
   /** All legal calls at the current auction position. */
@@ -745,23 +749,19 @@ export interface KernelView {
 // never receive raw Deal.
 
 /** Viewport for the declarer prompt phase. */
-export interface DeclarerPromptViewport {
+export interface DeclarerPromptViewport extends AuctionContextBase {
   readonly userSeat: Seat;
   readonly visibleHands: Partial<Record<Seat, Hand>>;
-  readonly dealer: Seat;
-  readonly vulnerability: Vulnerability;
   readonly auctionEntries: readonly AuctionEntryView[];
   readonly contract: Contract;
   readonly promptMode: "defender" | "south-declarer" | "declarer-swap";
 }
 
 /** Viewport for the play phase. */
-export interface PlayingViewport {
+export interface PlayingViewport extends AuctionContextBase {
   readonly userSeat: Seat;
   readonly rotated: boolean;
   readonly visibleHands: Partial<Record<Seat, Hand>>;
-  readonly dealer: Seat;
-  readonly vulnerability: Vulnerability;
   readonly contract: Contract | null;
   readonly currentPlayer: Seat | null;
   readonly currentTrick: readonly PlayedCard[];
@@ -788,11 +788,9 @@ export interface PlayRecommendation {
 }
 
 /** Viewport for the explanation/review phase. All hands are visible. */
-export interface ExplanationViewport {
+export interface ExplanationViewport extends AuctionContextBase {
   readonly userSeat: Seat;
   readonly allHands: Record<Seat, Hand>;
-  readonly dealer: Seat;
-  readonly vulnerability: Vulnerability;
   readonly auctionEntries: readonly AuctionEntryView[];
   readonly contract: Contract | null;
   readonly score: number | null;

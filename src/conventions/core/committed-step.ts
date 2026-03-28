@@ -15,6 +15,7 @@
 
 import type { Seat, Call } from "../../engine/types";
 import type { BidAction, BidSuitName } from "../pipeline/bid-action";
+import type { MeaningRef } from "../pipeline/evaluation/meaning";
 import type { PublicSnapshot } from "./module-surface";
 
 // ── NegotiationState ──────────────────────────────────────────────────────
@@ -49,15 +50,13 @@ export type NegotiationDelta = Partial<NegotiationState>;
 // ── ClaimRef ─────────────────────────────────────────────────────────
 
 /** Minimal identifying info from the winning arbitration proposal. */
-export interface ClaimRef {
-  readonly moduleId: string;
-  readonly meaningId: string;
+export type ClaimRef = MeaningRef & {
   readonly semanticClassId: string;
   readonly sourceIntent: {
     readonly type: string;
     readonly params: Readonly<Record<string, string | number | boolean>>;
   };
-}
+};
 
 // ── CommittedStep ────────────────────────────────────────────────────
 

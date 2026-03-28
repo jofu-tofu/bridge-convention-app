@@ -12,13 +12,12 @@
 import type { Call } from "../../engine/types";
 import type { ConventionModule } from "../core/convention-module";
 import type { TurnRole } from "../core/rule-module";
+import type { MeaningRef } from "./evaluation/meaning";
 
 // ── Types ───────────────────────────────────────────────────────────
 
 /** One testable convention atom derived from rule module claims. */
-export interface RuleAtom {
-  readonly moduleId: string;
-  readonly meaningId: string;
+export interface RuleAtom extends MeaningRef {
   readonly meaningLabel: string;
   readonly encoding: Call;
   /** Phase guard from the first rule occurrence. */

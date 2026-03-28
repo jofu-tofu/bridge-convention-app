@@ -11,6 +11,7 @@ import "./registration";
 export type {
   BidMeaning,
   BidMeaningClause,
+  MeaningRef,
 } from "./pipeline/evaluation/meaning";
 export { deriveNeutralDescription } from "./pipeline/evaluation/clause-derivation";
 

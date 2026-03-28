@@ -11,6 +11,13 @@ export type MeaningId = string;
 // SemanticClassId — string, cross-module equivalence class (e.g., "bridge:game-invite")
 export type SemanticClassId = string;
 
+/** Identity anchor for a meaning across pipeline, teaching, and observation layers. */
+export interface MeaningRef {
+  readonly moduleId: string;
+  readonly meaningId: MeaningId;
+  readonly semanticClassId?: SemanticClassId;
+}
+
 /** Recommendation band — authored semantic priority. */
 export type RecommendationBand = "must" | "should" | "may" | "avoid";
 
@@ -86,10 +93,7 @@ export interface EvaluationEvidence {
 }
 
 /** The core meaning proposal type — what a bid means, independent of encoding. */
-export interface MeaningProposal {
-  readonly meaningId: MeaningId;
-  readonly semanticClassId?: SemanticClassId;
-  readonly moduleId: string;
+export interface MeaningProposal extends MeaningRef {
   readonly clauses: readonly MeaningClause[];
   readonly ranking: RankingMetadata;
   readonly evidence: EvaluationEvidence;

@@ -46,13 +46,7 @@ export interface ArbitrationResult {
 }
 
 /** A surface carried through the entire pipeline with its per-surface traces attached. */
-export interface PipelineCarrier {
-  readonly proposal: MeaningProposal;
-  readonly call: Call;
-  readonly isDefaultEncoding: boolean;
-  readonly legal: boolean;
-  readonly allEncodings: readonly { readonly call: Call; readonly legal: boolean }[];
-  readonly eligibility: CandidateEligibility;
+export interface PipelineCarrier extends EncodedProposal {
   readonly traces: {
     readonly encoding: EncodingTrace;
     readonly legality: LegalityTrace;
