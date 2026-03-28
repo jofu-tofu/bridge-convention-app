@@ -88,8 +88,10 @@ describe("bidding characterization — lock existing behavior", () => {
 
     // Auction grew — user's bid was applied
     expect(store.auction.entries.length).toBeGreaterThan(entriesBefore);
-    // Feedback shows correct grade (momentarily) then clears
-    expect(store.bidFeedback).toBeNull();
+    // Non-blocking correct feedback shown (clears on next user bid)
+    expect(store.bidFeedback).not.toBeNull();
+    expect(store.bidFeedback!.grade).toBe("correct");
+    expect(store.isFeedbackBlocking).toBe(false);
   });
 
   it("wrong bid is blocked with feedback, auction unchanged", async () => {
@@ -180,10 +182,12 @@ describe("bidding characterization — lock existing behavior", () => {
       ewInferenceEngine: null,
     });
 
-    // Pass should be accepted
+    // Pass should be accepted — non-blocking correct feedback shown
     store.userBid({ type: "pass" });
     await flushActions();
-    expect(store.bidFeedback).toBeNull();
+    expect(store.bidFeedback).not.toBeNull();
+    expect(store.bidFeedback!.grade).toBe("correct");
+    expect(store.isFeedbackBlocking).toBe(false);
   });
 
   it("convention-exhausted suggest(null) rejects non-pass bids", async () => {

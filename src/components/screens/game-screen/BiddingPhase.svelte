@@ -8,6 +8,7 @@
   import ScaledTableArea from "./ScaledTableArea.svelte";
   import BiddingSidePanel from "./BiddingSidePanel.svelte";
   import SettingsDialog from "./SettingsDialog.svelte";
+  import { buildContextSummary } from "./context-banner";
 
   interface Props {
     viewport: BiddingViewport;
@@ -24,9 +25,16 @@
   const gameStore = getGameStore();
 
   let settingsDialogRef = $state<ReturnType<typeof SettingsDialog>>();
+
+  const contextSummary = $derived(buildContextSummary(viewport));
 </script>
 
 <div class={PHASE_CONTAINER_CLASS}>
+  {#if contextSummary}
+    <div class="px-4 py-2 bg-bg-card/50 border-b border-border-subtle text-text-secondary text-[--text-detail]">
+      {contextSummary}
+    </div>
+  {/if}
   <ScaledTableArea scale={layout.tableScale} origin={layout.tableOrigin} tableWidth={layout.tableBaseW} tableHeight={layout.tableBaseH}>
     <BridgeTable visibleHands={viewport.visibleHands} handEvaluation={viewport.handEvaluation} vulnerability={viewport.vulnerability}>
       <div

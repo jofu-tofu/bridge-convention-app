@@ -150,6 +150,10 @@ export function createGameStore(
   // $state.raw required — deep proxy breaks reference equality. Do not fold into BiddingPhaseState.
   let bidFeedback = $state.raw<BidFeedback | null>(null);
 
+  // ── Session stats (in-memory, per-bid) ─────────────────────
+  let sessionStats = $state({ correct: 0, incorrect: 0, streak: 0 });
+  let isRetryAttempt = false;
+
   let bidding = $state<BiddingPhaseState>(freshBiddingState());
   let play = $state<PlayPhaseState>(freshPlayState());
   let dds = $state<DDSState>(freshDDSState());
@@ -612,6 +616,10 @@ export function createGameStore(
     if (bidding.processing) return;
     if (!displayedIsUserTurn) return;
 
+    // Capture and clear retry flag early — prevents leak if submitBid throws
+    const skipTracking = isRetryAttempt;
+    isRetryAttempt = false;
+
     // Clear non-blocking feedback from previous bid (acceptable/correct-not-preferred)
     if (bidFeedback && !isFeedbackBlocking) {
       bidFeedback = null;
@@ -631,6 +639,10 @@ export function createGameStore(
             teaching: result.teaching,
           };
         }
+        // Track incorrect/near-miss (first attempt only)
+        if (!skipTracking && result.grade) {
+          sessionStats = { ...sessionStats, incorrect: sessionStats.incorrect + 1, streak: 0 };
+        }
         if (import.meta.env.DEV) {
           const log = await activeService.getDebugLog(handle);
           bidding.debugLog = [...log] as DebugLogEntry[];
@@ -639,8 +651,8 @@ export function createGameStore(
         return;
       }
 
-      // Show non-blocking feedback for accepted bids with non-correct grades
-      if (result.grade && result.grade !== "correct" && result.feedback) {
+      // Show non-blocking feedback for all accepted bids (correct, acceptable, correct-not-preferred)
+      if (result.grade && result.feedback) {
         bidFeedback = {
           grade: result.grade,
           viewportFeedback: result.feedback,
@@ -648,6 +660,11 @@ export function createGameStore(
         };
       } else {
         bidFeedback = null;
+      }
+
+      // Track correct/acceptable (first attempt only)
+      if (!skipTracking && result.grade) {
+        sessionStats = { ...sessionStats, correct: sessionStats.correct + 1, streak: sessionStats.streak + 1 };
       }
 
       // Update viewport — always non-null for accepted bids (PR 0 fix)
@@ -794,6 +811,8 @@ export function createGameStore(
     // Grouped state
     bidding = freshBiddingState();
     bidFeedback = null;
+    sessionStats = { correct: 0, incorrect: 0, streak: 0 };
+    isRetryAttempt = false;
     play = freshPlayState(true); // aborted=true cancels in-flight animations
     dds = freshDDSState();
     inference = freshInferenceState();
@@ -1147,6 +1166,9 @@ export function createGameStore(
     // Public belief state
     get publicBeliefState(): ServicePublicBeliefState { return inference.publicBeliefState; },
 
+    // Session stats (in-memory, per-bid)
+    get sessionStats() { return sessionStats; },
+
     // Debug observability
     get debugLog() { return bidding.debugLog; },
     get playLog() { return play.log; },
@@ -1255,6 +1277,7 @@ export function createGameStore(
       });
     },
     retryBid(): void {
+      isRetryAttempt = true;
       bidFeedback = null;
     },
 

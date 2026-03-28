@@ -194,8 +194,10 @@ describe("bid feedback — user-facing behavior", () => {
       store.userBid(correctBid);
       await flushActions();
 
-      // No feedback blocking — auction continued, it's user's turn again (AI all passed)
-      expect(store.bidFeedback).toBeNull();
+      // Non-blocking correct feedback shown — auction continued, it's user's turn again (AI all passed)
+      expect(store.bidFeedback).not.toBeNull();
+      expect(store.bidFeedback!.grade).toBe("correct");
+      expect(store.isFeedbackBlocking).toBe(false);
       expect(store.isUserTurn).toBe(true);
     });
   });
@@ -213,8 +215,10 @@ describe("bid feedback — user-facing behavior", () => {
       store.userBid({ type: "pass" });
       await flushActions();
 
-      // Strategy returned null → pass is the right call → no feedback
-      expect(store.bidFeedback).toBeNull();
+      // Strategy returned null → pass is the right call → non-blocking correct feedback
+      expect(store.bidFeedback).not.toBeNull();
+      expect(store.bidFeedback!.grade).toBe("correct");
+      expect(store.isFeedbackBlocking).toBe(false);
     });
 
     it("works without a convention strategy (no correctness checking)", async () => {

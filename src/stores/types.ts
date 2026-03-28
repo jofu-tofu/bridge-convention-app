@@ -28,6 +28,14 @@ import type {
   PlayLogEntry,
 } from "./game.svelte";
 
+// ── Session Stats ───────────────────────────────────────────────────
+
+export interface SessionStats {
+  readonly correct: number;
+  readonly incorrect: number;
+  readonly streak: number;
+}
+
 // ── Game Store ──────────────────────────────────────────────────────
 
 type PromptMode = "defender" | "south-declarer" | "declarer-swap";
@@ -94,6 +102,9 @@ export interface GameStore {
 
   // Public belief state
   readonly publicBeliefState: ServicePublicBeliefState;
+
+  // Session stats (in-memory, per-bid, resets on menu navigation)
+  readonly sessionStats: SessionStats;
 
   // Debug observability
   readonly debugLog: DebugLogEntry[];
