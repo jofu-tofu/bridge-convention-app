@@ -25,7 +25,7 @@ import { getSystemConfig, BASE_SYSTEM_SAYC, BASE_SYSTEM_TWO_OVER_ONE, BASE_SYSTE
 // ── Base system profiles ────────────────────────────────────────────
 
 /** Declares which modules are always active for a given base system. */
-export interface BaseSystemProfile {
+interface BaseSystemProfile {
   readonly baseSystemId: BaseSystemId;
   /** Module IDs merged into every specFromBundle() call for this system. */
   readonly baseModuleIds: readonly string[];

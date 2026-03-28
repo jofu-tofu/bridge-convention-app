@@ -8,13 +8,13 @@
 import type { Trick, PlayRecommendation, Seat, Card, Hand } from "../../service";
 
 /** Position within the trick sequence. playIndex -1 = before first play of that trick. */
-export interface ReplayPosition {
+interface ReplayPosition {
   readonly trickIndex: number;
   readonly playIndex: number;
 }
 
 /** Visible trick/play counts for progressive-reveal props. */
-export interface ReplayVisibility {
+interface ReplayVisibility {
   readonly visibleTrickCount: number;
   readonly partialTrickPlays: number;
 }

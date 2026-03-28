@@ -70,7 +70,6 @@ export { archetypeSupportsRoleSelection, getPrimaryCapability } from "./definiti
 
 // ── Definitions (system registry) ──────────────────────────────────────
 export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle, specFromSystem, getBaseModuleIds } from "./definitions/system-registry";
-export type { BaseSystemProfile } from "./definitions/system-registry";
 
 // ── Definitions (system config) ──────────────────────────────────────────
 export type { BaseSystemId, SystemConfig } from "./definitions/system-config";

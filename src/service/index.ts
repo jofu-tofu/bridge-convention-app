@@ -60,7 +60,7 @@ export { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../session";
 export type { PlayProfileId } from "../session";
 export { PLAY_PROFILES } from "../session";
 export { isValidTransition, resolveTransition } from "../session";
-export type { GamePhase, PhaseEvent, TransitionDescriptor, ViewportNeeded, ServiceAction } from "../session";
+export type { GamePhase, ViewportNeeded } from "../session";
 export type { PracticePreferences, DisplayPreferences } from "../session";
 export { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../session";
 

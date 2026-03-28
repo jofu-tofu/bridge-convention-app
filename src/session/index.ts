@@ -21,4 +21,4 @@ export type { BidFeedbackDTO } from "./bid-feedback-builder";
 
 // Phase coordinator
 export { resolveTransition } from "./phase-coordinator";
-export type { PhaseEvent, TransitionDescriptor, ViewportNeeded, ServiceAction } from "./phase-coordinator";
+export type { ViewportNeeded } from "./phase-coordinator";

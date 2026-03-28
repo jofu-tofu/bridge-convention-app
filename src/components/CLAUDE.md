@@ -29,7 +29,6 @@ components/
     PracticeModePicker.svelte        Practice mode selection panel: Decision Drill vs Full Auction cards with start buttons
     MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible, recursive snippet, depth-capped
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors
-    ConversationFlowTree.ts          Companion stub (layout is CSS-driven, no computed positions)
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     ProfilesScreen.svelte            Read-only base system profiles (SAYC/2-1/Acol) with detail + compare views
     SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards

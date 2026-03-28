@@ -1,4 +1,4 @@
 {
   "entry": ["src/cli/main.ts"],
-  "ignore": ["static/dds/dds.js", "src/test-support/vitest-setup.ts"]
+  "ignore": ["static/dds/dds.js"]
 }
