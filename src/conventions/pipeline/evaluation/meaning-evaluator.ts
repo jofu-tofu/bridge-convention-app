@@ -38,6 +38,7 @@ function evaluateClause(
       value: clause.operator === "in" ? false : (clause.value as MeaningClause["value"]),
       satisfied: false,
       description: desc,
+      ...(clause.isPublic ? { isPublic: true } : {}),
     };
   }
 
@@ -99,6 +100,7 @@ function evaluateClause(
     value: outputValue,
     satisfied,
     description: desc,
+    ...(clause.isPublic ? { isPublic: true } : {}),
     observedValue: factValue,
   };
 }

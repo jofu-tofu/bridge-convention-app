@@ -77,6 +77,7 @@ describe("AuctionTable", () => {
         meaning: "15-17 HCP balanced",
         alertLabel: "15 to 17",
         annotationType: "announce",
+        publicConditions: ["15-17 HCP", "Balanced"],
       },
     ];
     const { container } = render(AuctionTable, {
@@ -84,7 +85,7 @@ describe("AuctionTable", () => {
     });
     const tooltip = container.querySelector("[role='tooltip']");
     expect(tooltip).not.toBeNull();
-    expect(tooltip?.textContent).toContain("15-17 HCP balanced");
+    expect(tooltip?.textContent).toContain("15-17 HCP");
   });
 
   it("does not render tooltip for educational annotations", () => {

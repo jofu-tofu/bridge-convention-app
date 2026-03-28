@@ -163,6 +163,7 @@ export function initializeAuction(
       meaning: matches ? result.meaning : undefined,
       alertLabel: matches ? result.alert?.teachingLabel : undefined,
       annotationType: matches ? result.alert?.annotationType : undefined,
+      publicConditions: matches ? result.publicConditions : undefined,
     };
   });
 
@@ -217,6 +218,7 @@ async function applyBidAndRunAi(
     isCorrect: expectedResult ? true : undefined,
     alertLabel: expectedResult?.alert?.teachingLabel,
     annotationType: expectedResult?.alert?.annotationType,
+    publicConditions: expectedResult?.publicConditions,
     teachingProjection: state.strategy?.getLastEvaluation()?.teachingProjection ?? undefined,
   };
   state.bidHistory = [...state.bidHistory, userHistoryEntry];
@@ -332,6 +334,7 @@ async function runAiBidLoop(
       isUser: false,
       alertLabel: result.alert?.teachingLabel,
       annotationType: result.alert?.annotationType,
+      publicConditions: result.publicConditions,
     };
     state.bidHistory = [...state.bidHistory, historyEntry];
     aiBids.push({ seat: currentSeat, call: result.call, historyEntry });

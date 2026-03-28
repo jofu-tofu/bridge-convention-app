@@ -50,7 +50,7 @@ export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeanin
       declarationOrder: 0,
       sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
       disclosure: "alert",
-      teachingLabel: "Stayman 2♣ (planning Smolen)",
+      teachingLabel: "Stayman 2♣",
     }, SMOLEN_CTX),
 
     createSurface({
@@ -82,7 +82,7 @@ export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeanin
       declarationOrder: 1,
       sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
       disclosure: "alert",
-      teachingLabel: "Stayman 2♣ (planning Smolen)",
+      teachingLabel: "Stayman 2♣",
     }, SMOLEN_CTX),
   ];
 }
@@ -122,7 +122,7 @@ export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[]
       declarationOrder: 0,
       sourceIntent: { type: "Smolen", params: { longMajor: "spades" } },
       disclosure: "alert",
-      teachingLabel: "Smolen 3♥ (4♥ + 5♠, game force)",
+      teachingLabel: "Smolen 3♥",
     }, SMOLEN_CTX),
 
     createSurface({
@@ -156,7 +156,7 @@ export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[]
       declarationOrder: 1,
       sourceIntent: { type: "Smolen", params: { longMajor: "hearts" } },
       disclosure: "alert",
-      teachingLabel: "Smolen 3♠ (4♠ + 5♥, game force)",
+      teachingLabel: "Smolen 3♠",
     }, SMOLEN_CTX),
   ];
 }

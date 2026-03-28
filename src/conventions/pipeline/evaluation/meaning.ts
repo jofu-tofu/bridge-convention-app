@@ -66,6 +66,7 @@ export interface MeaningClause {
   readonly value: number | boolean | { min: number; max: number };
   readonly satisfied: boolean;
   readonly description: string;
+  readonly isPublic?: boolean;
   readonly observedValue?: number | boolean | string;
 }
 

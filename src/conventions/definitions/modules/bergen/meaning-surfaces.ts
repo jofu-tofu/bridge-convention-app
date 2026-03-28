@@ -252,7 +252,7 @@ function createBergenR2AfterConstructiveSurfaces(
       declarationOrder: 0,
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Accept constructive → game (4${suit === "hearts" ? "H" : "S"})`,
+      teachingLabel: "Accept constructive",
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
@@ -273,7 +273,7 @@ function createBergenR2AfterConstructiveSurfaces(
       declarationOrder: 1,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Decline constructive → signoff (3${suit === "hearts" ? "H" : "S"})`,
+      teachingLabel: "Decline constructive",
       surfaceBindings: bindings,
     }, BERGEN_CTX),
   ];
@@ -311,7 +311,7 @@ function createBergenR2AfterLimitSurfaces(
       declarationOrder: 0,
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Accept limit raise → game (4${suit === "hearts" ? "H" : "S"})`,
+      teachingLabel: "Accept limit raise",
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
@@ -332,7 +332,7 @@ function createBergenR2AfterLimitSurfaces(
       declarationOrder: 1,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Decline limit raise → signoff (3${suit === "hearts" ? "H" : "S"})`,
+      teachingLabel: "Decline limit raise",
       surfaceBindings: bindings,
     }, BERGEN_CTX),
   ];
@@ -576,7 +576,7 @@ function createBergenNatural1NtResponseSurfaces(
       declarationOrder: 5,
       sourceIntent: { type: "NaturalNtResponse", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Natural 1NT response (no 4-card ${suit === "hearts" ? "heart" : "spade"} support)`,
+      teachingLabel: "1NT response",
       surfaceBindings: bindings,
     }, BERGEN_CTX),
   ];

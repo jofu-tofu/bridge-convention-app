@@ -27,6 +27,7 @@
     alertLabel?: string;
     annotationType?: "alert" | "announce" | "educational";
     meaning?: string;
+    publicConditions?: readonly string[];
   }
 
   /** Annotation styling per ACBL type:
@@ -64,6 +65,7 @@
         alertLabel: hidden ? undefined : bidHistory?.[i]?.alertLabel,
         annotationType: hidden ? undefined : type,
         meaning: bidHistory?.[i]?.meaning,
+        publicConditions: bidHistory?.[i]?.publicConditions,
       });
     }
 
@@ -77,7 +79,7 @@
   let legendOpen = $state(false);
 </script>
 
-<div class="overflow-hidden">
+<div>
   <table class="w-full text-center {compact ? 'text-[--text-label]' : 'text-[--text-detail]'}">
     <caption class="sr-only">Auction sequence</caption>
     <thead>
@@ -146,7 +148,7 @@
                     <span
                       class="text-[--text-annotation] {annotationClass(cell.annotationType)} font-sans italic leading-tight"
                     >{cell.alertLabel}</span>
-                    {#if cell.meaning && (cell.annotationType === "alert" || cell.annotationType === "announce")}
+                    {#if cell.publicConditions?.length && (cell.annotationType === "alert" || cell.annotationType === "announce")}
                       <svg class="w-2.5 h-2.5 text-text-muted/50 shrink-0" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -160,7 +162,9 @@
                                transition-opacity text-[--text-annotation]"
                         role="tooltip"
                       >
-                        {cell.meaning}
+                        {#each cell.publicConditions as condition (condition)}
+                          <div>{condition}</div>
+                        {/each}
                       </div>
                     {/if}
                   </div>

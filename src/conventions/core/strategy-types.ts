@@ -70,6 +70,8 @@ export interface BidResult {
   /** All constraints from the winning surface's clauses, with isPublic flag preserved.
    *  Consumers filter by isPublic as needed. */
   readonly constraints?: readonly FactConstraint[];
+  /** Public hand conditions disclosed to opponents (from isPublic clauses). */
+  readonly publicConditions?: readonly string[];
   readonly handSummary?: string;
   readonly evaluationTrace?: EvaluationTrace;
   /** All candidates the pipeline considered for this auction+hand.
@@ -89,6 +91,8 @@ export interface BidHistoryEntry {
   readonly alertLabel?: string;
   /** Annotation type: alert (conventional), announce (spoken), educational (learning aid). */
   readonly annotationType?: "alert" | "announce" | "educational";
+  /** Public hand conditions disclosed to opponents (from isPublic clauses). */
+  readonly publicConditions?: readonly string[];
   /** Teaching projection snapshot — persisted for review-phase convention analysis.
    *  Present for user bids when the meaning pipeline produced one. */
   readonly teachingProjection?: TeachingProjection;

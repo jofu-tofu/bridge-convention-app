@@ -170,6 +170,8 @@ export interface ServiceBidHistoryEntry {
   };
   readonly alertLabel?: string;
   readonly annotationType?: "alert" | "announce" | "educational";
+  /** Public hand conditions disclosed to opponents (from isPublic clauses). */
+  readonly publicConditions?: readonly string[];
 }
 
 // ── Service-owned inference types ───────────────────────────────────

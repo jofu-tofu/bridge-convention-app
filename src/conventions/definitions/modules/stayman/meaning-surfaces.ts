@@ -93,7 +93,7 @@ export function createStaymanR1FiveFourSurface(sys: SystemConfig): BidMeaning {
     declarationOrder: 1,
     sourceIntent: { type: "StaymanAsk", params: { reason: "five-four-majors" } },
     disclosure: "standard",
-    teachingLabel: "Stayman 2\u2663 (5-4 majors, invitational)",
+    teachingLabel: "Stayman 2\u2663",
   }, STAYMAN_CTX);
 }
 
@@ -447,7 +447,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 1,
     sourceIntent: { type: "ShowFiveCardMajor", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "2\u2665 (5 hearts, 4 spades, invitational)",
+    teachingLabel: "5-4 majors",
   }, STAYMAN_CTX),
 
   createSurface({
@@ -481,7 +481,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 2,
     sourceIntent: { type: "ShowFiveCardMajor", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "2\u2660 (5 spades, 4 hearts, invitational)",
+    teachingLabel: "5-4 majors",
   }, STAYMAN_CTX),
 
   createSurface({

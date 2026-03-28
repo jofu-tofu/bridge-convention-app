@@ -58,6 +58,11 @@ export function buildBidResult(
     value: c.value,
   }));
 
+  // isPublic is the sole predicate — see FactConstraint.isPublic in agreement-module.ts
+  const publicConditions = selected.proposal.clauses
+    .filter((c) => c.isPublic)
+    .map((c) => c.description);
+
   return {
     call: selected.call,
     ruleName: selected.proposal.meaningId,
@@ -65,6 +70,7 @@ export function buildBidResult(
     meaning: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
     alert,
     constraints,
+    publicConditions,
     handSummary: formatHandSummary(context.evaluation),
     evaluationTrace: {
       conventionId: moduleId,

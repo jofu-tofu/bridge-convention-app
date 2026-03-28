@@ -37,7 +37,7 @@ export function createBlackwood4NTSurface(_sys: SystemConfig): BidMeaning {
     declarationOrder: 0,
     sourceIntent: { type: "BlackwoodAsk", params: { feature: "aces" } },
     disclosure: "standard",
-    teachingLabel: "Blackwood 4NT (ask for aces)",
+    teachingLabel: "Blackwood 4NT",
   }, BLACKWOOD_CTX);
 }
 
@@ -136,7 +136,7 @@ export function createBlackwoodR3Surfaces(_sys: SystemConfig): readonly BidMeani
       declarationOrder: 0,
       sourceIntent: { type: "BlackwoodAsk", params: { feature: "kings" } },
       disclosure: "standard",
-      teachingLabel: "5NT (ask for kings — guarantees all aces)",
+      teachingLabel: "Ask for kings",
     }, BLACKWOOD_CTX),
 
     createSurface({
@@ -160,7 +160,7 @@ export function createBlackwoodR3Surfaces(_sys: SystemConfig): readonly BidMeani
       declarationOrder: 2,
       sourceIntent: { type: "BlackwoodSignoff", params: { level: "five" } },
       disclosure: "natural",
-      teachingLabel: "Stop at 5-level (missing aces)",
+      teachingLabel: "Sign off",
     }, BLACKWOOD_CTX),
   ];
 }

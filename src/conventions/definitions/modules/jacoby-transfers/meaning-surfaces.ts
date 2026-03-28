@@ -109,7 +109,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 0,
     sourceIntent: { type: "Signoff", params: { suit: "hearts" } },
     disclosure: "natural",
-    teachingLabel: "Pass (signoff in hearts)",
+    teachingLabel: "Signoff",
   }, TRANSFER_CTX),
 
   createSurface({
@@ -127,7 +127,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
       {
         factId: "hand.suitLength.hearts",
         operator: "gte",
-        value: 6,
+        value: 5,
         rationale: "game in major with guaranteed fit",
         isPublic: true,
       },
@@ -166,11 +166,11 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
         isPublic: true,
       },
     ],
-    band: "should",
+    band: "must",
     declarationOrder: 2,
     sourceIntent: { type: "TransferNTGame", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "3NT (5 hearts, let opener choose)",
+    teachingLabel: "3NT choice",
   }, TRANSFER_CTX),
 
   createSurface({
@@ -248,7 +248,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 0,
     sourceIntent: { type: "Signoff", params: { suit: "spades" } },
     disclosure: "natural",
-    teachingLabel: "Pass (signoff in spades)",
+    teachingLabel: "Signoff",
   }, TRANSFER_CTX),
 
   createSurface({
@@ -266,7 +266,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
       {
         factId: "hand.suitLength.spades",
         operator: "gte",
-        value: 6,
+        value: 5,
         rationale: "game in major with guaranteed fit",
         isPublic: true,
       },
@@ -305,11 +305,11 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
         isPublic: true,
       },
     ],
-    band: "should",
+    band: "must",
     declarationOrder: 2,
     sourceIntent: { type: "TransferNTGame", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "3NT (5 spades, let opener choose)",
+    teachingLabel: "3NT choice",
   }, TRANSFER_CTX),
 
   createSurface({
@@ -388,7 +388,7 @@ export const OPENER_PLACE_HEARTS_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "PlacementCorrection", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "4H (heart fit found)",
+    teachingLabel: "4\u2665 heart fit",
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.PASS_3NT_HEARTS,
@@ -407,7 +407,7 @@ export const OPENER_PLACE_HEARTS_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 1,
     sourceIntent: { type: "PlacementPass", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "Pass (stay in 3NT, no heart fit)",
+    teachingLabel: "Stay in 3NT",
   }, TRANSFER_CTX),
 ];
 
@@ -429,7 +429,7 @@ export const OPENER_PLACE_SPADES_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "PlacementCorrection", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "4S (spade fit found)",
+    teachingLabel: "4\u2660 spade fit",
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.PASS_3NT_SPADES,
@@ -448,7 +448,7 @@ export const OPENER_PLACE_SPADES_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 1,
     sourceIntent: { type: "PlacementPass", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "Pass (stay in 3NT, no spade fit)",
+    teachingLabel: "Stay in 3NT",
   }, TRANSFER_CTX),
 ];
 
@@ -480,7 +480,7 @@ export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): reado
     declarationOrder: 0,
     sourceIntent: { type: "AcceptInvite", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "4\u2665 (accept invite, heart fit)",
+    teachingLabel: "Accept invite",
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_HEARTS,
@@ -506,7 +506,7 @@ export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): reado
     declarationOrder: 1,
     sourceIntent: { type: "AcceptInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "3NT (accept invite, no heart fit)",
+    teachingLabel: "Accept invite",
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.SIGNOFF_WITH_FIT_HEARTS,
@@ -532,7 +532,7 @@ export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): reado
     declarationOrder: 1,
     sourceIntent: { type: "SignoffWithFit", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "3\u2665 (sign off with fit, minimum)",
+    teachingLabel: "Sign off",
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_HEARTS,
@@ -558,7 +558,7 @@ export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): reado
     declarationOrder: 3,
     sourceIntent: { type: "DeclineInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "Pass (decline invite, minimum)",
+    teachingLabel: "Decline invite",
   }, TRANSFER_CTX),
   ];
 }
@@ -589,7 +589,7 @@ export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): reado
     declarationOrder: 0,
     sourceIntent: { type: "AcceptInvite", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "4\u2660 (accept invite, spade fit)",
+    teachingLabel: "Accept invite",
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_SPADES,
@@ -615,7 +615,7 @@ export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): reado
     declarationOrder: 1,
     sourceIntent: { type: "AcceptInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "3NT (accept invite, no spade fit)",
+    teachingLabel: "Accept invite",
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.SIGNOFF_WITH_FIT_SPADES,
@@ -641,7 +641,7 @@ export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): reado
     declarationOrder: 2,
     sourceIntent: { type: "SignoffWithFit", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "3\u2660 (sign off with fit, minimum)",
+    teachingLabel: "Sign off",
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_SPADES,
@@ -667,7 +667,7 @@ export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): reado
     declarationOrder: 3,
     sourceIntent: { type: "DeclineInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "Pass (decline invite, minimum)",
+    teachingLabel: "Decline invite",
   }, TRANSFER_CTX),
   ];
 }
@@ -695,7 +695,7 @@ export function createOpenerAcceptInviteRaiseHeartsSurfaces(sys: SystemConfig): 
     declarationOrder: 0,
     sourceIntent: { type: "AcceptInvite", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "4H (accept invite, heart fit guaranteed)",
+    teachingLabel: "Accept invite",
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_RAISE_HEARTS,
@@ -714,7 +714,7 @@ export function createOpenerAcceptInviteRaiseHeartsSurfaces(sys: SystemConfig): 
     declarationOrder: 1,
     sourceIntent: { type: "DeclineInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "Pass (decline invite, minimum)",
+    teachingLabel: "Decline invite",
   }, TRANSFER_CTX),
   ];
 }
@@ -738,7 +738,7 @@ export function createOpenerAcceptInviteRaiseSpadesSurfaces(sys: SystemConfig): 
     declarationOrder: 0,
     sourceIntent: { type: "AcceptInvite", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "4S (accept invite, spade fit guaranteed)",
+    teachingLabel: "Accept invite",
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_RAISE_SPADES,
@@ -757,7 +757,7 @@ export function createOpenerAcceptInviteRaiseSpadesSurfaces(sys: SystemConfig): 
     declarationOrder: 1,
     sourceIntent: { type: "DeclineInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "Pass (decline invite, minimum)",
+    teachingLabel: "Decline invite",
   }, TRANSFER_CTX),
   ];
 }
