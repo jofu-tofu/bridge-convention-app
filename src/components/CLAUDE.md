@@ -27,7 +27,7 @@ components/
     ConventionSelectScreen.svelte    Convention picker with search + category filter + learn buttons
     LearningScreen.svelte            Module-centric learning screen: sidebar lists modules (filterable by bundle), main content shows conversation flow tree (desktop) + module teaching (principle/tradeoff/mistakes) + surfaces grouped by conversation phase
     PracticeModePicker.svelte        Practice mode selection panel: Decision Drill vs Full Auction cards with start buttons
-    MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible, recursive snippet, depth-capped
+    MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible card, recursive snippet, tap-to-expand accordion for detail (recommendation/disclosure/explanation/clauses)
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     ProfilesScreen.svelte            Read-only base system profiles (SAYC/2-1/Acol) with detail + compare views
