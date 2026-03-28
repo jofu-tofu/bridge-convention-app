@@ -12,7 +12,7 @@ import type { ConventionModule, LocalFsm, ExplanationEntry, BidMeaningClause, Sy
 import {
   moduleSurfaces, getModule, getAllModules, listBundleInputs,
   getBundleInput, AVAILABLE_BASE_SYSTEMS, deriveNeutralDescription,
-  getBaseModuleIds, getSystemConfig,
+  getBaseModuleIds, getSystemConfig, normalizeIntent, matchObs,
 } from "../conventions";
 import { callKey } from "../engine/call-helpers";
 import { formatCall, formatBidReferences } from "../service/display/format";
@@ -315,12 +315,18 @@ function buildPhaseGroups(mod: ConventionModule): readonly PhaseGroupView[] {
 
 // ── Flow Tree Shared Types & Helpers ─────────────────────────────────
 
+interface SourceIntent {
+  readonly type: string;
+  readonly params: Readonly<Record<string, string | number | boolean>>;
+}
+
 interface TaggedSurface {
   meaningId: string;
   ck: string;
   call: Call;
   teachingLabel: string;
   moduleId: string;
+  sourceIntent: SourceIntent;
 }
 
 interface MutableNode {
@@ -406,6 +412,15 @@ function obsMatchesStep(obs: ObsPattern | null, step: ObsPattern): boolean {
   return true;
 }
 
+/**
+ * Check if a surface's sourceIntent produces observations that match a transition's `on` pattern.
+ * Uses normalizeIntent to derive BidActions from the surface, then matchObs for comparison.
+ */
+function surfaceMatchesTransition(surface: TaggedSurface, transOn: ObsPattern): boolean {
+  const actions = normalizeIntent(surface.sourceIntent);
+  return actions.some((action) => matchObs(transOn, action));
+}
+
 /** Build a subtree for one module starting from a given phase. */
 function buildModuleSubtree(
   modId: string,
@@ -428,13 +443,16 @@ function buildModuleSubtree(
   // Collect surfaces at this phase (excluding route-constrained ones)
   const normalStates = states.filter((s) => !s.route);
   const nodes: MutableNode[] = [];
+  const nodeSurfaces: TaggedSurface[] = [];
   const seenCK = new Set<string>();
 
   for (const state of normalStates) {
     for (const surface of state.surfaces) {
       if (seenCK.has(surface.ck)) continue;
       seenCK.add(surface.ck);
-      nodes.push(mkNode(surface, phase, state.turn, parentDepth + 1, counter, undefined, transObs));
+      const node = mkNode(surface, phase, state.turn, parentDepth + 1, counter, undefined, transObs);
+      nodes.push(node);
+      nodeSurfaces.push(surface);
     }
   }
 
@@ -443,8 +461,11 @@ function buildModuleSubtree(
     const childNodes = buildModuleSubtree(modId, trans.to, parentDepth + 1, visited, modulePhaseMap, moduleTransitions, counter, trans.on);
     if (childNodes.length === 0) continue;
 
-    if (nodes.length > 0) {
-      nodes[0]!.children.push(...childNodes);
+    // Match transition to the surface that produces the matching observation
+    const matchIdx = nodeSurfaces.findIndex((s) => surfaceMatchesTransition(s, trans.on));
+    const parent = matchIdx >= 0 ? nodes[matchIdx]! : nodes[0];
+    if (parent) {
+      parent.children.push(...childNodes);
     }
   }
 
@@ -473,6 +494,7 @@ function collectModuleData(mod: ConventionModule): {
       call: s.encoding.defaultCall,
       teachingLabel: s.teachingLabel,
       moduleId: mod.moduleId,
+      sourceIntent: s.sourceIntent,
     }));
     for (const phase of phases) {
       const existing = phaseMap.get(phase);
@@ -548,21 +570,31 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
     if (firstSurface) {
       rootNode = mkNode(firstSurface, mod.local.initial, "opener", 0, counter);
 
+      // Attach R1 responder surfaces from this module first
+      const respStates = states.filter((s) => s.turn === "responder" && !s.route);
+      const openingR1: { node: MutableNode; surface: TaggedSurface }[] = [];
+      for (const state of respStates) {
+        for (const surface of state.surfaces) {
+          const node = mkNode(surface, mod.local.initial, "responder", 1, counter);
+          rootNode.children.push(node);
+          openingR1.push({ node, surface });
+        }
+      }
+
       // Build the opening module's own subtree from initial phase
       const visited = new Set<string>();
       visited.add(mod.local.initial);
       const transitions = moduleTransitions.get(mod.moduleId) ?? [];
       const outTrans = transitions.filter((t) => t.from.includes(mod.local.initial));
       for (const trans of outTrans) {
-        const childNodes = buildModuleSubtree(mod.moduleId, trans.to, 0, visited, modulePhaseMap, moduleTransitions, counter, trans.on);
-        rootNode.children.push(...childNodes);
-      }
+        const childNodes = buildModuleSubtree(mod.moduleId, trans.to, 1, visited, modulePhaseMap, moduleTransitions, counter, trans.on);
+        if (childNodes.length === 0) continue;
 
-      // Also attach R1 responder surfaces from this module
-      const respStates = states.filter((s) => s.turn === "responder" && !s.route);
-      for (const state of respStates) {
-        for (const surface of state.surfaces) {
-          rootNode.children.push(mkNode(surface, mod.local.initial, "responder", 1, counter));
+        const matchingR1 = openingR1.find(({ surface }) => surfaceMatchesTransition(surface, trans.on));
+        if (matchingR1) {
+          matchingR1.node.children.push(...childNodes);
+        } else {
+          rootNode.children.push(...childNodes);
         }
       }
       break;
@@ -581,7 +613,7 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
     if (!states) continue;
 
     const respStates = states.filter((s) => s.turn === "responder" && !s.route);
-    const r1Nodes: MutableNode[] = [];
+    const r1Entries: { node: MutableNode; surface: TaggedSurface }[] = [];
     const seenCK = new Set<string>();
     const transitions = moduleTransitions.get(mod.moduleId) ?? [];
     const firstActiveTrans = transitions.find(
@@ -600,7 +632,7 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
         if (seenCK.has(surface.ck)) continue;
         seenCK.add(surface.ck);
         const r1Node = mkNode(surface, mod.local.initial, "responder", 1, counter, undefined, firstActiveTrans?.on);
-        r1Nodes.push(r1Node);
+        r1Entries.push({ node: r1Node, surface });
         rootNode.children.push(r1Node);
       }
     }
@@ -615,9 +647,12 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
       const childNodes = buildModuleSubtree(mod.moduleId, trans.to, 1, visited, modulePhaseMap, moduleTransitions, counter, trans.on);
       if (childNodes.length === 0) continue;
 
-      // Attach to the first R1 node (they all share the same module)
-      if (r1Nodes.length > 0) {
-        r1Nodes[0]!.children.push(...childNodes);
+      // Match transition to the R1 surface that produces the matching observation
+      const matchingR1 = r1Entries.find(({ surface }) => surfaceMatchesTransition(surface, trans.on));
+      if (matchingR1) {
+        matchingR1.node.children.push(...childNodes);
+      } else if (r1Entries.length > 0) {
+        r1Entries[0]!.node.children.push(...childNodes);
       }
     }
   }
@@ -735,22 +770,33 @@ export function buildModuleFlowTree(moduleId: string): ModuleFlowTreeViewport | 
     rootNode = mkNode(null, mod.local.initial, null, 0, counter, formatModuleName(moduleId));
   }
 
-  // Build subtree from initial phase transitions
-  const visited = new Set<string>();
-  visited.add(mod.local.initial);
-  const outTrans = transitions.filter((t) => t.from.includes(mod.local.initial));
-  for (const trans of outTrans) {
-    const childNodes = buildModuleSubtree(moduleId, trans.to, 0, visited, modulePhaseMap, moduleTransitions, counter, trans.on);
-    rootNode.children.push(...childNodes);
-  }
-
-  // Attach R1 responder surfaces from initial phase
+  // Attach R1 responder surfaces from initial phase first, then match transitions to them
+  const r1Nodes: { node: MutableNode; surface: TaggedSurface }[] = [];
   if (initialStates) {
     const respStates = initialStates.filter((s) => s.turn === "responder" && !s.route);
     for (const state of respStates) {
       for (const surface of state.surfaces) {
-        rootNode.children.push(mkNode(surface, mod.local.initial, "responder", 1, counter));
+        const node = mkNode(surface, mod.local.initial, "responder", 1, counter);
+        rootNode.children.push(node);
+        r1Nodes.push({ node, surface });
       }
+    }
+  }
+
+  // Build subtrees from initial phase transitions and attach to matching R1 surfaces
+  const visited = new Set<string>();
+  visited.add(mod.local.initial);
+  const outTrans = transitions.filter((t) => t.from.includes(mod.local.initial));
+  for (const trans of outTrans) {
+    const childNodes = buildModuleSubtree(moduleId, trans.to, 1, visited, modulePhaseMap, moduleTransitions, counter, trans.on);
+    if (childNodes.length === 0) continue;
+
+    // Match transition to the R1 surface that produces the matching observation
+    const matchingR1 = r1Nodes.find(({ surface }) => surfaceMatchesTransition(surface, trans.on));
+    if (matchingR1) {
+      matchingR1.node.children.push(...childNodes);
+    } else {
+      rootNode.children.push(...childNodes);
     }
   }
 

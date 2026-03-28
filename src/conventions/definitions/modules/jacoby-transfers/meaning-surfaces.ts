@@ -4,6 +4,7 @@ import {
   SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,
+  SYSTEM_RESPONDER_SLAM_VALUES,
   SYSTEM_OPENER_NOT_MINIMUM,
 } from "../../system-fact-vocabulary";
 import { BidSuit } from "../../../../engine/types";
@@ -127,8 +128,8 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
       {
         factId: "hand.suitLength.hearts",
         operator: "gte",
-        value: 5,
-        rationale: "game in major with guaranteed fit",
+        value: 6,
+        rationale: "game in major with long suit",
         isPublic: true,
       },
     ],
@@ -164,6 +165,12 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
         value: false,
         rationale: "balanced enough for NT",
         isPublic: true,
+      },
+      {
+        factId: SYSTEM_RESPONDER_SLAM_VALUES,
+        operator: "boolean",
+        value: false,
+        rationale: "game values, not slam (use 4NT for slam invite)",
       },
     ],
     band: "must",
@@ -226,6 +233,143 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     disclosure: "alert",
     teachingLabel: "2NT invite",
   }, TRANSFER_CTX),
+
+  // ─── New continuations (hearts track) ────────────────────────
+
+  createSurface({
+    meaningId: TRANSFER_MEANING_IDS.INVITE_MAJORS_HEARTS,
+    semanticClassId: TRANSFER_R3_CLASSES.INVITE_MAJORS,
+    encoding: bid(2, BidSuit.Spades),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_INVITE_VALUES,
+        operator: "boolean",
+        value: true,
+        rationale: "invitational values",
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.spades",
+        operator: "gte",
+        value: 5,
+        rationale: "5-5 in the majors",
+        isPublic: true,
+      },
+    ],
+    band: "should",
+    declarationOrder: 5,
+    sourceIntent: { type: "InviteMajorMajor", params: { suit: "spades" } },
+    disclosure: "alert",
+    teachingLabel: "2S invite (5-5 majors)",
+  }, TRANSFER_CTX),
+
+  createSurface({
+    meaningId: TRANSFER_MEANING_IDS.NEW_SUIT_CLUBS_HEARTS,
+    semanticClassId: TRANSFER_R3_CLASSES.NEW_SUIT_GF,
+    encoding: bid(3, BidSuit.Clubs),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
+        operator: "boolean",
+        value: true,
+        rationale: "game forcing",
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.clubs",
+        operator: "gte",
+        value: 4,
+        rationale: "4+ clubs, second suit",
+        isPublic: true,
+      },
+    ],
+    band: "should",
+    declarationOrder: 6,
+    sourceIntent: { type: "NewSuitGameForce", params: { suit: "clubs" } },
+    disclosure: "alert",
+    teachingLabel: "3C game force",
+  }, TRANSFER_CTX),
+
+  createSurface({
+    meaningId: TRANSFER_MEANING_IDS.NEW_SUIT_DIAMONDS_HEARTS,
+    semanticClassId: TRANSFER_R3_CLASSES.NEW_SUIT_GF,
+    encoding: bid(3, BidSuit.Diamonds),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
+        operator: "boolean",
+        value: true,
+        rationale: "game forcing",
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.diamonds",
+        operator: "gte",
+        value: 4,
+        rationale: "4+ diamonds, second suit",
+        isPublic: true,
+      },
+    ],
+    band: "should",
+    declarationOrder: 7,
+    sourceIntent: { type: "NewSuitGameForce", params: { suit: "diamonds" } },
+    disclosure: "alert",
+    teachingLabel: "3D game force",
+  }, TRANSFER_CTX),
+
+  createSurface({
+    meaningId: TRANSFER_MEANING_IDS.SPLINTER_SPADES,
+    semanticClassId: TRANSFER_R3_CLASSES.SPLINTER_SLAM_TRY,
+    encoding: bid(3, BidSuit.Spades),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_SLAM_VALUES,
+        operator: "boolean",
+        value: true,
+        rationale: "slam interest",
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.spades",
+        operator: "lte",
+        value: 1,
+        rationale: "singleton or void in spades",
+        isPublic: true,
+      },
+    ],
+    band: "should",
+    declarationOrder: 8,
+    sourceIntent: { type: "ShortageSlamTry", params: { suit: "spades" } },
+    disclosure: "alert",
+    teachingLabel: "3S splinter (slam try)",
+  }, TRANSFER_CTX),
+
+  createSurface({
+    meaningId: TRANSFER_MEANING_IDS.QUANTITATIVE_HEARTS,
+    semanticClassId: TRANSFER_R3_CLASSES.QUANTITATIVE,
+    encoding: bid(4, BidSuit.NoTrump),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_SLAM_VALUES,
+        operator: "boolean",
+        value: true,
+        rationale: "slam invite values",
+        isPublic: true,
+      },
+      {
+        factId: "bridge.hasShortage",
+        operator: "boolean",
+        value: false,
+        rationale: "balanced for quantitative",
+        isPublic: true,
+      },
+    ],
+    band: "must",
+    declarationOrder: 9,
+    sourceIntent: { type: "QuantitativeSlam", params: { suit: "hearts" } },
+    disclosure: "alert",
+    teachingLabel: "4NT quantitative",
+  }, TRANSFER_CTX),
   ];
 }
 
@@ -266,8 +410,8 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
       {
         factId: "hand.suitLength.spades",
         operator: "gte",
-        value: 5,
-        rationale: "game in major with guaranteed fit",
+        value: 6,
+        rationale: "game in major with long suit",
         isPublic: true,
       },
     ],
@@ -303,6 +447,12 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
         value: false,
         rationale: "balanced enough for NT",
         isPublic: true,
+      },
+      {
+        factId: SYSTEM_RESPONDER_SLAM_VALUES,
+        operator: "boolean",
+        value: false,
+        rationale: "game values, not slam (use 4NT for slam invite)",
       },
     ],
     band: "must",
@@ -364,6 +514,149 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     sourceIntent: { type: "Invite", params: { suit: "spades" } },
     disclosure: "alert",
     teachingLabel: "2NT invite",
+  }, TRANSFER_CTX),
+
+  // ─── New continuations (spades track) ────────────────────────
+
+  createSurface({
+    meaningId: TRANSFER_MEANING_IDS.NEW_SUIT_CLUBS_SPADES,
+    semanticClassId: TRANSFER_R3_CLASSES.NEW_SUIT_GF,
+    encoding: bid(3, BidSuit.Clubs),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
+        operator: "boolean",
+        value: true,
+        rationale: "game forcing",
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.clubs",
+        operator: "gte",
+        value: 4,
+        rationale: "4+ clubs, second suit",
+        isPublic: true,
+      },
+    ],
+    band: "should",
+    declarationOrder: 5,
+    sourceIntent: { type: "NewSuitGameForce", params: { suit: "clubs" } },
+    disclosure: "alert",
+    teachingLabel: "3C game force",
+  }, TRANSFER_CTX),
+
+  createSurface({
+    meaningId: TRANSFER_MEANING_IDS.NEW_SUIT_DIAMONDS_SPADES,
+    semanticClassId: TRANSFER_R3_CLASSES.NEW_SUIT_GF,
+    encoding: bid(3, BidSuit.Diamonds),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
+        operator: "boolean",
+        value: true,
+        rationale: "game forcing",
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.diamonds",
+        operator: "gte",
+        value: 4,
+        rationale: "4+ diamonds, second suit",
+        isPublic: true,
+      },
+    ],
+    band: "should",
+    declarationOrder: 6,
+    sourceIntent: { type: "NewSuitGameForce", params: { suit: "diamonds" } },
+    disclosure: "alert",
+    teachingLabel: "3D game force",
+  }, TRANSFER_CTX),
+
+  createSurface({
+    meaningId: TRANSFER_MEANING_IDS.SLAM_TRY_HEARTS,
+    semanticClassId: TRANSFER_R3_CLASSES.SLAM_TRY_SECOND_MAJOR,
+    encoding: bid(3, BidSuit.Hearts),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_SLAM_VALUES,
+        operator: "boolean",
+        value: true,
+        rationale: "slam interest (stronger than 4H)",
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.hearts",
+        operator: "gte",
+        value: 5,
+        rationale: "5+ hearts with 5+ spades",
+        isPublic: true,
+      },
+    ],
+    band: "should",
+    declarationOrder: 7,
+    sourceIntent: { type: "SlamTrySecondMajor", params: { suit: "hearts" } },
+    disclosure: "alert",
+    teachingLabel: "3H slam try (5-5 majors)",
+  }, TRANSFER_CTX),
+
+  createSurface({
+    meaningId: TRANSFER_MEANING_IDS.GAME_OTHER_MAJOR_SPADES,
+    semanticClassId: TRANSFER_R3_CLASSES.GAME_OTHER_MAJOR,
+    encoding: bid(4, BidSuit.Hearts),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_GAME_VALUES,
+        operator: "boolean",
+        value: true,
+        rationale: "game values",
+        isPublic: true,
+      },
+      {
+        factId: "hand.suitLength.hearts",
+        operator: "gte",
+        value: 5,
+        rationale: "5+ hearts with 5+ spades",
+        isPublic: true,
+      },
+      {
+        factId: SYSTEM_RESPONDER_SLAM_VALUES,
+        operator: "boolean",
+        value: false,
+        rationale: "game values, not slam (use 3H for slam interest)",
+      },
+    ],
+    band: "should",
+    declarationOrder: 8,
+    sourceIntent: { type: "GameInOtherMajor", params: { suit: "hearts" } },
+    disclosure: "alert",
+    teachingLabel: "4H game (5-5 majors)",
+  }, TRANSFER_CTX),
+
+  createSurface({
+    meaningId: TRANSFER_MEANING_IDS.QUANTITATIVE_SPADES,
+    semanticClassId: TRANSFER_R3_CLASSES.QUANTITATIVE,
+    encoding: bid(4, BidSuit.NoTrump),
+    clauses: [
+      {
+        factId: SYSTEM_RESPONDER_SLAM_VALUES,
+        operator: "boolean",
+        value: true,
+        rationale: "slam invite values",
+        isPublic: true,
+      },
+      {
+        factId: "bridge.hasShortage",
+        operator: "boolean",
+        value: false,
+        rationale: "balanced for quantitative",
+        isPublic: true,
+      },
+    ],
+    band: "must",
+    declarationOrder: 9,
+    sourceIntent: { type: "QuantitativeSlam", params: { suit: "spades" } },
+    disclosure: "alert",
+    teachingLabel: "4NT quantitative",
   }, TRANSFER_CTX),
   ];
 }

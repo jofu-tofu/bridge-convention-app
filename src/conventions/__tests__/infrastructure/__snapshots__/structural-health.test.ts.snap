@@ -34,7 +34,7 @@ exports[`per-bundle interference > dont-bundle > interference risk summary is st
 }
 `;
 
-exports[`per-bundle interference > nt-bundle > high-risk encoding collision count is stable 1`] = `13`;
+exports[`per-bundle interference > nt-bundle > high-risk encoding collision count is stable 1`] = `16`;
 
 exports[`per-bundle interference > nt-bundle > interference risk summary is stable 1`] = `
 {

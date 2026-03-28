@@ -42,6 +42,11 @@ export const TRANSFER_MEANING_IDS = {
   NT_GAME_HEARTS: "transfer:nt-game-hearts",
   INVITE_RAISE_HEARTS: "transfer:invite-raise-hearts",
   INVITE_HEARTS: "transfer:invite-hearts",
+  INVITE_MAJORS_HEARTS: "transfer:invite-majors-hearts",
+  NEW_SUIT_CLUBS_HEARTS: "transfer:new-suit-clubs-hearts",
+  NEW_SUIT_DIAMONDS_HEARTS: "transfer:new-suit-diamonds-hearts",
+  SPLINTER_SPADES: "transfer:splinter-spades",
+  QUANTITATIVE_HEARTS: "transfer:quantitative-hearts",
 
   // R3 — responder rebids after spades transfer accepted
   SIGNOFF_SPADES: "transfer:signoff-spades",
@@ -49,6 +54,11 @@ export const TRANSFER_MEANING_IDS = {
   NT_GAME_SPADES: "transfer:nt-game-spades",
   INVITE_RAISE_SPADES: "transfer:invite-raise-spades",
   INVITE_SPADES: "transfer:invite-spades",
+  NEW_SUIT_CLUBS_SPADES: "transfer:new-suit-clubs-spades",
+  NEW_SUIT_DIAMONDS_SPADES: "transfer:new-suit-diamonds-spades",
+  SLAM_TRY_HEARTS: "transfer:slam-try-hearts",
+  GAME_OTHER_MAJOR_SPADES: "transfer:game-other-major-spades",
+  QUANTITATIVE_SPADES: "transfer:quantitative-spades",
 
   // R4 — opener placement after responder's 3NT choice
   CORRECT_TO_4H: "transfer:correct-to-4h",
@@ -93,6 +103,12 @@ export const TRANSFER_R3_CLASSES = {
   INVITE_RAISE: "transfer:invite-raise",
   GAME_IN_MAJOR: "transfer:game-in-major",
   NT_GAME: "transfer:nt-game",
+  INVITE_MAJORS: "transfer:invite-majors",
+  NEW_SUIT_GF: "transfer:new-suit-gf",
+  SPLINTER_SLAM_TRY: "transfer:splinter-slam-try",
+  GAME_OTHER_MAJOR: "transfer:game-other-major",
+  SLAM_TRY_SECOND_MAJOR: "transfer:slam-try-second-major",
+  QUANTITATIVE: "transfer:quantitative",
 } as const;
 
 /** Opener placement semantic class IDs — opener's decision after responder's 3NT or 2NT. */

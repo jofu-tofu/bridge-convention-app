@@ -107,6 +107,14 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
   ["WeakTwoOpen", (p) => [{ act: "open", strain: strain(p), strength: "weak" }]],
   ["OgustAsk", () => [{ act: "inquire", feature: "suitQuality" }]],
   ["InviteRaise", (p) => [{ act: "raise", strain: strain(p), strength: "invitational", feature: "heldSuit" }]],
+
+  // ── Jacoby Transfers (new continuations) ───────────────────────
+  ["InviteMajorMajor", (p) => [{ act: "raise", strain: strain(p), strength: "invitational" }]],
+  ["NewSuitGameForce", (p) => [{ act: "show", feature: "heldSuit", suit: strain(p) }]],
+  ["ShortageSlamTry", (p) => [{ act: "show", feature: "shortage", suit: strain(p) }]],
+  ["QuantitativeSlam", () => [{ act: "raise", strain: "notrump", strength: "slam-invite" }]],
+  ["SlamTrySecondMajor", (p) => [{ act: "show", feature: "heldSuit", suit: strain(p), strength: "slam-invite" }]],
+  ["GameInOtherMajor", (p) => [{ act: "raise", strain: strain(p), strength: "game" }]],
   ["WeakPass", () => [{ act: "pass" }]],
   ["OgustSolid", () => [{ act: "show", feature: "suitQuality", quality: "solid" }]],
   ["OgustMinBad", () => [

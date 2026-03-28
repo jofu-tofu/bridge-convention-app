@@ -137,6 +137,48 @@ const MEANING_EXPLANATIONS: Record<TransferMeaningId, MeaningExplanationEntry> =
     roles: ["pedagogical"],
   },
 
+  // R3 — hearts track new continuations
+  "transfer:invite-majors-hearts": {
+    explanationId: "nt.transfer.inviteMajorsHearts",
+    meaningId: "transfer:invite-majors-hearts",
+    templateKey: "nt.transfer.inviteMajorsHearts.semantic",
+    displayText: "Bid 2\u2660: invitational with 5 hearts and 5 spades, non-forcing",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  "transfer:new-suit-clubs-hearts": {
+    explanationId: "nt.transfer.newSuitClubsHearts",
+    meaningId: "transfer:new-suit-clubs-hearts",
+    templateKey: "nt.transfer.newSuitClubsHearts.semantic",
+    displayText: "Bid 3\u2663: game forcing with 5+ hearts and 4+ clubs",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  "transfer:new-suit-diamonds-hearts": {
+    explanationId: "nt.transfer.newSuitDiamondsHearts",
+    meaningId: "transfer:new-suit-diamonds-hearts",
+    templateKey: "nt.transfer.newSuitDiamondsHearts.semantic",
+    displayText: "Bid 3\u2666: game forcing with 5+ hearts and 4+ diamonds",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  "transfer:splinter-spades": {
+    explanationId: "nt.transfer.splinterSpades",
+    meaningId: "transfer:splinter-spades",
+    templateKey: "nt.transfer.splinterSpades.semantic",
+    displayText: "Bid 3\u2660: singleton/void in spades with slam interest",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  "transfer:quantitative-hearts": {
+    explanationId: "nt.transfer.quantitativeHearts",
+    meaningId: "transfer:quantitative-hearts",
+    templateKey: "nt.transfer.quantitativeHearts.semantic",
+    displayText: "Bid 4NT: quantitative slam invite in hearts or notrump",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
   // R3 — responder rebids after spades transfer accepted
   "transfer:signoff-spades": {
     explanationId: "nt.transfer.signoffSpades",
@@ -175,6 +217,48 @@ const MEANING_EXPLANATIONS: Record<TransferMeaningId, MeaningExplanationEntry> =
     meaningId: "transfer:invite-spades",
     templateKey: "nt.transfer.inviteSpades.semantic",
     displayText: "Bid 2NT: invitational with exactly 5 spades, opener decides",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+
+  // R3 — spades track new continuations
+  "transfer:new-suit-clubs-spades": {
+    explanationId: "nt.transfer.newSuitClubsSpades",
+    meaningId: "transfer:new-suit-clubs-spades",
+    templateKey: "nt.transfer.newSuitClubsSpades.semantic",
+    displayText: "Bid 3\u2663: game forcing with 5+ spades and 4+ clubs",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  "transfer:new-suit-diamonds-spades": {
+    explanationId: "nt.transfer.newSuitDiamondsSpades",
+    meaningId: "transfer:new-suit-diamonds-spades",
+    templateKey: "nt.transfer.newSuitDiamondsSpades.semantic",
+    displayText: "Bid 3\u2666: game forcing with 5+ spades and 4+ diamonds",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  "transfer:slam-try-hearts": {
+    explanationId: "nt.transfer.slamTryHearts",
+    meaningId: "transfer:slam-try-hearts",
+    templateKey: "nt.transfer.slamTryHearts.semantic",
+    displayText: "Bid 3\u2665: 5-5 majors with slam interest (stronger than 4\u2665)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  "transfer:game-other-major-spades": {
+    explanationId: "nt.transfer.gameOtherMajorSpades",
+    meaningId: "transfer:game-other-major-spades",
+    templateKey: "nt.transfer.gameOtherMajorSpades.semantic",
+    displayText: "Bid 4\u2665: game values with 5+ spades and 5+ hearts",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  "transfer:quantitative-spades": {
+    explanationId: "nt.transfer.quantitativeSpades",
+    meaningId: "transfer:quantitative-spades",
+    templateKey: "nt.transfer.quantitativeSpades.semantic",
+    displayText: "Bid 4NT: quantitative slam invite in spades or notrump",
     preferredLevel: "semantic",
     roles: ["pedagogical"],
   },
