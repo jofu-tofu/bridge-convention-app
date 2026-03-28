@@ -83,7 +83,6 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     // ── Session lifecycle ─────────────────────────────────────────
 
     async createSession(config: SessionConfig): Promise<SessionHandle> {
-      console.log("[DEBUG] createSession called", config.conventionId);
       const handle = createHandle();
       const conventionId = config.conventionId;
       const baseConvention = getConvention(conventionId);
@@ -100,7 +99,6 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       }
 
       const baseSystemId = (config.baseSystemId as BaseSystemId) ?? BASE_SYSTEM_SAYC;
-      console.log("[DEBUG] about to assembleNewDrill");
       const drillOptions = {
         ...config.drill,
         ...(config.practiceMode ? { practiceMode: config.practiceMode } : {}),
@@ -115,7 +113,6 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         drillOptions,
         baseSystemId,
       );
-      console.log("[DEBUG] assembleNewDrill done");
 
       const activeSystemConfig = getSystemConfig(baseSystemId);
       const coordinator = createInferenceCoordinator(undefined, activeSystemConfig);
@@ -128,7 +125,6 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         initializeAuction(state, bundle.initialAuction);
       }
 
-      console.log("[DEBUG] createSession returning handle");
       return handle;
     },
 
@@ -139,13 +135,10 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     // ── Drill lifecycle ───────────────────────────────────────────
 
     async startDrill(handle: SessionHandle): Promise<DrillStartResult> {
-      console.log("[DEBUG] startDrill called");
       const state = manager.get(handle);
 
       // Run initial AI bids (no delays — service is transport-neutral)
-      console.log("[DEBUG] about to runInitialAiBids");
       const { aiBids, auctionComplete } = await runInitialAiBids(state, engine);
-      console.log("[DEBUG] runInitialAiBids done", { aiBids: aiBids.length, auctionComplete });
 
       // When playPreference="always" and the auction completed during initial AI bids,
       // the bidding controller transitions directly to PLAYING. Set up the world-class
