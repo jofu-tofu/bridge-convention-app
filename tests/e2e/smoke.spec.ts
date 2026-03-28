@@ -57,6 +57,9 @@ test.describe("convention navigation", () => {
     await page.goto("/");
     await page.getByTestId("practice-bergen-bundle").click();
 
+    // PracticeModePicker is shown for interactive selection; click through it
+    await page.getByTestId("mode-decision-drill").click({ timeout: 5000 });
+
     const phase = page.getByTestId("game-phase");
     await expect(phase).toHaveText("Bidding", { timeout: 10000 });
 
@@ -67,10 +70,12 @@ test.describe("convention navigation", () => {
     await page.goto("/");
     await page.getByTestId("learn-nt-bundle").click();
 
-    await expect(page.locator("h1")).toHaveText("1NT Responses", {
+    await expect(page.locator("h1")).toHaveText("Stayman", {
       timeout: 5000,
     });
-    await expect(page.getByRole("tab", { name: "Study" })).toBeVisible();
+    await expect(
+      page.getByRole("main", { name: "Convention learning" }),
+    ).toBeVisible();
   });
 
   test("URL param ?convention loads game directly", async ({ page }) => {
@@ -90,7 +95,8 @@ test.describe("convention navigation", () => {
 
 test.describe("bidding flow", () => {
   test("bid shows feedback panel", async ({ page }) => {
-    await page.goto("/?convention=bergen-bundle&seed=1");
+    // seed=2: Pass is NOT the correct bid, so clicking Pass triggers feedback
+    await page.goto("/?convention=bergen-bundle&seed=2");
 
     const phase = page.getByTestId("game-phase");
     await expect(phase).toHaveText("Bidding", { timeout: 10000 });
@@ -105,8 +111,8 @@ test.describe("bidding flow", () => {
   test("wrong bid shows feedback with try again or continue", async ({
     page,
   }) => {
-    // Bergen seed=1: pass is likely wrong (Bergen expects a raise)
-    await page.goto("/?convention=bergen-bundle&seed=1");
+    // Bergen seed=2: Pass is wrong (Bergen expects a raise)
+    await page.goto("/?convention=bergen-bundle&seed=2");
 
     const phase = page.getByTestId("game-phase");
     await expect(phase).toHaveText("Bidding", { timeout: 10000 });
