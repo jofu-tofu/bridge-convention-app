@@ -13,9 +13,18 @@ import type { ModuleContext } from "../../../core/surface-builder";
 
 import { NATURAL_NT_MEANING_IDS } from "./ids";
 
+// ─── Thresholds ─────────────────────────────────────────────
+
+/** Convention-intrinsic opening thresholds (standard across SAYC/2-over-1/Acol). */
+export const NATURAL_BIDS_THRESHOLDS = {
+  minClubLength: 3,
+  minDiamondLength: 4,
+  minOpeningHcp: 12,
+} as const;
+
 // ─── Module context ──────────────────────────────────────────
 
-const NATURAL_NT_CTX: ModuleContext = { moduleId: "natural-nt" };
+const NATURAL_BIDS_CTX: ModuleContext = { moduleId: "natural-bids" };
 
 // ─── R1 surfaces ─────────────────────────────────────────────
 
@@ -51,7 +60,7 @@ export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
       sourceIntent: { type: "NTInvite", params: {} },
       disclosure: "natural",
       teachingLabel: "NT invite",
-    }, NATURAL_NT_CTX),
+    }, NATURAL_BIDS_CTX),
 
     createSurface({
       meaningId: NATURAL_NT_MEANING_IDS.TO_3NT,
@@ -83,7 +92,7 @@ export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
       sourceIntent: { type: "NTGame", params: {} },
       disclosure: "natural",
       teachingLabel: "3NT game",
-    }, NATURAL_NT_CTX),
+    }, NATURAL_BIDS_CTX),
   ];
 }
 
@@ -122,6 +131,75 @@ export function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[]
       sourceIntent: { type: "NTOpening", params: {} },
       disclosure: "natural",
       teachingLabel: `${sys.ntOpening.minHcp} to ${sys.ntOpening.maxHcp}`,
-    }, NATURAL_NT_CTX),
+    }, NATURAL_BIDS_CTX),
+  ];
+}
+
+// ─── 1-level suit opening surfaces ──────────────────────────────
+
+export function createSuitOpeningSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+  const { minClubLength, minDiamondLength, minOpeningHcp } = NATURAL_BIDS_THRESHOLDS;
+  const majorMin = sys.openingRequirements.majorSuitMinLength;
+
+  return [
+    createSurface({
+      meaningId: NATURAL_NT_MEANING_IDS.OPEN_1C,
+      semanticClassId: BRIDGE_SEMANTIC_CLASSES.SUIT_OPENING_1C,
+      encoding: bid(1, BidSuit.Clubs),
+      clauses: [
+        { factId: "hand.hcp", operator: "gte", value: minOpeningHcp, isPublic: true },
+        { factId: "hand.clubs", operator: "gte", value: minClubLength, isPublic: true },
+      ],
+      band: "must",
+      declarationOrder: 1,
+      sourceIntent: { type: "SuitOpen", params: { suit: "clubs" } },
+      disclosure: "natural",
+      teachingLabel: `1♣ opening`,
+    }, NATURAL_BIDS_CTX),
+
+    createSurface({
+      meaningId: NATURAL_NT_MEANING_IDS.OPEN_1D,
+      semanticClassId: BRIDGE_SEMANTIC_CLASSES.SUIT_OPENING_1D,
+      encoding: bid(1, BidSuit.Diamonds),
+      clauses: [
+        { factId: "hand.hcp", operator: "gte", value: minOpeningHcp, isPublic: true },
+        { factId: "hand.diamonds", operator: "gte", value: minDiamondLength, isPublic: true },
+      ],
+      band: "must",
+      declarationOrder: 2,
+      sourceIntent: { type: "SuitOpen", params: { suit: "diamonds" } },
+      disclosure: "natural",
+      teachingLabel: `1♦ opening`,
+    }, NATURAL_BIDS_CTX),
+
+    createSurface({
+      meaningId: NATURAL_NT_MEANING_IDS.OPEN_1H,
+      semanticClassId: BRIDGE_SEMANTIC_CLASSES.SUIT_OPENING_1H,
+      encoding: bid(1, BidSuit.Hearts),
+      clauses: [
+        { factId: "hand.hcp", operator: "gte", value: minOpeningHcp, isPublic: true },
+        { factId: "hand.hearts", operator: "gte", value: majorMin, isPublic: true },
+      ],
+      band: "must",
+      declarationOrder: 3,
+      sourceIntent: { type: "SuitOpen", params: { suit: "hearts" } },
+      disclosure: "natural",
+      teachingLabel: `1♥ opening`,
+    }, NATURAL_BIDS_CTX),
+
+    createSurface({
+      meaningId: NATURAL_NT_MEANING_IDS.OPEN_1S,
+      semanticClassId: BRIDGE_SEMANTIC_CLASSES.SUIT_OPENING_1S,
+      encoding: bid(1, BidSuit.Spades),
+      clauses: [
+        { factId: "hand.hcp", operator: "gte", value: minOpeningHcp, isPublic: true },
+        { factId: "hand.spades", operator: "gte", value: majorMin, isPublic: true },
+      ],
+      band: "must",
+      declarationOrder: 4,
+      sourceIntent: { type: "SuitOpen", params: { suit: "spades" } },
+      disclosure: "natural",
+      teachingLabel: `1♠ opening`,
+    }, NATURAL_BIDS_CTX),
   ];
 }

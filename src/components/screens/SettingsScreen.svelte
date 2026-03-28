@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { OpponentMode, PlayProfileId, VulnerabilityDistribution } from "../../service";
-  import { AVAILABLE_BASE_SYSTEMS, DEFAULT_DRILL_TUNING, PLAY_PROFILES } from "../../service";
+  import type { OpponentMode, PlayProfileId, VulnerabilityDistribution, BaseModuleInfo } from "../../service";
+  import { AVAILABLE_BASE_SYSTEMS, DEFAULT_DRILL_TUNING, PLAY_PROFILES, buildBaseModuleInfos } from "../../service";
   import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../shared/vulnerability-labels";
   import type { VulnKey } from "../shared/vulnerability-labels";
   import { getAppStore } from "../../stores/context";
@@ -62,6 +62,8 @@
     return active.map((k) => `${VULN_LABELS[k]} ${vulnPercent(dist[k], total)}%`).join(", ") + ".";
   });
 
+  const baseModules: readonly BaseModuleInfo[] = $derived(buildBaseModuleInfos(appStore.baseSystemId));
+
   const isDefaultVuln = $derived.by(() => {
     const dist = appStore.drillTuning.vulnerabilityDistribution;
     const def = DEFAULT_DRILL_TUNING.vulnerabilityDistribution;
@@ -100,6 +102,24 @@
           </button>
         {/each}
       </div>
+    </section>
+
+    <!-- Base Conventions -->
+    <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5" data-testid="base-conventions">
+      <h2 class="text-base font-semibold text-text-primary mb-1">
+        Base Conventions
+      </h2>
+      <p class="text-sm text-text-secondary mb-3">
+        Always active regardless of which convention you practice.
+      </p>
+      <ul class="space-y-2">
+        {#each baseModules as mod (mod.id)}
+          <li class="flex flex-col px-3 py-2 rounded-[--radius-md] bg-bg-base border border-border-subtle">
+            <span class="text-sm font-medium text-text-primary">{mod.displayName}</span>
+            <span class="text-xs text-text-muted">{mod.description}</span>
+          </li>
+        {/each}
+      </ul>
     </section>
 
     <!-- Vulnerability Distribution -->

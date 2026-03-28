@@ -29,10 +29,10 @@ describe("BidPanel", () => {
     });
     const levelBids = container.querySelector("[data-testid='level-bids']");
     const buttons = levelBids?.querySelectorAll("button");
-    // 1NT (5th button, index 4) should be enabled
-    expect(buttons?.[4]?.disabled).toBe(false);
-    // 1C (1st button, index 0) should be disabled (not in legalCalls)
-    expect(buttons?.[0]?.disabled).toBe(true);
+    // 1NT (1st button, index 0) should be enabled (order: NT, S, H, D, C)
+    expect(buttons?.[0]?.disabled).toBe(false);
+    // 1C (5th button, index 4) should be disabled (not in legalCalls)
+    expect(buttons?.[4]?.disabled).toBe(true);
   });
 
   it("fires onBid callback when legal bid is clicked", async () => {
@@ -85,15 +85,15 @@ describe("BidPanel", () => {
     });
     const levelBids = container.querySelector("[data-testid='level-bids']");
     const buttons = levelBids?.querySelectorAll("button");
-    // First 5 buttons are level 1: C, D, H, S, NT
-    expect(buttons?.[0]?.textContent).toContain("1\u2663"); // 1C
-    expect(buttons?.[1]?.textContent).toContain("1\u2666"); // 1D
+    // First 5 buttons are level 1: NT, S, H, D, C
+    expect(buttons?.[0]?.textContent).toContain("1NT");
+    expect(buttons?.[1]?.textContent).toContain("1\u2660"); // 1S
     expect(buttons?.[2]?.textContent).toContain("1\u2665"); // 1H
-    expect(buttons?.[3]?.textContent).toContain("1\u2660"); // 1S
-    expect(buttons?.[4]?.textContent).toContain("1NT");
+    expect(buttons?.[3]?.textContent).toContain("1\u2666"); // 1D
+    expect(buttons?.[4]?.textContent).toContain("1\u2663"); // 1C
     // Last 5 buttons are level 7
-    expect(buttons?.[30]?.textContent).toContain("7\u2663"); // 7C
-    expect(buttons?.[34]?.textContent).toContain("7NT");
+    expect(buttons?.[30]?.textContent).toContain("7NT");
+    expect(buttons?.[34]?.textContent).toContain("7\u2663"); // 7C
   });
 
   it("applies compact styling when compact=true", () => {

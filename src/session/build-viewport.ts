@@ -43,7 +43,9 @@ import type {
   PlayingViewport,
   ExplanationViewport,
   PlayRecommendation,
+  BidContext,
 } from "../service/response-types";
+import type { PracticeMode } from "./drill-types";
 
 // ── Build Bidding Viewport ──────────────────────────────────────────
 
@@ -59,6 +61,8 @@ export interface BuildBiddingViewportInput {
   readonly currentBidder: Seat;
   /** Active meaning surfaces at the current state (system-card knowledge). */
   readonly activeSurfaces?: readonly BidMeaning[];
+  readonly practiceMode?: PracticeMode;
+  readonly bidContext?: BidContext;
 }
 
 /**
@@ -71,7 +75,7 @@ export function buildBiddingViewport(input: BuildBiddingViewportInput): BiddingV
   const {
     deal, userSeat, auction, bidHistory, legalCalls,
     faceUpSeats, conventionName, isUserTurn, currentBidder,
-    activeSurfaces,
+    activeSurfaces, practiceMode, bidContext,
   } = input;
 
   // Player's hand only
@@ -135,6 +139,8 @@ export function buildBiddingViewport(input: BuildBiddingViewportInput): BiddingV
     biddingOptions,
     isUserTurn,
     currentBidder,
+    practiceMode,
+    bidContext,
   };
 }
 

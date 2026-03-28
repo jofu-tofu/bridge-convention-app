@@ -9,7 +9,7 @@ import { describe, it, expect } from "vitest";
 import { ACOL_SYSTEM_CONFIG, SAYC_SYSTEM_CONFIG } from "../../definitions/system-config";
 import { moduleSurfaces } from "../../core/convention-module";
 import { getModule } from "../../definitions/module-registry";
-import { getBundleInput, resolveBundle } from "../../definitions/system-registry";
+import { getBundleInput, specFromBundle } from "../../definitions/system-registry";
 
 // ── Helpers ──────────────────────────────────────────────────────
 
@@ -32,9 +32,9 @@ function findClause(
 
 // ── Natural NT: 1NT opening surface ──────────────────────────────
 
-describe("Acol 1NT opening surface (natural-nt rules)", () => {
+describe("Acol 1NT opening surface (natural-bids rules)", () => {
   it("has 12+ HCP minimum for 1NT opening", () => {
-    const surface = findSurface("natural-nt", "bridge:1nt-opening");
+    const surface = findSurface("natural-bids", "bridge:1nt-opening");
     expect(surface).toBeDefined();
     const gteClause = findClause(surface!, "hand.hcp", "gte");
     expect(gteClause).toBeDefined();
@@ -42,7 +42,7 @@ describe("Acol 1NT opening surface (natural-nt rules)", () => {
   });
 
   it("has 14 HCP maximum for 1NT opening", () => {
-    const surface = findSurface("natural-nt", "bridge:1nt-opening");
+    const surface = findSurface("natural-bids", "bridge:1nt-opening");
     expect(surface).toBeDefined();
     const lteClause = findClause(surface!, "hand.hcp", "lte");
     expect(lteClause).toBeDefined();
@@ -50,7 +50,7 @@ describe("Acol 1NT opening surface (natural-nt rules)", () => {
   });
 
   it("has teaching label '12 to 14'", () => {
-    const surface = findSurface("natural-nt", "bridge:1nt-opening");
+    const surface = findSurface("natural-bids", "bridge:1nt-opening");
     expect(surface).toBeDefined();
     expect(surface!.teachingLabel).toBe("12 to 14");
   });
@@ -72,7 +72,7 @@ describe("Acol Stayman R1 surface (stayman rules)", () => {
 
 describe("SAYC surfaces remain unchanged", () => {
   it("SAYC 1NT opening has 15+ HCP minimum", () => {
-    const surface = findSurface("natural-nt", "bridge:1nt-opening", SAYC_SYSTEM_CONFIG);
+    const surface = findSurface("natural-bids", "bridge:1nt-opening", SAYC_SYSTEM_CONFIG);
     expect(surface).toBeDefined();
     const gteClause = findClause(surface!, "hand.hcp", "gte");
     expect(gteClause!.value).toBe(15);
@@ -88,11 +88,11 @@ describe("SAYC surfaces remain unchanged", () => {
 
 // ── Acol bundle-level verification (via resolveBundle) ───────────
 
-describe("resolveBundle with Acol has correct thresholds", () => {
-  it("bundle surfaces use Acol thresholds", () => {
+describe("specFromBundle with Acol has correct thresholds", () => {
+  it("spec surfaces include Acol thresholds (natural-bids via base modules)", () => {
     const input = getBundleInput("nt-bundle")!;
-    const bundle = resolveBundle(input, ACOL_SYSTEM_CONFIG);
-    const allSurfaces = bundle.modules.flatMap((m) => moduleSurfaces(m));
+    const spec = specFromBundle(input, ACOL_SYSTEM_CONFIG)!;
+    const allSurfaces = spec.modules.flatMap((m) => moduleSurfaces(m));
     const opening = allSurfaces.find((s) => s.meaningId === "bridge:1nt-opening");
     expect(opening).toBeDefined();
     const gteClause = findClause(opening!, "hand.hcp", "gte");

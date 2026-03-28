@@ -88,7 +88,7 @@ See `docs/design-philosophy.md` for the full set of 10 design principles and sub
 
 Multi-system support (SAYC, 2/1, Acol). Modules are system-agnostic — differences flow through `SystemConfig` → system facts → surface clause evaluation. `SystemConfig` and system fact vocabulary live in `conventions/definitions/`.
 
-**Base modules:** Each base system has 4 always-active modules: `["natural-open", "stayman", "jacoby-transfers", "blackwood"]`. These are merged into every `specFromBundle()` call (strategy layer) but NOT into `resolveBundle()` (deal generation/teaching). Base modules affect bidding strategy only — inert modules (e.g., Stayman during Bergen practice) never activate because their FSM triggers never fire.
+**Base modules:** Each base system has 4 always-active modules: `["natural-bids", "stayman", "jacoby-transfers", "blackwood"]`. These are merged into every `specFromBundle()` call (strategy layer) but NOT into `resolveBundle()` (deal generation/teaching). Base modules affect bidding strategy only — inert modules (e.g., Stayman during Bergen practice) never activate because their FSM triggers never fire.
 
 ## Architecture
 

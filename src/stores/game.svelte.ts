@@ -30,6 +30,7 @@ import type {
   ExplanationViewport,
 } from "../service";
 import type { ViewportBidGrade } from "../service";
+import type { PracticeMode, PlayPreference } from "../service";
 import type { BidFeedbackDTO, PlaySuggestions } from "../service/debug-types";
 import { isValidTransition } from "../service";
 import type { GamePhase } from "../service";
@@ -110,6 +111,20 @@ const EMPTY_EVALUATION: StrategyEvaluation = {
   auctionContext: null,
 };
 
+// ── Grouped phase state types ───────────────────────────────────────
+
+export interface BiddingPhaseState { processing: boolean; error: string | null; debugLog: DebugLogEntry[]; }
+export interface PlayPhaseState { score: number | null; aborted: boolean; showingTrickResult: boolean; processing: boolean; log: PlayLogEntry[]; suggestions: PlaySuggestions; }
+export interface DDSState { solution: DDSolution | null; solving: boolean; error: string | null; }
+export interface InferenceState { playInferences: Record<Seat, ServicePublicBeliefs> | null; publicBeliefState: ServicePublicBeliefState; }
+export interface ViewportCache { bidding: BiddingViewport | null; declarerPrompt: DeclarerPromptViewport | null; playing: PlayingViewport | null; explanation: ExplanationViewport | null; }
+
+function freshBiddingState(): BiddingPhaseState { return { processing: false, error: null, debugLog: [] }; }
+function freshPlayState(aborted = false): PlayPhaseState { return { score: null, aborted, showingTrickResult: false, processing: false, log: [], suggestions: [] }; }
+function freshDDSState(): DDSState { return { solution: null, solving: false, error: null }; }
+function freshInferenceState(): InferenceState { return { playInferences: null, publicBeliefState: { beliefs: {} as Record<Seat, ServicePublicBeliefs>, annotations: [] } }; }
+function freshViewportCache(): ViewportCache { return { bidding: null, declarerPrompt: null, playing: null, explanation: null }; }
+
 // ── Store factory ───────────────────────────────────────────────────
 
 export function createGameStore(
@@ -118,7 +133,7 @@ export function createGameStore(
 ) {
   const delayFn = options?.delayFn ?? delay;
 
-  // ── Session state ─────────────────────────────────────────────
+  // ── Session state (flat — span all phases) ───────────────────
   let activeHandle = $state<SessionHandle | null>(null);
   // Not $state — swapped per-drill, not reactive (components access via closures)
   let activeService: DevServicePort = service;
@@ -127,44 +142,27 @@ export function createGameStore(
   let contract = $state<Contract | null>(null);
   let conventionName = $state("");
   let effectiveUserSeat = $state<Seat | null>(null);
+  let practiceMode = $state<PracticeMode>("decision-drill");
+  let playPreference = $state<PlayPreference>("prompt");
 
-  // ── Bidding state ─────────────────────────────────────────────
-  let biddingProcessing = $state(false);
+  // ── Grouped phase state ─────────────────────────────────────
+  // $state.raw required — deep proxy breaks reference equality. Do not fold into BiddingPhaseState.
   let bidFeedback = $state.raw<BidFeedback | null>(null);
-  let biddingError = $state<string | null>(null);
-  let debugLog = $state<DebugLogEntry[]>([]);
 
-  // ── Play state ────────────────────────────────────────────────
-  let score = $state<number | null>(null);
-  let playAborted = $state(false);
-  let isShowingTrickResult = $state(false);
-  let playProcessing = $state(false);
-  let playLog = $state<PlayLogEntry[]>([]);
-  let playSuggestions = $state<PlaySuggestions>([]);
+  let bidding = $state<BiddingPhaseState>(freshBiddingState());
+  let play = $state<PlayPhaseState>(freshPlayState());
+  let dds = $state<DDSState>(freshDDSState());
+  let inference = $state<InferenceState>(freshInferenceState());
+  let viewports = $state<ViewportCache>(freshViewportCache());
 
-  // ── DDS state ─────────────────────────────────────────────────
-  let ddsSolution = $state<DDSolution | null>(null);
-  let ddsSolving = $state(false);
-  let ddsError = $state<string | null>(null);
-
-  // ── Inference state ───────────────────────────────────────────
-  let playInferences = $state<Record<Seat, ServicePublicBeliefs> | null>(null);
-  let publicBeliefState = $state<ServicePublicBeliefState>({ beliefs: {} as Record<Seat, ServicePublicBeliefs>, annotations: [] });
-
-  // ── Cached viewports ───────────────────────────────────────────
-  let cachedBiddingViewport = $state<BiddingViewport | null>(null);
-  let cachedDeclarerPromptViewport = $state<DeclarerPromptViewport | null>(null);
-  let cachedPlayingViewport = $state<PlayingViewport | null>(null);
-  let cachedExplanationViewport = $state<ExplanationViewport | null>(null);
-
-  // ── Bidding animation state ──────────────────────────────────
-  // Animation overlay: controls incremental reveal of AI bids from the viewport.
+  // ── Animation state (flat — independent lifecycles) ─────────
+  // biddingAnim: controls incremental reveal of AI bids from the viewport.
   // When non-null, displayedAuctionEntries slices the viewport's entries.
   let biddingAnim = $state<{ totalAiBids: number; revealed: number } | null>(null);
 
   // Viewport-derived display values — single source of truth for bidding UI
   const displayedAuctionEntries = $derived.by((): readonly AuctionEntryView[] => {
-    const vp = cachedBiddingViewport;
+    const vp = viewports.bidding;
     if (!vp) return [];
     if (!biddingAnim) return vp.auctionEntries;
     const baseCount = vp.auctionEntries.length - biddingAnim.totalAiBids;
@@ -172,12 +170,12 @@ export function createGameStore(
   });
 
   const displayedLegalCalls = $derived.by((): readonly Call[] => {
-    if (biddingProcessing || biddingAnim) return [];
-    return cachedBiddingViewport?.legalCalls ?? [];
+    if (bidding.processing || biddingAnim) return [];
+    return viewports.bidding?.legalCalls ?? [];
   });
 
   const displayedCurrentBidder = $derived.by((): Seat | null => {
-    const vp = cachedBiddingViewport;
+    const vp = viewports.bidding;
     if (!vp) return null;
     if (!biddingAnim) return vp.currentBidder;
     // During animation, derive current bidder from the last displayed entry
@@ -187,11 +185,11 @@ export function createGameStore(
   });
 
   const displayedIsUserTurn = $derived(
-    !biddingProcessing &&
+    !bidding.processing &&
     !biddingAnim &&
     phase === "BIDDING" &&
-    cachedBiddingViewport !== null &&
-    cachedBiddingViewport.isUserTurn,
+    viewports.bidding !== null &&
+    viewports.bidding.isUserTurn,
   );
 
   // ── Play animation state ─────────────────────────────────────
@@ -200,7 +198,7 @@ export function createGameStore(
 
   const displayedCurrentTrick = $derived.by((): readonly PlayedCard[] => {
     if (animatedTrickOverride) return animatedTrickOverride;
-    const vp = cachedPlayingViewport;
+    const vp = viewports.playing;
     if (!vp) return [];
     return vp.currentTrick;
   });
@@ -209,16 +207,16 @@ export function createGameStore(
     if (!activeHandle) return;
     switch (phase) {
       case "BIDDING":
-        cachedBiddingViewport = await activeService.getBiddingViewport(activeHandle);
+        viewports.bidding = await activeService.getBiddingViewport(activeHandle);
         break;
       case "DECLARER_PROMPT":
-        cachedDeclarerPromptViewport = await activeService.getDeclarerPromptViewport(activeHandle);
+        viewports.declarerPrompt = await activeService.getDeclarerPromptViewport(activeHandle);
         break;
       case "PLAYING":
-        cachedPlayingViewport = await activeService.getPlayingViewport(activeHandle);
+        viewports.playing = await activeService.getPlayingViewport(activeHandle);
         break;
       case "EXPLANATION":
-        cachedExplanationViewport = await activeService.getExplanationViewport(activeHandle);
+        viewports.explanation = await activeService.getExplanationViewport(activeHandle);
         break;
     }
   }
@@ -226,7 +224,7 @@ export function createGameStore(
   // ── Derived ───────────────────────────────────────────────────
 
   const userSeat = $derived<Seat | null>(
-    cachedBiddingViewport?.seat ?? cachedDeclarerPromptViewport?.userSeat ?? cachedPlayingViewport?.userSeat ?? cachedExplanationViewport?.userSeat ?? null,
+    viewports.bidding?.seat ?? viewports.declarerPrompt?.userSeat ?? viewports.playing?.userSeat ?? viewports.explanation?.userSeat ?? null,
   );
 
   // Grade-acceptance policy: only near-miss/incorrect block.
@@ -235,6 +233,36 @@ export function createGameStore(
     bidFeedback !== null &&
       (bidFeedback.grade === "near-miss" || bidFeedback.grade === "incorrect"),
   );
+
+  // ── Practice mode helpers ────────────────────────────────────
+
+  /**
+   * Handle auto-transition from DECLARER_PROMPT based on playPreference.
+   * Returns true if an auto-transition was performed (caller should not
+   * do normal DECLARER_PROMPT handling).
+   */
+  async function maybeAutoTransitionFromPrompt(handle: SessionHandle): Promise<boolean> {
+    if (playPreference === "prompt") return false;
+
+    if (playPreference === "always") {
+      // Auto-accept play without showing the declarer prompt
+      acceptPrompt();
+      return true;
+    }
+
+    if (playPreference === "skip") {
+      // Auto-skip to explanation without showing the declarer prompt
+      try {
+        await activeService.acceptPrompt(handle, "skip");
+      } catch (err) {
+        console.error("auto-skip acceptPrompt failed:", err);
+      }
+      transitionToExplanation();
+      return true;
+    }
+
+    return false;
+  }
 
   // ── Phase helpers ─────────────────────────────────────────────
 
@@ -294,31 +322,25 @@ export function createGameStore(
   // ── DDS helpers ───────────────────────────────────────────────
 
   async function triggerDDSSolve() {
-    if (!activeHandle || ddsSolving) return;
+    if (!activeHandle || dds.solving) return;
     const handle = activeHandle;
-    ddsSolving = true;
-    ddsError = null;
-    ddsSolution = null;
+    dds.solving = true;
+    dds.error = null;
+    dds.solution = null;
 
     try {
       const result = await activeService.getDDSSolution(handle);
       if (activeHandle !== handle) return; // cancelled
-      ddsSolution = result.solution;
-      if (result.error) ddsError = result.error;
+      dds.solution = result.solution;
+      if (result.error) dds.error = result.error;
     } catch (err: unknown) {
       if (activeHandle !== handle) return;
-      ddsError = err instanceof Error ? err.message : String(err);
+      dds.error = err instanceof Error ? err.message : String(err);
     } finally {
       if (activeHandle === handle) {
-        ddsSolving = false;
+        dds.solving = false;
       }
     }
-  }
-
-  function resetDDS() {
-    ddsSolution = null;
-    ddsSolving = false;
-    ddsError = null;
   }
 
   // ── Play helpers ──────────────────────────────────────────────
@@ -326,9 +348,9 @@ export function createGameStore(
   async function fetchPlaySuggestions(handle: SessionHandle) {
     if (!import.meta.env.DEV) return;
     try {
-      playSuggestions = await activeService.getPlaySuggestions(handle);
+      play.suggestions = await activeService.getPlaySuggestions(handle);
     } catch {
-      playSuggestions = [];
+      play.suggestions = [];
     }
   }
 
@@ -340,62 +362,77 @@ export function createGameStore(
     handle: SessionHandle,
     aiPlays: readonly { seat: Seat; card: Card; reason: string; trickComplete?: boolean }[],
     baseTrick: readonly PlayedCard[],
-    options?: { keepFinalTrick?: boolean },
-  ): Promise<boolean> {
-    if (aiPlays.length === 0) return true;
+  ): Promise<{ ok: boolean; finalCompletedTrick: readonly PlayedCard[] | null }> {
+    if (aiPlays.length === 0) return { ok: true, finalCompletedTrick: null };
     // Start with the cards already visible in the current trick
     const trickBuffer: PlayedCard[] = [...baseTrick];
     animatedTrickOverride = trickBuffer;
+    let finalCompletedTrick: readonly PlayedCard[] | null = null;
 
     for (const aiPlay of aiPlays) {
       await delayFn(AI_PLAY_DELAY);
-      if (activeHandle !== handle || playAborted) return false;
+      if (activeHandle !== handle || play.aborted) return { ok: false, finalCompletedTrick: null };
 
       // Add the AI card to the display buffer
       trickBuffer.push({ card: aiPlay.card, seat: aiPlay.seat });
       animatedTrickOverride = [...trickBuffer];
 
-      playLog = [...playLog, {
+      play.log = [...play.log, {
         seat: aiPlay.seat, card: aiPlay.card, reason: aiPlay.reason,
-        trickIndex: cachedPlayingViewport?.tricks.length ?? 0,
+        trickIndex: viewports.playing?.tricks.length ?? 0,
       }];
 
       // Pause at trick boundaries (4th card in trick)
       if (aiPlay.trickComplete) {
-        isShowingTrickResult = true;
-        await delayFn(TRICK_PAUSE);
-        if (activeHandle !== handle || playAborted) return false;
+        play.showingTrickResult = true;
 
-        // Keep the final trick visible when play is about to complete
+        // Capture the completed trick if this is the last AI play
         const isLastAiPlay = aiPlay === aiPlays[aiPlays.length - 1];
-        if (options?.keepFinalTrick && isLastAiPlay) {
-          // Leave trick buffer and isShowingTrickResult as-is
-          break;
+        if (isLastAiPlay) {
+          finalCompletedTrick = [...trickBuffer];
         }
 
-        isShowingTrickResult = false;
+        await delayFn(TRICK_PAUSE);
+        if (activeHandle !== handle || play.aborted) return { ok: false, finalCompletedTrick: null };
+
+        play.showingTrickResult = false;
         // Clear the trick buffer for the next trick
         trickBuffer.length = 0;
         animatedTrickOverride = [...trickBuffer];
       }
     }
 
-    if (!options?.keepFinalTrick) {
-      animatedTrickOverride = null;
-    }
-    return true;
+    animatedTrickOverride = null;
+    return { ok: true, finalCompletedTrick };
+  }
+
+  /**
+   * Show the final completed trick briefly, then transition to review.
+   */
+  async function showFinalTrickAndTransition(
+    handle: SessionHandle,
+    finalTrick: readonly PlayedCard[],
+    resultScore: number | null,
+  ): Promise<void> {
+    animatedTrickOverride = finalTrick;
+    play.showingTrickResult = true;
+    await delayFn(TRICK_PAUSE);
+    if (activeHandle !== handle || play.aborted) return;
+    play.score = resultScore;
+    animatedTrickOverride = null;
+    transitionToExplanation();
   }
 
   async function userPlayCardViaService(card: Card, seat: Seat) {
     if (!activeHandle) return;
-    if (playProcessing || playAborted) return;
+    if (play.processing || play.aborted) return;
 
     const handle = activeHandle;
-    playProcessing = true;
+    play.processing = true;
     try {
       // Snapshot the current trick before the service processes the play
-      const trickBeforePlay: PlayedCard[] = cachedPlayingViewport
-        ? [...cachedPlayingViewport.currentTrick]
+      const trickBeforePlay: PlayedCard[] = viewports.playing
+        ? [...viewports.playing.currentTrick]
         : [];
 
       const result = await activeService.playCard(handle, card, seat);
@@ -406,7 +443,7 @@ export function createGameStore(
       // When play completes, skip viewport refresh to keep hands visible during
       // the last trick animation (otherwise all hands show as empty)
       if (!result.playComplete) {
-        cachedPlayingViewport = await activeService.getPlayingViewport(handle);
+        viewports.playing = await activeService.getPlayingViewport(handle);
         if (activeHandle !== handle) return;
       }
 
@@ -416,37 +453,50 @@ export function createGameStore(
       // If the user's card completed the trick (4th card), pause to show it
       if (baseTrick.length === 4) {
         animatedTrickOverride = baseTrick;
-        isShowingTrickResult = true;
+        play.showingTrickResult = true;
         await delayFn(TRICK_PAUSE);
-        if (activeHandle !== handle || playAborted) return;
+        if (activeHandle !== handle || play.aborted) return;
 
         if (!result.playComplete) {
-          isShowingTrickResult = false;
+          play.showingTrickResult = false;
           animatedTrickOverride = null;
           // Start fresh for AI plays in the next trick
-          const ok = await animateAiPlays(handle, result.aiPlays, []);
+          const { ok } = await animateAiPlays(handle, result.aiPlays, []);
           if (!ok) return;
         }
         // When play completes, keep the last trick visible on the table
       } else {
-        // User's card didn't complete the trick — animate AI plays continuing from the base
-        const ok = await animateAiPlays(handle, result.aiPlays, baseTrick, { keepFinalTrick: result.playComplete });
+        // User's card didn't complete the trick — AI continues
+        const { ok, finalCompletedTrick } = await animateAiPlays(handle, result.aiPlays, baseTrick);
         if (!ok) return;
+
+        if (result.playComplete) {
+          // AI completed the final trick. finalCompletedTrick should be non-null here
+          // because playComplete + baseTrick.length < 4 means AI played the completing card.
+          // Guard defensively in case the service contract changes.
+          if (finalCompletedTrick) {
+            await showFinalTrickAndTransition(handle, finalCompletedTrick, result.score);
+          } else {
+            play.score = result.score;
+            transitionToExplanation();
+          }
+          return;
+        }
       }
 
-      // Handle play completion
+      // Handle play completion (baseTrick.length === 4 branch)
       if (result.playComplete) {
-        score = result.score;
-        playSuggestions = [];
+        play.score = result.score;
+        play.suggestions = [];
         transitionToExplanation();
       } else {
-        // Refresh viewport for final state
-        cachedPlayingViewport = await activeService.getPlayingViewport(handle);
+        // Normal mid-game — refresh viewport for next turn
+        viewports.playing = await activeService.getPlayingViewport(handle);
         if (activeHandle !== handle) return;
-        await fetchPlaySuggestions(handle);
+        void fetchPlaySuggestions(handle);
       }
     } finally {
-      playProcessing = false;
+      play.processing = false;
       animatedTrickOverride = null;
       await tick();
     }
@@ -456,7 +506,7 @@ export function createGameStore(
 
   async function userBidViaService(call: Call) {
     if (!activeHandle) return;
-    if (biddingProcessing) return;
+    if (bidding.processing) return;
     if (!displayedIsUserTurn) return;
 
     // Clear non-blocking feedback from previous bid (acceptable/correct-not-preferred)
@@ -465,7 +515,7 @@ export function createGameStore(
     }
 
     const handle = activeHandle;
-    biddingProcessing = true;
+    bidding.processing = true;
     try {
       const result = await activeService.submitBid(handle, call);
       if (activeHandle !== handle) return; // cancelled
@@ -480,7 +530,7 @@ export function createGameStore(
         }
         if (import.meta.env.DEV) {
           const log = await activeService.getDebugLog(handle);
-          debugLog = [...log] as DebugLogEntry[];
+          bidding.debugLog = [...log] as DebugLogEntry[];
         }
         await tick();
         return;
@@ -499,12 +549,12 @@ export function createGameStore(
 
       // Update viewport — always non-null for accepted bids (PR 0 fix)
       if (result.nextViewport) {
-        cachedBiddingViewport = result.nextViewport;
+        viewports.bidding = result.nextViewport;
       }
 
       if (import.meta.env.DEV) {
         const log = await activeService.getDebugLog(handle);
-        debugLog = [...log] as DebugLogEntry[];
+        bidding.debugLog = [...log] as DebugLogEntry[];
       }
 
       // Animate AI bids via incremental reveal
@@ -520,7 +570,7 @@ export function createGameStore(
       }
 
       // Fetch belief state from service (single source of truth for inference)
-      publicBeliefState = await activeService.getPublicBeliefState(handle);
+      inference.publicBeliefState = await activeService.getPublicBeliefState(handle);
       if (activeHandle !== handle) return;
 
       // Handle phase transition (auction complete)
@@ -529,28 +579,34 @@ export function createGameStore(
       if (activeHandle !== handle) return;
 
       if (phaseTransitioned) {
-        playInferences = await activeService.capturePlayInferences(handle);
+        inference.playInferences = await activeService.capturePlayInferences(handle);
         if (activeHandle !== handle) return;
         const servicePhase = await activeService.getPhase(handle);
         if (activeHandle !== handle) return;
         if (servicePhase === "DECLARER_PROMPT") {
           const dpvp = await activeService.getDeclarerPromptViewport(handle);
           if (activeHandle !== handle) return;
-          cachedDeclarerPromptViewport = dpvp;
+          viewports.declarerPrompt = dpvp;
           contract = dpvp?.contract ?? null;
           effectiveUserSeat = userSeat;
           transitionTo("DECLARER_PROMPT");
+          const autoHandled = await maybeAutoTransitionFromPrompt(handle);
+          if (autoHandled && activeHandle !== handle) return;
         } else if (servicePhase === "EXPLANATION") {
-          contract = null;
+          // Fetch explanation viewport first so we can capture the contract
+          // (non-null when playPreference="skip" bypassed DECLARER_PROMPT).
+          viewports.explanation = await activeService.getExplanationViewport(handle);
+          if (activeHandle !== handle) return;
+          contract = viewports.explanation?.contract ?? null;
           transitionToExplanation();
         }
         await tick();
         return;
       }
     } catch (e) {
-      biddingError = e instanceof Error ? e.message : "Unknown error during bid";
+      bidding.error = e instanceof Error ? e.message : "Unknown error during bid";
     } finally {
-      biddingProcessing = false;
+      bidding.processing = false;
       await tick();
     }
   }
@@ -566,12 +622,12 @@ export function createGameStore(
 
     // Transition to PLAYING immediately for responsive UI
     if (!transitionTo("PLAYING")) return;
-    playAborted = false;
+    play.aborted = false;
     animatedTrickOverride = null;
-    score = null;
-    isShowingTrickResult = false;
-    playProcessing = false;
-    playLog = [];
+    play.score = null;
+    play.showingTrickResult = false;
+    play.processing = false;
+    play.log = [];
 
     void (async () => {
       try {
@@ -580,18 +636,18 @@ export function createGameStore(
         if (activeHandle !== handle) return;
 
         // Fetch viewport (includes any AI plays already applied)
-        cachedPlayingViewport = await activeService.getPlayingViewport(handle);
+        viewports.playing = await activeService.getPlayingViewport(handle);
         if (activeHandle !== handle) return;
 
         // Animate initial AI plays (e.g., opening lead by AI)
         const aiPlays = result.aiPlays ?? [];
         if (aiPlays.length > 0) {
-          const ok = await animateAiPlays(handle, aiPlays, []);
+          const { ok } = await animateAiPlays(handle, aiPlays, []);
           if (!ok) return;
         }
 
         // Fetch play suggestions for the user's first turn
-        await fetchPlaySuggestions(handle);
+        void fetchPlaySuggestions(handle);
       } catch (err) {
         console.error('acceptPlay failed:', err);
       }
@@ -643,47 +699,26 @@ export function createGameStore(
     contract = null;
     effectiveUserSeat = null;
     conventionName = "";
+    practiceMode = "decision-drill";
+    playPreference = "prompt";
 
-    // Bidding
-    biddingProcessing = false;
+    // Grouped state
+    bidding = freshBiddingState();
     bidFeedback = null;
-    biddingError = null;
-    debugLog = [];
-
-    // Play
-    playAborted = true;
-    score = null;
-    isShowingTrickResult = false;
-    playProcessing = false;
-    playLog = [];
-    playSuggestions = [];
-
-    // DDS
-    resetDDS();
+    play = freshPlayState(true); // aborted=true cancels in-flight animations
+    dds = freshDDSState();
+    inference = freshInferenceState();
+    viewports = freshViewportCache();
 
     // Animation
     biddingAnim = null;
     animatedTrickOverride = null;
-
-    // Cached viewports
-    cachedBiddingViewport = null;
-    cachedDeclarerPromptViewport = null;
-    cachedPlayingViewport = null;
-    cachedExplanationViewport = null;
-
-    // Inference
-    playInferences = null;
-    publicBeliefState = { beliefs: {} as Record<Seat, ServicePublicBeliefs>, annotations: [] };
   }
 
   function resetPlay() {
-    playAborted = true;
-    score = null;
-    isShowingTrickResult = false;
-    playProcessing = false;
-    playLog = [];
+    play = freshPlayState(true); // aborted=true cancels in-flight animations
     animatedTrickOverride = null;
-    cachedPlayingViewport = null;
+    viewports.playing = null; // direct property mutation — fine-grained
   }
 
   // ── Return ────────────────────────────────────────────────────
@@ -695,12 +730,14 @@ export function createGameStore(
     get deal() { return deal; },
     get phase() { return phase; },
     get contract(): Contract | null {
-      if (cachedDeclarerPromptViewport) return cachedDeclarerPromptViewport.contract;
-      if (cachedPlayingViewport) return cachedPlayingViewport.contract;
-      if (cachedExplanationViewport) return cachedExplanationViewport.contract;
+      if (viewports.declarerPrompt) return viewports.declarerPrompt.contract;
+      if (viewports.playing) return viewports.playing.contract;
+      if (viewports.explanation) return viewports.explanation.contract;
       return contract; // fallback during transitions
     },
     get effectiveUserSeat() { return effectiveUserSeat; },
+    get practiceMode() { return practiceMode; },
+    get playPreference() { return playPreference; },
     get playUserSeat(): Seat {
       return effectiveUserSeat ?? userSeat ?? Seat.South;
     },
@@ -710,7 +747,7 @@ export function createGameStore(
 
     // Bidding state — always viewport-derived
     get auction(): Auction {
-      if (cachedBiddingViewport) {
+      if (viewports.bidding) {
         return {
           entries: displayedAuctionEntries.map(e => ({ seat: e.seat, call: e.call })),
           isComplete: phase !== "BIDDING",
@@ -722,7 +759,7 @@ export function createGameStore(
       return displayedCurrentBidder;
     },
     get bidHistory(): BidHistoryEntry[] {
-      if (cachedBiddingViewport) {
+      if (viewports.bidding) {
         return displayedAuctionEntries.map(e => ({
           seat: e.seat,
           call: e.call,
@@ -733,7 +770,7 @@ export function createGameStore(
       }
       return [];
     },
-    get isProcessing() { return biddingProcessing || playProcessing; },
+    get isProcessing() { return bidding.processing || play.processing; },
     get isUserTurn() {
       return displayedIsUserTurn;
     },
@@ -745,50 +782,50 @@ export function createGameStore(
 
     // Play state — always viewport-derived
     get tricks() {
-      const vp = cachedPlayingViewport;
+      const vp = viewports.playing;
       return vp ? vp.tricks : [];
     },
     get currentTrick() {
-      return cachedPlayingViewport ? displayedCurrentTrick : [];
+      return viewports.playing ? displayedCurrentTrick : [];
     },
     get currentPlayer() {
-      const vp = cachedPlayingViewport;
+      const vp = viewports.playing;
       return vp ? vp.currentPlayer : null;
     },
     get declarerTricksWon() {
-      const vp = cachedPlayingViewport;
+      const vp = viewports.playing;
       return vp ? vp.declarerTricksWon : 0;
     },
     get defenderTricksWon() {
-      const vp = cachedPlayingViewport;
+      const vp = viewports.playing;
       return vp ? vp.defenderTricksWon : 0;
     },
     get dummySeat() {
-      const vp = cachedPlayingViewport;
+      const vp = viewports.playing;
       return vp ? partnerSeat(vp.contract?.declarer ?? Seat.North) : null;
     },
-    get score() { return score; },
+    get score() { return play.score; },
     get trumpSuit() {
-      const vp = cachedPlayingViewport;
+      const vp = viewports.playing;
       return vp ? vp.trumpSuit : undefined;
     },
     get legalPlaysForCurrentPlayer() {
-      const vp = cachedPlayingViewport;
+      const vp = viewports.playing;
       return vp ? [...vp.legalPlays] : [];
     },
     get userControlledSeats() {
-      const vp = cachedPlayingViewport;
+      const vp = viewports.playing;
       return vp ? [...vp.userControlledSeats] : [];
     },
     get remainingCardsPerSeat() {
-      const vp = cachedPlayingViewport;
+      const vp = viewports.playing;
       return vp ? (vp.remainingCards ?? {}) : {};
     },
 
     // DDS state
-    get ddsSolution() { return ddsSolution; },
-    get ddsSolving() { return ddsSolving; },
-    get ddsError() { return ddsError; },
+    get ddsSolution() { return dds.solution; },
+    get ddsSolving() { return dds.solving; },
+    get ddsError() { return dds.error; },
 
     // Prompt state
     get isDefenderPrompt() {
@@ -806,7 +843,7 @@ export function createGameStore(
     get faceUpSeats(): ReadonlySet<Seat> { return getFaceUpSeats(); },
 
     // ── Viewport getters ──────────────────────────────────────
-    get biddingViewport() { return cachedBiddingViewport; },
+    get biddingViewport() { return viewports.bidding; },
     get viewportFeedback(): ViewportBidFeedback | null {
       const fb = bidFeedback;
       if (!fb) return null;
@@ -817,9 +854,9 @@ export function createGameStore(
       if (!fb) return null;
       return fb.teaching;
     },
-    get declarerPromptViewport() { return cachedDeclarerPromptViewport; },
-    get playingViewport() { return cachedPlayingViewport; },
-    get explanationViewport() { return cachedExplanationViewport; },
+    get declarerPromptViewport() { return viewports.declarerPrompt; },
+    get playingViewport() { return viewports.playing; },
+    get explanationViewport() { return viewports.explanation; },
 
     // Namespaced sub-store accessors (backward compat) — delegates to top-level getters
     get bidding() {
@@ -836,7 +873,7 @@ export function createGameStore(
       };
     },
     get play() {
-      const vp = cachedPlayingViewport;
+      const vp = viewports.playing;
       return {
         get tricks() { return vp ? vp.tricks : []; },
         get currentTrick() { return vp ? displayedCurrentTrick : []; },
@@ -844,26 +881,26 @@ export function createGameStore(
         get declarerTricksWon() { return vp ? vp.declarerTricksWon : 0; },
         get defenderTricksWon() { return vp ? vp.defenderTricksWon : 0; },
         get dummySeat() { return vp ? partnerSeat(vp.contract?.declarer ?? Seat.North) : null; },
-        get score() { return score; },
+        get score() { return play.score; },
         get trumpSuit() { return vp ? vp.trumpSuit : undefined; },
       };
     },
     get dds() {
       return {
-        get solution() { return ddsSolution; },
-        get solving() { return ddsSolving; },
-        get error() { return ddsError; },
+        get solution() { return dds.solution; },
+        get solving() { return dds.solving; },
+        get error() { return dds.error; },
       };
     },
 
     // Public belief state
-    get publicBeliefState(): ServicePublicBeliefState { return publicBeliefState; },
+    get publicBeliefState(): ServicePublicBeliefState { return inference.publicBeliefState; },
 
     // Debug observability
-    get debugLog() { return debugLog; },
-    get playLog() { return playLog; },
-    get playSuggestions() { return playSuggestions; },
-    get playInferences() { return playInferences; },
+    get debugLog() { return bidding.debugLog; },
+    get playLog() { return play.log; },
+    get playSuggestions() { return play.suggestions; },
+    get playInferences() { return inference.playInferences; },
     get inferenceTimeline(): readonly ServiceInferenceSnapshot[] {
       if (!activeHandle) return [];
       // Inference timeline is fetched from service when needed — return empty for now
@@ -881,7 +918,7 @@ export function createGameStore(
     },
 
     skipToReview(): void {
-      playAborted = true;
+      play.aborted = true;
       if (activeHandle) {
         activeService.skipToReview(activeHandle)
           .then(() => transitionToExplanation())
@@ -895,31 +932,31 @@ export function createGameStore(
       const handle = activeHandle;
 
       // Cancel in-flight animations (keep stale viewport to avoid UI flash)
-      playAborted = true;
-      score = null;
-      isShowingTrickResult = false;
-      playProcessing = false;
-      playLog = [];
-      playSuggestions = [];
+      play.aborted = true;
+      play.score = null;
+      play.showingTrickResult = false;
+      play.processing = false;
+      play.log = [];
+      play.suggestions = [];
       animatedTrickOverride = null;
 
       void (async () => {
         try {
-          playAborted = false;
+          play.aborted = false;
           const result = await activeService.restartPlay(handle);
           if (activeHandle !== handle) return;
 
           // Replace stale viewport with fresh one
-          cachedPlayingViewport = await activeService.getPlayingViewport(handle);
+          viewports.playing = await activeService.getPlayingViewport(handle);
           if (activeHandle !== handle) return;
 
           const aiPlays = result.aiPlays ?? [];
           if (aiPlays.length > 0) {
-            const ok = await animateAiPlays(handle, aiPlays, []);
+            const { ok } = await animateAiPlays(handle, aiPlays, []);
             if (!ok) return;
           }
 
-          await fetchPlaySuggestions(handle);
+          void fetchPlaySuggestions(handle);
         } catch (err) {
           console.error('restartPlay failed:', err);
         }
@@ -938,13 +975,17 @@ export function createGameStore(
     declineSouthPlay,
 
     playThisHand() {
-      if (!contract) return;
+      // Check viewport contract — the internal `contract` variable may be null
+      // when playPreference="skip" bypassed DECLARER_PROMPT (contract was never
+      // stored locally, but the session and viewport still have it).
+      const viewportContract = viewports.explanation?.contract ?? contract;
+      if (!viewportContract) return;
       if (phase !== "EXPLANATION") return;
       if (!activeHandle) return;
       const handle = activeHandle;
       resetPlay();
       effectiveUserSeat = userSeat;
-      resetDDS();
+      dds = freshDDSState();
       // Transition service-side phase back to DECLARER_PROMPT, fetch viewport, then transition store
       void (async () => {
         try {
@@ -952,7 +993,7 @@ export function createGameStore(
           if (activeHandle !== handle) return;
           const dpvp = await activeService.getDeclarerPromptViewport(handle);
           if (activeHandle !== handle) return;
-          cachedDeclarerPromptViewport = dpvp;
+          viewports.declarerPrompt = dpvp;
           transitionTo("DECLARER_PROMPT");
           await tick();
         } catch (err) {
@@ -975,7 +1016,9 @@ export function createGameStore(
       // Start drill via service
       const startResult = await activeService.startDrill(handle);
       if (activeHandle !== handle) return;
-      cachedBiddingViewport = startResult.viewport;
+      viewports.bidding = startResult.viewport;
+      practiceMode = startResult.practiceMode;
+      playPreference = startResult.playPreference;
 
       // Animate initial AI bids via incremental reveal
       if (startResult.aiBids.length > 0 && !startResult.auctionComplete) {
@@ -990,23 +1033,29 @@ export function createGameStore(
       }
 
       // Fetch belief state from service
-      publicBeliefState = await activeService.getPublicBeliefState(handle);
+      inference.publicBeliefState = await activeService.getPublicBeliefState(handle);
       if (activeHandle !== handle) return;
 
       // Handle auction complete during initial bids
       if (startResult.auctionComplete) {
-        playInferences = await activeService.capturePlayInferences(handle);
+        inference.playInferences = await activeService.capturePlayInferences(handle);
         if (activeHandle !== handle) return;
         const servicePhase = await activeService.getPhase(handle);
         if (activeHandle !== handle) return;
         if (servicePhase === "DECLARER_PROMPT") {
           const dpvp = await activeService.getDeclarerPromptViewport(handle);
           if (activeHandle !== handle) return;
-          cachedDeclarerPromptViewport = dpvp;
+          viewports.declarerPrompt = dpvp;
           contract = dpvp?.contract ?? null;
           effectiveUserSeat = userSeat;
           transitionTo("DECLARER_PROMPT");
+          const autoHandled = await maybeAutoTransitionFromPrompt(handle);
+          if (autoHandled && activeHandle !== handle) return;
         } else if (servicePhase === "EXPLANATION") {
+          // Fetch explanation viewport to capture contract before transitioning
+          viewports.explanation = await activeService.getExplanationViewport(handle);
+          if (activeHandle !== handle) return;
+          contract = viewports.explanation?.contract ?? null;
           transitionToExplanation();
         }
       }
@@ -1014,7 +1063,7 @@ export function createGameStore(
       // Populate debug drawer
       if (import.meta.env.DEV) {
         const log = await activeService.getDebugLog(handle);
-        debugLog = [...log] as DebugLogEntry[];
+        bidding.debugLog = [...log] as DebugLogEntry[];
       }
 
       await refreshViewport();
@@ -1030,17 +1079,19 @@ export function createGameStore(
       if (!activeHandle) return false;
       const handle = activeHandle;
 
-      // Auto-bid through the auction instantly (no animation)
+      // Auto-bid through the auction instantly (no animation).
+      // When the strategy can't determine the user's bid (e.g., hand doesn't match
+      // any convention rule), fall back to Pass so the auction can still complete.
       while (phase === "BIDDING" && activeHandle === handle) {
         const expected = await activeService.getExpectedBid(handle);
         if (activeHandle !== handle) return false;
-        if (!expected) break;
 
-        const result = await activeService.submitBid(handle, expected.call);
+        const call: Call = expected?.call ?? { type: "pass" as const };
+        const result = await activeService.submitBid(handle, call);
         if (activeHandle !== handle) return false;
 
         if (result.nextViewport) {
-          cachedBiddingViewport = result.nextViewport;
+          viewports.bidding = result.nextViewport;
         }
 
         // Check if auction completed
@@ -1048,17 +1099,21 @@ export function createGameStore(
         if (activeHandle !== handle) return false;
 
         if (servicePhase !== "BIDDING") {
-          playInferences = await activeService.capturePlayInferences(handle);
+          inference.playInferences = await activeService.capturePlayInferences(handle);
           if (activeHandle !== handle) return false;
 
           if (servicePhase === "DECLARER_PROMPT") {
             const dpvp = await activeService.getDeclarerPromptViewport(handle);
             if (activeHandle !== handle) return false;
-            cachedDeclarerPromptViewport = dpvp;
+            viewports.declarerPrompt = dpvp;
             contract = dpvp?.contract ?? null;
             effectiveUserSeat = userSeat;
             transitionTo("DECLARER_PROMPT");
           } else if (servicePhase === "EXPLANATION") {
+            // Fetch explanation viewport to capture contract before transitioning
+            viewports.explanation = await activeService.getExplanationViewport(handle);
+            if (activeHandle !== handle) return false;
+            contract = viewports.explanation?.contract ?? null;
             transitionToExplanation();
           }
           break;
@@ -1080,6 +1135,13 @@ export function createGameStore(
         if (phase === "DECLARER_PROMPT") {
           declinePrompt(); // skip to review
         }
+        // Ensure the explanation viewport is loaded before returning, so the
+        // review screen renders immediately without a momentary blank flash.
+        // The viewport may already be cached (from the while-loop EXPLANATION
+        // branch), so only fetch if missing.
+        if (phase === "EXPLANATION" && !viewports.explanation) {
+          await refreshViewport();
+        }
         return phase === "EXPLANATION";
       }
 
@@ -1089,7 +1151,7 @@ export function createGameStore(
     // Bidding actions
     userBid(call: Call): void {
       userBidViaService(call).catch((e: unknown) => {
-        biddingError = e instanceof Error ? e.message : "Unknown error during bid";
+        bidding.error = e instanceof Error ? e.message : "Unknown error during bid";
       });
     },
     retryBid(): void {

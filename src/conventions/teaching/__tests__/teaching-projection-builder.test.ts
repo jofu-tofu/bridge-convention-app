@@ -277,7 +277,7 @@ describe("projectTeaching", () => {
   test("near-miss: acceptable set candidates produce WhyNotEntry with near-miss grade", () => {
     const winnerProposal = makeProposal({
       meaningId: "nt:game-raise",
-      moduleId: "natural-nt",
+      moduleId: "natural-bids",
     });
     const winnerEncoded = makeEncoded({
       proposal: winnerProposal,
@@ -287,7 +287,7 @@ describe("projectTeaching", () => {
     // Near-miss: hand conditions partially satisfied, in acceptable set
     const nearMissProposal = makeProposal({
       meaningId: "nt:invite",
-      moduleId: "natural-nt",
+      moduleId: "natural-bids",
       clauses: [
         makeClause({ factId: "hand.hcp", value: 8, satisfied: false, description: "HCP >= 8" }),
         makeClause({ factId: "hand.hcp", value: 9, operator: "lte", satisfied: true, description: "HCP <= 9" }),
@@ -396,12 +396,12 @@ describe("projectTeaching", () => {
   test("merged-equivalent: multiple meanings with same semanticClassId encoding to same call", () => {
     const proposal1 = makeProposal({
       meaningId: "nt:quantitative-invite-a",
-      moduleId: "natural-nt",
+      moduleId: "natural-bids",
       semanticClassId: "bridge:nt-invite",
     });
     const proposal2 = makeProposal({
       meaningId: "nt:quantitative-invite-b",
-      moduleId: "natural-nt",
+      moduleId: "natural-bids",
       semanticClassId: "bridge:nt-invite",
     });
     const call = makeCall(2, BidSuit.NoTrump);
@@ -431,7 +431,7 @@ describe("projectTeaching", () => {
   test("multi-rationale-same-call: distinct semantic classes encoding to same call", () => {
     const proposal1 = makeProposal({
       meaningId: "nt:quantitative-invite",
-      moduleId: "natural-nt",
+      moduleId: "natural-bids",
       semanticClassId: "bridge:nt-invite",
     });
     const proposal2 = makeProposal({
@@ -577,7 +577,7 @@ describe("projectTeaching", () => {
 
     const winnerProposal = makeProposal({
       meaningId: "nt:game-raise",
-      moduleId: "natural-nt",
+      moduleId: "natural-bids",
     });
     const winnerEncoded = makeEncoded({
       proposal: winnerProposal,
@@ -586,7 +586,7 @@ describe("projectTeaching", () => {
 
     const nearMissProposal = makeProposal({
       meaningId: "nt:invite",
-      moduleId: "natural-nt",
+      moduleId: "natural-bids",
       clauses: [makeClause({ factId: "hand.hcp", satisfied: false, description: "HCP >= 8" })],
     });
     const nearMissEncoded = makeEncoded({
@@ -745,7 +745,7 @@ describe("projectTeaching", () => {
   test("eliminated meaningView gets eliminationReason enriched from provenance", () => {
     const winnerProposal = makeProposal({
       meaningId: "bridge:to-3nt",
-      moduleId: "natural-nt",
+      moduleId: "natural-bids",
     });
     const winnerEncoded = makeEncoded({
       proposal: winnerProposal,
@@ -755,7 +755,7 @@ describe("projectTeaching", () => {
     const eliminations: EliminationRecord[] = [
       {
         candidateBidName: "bridge:nt-invite",
-        moduleId: "natural-nt",
+        moduleId: "natural-bids",
         reason: "Too many HCP for invite",
         gateId: "semantic-applicability",
       },

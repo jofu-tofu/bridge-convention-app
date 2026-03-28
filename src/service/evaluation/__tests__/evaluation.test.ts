@@ -65,7 +65,7 @@ describe("atom-evaluator", () => {
     it("returns a BiddingViewport with the expected shape", () => {
       const viewport = buildAtomViewport(
         BUNDLE,
-        "natural-nt/bridge:1nt-opening",
+        "stayman/stayman:ask-major",
         42,
       );
 
@@ -88,7 +88,7 @@ describe("atom-evaluator", () => {
     it("shows only the active player's hand in visibleHands", () => {
       const viewport = buildAtomViewport(
         BUNDLE,
-        "natural-nt/bridge:1nt-opening",
+        "stayman/stayman:ask-major",
         42,
       );
 
@@ -99,15 +99,15 @@ describe("atom-evaluator", () => {
     });
 
     it("produces the same viewport for the same seed", () => {
-      const v1 = buildAtomViewport(BUNDLE, "natural-nt/bridge:1nt-opening", 99);
-      const v2 = buildAtomViewport(BUNDLE, "natural-nt/bridge:1nt-opening", 99);
+      const v1 = buildAtomViewport(BUNDLE, "stayman/stayman:ask-major", 99);
+      const v2 = buildAtomViewport(BUNDLE, "stayman/stayman:ask-major", 99);
       expect(v1.hand).toEqual(v2.hand);
       expect(v1.handSummary).toBe(v2.handSummary);
     });
 
     it("produces different viewports for different seeds", () => {
-      const v1 = buildAtomViewport(BUNDLE, "natural-nt/bridge:1nt-opening", 1);
-      const v2 = buildAtomViewport(BUNDLE, "natural-nt/bridge:1nt-opening", 2);
+      const v1 = buildAtomViewport(BUNDLE, "stayman/stayman:ask-major", 1);
+      const v2 = buildAtomViewport(BUNDLE, "stayman/stayman:ask-major", 2);
       // Different seeds should almost always produce different hands
       // (astronomically unlikely to be the same)
       expect(v1.handSummary).not.toBe(v2.handSummary);
@@ -116,7 +116,7 @@ describe("atom-evaluator", () => {
     it("includes hand evaluation with HCP", () => {
       const viewport = buildAtomViewport(
         BUNDLE,
-        "natural-nt/bridge:1nt-opening",
+        "stayman/stayman:ask-major",
         42,
       );
       expect(viewport.handEvaluation).toHaveProperty("hcp");
@@ -128,7 +128,7 @@ describe("atom-evaluator", () => {
     it("sets isUserTurn to true", () => {
       const viewport = buildAtomViewport(
         BUNDLE,
-        "natural-nt/bridge:1nt-opening",
+        "stayman/stayman:ask-major",
         42,
       );
       expect(viewport.isUserTurn).toBe(true);
@@ -226,7 +226,7 @@ describe("viewport type boundary", () => {
   it("BiddingViewport does not expose opponent hands", () => {
     const viewport = buildAtomViewport(
       BUNDLE,
-      "natural-nt/bridge:1nt-opening",
+      "stayman/stayman:ask-major",
       42,
     );
 

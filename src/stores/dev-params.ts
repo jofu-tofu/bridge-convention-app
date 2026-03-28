@@ -57,6 +57,17 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     }
   }
 
+  // ── Practice mode/role (must be set BEFORE selectConvention) ──
+  const practiceModeParam = params.get("practiceMode");
+  if (practiceModeParam === "decision-drill" || practiceModeParam === "full-auction" || practiceModeParam === "continuation-drill") {
+    store.setPracticeMode(practiceModeParam);
+  }
+
+  const practiceRoleParam = params.get("practiceRole");
+  if (practiceRoleParam === "opener" || practiceRoleParam === "responder" || practiceRoleParam === "both") {
+    store.setDevPracticeRole(practiceRoleParam);
+  }
+
   // ── Convention / Learn deep links ──────────────────────────
   const conventionParam = params.get("convention");
   const learnParam = params.get("learn");
@@ -81,18 +92,6 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     } catch {
       // Invalid param — silently ignore
     }
-  }
-
-  // ── Practice mode ─────────────────────────────────────────
-  const practiceModeParam = params.get("practiceMode");
-  if (practiceModeParam === "decision-drill" || practiceModeParam === "full-auction" || practiceModeParam === "continuation-drill") {
-    store.setPracticeMode(practiceModeParam);
-  }
-
-  // ── Practice role ──────────────────────────────────────────
-  const practiceRoleParam = params.get("practiceRole");
-  if (practiceRoleParam === "opener" || practiceRoleParam === "responder" || practiceRoleParam === "both") {
-    store.setDevPracticeRole(practiceRoleParam);
   }
 
   // ── Coverage targeting ─────────────────────────────────────

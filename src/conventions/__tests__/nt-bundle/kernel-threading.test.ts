@@ -20,7 +20,7 @@ import { buildObservationLogViaRules } from "../../adapter/protocol-adapter";
 import { collectMatchingClaims } from "../../pipeline/observation/rule-interpreter";
 
 const allRuleModules: readonly ConventionModule[] = getModules([
-  "natural-nt",
+  "natural-bids",
   "stayman",
   "jacoby-transfers",
   "smolen",

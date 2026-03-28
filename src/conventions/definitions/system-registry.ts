@@ -31,7 +31,7 @@ export interface BaseSystemProfile {
   readonly baseModuleIds: readonly string[];
 }
 
-const DEFAULT_BASE_MODULE_IDS: readonly string[] = ["natural-open", "stayman", "jacoby-transfers", "blackwood"];
+const DEFAULT_BASE_MODULE_IDS: readonly string[] = ["natural-bids", "stayman", "jacoby-transfers", "blackwood"];
 
 const BASE_SYSTEM_PROFILES: Record<BaseSystemId, BaseSystemProfile> = {
   [BASE_SYSTEM_SAYC]: { baseSystemId: BASE_SYSTEM_SAYC, baseModuleIds: DEFAULT_BASE_MODULE_IDS },
@@ -102,7 +102,7 @@ const ntBundleInput: BundleInput = {
   description: "Full 1NT response system with Stayman, Jacoby Transfers, Smolen, and natural bids",
   category: ConventionCategory.Constructive,
   systemProfile: NT_SAYC_PROFILE,
-  memberIds: ["natural-open", "stayman", "jacoby-transfers", "smolen"],
+  memberIds: ["stayman", "jacoby-transfers", "smolen"],
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   teaching: {
     purpose:
@@ -130,7 +130,7 @@ const ntStaymanInput: BundleInput = {
   description: "Find a 4-4 major fit after 1NT opening",
   category: ConventionCategory.Asking,
   systemProfile: NT_STAYMAN_ONLY_PROFILE,
-  memberIds: ["natural-open", "stayman"],
+  memberIds: ["stayman"],
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   teaching: {
     purpose:
@@ -155,7 +155,7 @@ const ntTransfersInput: BundleInput = {
   description: "Ensure the strong hand declares in a major-suit contract",
   category: ConventionCategory.Constructive,
   systemProfile: NT_TRANSFERS_ONLY_PROFILE,
-  memberIds: ["natural-open", "jacoby-transfers"],
+  memberIds: ["jacoby-transfers"],
   declaredCapabilities: { [CAP_OPENING_1NT]: "active" },
   teaching: {
     purpose:

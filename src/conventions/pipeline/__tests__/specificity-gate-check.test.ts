@@ -94,7 +94,7 @@ const dontSurfaces: readonly BidMeaning[] = [
 import { getModules } from "../../definitions/module-registry";
 import { moduleSurfaces } from "../../core/convention-module";
 
-const ntModules = getModules(["natural-nt", "stayman", "jacoby-transfers", "smolen"], SAYC_SYSTEM_CONFIG);
+const ntModules = getModules(["natural-bids", "stayman", "jacoby-transfers", "smolen"], SAYC_SYSTEM_CONFIG);
 const ntSurfaces: readonly BidMeaning[] = ntModules.flatMap(m => moduleSurfaces(m));
 
 const weakTwoSurfaces: readonly BidMeaning[] = [

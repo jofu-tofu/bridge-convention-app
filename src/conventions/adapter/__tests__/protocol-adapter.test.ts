@@ -12,7 +12,7 @@ import type { Call } from "../../../engine/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
-import { createBiddingContext, specFromBundle, ntBundle } from "../..";
+import { createBiddingContext, specFromBundle, ntBundle, getBundleInput, SAYC_SYSTEM_CONFIG } from "../..";
 import type { ConventionModule, ConventionSpec } from "../..";
 import { makeSurface, makeRanking } from "../../../test-support/convention-factories";
 import type { BidMeaning } from "../../pipeline/evaluation/meaning";
@@ -22,7 +22,6 @@ import {
   buildObservationLogViaRules,
   findMatchingClaimForCall,
 } from "../protocol-adapter";
-import { SAYC_SYSTEM_CONFIG } from "../../definitions/system-config";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -466,7 +465,7 @@ describe("protocolSpecToStrategy with real NT system", () => {
   });
 
   it("builds an observation log for a multi-step Stayman auction", () => {
-    const ruleModules = ntBundle.modules;
+    const ruleModules = specFromBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG)!.modules;
 
     const auction = buildAuction(Seat.North, ["1NT", "P", "2C", "P", "2D", "P"]);
     const history = auction.entries.map((e) => ({ call: e.call, seat: e.seat }));
@@ -494,7 +493,7 @@ describe("protocolSpecToStrategy with real NT system", () => {
   });
 
   it("threads kernel state correctly through Stayman auction", () => {
-    const ruleModules = ntBundle.modules;
+    const ruleModules = specFromBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG)!.modules;
 
     const auction = buildAuction(Seat.North, ["1NT", "P", "2C", "P"]);
     const history = auction.entries.map((e) => ({ call: e.call, seat: e.seat }));

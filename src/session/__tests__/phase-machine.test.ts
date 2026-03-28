@@ -14,8 +14,8 @@ describe("phase machine (service)", () => {
     expect(isValidTransition("BIDDING", "EXPLANATION")).toBe(true);
   });
 
-  it("BIDDING → PLAYING is invalid", () => {
-    expect(isValidTransition("BIDDING", "PLAYING")).toBe(false);
+  it("BIDDING → PLAYING is valid (always play preference)", () => {
+    expect(isValidTransition("BIDDING", "PLAYING")).toBe(true);
   });
 
   it("PLAYING → BIDDING is invalid", () => {

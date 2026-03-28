@@ -16,11 +16,6 @@ const STAYMAN_ONLY_PROFILE: SystemProfile = {
   baseSystem: "sayc",
   modules: [
     {
-      moduleId: "natural-nt",
-      kind: "base-system",
-      attachments: [{ whenAuction: { kind: "sequence", calls: ["1NT"] } }],
-    },
-    {
       moduleId: "stayman",
       kind: "add-on",
       attachments: [
@@ -38,11 +33,6 @@ const TRANSFER_ONLY_PROFILE: SystemProfile = {
   profileId: "1nt-transfers-only",
   baseSystem: "sayc",
   modules: [
-    {
-      moduleId: "natural-nt",
-      kind: "base-system",
-      attachments: [{ whenAuction: { kind: "sequence", calls: ["1NT"] } }],
-    },
     {
       moduleId: "jacoby-transfers",
       kind: "add-on",
@@ -71,19 +61,19 @@ describe("NT sub-bundle profiles", () => {
         Seat.South,
         ntCapabilities,
       );
-      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers", "smolen"]);
+      expect(result).toEqual(["stayman", "jacoby-transfers", "smolen"]);
     });
   });
 
   describe("Stayman-only profile", () => {
-    it("activates natural-nt and stayman after 1NT P", () => {
+    it("activates stayman after 1NT P", () => {
       const result = resolveActiveModules(
         STAYMAN_ONLY_PROFILE,
         auctionAfter1NT,
         Seat.South,
         ntCapabilities,
       );
-      expect(result).toEqual(["natural-nt", "stayman"]);
+      expect(result).toEqual(["stayman"]);
     });
 
     it("does NOT activate jacoby-transfers", () => {
@@ -109,14 +99,14 @@ describe("NT sub-bundle profiles", () => {
   });
 
   describe("Transfer-only profile", () => {
-    it("activates natural-nt and jacoby-transfers after 1NT P", () => {
+    it("activates jacoby-transfers after 1NT P", () => {
       const result = resolveActiveModules(
         TRANSFER_ONLY_PROFILE,
         auctionAfter1NT,
         Seat.South,
         ntCapabilities,
       );
-      expect(result).toEqual(["natural-nt", "jacoby-transfers"]);
+      expect(result).toEqual(["jacoby-transfers"]);
     });
 
     it("does NOT activate stayman", () => {
@@ -151,10 +141,10 @@ describe("NT sub-bundle profiles", () => {
         ntCapabilities,
       );
 
-      // Full profile = union of both sub-profiles (with natural-nt in both)
-      expect(fullResult).toHaveLength(4);
-      expect(staymanResult).toHaveLength(2);
-      expect(transferResult).toHaveLength(2);
+      // Full profile has 3 modules (natural-bids is base-only, not in profile)
+      expect(fullResult).toHaveLength(3);
+      expect(staymanResult).toHaveLength(1);
+      expect(transferResult).toHaveLength(1);
 
       // Each sub-profile is a strict subset of the full profile
       expect(staymanResult.every((id) => fullResult.includes(id))).toBe(true);

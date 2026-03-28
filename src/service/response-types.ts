@@ -15,6 +15,10 @@
  */
 
 import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Suit, DDSolution, AuctionEntry, NumberRange } from "../engine/types";
+import type { PracticeMode, PlayPreference } from "../session/drill-types";
+
+/** Bid context relative to the practice target. */
+export type BidContext = "prerequisite" | "target" | "follow-up" | "background" | "off-convention";
 
 // ── Service-owned type replacements ─────────────────────────────────
 //
@@ -232,6 +236,8 @@ export interface DrillStartResult {
   readonly aiBids: readonly AiBidEntry[];
   /** True when the auction completed during initial AI bids (e.g., all four seats passed). */
   readonly auctionComplete: boolean;
+  readonly practiceMode: PracticeMode;
+  readonly playPreference: PlayPreference;
 }
 
 /** A single AI bid entry for animation. */
@@ -407,6 +413,15 @@ export interface BundleFlowTreeViewport {
   readonly maxDepth: number;
 }
 
+/** Conversation flow tree scoped to a single module. */
+export interface ModuleFlowTreeViewport {
+  readonly moduleId: string;
+  readonly moduleName: string;
+  readonly root: FlowTreeNode;
+  readonly nodeCount: number;
+  readonly maxDepth: number;
+}
+
 // ── Player Viewport ─────────────────────────────────────────────────
 //
 // The explicit information boundary between the engine and the player.
@@ -452,6 +467,10 @@ export interface BiddingViewport {
   // ── Turn state ────────────────────────────────────────────────
   readonly isUserTurn: boolean;
   readonly currentBidder: Seat;
+
+  // ── Practice mode context ────────────────────────────────────
+  readonly practiceMode?: PracticeMode;
+  readonly bidContext?: BidContext;
 }
 
 /** Compact hand evaluation visible to the player (their own hand only). */
@@ -772,4 +791,13 @@ export interface ConventionCardView {
   readonly twoLevelForcing: string;  // "1 round" or "Game forcing"
   readonly oneNtResponse: string;    // "Non-forcing 6–10" or "Semi-forcing 6–12"
   readonly majorLength: string;      // "5-card majors" or "4-card majors"
+}
+
+// ── Base Module Info ────────────────────────────────────────────
+
+/** Read-only metadata about a base system module for settings display. */
+export interface BaseModuleInfo {
+  readonly id: string;
+  readonly displayName: string;
+  readonly description: string;
 }

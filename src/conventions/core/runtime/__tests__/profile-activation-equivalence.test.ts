@@ -11,7 +11,7 @@ describe("profile-driven activation", () => {
     const seat = Seat.North;
     const ntCapabilities = { [CAP_OPENING_1NT]: "active" } as const;
 
-    it("after 1NT P — activates all four modules", () => {
+    it("after 1NT P — activates three modules (natural-bids is base-only)", () => {
       const auction = buildAuction(Seat.North, ["1NT", "P"]);
       const result = resolveActiveModules(
         NT_SAYC_PROFILE,
@@ -20,10 +20,10 @@ describe("profile-driven activation", () => {
         ntCapabilities,
       );
 
-      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers", "smolen"]);
+      expect(result).toEqual(["stayman", "jacoby-transfers", "smolen"]);
     });
 
-    it("after 1NT P 2C P — all modules remain active", () => {
+    it("after 1NT P 2C P — all profile modules remain active", () => {
       const auction = buildAuction(Seat.North, ["1NT", "P", "2C", "P"]);
       const result = resolveActiveModules(
         NT_SAYC_PROFILE,
@@ -32,7 +32,7 @@ describe("profile-driven activation", () => {
         ntCapabilities,
       );
 
-      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers", "smolen"]);
+      expect(result).toEqual(["stayman", "jacoby-transfers", "smolen"]);
     });
 
     it("empty auction — returns nothing", () => {
@@ -75,10 +75,10 @@ describe("profile-driven activation", () => {
         ntCapabilities,
       );
 
-      expect(result).toEqual(["natural-nt", "stayman", "jacoby-transfers", "smolen"]);
+      expect(result).toEqual(["stayman", "jacoby-transfers", "smolen"]);
     });
 
-    it("without opening.1nt capability — only base module activates", () => {
+    it("without opening.1nt capability — no modules activate (natural-bids is base-only)", () => {
       const auction = buildAuction(Seat.North, ["1NT", "P"]);
       const result = resolveActiveModules(
         NT_SAYC_PROFILE,
@@ -87,7 +87,7 @@ describe("profile-driven activation", () => {
         {}, // no capabilities
       );
 
-      expect(result).toEqual(["natural-nt"]);
+      expect(result).toEqual([]);
     });
   });
 

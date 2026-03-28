@@ -4,11 +4,12 @@ import { getModule, getAllModules, getModules } from "../module-registry";
 const KNOWN_IDS = [
   "stayman",
   "jacoby-transfers",
-  "natural-nt",
+  "natural-bids",
   "smolen",
   "bergen",
   "dont",
   "weak-twos",
+  "blackwood",
 ] as const;
 
 describe("getModule", () => {
@@ -24,8 +25,8 @@ describe("getModule", () => {
 });
 
 describe("getAllModules", () => {
-  it("returns exactly 7 modules", () => {
-    expect(getAllModules()).toHaveLength(7);
+  it("returns exactly 8 modules", () => {
+    expect(getAllModules()).toHaveLength(8);
   });
 
   it("contains all expected module IDs", () => {
@@ -57,10 +58,10 @@ describe("getModules", () => {
   });
 
   it("works with a subset of IDs", () => {
-    const subset = ["natural-nt", "weak-twos"];
+    const subset = ["natural-bids", "weak-twos"];
     const result = getModules(subset);
     expect(result).toHaveLength(2);
-    expect(result[0]!.moduleId).toBe("natural-nt");
+    expect(result[0]!.moduleId).toBe("natural-bids");
     expect(result[1]!.moduleId).toBe("weak-twos");
   });
 });

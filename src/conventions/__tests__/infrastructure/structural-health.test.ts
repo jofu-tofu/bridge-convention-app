@@ -223,7 +223,7 @@ describe("explanation coverage", () => {
     for (const bundle of bundles) {
       // Collect all fact IDs across the entire bundle — explanation entries
       // in one module may legitimately reference facts from sibling modules
-      // (e.g., natural-nt explanations referencing stayman posterior facts).
+      // (e.g., natural-bids explanations referencing stayman posterior facts).
       const bundleFactIds = collectAllBundleFactIds(bundle);
 
       for (const mod of bundle.modules) {

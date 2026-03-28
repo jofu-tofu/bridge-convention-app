@@ -53,8 +53,8 @@ describe("System-dependent surfaces differ between SAYC and ACOL", () => {
   });
 
   it("Natural NT opener HCP differs between SAYC and ACOL", () => {
-    const saycMod = getModule("natural-nt", SAYC_SYSTEM_CONFIG)!;
-    const acolMod = getModule("natural-nt", ACOL_SYSTEM_CONFIG)!;
+    const saycMod = getModule("natural-bids", SAYC_SYSTEM_CONFIG)!;
+    const acolMod = getModule("natural-bids", ACOL_SYSTEM_CONFIG)!;
 
     const saycOpener = moduleSurfaces(saycMod).find(s => s.meaningId === "bridge:1nt-opening");
     const acolOpener = moduleSurfaces(acolMod).find(s => s.meaningId === "bridge:1nt-opening");

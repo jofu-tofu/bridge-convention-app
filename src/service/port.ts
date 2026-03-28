@@ -29,6 +29,7 @@ import type {
   DDSolutionResult,
   ConventionInfo,
   BundleFlowTreeViewport,
+  ModuleFlowTreeViewport,
   ServiceInferenceSnapshot,
   ServicePublicBeliefState,
   ServicePublicBeliefs,
@@ -96,6 +97,9 @@ interface ServicePort {
 
   /** Build a unified conversation flow tree for a bundle. */
   getBundleFlowTree(bundleId: string): Promise<BundleFlowTreeViewport | null>;
+
+  /** Build a conversation flow tree scoped to a single module. */
+  getModuleFlowTree(moduleId: string): Promise<ModuleFlowTreeViewport | null>;
 }
 
 /** Extends ServicePort with dev/debug methods.

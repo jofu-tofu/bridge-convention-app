@@ -32,8 +32,8 @@ describe("LearningScreen", () => {
 
   it("renders the selected module name in the heading", async () => {
     renderLearningScreen();
-    // navigateToLearning auto-selects the first module (natural-nt)
-    expect(await screen.findByRole("heading", { name: /Natural NT/, level: 1 })).toBeTruthy();
+    // navigateToLearning auto-selects the first module (stayman, since natural-bids is base-only)
+    expect(await screen.findByRole("heading", { name: /Stayman/, level: 1 })).toBeTruthy();
   });
 
   it("has a Learn header", () => {
@@ -54,19 +54,19 @@ describe("LearningScreen", () => {
 
   it("shows module description", async () => {
     renderLearningScreen();
-    // First module (natural-nt) description should appear
-    expect(await screen.findByText(/Raise to 2NT \(invite\) or 3NT/i)).toBeTruthy();
+    // First module (stayman) description should appear (♣ is the formatted suit symbol)
+    expect(await screen.findByText(/over 1NT/i)).toBeTruthy();
   });
 
   it("shows teaching content", async () => {
     renderLearningScreen();
-    // natural-nt has a principle
+    // stayman has a principle
     expect(await screen.findByText(/Principle/)).toBeTruthy();
   });
 
   it("shows surfaces grouped by phase", async () => {
     renderLearningScreen();
-    // natural-nt has phases: idle, opened
+    // stayman has phases visible in conversation flow
     expect(await screen.findByText(/Bidding Conversation/i)).toBeTruthy();
   });
 

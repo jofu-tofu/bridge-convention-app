@@ -168,7 +168,7 @@ export function evaluateBidMeaning(
     evidence,
     sourceIntent: surface.sourceIntent,
     teachingLabel: surface.teachingLabel,
-    ...(resolved ? { isAlertable: true } : {}),
+    ...(resolved ? { isAlertable: true, annotationType: resolved.annotationType } : {}),
   };
 }
 

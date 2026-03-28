@@ -1,7 +1,7 @@
 /**
  * Integration tests: rule interpreter surface selection for NT bundle.
  *
- * Uses all four rule modules (natural-nt, stayman, jacoby-transfers, smolen)
+ * Uses all four rule modules (natural-bids, stayman, jacoby-transfers, smolen)
  * with the rule interpreter, verifying correct surface activation for
  * key auction sequences.
  */
@@ -18,7 +18,7 @@ import { Seat } from "../../../engine/types";
 import { getModules } from "../../definitions/module-registry";
 
 const allRuleModules: ConventionModule[] = [
-  ...getModules(["natural-nt", "stayman", "jacoby-transfers", "smolen"]),
+  ...getModules(["natural-bids", "stayman", "jacoby-transfers", "smolen"]),
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────

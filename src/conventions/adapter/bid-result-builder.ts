@@ -47,6 +47,7 @@ export function buildBidResult(
   const alert: BidAlert | null = selected.proposal.isAlertable
     ? {
         teachingLabel: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
+        annotationType: selected.proposal.annotationType,
       }
     : null;
 

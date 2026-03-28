@@ -17,15 +17,26 @@ import "../../conventions/registration";
 describe("buildModuleCatalog", () => {
   const catalog = buildModuleCatalog();
 
-  it("returns all 7 registered modules", () => {
-    expect(catalog.length).toBe(7);
+  it("returns all 8 registered modules", () => {
+    expect(catalog.length).toBe(8);
   });
 
-  it("each entry has displayName, surfaceCount > 0, and bundleIds", () => {
+  it("each entry has displayName and surfaceCount > 0", () => {
     for (const entry of catalog) {
       expect(entry.displayName).toBeTruthy();
       expect(entry.surfaceCount).toBeGreaterThan(0);
+    }
+  });
+
+  it("bundle-member modules have bundleIds; base-only modules may not", () => {
+    const baseOnlyIds = new Set(["blackwood", "natural-bids"]);
+    const bundleMembers = catalog.filter((e) => !baseOnlyIds.has(e.moduleId));
+    for (const entry of bundleMembers) {
       expect(entry.bundleIds.length).toBeGreaterThan(0);
+    }
+    for (const baseId of baseOnlyIds) {
+      const mod = catalog.find((e) => e.moduleId === baseId)!;
+      expect(mod.bundleIds).toEqual([]);
     }
   });
 
@@ -52,11 +63,11 @@ describe("buildModuleLearningViewport", () => {
     it("has correct identity fields", () => {
       expect(viewport.moduleId).toBe("stayman");
       expect(viewport.displayName).toBe("Stayman");
-      expect(viewport.description).toContain("2C over 1NT");
+      expect(viewport.description).toContain("2\u2663 over 1NT");
     });
 
     it("has teaching content", () => {
-      expect(viewport.teaching.tradeoff).toContain("2C");
+      expect(viewport.teaching.tradeoff).toContain("2\u2663");
       expect(viewport.teaching.principle).toBeTruthy();
       expect(viewport.teaching.commonMistakes.length).toBeGreaterThan(0);
     });
@@ -123,7 +134,7 @@ describe("buildModuleLearningViewport", () => {
     });
 
     it("has teaching content", () => {
-      expect(viewport.teaching.tradeoff).toContain("3C");
+      expect(viewport.teaching.tradeoff).toContain("3\u2663");
     });
   });
 });
@@ -150,7 +161,7 @@ describe("formatModuleName", () => {
   });
 
   it("uppercases bridge abbreviations", () => {
-    expect(formatModuleName("natural-nt")).toBe("Natural NT");
+    expect(formatModuleName("natural-bids")).toBe("Natural Bids");
   });
 
   it("handles empty string", () => {
@@ -207,10 +218,10 @@ describe("clause system variance", () => {
     });
   });
 
-  it("natural-nt system.* clauses have systemVariants", () => {
-    const viewport = buildModuleLearningViewport("natural-nt")!;
+  it("natural-bids system.* clauses have systemVariants", () => {
+    const viewport = buildModuleLearningViewport("natural-bids")!;
 
-    // natural-nt uses SYSTEM_RESPONDER_INVITE_VALUES and SYSTEM_RESPONDER_GAME_VALUES
+    // natural-bids uses SYSTEM_RESPONDER_INVITE_VALUES and SYSTEM_RESPONDER_GAME_VALUES
     const systemClauses = viewport.phases
       .flatMap((p) => p.surfaces)
       .flatMap((s) => s.clauses)

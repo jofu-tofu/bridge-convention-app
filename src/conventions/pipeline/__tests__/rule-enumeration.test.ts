@@ -181,7 +181,7 @@ describe("generateRuleCoverageManifest", () => {
 
 describe("real bundle atom counts", () => {
   const bundles = [
-    { name: "nt-bundle", modules: [getModule("natural-nt")!, getModule("stayman")!, getModule("jacoby-transfers")!, getModule("smolen")!] },
+    { name: "nt-bundle", modules: [getModule("natural-bids")!, getModule("stayman")!, getModule("jacoby-transfers")!, getModule("smolen")!] },
     { name: "bergen-bundle", modules: [getModule("bergen")!] },
     { name: "dont-bundle", modules: [getModule("dont")!] },
     { name: "weak-twos-bundle", modules: [getModule("weak-twos")!] },

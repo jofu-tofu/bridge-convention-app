@@ -1,30 +1,15 @@
 <script lang="ts">
-  import type { Trick, Seat, Card as CardType } from "../../../service";
+  import type { Card as CardType, Seat } from "../../../service";
   import type { AuctionEntry } from "../../../service";
   import type { AuctionEntryView } from "../../../service";
-  import type { BidHistoryEntry } from "../../../service";
   import { Suit } from "../../../service";
   import { SUIT_ORDER, SEAT_INDEX } from "../../../service";
   import { SUIT_SYMBOLS, displayRank, formatCall } from "../../../service";
   import { SUIT_COLOR_CLASS, BID_SUIT_COLOR_CLASS } from "../../shared/tokens";
   import { sortCards } from "../../shared/sort-cards";
+  import type { PlayHistoryBaseProps, PlayHistoryReplayProps } from "./shared-props";
 
-  interface Props {
-    tricks: readonly Trick[];
-    declarerSeat: Seat | null;
-    /** Viewport-safe auction entries (preferred). */
-    auctionEntries?: readonly AuctionEntryView[];
-    dealer?: Seat;
-    bidHistory?: readonly BidHistoryEntry[];
-    /** Highlight ring on the selected trick row. */
-    highlightTrickIndex?: number | null;
-    /** Clicking a trick row jumps to it. */
-    onClickTrick?: (index: number) => void;
-    /** Only render tricks up to this count (progressive reveal). */
-    visibleTrickCount?: number;
-    /** Only show this many plays in the last visible trick. */
-    partialTrickPlays?: number;
-  }
+  interface Props extends PlayHistoryBaseProps, PlayHistoryReplayProps {}
 
   let {
     tricks,

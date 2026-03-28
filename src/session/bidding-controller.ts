@@ -269,8 +269,14 @@ async function handleAuctionComplete(
 
   if (contract) {
     state.effectiveUserSeat = state.userSeat;
-    if (isValidTransition(state.phase, "DECLARER_PROMPT")) {
-      state.phase = "DECLARER_PROMPT";
+    const pref = state.playPreference;
+    if (pref === "skip") {
+      if (isValidTransition(state.phase, "EXPLANATION")) state.phase = "EXPLANATION";
+    } else if (pref === "always") {
+      state.initializePlay(contract);
+      if (isValidTransition(state.phase, "PLAYING")) state.phase = "PLAYING";
+    } else {
+      if (isValidTransition(state.phase, "DECLARER_PROMPT")) state.phase = "DECLARER_PROMPT";
     }
   } else {
     if (isValidTransition(state.phase, "EXPLANATION")) {
@@ -340,8 +346,14 @@ async function runAiBidLoop(
       state.contract = contract;
       if (contract) {
         state.effectiveUserSeat = state.userSeat;
-        if (isValidTransition(state.phase, "DECLARER_PROMPT")) {
-          state.phase = "DECLARER_PROMPT";
+        const pref = state.playPreference;
+        if (pref === "skip") {
+          if (isValidTransition(state.phase, "EXPLANATION")) state.phase = "EXPLANATION";
+        } else if (pref === "always") {
+          state.initializePlay(contract);
+          if (isValidTransition(state.phase, "PLAYING")) state.phase = "PLAYING";
+        } else {
+          if (isValidTransition(state.phase, "DECLARER_PROMPT")) state.phase = "DECLARER_PROMPT";
         }
       } else {
         if (isValidTransition(state.phase, "EXPLANATION")) {

@@ -27,12 +27,23 @@ describe("normalizeIntent", () => {
     expect(normalize("UnknownIntent")).toEqual([]);
   });
 
-  // ── Natural NT (4 intents) ─────────────────────────────────────
+  // ── Natural openings (5 intents) ──────────────────────────────
 
-  describe("Natural NT", () => {
+  describe("Natural openings", () => {
     it("normalizes NTOpening", () => {
       expect(normalize("NTOpening")).toEqual([
         { act: "open", strain: "notrump" },
+      ]);
+    });
+
+    it.each([
+      ["clubs", "clubs"],
+      ["diamonds", "diamonds"],
+      ["hearts", "hearts"],
+      ["spades", "spades"],
+    ] as const)("normalizes SuitOpen(%s)", (suit, expectedStrain) => {
+      expect(normalize("SuitOpen", { suit })).toEqual([
+        { act: "open", strain: expectedStrain },
       ]);
     });
 

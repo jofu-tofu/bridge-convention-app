@@ -91,7 +91,7 @@ describe("buildObservationLog", () => {
     const call = bid(1, BidSuit.NoTrump);
     const proposal = makeProposal({
       sourceIntent: { type: "NTOpening", params: {} },
-      moduleId: "natural-nt",
+      moduleId: "natural-bids",
       meaningId: "nt-opening",
       semanticClassId: "bridge:nt-open",
     });
@@ -122,7 +122,7 @@ describe("buildObservationLog", () => {
 
     const ntProposal = makeProposal({
       sourceIntent: { type: "NTOpening", params: {} },
-      moduleId: "natural-nt",
+      moduleId: "natural-bids",
       meaningId: "nt-opening",
       semanticClassId: "bridge:nt-open",
     });

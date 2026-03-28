@@ -101,6 +101,8 @@ export interface MeaningProposal {
   readonly teachingLabel?: string;
   /** True when this bid is alertable (derived from sourceIntent.type). */
   readonly isAlertable?: boolean;
+  /** ACBL annotation type: alert, announce, or educational (derived from disclosure). */
+  readonly annotationType?: "alert" | "announce" | "educational";
 }
 
 /** Recommendation band priority values for comparison (lower = higher priority). */
@@ -203,4 +205,8 @@ export const BRIDGE_SEMANTIC_CLASSES = {
   NT_OPENING: "bridge:1nt-opening",
   NT_INVITE: "bridge:nt-invite",
   NT_GAME: "bridge:to-3nt",
+  SUIT_OPENING_1C: "bridge:1c-opening",
+  SUIT_OPENING_1D: "bridge:1d-opening",
+  SUIT_OPENING_1H: "bridge:1h-opening",
+  SUIT_OPENING_1S: "bridge:1s-opening",
 } as const;

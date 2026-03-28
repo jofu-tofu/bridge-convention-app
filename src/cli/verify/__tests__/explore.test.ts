@@ -8,14 +8,14 @@ import { describe, it, expect } from "vitest";
 // Side-effect import: registers all bundles + conventions
 import "../../../conventions";
 
-import { resolveBundle, getBundleInput } from "../../../conventions";
+import { resolveBundle, getBundleInput, specFromBundle } from "../../../conventions";
 import { SAYC_SYSTEM_CONFIG } from "../../../conventions/definitions/system-config";
 import { exploreBundle } from "../explore";
 
 describe("exploreBundle", () => {
   it("runs without crashes on nt-bundle with minimal trials", () => {
     const system = resolveBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG);
-    const modules = system.modules ?? [];
+    const modules = specFromBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG)!.modules;
     expect(modules.length).toBeGreaterThan(0);
 
     const result = exploreBundle(system, modules, {
@@ -34,7 +34,7 @@ describe("exploreBundle", () => {
 
   it("tracks atom coverage across trials", () => {
     const system = resolveBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG);
-    const modules = system.modules ?? [];
+    const modules = specFromBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG)!.modules;
 
     const result = exploreBundle(system, modules, {
       depth: 6,
@@ -52,7 +52,7 @@ describe("exploreBundle", () => {
 
   it("produces deterministic results with same seed", () => {
     const system = resolveBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG);
-    const modules = system.modules ?? [];
+    const modules = specFromBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG)!.modules;
 
     const result1 = exploreBundle(system, modules, { depth: 4, seed: 42, trials: 3 });
     const result2 = exploreBundle(system, modules, { depth: 4, seed: 42, trials: 3 });
@@ -63,7 +63,7 @@ describe("exploreBundle", () => {
 
   it("filters invariants when specified", () => {
     const system = resolveBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG);
-    const modules = system.modules ?? [];
+    const modules = specFromBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG)!.modules;
 
     const result = exploreBundle(system, modules, {
       depth: 4,

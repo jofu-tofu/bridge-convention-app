@@ -2,13 +2,13 @@ import { Seat } from "../engine/types";
 import type { BiddingStrategy, BaseSystemId } from "../conventions";
 import type { EnginePort } from "../engine/port";
 import type { DrillConfig } from "./drill-types";
-import type { OpponentMode } from "./drill-types";
+import type { OpponentMode, PracticeMode } from "./drill-types";
 import { getSystemConfig } from "../conventions";
 import type { InferenceConfig } from "../inference/types";
 import { createSpecStrategyWithFallback, createOpponentStrategy } from "./strategy-factory";
 import { createHeuristicPlayStrategy } from "../session/heuristics/heuristic-play";
 import { createNaturalInferenceProvider } from "../inference/natural-inference";
-import { getBundleInput, specFromBundle } from "../conventions";
+import { getBundleInput, specFromBundle, specFromSystem } from "../conventions";
 import type { PlayProfileId } from "./heuristics/play-profiles";
 import { PLAY_PROFILES, BEGINNER_PROFILE } from "./heuristics/play-profiles";
 import { createProfileStrategyProvider } from "./heuristics/profile-play-strategy";
@@ -25,7 +25,7 @@ const NS_SEATS = new Set([Seat.North, Seat.South]);
 export function createProtocolDrillConfig(
   conventionId: string,
   userSeat: Seat,
-  options: { opponentMode?: OpponentMode; baseSystem: BaseSystemId; playProfileId?: PlayProfileId; engine?: EnginePort },
+  options: { opponentMode?: OpponentMode; baseSystem: BaseSystemId; playProfileId?: PlayProfileId; engine?: EnginePort; practiceMode?: PracticeMode },
 ): DrillConfig {
   const input = getBundleInput(conventionId);
   if (!input) {
@@ -34,10 +34,19 @@ export function createProtocolDrillConfig(
     );
   }
   const systemConfig = getSystemConfig(options.baseSystem);
-  const spec = specFromBundle(input, systemConfig);
+
+  // For full-auction and continuation-drill, build strategy from the full system
+  // so the user can bid through prerequisite and follow-up modules too.
+  const mode = options.practiceMode;
+  const useSystemSpec = mode === "full-auction" || mode === "continuation-drill";
+  const spec = useSystemSpec
+    ? specFromSystem(options.baseSystem)
+    : specFromBundle(input, systemConfig);
   if (!spec) {
     throw new Error(
-      `No ConventionSpec derivable for "${conventionId}".`,
+      useSystemSpec
+        ? `No ConventionSpec derivable for system "${options.baseSystem}".`
+        : `No ConventionSpec derivable for "${conventionId}".`,
     );
   }
 

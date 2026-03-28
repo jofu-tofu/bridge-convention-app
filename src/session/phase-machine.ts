@@ -13,7 +13,7 @@ export type GamePhase =
 
 /** Valid phase transitions. Key = source phase, value = allowed target phases. */
 export const VALID_TRANSITIONS: Record<GamePhase, readonly GamePhase[]> = {
-  BIDDING: ["DECLARER_PROMPT", "EXPLANATION"],
+  BIDDING: ["DECLARER_PROMPT", "PLAYING", "EXPLANATION"],
   DECLARER_PROMPT: ["PLAYING", "EXPLANATION"],
   PLAYING: ["EXPLANATION"],
   EXPLANATION: ["DECLARER_PROMPT"],

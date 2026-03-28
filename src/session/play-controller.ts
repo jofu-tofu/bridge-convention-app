@@ -75,7 +75,7 @@ export async function processPlayCard(
 
     if (state.tricks.length === 13) {
       await completePlay(state, engine);
-      await resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
+      state.pendingRecommendation = resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
       return {
         accepted: true,
         trickComplete: true,
@@ -91,13 +91,13 @@ export async function processPlayCard(
     if (!state.isUserControlledPlay(state.currentPlayer)) {
       // AI leads next trick -- run AI plays
       const aiPlays = await runAiPlayLoop(state, engine);
-      await resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
+      state.pendingRecommendation = resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
       return buildResult(state, true, aiPlays);
     }
 
     // User leads next trick
     const nextLegalPlays = await getNextLegalPlays(state, engine);
-    await resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
+    state.pendingRecommendation = resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
     return {
       accepted: true,
       trickComplete: true,
@@ -115,13 +115,13 @@ export async function processPlayCard(
   // If next player is AI, run AI plays
   if (!state.isUserControlledPlay(state.currentPlayer)) {
     const aiPlays = await runAiPlayLoop(state, engine);
-    await resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
+    state.pendingRecommendation = resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
     return buildResult(state, false, aiPlays);
   }
 
   // Next player is user-controlled
   const nextLegalPlays = await getNextLegalPlays(state, engine);
-  await resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
+  state.pendingRecommendation = resolveRecommendation(state, recPromise, trickIndex, playIndex, seat, card);
   return {
     accepted: true,
     trickComplete: false,
@@ -204,6 +204,15 @@ function buildPlayContext(state: SessionState, seat: Seat, legalCards: readonly 
   }
   const remaining = state.getRemainingCards(seat);
   const dummyVisible = state.tricks.length > 0 || state.currentTrick.length > 0;
+  const dummySeat = state.dummySeat;
+  const isDummyPlaying = dummySeat !== null && seat === dummySeat;
+  // dummyHand = "the other visible hand in the partnership"
+  // When declarer plays → dummy's hand. When dummy plays → declarer's hand.
+  const otherVisibleHand = dummyVisible && dummySeat && state.contract
+    ? isDummyPlaying
+      ? { cards: state.getRemainingCards(state.contract.declarer) }
+      : { cards: state.getRemainingCards(dummySeat) }
+    : undefined;
   return {
     hand: { cards: remaining },
     currentTrick: [...state.currentTrick],
@@ -212,9 +221,7 @@ function buildPlayContext(state: SessionState, seat: Seat, legalCards: readonly 
     seat,
     trumpSuit: state.trumpSuit,
     legalPlays: legalCards,
-    dummyHand: dummyVisible && state.dummySeat
-      ? { cards: state.getRemainingCards(state.dummySeat) }
-      : undefined,
+    dummyHand: otherVisibleHand,
     inferences: state.playInferences ?? undefined,
   };
 }
@@ -238,7 +245,10 @@ async function resolveRecommendation(
   seat: Seat,
   card: Card,
 ): Promise<void> {
-  if (!recPromise) return;
+  if (!recPromise) {
+    state.pendingRecommendation = null;
+    return;
+  }
   try {
     const rec = await recPromise;
     state.playRecommendations.push({
@@ -247,6 +257,7 @@ async function resolveRecommendation(
       isOptimal: card.suit === rec.card.suit && card.rank === rec.card.rank,
     });
   } catch { /* MC+DDS failure is non-fatal — trick gets no recommendation */ }
+  state.pendingRecommendation = null;
 }
 
 /**

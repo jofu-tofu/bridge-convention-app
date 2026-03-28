@@ -32,13 +32,13 @@ describe("phase machine — pure logic", () => {
     it("EXPLANATION → DECLARER_PROMPT is valid (playThisHand)", () => {
       expect(isValidTransition("EXPLANATION", "DECLARER_PROMPT")).toBe(true);
     });
+
+    it("BIDDING → PLAYING is valid (always play preference)", () => {
+      expect(isValidTransition("BIDDING", "PLAYING")).toBe(true);
+    });
   });
 
   describe("invalid transitions", () => {
-    it("BIDDING → PLAYING is invalid", () => {
-      expect(isValidTransition("BIDDING", "PLAYING")).toBe(false);
-    });
-
     it("PLAYING → BIDDING is invalid", () => {
       expect(isValidTransition("PLAYING", "BIDDING")).toBe(false);
     });

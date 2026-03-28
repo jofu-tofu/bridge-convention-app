@@ -133,11 +133,12 @@ describe("NT_EXPLANATION_CATALOG", () => {
     expect(meaningEntries.length).toBeGreaterThanOrEqual(1);
   });
 
-  test("includes natural-nt meaning entries", () => {
+  test("includes natural-bids meaning entries", () => {
     const meaningEntries = NT_EXPLANATION_CATALOG.entries.filter(
       (e) => "meaningId" in e && (e.meaningId).startsWith("bridge:"),
     );
-    expect(meaningEntries.length).toBe(3);
+    // 3 NT surfaces + 4 suit openings = 7 natural-bids meaning entries
+    expect(meaningEntries.length).toBe(7);
   });
 
   test("templateKeys follow dotted naming convention", () => {

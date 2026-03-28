@@ -77,6 +77,12 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "Side-by-side comparison table, horizontally scrollable on mobile",
   },
   {
+    path: "PracticeModePicker.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Embedded mode selection panel; cards stack vertically on mobile",
+  },
+  {
     path: "ConversationFlowTree.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,

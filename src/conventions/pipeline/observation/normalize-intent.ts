@@ -44,8 +44,9 @@ function strain(params: Readonly<Record<string, string | number | boolean>>): Bi
 // ── Mapping table ──────────────────────────────────────────────────
 
 const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapper>([
-  // ── Natural NT ───────────────────────────────────────────────────
+  // ── Natural openings ────────────────────────────────────────────
   ["NTOpening", () => [{ act: "open", strain: "notrump" }]],
+  ["SuitOpen", (p) => [{ act: "open", strain: strain(p) }]],
   ["NTInvite", () => [{ act: "raise", strain: "notrump", strength: "invitational" }]],
   ["NTGame", () => [{ act: "raise", strain: "notrump", strength: "game" }]],
   ["TerminalPass", () => [{ act: "pass" }]],
@@ -165,6 +166,12 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
   ["DONTShowSpades", () => [{ act: "show", feature: "heldSuit", suit: "spades" }]],
   ["DONTShowHeartsFromDiamonds", () => [{ act: "show", feature: "heldSuit", suit: "hearts" }]],
   ["DONTShowSpadesFromDiamonds", () => [{ act: "show", feature: "heldSuit", suit: "spades" }]],
+
+  // ── Blackwood ──────────────────────────────────────────────────
+  ["BlackwoodAsk", (p) => [{ act: "inquire", feature: p.feature === "kings" ? "control" as const : "keyCards" as const }]],
+  ["ShowAceCount", () => [{ act: "show", feature: "keyCards" }]],
+  ["ShowKingCount", () => [{ act: "show", feature: "control" }]],
+  ["BlackwoodSignoff", () => [{ act: "signoff", strain: "notrump" }]],
 ]);
 
 // ── Public API ─────────────────────────────────────────────────────

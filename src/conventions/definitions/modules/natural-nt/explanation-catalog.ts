@@ -33,6 +33,38 @@ const MEANING_EXPLANATIONS: Record<NaturalNtMeaningId, MeaningExplanationEntry> 
     preferredLevel: "semantic",
     roles: ["pedagogical"],
   },
+  [NATURAL_NT_MEANING_IDS.OPEN_1C]: {
+    explanationId: "natural.open.1c",
+    meaningId: NATURAL_NT_MEANING_IDS.OPEN_1C,
+    templateKey: "natural.open.1c.semantic",
+    displayText: "1♣ opening: 12+ HCP, 3+ clubs",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [NATURAL_NT_MEANING_IDS.OPEN_1D]: {
+    explanationId: "natural.open.1d",
+    meaningId: NATURAL_NT_MEANING_IDS.OPEN_1D,
+    templateKey: "natural.open.1d.semantic",
+    displayText: "1♦ opening: 12+ HCP, 4+ diamonds",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [NATURAL_NT_MEANING_IDS.OPEN_1H]: {
+    explanationId: "natural.open.1h",
+    meaningId: NATURAL_NT_MEANING_IDS.OPEN_1H,
+    templateKey: "natural.open.1h.semantic",
+    displayText: "1♥ opening: 12+ HCP, 5+ hearts (SAYC/2-over-1) or 4+ (Acol)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [NATURAL_NT_MEANING_IDS.OPEN_1S]: {
+    explanationId: "natural.open.1s",
+    meaningId: NATURAL_NT_MEANING_IDS.OPEN_1S,
+    templateKey: "natural.open.1s.semantic",
+    displayText: "1♠ opening: 12+ HCP, 5+ spades (SAYC/2-over-1) or 4+ (Acol)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
 };
 
 // ─── Combined export ─────────────────────────────────────────

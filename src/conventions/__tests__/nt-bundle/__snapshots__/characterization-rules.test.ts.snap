@@ -28,6 +28,6 @@ exports[`Characterization tests: NT bundle golden masters > 1NT-P-2D-P (Transfer
 
 exports[`Characterization tests: NT bundle golden masters > 1NT-P-2D-P (Transfer — opener accepts) > produces transfer accept surfaces for opener 2`] = `"transfer:accept"`;
 
-exports[`Characterization tests: NT bundle golden masters > 1NT-P-2D-P-2H-P (Transfer R3 — after accept) > produces R3 surfaces for transfer responder after accept 1`] = `5`;
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2D-P-2H-P (Transfer R3 — after accept) > produces R3 surfaces for transfer responder after accept 1`] = `6`;
 
 exports[`Characterization tests: NT bundle golden masters > 1NT-P-2D-P-2H-P (Transfer R3 — after accept) > produces R3 surfaces for transfer responder after accept 2`] = `null`;

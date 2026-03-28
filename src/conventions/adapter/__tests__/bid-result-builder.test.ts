@@ -151,6 +151,24 @@ describe("buildBidResult", () => {
     expect(bidResult.alert).toBeNull();
   });
 
+  test("alert includes annotationType when threaded from proposal", () => {
+    const selected = makeCarrier({
+      proposal: makeProposal({
+        isAlertable: true,
+        teachingLabel: "Transfer to hearts",
+        annotationType: "announce",
+      }),
+    });
+    const result = makePipelineResult({ selected, truthSet: [selected] });
+
+    const bidResult = buildBidResult(selected, makeBiddingContext(), "nt", result);
+
+    expect(bidResult.alert).toEqual({
+      teachingLabel: "Transfer to hearts",
+      annotationType: "announce",
+    });
+  });
+
   test("alert uses meaningId as teachingLabel fallback", () => {
     const selected = makeCarrier({
       proposal: makeProposal({

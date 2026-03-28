@@ -19,7 +19,8 @@ import { buildAuction } from "../../../engine/auction-helpers";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { Seat, Vulnerability } from "../../../engine/types";
-import { ntBundle } from "../../definitions/nt-bundle";
+import { specFromBundle, getBundleInput } from "../../definitions/system-registry";
+import { SAYC_SYSTEM_CONFIG } from "../../definitions/system-config";
 import { createSharedFactCatalog } from "../../pipeline/facts/shared-fact-catalog";
 import { collectMatchingClaims } from "../../pipeline/observation/rule-interpreter";
 import { createFactCatalog } from "../../core/fact-catalog";
@@ -30,7 +31,9 @@ import type { AuctionContext } from "../../core/committed-step";
 import type { PublicSnapshot } from "../../core/module-surface";
 import type { ConventionModule } from "../../core/convention-module";
 
-const ruleModules: readonly ConventionModule[] = ntBundle.modules;
+// Use specFromBundle to include base modules (natural-bids) for full bidding simulation
+const ntSpec = specFromBundle(getBundleInput("nt-bundle")!, SAYC_SYSTEM_CONFIG)!;
+const ruleModules: readonly ConventionModule[] = ntSpec.modules;
 
 // Build fact catalog from rule module fact extensions
 const moduleFactExtensions = ruleModules

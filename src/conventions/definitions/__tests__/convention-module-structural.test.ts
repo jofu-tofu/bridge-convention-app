@@ -137,8 +137,8 @@ describe("cross-module invariants", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("all 7 expected modules are present", () => {
-    expect(modules).toHaveLength(7);
+  it("all 8 expected modules are present", () => {
+    expect(modules).toHaveLength(8);
   });
 
   it("meaningIds are globally unique across modules", () => {

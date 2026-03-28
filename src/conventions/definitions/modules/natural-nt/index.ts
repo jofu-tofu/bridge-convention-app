@@ -2,38 +2,40 @@ import type { SystemConfig } from "../../system-config";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 
-import { createOpener1NtSurface, createNtR1Surfaces } from "./meaning-surfaces";
+import { createOpener1NtSurface, createNtR1Surfaces, createSuitOpeningSurfaces } from "./meaning-surfaces";
 import { NT_EXPLANATION_ENTRIES } from "./explanation-catalog";
 
 // ─── Local FSM + States ──────────────────────────────────────
 
-type NaturalNtPhase = "idle" | "opened" | "responded";
+type NaturalBidsPhase = "idle" | "opened-nt" | "opened-suit" | "responded";
 
-const naturalNtLocal: LocalFsm<NaturalNtPhase> = {
+const naturalBidsLocal: LocalFsm<NaturalBidsPhase> = {
   initial: "idle",
   transitions: [
-    { from: "idle", to: "opened", on: { act: "open", strain: "notrump" } },
-    { from: "opened", to: "responded", on: { act: "inquire" } },
-    { from: "opened", to: "responded", on: { act: "transfer" } },
-    { from: "opened", to: "responded", on: { act: "raise" } },
-    { from: "opened", to: "responded", on: { act: "place" } },
-    { from: "opened", to: "responded", on: { act: "signoff" } },
-    { from: "opened", to: "responded", on: { act: "show" } },
+    { from: "idle", to: "opened-nt", on: { act: "open", strain: "notrump" } },
+    { from: "idle", to: "opened-suit", on: { act: "open" } },
+    { from: "opened-nt", to: "responded", on: { act: "inquire" } },
+    { from: "opened-nt", to: "responded", on: { act: "transfer" } },
+    { from: "opened-nt", to: "responded", on: { act: "raise" } },
+    { from: "opened-nt", to: "responded", on: { act: "place" } },
+    { from: "opened-nt", to: "responded", on: { act: "signoff" } },
+    { from: "opened-nt", to: "responded", on: { act: "show" } },
+    // opened-suit has no transitions yet — Phase 2 adds response surfaces
   ],
 };
 
-function createNaturalNtStates(sys: SystemConfig): readonly StateEntry<NaturalNtPhase>[] {
+function createNaturalBidsStates(sys: SystemConfig): readonly StateEntry<NaturalBidsPhase>[] {
   return [
-    { phase: "idle", turn: "opener" as const, surfaces: createOpener1NtSurface(sys) },
-    { phase: "opened", turn: "responder" as const, surfaces: createNtR1Surfaces(sys) },
+    { phase: "idle", turn: "opener" as const, surfaces: [...createOpener1NtSurface(sys), ...createSuitOpeningSurfaces(sys)] },
+    { phase: "opened-nt", turn: "responder" as const, surfaces: createNtR1Surfaces(sys) },
   ];
 }
 
 // ─── Module declarations ─────────────────────────────────────
 
-/** Factory: creates natural-nt declaration parts (facts + explanations).
+/** Factory: creates natural-bids declaration parts (facts + explanations).
  *  Full ConventionModule assembly happens in module-registry.ts. */
-export function createNaturalNtDeclarations(_sys: SystemConfig) {
+export function createNaturalBidsDeclarations(_sys: SystemConfig) {
   return {
     facts: { definitions: [], evaluators: new Map() } as const,
     explanationEntries: NT_EXPLANATION_ENTRIES,
@@ -42,9 +44,9 @@ export function createNaturalNtDeclarations(_sys: SystemConfig) {
 
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
-  moduleId: "natural-nt",
-  description: "Raise to 2NT (invite) or 3NT (game) with no major fit",
-  purpose: "Place the notrump contract at the right level when no major-suit fit is worth exploring",
+  moduleId: "natural-bids",
+  description: "Standard non-alertable bids: natural openings, notrump responses, and common natural sequences",
+  purpose: "Provide the universal base layer of natural bids so every convention has standard entry points and fallback bidding",
   teaching: {
     principle: "When no major fit exists, raise notrump to the level your combined HCP supports — 25 total for game.",
     commonMistakes: [
@@ -52,7 +54,7 @@ export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
       "With a flat 8-9 HCP hand, 2NT (invite) is correct — don't stretch to game with marginal values",
     ],
   },
-  ...createNaturalNtDeclarations(sys),
-  local: naturalNtLocal,
-  states: createNaturalNtStates(sys),
+  ...createNaturalBidsDeclarations(sys),
+  local: naturalBidsLocal,
+  states: createNaturalBidsStates(sys),
 });

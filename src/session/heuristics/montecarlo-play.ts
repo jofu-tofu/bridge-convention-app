@@ -16,7 +16,7 @@ import type { SolveBoardResult } from "../../engine/dds-wasm";
 import type { PlayStrategyProvider } from "./play-profiles";
 import type { PublicBeliefs, DerivedRanges } from "../../inference/inference-types";
 import { PlayConstraintTracker } from "./play-constraint-tracker";
-import { createDeck, SEATS, SUITS, HCP_VALUES } from "../../engine/constants";
+import { createDeck, SEATS, SUITS, HCP_VALUES, partnerSeat } from "../../engine/constants";
 import {
   handsToPBN,
   trumpToDdsIndex,
@@ -394,6 +394,7 @@ export function createMCDDSProvider(
 
       // 7. Fallback if no samples
       if (samples.length === 0) {
+        console.warn(`[mc-dds] fallback: 0 samples (seat=${context.seat}, unknownSeats=[${unknownSeats}], hasBeliefs=${!!beliefConstraints})`);
         return expertFallback(context);
       }
 
@@ -469,6 +470,7 @@ export function createMCDDSProvider(
 
       // 9. All solves failed → expert fallback
       if (cumulativeSuccessCount === 0) {
+        console.warn(`[mc-dds] fallback: 0 DDS successes from ${samples.length} samples`);
         return expertFallback(context);
       }
 
@@ -624,13 +626,8 @@ function computeTopTwo(
 
 function findDummySeat(context: PlayContext): Seat | undefined {
   if (!context.dummyHand) return undefined;
-  // Dummy is declarer's partner
   const declarer = context.contract.declarer;
-  const partnerMap: Record<Seat, Seat> = {
-    N: "S" as Seat,
-    S: "N" as Seat,
-    E: "W" as Seat,
-    W: "E" as Seat,
-  };
-  return partnerMap[declarer];
+  const dummy = partnerSeat(declarer);
+  // When player IS the dummy, dummyHand holds the declarer's cards
+  return context.seat === dummy ? declarer : dummy;
 }

@@ -34,22 +34,22 @@ exports[`per-bundle interference > dont-bundle > interference risk summary is st
 }
 `;
 
-exports[`per-bundle interference > nt-bundle > high-risk encoding collision count is stable 1`] = `17`;
+exports[`per-bundle interference > nt-bundle > high-risk encoding collision count is stable 1`] = `15`;
 
 exports[`per-bundle interference > nt-bundle > interference risk summary is stable 1`] = `
 {
-  "high": 3,
+  "high": 2,
   "low": 0,
-  "medium": 3,
+  "medium": 1,
   "none": 0,
 }
 `;
 
-exports[`per-bundle interference > nt-stayman > high-risk encoding collision count is stable 1`] = `2`;
+exports[`per-bundle interference > nt-stayman > high-risk encoding collision count is stable 1`] = `0`;
 
 exports[`per-bundle interference > nt-stayman > interference risk summary is stable 1`] = `
 {
-  "high": 1,
+  "high": 0,
   "low": 0,
   "medium": 0,
   "none": 0,
@@ -62,7 +62,7 @@ exports[`per-bundle interference > nt-transfers > interference risk summary is s
 {
   "high": 0,
   "low": 0,
-  "medium": 1,
+  "medium": 0,
   "none": 0,
 }
 `;

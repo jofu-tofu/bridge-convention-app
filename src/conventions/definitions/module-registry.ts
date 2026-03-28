@@ -20,6 +20,7 @@ import { moduleFactory as smolen } from "./modules/smolen";
 import { moduleFactory as bergen } from "./modules/bergen";
 import { moduleFactory as dont } from "./modules/dont";
 import { moduleFactory as weakTwos } from "./modules/weak-twos";
+import { moduleFactory as blackwood } from "./modules/blackwood";
 
 // ── Factory type ────────────────────────────────────────────────────
 
@@ -29,13 +30,14 @@ type ModuleFactory = (sys: SystemConfig) => ConventionModule;
 // ── Factory registry ────────────────────────────────────────────────
 
 const MODULE_FACTORIES = new Map<string, ModuleFactory>([
-  ["natural-nt", naturalNt],
+  ["natural-bids", naturalNt],
   ["stayman", stayman],
   ["jacoby-transfers", jacobyTransfers],
   ["smolen", smolen],
   ["bergen", bergen],
   ["dont", dont],
   ["weak-twos", weakTwos],
+  ["blackwood", blackwood],
 ]);
 
 // ── Instance cache ──────────────────────────────────────────────────

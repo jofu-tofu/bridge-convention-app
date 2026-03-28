@@ -6,7 +6,8 @@
 
 import type { Deal, Auction, AuctionEntry, Contract, Call, Seat, Card, Trick, PlayedCard } from "../engine/types";
 import { BidSuit, Suit } from "../engine/types";
-import type { DrillSession, DrillBundle } from "./drill-types";
+import type { DrillSession, DrillBundle, PracticeMode, PracticeFocus, PlayPreference } from "./drill-types";
+import { ALL_TARGETS_FOCUS } from "./drill-types";
 import type { BidResult, BidHistoryEntry } from "../conventions";
 import type { PlayStrategy } from "../conventions";
 import type { PlayStrategyProvider } from "./heuristics/play-profiles";
@@ -58,6 +59,9 @@ export class SessionState {
   readonly conventionId: string;
   readonly conventionName: string;
   readonly isOffConvention: boolean;
+  readonly practiceMode: PracticeMode;
+  readonly practiceFocus: PracticeFocus;
+  readonly playPreference: PlayPreference;
   /** Transitional: raw bundle for stores that still need it. Will be removed (Phases 2-4). */
   readonly bundle: DrillBundle;
 
@@ -82,6 +86,7 @@ export class SessionState {
   playStrategyProvider: PlayStrategyProvider | null;
   playRecommendations: PlayRecommendation[];
   worldClassAdvisor: PlayStrategy | null;
+  pendingRecommendation: Promise<void> | null;
 
   constructor(
     bundle: DrillBundle,
@@ -102,6 +107,9 @@ export class SessionState {
     this.conventionId = bundle.session.config.conventionId;
     this.conventionName = conventionName ?? bundle.session.config.conventionId;
     this.isOffConvention = bundle.isOffConvention ?? false;
+    this.practiceMode = bundle.practiceMode ?? "decision-drill";
+    this.practiceFocus = bundle.practiceFocus ?? ALL_TARGETS_FOCUS;
+    this.playPreference = bundle.playPreference ?? "prompt";
     this.bundle = bundle;
 
     this.playInferences = null;
@@ -123,6 +131,7 @@ export class SessionState {
     this.playStrategyProvider = bundle.session.config.playStrategyProvider ?? null;
     this.playRecommendations = [];
     this.worldClassAdvisor = null;
+    this.pendingRecommendation = null;
 
     // Initialize inference coordinator with engines from bundle
     coordinator.initialize(bundle.nsInferenceEngine, bundle.ewInferenceEngine);
@@ -199,6 +208,7 @@ export class SessionState {
     this.tricks = [];
     this.currentTrick = [];
     this.playRecommendations = [];
+    this.pendingRecommendation = null;
     // NOTE: worldClassAdvisor is NOT reset here — it is set by the service layer
     // in local-service.ts acceptPrompt() AFTER calling initializePlay().
     this.declarerTricksWon = 0;

@@ -14,6 +14,7 @@ import { moduleSurfaces } from "../../core/convention-module";
 import type { BidMeaning } from "../../pipeline/evaluation/meaning";
 import { BERGEN_THRESHOLDS } from "../../definitions/modules/bergen/meaning-surfaces";
 import { WEAK_TWO_THRESHOLDS } from "../../definitions/modules/weak-twos/meaning-surfaces";
+import { NATURAL_BIDS_THRESHOLDS } from "../../definitions/modules/natural-nt/meaning-surfaces";
 
 // ── Known convention threshold objects ──────────────────────────────
 //
@@ -26,6 +27,8 @@ const KNOWN_THRESHOLDS = new Set<number>([
   ...Object.values(BERGEN_THRESHOLDS),
   // Weak Two thresholds
   ...Object.values(WEAK_TWO_THRESHOLDS),
+  // Natural Bids thresholds
+  ...Object.values(NATURAL_BIDS_THRESHOLDS),
 ]);
 
 // ── Helpers ─────────────────────────────────────────────────────────
@@ -61,8 +64,9 @@ function isSystemFact(factId: string): boolean {
 }
 
 /** Fact IDs for suit-length constraints (convention-intrinsic, not HCP). */
+const SUIT_LENGTH_FACTS = new Set(["hand.suitLength", "hand.clubs", "hand.diamonds", "hand.hearts", "hand.spades"]);
 function isSuitLengthFact(factId: string): boolean {
-  return factId.startsWith("hand.suitLength");
+  return SUIT_LENGTH_FACTS.has(factId) || factId.startsWith("hand.suitLength");
 }
 
 // ── Tests ───────────────────────────────────────────────────────────
