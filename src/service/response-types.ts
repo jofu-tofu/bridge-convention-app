@@ -404,6 +404,11 @@ export interface FlowTreeNode {
   readonly moduleDisplayName: string | null;
   readonly children: readonly FlowTreeNode[];
   readonly depth: number;
+  /** Tooltip fields — same content shown in the Bidding Conversation section. */
+  readonly recommendation: "must" | "should" | "may" | "avoid" | null;
+  readonly disclosure: "alert" | "announcement" | "natural" | "standard" | null;
+  readonly explanationText: string | null;
+  readonly clauses: readonly SurfaceClauseView[];
 }
 
 /** Unified conversation flow tree for a bundle. */

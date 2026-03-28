@@ -327,6 +327,10 @@ interface TaggedSurface {
   teachingLabel: string;
   moduleId: string;
   sourceIntent: SourceIntent;
+  recommendation: "must" | "should" | "may" | "avoid" | null;
+  disclosure: "alert" | "announcement" | "natural" | "standard";
+  explanationText: string | null;
+  clauses: readonly SurfaceClauseView[];
 }
 
 interface MutableNode {
@@ -342,6 +346,10 @@ interface MutableNode {
   phase: string;
   /** The transition observation that leads INTO this node's phase. */
   transitionObs: ObsPattern | null;
+  recommendation: "must" | "should" | "may" | "avoid" | null;
+  disclosure: "alert" | "announcement" | "natural" | "standard" | null;
+  explanationText: string | null;
+  clauses: readonly SurfaceClauseView[];
 }
 
 interface ModulePhaseState {
@@ -378,6 +386,10 @@ function mkNode(
     depth,
     phase,
     transitionObs: transObs ?? null,
+    recommendation: surface?.recommendation ?? null,
+    disclosure: surface?.disclosure ?? null,
+    explanationText: surface?.explanationText ?? null,
+    clauses: surface?.clauses ?? [],
   };
 }
 
@@ -392,6 +404,10 @@ function toFlowTreeNode(node: MutableNode): FlowTreeNode {
     moduleDisplayName: node.moduleDisplayName,
     children: node.children.map(toFlowTreeNode),
     depth: node.depth,
+    recommendation: node.recommendation,
+    disclosure: node.disclosure,
+    explanationText: node.explanationText,
+    clauses: node.clauses,
   };
 }
 
@@ -488,14 +504,21 @@ function collectModuleData(mod: ConventionModule): {
     const phases: readonly string[] = Array.isArray(entry.phase)
       ? entry.phase as readonly string[]
       : [entry.phase as string];
-    const surfaces: TaggedSurface[] = entry.surfaces.map((s) => ({
-      meaningId: s.meaningId,
-      ck: callKey(s.encoding.defaultCall),
-      call: s.encoding.defaultCall,
-      teachingLabel: s.teachingLabel,
-      moduleId: mod.moduleId,
-      sourceIntent: s.sourceIntent,
-    }));
+    const surfaces: TaggedSurface[] = entry.surfaces.map((s) => {
+      const rawExplanation = findExplanationText(mod.explanationEntries, s.meaningId);
+      return {
+        meaningId: s.meaningId,
+        ck: callKey(s.encoding.defaultCall),
+        call: s.encoding.defaultCall,
+        teachingLabel: s.teachingLabel,
+        moduleId: mod.moduleId,
+        sourceIntent: s.sourceIntent,
+        recommendation: s.ranking.recommendationBand ?? null,
+        disclosure: s.disclosure,
+        explanationText: rawExplanation ? formatBidReferences(rawExplanation) : null,
+        clauses: mapClauses(s.clauses),
+      };
+    });
     for (const phase of phases) {
       const existing = phaseMap.get(phase);
       const state: ModulePhaseState = {
