@@ -17,6 +17,7 @@ import {
 } from "../conventions";
 import { formatTransitionLabel } from "./format-obs-label";
 import { callKey } from "../engine/call-helpers";
+import { parsePatternCall } from "../engine/auction-helpers";
 import { formatCall, formatBidReferences } from "../service/display/format";
 import type {
   ModuleCatalogEntry,
@@ -279,20 +280,34 @@ function mapClauses(
   });
 }
 
+/** Entry condition info for a module's root: label + optional trigger call. */
+interface EntryCondition {
+  readonly label: string;
+  readonly call: Call | null;
+  readonly turn: "opener" | "responder" | null;
+}
+
+const CAP_ENTRY_CONDITIONS: Record<string, EntryCondition> = {
+  "opening.1nt": { label: "Partner opened 1NT", call: parsePatternCall("1NT"), turn: "opener" },
+  "opening.major": { label: "Partner opened a major", call: null, turn: "opener" },
+  "opening.weak-two": { label: "Partner opened a weak two", call: null, turn: "opener" },
+  "opponent.1nt": { label: "Opponent opened 1NT", call: parsePatternCall("1NT"), turn: null },
+};
+
 /**
  * Derive root phase label from the module's host capability.
  */
 function deriveRootPhaseLabel(moduleId: string): string | null {
-  const capLabels: Record<string, string> = {
-    "opening.1nt": "Partner opened 1NT",
-    "opening.major": "Partner opened a major",
-    "opening.weak-two": "Partner opened a weak two",
-    "opponent.1nt": "Opponent opened 1NT",
-  };
+  const entry = deriveEntryCondition(moduleId);
+  return entry?.label ?? null;
+}
+
+/** Derive full entry condition (label + trigger call) from the module's host capability. */
+function deriveEntryCondition(moduleId: string): EntryCondition | null {
   for (const input of listBundleInputs()) {
     if (!input.memberIds.includes(moduleId)) continue;
     const capId = getPrimaryCapability(input.declaredCapabilities);
-    if (capId && capLabels[capId]) return capLabels[capId];
+    if (capId && CAP_ENTRY_CONDITIONS[capId]) return CAP_ENTRY_CONDITIONS[capId];
   }
   return null;
 }
@@ -480,6 +495,28 @@ function mkNode(
     disclosure: surface?.disclosure ?? null,
     explanationText: surface?.explanationText ?? null,
     clauses: surface?.clauses ?? [],
+  };
+}
+
+/** Create a synthetic root node from an entry condition (label + trigger call). */
+function mkEntryConditionRoot(entry: EntryCondition, phase: string, counter: NodeCounter): MutableNode {
+  const idx = counter.value++;
+  return {
+    id: `root:${phase}:${idx}`,
+    callKey: entry.call ? callKey(entry.call) : null,
+    call: entry.call,
+    turn: entry.turn,
+    label: entry.label,
+    moduleId: null,
+    moduleDisplayName: null,
+    children: [],
+    depth: 0,
+    phase,
+    transitionObs: null,
+    recommendation: null,
+    disclosure: null,
+    explanationText: null,
+    clauses: [],
   };
 }
 
@@ -715,7 +752,14 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
   }
 
   if (!rootNode) {
-    rootNode = mkNode(null, "root", null, 0, counter, input.name);
+    // Derive entry condition from the first module's capability
+    const firstModuleId = modules[0]?.moduleId;
+    const entry = firstModuleId ? deriveEntryCondition(firstModuleId) : null;
+    if (entry) {
+      rootNode = mkEntryConditionRoot(entry, "root", counter);
+    } else {
+      rootNode = mkNode(null, "root", null, 0, counter, input.name);
+    }
   }
 
   // Attach other modules' subtrees under root.
@@ -878,9 +922,14 @@ export function buildModuleFlowTree(moduleId: string): ModuleFlowTreeViewport | 
     }
   }
 
-  // If no opener surface (e.g., a responder-only module like DONT), create synthetic root
+  // If no opener surface, create synthetic root from entry condition (e.g., "Partner opened 1NT")
   if (!rootNode) {
-    rootNode = mkNode(null, mod.local.initial, null, 0, counter, formatModuleName(moduleId));
+    const entry = deriveEntryCondition(moduleId);
+    if (entry) {
+      rootNode = mkEntryConditionRoot(entry, mod.local.initial, counter);
+    } else {
+      rootNode = mkNode(null, mod.local.initial, null, 0, counter, formatModuleName(moduleId));
+    }
   }
 
   // Attach R1 responder surfaces from initial phase first, then match transitions to them
