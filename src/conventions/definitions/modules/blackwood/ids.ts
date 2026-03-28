@@ -31,6 +31,7 @@ export const BLACKWOOD_MEANING_IDS = {
 
   // R2: Responder shows ace count (step responses to 4NT)
   RESPONSE_0_ACES: "blackwood:response-0-aces",
+  RESPONSE_4_ACES: "blackwood:response-4-aces",
   RESPONSE_1_ACE: "blackwood:response-1-ace",
   RESPONSE_2_ACES: "blackwood:response-2-aces",
   RESPONSE_3_ACES: "blackwood:response-3-aces",
@@ -43,6 +44,7 @@ export const BLACKWOOD_MEANING_IDS = {
 
   // R4: Responder shows king count (step responses to 5NT)
   KING_RESPONSE_0: "blackwood:king-response-0",
+  KING_RESPONSE_4: "blackwood:king-response-4",
   KING_RESPONSE_1: "blackwood:king-response-1",
   KING_RESPONSE_2: "blackwood:king-response-2",
   KING_RESPONSE_3: "blackwood:king-response-3",

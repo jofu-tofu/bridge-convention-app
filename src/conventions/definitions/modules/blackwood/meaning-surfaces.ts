@@ -65,6 +65,25 @@ export const ACE_RESPONSE_SURFACES: readonly BidMeaning[] = [
   }, BLACKWOOD_CTX),
 
   createSurface({
+    meaningId: BLACKWOOD_MEANING_IDS.RESPONSE_4_ACES,
+    semanticClassId: BLACKWOOD_CLASSES.ACE_RESPONSE,
+    encoding: bid(5, BidSuit.Clubs),
+    clauses: [
+      {
+        factId: BLACKWOOD_FACT_IDS.ACE_COUNT,
+        operator: "eq",
+        value: 4,
+        isPublic: true,
+      },
+    ],
+    band: "must",
+    declarationOrder: 0,
+    sourceIntent: { type: "ShowAceCount", params: { count: 4 } },
+    disclosure: "standard",
+    teachingLabel: "5♣ — 0 (or 4) aces",
+  }, BLACKWOOD_CTX),
+
+  createSurface({
     meaningId: BLACKWOOD_MEANING_IDS.RESPONSE_1_ACE,
     semanticClassId: BLACKWOOD_CLASSES.ACE_RESPONSE,
     encoding: bid(5, BidSuit.Diamonds),
@@ -185,7 +204,26 @@ export const KING_RESPONSE_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "ShowKingCount", params: { count: 0 } },
     disclosure: "standard",
-    teachingLabel: "6♣ — 0 kings",
+    teachingLabel: "6♣ — 0 (or 4) kings",
+  }, BLACKWOOD_CTX),
+
+  createSurface({
+    meaningId: BLACKWOOD_MEANING_IDS.KING_RESPONSE_4,
+    semanticClassId: BLACKWOOD_CLASSES.KING_RESPONSE,
+    encoding: bid(6, BidSuit.Clubs),
+    clauses: [
+      {
+        factId: BLACKWOOD_FACT_IDS.KING_COUNT,
+        operator: "eq",
+        value: 4,
+        isPublic: true,
+      },
+    ],
+    band: "must",
+    declarationOrder: 0,
+    sourceIntent: { type: "ShowKingCount", params: { count: 4 } },
+    disclosure: "standard",
+    teachingLabel: "6♣ — 0 (or 4) kings",
   }, BLACKWOOD_CTX),
 
   createSurface({
