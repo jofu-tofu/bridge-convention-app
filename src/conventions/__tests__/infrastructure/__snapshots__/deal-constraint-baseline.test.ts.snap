@@ -349,7 +349,7 @@ exports[`deal constraint baseline > dont-bundle > 2/1 > dealConstraints snapshot
       "maxHcp": 15,
       "minHcp": 8,
       "minLengthAny": {
-        "C": 5,
+        "C": 4,
         "D": 4,
         "H": 4,
         "S": 4,
@@ -382,7 +382,7 @@ exports[`deal constraint baseline > dont-bundle > 2/1 > dealConstraints structur
   "minHcp": 8,
   "minLength": undefined,
   "minLengthAny": {
-    "C": 5,
+    "C": 4,
     "D": 4,
     "H": 4,
     "S": 4,
@@ -445,7 +445,7 @@ exports[`deal constraint baseline > dont-bundle > Acol > dealConstraints snapsho
       "maxHcp": 15,
       "minHcp": 8,
       "minLengthAny": {
-        "C": 5,
+        "C": 4,
         "D": 4,
         "H": 4,
         "S": 4,
@@ -478,7 +478,7 @@ exports[`deal constraint baseline > dont-bundle > Acol > dealConstraints structu
   "minHcp": 8,
   "minLength": undefined,
   "minLengthAny": {
-    "C": 5,
+    "C": 4,
     "D": 4,
     "H": 4,
     "S": 4,
@@ -541,7 +541,7 @@ exports[`deal constraint baseline > dont-bundle > SAYC > dealConstraints snapsho
       "maxHcp": 15,
       "minHcp": 8,
       "minLengthAny": {
-        "C": 5,
+        "C": 4,
         "D": 4,
         "H": 4,
         "S": 4,
@@ -574,7 +574,7 @@ exports[`deal constraint baseline > dont-bundle > SAYC > dealConstraints structu
   "minHcp": 8,
   "minLength": undefined,
   "minLengthAny": {
-    "C": 5,
+    "C": 4,
     "D": 4,
     "H": 4,
     "S": 4,

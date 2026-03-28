@@ -174,6 +174,15 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
   ["DONTShowSpades", () => [{ act: "show", feature: "heldSuit", suit: "spades" }]],
   ["DONTShowHeartsFromDiamonds", () => [{ act: "show", feature: "heldSuit", suit: "hearts" }]],
   ["DONTShowSpadesFromDiamonds", () => [{ act: "show", feature: "heldSuit", suit: "spades" }]],
+  ["DONTBypassDiamonds", () => [{ act: "show", feature: "heldSuit", suit: "diamonds" }]],
+  ["DONTBypassHearts", () => [{ act: "show", feature: "heldSuit", suit: "hearts" }]],
+  ["DONTBypassSpades", () => [{ act: "show", feature: "heldSuit", suit: "spades" }]],
+  ["DONTBypassHeartsAfter2C", () => [{ act: "show", feature: "heldSuit", suit: "hearts" }]],
+  ["DONTBypassSpadesAfter2C", () => [{ act: "show", feature: "heldSuit", suit: "spades" }]],
+  ["DONTBypassSpadesAfter2D", () => [{ act: "show", feature: "heldSuit", suit: "spades" }]],
+  ["DONTEscape3CAfter2S", () => [{ act: "show", feature: "heldSuit", suit: "clubs" }]],
+  ["DONTEscape3DAfter2S", () => [{ act: "show", feature: "heldSuit", suit: "diamonds" }]],
+  ["DONTEscape3HAfter2S", () => [{ act: "show", feature: "heldSuit", suit: "hearts" }]],
 
   // ── Blackwood ──────────────────────────────────────────────────
   ["BlackwoodAsk", (p) => [{ act: "inquire", feature: p.feature === "kings" ? "control" as const : "keyCards" as const }]],
