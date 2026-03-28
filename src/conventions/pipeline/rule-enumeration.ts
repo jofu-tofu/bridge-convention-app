@@ -83,7 +83,7 @@ export function enumerateRuleAtoms(
             atom: {
               moduleId: mod.moduleId,
               meaningId: surface.meaningId,
-              meaningLabel: surface.teachingLabel,
+              meaningLabel: surface.teachingLabel.name,
               encoding: surface.encoding.defaultCall,
               primaryPhaseGuard: state.phase,
               turnGuard: state.turn,

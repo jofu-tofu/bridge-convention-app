@@ -10,7 +10,7 @@ function makeWrongViewportFeedback(): ViewportBidFeedback {
     userCallDisplay: "Pass",
     correctCall: { type: "bid", level: 2, strain: "C" as never },
     correctCallDisplay: "2C",
-    correctBidLabel: "Stayman",
+    correctBidLabel: { name: "Stayman", summary: "Stayman convention ask" },
     correctBidExplanation: "Stayman convention ask",
     requiresRetry: true,
   };

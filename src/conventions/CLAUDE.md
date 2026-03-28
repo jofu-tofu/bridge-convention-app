@@ -41,6 +41,8 @@ When creating or modifying convention modules under `definitions/modules/`:
 
 5. **Profile builder.** Use `createSystemProfile({ baseSystem, ... })` for building system profiles.
 
+6. **Use branded factory functions for all authored text fields.** Import `bidName()`, `bidSummary()`, etc. from `core/authored-text.ts`. `teachingLabel` on surfaces is a `TeachingLabel` object (`{ name: BidName, summary: BidSummary }`), not a plain string. Module `description` and `purpose` use `moduleDescription()` and `modulePurpose()`. Teaching fields use `teachingTradeoff()`, `teachingPrinciple()`, `teachingItem()`.
+
 ## Test Organization
 
 Convention-specific tests live in `__tests__/<convention-name>/` (e.g., `__tests__/nt-bundle/`). Core infrastructure tests live in `__tests__/infrastructure/` and use synthetic fixtures — zero imports from `definitions/`.

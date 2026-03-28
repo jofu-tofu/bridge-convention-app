@@ -52,7 +52,7 @@ describe("Acol 1NT opening surface (natural-bids rules)", () => {
   it("has teaching label '12 to 14'", () => {
     const surface = findSurface("natural-bids", "bridge:1nt-opening");
     expect(surface).toBeDefined();
-    expect(surface!.teachingLabel).toBe("12 to 14");
+    expect(surface!.teachingLabel.name).toBe("12 to 14");
   });
 });
 

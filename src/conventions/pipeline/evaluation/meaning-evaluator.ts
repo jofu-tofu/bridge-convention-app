@@ -137,7 +137,7 @@ export function evaluateBidMeaning(
     }),
     provenance: {
       moduleId: surface.moduleId ?? "unknown",
-      nodeName: surface.teachingLabel ?? surface.meaningId,
+      nodeName: surface.teachingLabel.name,
       origin: "meaning-pipeline" as const,
     },
   };

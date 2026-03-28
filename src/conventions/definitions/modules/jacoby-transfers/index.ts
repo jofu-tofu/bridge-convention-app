@@ -3,6 +3,7 @@ import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { NegotiationDelta } from "../../../core/committed-step";
 import type { SystemConfig } from "../../system-config";
+import { moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple, teachingItem } from "../../../core/authored-text";
 
 import { createTransferFacts } from "./facts";
 import { TRANSFER_EXPLANATION_ENTRIES } from "./explanation-catalog";
@@ -106,14 +107,14 @@ export function createJacobyTransfersDeclarations(sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "jacoby-transfers",
-  description: "Bid 2D/2H over 1NT to show a 5+ card major and let opener declare",
-  purpose: "Right-side the contract so the strong 1NT hand stays hidden, while guaranteeing a trump fit when responder has a 5+ card major",
+  description: moduleDescription("Bid 2D/2H over 1NT to show a 5+ card major and let opener declare"),
+  purpose: modulePurpose("Right-side the contract so the strong 1NT hand stays hidden, while guaranteeing a trump fit when responder has a 5+ card major"),
   teaching: {
-    tradeoff: "Using 2D and 2H as transfers means you can't play in a natural 2D or 2H contract.",
-    principle: "Transfer principle: let the strong hand be declarer to protect tenaces from the opening lead.",
+    tradeoff: teachingTradeoff("Using 2D and 2H as transfers means you can't play in a natural 2D or 2H contract."),
+    principle: teachingPrinciple("Transfer principle: let the strong hand be declarer to protect tenaces from the opening lead."),
     commonMistakes: [
-      "Remember to complete the transfer — after opener bids 2H/2S, you must rebid to show your strength and shape",
-      "With exactly 5 cards in the major and invitational values, bid 2NT after the transfer to give opener a choice",
+      teachingItem("Remember to complete the transfer — after opener bids 2H/2S, you must rebid to show your strength and shape"),
+      teachingItem("With exactly 5 cards in the major and invitational values, bid 2NT after the transfer to give opener a choice"),
     ],
   },
   ...createJacobyTransfersDeclarations(sys),

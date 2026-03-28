@@ -53,6 +53,15 @@ export type ServiceEncoderKind =
 /** Fact operator — service-owned mirror of pipeline/meaning FactOperator. */
 export type ServiceFactOperator = "gte" | "lte" | "eq" | "range" | "boolean" | "in";
 
+// ── Service-owned teaching label ───────────────────────────────────
+
+/** Structured teaching label — service-owned mirror of conventions/core TeachingLabel.
+ *  Plain strings (no branded types) at the service boundary. */
+export interface ServiceTeachingLabel {
+  readonly name: string;
+  readonly summary: string;
+}
+
 // ── Service-owned teaching types ────────────────────────────────────
 
 /** Condition role — service-owned mirror of pipeline/evidence-bundle ConditionRole. */
@@ -384,7 +393,7 @@ export interface SurfaceClauseView {
 /** Surface detail with explanation text. */
 export interface SurfaceDetailView {
   readonly meaningId: string;
-  readonly teachingLabel: string;
+  readonly teachingLabel: ServiceTeachingLabel;
   readonly call: Call;
   readonly callDisplay: string;
   readonly disclosure: "alert" | "announcement" | "natural" | "standard";
@@ -511,9 +520,9 @@ export interface AuctionEntryView {
 export interface BiddingOptionView {
   readonly call: Call;
   readonly callDisplay: string;
-  /** Convention meaning (e.g., "Stayman — asks for 4-card major").
+  /** Structured teaching label: `.name` for compact display, `.summary` for explanation.
    *  Undefined for calls with no convention-level meaning. */
-  readonly teachingLabel?: string;
+  readonly teachingLabel?: ServiceTeachingLabel;
   /** Whether this bid would need to be alerted to opponents. */
   readonly isAlertable: boolean;
   /** Authored recommendation band from the convention.  Undefined for
@@ -536,8 +545,8 @@ export interface ViewportBidFeedback {
   // ── Correct answer (shown after wrong/near-miss bids) ─────────
   readonly correctCall?: Call;
   readonly correctCallDisplay?: string;
-  readonly correctBidLabel?: string; // "Stayman 2♣"
-  readonly correctBidExplanation?: string; // "Ask opener for 4-card major"
+  readonly correctBidLabel?: ServiceTeachingLabel;
+  readonly correctBidExplanation?: string;
 
   // ── Structured explanation ────────────────────────────────────
   /** Condition nodes from the teaching explanation (e.g., "HCP ≥ 8 ✓"). */

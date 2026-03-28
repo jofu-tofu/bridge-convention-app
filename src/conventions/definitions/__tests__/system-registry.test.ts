@@ -90,7 +90,7 @@ describe("resolveBundle", () => {
     expect(opening).toBeDefined();
     const gteClause = opening!.clauses.find((c) => c.factId === "hand.hcp" && c.operator === "gte");
     expect(gteClause!.value).toBe(12);
-    expect(opening!.teachingLabel).toBe("12 to 14");
+    expect(opening!.teachingLabel.name).toBe("12 to 14");
   });
 
   it("SAYC spec has 1NT opening with 15-17 HCP (via base module natural-bids)", () => {
@@ -101,7 +101,7 @@ describe("resolveBundle", () => {
     expect(opening).toBeDefined();
     const gteClause = opening!.clauses.find((c) => c.factId === "hand.hcp" && c.operator === "gte");
     expect(gteClause!.value).toBe(15);
-    expect(opening!.teachingLabel).toBe("15 to 17");
+    expect(opening!.teachingLabel.name).toBe("15 to 17");
   });
 
   it("produces derivedTeaching with surfaceGroups array", () => {

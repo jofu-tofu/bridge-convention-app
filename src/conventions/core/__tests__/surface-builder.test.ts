@@ -3,6 +3,10 @@ import { createSurface } from "../surface-builder";
 import type { ModuleContext, SurfaceInput } from "../surface-builder";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
+import { bidName, bidSummary } from "../authored-text";
+import type { TeachingLabel } from "../authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
 const bid = (level: number, strain: BidSuit): Call => ({
   type: "bid",
@@ -24,7 +28,7 @@ function baseInput(overrides?: Partial<SurfaceInput>): SurfaceInput {
     declarationOrder: 0,
     sourceIntent: { type: "Test", params: {} },
     disclosure: "alert",
-    teachingLabel: "Test surface",
+    teachingLabel: tl("Test surface"),
     ...overrides,
   };
 }
@@ -41,7 +45,7 @@ describe("createSurface", () => {
     expect(surface.ranking.modulePrecedence).toBe(0);
     expect(surface.ranking.declarationOrder).toBe(0);
     expect(surface.sourceIntent).toEqual({ type: "Test", params: {} });
-    expect(surface.teachingLabel).toBe("Test surface");
+    expect(surface.teachingLabel).toEqual(tl("Test surface"));
   });
 
   it("injects moduleId from ModuleContext", () => {

@@ -325,7 +325,7 @@
                         <div class="px-4 py-3">
                           <div class="flex items-center gap-3 mb-1">
                             <span class="font-mono text-sm font-bold text-text-primary">{surface.callDisplay}</span>
-                            <span class="text-sm text-text-secondary">{surface.teachingLabel}</span>
+                            <span class="text-sm text-text-secondary">{surface.teachingLabel.name}</span>
                             {#if surface.recommendation}
                               <span class="text-xs font-medium px-2 py-0.5 rounded-full {recommendationClass(surface.recommendation)}">
                                 {surface.recommendation}

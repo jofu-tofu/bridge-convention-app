@@ -1,6 +1,7 @@
 import type { SystemConfig } from "../../system-config";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
+import { moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple, teachingItem } from "../../../core/authored-text";
 
 import { createOpener1NtSurface, createNtR1Surfaces, createSuitOpeningSurfaces } from "./meaning-surfaces";
 import { NT_EXPLANATION_ENTRIES } from "./explanation-catalog";
@@ -45,13 +46,14 @@ export function createNaturalBidsDeclarations(_sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "natural-bids",
-  description: "Standard non-alertable bids: natural openings, notrump responses, and common natural sequences",
-  purpose: "Provide the universal base layer of natural bids so every convention has standard entry points and fallback bidding",
+  description: moduleDescription("Standard non-alertable bids: natural openings, notrump responses, and common natural sequences"),
+  purpose: modulePurpose("Provide the universal base layer of natural bids so every convention has standard entry points and fallback bidding"),
   teaching: {
-    principle: "When no major fit exists, raise notrump to the level your combined HCP supports — 25 total for game.",
+    tradeoff: teachingTradeoff("Natural bids have no tradeoff — they are the default base layer that other conventions build on"),
+    principle: teachingPrinciple("When no major fit exists, raise notrump to the level your combined HCP supports — 25 total for game."),
     commonMistakes: [
-      "Don't jump to 3NT with a worthless doubleton — consider if a suit contract might be safer",
-      "With a flat 8-9 HCP hand, 2NT (invite) is correct — don't stretch to game with marginal values",
+      teachingItem("Don't jump to 3NT with a worthless doubleton — consider if a suit contract might be safer"),
+      teachingItem("With a flat 8-9 HCP hand, 2NT (invite) is correct — don't stretch to game with marginal values"),
     ],
   },
   ...createNaturalBidsDeclarations(sys),

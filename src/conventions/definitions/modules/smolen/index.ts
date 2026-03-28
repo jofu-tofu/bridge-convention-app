@@ -2,6 +2,7 @@ import type { LocalFsm, StateEntry, RouteExpr } from "../../../core/rule-module"
 import type { ConventionModule } from "../../../core/convention-module";
 import type { NegotiationDelta } from "../../../core/committed-step";
 import type { SystemConfig } from "../../system-config";
+import { moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple, teachingItem } from "../../../core/authored-text";
 
 import { createSmolenEntrySurfaces, createSmolenR3Surfaces, OPENER_SMOLEN_HEARTS_SURFACES, OPENER_SMOLEN_SPADES_SURFACES, RESPONDER_SMOLEN_COMPLETE_SPADES_SURFACES } from "./meaning-surfaces";
 import { createSmolenFacts } from "./facts";
@@ -85,14 +86,14 @@ export function createSmolenDeclarations(_sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "smolen",
-  description: "Jump to 3H/3S after Stayman denial to show 5-4 in majors, game-forcing",
-  purpose: "Handle the 5-4 major hand with game values after Stayman gets a 2D denial — let opener choose the fit while keeping the strong hand as declarer",
+  description: moduleDescription("Jump to 3H/3S after Stayman denial to show 5-4 in majors, game-forcing"),
+  purpose: modulePurpose("Handle the 5-4 major hand with game values after Stayman gets a 2D denial — let opener choose the fit while keeping the strong hand as declarer"),
   teaching: {
-    tradeoff: "Smolen uses jump bids (3H/3S) that could otherwise be used as natural invitational bids.",
-    principle: "Bid the shorter major at the 3-level — this tells opener about both majors and lets the strong hand declare.",
+    tradeoff: teachingTradeoff("Smolen uses jump bids (3H/3S) that could otherwise be used as natural invitational bids."),
+    principle: teachingPrinciple("Bid the shorter major at the 3-level — this tells opener about both majors and lets the strong hand declare."),
     commonMistakes: [
-      "Smolen bids show the SHORT major — 3H shows 4 hearts and 5 spades, not the other way around",
-      "Only use Smolen with game-forcing values — with invitational hands, use a different approach after Stayman denial",
+      teachingItem("Smolen bids show the SHORT major — 3H shows 4 hearts and 5 spades, not the other way around"),
+      teachingItem("Only use Smolen with game-forcing values — with invitational hands, use a different approach after Stayman denial"),
     ],
   },
   ...createSmolenDeclarations(sys),

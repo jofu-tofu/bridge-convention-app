@@ -9,6 +9,10 @@ import {
   makeProvenance,
   makeClause,
 } from "../../../test-support/convention-factories";
+import { bidName, bidSummary } from "../../core/authored-text";
+import type { TeachingLabel } from "../../core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
 describe("buildParseTree", () => {
   test("empty arbitration and provenance produces empty tree with no selected path", () => {
@@ -25,7 +29,7 @@ describe("buildParseTree", () => {
     const proposal = makeProposal({
       meaningId: "stayman:ask-major",
       moduleId: "stayman",
-      teachingLabel: "Stayman",
+      teachingLabel: tl("Stayman"),
     });
     const encoded = makeEncoded({
       proposal,
@@ -56,7 +60,7 @@ describe("buildParseTree", () => {
     const otherProposal = makeProposal({
       meaningId: "transfer:hearts",
       moduleId: "transfers",
-      teachingLabel: "Transfer to hearts",
+      teachingLabel: tl("Transfer to hearts"),
     });
     const otherEncoded = makeEncoded({
       proposal: otherProposal,
@@ -172,7 +176,7 @@ describe("buildParseTree", () => {
     const proposal = makeProposal({
       meaningId: "stayman:ask-major",
       moduleId: "stayman",
-      teachingLabel: "Stayman",
+      teachingLabel: tl("Stayman"),
     });
     const call = makeCall(2, BidSuit.Clubs);
     const encoded = makeEncoded({ proposal, call });

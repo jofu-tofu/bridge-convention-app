@@ -2,6 +2,10 @@ import { describe, it, expect } from "vitest";
 import type { BidMeaning, BidMeaningClause } from "../evaluation/meaning";
 import type { Call } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
+import { bidName, bidSummary } from "../../core/authored-text";
+import type { TeachingLabel } from "../../core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
 describe("BidMeaning", () => {
   it("can construct a BidMeaning with all required fields", () => {
@@ -30,7 +34,7 @@ describe("BidMeaning", () => {
         params: {},
       },
       disclosure: "alert" as const,
-      teachingLabel: "Stayman 2C",
+      teachingLabel: tl("Stayman 2C"),
     };
 
     expect(surface.meaningId).toBe("stayman:ask-major");
@@ -69,7 +73,7 @@ describe("BidMeaning", () => {
         params: { level: 2 },
       },
       disclosure: "alert" as const,
-      teachingLabel: "Stayman Convention",
+      teachingLabel: tl("Stayman Convention"),
     };
 
     expect(surface.semanticClassId).toBe("bridge:major-ask");
@@ -77,7 +81,7 @@ describe("BidMeaning", () => {
     expect(surface.encoding.alternateEncodings![0]!.condition).toBe(
       "after-interference",
     );
-    expect(surface.teachingLabel).toBe("Stayman Convention");
+    expect(surface.teachingLabel).toEqual(tl("Stayman Convention"));
   });
 
   it("all operator types can be used in clauses (gte, lte, eq, range, boolean, in)", () => {
@@ -146,7 +150,7 @@ describe("BidMeaning", () => {
       },
       sourceIntent: { type: "test", params: {} },
       disclosure: "alert" as const,
-      teachingLabel: "3NT contract bid",
+      teachingLabel: tl("3NT contract bid"),
     };
 
     const passSurface: BidMeaning = {
@@ -164,7 +168,7 @@ describe("BidMeaning", () => {
       },
       sourceIntent: { type: "test", params: {} },
       disclosure: "alert" as const,
-      teachingLabel: "Pass",
+      teachingLabel: tl("Pass"),
     };
 
     expect(contractBidSurface.encoding.defaultCall.type).toBe("bid");

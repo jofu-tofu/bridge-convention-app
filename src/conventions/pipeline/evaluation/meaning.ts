@@ -3,6 +3,7 @@ import type { Call } from "../../../engine/types";
 import type {
   FactConstraint,
 } from "../../core/agreement-module";
+import type { TeachingLabel } from "../../core/authored-text";
 
 // MeaningId — string, colon-namespaced (e.g., "stayman:ask-major", "bridge:nt-invite")
 export type MeaningId = string;
@@ -99,7 +100,7 @@ export interface MeaningProposal {
   readonly modulePriority?: "preferred" | "alternative";
   /** Human-readable teaching label (e.g., "Stayman 2C", "Transfer to hearts").
    *  Threaded from BidMeaning.teachingLabel through the evaluation pipeline. */
-  readonly teachingLabel?: string;
+  readonly teachingLabel?: TeachingLabel;
   /** True when this bid is alertable (derived from sourceIntent.type). */
   readonly isAlertable?: boolean;
   /** ACBL annotation type: alert, announce, or educational (derived from disclosure). */
@@ -187,7 +188,7 @@ export interface BidMeaning {
    *  - "standard": universally known convention, not ACBL-alerted (e.g., Stayman)
    *  - "natural": natural meaning, no disclosure needed */
   readonly disclosure: "alert" | "announcement" | "natural" | "standard";
-  readonly teachingLabel: string;
+  readonly teachingLabel: TeachingLabel;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
 }
 

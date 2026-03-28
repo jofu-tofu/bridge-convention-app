@@ -48,7 +48,7 @@ export function buildParseTree(
     }
     entry.truthMeanings.push({
       meaningId: encoded.proposal.meaningId,
-      displayLabel: encoded.proposal.teachingLabel ?? encoded.proposal.meaningId,
+      displayLabel: encoded.proposal.teachingLabel?.name ?? encoded.proposal.meaningId,
       call: encoded.call,
     });
     // Collect conditions from the first truth-set meaning per module

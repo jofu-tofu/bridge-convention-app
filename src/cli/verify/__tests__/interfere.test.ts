@@ -11,13 +11,19 @@ import {
   classifyPairRisk,
 } from "../interfere";
 
+import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple } from "../../../conventions/core/authored-text";
+import type { TeachingLabel } from "../../../conventions/core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
+
 // ── Fixture factories ─────────────────────────────────────────────
 
 function makeModule(id: string, overrides: Partial<ConventionModule> = {}): ConventionModule {
   return {
     moduleId: id,
-    description: "test module",
-    purpose: "test",
+    description: moduleDescription("test module description for interfere"),
+    purpose: modulePurpose("test purpose for interfere module"),
+    teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
     local: { initial: "idle", transitions: [] },
     states: [],
     facts: { definitions: [], evaluators: new Map() },
@@ -33,7 +39,7 @@ function makeSurface(
   return {
     meaningId,
     semanticClassId: `test:${meaningId}`,
-    teachingLabel: meaningId,
+    teachingLabel: tl(meaningId),
     sourceIntent: { type: "TestIntent", params: {} },
     clauses: [],
     encoding: {

@@ -6,13 +6,18 @@ import type {
   PhaseTransition,
 } from "../rule-module";
 import type { ConventionModule } from "../convention-module";
+import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple } from "../authored-text";
+import type { TeachingLabel } from "../authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
 describe("ConventionModule type construction", () => {
   it("constructs a minimal ConventionModule", () => {
     const mod: ConventionModule<"idle" | "active"> = {
       moduleId: "test-module",
-      description: "test module",
-      purpose: "test",
+      description: moduleDescription("test module description for rule module"),
+      purpose: modulePurpose("test purpose for rule module tests"),
+      teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: {
         initial: "idle",
         transitions: [],
@@ -115,7 +120,7 @@ describe("ConventionModule type construction", () => {
         {
           meaningId: "test",
           semanticClassId: "test:class",
-          teachingLabel: "Test surface",
+          teachingLabel: tl("Test surface"),
         // any: BidMeaning has many fields; test only exercises type compatibility
         } as never,
       ],
@@ -129,7 +134,7 @@ describe("ConventionModule type construction", () => {
       phase: "active",
       turn: "opener",
       surfaces: [
-        { meaningId: "test", semanticClassId: "test:class", teachingLabel: "Test" } as never,
+        { meaningId: "test", semanticClassId: "test:class", teachingLabel: tl("Test") } as never,
       ],
       negotiationDelta: { forcing: "one-round", captain: "responder" },
     };
@@ -143,7 +148,7 @@ describe("ConventionModule type construction", () => {
     const entry: StateEntry<"idle"> = {
       phase: "idle",
       surfaces: [
-        { meaningId: "test", semanticClassId: "test:class", teachingLabel: "Test" } as never,
+        { meaningId: "test", semanticClassId: "test:class", teachingLabel: tl("Test") } as never,
       ],
     };
     expect(entry.negotiationDelta).toBeUndefined();

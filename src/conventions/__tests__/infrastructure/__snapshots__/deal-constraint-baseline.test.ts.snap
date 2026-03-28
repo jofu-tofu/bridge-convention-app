@@ -49,7 +49,7 @@ exports[`deal constraint baseline > bergen-bundle > 2/1 > dealConstraints struct
 exports[`deal constraint baseline > bergen-bundle > 2/1 > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": {
     "H": 4,
@@ -159,7 +159,7 @@ exports[`deal constraint baseline > bergen-bundle > Acol > dealConstraints struc
 exports[`deal constraint baseline > bergen-bundle > Acol > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": {
     "H": 4,
@@ -269,7 +269,7 @@ exports[`deal constraint baseline > bergen-bundle > SAYC > dealConstraints struc
 exports[`deal constraint baseline > bergen-bundle > SAYC > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": {
     "H": 4,
@@ -376,7 +376,7 @@ exports[`deal constraint baseline > dont-bundle > 2/1 > dealConstraints structur
 exports[`deal constraint baseline > dont-bundle > 2/1 > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": 15,
   "maxLength": undefined,
   "minHcp": 8,
@@ -472,7 +472,7 @@ exports[`deal constraint baseline > dont-bundle > Acol > dealConstraints structu
 exports[`deal constraint baseline > dont-bundle > Acol > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": 15,
   "maxLength": undefined,
   "minHcp": 8,
@@ -568,7 +568,7 @@ exports[`deal constraint baseline > dont-bundle > SAYC > dealConstraints structu
 exports[`deal constraint baseline > dont-bundle > SAYC > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": 15,
   "maxLength": undefined,
   "minHcp": 8,
@@ -657,7 +657,7 @@ exports[`deal constraint baseline > nt-bundle > 2/1 > dealConstraints structural
 exports[`deal constraint baseline > nt-bundle > 2/1 > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": undefined,
@@ -751,7 +751,7 @@ exports[`deal constraint baseline > nt-bundle > Acol > dealConstraints structura
 exports[`deal constraint baseline > nt-bundle > Acol > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": undefined,
@@ -845,7 +845,7 @@ exports[`deal constraint baseline > nt-bundle > SAYC > dealConstraints structura
 exports[`deal constraint baseline > nt-bundle > SAYC > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": undefined,
@@ -940,7 +940,7 @@ exports[`deal constraint baseline > nt-stayman > 2/1 > dealConstraints structura
 exports[`deal constraint baseline > nt-stayman > 2/1 > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": 8,
@@ -1035,7 +1035,7 @@ exports[`deal constraint baseline > nt-stayman > Acol > dealConstraints structur
 exports[`deal constraint baseline > nt-stayman > Acol > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": 10,
@@ -1130,7 +1130,7 @@ exports[`deal constraint baseline > nt-stayman > SAYC > dealConstraints structur
 exports[`deal constraint baseline > nt-stayman > SAYC > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": 8,
@@ -1224,7 +1224,7 @@ exports[`deal constraint baseline > nt-transfers > 2/1 > dealConstraints structu
 exports[`deal constraint baseline > nt-transfers > 2/1 > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": undefined,
@@ -1318,7 +1318,7 @@ exports[`deal constraint baseline > nt-transfers > Acol > dealConstraints struct
 exports[`deal constraint baseline > nt-transfers > Acol > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": undefined,
@@ -1412,7 +1412,7 @@ exports[`deal constraint baseline > nt-transfers > SAYC > dealConstraints struct
 exports[`deal constraint baseline > nt-transfers > SAYC > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": undefined,
@@ -1520,7 +1520,7 @@ exports[`deal constraint baseline > weak-twos-bundle > 2/1 > dealConstraints str
 exports[`deal constraint baseline > weak-twos-bundle > 2/1 > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": 4,
@@ -1633,7 +1633,7 @@ exports[`deal constraint baseline > weak-twos-bundle > Acol > dealConstraints st
 exports[`deal constraint baseline > weak-twos-bundle > Acol > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": 4,
@@ -1746,7 +1746,7 @@ exports[`deal constraint baseline > weak-twos-bundle > SAYC > dealConstraints st
 exports[`deal constraint baseline > weak-twos-bundle > SAYC > dealConstraints structural properties 2`] = `
 {
   "balanced": undefined,
-  "hasCustomCheck": false,
+  "hasCustomCheck": true,
   "maxHcp": undefined,
   "maxLength": undefined,
   "minHcp": 4,

@@ -17,6 +17,10 @@ import type { ConventionModule, ConventionSpec } from "../..";
 import { makeSurface, makeRanking } from "../../../test-support/convention-factories";
 import type { BidMeaning } from "../../pipeline/evaluation/meaning";
 import type { FactCatalogExtension } from "../../core/fact-catalog";
+import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple } from "../../core/authored-text";
+import type { TeachingLabel } from "../../core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 import {
   protocolSpecToStrategy,
   buildObservationLogViaRules,
@@ -44,14 +48,15 @@ function makeRuleModule(overrides: {
       clauses: [],
       ranking: makeRanking({ recommendationBand: "should" }),
       sourceIntent: { type: "TestBid", params: {} },
-      teachingLabel: "Test bid",
+      teachingLabel: tl("Test bid"),
     }),
   ];
 
   return {
     moduleId: overrides.id ?? "test-module",
-    description: "test module",
-    purpose: "test",
+    description: moduleDescription("test module description for adapter"),
+    purpose: modulePurpose("test purpose for adapter module"),
+    teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
     local: {
       initial: "idle",
       transitions: [],
@@ -140,7 +145,7 @@ describe("protocolSpecToStrategy", () => {
       clauses: [],
       ranking: makeRanking({ recommendationBand: "should" }),
       sourceIntent: { type: "TestBid", params: {} },
-      teachingLabel: "Always bid 2C",
+      teachingLabel: tl("Always bid 2C"),
     });
 
     const mod = makeRuleModule({ surfaces: [surface], turn: "opener" });
@@ -171,7 +176,7 @@ describe("protocolSpecToStrategy", () => {
       clauses: [],
       ranking: makeRanking({ recommendationBand: "should" }),
       sourceIntent: { type: "TestBid", params: {} },
-      teachingLabel: "Eval check",
+      teachingLabel: tl("Eval check"),
     });
 
     // Use opener turn — synthetic module doesn't resolve 1NT, so South = opener
@@ -225,13 +230,14 @@ describe("buildObservationLogViaRules", () => {
       clauses: [],
       ranking: makeRanking({ recommendationBand: "should" }),
       sourceIntent: { type: "Open1NT", params: {} },
-      teachingLabel: "1NT opening",
+      teachingLabel: tl("1NT opening"),
     });
 
     const mod: ConventionModule = {
       moduleId: "test",
-      description: "test module",
-      purpose: "test",
+      description: moduleDescription("test module for protocol adapter"),
+      purpose: modulePurpose("test purpose for protocol adapter"),
+      teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: { initial: "idle", transitions: [] },
       states: [
         { phase: "idle", turn: "opener", surfaces: [surface] },
@@ -271,20 +277,21 @@ describe("buildObservationLogViaRules", () => {
       meaningId: "test:opener",
       encoding: { defaultCall: { type: "bid", level: 1, strain: BidSuit.NoTrump } },
       sourceIntent: { type: "NTOpening", params: {} },
-      teachingLabel: "1NT opening",
+      teachingLabel: tl("1NT opening"),
     });
 
     const surface2 = makeSurface({
       meaningId: "test:stayman-ask",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
       sourceIntent: { type: "StaymanAsk", params: {} },
-      teachingLabel: "Stayman",
+      teachingLabel: tl("Stayman"),
     });
 
     const mod: ConventionModule = {
       moduleId: "test",
-      description: "test module",
-      purpose: "test",
+      description: moduleDescription("test module for protocol adapter"),
+      purpose: modulePurpose("test purpose for protocol adapter"),
+      teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: {
         initial: "idle",
         transitions: [

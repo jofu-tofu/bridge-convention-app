@@ -5,6 +5,7 @@ import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
+import { bidName, bidSummary } from "../../../core/authored-text";
 
 import { SMOLEN_FACT_IDS, SMOLEN_MEANING_IDS, SMOLEN_CLASSES } from "./ids";
 
@@ -50,7 +51,7 @@ export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeanin
       declarationOrder: 0,
       sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
       disclosure: "alert",
-      teachingLabel: "Stayman 2♣",
+      teachingLabel: { name: bidName("Stayman 2♣"), summary: bidSummary("Initiate Stayman with 5 hearts and 4 spades, planning a Smolen jump if opener denies") },
     }, SMOLEN_CTX),
 
     createSurface({
@@ -82,7 +83,7 @@ export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeanin
       declarationOrder: 1,
       sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
       disclosure: "alert",
-      teachingLabel: "Stayman 2♣",
+      teachingLabel: { name: bidName("Stayman 2♣"), summary: bidSummary("Initiate Stayman with 5 spades and 4 hearts, planning a Smolen jump if opener denies") },
     }, SMOLEN_CTX),
   ];
 }
@@ -122,7 +123,7 @@ export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[]
       declarationOrder: 0,
       sourceIntent: { type: "Smolen", params: { longMajor: "spades" } },
       disclosure: "alert",
-      teachingLabel: "Smolen 3♥",
+      teachingLabel: { name: bidName("Smolen 3♥"), summary: bidSummary("Show 5 spades and 4 hearts with game-forcing values after Stayman denial") },
     }, SMOLEN_CTX),
 
     createSurface({
@@ -156,7 +157,7 @@ export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[]
       declarationOrder: 1,
       sourceIntent: { type: "Smolen", params: { longMajor: "hearts" } },
       disclosure: "alert",
-      teachingLabel: "Smolen 3♠",
+      teachingLabel: { name: bidName("Smolen 3♠"), summary: bidSummary("Show 5 hearts and 4 spades with game-forcing values after Stayman denial") },
     }, SMOLEN_CTX),
   ];
 }
@@ -181,7 +182,7 @@ export const OPENER_SMOLEN_HEARTS_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "SmolenPlacement", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "4H (heart fit found)",
+    teachingLabel: { name: bidName("4H (heart fit found)"), summary: bidSummary("Place the contract in 4♥ after confirming a fit with responder's 5-card heart suit") },
   }, SMOLEN_CTX),
   createSurface({
     meaningId: SMOLEN_MEANING_IDS.PLACE_THREE_NT_NO_HEART_FIT,
@@ -200,7 +201,7 @@ export const OPENER_SMOLEN_HEARTS_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 1,
     sourceIntent: { type: "SmolenPlacement", params: { suit: "notrump" } },
     disclosure: "alert",
-    teachingLabel: "3NT (no heart fit)",
+    teachingLabel: { name: bidName("3NT (no heart fit)"), summary: bidSummary("Sign off in 3NT when opener lacks 3-card heart support for responder's 5-card suit") },
   }, SMOLEN_CTX),
 ];
 
@@ -222,7 +223,7 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "SmolenAcceptance", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "3S (spade fit found)",
+    teachingLabel: { name: bidName("3S (spade fit found)"), summary: bidSummary("Confirm a spade fit after responder's Smolen 3♥ showed 5 spades") },
   }, SMOLEN_CTX),
   createSurface({
     meaningId: SMOLEN_MEANING_IDS.PLACE_THREE_NT_NO_SPADE_FIT,
@@ -241,7 +242,7 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 1,
     sourceIntent: { type: "SmolenPlacement", params: { suit: "notrump" } },
     disclosure: "alert",
-    teachingLabel: "3NT (no spade fit)",
+    teachingLabel: { name: bidName("3NT (no spade fit)"), summary: bidSummary("Sign off in 3NT when opener lacks 3-card spade support for responder's 5-card suit") },
   }, SMOLEN_CTX),
 ];
 
@@ -257,6 +258,6 @@ export const RESPONDER_SMOLEN_COMPLETE_SPADES_SURFACES: readonly BidMeaning[] = 
     declarationOrder: 0,
     sourceIntent: { type: "SmolenPlacement", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "4S (complete to game)",
+    teachingLabel: { name: bidName("4S (complete to game)"), summary: bidSummary("Raise opener's 3♠ acceptance to the 4♠ game contract") },
   }, SMOLEN_CTX),
 ];

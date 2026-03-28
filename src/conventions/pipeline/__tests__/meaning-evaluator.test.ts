@@ -6,6 +6,10 @@ import {
 import type { BidMeaning } from "../evaluation/meaning";
 import type { EvaluatedFacts, FactValue } from "../../core/fact-catalog";
 import { BidSuit } from "../../../engine/types";
+import { bidName, bidSummary } from "../../core/authored-text";
+import type { TeachingLabel } from "../../core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
 function buildFacts(
   entries: Record<string, number | boolean | string>,
@@ -34,7 +38,7 @@ function makeSurface(
       declarationOrder: 0,
     },
     sourceIntent: { type: "test-intent", params: {} },
-    teachingLabel: "Test meaning",
+    teachingLabel: tl("Test meaning"),
     ...overrides,
   } as BidMeaning;
 }

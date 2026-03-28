@@ -4,6 +4,7 @@ import type {
   RecommendationBand,
 } from "../pipeline/evaluation/meaning";
 import type { Call } from "../../engine/types";
+import type { TeachingLabel } from "./authored-text";
 import { deriveClauseId, deriveClauseDescription } from "../pipeline/evaluation/clause-derivation";
 
 /**
@@ -45,7 +46,7 @@ export interface SurfaceInput {
    *  - "standard": universally known convention, not ACBL-alerted (e.g., Stayman)
    *  - "natural": natural meaning, no disclosure needed */
   readonly disclosure: "alert" | "announcement" | "natural" | "standard";
-  readonly teachingLabel: string;
+  readonly teachingLabel: TeachingLabel;
   // Optional overrides:
   readonly moduleId?: string;
   readonly surfaceBindings?: Readonly<Record<string, string>>;

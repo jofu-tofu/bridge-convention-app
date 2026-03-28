@@ -9,6 +9,10 @@ import { runPipeline, specFromBundle, ntBundle, bergenBundle } from "../..";
 import { protocolSpecToStrategy } from "../protocol-adapter";
 import { makeSurface, makeRanking } from "../../../test-support/convention-factories";
 import { SAYC_SYSTEM_CONFIG } from "../../definitions/system-config";
+import { bidName, bidSummary } from "../../core/authored-text";
+import type { TeachingLabel } from "../../core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -68,7 +72,7 @@ describe("meaningToStrategy", () => {
       ],
       ranking: makeRanking({ recommendationBand: "should", modulePrecedence: 0, declarationOrder: 0 }),
       sourceIntent: { type: "OpenNT", params: {} },
-      teachingLabel: "1NT Opening",
+      teachingLabel: tl("1NT Opening"),
     });
 
     const strategy = meaningToStrategy([surface], "test");
@@ -87,7 +91,7 @@ describe("meaningToStrategy", () => {
       encoding: { defaultCall: { type: "bid", level: 1, strain: BidSuit.Clubs } },
       clauses: [],
       sourceIntent: { type: "TestBid", params: {} },
-      teachingLabel: "Test bid",
+      teachingLabel: tl("Test bid"),
     });
 
     const strategy = meaningToStrategy([surface], "test");
@@ -108,7 +112,7 @@ describe("meaningToStrategy", () => {
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
       clauses: [],
       sourceIntent: { type: "StaymanAsk", params: {} },
-      teachingLabel: "Stayman — asking for a 4-card major",
+      teachingLabel: tl("Stayman — asking for a 4-card major"),
     });
 
     const strategy = meaningToStrategy([surface], "stayman");
@@ -127,7 +131,7 @@ describe("meaningToStrategy", () => {
       encoding: { defaultCall: { type: "bid", level: 1, strain: BidSuit.NoTrump } },
       clauses: [],
       sourceIntent: { type: "TestIntent", params: {} },
-      teachingLabel: "Test",
+      teachingLabel: tl("Test"),
     });
 
     const strategy = meaningToStrategy([surface], "test");

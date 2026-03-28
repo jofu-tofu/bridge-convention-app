@@ -11,6 +11,7 @@ import type { ExplanationEntry } from "../../../core/explanation-catalog";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 import type { NegotiationDelta } from "../../../core/committed-step";
+import { moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple, teachingItem } from "../../../core/authored-text";
 import { weakTwoFacts } from "./facts";
 import { WEAK_TWO_ENTRIES } from "./explanation-catalog";
 import {
@@ -279,14 +280,14 @@ function createWeakTwosModule(_sys: SystemConfig): WeakTwosModuleParts {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "weak-twos",
-  description: "Open 2D/2H/2S with 6+ cards and 5-11 HCP, responses include Ogust",
-  purpose: "Preempt opponents with a descriptive opening while giving partner enough information to judge game prospects via Ogust",
+  description: moduleDescription("Open 2D/2H/2S with 6+ cards and 5-11 HCP, responses include Ogust"),
+  purpose: modulePurpose("Preempt opponents with a descriptive opening while giving partner enough information to judge game prospects via Ogust"),
   teaching: {
-    tradeoff: "Using 2D/2H/2S as weak openings means you can't use them for strong two-bids.",
-    principle: "Preemption works by consuming bidding space — make opponents guess at a high level with incomplete information.",
+    tradeoff: teachingTradeoff("Using 2D/2H/2S as weak openings means you can't use them for strong two-bids."),
+    principle: teachingPrinciple("Preemption works by consuming bidding space — make opponents guess at a high level with incomplete information."),
     commonMistakes: [
-      "Don't open a weak two with a void or a strong 4-card side suit — your hand may play better in the other suit",
-      "Ogust 2NT asks opener to describe hand quality — memorize the step responses (3C=weak/weak through 3S=strong/strong)",
+      teachingItem("Don't open a weak two with a void or a strong 4-card side suit — your hand may play better in the other suit"),
+      teachingItem("Ogust 2NT asks opener to describe hand quality — memorize the step responses (3C=weak/weak through 3S=strong/strong)"),
     ],
   },
   ...createWeakTwosModule(sys),

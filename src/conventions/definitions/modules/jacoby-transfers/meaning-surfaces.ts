@@ -1,5 +1,6 @@
 import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
 import type { SystemConfig } from "../../system-config";
+import { bidName, bidSummary } from "../../../core/authored-text";
 import {
   SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
@@ -36,7 +37,7 @@ export const TRANSFER_R1_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 1,
     sourceIntent: { type: "TransferToHearts", params: {} },
     disclosure: "announcement",
-    teachingLabel: "Transfer to hearts",
+    teachingLabel: { name: bidName("Transfer to hearts"), summary: bidSummary("Bid 2D to ask opener to bid 2H, keeping the strong hand as declarer") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -55,7 +56,7 @@ export const TRANSFER_R1_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "TransferToSpades", params: {} },
     disclosure: "announcement",
-    teachingLabel: "Transfer to spades",
+    teachingLabel: { name: bidName("Transfer to spades"), summary: bidSummary("Bid 2H to ask opener to bid 2S, keeping the strong hand as declarer") },
   }, TRANSFER_CTX),
 ];
 
@@ -71,7 +72,7 @@ export const OPENER_TRANSFER_HEARTS_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "AcceptTransfer", params: { suit: "hearts" } },
     disclosure: "standard",
-    teachingLabel: "Accept transfer to hearts",
+    teachingLabel: { name: bidName("Accept transfer to hearts"), summary: bidSummary("Complete the transfer by bidding 2H as requested") },
   }, TRANSFER_CTX),
 ];
 
@@ -85,7 +86,7 @@ export const OPENER_TRANSFER_SPADES_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "AcceptTransfer", params: { suit: "spades" } },
     disclosure: "standard",
-    teachingLabel: "Accept transfer to spades",
+    teachingLabel: { name: bidName("Accept transfer to spades"), summary: bidSummary("Complete the transfer by bidding 2S as requested") },
   }, TRANSFER_CTX),
 ];
 
@@ -110,7 +111,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 0,
     sourceIntent: { type: "Signoff", params: { suit: "hearts" } },
     disclosure: "natural",
-    teachingLabel: "Signoff",
+    teachingLabel: { name: bidName("Signoff"), summary: bidSummary("Pass to play in 2H with a weak hand, ending the auction") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -137,7 +138,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 1,
     sourceIntent: { type: "GameInMajor", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "4H game",
+    teachingLabel: { name: bidName("4H game"), summary: bidSummary("Jump to 4H with game values and 6+ hearts to play in the major") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -177,7 +178,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 2,
     sourceIntent: { type: "TransferNTGame", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "3NT choice",
+    teachingLabel: { name: bidName("3NT choice"), summary: bidSummary("Offer opener a choice between 3NT and 4H with exactly 5 balanced hearts") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -204,7 +205,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 3,
     sourceIntent: { type: "InviteRaise", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "3H invite (6+ hearts)",
+    teachingLabel: { name: bidName("3H invite (6+ hearts)"), summary: bidSummary("Invite game in hearts with 6+ cards and invitational values") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -231,7 +232,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 4,
     sourceIntent: { type: "Invite", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "2NT invite",
+    teachingLabel: { name: bidName("2NT invite"), summary: bidSummary("Invite game with a balanced hand, letting opener choose between 3NT and hearts") },
   }, TRANSFER_CTX),
 
   // ─── New continuations (hearts track) ────────────────────────
@@ -260,7 +261,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 5,
     sourceIntent: { type: "InviteMajorMajor", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "2S invite (5-5 majors)",
+    teachingLabel: { name: bidName("2S invite (5-5 majors)"), summary: bidSummary("Show 5-5 in both majors with invitational values after a heart transfer") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -287,7 +288,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 6,
     sourceIntent: { type: "NewSuitGameForce", params: { suit: "clubs" } },
     disclosure: "alert",
-    teachingLabel: "3C game force",
+    teachingLabel: { name: bidName("3C game force"), summary: bidSummary("Show a 4+ club side suit with game-forcing values to explore the best contract") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -314,7 +315,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 7,
     sourceIntent: { type: "NewSuitGameForce", params: { suit: "diamonds" } },
     disclosure: "alert",
-    teachingLabel: "3D game force",
+    teachingLabel: { name: bidName("3D game force"), summary: bidSummary("Show a 4+ diamond side suit with game-forcing values to explore the best contract") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -341,7 +342,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 8,
     sourceIntent: { type: "ShortageSlamTry", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "3S splinter (slam try)",
+    teachingLabel: { name: bidName("3S splinter (slam try)"), summary: bidSummary("Show shortness in spades with slam interest in hearts") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -368,7 +369,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 9,
     sourceIntent: { type: "QuantitativeSlam", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "4NT quantitative",
+    teachingLabel: { name: bidName("4NT quantitative"), summary: bidSummary("Invite slam with balanced slam values, asking opener to bid 6 with a maximum") },
   }, TRANSFER_CTX),
   ];
 }
@@ -392,7 +393,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 0,
     sourceIntent: { type: "Signoff", params: { suit: "spades" } },
     disclosure: "natural",
-    teachingLabel: "Signoff",
+    teachingLabel: { name: bidName("Signoff"), summary: bidSummary("Pass to play in 2S with a weak hand, ending the auction") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -419,7 +420,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 1,
     sourceIntent: { type: "GameInMajor", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "4S game",
+    teachingLabel: { name: bidName("4S game"), summary: bidSummary("Jump to 4S with game values and 6+ spades to play in the major") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -459,7 +460,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 2,
     sourceIntent: { type: "TransferNTGame", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "3NT choice",
+    teachingLabel: { name: bidName("3NT choice"), summary: bidSummary("Offer opener a choice between 3NT and 4S with exactly 5 balanced spades") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -486,7 +487,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 3,
     sourceIntent: { type: "InviteRaise", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "3S invite (6+ spades)",
+    teachingLabel: { name: bidName("3S invite (6+ spades)"), summary: bidSummary("Invite game in spades with 6+ cards and invitational values") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -513,7 +514,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 4,
     sourceIntent: { type: "Invite", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "2NT invite",
+    teachingLabel: { name: bidName("2NT invite"), summary: bidSummary("Invite game with a balanced hand, letting opener choose between 3NT and spades") },
   }, TRANSFER_CTX),
 
   // ─── New continuations (spades track) ────────────────────────
@@ -542,7 +543,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 5,
     sourceIntent: { type: "NewSuitGameForce", params: { suit: "clubs" } },
     disclosure: "alert",
-    teachingLabel: "3C game force",
+    teachingLabel: { name: bidName("3C game force"), summary: bidSummary("Show a 4+ club side suit with game-forcing values after a spade transfer") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -569,7 +570,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 6,
     sourceIntent: { type: "NewSuitGameForce", params: { suit: "diamonds" } },
     disclosure: "alert",
-    teachingLabel: "3D game force",
+    teachingLabel: { name: bidName("3D game force"), summary: bidSummary("Show a 4+ diamond side suit with game-forcing values after a spade transfer") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -596,7 +597,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 7,
     sourceIntent: { type: "SlamTrySecondMajor", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "3H slam try (5-5 majors)",
+    teachingLabel: { name: bidName("3H slam try (5-5 majors)"), summary: bidSummary("Show 5-5 majors with slam interest, distinguishing from a game-only 4H bid") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -629,7 +630,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 8,
     sourceIntent: { type: "GameInOtherMajor", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "4H game (5-5 majors)",
+    teachingLabel: { name: bidName("4H game (5-5 majors)"), summary: bidSummary("Bid game in hearts with 5-5 majors and game values but no slam interest") },
   }, TRANSFER_CTX),
 
   createSurface({
@@ -656,7 +657,7 @@ export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 9,
     sourceIntent: { type: "QuantitativeSlam", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "4NT quantitative",
+    teachingLabel: { name: bidName("4NT quantitative"), summary: bidSummary("Invite slam with balanced slam values after a spade transfer") },
   }, TRANSFER_CTX),
   ];
 }
@@ -681,7 +682,7 @@ export const OPENER_PLACE_HEARTS_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "PlacementCorrection", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "4\u2665 heart fit",
+    teachingLabel: { name: bidName("4\u2665 heart fit"), summary: bidSummary("Correct to 4H with 3+ hearts, choosing the major fit over 3NT") },
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.PASS_3NT_HEARTS,
@@ -700,7 +701,7 @@ export const OPENER_PLACE_HEARTS_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 1,
     sourceIntent: { type: "PlacementPass", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "Stay in 3NT",
+    teachingLabel: { name: bidName("Stay in 3NT"), summary: bidSummary("Pass 3NT with only a doubleton in hearts, preferring notrump") },
   }, TRANSFER_CTX),
 ];
 
@@ -722,7 +723,7 @@ export const OPENER_PLACE_SPADES_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "PlacementCorrection", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "4\u2660 spade fit",
+    teachingLabel: { name: bidName("4\u2660 spade fit"), summary: bidSummary("Correct to 4S with 3+ spades, choosing the major fit over 3NT") },
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.PASS_3NT_SPADES,
@@ -741,7 +742,7 @@ export const OPENER_PLACE_SPADES_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 1,
     sourceIntent: { type: "PlacementPass", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "Stay in 3NT",
+    teachingLabel: { name: bidName("Stay in 3NT"), summary: bidSummary("Pass 3NT with only a doubleton in spades, preferring notrump") },
   }, TRANSFER_CTX),
 ];
 
@@ -773,7 +774,7 @@ export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): reado
     declarationOrder: 0,
     sourceIntent: { type: "AcceptInvite", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "Accept invite",
+    teachingLabel: { name: bidName("Accept invite"), summary: bidSummary("Raise to 4H with a non-minimum hand and a heart fit") },
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_HEARTS,
@@ -799,7 +800,7 @@ export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): reado
     declarationOrder: 1,
     sourceIntent: { type: "AcceptInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "Accept invite",
+    teachingLabel: { name: bidName("Accept invite"), summary: bidSummary("Accept in 3NT with a non-minimum hand but no heart fit") },
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.SIGNOFF_WITH_FIT_HEARTS,
@@ -825,7 +826,7 @@ export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): reado
     declarationOrder: 1,
     sourceIntent: { type: "SignoffWithFit", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "Sign off",
+    teachingLabel: { name: bidName("Sign off"), summary: bidSummary("Decline the invite but correct to 3H with a minimum hand and heart fit") },
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_HEARTS,
@@ -851,7 +852,7 @@ export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): reado
     declarationOrder: 3,
     sourceIntent: { type: "DeclineInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "Decline invite",
+    teachingLabel: { name: bidName("Decline invite"), summary: bidSummary("Pass 2NT with a minimum hand and no heart fit") },
   }, TRANSFER_CTX),
   ];
 }
@@ -882,7 +883,7 @@ export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): reado
     declarationOrder: 0,
     sourceIntent: { type: "AcceptInvite", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "Accept invite",
+    teachingLabel: { name: bidName("Accept invite"), summary: bidSummary("Raise to 4S with a non-minimum hand and a spade fit") },
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_SPADES,
@@ -908,7 +909,7 @@ export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): reado
     declarationOrder: 1,
     sourceIntent: { type: "AcceptInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "Accept invite",
+    teachingLabel: { name: bidName("Accept invite"), summary: bidSummary("Accept in 3NT with a non-minimum hand but no spade fit") },
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.SIGNOFF_WITH_FIT_SPADES,
@@ -934,7 +935,7 @@ export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): reado
     declarationOrder: 2,
     sourceIntent: { type: "SignoffWithFit", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "Sign off",
+    teachingLabel: { name: bidName("Sign off"), summary: bidSummary("Decline the invite but correct to 3S with a minimum hand and spade fit") },
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_SPADES,
@@ -960,7 +961,7 @@ export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): reado
     declarationOrder: 3,
     sourceIntent: { type: "DeclineInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "Decline invite",
+    teachingLabel: { name: bidName("Decline invite"), summary: bidSummary("Pass 2NT with a minimum hand and no spade fit") },
   }, TRANSFER_CTX),
   ];
 }
@@ -988,7 +989,7 @@ export function createOpenerAcceptInviteRaiseHeartsSurfaces(sys: SystemConfig): 
     declarationOrder: 0,
     sourceIntent: { type: "AcceptInvite", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "Accept invite",
+    teachingLabel: { name: bidName("Accept invite"), summary: bidSummary("Raise to 4H with a non-minimum hand opposite responder's 6+ hearts") },
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_RAISE_HEARTS,
@@ -1007,7 +1008,7 @@ export function createOpenerAcceptInviteRaiseHeartsSurfaces(sys: SystemConfig): 
     declarationOrder: 1,
     sourceIntent: { type: "DeclineInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "Decline invite",
+    teachingLabel: { name: bidName("Decline invite"), summary: bidSummary("Pass 3H with a minimum hand, settling for partscore in the major fit") },
   }, TRANSFER_CTX),
   ];
 }
@@ -1031,7 +1032,7 @@ export function createOpenerAcceptInviteRaiseSpadesSurfaces(sys: SystemConfig): 
     declarationOrder: 0,
     sourceIntent: { type: "AcceptInvite", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "Accept invite",
+    teachingLabel: { name: bidName("Accept invite"), summary: bidSummary("Raise to 4S with a non-minimum hand opposite responder's 6+ spades") },
   }, TRANSFER_CTX),
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.DECLINE_INVITE_RAISE_SPADES,
@@ -1050,7 +1051,7 @@ export function createOpenerAcceptInviteRaiseSpadesSurfaces(sys: SystemConfig): 
     declarationOrder: 1,
     sourceIntent: { type: "DeclineInvite", params: {} },
     disclosure: "alert",
-    teachingLabel: "Decline invite",
+    teachingLabel: { name: bidName("Decline invite"), summary: bidSummary("Pass 3S with a minimum hand, settling for partscore in the major fit") },
   }, TRANSFER_CTX),
   ];
 }

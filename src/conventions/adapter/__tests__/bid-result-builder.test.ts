@@ -9,6 +9,10 @@ import {
   makeCall,
   makeClause,
 } from "../../../test-support/convention-factories";
+import { bidName, bidSummary } from "../../core/authored-text";
+import type { TeachingLabel } from "../../core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 import { buildBidResult } from "../bid-result-builder";
 
 // ─── Helpers ─────────────────────────────────────────────────────
@@ -66,7 +70,7 @@ describe("buildBidResult", () => {
     // When teachingLabel is present, it takes priority
     const withLabel = makeCarrier({
       proposal: makeProposal({
-        teachingLabel: "Stayman 2C",
+        teachingLabel: tl("Stayman 2C"),
         evidence: {
           factDependencies: [],
           evaluatedConditions: [],
@@ -96,7 +100,7 @@ describe("buildBidResult", () => {
     const selected = makeCarrier({
       proposal: makeProposal({
         meaningId: "stayman:ask-major",
-        teachingLabel: "Stayman 2C",
+        teachingLabel: tl("Stayman 2C"),
       }),
     });
     const result = makePipelineResult({ selected, truthSet: [selected] });
@@ -126,7 +130,7 @@ describe("buildBidResult", () => {
     const selected = makeCarrier({
       proposal: makeProposal({
         isAlertable: true,
-        teachingLabel: "Stayman 2C",
+        teachingLabel: tl("Stayman 2C"),
       }),
     });
     const result = makePipelineResult({ selected, truthSet: [selected] });
@@ -155,7 +159,7 @@ describe("buildBidResult", () => {
     const selected = makeCarrier({
       proposal: makeProposal({
         isAlertable: true,
-        teachingLabel: "Transfer to hearts",
+        teachingLabel: tl("Transfer to hearts"),
         annotationType: "announce",
       }),
     });
@@ -245,11 +249,11 @@ describe("buildBidResult", () => {
   test("resolvedCandidates includes truthSet and acceptableSet entries", () => {
     const truth1 = makeCarrier({
       call: makeCall(2, BidSuit.Clubs),
-      proposal: makeProposal({ meaningId: "stayman:ask-major", teachingLabel: "Stayman" }),
+      proposal: makeProposal({ meaningId: "stayman:ask-major", teachingLabel: tl("Stayman") }),
     });
     const acceptable1 = makeCarrier({
       call: makeCall(2, BidSuit.Diamonds),
-      proposal: makeProposal({ meaningId: "transfer:hearts", teachingLabel: "Transfer" }),
+      proposal: makeProposal({ meaningId: "transfer:hearts", teachingLabel: tl("Transfer") }),
     });
     const result = makePipelineResult({
       selected: truth1,

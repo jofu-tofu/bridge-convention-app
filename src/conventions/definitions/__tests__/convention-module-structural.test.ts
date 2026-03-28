@@ -69,7 +69,7 @@ describe.each(moduleEntries)("surface integrity — %s", (_id, mod) => {
       expect(s.encoding).toBeDefined();
       expect(Array.isArray(s.clauses)).toBe(true);
       expect(s.ranking).toBeDefined();
-      expect(s.teachingLabel).toEqual(expect.any(String));
+      expect(typeof s.teachingLabel === "string" || (typeof s.teachingLabel === "object" && "name" in s.teachingLabel)).toBe(true);
     }
   });
 

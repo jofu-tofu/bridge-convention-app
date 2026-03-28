@@ -10,6 +10,7 @@ import {
 import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
+import { bidName, bidSummary } from "../../../core/authored-text";
 
 import { NATURAL_NT_MEANING_IDS } from "./ids";
 
@@ -59,7 +60,7 @@ export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
       declarationOrder: 0,
       sourceIntent: { type: "NTInvite", params: {} },
       disclosure: "natural",
-      teachingLabel: "NT invite",
+      teachingLabel: { name: bidName("NT invite"), summary: bidSummary("Invite game in notrump with no 4-card or 5-card major") },
     }, NATURAL_BIDS_CTX),
 
     createSurface({
@@ -91,7 +92,7 @@ export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
       declarationOrder: 1,
       sourceIntent: { type: "NTGame", params: {} },
       disclosure: "natural",
-      teachingLabel: "3NT game",
+      teachingLabel: { name: bidName("3NT game"), summary: bidSummary("Bid game in notrump with game-forcing values and no 4-card or 5-card major") },
     }, NATURAL_BIDS_CTX),
   ];
 }
@@ -130,7 +131,7 @@ export function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[]
       declarationOrder: 0,
       sourceIntent: { type: "NTOpening", params: {} },
       disclosure: "natural",
-      teachingLabel: `${sys.ntOpening.minHcp} to ${sys.ntOpening.maxHcp}`,
+      teachingLabel: { name: bidName(`${sys.ntOpening.minHcp} to ${sys.ntOpening.maxHcp}`), summary: bidSummary("Open 1NT showing a balanced hand within the system HCP range") },
     }, NATURAL_BIDS_CTX),
   ];
 }
@@ -154,7 +155,7 @@ export function createSuitOpeningSurfaces(sys: SystemConfig): readonly BidMeanin
       declarationOrder: 1,
       sourceIntent: { type: "SuitOpen", params: { suit: "clubs" } },
       disclosure: "natural",
-      teachingLabel: `1♣ opening`,
+      teachingLabel: { name: bidName("1♣ opening"), summary: bidSummary("Open 1♣ with 12+ HCP and 3+ clubs") },
     }, NATURAL_BIDS_CTX),
 
     createSurface({
@@ -169,7 +170,7 @@ export function createSuitOpeningSurfaces(sys: SystemConfig): readonly BidMeanin
       declarationOrder: 2,
       sourceIntent: { type: "SuitOpen", params: { suit: "diamonds" } },
       disclosure: "natural",
-      teachingLabel: `1♦ opening`,
+      teachingLabel: { name: bidName("1♦ opening"), summary: bidSummary("Open 1♦ with 12+ HCP and 4+ diamonds") },
     }, NATURAL_BIDS_CTX),
 
     createSurface({
@@ -184,7 +185,7 @@ export function createSuitOpeningSurfaces(sys: SystemConfig): readonly BidMeanin
       declarationOrder: 3,
       sourceIntent: { type: "SuitOpen", params: { suit: "hearts" } },
       disclosure: "natural",
-      teachingLabel: `1♥ opening`,
+      teachingLabel: { name: bidName("1♥ opening"), summary: bidSummary("Open 1♥ with 12+ HCP and a 5-card or longer heart suit") },
     }, NATURAL_BIDS_CTX),
 
     createSurface({
@@ -199,7 +200,7 @@ export function createSuitOpeningSurfaces(sys: SystemConfig): readonly BidMeanin
       declarationOrder: 4,
       sourceIntent: { type: "SuitOpen", params: { suit: "spades" } },
       disclosure: "natural",
-      teachingLabel: `1♠ opening`,
+      teachingLabel: { name: bidName("1♠ opening"), summary: bidSummary("Open 1♠ with 12+ HCP and a 5-card or longer spade suit") },
     }, NATURAL_BIDS_CTX),
   ];
 }

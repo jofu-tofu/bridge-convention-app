@@ -47,7 +47,7 @@ export function buildMeaningViews(
     views.push({
       meaningId: encoded.proposal.meaningId,
       semanticClassId: encoded.proposal.semanticClassId,
-      displayLabel: encoded.proposal.teachingLabel ?? encoded.proposal.meaningId,
+      displayLabel: encoded.proposal.teachingLabel?.name ?? encoded.proposal.meaningId,
       status: "live",
       supportingEvidence: encoded.proposal.clauses.map(clauseToEvidence),
     });
@@ -83,7 +83,7 @@ export function buildMeaningViews(
     views.push({
       meaningId: encoded.proposal.meaningId,
       semanticClassId: encoded.proposal.semanticClassId,
-      displayLabel: encoded.proposal.teachingLabel ?? encoded.proposal.meaningId,
+      displayLabel: encoded.proposal.teachingLabel?.name ?? encoded.proposal.meaningId,
       status: "eliminated",
       eliminationReason: "Your hand doesn't fully match",
       supportingEvidence: encoded.proposal.clauses.map(clauseToEvidence),

@@ -2,6 +2,7 @@ import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
 
 import { BidSuit } from "../../../../engine/types";
 import type { SystemConfig } from "../../system-config";
+import { bidName, bidSummary } from "../../../core/authored-text";
 import {
   SYSTEM_RESPONDER_INVITE_VALUES,
   SYSTEM_RESPONDER_GAME_VALUES,
@@ -51,7 +52,7 @@ export function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
     declarationOrder: 0,
     sourceIntent: { type: "StaymanAsk", params: {} },
     disclosure: "standard",
-    teachingLabel: "Stayman 2\u2663",
+    teachingLabel: { name: bidName("Stayman 2\u2663"), summary: bidSummary("Ask opener if they hold a 4-card major") },
   }, STAYMAN_CTX);
 }
 
@@ -93,7 +94,7 @@ export function createStaymanR1FiveFourSurface(sys: SystemConfig): BidMeaning {
     declarationOrder: 1,
     sourceIntent: { type: "StaymanAsk", params: { reason: "five-four-majors" } },
     disclosure: "standard",
-    teachingLabel: "Stayman 2\u2663",
+    teachingLabel: { name: bidName("Stayman 2\u2663"), summary: bidSummary("Seek a 4-4 major fit with 5-4 in both majors at invite strength") },
   }, STAYMAN_CTX);
 }
 
@@ -116,7 +117,7 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "hearts" } },
     disclosure: "standard",
-    teachingLabel: "Show hearts",
+    teachingLabel: { name: bidName("Show hearts"), summary: bidSummary("Reveal a 4-card heart suit in response to Stayman") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -141,7 +142,7 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 1,
     sourceIntent: { type: "ShowHeldSuit", params: { suit: "spades" } },
     disclosure: "standard",
-    teachingLabel: "Show spades",
+    teachingLabel: { name: bidName("Show spades"), summary: bidSummary("Show a 4-card spade suit, denying 4 hearts") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -160,7 +161,7 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 2,
     sourceIntent: { type: "DenyMajor", params: {} },
     disclosure: "standard",
-    teachingLabel: "Deny major (2♦)",
+    teachingLabel: { name: bidName("Deny major (2♦)"), summary: bidSummary("Deny holding a 4-card major in response to Stayman") },
   }, STAYMAN_CTX),
 ];
 
@@ -193,7 +194,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 0,
     sourceIntent: { type: "RaiseGame", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "Raise to game in hearts",
+    teachingLabel: { name: bidName("Raise to game in hearts"), summary: bidSummary("Bid game in the confirmed 4-4 heart fit with game-going values") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -220,7 +221,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 1,
     sourceIntent: { type: "RaiseInvite", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "Invite in hearts",
+    teachingLabel: { name: bidName("Invite in hearts"), summary: bidSummary("Invite game in the 4-4 heart fit, letting opener decide with minimum vs maximum") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -247,7 +248,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 2,
     sourceIntent: { type: "StaymanNTGame", params: { reason: "no-heart-fit" } },
     disclosure: "alert",
-    teachingLabel: "3NT (no heart fit)",
+    teachingLabel: { name: bidName("3NT (no heart fit)"), summary: bidSummary("Place the contract in 3NT after opener shows hearts but responder lacks support") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -274,7 +275,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 3,
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "no-heart-fit" } },
     disclosure: "alert",
-    teachingLabel: "2NT invite (no heart fit)",
+    teachingLabel: { name: bidName("2NT invite (no heart fit)"), summary: bidSummary("Invite notrump game after opener shows hearts but responder lacks support") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -308,7 +309,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 4,
     sourceIntent: { type: "CrossMajorInvite", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "2\u2660 invite (5\u2660 + 4\u2665)",
+    teachingLabel: { name: bidName("2\u2660 invite (5\u2660 + 4\u2665)"), summary: bidSummary("Show 5 spades with invite values after opener's hearts miss the fit") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -335,7 +336,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 5,
     sourceIntent: { type: "MinorSuitGF", params: { suit: "clubs" } },
     disclosure: "alert",
-    teachingLabel: "3\u2663 GF (5+ clubs)",
+    teachingLabel: { name: bidName("3\u2663 GF (5+ clubs)"), summary: bidSummary("Force to game showing a long club suit after the heart response misses") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -362,7 +363,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 6,
     sourceIntent: { type: "MinorSuitGF", params: { suit: "diamonds" } },
     disclosure: "alert",
-    teachingLabel: "3\u2666 GF (5+ diamonds)",
+    teachingLabel: { name: bidName("3\u2666 GF (5+ diamonds)"), summary: bidSummary("Force to game showing a long diamond suit after the heart response misses") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -396,7 +397,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 7,
     sourceIntent: { type: "CrossMajorGF", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "3\u2660 GF (5\u2660 + 4\u2665)",
+    teachingLabel: { name: bidName("3\u2660 GF (5\u2660 + 4\u2665)"), summary: bidSummary("Force to game showing 5 spades and 4 hearts after opener shows hearts") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -423,7 +424,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 8,
     sourceIntent: { type: "Quantitative4NT", params: { reason: "no-heart-fit" } },
     disclosure: "alert",
-    teachingLabel: "4NT quantitative",
+    teachingLabel: { name: bidName("4NT quantitative"), summary: bidSummary("Invite slam in notrump after no heart fit is found") },
   }, STAYMAN_CTX),
   ];
 }
@@ -455,7 +456,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 0,
     sourceIntent: { type: "RaiseGame", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "Raise to game in spades",
+    teachingLabel: { name: bidName("Raise to game in spades"), summary: bidSummary("Bid game in the confirmed 4-4 spade fit with game-going values") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -482,7 +483,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 1,
     sourceIntent: { type: "RaiseInvite", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "Invite in spades",
+    teachingLabel: { name: bidName("Invite in spades"), summary: bidSummary("Invite game in the 4-4 spade fit, letting opener decide with minimum vs maximum") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -509,7 +510,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 2,
     sourceIntent: { type: "StaymanNTGame", params: { reason: "no-spade-fit" } },
     disclosure: "alert",
-    teachingLabel: "3NT (no spade fit)",
+    teachingLabel: { name: bidName("3NT (no spade fit)"), summary: bidSummary("Place the contract in 3NT after opener shows spades but responder lacks support") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -536,7 +537,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 3,
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "no-spade-fit" } },
     disclosure: "alert",
-    teachingLabel: "2NT invite (no spade fit)",
+    teachingLabel: { name: bidName("2NT invite (no spade fit)"), summary: bidSummary("Invite notrump game after opener shows spades but responder lacks support") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -563,7 +564,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 4,
     sourceIntent: { type: "MinorSuitGF", params: { suit: "clubs" } },
     disclosure: "alert",
-    teachingLabel: "3\u2663 GF (5+ clubs)",
+    teachingLabel: { name: bidName("3\u2663 GF (5+ clubs)"), summary: bidSummary("Force to game showing a long club suit after the spade response misses") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -590,7 +591,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 5,
     sourceIntent: { type: "MinorSuitGF", params: { suit: "diamonds" } },
     disclosure: "alert",
-    teachingLabel: "3\u2666 GF (5+ diamonds)",
+    teachingLabel: { name: bidName("3\u2666 GF (5+ diamonds)"), summary: bidSummary("Force to game showing a long diamond suit after the spade response misses") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -624,7 +625,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 6,
     sourceIntent: { type: "CrossMajorGF", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "3\u2665 GF (5\u2665 + 4\u2660)",
+    teachingLabel: { name: bidName("3\u2665 GF (5\u2665 + 4\u2660)"), summary: bidSummary("Force to game showing 5 hearts and 4 spades after opener shows spades") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -651,7 +652,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 7,
     sourceIntent: { type: "Quantitative4NT", params: { reason: "no-spade-fit" } },
     disclosure: "alert",
-    teachingLabel: "4NT quantitative",
+    teachingLabel: { name: bidName("4NT quantitative"), summary: bidSummary("Invite slam in notrump after no spade fit is found") },
   }, STAYMAN_CTX),
   ];
 }
@@ -677,7 +678,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 0,
     sourceIntent: { type: "StaymanNTGame", params: { reason: "denial" } },
     disclosure: "alert",
-    teachingLabel: "3NT after denial",
+    teachingLabel: { name: bidName("3NT after denial"), summary: bidSummary("Place the contract in 3NT after opener denies a 4-card major") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -711,7 +712,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 1,
     sourceIntent: { type: "ShowFiveCardMajor", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "5-4 majors",
+    teachingLabel: { name: bidName("5-4 majors"), summary: bidSummary("Show 5 hearts after denial, seeking a 3-card heart fit from opener") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -745,7 +746,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 2,
     sourceIntent: { type: "ShowFiveCardMajor", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "5-4 majors",
+    teachingLabel: { name: bidName("5-4 majors"), summary: bidSummary("Show 5 spades after denial, seeking a 3-card spade fit from opener") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -765,7 +766,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 3,
     sourceIntent: { type: "StaymanNTInvite", params: { reason: "denial" } },
     disclosure: "alert",
-    teachingLabel: "2NT invite after denial",
+    teachingLabel: { name: bidName("2NT invite after denial"), summary: bidSummary("Invite notrump game after opener denies a 4-card major") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -792,7 +793,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 4,
     sourceIntent: { type: "MinorSuitGF", params: { suit: "clubs" } },
     disclosure: "alert",
-    teachingLabel: "3\u2663 GF (5+ clubs)",
+    teachingLabel: { name: bidName("3\u2663 GF (5+ clubs)"), summary: bidSummary("Force to game showing a long club suit after opener denies a major") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -819,7 +820,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 5,
     sourceIntent: { type: "MinorSuitGF", params: { suit: "diamonds" } },
     disclosure: "alert",
-    teachingLabel: "3\u2666 GF (5+ diamonds)",
+    teachingLabel: { name: bidName("3\u2666 GF (5+ diamonds)"), summary: bidSummary("Force to game showing a long diamond suit after opener denies a major") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -853,7 +854,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 6,
     sourceIntent: { type: "MajorSignoff64", params: { suit: "hearts" } },
     disclosure: "alert",
-    teachingLabel: "4\u2665 signoff (6-4 majors)",
+    teachingLabel: { name: bidName("4\u2665 signoff (6-4 majors)"), summary: bidSummary("Sign off in 4H with 6 hearts and 4 spades after opener denies a major") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -887,7 +888,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 7,
     sourceIntent: { type: "MajorSignoff64", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "4\u2660 signoff (6-4 majors)",
+    teachingLabel: { name: bidName("4\u2660 signoff (6-4 majors)"), summary: bidSummary("Sign off in 4S with 6 spades and 4 hearts after opener denies a major") },
   }, STAYMAN_CTX),
 
   createSurface({
@@ -907,7 +908,7 @@ export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidM
     declarationOrder: 8,
     sourceIntent: { type: "Quantitative4NT", params: { reason: "denial" } },
     disclosure: "alert",
-    teachingLabel: "4NT quantitative",
+    teachingLabel: { name: bidName("4NT quantitative"), summary: bidSummary("Invite slam in notrump after opener denies a 4-card major") },
   }, STAYMAN_CTX),
   ];
 }

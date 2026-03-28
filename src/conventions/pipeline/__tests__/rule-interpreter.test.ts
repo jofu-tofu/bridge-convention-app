@@ -7,12 +7,16 @@ import type { NegotiationState } from "../../core/committed-step";
 import type { BidMeaning } from "../evaluation/meaning";
 import type { PublicSnapshot } from "../../core/module-surface";
 import { Seat } from "../../../engine/types";
+import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple } from "../../core/authored-text";
+import type { TeachingLabel } from "../../core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
 function makeSurface(id: string): BidMeaning {
   return {
     meaningId: id,
     semanticClassId: `test:${id}`,
-    teachingLabel: id,
+    teachingLabel: tl(id),
     clauses: [],
     sourceIntent: { type: "Test", params: {} },
     encoding: { kind: "direct", defaultCall: { type: "pass" } },
@@ -58,8 +62,9 @@ describe("collectMatchingClaims", () => {
     const surface = makeSurface("stayman-ask");
     const mod: ConventionModule<"idle" | "opened"> = {
       moduleId: "stayman",
-      description: "test module",
-      purpose: "test",
+      description: moduleDescription("test module description for interpreter"),
+      purpose: modulePurpose("test purpose for interpreter module"),
+      teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: {
         initial: "idle",
         transitions: [
@@ -88,8 +93,9 @@ describe("collectMatchingClaims", () => {
     const surface = makeSurface("stayman-ask");
     const mod: ConventionModule<"idle" | "opened"> = {
       moduleId: "stayman",
-      description: "test module",
-      purpose: "test",
+      description: moduleDescription("test module description for interpreter"),
+      purpose: modulePurpose("test purpose for interpreter module"),
+      teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: {
         initial: "idle",
         transitions: [
@@ -112,8 +118,9 @@ describe("collectMatchingClaims", () => {
     const surface = makeSurface("test");
     const mod: ConventionModule<"idle"> = {
       moduleId: "test-mod",
-      description: "test module",
-      purpose: "test",
+      description: moduleDescription("test module description for interpreter"),
+      purpose: modulePurpose("test purpose for interpreter module"),
+      teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: { initial: "idle", transitions: [] },
       states: [
         {
@@ -142,8 +149,9 @@ describe("collectMatchingClaims", () => {
     const surface = makeSurface("smolen-entry");
     const mod: ConventionModule<"idle"> = {
       moduleId: "smolen",
-      description: "test module",
-      purpose: "test",
+      description: moduleDescription("test module description for interpreter"),
+      purpose: modulePurpose("test purpose for interpreter module"),
+      teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: { initial: "idle", transitions: [] },
       states: [
         {
@@ -190,8 +198,9 @@ describe("collectMatchingClaims", () => {
 
     const mod1: ConventionModule<"active"> = {
       moduleId: "mod1",
-      description: "test module",
-      purpose: "test",
+      description: moduleDescription("test module description for interpreter"),
+      purpose: modulePurpose("test purpose for interpreter module"),
+      teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: { initial: "active", transitions: [] },
       states: [{ phase: "active", surfaces: [s1] }],
       facts: { definitions: [], evaluators: new Map() },
@@ -199,8 +208,9 @@ describe("collectMatchingClaims", () => {
     };
     const mod2: ConventionModule<"active"> = {
       moduleId: "mod2",
-      description: "test module",
-      purpose: "test",
+      description: moduleDescription("test module description for interpreter"),
+      purpose: modulePurpose("test purpose for interpreter module"),
+      teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: { initial: "active", transitions: [] },
       states: [{ phase: "active", surfaces: [s2] }],
       facts: { definitions: [], evaluators: new Map() },
@@ -216,8 +226,9 @@ describe("collectMatchingClaims", () => {
   it("returns empty when no state entries match", () => {
     const mod: ConventionModule<"idle"> = {
       moduleId: "empty",
-      description: "test module",
-      purpose: "test",
+      description: moduleDescription("test module description for interpreter"),
+      purpose: modulePurpose("test purpose for interpreter module"),
+      teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: { initial: "idle", transitions: [] },
       states: [
         {
@@ -240,8 +251,9 @@ describe("collectMatchingClaims", () => {
 
     const mod: ConventionModule<"active"> = {
       moduleId: "multi-rule",
-      description: "test module",
-      purpose: "test",
+      description: moduleDescription("test module description for interpreter"),
+      purpose: modulePurpose("test purpose for interpreter module"),
+      teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: { initial: "active", transitions: [] },
       states: [
         { phase: "active", surfaces: [s1] },

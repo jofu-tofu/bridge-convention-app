@@ -64,3 +64,8 @@ export function teachingPrinciple(raw: string): TeachingPrinciple {
 export function teachingItem(raw: string): TeachingItem {
   return validated(raw, "TeachingItem", 5, 300);
 }
+
+/** Convenience: build a TeachingLabel from a name + summary string pair. */
+export function teachingLabel(name: string, summary: string): TeachingLabel {
+  return { name: bidName(name), summary: bidSummary(summary) };
+}

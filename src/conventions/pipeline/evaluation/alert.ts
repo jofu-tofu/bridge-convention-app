@@ -1,5 +1,6 @@
 import type { BidAlert } from "../../core/strategy-types";
 import type { BidMeaningClause } from "./meaning";
+import type { TeachingLabel } from "../../core/authored-text";
 
 // ─── Disclosure-based conventionality derivation ─────────────────────
 //
@@ -12,7 +13,7 @@ import type { BidMeaningClause } from "./meaning";
 export interface AlertResolvable {
   readonly disclosure: "alert" | "announcement" | "natural" | "standard";
   readonly clauses: readonly BidMeaningClause[];
-  readonly teachingLabel: string;
+  readonly teachingLabel: TeachingLabel;
 }
 
 /** Derive whether a bid is alertable from its disclosure classification.
@@ -38,7 +39,7 @@ export function resolveAlert(surface: AlertResolvable): BidAlert | null {
       : "alert" as const;
 
   return {
-    teachingLabel: surface.teachingLabel,
+    teachingLabel: surface.teachingLabel.name,
     annotationType,
   };
 }

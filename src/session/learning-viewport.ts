@@ -1,4 +1,3 @@
-import { resolveTeachingLabelName } from "../conventions";
 /**
  * Learning viewport builder — projects convention bundle and module internals
  * into viewport response types for UI consumption.
@@ -327,7 +326,10 @@ function buildPhaseGroups(mod: ConventionModule): readonly PhaseGroupView[] {
         const rawExplanation = findExplanationText(mod.explanationEntries, surface.meaningId);
         group.surfaces.push({
           meaningId: surface.meaningId,
-          teachingLabel: formatBidReferences(resolveTeachingLabelName(surface.teachingLabel)),
+          teachingLabel: {
+            name: formatBidReferences(surface.teachingLabel.name),
+            summary: formatBidReferences(surface.teachingLabel.summary),
+          },
           call: surface.encoding.defaultCall,
           callDisplay: formatCall(surface.encoding.defaultCall),
           disclosure: surface.disclosure,
@@ -444,7 +446,7 @@ function mkNode(
     callKey: surface ? surface.ck : null,
     call: surface ? surface.call : null,
     turn: (turn === "opener" || turn === "responder") ? turn : null,
-    label: label ?? (surface ? resolveTeachingLabelName(surface.teachingLabel) : phase),
+    label: label ?? (surface ? surface.teachingLabel : phase),
     moduleId: surface ? surface.moduleId : null,
     moduleDisplayName: surface ? formatModuleName(surface.moduleId) : null,
     children: [],
@@ -575,7 +577,7 @@ function collectModuleData(mod: ConventionModule): {
         meaningId: s.meaningId,
         ck: callKey(s.encoding.defaultCall),
         call: s.encoding.defaultCall,
-        teachingLabel: resolveTeachingLabelName(s.teachingLabel),
+        teachingLabel: s.teachingLabel.name,
         moduleId: mod.moduleId,
         sourceIntent: s.sourceIntent,
         recommendation: s.ranking.recommendationBand ?? null,
@@ -712,8 +714,8 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
       for (const surface of state.surfaces) {
         const existingChild = rootNode.children.find((c) => c.callKey === surface.ck);
         if (existingChild) {
-          if (!existingChild.label.includes(resolveTeachingLabelName(surface.teachingLabel))) {
-            existingChild.label += ` / ${resolveTeachingLabelName(surface.teachingLabel)}`;
+          if (!existingChild.label.includes(surface.teachingLabel)) {
+            existingChild.label += ` / ${surface.teachingLabel}`;
           }
           continue;
         }

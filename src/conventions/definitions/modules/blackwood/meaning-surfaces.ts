@@ -5,6 +5,7 @@ import type { SystemConfig } from "../../system-config";
 import {
   SYSTEM_RESPONDER_SLAM_VALUES,
 } from "../../system-fact-vocabulary";
+import { bidName, bidSummary } from "../../../core/authored-text";
 
 import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
@@ -37,7 +38,7 @@ export function createBlackwood4NTSurface(_sys: SystemConfig): BidMeaning {
     declarationOrder: 0,
     sourceIntent: { type: "BlackwoodAsk", params: { feature: "aces" } },
     disclosure: "standard",
-    teachingLabel: "Blackwood 4NT",
+    teachingLabel: { name: bidName("Blackwood 4NT"), summary: bidSummary("Ask partner how many aces they hold to evaluate slam potential") },
   }, BLACKWOOD_CTX);
 }
 
@@ -61,7 +62,7 @@ export const ACE_RESPONSE_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "ShowAceCount", params: { count: 0 } },
     disclosure: "standard",
-    teachingLabel: "5♣ — 0 (or 4) aces",
+    teachingLabel: { name: bidName("5♣ — 0 (or 4) aces"), summary: bidSummary("Show zero aces in response to partner's Blackwood ask") },
   }, BLACKWOOD_CTX),
 
   createSurface({
@@ -80,7 +81,7 @@ export const ACE_RESPONSE_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "ShowAceCount", params: { count: 4 } },
     disclosure: "standard",
-    teachingLabel: "5♣ — 0 (or 4) aces",
+    teachingLabel: { name: bidName("5♣ — 0 (or 4) aces"), summary: bidSummary("Show all four aces in response to partner's Blackwood ask") },
   }, BLACKWOOD_CTX),
 
   createSurface({
@@ -99,7 +100,7 @@ export const ACE_RESPONSE_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 1,
     sourceIntent: { type: "ShowAceCount", params: { count: 1 } },
     disclosure: "standard",
-    teachingLabel: "5♦ — 1 ace",
+    teachingLabel: { name: bidName("5♦ — 1 ace"), summary: bidSummary("Show exactly one ace in response to partner's Blackwood ask") },
   }, BLACKWOOD_CTX),
 
   createSurface({
@@ -118,7 +119,7 @@ export const ACE_RESPONSE_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 2,
     sourceIntent: { type: "ShowAceCount", params: { count: 2 } },
     disclosure: "standard",
-    teachingLabel: "5♥ — 2 aces",
+    teachingLabel: { name: bidName("5♥ — 2 aces"), summary: bidSummary("Show exactly two aces in response to partner's Blackwood ask") },
   }, BLACKWOOD_CTX),
 
   createSurface({
@@ -137,7 +138,7 @@ export const ACE_RESPONSE_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 3,
     sourceIntent: { type: "ShowAceCount", params: { count: 3 } },
     disclosure: "standard",
-    teachingLabel: "5♠ — 3 aces",
+    teachingLabel: { name: bidName("5♠ — 3 aces"), summary: bidSummary("Show exactly three aces in response to partner's Blackwood ask") },
   }, BLACKWOOD_CTX),
 ];
 
@@ -155,7 +156,7 @@ export function createBlackwoodR3Surfaces(_sys: SystemConfig): readonly BidMeani
       declarationOrder: 0,
       sourceIntent: { type: "BlackwoodAsk", params: { feature: "kings" } },
       disclosure: "standard",
-      teachingLabel: "Ask for kings",
+      teachingLabel: { name: bidName("Ask for kings"), summary: bidSummary("Confirm all aces are held and ask partner how many kings they have") },
     }, BLACKWOOD_CTX),
 
     createSurface({
@@ -167,7 +168,7 @@ export function createBlackwoodR3Surfaces(_sys: SystemConfig): readonly BidMeani
       declarationOrder: 1,
       sourceIntent: { type: "BlackwoodSignoff", params: { level: "small-slam" } },
       disclosure: "natural",
-      teachingLabel: "6NT — small slam signoff",
+      teachingLabel: { name: bidName("6NT — small slam signoff"), summary: bidSummary("Bid small slam after confirming sufficient aces for twelve tricks") },
     }, BLACKWOOD_CTX),
 
     createSurface({
@@ -179,7 +180,7 @@ export function createBlackwoodR3Surfaces(_sys: SystemConfig): readonly BidMeani
       declarationOrder: 2,
       sourceIntent: { type: "BlackwoodSignoff", params: { level: "five" } },
       disclosure: "natural",
-      teachingLabel: "Sign off",
+      teachingLabel: { name: bidName("Sign off"), summary: bidSummary("Stop below slam after learning the partnership is missing too many aces") },
     }, BLACKWOOD_CTX),
   ];
 }
@@ -204,7 +205,7 @@ export const KING_RESPONSE_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "ShowKingCount", params: { count: 0 } },
     disclosure: "standard",
-    teachingLabel: "6♣ — 0 (or 4) kings",
+    teachingLabel: { name: bidName("6♣ — 0 (or 4) kings"), summary: bidSummary("Show zero kings in response to partner's king ask") },
   }, BLACKWOOD_CTX),
 
   createSurface({
@@ -223,7 +224,7 @@ export const KING_RESPONSE_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 0,
     sourceIntent: { type: "ShowKingCount", params: { count: 4 } },
     disclosure: "standard",
-    teachingLabel: "6♣ — 0 (or 4) kings",
+    teachingLabel: { name: bidName("6♣ — 0 (or 4) kings"), summary: bidSummary("Show all four kings in response to partner's king ask") },
   }, BLACKWOOD_CTX),
 
   createSurface({
@@ -242,7 +243,7 @@ export const KING_RESPONSE_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 1,
     sourceIntent: { type: "ShowKingCount", params: { count: 1 } },
     disclosure: "standard",
-    teachingLabel: "6♦ — 1 king",
+    teachingLabel: { name: bidName("6♦ — 1 king"), summary: bidSummary("Show exactly one king in response to partner's king ask") },
   }, BLACKWOOD_CTX),
 
   createSurface({
@@ -261,7 +262,7 @@ export const KING_RESPONSE_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 2,
     sourceIntent: { type: "ShowKingCount", params: { count: 2 } },
     disclosure: "standard",
-    teachingLabel: "6♥ — 2 kings",
+    teachingLabel: { name: bidName("6♥ — 2 kings"), summary: bidSummary("Show exactly two kings in response to partner's king ask") },
   }, BLACKWOOD_CTX),
 
   createSurface({
@@ -280,7 +281,7 @@ export const KING_RESPONSE_SURFACES: readonly BidMeaning[] = [
     declarationOrder: 3,
     sourceIntent: { type: "ShowKingCount", params: { count: 3 } },
     disclosure: "standard",
-    teachingLabel: "6♠ — 3 kings",
+    teachingLabel: { name: bidName("6♠ — 3 kings"), summary: bidSummary("Show exactly three kings in response to partner's king ask") },
   }, BLACKWOOD_CTX),
 ];
 
@@ -297,7 +298,7 @@ export function createBlackwoodR5Surfaces(_sys: SystemConfig): readonly BidMeani
       declarationOrder: 0,
       sourceIntent: { type: "BlackwoodSignoff", params: { level: "grand-slam" } },
       disclosure: "natural",
-      teachingLabel: "7NT — grand slam",
+      teachingLabel: { name: bidName("7NT — grand slam"), summary: bidSummary("Bid grand slam after confirming all aces and sufficient kings") },
     }, BLACKWOOD_CTX),
 
     createSurface({
@@ -309,7 +310,7 @@ export function createBlackwoodR5Surfaces(_sys: SystemConfig): readonly BidMeani
       declarationOrder: 1,
       sourceIntent: { type: "BlackwoodSignoff", params: { level: "small-slam" } },
       disclosure: "natural",
-      teachingLabel: "6NT — small slam signoff",
+      teachingLabel: { name: bidName("6NT — small slam signoff"), summary: bidSummary("Settle for small slam after learning the partnership is missing a king") },
     }, BLACKWOOD_CTX),
   ];
 }

@@ -16,6 +16,7 @@ import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
+import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple, teachingItem } from "../../../core/authored-text";
 import { bergenFacts } from "./facts";
 import { BERGEN_EXPLANATION_ENTRIES } from "./explanation-catalog";
 import { BERGEN_MEANING_IDS } from "./ids";
@@ -53,7 +54,7 @@ const OPENER_1H_SURFACE: BidMeaning = createSurface({
   band: "must",
   declarationOrder: 0,
   sourceIntent: { type: "MajorOpen", params: { suit: "hearts" } },
-  teachingLabel: "1\u2665 opening",
+  teachingLabel: { name: bidName("1\u2665 opening"), summary: bidSummary("Open 1 heart to show 5+ hearts and 12-21 HCP") },
   disclosure: "natural",
 }, BERGEN_CTX);
 
@@ -65,7 +66,7 @@ const OPENER_1S_SURFACE: BidMeaning = createSurface({
   band: "must",
   declarationOrder: 0,
   sourceIntent: { type: "MajorOpen", params: { suit: "spades" } },
-  teachingLabel: "1\u2660 opening",
+  teachingLabel: { name: bidName("1\u2660 opening"), summary: bidSummary("Open 1 spade to show 5+ spades and 12-21 HCP") },
   disclosure: "natural",
 }, BERGEN_CTX);
 
@@ -320,14 +321,14 @@ function createBergenModule(_sys: SystemConfig): BergenModuleParts {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "bergen",
-  description: "Use 3C/3D as artificial raises after 1M to show different strength levels",
-  purpose: "Distinguish between weak, constructive, limit, and game-forcing raises of partner's major so opener can judge the right level",
+  description: moduleDescription("Use 3C/3D as artificial raises after 1M to show different strength levels"),
+  purpose: modulePurpose("Distinguish between weak, constructive, limit, and game-forcing raises of partner's major so opener can judge the right level"),
   teaching: {
-    tradeoff: "Uses 3C and 3D as conventional raises, giving up natural minor bids over 1M.",
-    principle: "Immediately show trump support and strength — the Law of Total Tricks says bid to the level of your combined trump length.",
+    tradeoff: teachingTradeoff("Uses 3C and 3D as conventional raises, giving up natural minor bids over 1M."),
+    principle: teachingPrinciple("Immediately show trump support and strength — the Law of Total Tricks says bid to the level of your combined trump length."),
     commonMistakes: [
-      "Remember 3C is constructive (7-10) and 3D is limit (10-12) — don't confuse the order",
-      "With 4+ trump support and 12+ HCP with a shortage, bid the short suit as a splinter instead of using Bergen",
+      teachingItem("Remember 3C is constructive (7-10) and 3D is limit (10-12) — don't confuse the order"),
+      teachingItem("With 4+ trump support and 12+ HCP with a shortage, bid the short suit as a splinter instead of using Bergen"),
     ],
   },
   ...createBergenModule(sys),

@@ -12,11 +12,15 @@ core/
   convention-module.ts  Unified ConventionModule interface — the single module type (moduleId, facts, explanationEntries, teaching?: ModuleTeaching, local: LocalFsm, states: StateEntry[]). `ModuleTeaching` carries strategic content orthogonal to structure (tradeoffs, principles, common mistakes). Exports `moduleSurfaces()` helper (extracts deduplicated surfaces from a module's states). Re-exports `ResolvedSurface`, `LocalFsm`, `StateEntry` from `rule-module.ts` for convenience.
   rule-module.ts        Pattern primitives for rule-based surface selection: `LocalFsm`, `StateEntry` (phase + turn + surfaces + negotiationDelta), `ResolvedSurface` (surface + negotiationDelta), `TurnRole`, `ObsPattern`, `RouteExpr`, `NegotiationExpr`, `PhaseTransition`. `StateEntry` groups surfaces by conversation state — activation context stays in `conventions/core/`, not on `BidMeaning` in `contracts/`.
   strategy-types.ts     Shared strategy contract types: BiddingStrategy, BidResult, BiddingContext, PlayStrategy, PlayContext, PlayResult, PosteriorSummary, PracticalRecommendation (moved from former strategy/bidding/bidding-types.ts, strategy/play/play-types.ts, strategy/recommendation-types.ts). Lives here because conventions/ imports these types heavily — placing them in service/ would create circular deps.
+
+> Note: `BidAlert.teachingLabel` is intentionally plain `string` — alerts extract only `.name` from the internal `TeachingLabel`. Do not change it to `TeachingLabel`.
+
   context-factory.ts    createBiddingContext — canonical BiddingContext constructor
   registry.ts           registerConvention, getConvention, listConventions, clearRegistry
   shared-explanation-catalog.ts  Platform shared-fact explanation catalog — FactExplanationEntry for every shared fact (primitive, bridge-derived, posterior) and system fact. Exports PLATFORM_EXPLANATION_ENTRIES. Owns explanations for all IDs in `shared-fact-vocabulary.ts` and `system-fact-vocabulary.ts`. Module-owned facts (including template-form `$suit` IDs) are NOT covered here — they belong in per-module `explanation-catalog.ts` files.
   surface-helpers.ts    Surface utility functions (bid(), suitToBidSuit(), otherMajorBidSuit())
   surface-builder.ts    createSurface() builder — simplified BidMeaning construction with auto-derived clauseId/description/moduleId. modulePrecedence defaults to 0.
+  authored-text.ts      Branded string types (BidName, BidSummary, ModuleDescription, ModulePurpose, etc.), TeachingLabel interface, and validating factory functions for all authored text fields. Exported via conventions barrel.
   profile-builder.ts    Profile building utilities
   bundle/               Bundle registry (ConventionBundle CRUD)
     bundle-types.ts       ConventionBundle interface — `category` and `description` are required; includes `teaching`, `allowedDealers`, `modules` fields. `BundleInput` no longer has `ruleModules`; modules are resolved by `buildBundle()` from `memberIds` via module-registry.

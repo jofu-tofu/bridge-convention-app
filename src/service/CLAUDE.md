@@ -37,7 +37,9 @@ The `evaluation/` subfolder contains stateless CLI grading logic (atom evaluatio
 
 ## Boundary Types
 
-**Allowed to cross:** `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`, `Call`, `Card`, `Seat`, `Vulnerability`, `BidGrade`, `BidHistoryEntry`, `GamePhase`, `SessionHandle` (opaque string), session config DTOs.
+**Allowed to cross:** `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`, `ServiceTeachingLabel`, `Call`, `Card`, `Seat`, `Vulnerability`, `BidGrade`, `BidHistoryEntry`, `GamePhase`, `SessionHandle` (opaque string), session config DTOs.
+
+`ServiceTeachingLabel` is a plain `{ name: string; summary: string }` — no branded types at the service boundary. Branded types (`BidName`, `BidSummary`) widen implicitly to `string` at assignment in the viewport builders. Do NOT add an explicit converter.
 
 `updatePlayProfile()` — swaps `PlayStrategyProvider` on active session. Must transfer `onAuctionComplete` state to new provider.
 

@@ -12,6 +12,7 @@ import type { ArbitrationResult, EncodedProposal, PipelineCarrier, PipelineResul
 import type { CandidateEligibility } from "../conventions/pipeline/tree-evaluation";
 import type { DecisionProvenance, EncodingTrace, LegalityTrace } from "../conventions/pipeline/evaluation/provenance";
 import type { FactExplanationEntry, MeaningExplanationEntry } from "../conventions/core/explanation-catalog";
+import { bidName, bidSummary } from "../conventions/core/authored-text";
 /** Create a minimal BidMeaning with override support. */
 export function makeSurface(overrides: Partial<BidMeaning> & { meaningId?: string; moduleId?: string } = {}): BidMeaning {
   return {
@@ -22,7 +23,7 @@ export function makeSurface(overrides: Partial<BidMeaning> & { meaningId?: strin
     clauses: [],
     ranking: makeRanking(),
     sourceIntent: { type: "TestIntent", params: {} },
-    teachingLabel: "Test meaning",
+    teachingLabel: { name: bidName("Test meaning"), summary: bidSummary("[TODO] test") },
     ...overrides,
   } as BidMeaning;
 }

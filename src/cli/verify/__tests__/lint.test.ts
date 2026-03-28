@@ -12,13 +12,19 @@ import {
   detectDuplicateEncodings,
 } from "../lint";
 
+import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple } from "../../../conventions/core/authored-text";
+import type { TeachingLabel } from "../../../conventions/core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
+
 // ── Factories ───────────────────────────────────────────────────────
 
 function makeModule(overrides: Partial<ConventionModule> = {}): ConventionModule {
   return {
     moduleId: "test-mod",
-    description: "test module",
-    purpose: "test",
+    description: moduleDescription("test module description for lint checks"),
+    purpose: modulePurpose("test purpose for lint module checks"),
+    teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
     local: { initial: "idle", transitions: [] },
     states: [],
     facts: { definitions: [], evaluators: new Map() },
@@ -34,7 +40,7 @@ function makeSurface(
   return {
     meaningId,
     semanticClassId: `test:${meaningId}`,
-    teachingLabel: meaningId,
+    teachingLabel: tl(meaningId),
     sourceIntent: { type: "TestIntent", params: {} },
     clauses: [],
     encoding: {

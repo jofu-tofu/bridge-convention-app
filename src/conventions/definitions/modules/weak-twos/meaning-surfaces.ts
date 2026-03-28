@@ -4,6 +4,7 @@ import { WEAK_TWO_CLASSES, WEAK_TWO_FACT_IDS, WEAK_TWO_MEANING_IDS } from "./ids
 import { bid, suitToBidSuit } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
+import { bidName, bidSummary } from "../../../core/authored-text";
 
 type WeakTwoSuit = "hearts" | "spades" | "diamonds";
 
@@ -211,7 +212,7 @@ function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
     declarationOrder: order,
     sourceIntent: { type: "WeakTwoOpen", params: { suit } },
     disclosure: "standard",
-    teachingLabel: `Open 2${suitLabel(suit)}`,
+    teachingLabel: { name: bidName(`Open 2${suitLabel(suit)}`), summary: bidSummary("Open preemptively showing a 6+ card suit and weak hand strength") },
     surfaceBindings: { suit },
   }, WEAK_TWOS_CTX));
 }
@@ -261,7 +262,7 @@ function createWeakTwoR2Surfaces(
       declarationOrder: 0,
       sourceIntent: { type: "GameRaise", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Game raise (${gameLevel}${sl})`,
+      teachingLabel: { name: bidName(`Game raise (${gameLevel}${sl})`), summary: bidSummary("Raise directly to game with 16+ total points and 3+ card fit") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -288,7 +289,7 @@ function createWeakTwoR2Surfaces(
       declarationOrder: 1,
       sourceIntent: { type: "OgustAsk", params: { suit } },
       disclosure: "alert",
-      teachingLabel: "Ogust ask (2NT)",
+      teachingLabel: { name: bidName("Ogust ask (2NT)"), summary: bidSummary("Ask opener to describe hand strength and suit quality via Ogust responses") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -316,7 +317,7 @@ function createWeakTwoR2Surfaces(
       declarationOrder: 2,
       sourceIntent: { type: "InviteRaise", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Invite raise (3${sl})`,
+      teachingLabel: { name: bidName(`Invite raise (3${sl})`), summary: bidSummary("Invite game with 14-15 total points and 3+ card support") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -344,7 +345,7 @@ function createWeakTwoR2Surfaces(
       declarationOrder: 3,
       sourceIntent: { type: "PreemptiveRaise", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Preemptive raise (3${sl})`,
+      teachingLabel: { name: bidName(`Preemptive raise (3${sl})`), summary: bidSummary("Raise preemptively with 3+ fit to block opponents despite weak values") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -372,7 +373,7 @@ function createWeakTwoR2Surfaces(
       declarationOrder: 4,
       sourceIntent: { type: "NewSuitForcing", params: { suit } },
       disclosure: "natural",
-      teachingLabel: "New suit forcing",
+      teachingLabel: { name: bidName("New suit forcing"), summary: bidSummary("Bid a new 5+ card suit forcing opener to rebid, exploring for a better fit") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -386,7 +387,7 @@ function createWeakTwoR2Surfaces(
       declarationOrder: 5,
       sourceIntent: { type: "WeakPass", params: { suit } },
       disclosure: "natural",
-      teachingLabel: "Pass (no action)",
+      teachingLabel: { name: bidName("Pass (no action)"), summary: bidSummary("Decline to act with insufficient values or fit for any conventional response") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
   ];
@@ -427,7 +428,7 @@ function createWeakTwoOgustSurfaces(
       declarationOrder: 0,
       sourceIntent: { type: "OgustSolid", params: { suit } },
       disclosure: "alert",
-      teachingLabel: "Ogust solid (3NT)",
+      teachingLabel: { name: bidName("Ogust solid (3NT)"), summary: bidSummary("Show a solid suit headed by AKQ, suggesting 3NT as the final contract") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -456,7 +457,7 @@ function createWeakTwoOgustSurfaces(
       declarationOrder: 1,
       sourceIntent: { type: "OgustMinBad", params: { suit } },
       disclosure: "alert",
-      teachingLabel: "Ogust min/bad (3C)",
+      teachingLabel: { name: bidName("Ogust min/bad (3C)"), summary: bidSummary("Show minimum strength with a bad suit (0-1 top honors)") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -485,7 +486,7 @@ function createWeakTwoOgustSurfaces(
       declarationOrder: 2,
       sourceIntent: { type: "OgustMinGood", params: { suit } },
       disclosure: "alert",
-      teachingLabel: "Ogust min/good (3D)",
+      teachingLabel: { name: bidName("Ogust min/good (3D)"), summary: bidSummary("Show minimum strength with a good suit (2+ top honors)") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -514,7 +515,7 @@ function createWeakTwoOgustSurfaces(
       declarationOrder: 3,
       sourceIntent: { type: "OgustMaxBad", params: { suit } },
       disclosure: "alert",
-      teachingLabel: "Ogust max/bad (3H)",
+      teachingLabel: { name: bidName("Ogust max/bad (3H)"), summary: bidSummary("Show maximum strength with a bad suit (0-1 top honors)") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -543,7 +544,7 @@ function createWeakTwoOgustSurfaces(
       declarationOrder: 4,
       sourceIntent: { type: "OgustMaxGood", params: { suit } },
       disclosure: "alert",
-      teachingLabel: "Ogust max/good (3S)",
+      teachingLabel: { name: bidName("Ogust max/good (3S)"), summary: bidSummary("Show maximum strength with a good suit (2+ top honors)") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
   ];
@@ -584,7 +585,7 @@ function createPostOgustSurfaces(
       declarationOrder: 0,
       sourceIntent: { type: "PostOgustGame", params: { suit } },
       disclosure: "alert",
-      teachingLabel: `Bid game in ${suit}`,
+      teachingLabel: { name: bidName(`Bid game in ${suit}`), summary: bidSummary("Bid game after Ogust confirms sufficient combined strength") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -607,7 +608,7 @@ function createPostOgustSurfaces(
         declarationOrder: 0,
         sourceIntent: { type: "PostOgust3NT", params: { suit } },
         disclosure: "alert",
-        teachingLabel: "3NT game (alternative to 5D)",
+        teachingLabel: { name: bidName("3NT game (alternative to 5D)"), summary: bidSummary("Choose 3NT over 5D as a more practical nine-trick game contract") },
         surfaceBindings: bindings,
       }, WEAK_TWOS_CTX),
     ] : []),
@@ -622,7 +623,7 @@ function createPostOgustSurfaces(
       declarationOrder: 1,
       sourceIntent: { type: "PostOgustSignoff", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Sign off in ${suit}`,
+      teachingLabel: { name: bidName(`Sign off in ${suit}`), summary: bidSummary("Return to the agreed suit at the 3-level to stop below game") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -636,7 +637,7 @@ function createPostOgustSurfaces(
       declarationOrder: 2,
       sourceIntent: { type: "PostOgustPass", params: { suit } },
       disclosure: "natural",
-      teachingLabel: "Pass",
+      teachingLabel: { name: bidName("Pass"), summary: bidSummary("Accept the current Ogust response as the final contract") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
   ];
@@ -673,7 +674,7 @@ function createNsfRebidSurfaces(
       declarationOrder: 0,
       sourceIntent: { type: "NsfSupport", params: { suit } },
       disclosure: "natural",
-      teachingLabel: "Support new suit",
+      teachingLabel: { name: bidName("Support new suit"), summary: bidSummary("Raise responder's new suit showing 3+ card support") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
@@ -687,7 +688,7 @@ function createNsfRebidSurfaces(
       declarationOrder: 1,
       sourceIntent: { type: "NsfRebid", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Rebid ${sl}`,
+      teachingLabel: { name: bidName(`Rebid ${sl}`), summary: bidSummary("Rebid the original suit denying support for responder's new suit") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
   ];

@@ -26,6 +26,7 @@ import type { ModuleContext } from "../../../core/surface-builder";
 import { dontFacts } from "./facts";
 import { DONT_ENTRIES } from "./explanation-catalog";
 import { DONT_MEANING_IDS } from "./ids";
+import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple, teachingItem } from "../../../core/authored-text";
 import {
   DONT_R1_SURFACES,
   DONT_ADVANCER_2H_SURFACES,
@@ -50,7 +51,7 @@ const OPPONENT_1NT_SURFACE: BidMeaning = createSurface({
   band: "must",
   declarationOrder: 0,
   sourceIntent: { type: "NTOpening", params: {} },
-  teachingLabel: "Opponent's 1NT",
+  teachingLabel: { name: bidName("Opponent's 1NT"), summary: bidSummary("Opponent opens 1NT, triggering the DONT convention") },
   disclosure: "natural",
 }, DONT_CTX);
 
@@ -130,14 +131,14 @@ function createDontModule(_sys: SystemConfig) {
 /** Self-contained factory producing a complete ConventionModule. */
 export const moduleFactory = (sys: SystemConfig): ConventionModule => ({
   moduleId: "dont",
-  description: "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns",
-  purpose: "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
+  description: moduleDescription("Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns"),
+  purpose: modulePurpose("Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level"),
   teaching: {
-    tradeoff: "DONT overcalls commit to the 2-level immediately — if partner has a misfit, you may go down.",
-    principle: "Against a strong 1NT, disrupting their communication is more valuable than finding your own perfect contract.",
+    tradeoff: teachingTradeoff("DONT overcalls commit to the 2-level immediately — if partner has a misfit, you may go down."),
+    principle: teachingPrinciple("Against a strong 1NT, disrupting their communication is more valuable than finding your own perfect contract."),
     commonMistakes: [
-      "Double shows a single long suit (not penalty) — advancer must relay to 2C to discover which suit",
-      "2H shows hearts AND a higher suit (spades) — it's not a single-suited overcall",
+      teachingItem("Double shows a single long suit (not penalty) — advancer must relay to 2C to discover which suit"),
+      teachingItem("2H shows hearts AND a higher suit (spades) — it's not a single-suited overcall"),
     ],
   },
   ...createDontModule(sys),

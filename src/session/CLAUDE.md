@@ -23,7 +23,7 @@ service/ (thin port) → session/ → {engine/, conventions/, inference/}
 | `bidding-controller.ts` | Pure bidding logic: processBid(), runInitialAiBids(), initializeAuction() |
 | `play-controller.ts` | Pure play logic: processPlayCard(), trick scoring, AI play loop. `selectAiCard()` is async (awaits `PlayStrategy.suggest()`). |
 | `dds-controller.ts` | DDS solve logic with timeout and stale-result guard |
-| `build-viewport.ts` | Viewport builders: buildBiddingViewport(), buildDeclarerPromptViewport(), etc. |
+| `build-viewport.ts` | Viewport builders: buildBiddingViewport(), buildDeclarerPromptViewport(), etc. Viewport builders produce `ServiceTeachingLabel` objects from internal `TeachingLabel` — branded strings widen implicitly to `string`. |
 | `format-obs-label.ts` | ObsPattern → human-readable transition labels for learning viewport |
 | `learning-viewport.ts` | buildModuleCatalog(), buildModuleLearningViewport(), buildBundleFlowTree(), buildModuleFlowTree() — module-centric learning viewport builders + conversation flow trees (bundle-wide and module-scoped) |
 | `evaluation-oracle.ts` | EvaluationOracle (answer key, internal only) |

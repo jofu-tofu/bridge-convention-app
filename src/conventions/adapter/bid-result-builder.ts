@@ -25,7 +25,7 @@ export function buildBidResult(
     isMatched: ep.eligibility.hand.satisfied,
     isDefaultCall: ep.isDefaultEncoding,
     legal: ep.eligibility.encoding.legal,
-    meaning: ep.proposal.teachingLabel ?? ep.proposal.meaningId,
+    meaning: ep.proposal.teachingLabel?.name ?? ep.proposal.meaningId,
     intentType: ep.proposal.sourceIntent.type,
     priority: ep.proposal.modulePriority,
     orderKey: ep.proposal.ranking.declarationOrder,
@@ -46,7 +46,7 @@ export function buildBidResult(
   // Build alert from proposal's threaded alertability metadata
   const alert: BidAlert | null = selected.proposal.isAlertable
     ? {
-        teachingLabel: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
+        teachingLabel: selected.proposal.teachingLabel?.name ?? selected.proposal.meaningId,
         annotationType: selected.proposal.annotationType,
       }
     : null;
@@ -66,8 +66,8 @@ export function buildBidResult(
   return {
     call: selected.call,
     ruleName: selected.proposal.meaningId,
-    explanation: selected.proposal.teachingLabel ?? selected.proposal.evidence.provenance.nodeName,
-    meaning: selected.proposal.teachingLabel ?? selected.proposal.meaningId,
+    explanation: selected.proposal.teachingLabel?.name ?? selected.proposal.evidence.provenance.nodeName,
+    meaning: selected.proposal.teachingLabel?.name ?? selected.proposal.meaningId,
     alert,
     constraints,
     publicConditions,

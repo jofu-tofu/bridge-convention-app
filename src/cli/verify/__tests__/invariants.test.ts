@@ -5,6 +5,10 @@ import type { VerificationSnapshot } from "../types";
 import type { NegotiationState, CommittedStep } from "../../../conventions/core/committed-step";
 import type { BidMeaning } from "../../../conventions/pipeline/evaluation/meaning";
 import type { BidAction } from "../../../conventions/pipeline/bid-action";
+import { bidName, bidSummary } from "../../../conventions/core/authored-text";
+import type { TeachingLabel } from "../../../conventions/core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 import {
   checkArbitrationTotality,
   checkKernelConsistency,
@@ -58,7 +62,7 @@ function makeSurface(overrides: Partial<BidMeaning> = {}): BidMeaning {
     clauses: [],
     ranking: { recommendationBand: "preferred" as const, declarationOrder: 0 },
     sourceIntent: { type: "TestIntent", params: {} },
-    teachingLabel: "Test meaning",
+    teachingLabel: tl("Test meaning"),
     ...overrides,
   } as BidMeaning;
 }

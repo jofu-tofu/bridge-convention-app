@@ -8,6 +8,10 @@ import type { MeaningProposal } from "../evaluation/meaning";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { makeCall, makeMeaningProposal, makeArbitrationInput } from "./pipeline-test-helpers";
+import { bidName, bidSummary } from "../../core/authored-text";
+import type { TeachingLabel } from "../../core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
 describe("arbitrateMeanings", () => {
   it("selects a single proposal that passes all gates", () => {
@@ -397,8 +401,8 @@ describe("zipProposalsWithSurfaces", () => {
   it("pairs proposals with their source surfaces by index", () => {
     const proposals: MeaningProposal[] = [makeMeaningProposal({ meaningId: "a" }), makeMeaningProposal({ meaningId: "b" })];
     const surfaces = [
-      { meaningId: "a", semanticClassId: "test:a", moduleId: "test", encoding: { defaultCall: makeCall(1, BidSuit.Clubs) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 0 }, sourceIntent: { type: "t", params: {} }, disclosure: "alert" as const, teachingLabel: "Test A" },
-      { meaningId: "b", semanticClassId: "test:b", moduleId: "test", encoding: { defaultCall: makeCall(2, BidSuit.Hearts) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 1 }, sourceIntent: { type: "t", params: {} }, disclosure: "alert" as const, teachingLabel: "Test B" },
+      { meaningId: "a", semanticClassId: "test:a", moduleId: "test", encoding: { defaultCall: makeCall(1, BidSuit.Clubs) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 0 }, sourceIntent: { type: "t", params: {} }, disclosure: "alert" as const, teachingLabel: tl("Test A") },
+      { meaningId: "b", semanticClassId: "test:b", moduleId: "test", encoding: { defaultCall: makeCall(2, BidSuit.Hearts) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 1 }, sourceIntent: { type: "t", params: {} }, disclosure: "alert" as const, teachingLabel: tl("Test B") },
     ];
 
     const inputs = zipProposalsWithSurfaces(proposals, surfaces);

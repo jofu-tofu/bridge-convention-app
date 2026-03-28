@@ -4,6 +4,8 @@ import { BERGEN_CLASSES, BERGEN_MEANING_BY_SUIT, BERGEN_MEANING_IDS, BERGEN_CLAU
 import { bid, suitToBidSuit, otherMajorBidSuit } from "../../../core/surface-helpers";
 import { createSurface } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
+import { bidName, bidSummary } from "../../../core/authored-text";
+import type { TeachingLabel } from "../../../core/authored-text";
 
 const BERGEN_CTX: ModuleContext = { moduleId: "bergen" };
 
@@ -101,7 +103,7 @@ function createBergenR1Surfaces(
       declarationOrder: 0,
       sourceIntent: { type: "Splinter", params: { suit } },
       disclosure: "alert",
-      teachingLabel: `Splinter (3${suit === "hearts" ? "S" : "H"})`,
+      teachingLabel: { name: bidName(`Splinter (3${suit === "hearts" ? "S" : "H"})`), summary: bidSummary("Show game-forcing raise with 4+ trump support and shortness in a side suit") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
@@ -128,7 +130,7 @@ function createBergenR1Surfaces(
       declarationOrder: 1,
       sourceIntent: { type: "GameRaise", params: { suit } },
       disclosure: "alert",
-      teachingLabel: `Game raise (4${suit === "hearts" ? "H" : "S"})`,
+      teachingLabel: { name: bidName(`Game raise (4${suit === "hearts" ? "H" : "S"})`), summary: bidSummary("Raise directly to game with 13+ HCP and 4-card trump support") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
@@ -155,7 +157,7 @@ function createBergenR1Surfaces(
       declarationOrder: 2,
       sourceIntent: { type: "LimitRaise", params: { suit } },
       disclosure: "alert",
-      teachingLabel: "Limit raise (3D)",
+      teachingLabel: { name: bidName("Limit raise (3D)"), summary: bidSummary("Show 4+ card support with 10-12 HCP, inviting game via artificial 3D") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
@@ -182,7 +184,7 @@ function createBergenR1Surfaces(
       declarationOrder: 3,
       sourceIntent: { type: "ConstructiveRaise", params: { suit } },
       disclosure: "alert",
-      teachingLabel: "Constructive raise (3C)",
+      teachingLabel: { name: bidName("Constructive raise (3C)"), summary: bidSummary("Show 4+ card support with 7-10 HCP via artificial 3C, competing for the partscore") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
@@ -209,7 +211,7 @@ function createBergenR1Surfaces(
       declarationOrder: 4,
       sourceIntent: { type: "PreemptiveRaise", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Preemptive raise (3${suit === "hearts" ? "H" : "S"})`,
+      teachingLabel: { name: bidName(`Preemptive raise (3${suit === "hearts" ? "H" : "S"})`), summary: bidSummary("Raise to the 3-level with 4+ trump support and weak values to obstruct opponents") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
   ];
@@ -253,7 +255,7 @@ function createBergenR2AfterConstructiveSurfaces(
       declarationOrder: 0,
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       disclosure: "natural",
-      teachingLabel: "Accept constructive",
+      teachingLabel: { name: bidName("Accept constructive"), summary: bidSummary("Bid game with 17+ HCP after partner's constructive raise") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
@@ -277,7 +279,7 @@ function createBergenR2AfterConstructiveSurfaces(
       declarationOrder: 1,
       sourceIntent: { type: "GameTry", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Game try (3${suit === "hearts" ? "D" : "H"})`,
+      teachingLabel: { name: bidName(`Game try (3${suit === "hearts" ? "D" : "H"})`), summary: bidSummary("Invite game with 14-16 HCP by bidding a help suit after the constructive raise") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
@@ -298,7 +300,7 @@ function createBergenR2AfterConstructiveSurfaces(
       declarationOrder: 2,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       disclosure: "natural",
-      teachingLabel: "Decline constructive",
+      teachingLabel: { name: bidName("Decline constructive"), summary: bidSummary("Sign off at the 3-level with 13 or fewer HCP, declining the game invitation") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
   ];
@@ -336,7 +338,7 @@ function createBergenR2AfterLimitSurfaces(
       declarationOrder: 0,
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       disclosure: "natural",
-      teachingLabel: "Accept limit raise",
+      teachingLabel: { name: bidName("Accept limit raise"), summary: bidSummary("Bid game with 15+ HCP after partner's limit raise shows 10-12 points") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
@@ -357,7 +359,7 @@ function createBergenR2AfterLimitSurfaces(
       declarationOrder: 1,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       disclosure: "natural",
-      teachingLabel: "Decline limit raise",
+      teachingLabel: { name: bidName("Decline limit raise"), summary: bidSummary("Sign off at the 3-level with 14 or fewer HCP, settling for partscore") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
   ];
@@ -396,7 +398,7 @@ function createBergenR2AfterPreemptiveSurfaces(
       declarationOrder: 0,
       sourceIntent: { type: "RaiseToGame", params: { suit } },
       disclosure: "natural",
-      teachingLabel: `Bid game over preemptive (4${suit === "hearts" ? "H" : "S"})`,
+      teachingLabel: { name: bidName(`Bid game over preemptive (4${suit === "hearts" ? "H" : "S"})`), summary: bidSummary("Raise to game with 18+ total points despite partner's weak hand") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
@@ -417,7 +419,7 @@ function createBergenR2AfterPreemptiveSurfaces(
       declarationOrder: 1,
       sourceIntent: { type: "AcceptPartnerDecision", params: { suit } },
       disclosure: "natural",
-      teachingLabel: "Pass over preemptive",
+      teachingLabel: { name: bidName("Pass over preemptive"), summary: bidSummary("Accept the preemptive level with 17 or fewer total points") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
   ];
@@ -458,7 +460,7 @@ function createBergenR3AfterGameTrySurfaces(
       declarationOrder: 0,
       sourceIntent: { type: "AcceptInvitation", params: { suit } },
       disclosure: "alert",
-      teachingLabel: `Accept game try → game (4${suit === "hearts" ? "H" : "S"})`,
+      teachingLabel: { name: bidName(`Accept game try → game (4${suit === "hearts" ? "H" : "S"})`), summary: bidSummary("Accept opener's game try with 9-10 HCP at the top of the constructive range") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
@@ -479,7 +481,7 @@ function createBergenR3AfterGameTrySurfaces(
       declarationOrder: 1,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       disclosure: "alert",
-      teachingLabel: `Reject game try → signoff (3${suit === "hearts" ? "H" : "S"})`,
+      teachingLabel: { name: bidName(`Reject game try → signoff (3${suit === "hearts" ? "H" : "S"})`), summary: bidSummary("Reject opener's game try with 7-8 HCP, returning to the agreed trump suit") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
   ];
@@ -493,7 +495,7 @@ function createBergenR3AfterGameTrySurfaces(
 function createBergenPassSurface(
   meaningId: string,
   semanticClassId: string,
-  teachingLabel: string,
+  teachingLabel: TeachingLabel,
 ): readonly BidMeaning[] {
   return [
     createSurface({
@@ -519,7 +521,7 @@ function createBergenR3AfterGameSurfaces(): readonly BidMeaning[] {
   return createBergenPassSurface(
     BERGEN_MEANING_IDS.RESPONDER_ACCEPT_GAME,
     BERGEN_CLASSES.RESPONDER_ACCEPT_GAME,
-    "Accept partner's game bid → pass",
+    { name: bidName("Accept partner's game bid → pass"), summary: bidSummary("Pass after opener bids game, accepting the final contract") },
   );
 }
 
@@ -532,7 +534,7 @@ function createBergenR3AfterSignoffSurfaces(): readonly BidMeaning[] {
   return createBergenPassSurface(
     BERGEN_MEANING_IDS.RESPONDER_ACCEPT_SIGNOFF,
     BERGEN_CLASSES.RESPONDER_ACCEPT_SIGNOFF,
-    "Accept partner's signoff → pass",
+    { name: bidName("Accept partner's signoff → pass"), summary: bidSummary("Pass after opener signs off, ending the auction at partscore") },
   );
 }
 
@@ -545,7 +547,7 @@ function createBergenR4Surfaces(): readonly BidMeaning[] {
   return createBergenPassSurface(
     BERGEN_MEANING_IDS.OPENER_ACCEPT_AFTER_TRY,
     BERGEN_CLASSES.OPENER_ACCEPT_AFTER_TRY,
-    "Accept partner's decision on game try → pass",
+    { name: bidName("Accept game try decision → pass"), summary: bidSummary("Pass after responder decides on the game try, accepting their judgment") },
   );
 }
 
@@ -601,7 +603,7 @@ function createBergenNatural1NtResponseSurfaces(
       declarationOrder: 5,
       sourceIntent: { type: "NaturalNtResponse", params: { suit } },
       disclosure: "natural",
-      teachingLabel: "1NT response",
+      teachingLabel: { name: bidName("1NT response"), summary: bidSummary("Deny 4-card support for opener's major, showing a balanced hand within system range") },
       surfaceBindings: bindings,
     }, BERGEN_CTX),
   ];

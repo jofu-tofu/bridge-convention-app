@@ -81,7 +81,7 @@ Root files are cross-cutting — imported by 2+ subfolders or by many external c
 
 | File | Role |
 | ---- | ---- |
-| `meaning.ts` | `BidMeaning`, `MeaningProposal`, `MeaningClause`, `BidMeaningClause` types |
+| `meaning.ts` | `BidMeaning`, `MeaningProposal`, `MeaningClause`, `BidMeaningClause` types. `BidMeaning.teachingLabel` is `TeachingLabel` (structured object with `name: BidName` and `summary: BidSummary`), not `string`. |
 | `meaning-evaluator.ts` | `evaluateBidMeaning()`, `evaluateAllBidMeanings()` — clause evaluation |
 | `binding-resolver.ts` | `resolveFactId()`, `resolveClause()` — `$suit` placeholder resolution |
 | `clause-derivation.ts` | `deriveClauseId()`, `deriveClauseDescription()`, `fillClauseDefaults()` |

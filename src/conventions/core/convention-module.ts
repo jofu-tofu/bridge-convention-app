@@ -16,6 +16,7 @@ import type { BidMeaning } from "../pipeline/evaluation/meaning";
 import type { FactCatalogExtension } from "./fact-catalog";
 import type { ExplanationEntry } from "./explanation-catalog";
 import type { LocalFsm, StateEntry } from "./rule-module";
+import type { ModuleDescription, ModulePurpose, TeachingTradeoff, TeachingPrinciple, TeachingItem } from "./authored-text";
 
 // Re-export for consumer convenience (ResolvedSurface, LocalFsm, and StateEntry are structurally
 // part of rule-module.ts but frequently needed alongside ConventionModule).
@@ -28,25 +29,25 @@ export type { ResolvedSurface, LocalFsm, StateEntry } from "./rule-module";
 export interface ModuleTeaching {
   /** What you give up by playing this convention — strategic tradeoff.
    *  E.g., "Using 2C as Stayman means you can't play in a 2C contract." */
-  readonly tradeoff?: string;
+  readonly tradeoff: TeachingTradeoff;
   /** The broader bridge principle this module embodies.
    *  E.g., "Transfer principle: let the strong hand be declarer to protect
    *  tenaces from the opening lead." */
-  readonly principle?: string;
+  readonly principle: TeachingPrinciple;
   /** Common mistakes or misconceptions — things the structure can't warn about.
    *  E.g., "Don't use Stayman with 4-3-3-3 shape — prefer a quantitative raise." */
-  readonly commonMistakes?: readonly string[];
+  readonly commonMistakes: readonly TeachingItem[];
 }
 
 export interface ConventionModule<Phase extends string = string> {
   /** Unique module identifier (kebab-case). */
   readonly moduleId: string;
   /** Human-readable one-line description of what this module does. */
-  readonly description: string;
+  readonly description: ModuleDescription;
   /** Why this module exists — the problem it solves for the partnership. */
-  readonly purpose: string;
+  readonly purpose: ModulePurpose;
   /** Strategic teaching content orthogonal to structure (tradeoffs, principles, mistakes). */
-  readonly teaching?: ModuleTeaching;
+  readonly teaching: ModuleTeaching;
 
   // ── Declaration ─────────────────────────────────────────────
   /** Module-derived fact definitions and evaluators. */

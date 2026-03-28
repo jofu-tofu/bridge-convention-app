@@ -11,6 +11,10 @@ import {
   makeArbitration,
   makeProvenance,
 } from "../../../test-support/convention-factories";
+import { bidName, bidSummary } from "../../core/authored-text";
+import type { TeachingLabel } from "../../core/authored-text";
+
+const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
 // -- Tests --
 
@@ -156,7 +160,7 @@ describe("buildMeaningViews", () => {
     const encoded = makeEncoded({
       proposal: makeProposal({
         meaningId: "stayman:ask-major",
-        teachingLabel: "Stayman — Ask for a 4-card major",
+        teachingLabel: tl("Stayman — Ask for a 4-card major"),
       }),
     });
     const arbitration = makeArbitration({ truthSet: [encoded] });

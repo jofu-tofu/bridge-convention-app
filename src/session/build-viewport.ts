@@ -118,7 +118,7 @@ export function buildBiddingViewport(input: BuildBiddingViewportInput): BiddingV
       biddingOptions.push({
         call,
         callDisplay: formatCall(call),
-        teachingLabel: surface.teachingLabel,
+        teachingLabel: { name: surface.teachingLabel.name, summary: surface.teachingLabel.summary },
         isAlertable: isAlertable(surface.disclosure),
         recommendation: surface.ranking.recommendationBand as BiddingOptionView["recommendation"],
       });
@@ -159,8 +159,11 @@ export function buildViewportFeedback(feedback: BidFeedbackLike): ViewportBidFee
   // Correct answer (from expected result)
   const correctCall = feedback.expectedResult.call;
   const correctCallDisplay = formatCall(correctCall);
-  const correctBidLabel = feedback.expectedResult.alert?.teachingLabel
+  const correctBidLabelName = feedback.expectedResult.alert?.teachingLabel
     ?? feedback.expectedResult.meaning;
+  const correctBidLabel = correctBidLabelName
+    ? { name: correctBidLabelName, summary: feedback.expectedResult.explanation ?? "" }
+    : undefined;
   const correctBidExplanation = feedback.expectedResult.explanation;
 
   // Conditions from teaching projection
