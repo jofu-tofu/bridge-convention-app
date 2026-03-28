@@ -35,10 +35,34 @@ const R2_INVITE_RAISE_ID: Record<WeakTwoSuit, string> = {
   diamonds: WEAK_TWO_MEANING_IDS.INVITE_RAISE_DIAMONDS,
 };
 
+const R2_PREEMPTIVE_RAISE_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.PREEMPTIVE_RAISE_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.PREEMPTIVE_RAISE_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.PREEMPTIVE_RAISE_DIAMONDS,
+};
+
+const R2_NEW_SUIT_FORCING_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.NEW_SUIT_FORCING_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.NEW_SUIT_FORCING_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.NEW_SUIT_FORCING_DIAMONDS,
+};
+
 const R2_WEAK_PASS_ID: Record<WeakTwoSuit, string> = {
   hearts: WEAK_TWO_MEANING_IDS.WEAK_PASS_HEARTS,
   spades: WEAK_TWO_MEANING_IDS.WEAK_PASS_SPADES,
   diamonds: WEAK_TWO_MEANING_IDS.WEAK_PASS_DIAMONDS,
+};
+
+const NSF_SUPPORT_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.NSF_SUPPORT_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.NSF_SUPPORT_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.NSF_SUPPORT_DIAMONDS,
+};
+
+const NSF_REBID_ID: Record<WeakTwoSuit, string> = {
+  hearts: WEAK_TWO_MEANING_IDS.NSF_REBID_HEARTS,
+  spades: WEAK_TWO_MEANING_IDS.NSF_REBID_SPADES,
+  diamonds: WEAK_TWO_MEANING_IDS.NSF_REBID_DIAMONDS,
 };
 
 const OGUST_SOLID_ID: Record<WeakTwoSuit, string> = {
@@ -109,6 +133,18 @@ export const WEAK_TWO_THRESHOLDS = {
   GAME_RAISE_FIT: 3,
   OGUST_FIT: 2,
   INVITE_FIT: 3,
+  PREEMPTIVE_RAISE_FIT: 3,
+
+  // R2: Preemptive raise total points
+  PREEMPTIVE_RAISE_MIN: 6,
+  PREEMPTIVE_RAISE_MAX: 13,
+
+  // R2: New suit forcing requirements
+  NEW_SUIT_FORCING_MIN_HCP: 16,
+  NEW_SUIT_FORCING_MIN_LENGTH: 5,
+
+  // R3: Opener rebid after new suit forcing
+  NSF_SUPPORT_FIT: 3,
 
   // R4: Post-Ogust responder rebid
   POST_OGUST_GAME_MIN: 17,
@@ -125,6 +161,18 @@ function suitLabel(suit: WeakTwoSuit): string {
 function gameRaiseBid(suit: WeakTwoSuit) {
   if (suit === "diamonds") return bid(5, BidSuit.Diamonds);
   return bid(4, suitToBidSuit(suit));
+}
+
+/** Cheapest new suit bid available after a weak two opening. */
+function cheapestNewSuitBid(suit: WeakTwoSuit) {
+  // After 2D: 2H is cheapest new suit
+  // After 2H: 2S is cheapest new suit
+  // After 2S: 3C is cheapest new suit
+  switch (suit) {
+    case "diamonds": return bid(2, BidSuit.Hearts);
+    case "hearts": return bid(2, BidSuit.Spades);
+    case "spades": return bid(3, BidSuit.Clubs);
+  }
 }
 
 // ─── Round 1: Opener weak two bid ───────────────────────────
@@ -174,9 +222,11 @@ function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
 // so clause factIds resolve to the correct suit.
 //
 // Game raise: 16+ HCP, 3+ fit → 4M for majors, 5D for diamonds
-// Ogust ask: 16+ HCP → 2NT (lower specificity than game raise)
+// Ogust ask: 15+ HCP → 2NT (lower specificity than game raise)
 // Invite raise: 14-15 HCP, 3+ fit → 3 of opener's suit
-// Pass: fallback (no action in 10-13 HCP range)
+// Preemptive raise: 6-13 total points, 3+ fit → 3 of opener's suit
+// New suit forcing: 16+ HCP, 5+ in new suit → cheapest new suit
+// Pass: fallback (no action)
 
 function createWeakTwoR2Surfaces(
   suit: WeakTwoSuit,
@@ -270,14 +320,70 @@ function createWeakTwoR2Surfaces(
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
-    // 4. Pass (fallback — no convention bid applies)
+    // 3.5. Preemptive raise: 6-13 total points, 3+ fit → 3 of opener's suit
+    createSurface({
+      meaningId: R2_PREEMPTIVE_RAISE_ID[suit],
+      semanticClassId: WEAK_TWO_CLASSES.PREEMPTIVE_RAISE,
+      encoding: { defaultCall: bid(3, suitToBidSuit(suit)) },
+      clauses: [
+        {
+          factId: "bridge.totalPointsForRaise",
+          operator: "range",
+          value: { min: WEAK_TWO_THRESHOLDS.PREEMPTIVE_RAISE_MIN, max: WEAK_TWO_THRESHOLDS.PREEMPTIVE_RAISE_MAX },
+          isPublic: true,
+          rationale: "HCP + shortage",
+        },
+        {
+          factId: "hand.suitLength.$suit",
+          operator: "gte",
+          value: WEAK_TWO_THRESHOLDS.PREEMPTIVE_RAISE_FIT,
+          isPublic: true,
+        },
+      ],
+      band: "should",
+      declarationOrder: 3,
+      sourceIntent: { type: "PreemptiveRaise", params: { suit } },
+      disclosure: "natural",
+      teachingLabel: `Preemptive raise (3${sl})`,
+      surfaceBindings: bindings,
+    }, WEAK_TWOS_CTX),
+
+    // 4. New suit forcing: 16+ HCP, 5+ in new suit → cheapest new suit bid
+    createSurface({
+      meaningId: R2_NEW_SUIT_FORCING_ID[suit],
+      semanticClassId: WEAK_TWO_CLASSES.NEW_SUIT_FORCING,
+      encoding: { defaultCall: cheapestNewSuitBid(suit) },
+      clauses: [
+        {
+          factId: "hand.hcp",
+          operator: "gte",
+          value: WEAK_TWO_THRESHOLDS.NEW_SUIT_FORCING_MIN_HCP,
+          isPublic: true,
+        },
+        {
+          factId: `module.weakTwo.hasNewSuit.$suit`,
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+          rationale: "5+ in a non-opener suit",
+        },
+      ],
+      band: "should",
+      declarationOrder: 4,
+      sourceIntent: { type: "NewSuitForcing", params: { suit } },
+      disclosure: "natural",
+      teachingLabel: "New suit forcing",
+      surfaceBindings: bindings,
+    }, WEAK_TWOS_CTX),
+
+    // 5. Pass (fallback — no convention bid applies)
     createSurface({
       meaningId: R2_WEAK_PASS_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.WEAK_PASS,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
       band: "avoid",
-      declarationOrder: 3,
+      declarationOrder: 5,
       sourceIntent: { type: "WeakPass", params: { suit } },
       disclosure: "natural",
       teachingLabel: "Pass (no action)",
@@ -289,7 +395,7 @@ function createWeakTwoR2Surfaces(
 // ─── Round 3: Ogust rebid (opener describes hand) ───────────
 //
 // After 2NT Ogust ask, opener classifies hand along two dimensions:
-//   1. Strength: minimum (5-8 NV / 6-8 vul) vs maximum (9-11 HCP)
+//   1. Strength: minimum (5-7 NV / 6-7 vul) vs maximum (8-11 HCP)
 //   2. Quality: bad (0-1 top honors) vs good (2+ top honors)
 // Special case: solid (AKQ in suit) → 3NT
 //
@@ -325,7 +431,7 @@ function createWeakTwoOgustSurfaces(
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
-    // 2. Min bad: 5-8 NV / 6-8 vul HCP, 0-1 top honors → 3C
+    // 2. Min bad: 5-7 NV / 6-7 vul HCP, 0-1 top honors → 3C
     createSurface({
       meaningId: OGUST_MIN_BAD_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MIN_BAD,
@@ -336,7 +442,7 @@ function createWeakTwoOgustSurfaces(
           operator: "boolean",
           value: true,
           isPublic: true,
-          rationale: "5-8 NV, 6-8 vul",
+          rationale: "5-7 NV, 6-7 vul",
         },
         {
           factId: "module.weakTwo.topHonorCount.$suit",
@@ -354,7 +460,7 @@ function createWeakTwoOgustSurfaces(
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
-    // 3. Min good: 5-8 NV / 6-8 vul HCP, 2+ top honors → 3D
+    // 3. Min good: 5-7 NV / 6-7 vul HCP, 2+ top honors → 3D
     createSurface({
       meaningId: OGUST_MIN_GOOD_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MIN_GOOD,
@@ -365,7 +471,7 @@ function createWeakTwoOgustSurfaces(
           operator: "boolean",
           value: true,
           isPublic: true,
-          rationale: "5-8 NV, 6-8 vul",
+          rationale: "5-7 NV, 6-7 vul",
         },
         {
           factId: "module.weakTwo.topHonorCount.$suit",
@@ -383,7 +489,7 @@ function createWeakTwoOgustSurfaces(
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
-    // 4. Max bad: 9-11 HCP, 0-1 top honors → 3H
+    // 4. Max bad: 8-11 HCP, 0-1 top honors → 3H
     createSurface({
       meaningId: OGUST_MAX_BAD_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MAX_BAD,
@@ -394,7 +500,7 @@ function createWeakTwoOgustSurfaces(
           operator: "boolean",
           value: true,
           isPublic: true,
-          rationale: "9-11 HCP",
+          rationale: "8-11 HCP",
         },
         {
           factId: "module.weakTwo.topHonorCount.$suit",
@@ -412,7 +518,7 @@ function createWeakTwoOgustSurfaces(
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
-    // 5. Max good: 9-11 HCP, 2+ top honors → 3S
+    // 5. Max good: 8-11 HCP, 2+ top honors → 3S
     createSurface({
       meaningId: OGUST_MAX_GOOD_ID[suit],
       semanticClassId: WEAK_TWO_CLASSES.OGUST_MAX_GOOD,
@@ -423,7 +529,7 @@ function createWeakTwoOgustSurfaces(
           operator: "boolean",
           value: true,
           isPublic: true,
-          rationale: "9-11 HCP",
+          rationale: "8-11 HCP",
         },
         {
           factId: "module.weakTwo.topHonorCount.$suit",
@@ -536,6 +642,57 @@ function createPostOgustSurfaces(
   ];
 }
 
+// ─── Opener rebid after new suit forcing ─────────────────────
+//
+// After responder bids a new suit (forcing), opener either:
+//   1. Supports responder's suit with 3+ cards
+//   2. Rebids own suit (default fallback)
+
+function createNsfRebidSurfaces(
+  suit: WeakTwoSuit,
+): readonly BidMeaning[] {
+  const bindings = { suit } as const;
+  const sl = suitLabel(suit);
+
+  return [
+    // 1. Support responder's new suit: 3+ cards in responder's suit
+    createSurface({
+      meaningId: NSF_SUPPORT_ID[suit],
+      semanticClassId: WEAK_TWO_CLASSES.NSF_SUPPORT,
+      encoding: { defaultCall: bid(3, suitToBidSuit(suit)) },
+      clauses: [
+        {
+          factId: `module.weakTwo.hasNsfSupport.$suit`,
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+          rationale: "3+ cards in responder's suit",
+        },
+      ],
+      band: "should",
+      declarationOrder: 0,
+      sourceIntent: { type: "NsfSupport", params: { suit } },
+      disclosure: "natural",
+      teachingLabel: "Support new suit",
+      surfaceBindings: bindings,
+    }, WEAK_TWOS_CTX),
+
+    // 2. Rebid own suit (fallback)
+    createSurface({
+      meaningId: NSF_REBID_ID[suit],
+      semanticClassId: WEAK_TWO_CLASSES.NSF_REBID,
+      encoding: { defaultCall: bid(3, suitToBidSuit(suit)) },
+      clauses: [],
+      band: "should",
+      declarationOrder: 1,
+      sourceIntent: { type: "NsfRebid", params: { suit } },
+      disclosure: "natural",
+      teachingLabel: `Rebid ${sl}`,
+      surfaceBindings: bindings,
+    }, WEAK_TWOS_CTX),
+  ];
+}
+
 // ─── Pre-instantiated surfaces ──────────────────────────────
 
 /** R1: Opener weak two surfaces (all 3 suits in one group). */
@@ -550,6 +707,11 @@ export const WEAK_TWO_R2_DIAMONDS_SURFACES = createWeakTwoR2Surfaces("diamonds")
 export const WEAK_TWO_OGUST_HEARTS_SURFACES = createWeakTwoOgustSurfaces("hearts");
 export const WEAK_TWO_OGUST_SPADES_SURFACES = createWeakTwoOgustSurfaces("spades");
 export const WEAK_TWO_OGUST_DIAMONDS_SURFACES = createWeakTwoOgustSurfaces("diamonds");
+
+/** R3: Opener rebid after new suit forcing per suit. */
+export const NSF_REBID_HEARTS_SURFACES = createNsfRebidSurfaces("hearts");
+export const NSF_REBID_SPADES_SURFACES = createNsfRebidSurfaces("spades");
+export const NSF_REBID_DIAMONDS_SURFACES = createNsfRebidSurfaces("diamonds");
 
 /** R4: Responder rebid after Ogust surfaces per suit. */
 export const POST_OGUST_HEARTS_SURFACES = createPostOgustSurfaces("hearts");
