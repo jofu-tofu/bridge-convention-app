@@ -138,21 +138,26 @@
     void service.updatePlayProfile(handle, profileId);
   });
 
+  // Defer debug drawer until game is initialized (avoids DebugDrawer $derived
+  // computations interfering with the {#if isInitialized} block's initial render)
+  $effect(() => {
+    if (gameStore.isInitialized && !debugReady) {
+      debugReady = true;
+    }
+  });
+
   onMount(() => {
     // Skip if a deal is already in progress
     if (gameStore.isInitialized && gameStore.phase === "BIDDING") {
       dealNumber++;
-      debugReady = true;
       return;
     }
     startNewDrill();
-    debugReady = true;
     // ?phase= skip: handled after drill initializes via effect or manual trigger
     const target = appStore.skipToPhase;
     if (target) {
       // Wait for drill to initialize, then skip to target phase
       void (async () => {
-        // Poll briefly for initialization (startNewDrill is guarded/async internally)
         while (!gameStore.isInitialized) await new Promise(r => setTimeout(r, 50));
         await gameStore.skipToPhase(target);
         appStore.setSkipToPhase(null);

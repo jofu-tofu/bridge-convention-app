@@ -20,6 +20,7 @@
   <!-- Per-seat beliefs — compact single-line per seat -->
   {#each allSeats as seat (seat)}
     {@const beliefs = publicBeliefState.beliefs[seat]}
+    {#if beliefs?.ranges}
     <div class="text-[10px] leading-tight mb-0.5">
       <span class="font-semibold text-text-primary inline-block w-5">{seat}</span>
       <span class="text-text-muted">HCP:{beliefs.ranges.hcp.min}-{beliefs.ranges.hcp.max}</span>
@@ -36,6 +37,7 @@
         {/each}
       {/if}
     </div>
+    {/if}
   {/each}
 
   <!-- Annotations — collapsed if present -->
