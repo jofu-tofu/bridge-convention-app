@@ -14,6 +14,14 @@ export const WEAK_TWO_FACT_IDS = {
   IS_MAXIMUM: "module.weakTwo.isMaximum",
   IS_MINIMUM: "module.weakTwo.isMinimum",
 
+  // ── New suit forcing facts ─────────────────────────────────
+  HAS_NEW_SUIT_HEARTS: "module.weakTwo.hasNewSuit.hearts",
+  HAS_NEW_SUIT_SPADES: "module.weakTwo.hasNewSuit.spades",
+  HAS_NEW_SUIT_DIAMONDS: "module.weakTwo.hasNewSuit.diamonds",
+  HAS_NSF_SUPPORT_HEARTS: "module.weakTwo.hasNsfSupport.hearts",
+  HAS_NSF_SUPPORT_SPADES: "module.weakTwo.hasNsfSupport.spades",
+  HAS_NSF_SUPPORT_DIAMONDS: "module.weakTwo.hasNsfSupport.diamonds",
+
   // ── Per-suit solid (AKQ) facts ──────────────────────────────
   IS_SOLID_HEARTS: "module.weakTwo.isSolid.hearts",
   IS_SOLID_SPADES: "module.weakTwo.isSolid.spades",
@@ -68,18 +76,24 @@ export const WEAK_TWO_MEANING_IDS = {
   GAME_RAISE_HEARTS: "weak-two:game-raise-hearts",
   OGUST_ASK_HEARTS: "weak-two:ogust-ask-hearts",
   INVITE_RAISE_HEARTS: "weak-two:invite-raise-hearts",
+  PREEMPTIVE_RAISE_HEARTS: "weak-two:preemptive-raise-hearts",
+  NEW_SUIT_FORCING_HEARTS: "weak-two:new-suit-forcing-hearts",
   WEAK_PASS_HEARTS: "weak-two:weak-pass-hearts",
 
   // ── R2: Responder actions (spades) ──────────────────────────
   GAME_RAISE_SPADES: "weak-two:game-raise-spades",
   OGUST_ASK_SPADES: "weak-two:ogust-ask-spades",
   INVITE_RAISE_SPADES: "weak-two:invite-raise-spades",
+  PREEMPTIVE_RAISE_SPADES: "weak-two:preemptive-raise-spades",
+  NEW_SUIT_FORCING_SPADES: "weak-two:new-suit-forcing-spades",
   WEAK_PASS_SPADES: "weak-two:weak-pass-spades",
 
   // ── R2: Responder actions (diamonds) ────────────────────────
   GAME_RAISE_DIAMONDS: "weak-two:game-raise-diamonds",
   OGUST_ASK_DIAMONDS: "weak-two:ogust-ask-diamonds",
   INVITE_RAISE_DIAMONDS: "weak-two:invite-raise-diamonds",
+  PREEMPTIVE_RAISE_DIAMONDS: "weak-two:preemptive-raise-diamonds",
+  NEW_SUIT_FORCING_DIAMONDS: "weak-two:new-suit-forcing-diamonds",
   WEAK_PASS_DIAMONDS: "weak-two:weak-pass-diamonds",
 
   // ── R3: Ogust rebid — opener describes hand (hearts) ───────
@@ -102,6 +116,18 @@ export const WEAK_TWO_MEANING_IDS = {
   OGUST_MIN_GOOD_DIAMONDS: "weak-two:ogust-min-good-diamonds",
   OGUST_MAX_BAD_DIAMONDS: "weak-two:ogust-max-bad-diamonds",
   OGUST_MAX_GOOD_DIAMONDS: "weak-two:ogust-max-good-diamonds",
+
+  // ── R3: Opener rebid after new suit forcing (hearts) ───────
+  NSF_SUPPORT_HEARTS: "weak-two:nsf-support-hearts",
+  NSF_REBID_HEARTS: "weak-two:nsf-rebid-hearts",
+
+  // ── R3: Opener rebid after new suit forcing (spades) ──────
+  NSF_SUPPORT_SPADES: "weak-two:nsf-support-spades",
+  NSF_REBID_SPADES: "weak-two:nsf-rebid-spades",
+
+  // ── R3: Opener rebid after new suit forcing (diamonds) ────
+  NSF_SUPPORT_DIAMONDS: "weak-two:nsf-support-diamonds",
+  NSF_REBID_DIAMONDS: "weak-two:nsf-rebid-diamonds",
 
   // ── R4: Post-Ogust responder rebid (hearts) ────────────────
   POST_OGUST_GAME_HEARTS: "weak-two:post-ogust-game-hearts",
@@ -136,7 +162,13 @@ export const WEAK_TWO_CLASSES = {
   GAME_RAISE: "weak-two:game-raise",
   OGUST_ASK: "weak-two:ogust-ask",
   INVITE_RAISE: "weak-two:invite-raise",
+  PREEMPTIVE_RAISE: "weak-two:preemptive-raise",
+  NEW_SUIT_FORCING: "weak-two:new-suit-forcing",
   WEAK_PASS: "weak-two:weak-pass",
+
+  // R3: Opener rebid after new suit forcing
+  NSF_SUPPORT: "weak-two:nsf-support",
+  NSF_REBID: "weak-two:nsf-rebid",
 
   // R3: Ogust rebid responses
   OGUST_SOLID: "weak-two:ogust-solid",

@@ -1488,7 +1488,7 @@ exports[`deal constraint baseline > weak-twos-bundle > 2/1 > dealConstraints sna
       "seat": "N",
     },
     {
-      "minHcp": 12,
+      "minHcp": 4,
       "minLengthAny": {
         "D": 2,
         "H": 2,
@@ -1523,7 +1523,7 @@ exports[`deal constraint baseline > weak-twos-bundle > 2/1 > dealConstraints str
   "hasCustomCheck": false,
   "maxHcp": undefined,
   "maxLength": undefined,
-  "minHcp": 12,
+  "minHcp": 4,
   "minLength": undefined,
   "minLengthAny": {
     "D": 2,
@@ -1601,7 +1601,7 @@ exports[`deal constraint baseline > weak-twos-bundle > Acol > dealConstraints sn
       "seat": "N",
     },
     {
-      "minHcp": 12,
+      "minHcp": 4,
       "minLengthAny": {
         "D": 2,
         "H": 2,
@@ -1636,7 +1636,7 @@ exports[`deal constraint baseline > weak-twos-bundle > Acol > dealConstraints st
   "hasCustomCheck": false,
   "maxHcp": undefined,
   "maxLength": undefined,
-  "minHcp": 12,
+  "minHcp": 4,
   "minLength": undefined,
   "minLengthAny": {
     "D": 2,
@@ -1714,7 +1714,7 @@ exports[`deal constraint baseline > weak-twos-bundle > SAYC > dealConstraints sn
       "seat": "N",
     },
     {
-      "minHcp": 12,
+      "minHcp": 4,
       "minLengthAny": {
         "D": 2,
         "H": 2,
@@ -1749,7 +1749,7 @@ exports[`deal constraint baseline > weak-twos-bundle > SAYC > dealConstraints st
   "hasCustomCheck": false,
   "maxHcp": undefined,
   "maxLength": undefined,
-  "minHcp": 12,
+  "minHcp": 4,
   "minLength": undefined,
   "minLengthAny": {
     "D": 2,

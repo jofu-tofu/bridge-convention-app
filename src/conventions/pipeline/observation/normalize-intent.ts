@@ -143,6 +143,10 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
   ["PostOgustGame", (p) => [{ act: "raise", strain: strain(p), strength: "game" }]],
   ["PostOgust3NT", () => [{ act: "raise", strain: "notrump", strength: "game" }]],
   ["PostOgustSignoff", (p) => [{ act: "signoff", strain: strain(p) }]],
+  ["PreemptiveRaise", (p) => [{ act: "raise", strain: strain(p), strength: "preemptive" }]],
+  ["NewSuitForcing", () => [{ act: "show", feature: "heldSuit" }]],
+  ["NsfSupport", () => [{ act: "raise", strain: "notrump", strength: "minimum" }]],
+  ["NsfRebid", (p) => [{ act: "signoff", strain: strain(p) }]],
   ["PostOgustPass", () => [{ act: "pass" }]],
 
   // ── DONT ─────────────────────────────────────────────────────────

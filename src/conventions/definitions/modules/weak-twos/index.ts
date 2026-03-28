@@ -21,6 +21,9 @@ import {
   WEAK_TWO_OGUST_HEARTS_SURFACES,
   WEAK_TWO_OGUST_SPADES_SURFACES,
   WEAK_TWO_OGUST_DIAMONDS_SURFACES,
+  NSF_REBID_HEARTS_SURFACES,
+  NSF_REBID_SPADES_SURFACES,
+  NSF_REBID_DIAMONDS_SURFACES,
   POST_OGUST_HEARTS_SURFACES,
   POST_OGUST_SPADES_SURFACES,
   POST_OGUST_DIAMONDS_SURFACES,
@@ -39,6 +42,9 @@ type Phase =
   | "post-ogust-hearts"
   | "post-ogust-spades"
   | "post-ogust-diamonds"
+  | "nsf-hearts"
+  | "nsf-spades"
+  | "nsf-diamonds"
   | "done";
 
 // ── Kernel deltas ───────────────────────────────────────────────
@@ -48,6 +54,12 @@ const OGUST_ASK_DELTA: NegotiationDelta = { forcing: "one-round" };
 
 /** Ogust response: forcing resolved. */
 const OGUST_RESPONSE_DELTA: NegotiationDelta = { forcing: "none" };
+
+/** New suit forcing: forcing one round (opener must respond). */
+const NSF_DELTA: NegotiationDelta = { forcing: "one-round" };
+
+/** Opener rebid after new suit forcing: forcing resolved. */
+const NSF_RESPONSE_DELTA: NegotiationDelta = { forcing: "none" };
 
 // ── Local FSM ───────────────────────────────────────────────────
 
@@ -71,6 +83,19 @@ const weakTwosLocal: LocalFsm<Phase> = {
     { from: "opened-spades", to: "done", on: { act: "pass" } },
     { from: "opened-diamonds", to: "done", on: { act: "raise" } },
     { from: "opened-diamonds", to: "done", on: { act: "pass" } },
+
+    // New suit forcing -> opener rebid
+    { from: "opened-hearts", to: "nsf-hearts", on: { act: "show", feature: "heldSuit" } },
+    { from: "opened-spades", to: "nsf-spades", on: { act: "show", feature: "heldSuit" } },
+    { from: "opened-diamonds", to: "nsf-diamonds", on: { act: "show", feature: "heldSuit" } },
+
+    // Opener rebid after new suit forcing -> terminal
+    { from: "nsf-hearts", to: "done", on: { act: "raise" } },
+    { from: "nsf-hearts", to: "done", on: { act: "signoff" } },
+    { from: "nsf-spades", to: "done", on: { act: "raise" } },
+    { from: "nsf-spades", to: "done", on: { act: "signoff" } },
+    { from: "nsf-diamonds", to: "done", on: { act: "raise" } },
+    { from: "nsf-diamonds", to: "done", on: { act: "signoff" } },
 
     // Ogust response -> post-Ogust
     { from: "ogust-asked-hearts", to: "post-ogust-hearts", on: { act: "show", feature: "suitQuality" } },
@@ -112,11 +137,19 @@ function createWeakTwosStates(): readonly StateEntry<Phase>[] {
       negotiationDelta: OGUST_ASK_DELTA,
       surfaces: WEAK_TWO_R2_HEARTS_SURFACES.filter((s) => s.sourceIntent.type === "OgustAsk"),
     },
-    // R1: Responder after hearts opening — non-Ogust surfaces (no delta)
+    // R1: Responder after hearts opening — new suit forcing (with forcing delta)
     {
       phase: "opened-hearts",
       turn: "responder" as const,
-      surfaces: WEAK_TWO_R2_HEARTS_SURFACES.filter((s) => s.sourceIntent.type !== "OgustAsk"),
+      negotiationDelta: NSF_DELTA,
+      surfaces: WEAK_TWO_R2_HEARTS_SURFACES.filter((s) => s.sourceIntent.type === "NewSuitForcing"),
+    },
+    // R1: Responder after hearts opening — non-forcing surfaces (no delta)
+    {
+      phase: "opened-hearts",
+      turn: "responder" as const,
+      surfaces: WEAK_TWO_R2_HEARTS_SURFACES.filter((s) =>
+        s.sourceIntent.type !== "OgustAsk" && s.sourceIntent.type !== "NewSuitForcing"),
     },
 
     // R1: Responder after spades opening — Ogust surfaces (with forcing delta)
@@ -126,11 +159,19 @@ function createWeakTwosStates(): readonly StateEntry<Phase>[] {
       negotiationDelta: OGUST_ASK_DELTA,
       surfaces: WEAK_TWO_R2_SPADES_SURFACES.filter((s) => s.sourceIntent.type === "OgustAsk"),
     },
-    // R1: Responder after spades opening — non-Ogust surfaces (no delta)
+    // R1: Responder after spades opening — new suit forcing (with forcing delta)
     {
       phase: "opened-spades",
       turn: "responder" as const,
-      surfaces: WEAK_TWO_R2_SPADES_SURFACES.filter((s) => s.sourceIntent.type !== "OgustAsk"),
+      negotiationDelta: NSF_DELTA,
+      surfaces: WEAK_TWO_R2_SPADES_SURFACES.filter((s) => s.sourceIntent.type === "NewSuitForcing"),
+    },
+    // R1: Responder after spades opening — non-forcing surfaces (no delta)
+    {
+      phase: "opened-spades",
+      turn: "responder" as const,
+      surfaces: WEAK_TWO_R2_SPADES_SURFACES.filter((s) =>
+        s.sourceIntent.type !== "OgustAsk" && s.sourceIntent.type !== "NewSuitForcing"),
     },
 
     // R1: Responder after diamonds opening — Ogust surfaces (with forcing delta)
@@ -140,11 +181,19 @@ function createWeakTwosStates(): readonly StateEntry<Phase>[] {
       negotiationDelta: OGUST_ASK_DELTA,
       surfaces: WEAK_TWO_R2_DIAMONDS_SURFACES.filter((s) => s.sourceIntent.type === "OgustAsk"),
     },
-    // R1: Responder after diamonds opening — non-Ogust surfaces (no delta)
+    // R1: Responder after diamonds opening — new suit forcing (with forcing delta)
     {
       phase: "opened-diamonds",
       turn: "responder" as const,
-      surfaces: WEAK_TWO_R2_DIAMONDS_SURFACES.filter((s) => s.sourceIntent.type !== "OgustAsk"),
+      negotiationDelta: NSF_DELTA,
+      surfaces: WEAK_TWO_R2_DIAMONDS_SURFACES.filter((s) => s.sourceIntent.type === "NewSuitForcing"),
+    },
+    // R1: Responder after diamonds opening — non-forcing surfaces (no delta)
+    {
+      phase: "opened-diamonds",
+      turn: "responder" as const,
+      surfaces: WEAK_TWO_R2_DIAMONDS_SURFACES.filter((s) =>
+        s.sourceIntent.type !== "OgustAsk" && s.sourceIntent.type !== "NewSuitForcing"),
     },
 
     // Ogust response: opener shows hand quality
@@ -165,6 +214,26 @@ function createWeakTwosStates(): readonly StateEntry<Phase>[] {
       turn: "opener" as const,
       negotiationDelta: OGUST_RESPONSE_DELTA,
       surfaces: WEAK_TWO_OGUST_DIAMONDS_SURFACES,
+    },
+
+    // NSF rebid: opener responds to new suit forcing
+    {
+      phase: "nsf-hearts",
+      turn: "opener" as const,
+      negotiationDelta: NSF_RESPONSE_DELTA,
+      surfaces: NSF_REBID_HEARTS_SURFACES,
+    },
+    {
+      phase: "nsf-spades",
+      turn: "opener" as const,
+      negotiationDelta: NSF_RESPONSE_DELTA,
+      surfaces: NSF_REBID_SPADES_SURFACES,
+    },
+    {
+      phase: "nsf-diamonds",
+      turn: "opener" as const,
+      negotiationDelta: NSF_RESPONSE_DELTA,
+      surfaces: NSF_REBID_DIAMONDS_SURFACES,
     },
 
     // Post-Ogust: responder decides (terminal)

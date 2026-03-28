@@ -224,8 +224,8 @@ describe("deal constraint structural invariants", () => {
 
     it("responder South has HCP floor from totalPoints approximation", () => {
       const south = extractSeatConstraint(bundle.dealConstraints, Seat.South);
-      // bridge.totalPointsForRaise >= 14 → approx hand.hcp >= 12
-      expect(south?.minHcp).toBe(12);
+      // bridge.totalPointsForRaise >= 6 (preemptive raise) → approx hand.hcp >= 4
+      expect(south?.minHcp).toBe(4);
     });
 
     it("allowed dealers is North only", () => {
