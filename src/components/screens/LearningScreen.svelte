@@ -4,6 +4,7 @@
   import type { ModuleCatalogEntry, ModuleLearningViewport, ClauseSystemVariant, ModuleFlowTreeViewport } from "../../service";
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
   import ConversationFlowTree from "./ConversationFlowTree.svelte";
+  import MobileFlowTree from "./MobileFlowTree.svelte";
 
   const appStore = getAppStore();
   const service = getService();
@@ -256,13 +257,17 @@
             </div>
           </div>
 
-          <!-- Conversation flow tree (desktop only) -->
-          {#if flowTree && isDesktop}
+          <!-- Conversation flow tree -->
+          {#if flowTree}
             <section class="px-4 sm:px-8 py-6">
-              <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Conversation Flow</h2>
-              <div class="overflow-x-auto bg-bg-card rounded-[--radius-lg] border border-border-subtle">
-                <ConversationFlowTree tree={flowTree} />
-              </div>
+              {#if isDesktop}
+                <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Conversation Flow</h2>
+                <div class="overflow-x-auto bg-bg-card rounded-[--radius-lg] border border-border-subtle">
+                  <ConversationFlowTree tree={flowTree} />
+                </div>
+              {:else}
+                <MobileFlowTree tree={flowTree} />
+              {/if}
             </section>
           {/if}
 
@@ -310,6 +315,9 @@
                     <!-- Phase header -->
                     <div class="px-4 py-3 border-b border-border-subtle bg-bg-elevated/50">
                       <h3 class="text-sm font-semibold text-text-primary">{phase.phaseDisplay}</h3>
+                      {#if phase.transitionLabel}
+                        <p class="text-xs text-text-muted mt-0.5">{phase.transitionLabel}</p>
+                      {/if}
                     </div>
                     <!-- Surface list -->
                     <div class="divide-y divide-border-subtle">

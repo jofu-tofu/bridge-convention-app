@@ -1,3 +1,4 @@
+import { resolveTeachingLabelName } from "../conventions";
 /**
  * Learning viewport builder — projects convention bundle and module internals
  * into viewport response types for UI consumption.
@@ -13,7 +14,9 @@ import {
   moduleSurfaces, getModule, getAllModules, listBundleInputs,
   getBundleInput, AVAILABLE_BASE_SYSTEMS, deriveNeutralDescription,
   getBaseModuleIds, getSystemConfig, normalizeIntent, matchObs,
+  getPrimaryCapability,
 } from "../conventions";
+import { formatTransitionLabel } from "./format-obs-label";
 import { callKey } from "../engine/call-helpers";
 import { formatCall, formatBidReferences } from "../service/display/format";
 import type {
@@ -254,12 +257,52 @@ function mapClauses(
   });
 }
 
+/**
+ * Derive root phase label from the module's host capability.
+ */
+function deriveRootPhaseLabel(moduleId: string): string | null {
+  const capLabels: Record<string, string> = {
+    "opening.1nt": "Partner opened 1NT",
+    "opening.major": "Partner opened a major",
+    "opening.weak-two": "Partner opened a weak two",
+    "opponent.1nt": "Opponent opened 1NT",
+  };
+  for (const input of listBundleInputs()) {
+    if (!input.memberIds.includes(moduleId)) continue;
+    const capId = getPrimaryCapability(input.declaredCapabilities);
+    if (capId && capLabels[capId]) return capLabels[capId];
+  }
+  return null;
+}
+
+function findTriggerCall(mod: ConventionModule, fromPhase: string, obs: ObsPattern): Call | null {
+  for (const entry of mod.states ?? []) {
+    const entryPhases: readonly string[] = Array.isArray(entry.phase) ? entry.phase : [entry.phase];
+    if (!entryPhases.includes(fromPhase)) continue;
+    for (const surface of entry.surfaces) {
+      const actions = normalizeIntent(surface.sourceIntent);
+      if (actions.some((a) => matchObs(obs, a))) return surface.encoding.defaultCall;
+    }
+  }
+  return null;
+}
+
 /** Build PhaseGroupView[] from a module's states, ordered by FSM topology. */
 function buildPhaseGroups(mod: ConventionModule): readonly PhaseGroupView[] {
   const states = mod.states ?? [];
   if (states.length === 0) return [];
 
   const phaseOrder = derivePhaseOrder(mod.local);
+
+  const incomingMap = new Map<string, { obs: ObsPattern; fromPhase: string }[]>();
+  for (const t of mod.local.transitions) {
+    const froms: readonly string[] = Array.isArray(t.from) ? t.from : [t.from];
+    for (const f of froms) {
+      const existing = incomingMap.get(t.to) ?? [];
+      existing.push({ obs: t.on, fromPhase: f });
+      incomingMap.set(t.to, existing);
+    }
+  }
 
   // Group states by phase string (flatten multi-phase entries)
   const phaseMap = new Map<string, { turn: string | null; surfaces: SurfaceDetailView[] }>();
@@ -284,7 +327,7 @@ function buildPhaseGroups(mod: ConventionModule): readonly PhaseGroupView[] {
         const rawExplanation = findExplanationText(mod.explanationEntries, surface.meaningId);
         group.surfaces.push({
           meaningId: surface.meaningId,
-          teachingLabel: formatBidReferences(surface.teachingLabel),
+          teachingLabel: formatBidReferences(resolveTeachingLabelName(surface.teachingLabel)),
           call: surface.encoding.defaultCall,
           callDisplay: formatCall(surface.encoding.defaultCall),
           disclosure: surface.disclosure,
@@ -296,16 +339,38 @@ function buildPhaseGroups(mod: ConventionModule): readonly PhaseGroupView[] {
     }
   }
 
-  // Build ordered result following FSM topology
+  const visiblePhases = phaseOrder.filter((p) => {
+    const g = phaseMap.get(p);
+    return g && g.surfaces.length > 0;
+  });
+  const suppressLabels = visiblePhases.length < 3;
+
   const result: PhaseGroupView[] = [];
   for (const phase of phaseOrder) {
     const group = phaseMap.get(phase);
     if (!group || group.surfaces.length === 0) continue;
 
+    let transitionLabel: string | null = null;
+    if (!suppressLabels) {
+      if (phase === mod.local.initial) {
+        transitionLabel = deriveRootPhaseLabel(mod.moduleId);
+      } else {
+        const incoming = incomingMap.get(phase);
+        if (incoming && incoming.length > 0) {
+          const { obs, fromPhase } = incoming[0]!;
+          const triggerCall = findTriggerCall(mod, fromPhase, obs);
+          const fromGroup = phaseMap.get(fromPhase);
+          const sourceTurn = fromGroup?.turn ?? null;
+          transitionLabel = formatTransitionLabel(obs, triggerCall, sourceTurn);
+        }
+      }
+    }
+
     result.push({
       phase,
       phaseDisplay: formatPhaseDisplay(phase, group.turn),
       turn: group.turn,
+      transitionLabel,
       surfaces: group.surfaces,
     });
   }
@@ -379,7 +444,7 @@ function mkNode(
     callKey: surface ? surface.ck : null,
     call: surface ? surface.call : null,
     turn: (turn === "opener" || turn === "responder") ? turn : null,
-    label: label ?? (surface ? surface.teachingLabel : phase),
+    label: label ?? (surface ? resolveTeachingLabelName(surface.teachingLabel) : phase),
     moduleId: surface ? surface.moduleId : null,
     moduleDisplayName: surface ? formatModuleName(surface.moduleId) : null,
     children: [],
@@ -510,7 +575,7 @@ function collectModuleData(mod: ConventionModule): {
         meaningId: s.meaningId,
         ck: callKey(s.encoding.defaultCall),
         call: s.encoding.defaultCall,
-        teachingLabel: s.teachingLabel,
+        teachingLabel: resolveTeachingLabelName(s.teachingLabel),
         moduleId: mod.moduleId,
         sourceIntent: s.sourceIntent,
         recommendation: s.ranking.recommendationBand ?? null,
@@ -647,8 +712,8 @@ export function buildBundleFlowTree(bundleId: string): BundleFlowTreeViewport | 
       for (const surface of state.surfaces) {
         const existingChild = rootNode.children.find((c) => c.callKey === surface.ck);
         if (existingChild) {
-          if (!existingChild.label.includes(surface.teachingLabel)) {
-            existingChild.label += ` / ${surface.teachingLabel}`;
+          if (!existingChild.label.includes(resolveTeachingLabelName(surface.teachingLabel))) {
+            existingChild.label += ` / ${resolveTeachingLabelName(surface.teachingLabel)}`;
           }
           continue;
         }

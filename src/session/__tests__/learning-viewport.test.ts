@@ -137,6 +137,29 @@ describe("buildModuleLearningViewport", () => {
       expect(viewport.teaching.tradeoff).toContain("3\u2663");
     });
   });
+
+  describe("transition labels", () => {
+    it("stayman root phase has 1NT label", () => {
+      const viewport = buildModuleLearningViewport("stayman")!;
+      expect(viewport.phases[0]!.transitionLabel).toBe("Partner opened 1NT");
+    });
+
+    it("bergen root phase has major label", () => {
+      const viewport = buildModuleLearningViewport("bergen")!;
+      expect(viewport.phases[0]!.transitionLabel).toBe("Partner opened a major");
+    });
+
+    it("stayman subsequent phases have transition labels", () => {
+      const viewport = buildModuleLearningViewport("stayman")!;
+      const asked = viewport.phases.find((p) => p.phase === "asked");
+      expect(asked?.transitionLabel).toBeTruthy();
+    });
+
+    it("blackwood root phase has null label (base module)", () => {
+      const viewport = buildModuleLearningViewport("blackwood")!;
+      expect(viewport.phases[0]!.transitionLabel).toBeNull();
+    });
+  });
 });
 
 describe("derivePhaseOrder", () => {

@@ -14,15 +14,17 @@ service/ (thin port) → session/ → {engine/, conventions/, inference/}
 
 | File | Role |
 |------|------|
-| `index.ts` | Barrel: GamePhase, DrillSettings, PlayProfileId, PracticePreferences, BidFeedbackDTO re-exports for service/ consumption |
+| `index.ts` | Barrel: GamePhase, DrillSettings, PlayProfileId, PracticePreferences, BidFeedbackDTO, resolveTransition, PhaseEvent, TransitionDescriptor re-exports for service/ consumption |
 | `session-state.ts` | Per-session mutable state (deal, auction, strategy, inference, phase, play state). Stores `PlayStrategyProvider` and calls `onAuctionComplete()` at auction end via `capturePlayInferences()`. Also stores `playRecommendations` and `worldClassAdvisor` for play review. **Ordering constraint:** `initializePlay()` resets `playRecommendations` but NOT `worldClassAdvisor` — the advisor is set by `local-service.ts` AFTER calling `initializePlay()`. |
 | `session-manager.ts` | Map<SessionHandle, SessionState>, createHandle() |
 | `drill-session.ts` | createDrillSession() — DrillSession implementation |
 | `phase-machine.ts` | GamePhase state machine (BIDDING → DECLARER_PROMPT → PLAYING → EXPLANATION) |
+| `phase-coordinator.ts` | Stateless phase transition decisions — maps (currentPhase, event) → TransitionDescriptor for store consumption. Pure functions, no Svelte or service deps. |
 | `bidding-controller.ts` | Pure bidding logic: processBid(), runInitialAiBids(), initializeAuction() |
 | `play-controller.ts` | Pure play logic: processPlayCard(), trick scoring, AI play loop. `selectAiCard()` is async (awaits `PlayStrategy.suggest()`). |
 | `dds-controller.ts` | DDS solve logic with timeout and stale-result guard |
 | `build-viewport.ts` | Viewport builders: buildBiddingViewport(), buildDeclarerPromptViewport(), etc. |
+| `format-obs-label.ts` | ObsPattern → human-readable transition labels for learning viewport |
 | `learning-viewport.ts` | buildModuleCatalog(), buildModuleLearningViewport(), buildBundleFlowTree(), buildModuleFlowTree() — module-centric learning viewport builders + conversation flow trees (bundle-wide and module-scoped) |
 | `evaluation-oracle.ts` | EvaluationOracle (answer key, internal only) |
 | `bid-feedback-builder.ts` | assembleBidFeedback() — grades bids, builds feedback DTOs |

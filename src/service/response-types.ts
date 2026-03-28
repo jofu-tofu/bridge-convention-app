@@ -354,6 +354,8 @@ export interface PhaseGroupView {
   /** Human-readable, e.g., "Asked — Opener". */
   readonly phaseDisplay: string;
   readonly turn: string | null;
+  /** Human-readable description of what triggered entry into this phase, or null for simple modules. */
+  readonly transitionLabel: string | null;
   readonly surfaces: readonly SurfaceDetailView[];
 }
 
