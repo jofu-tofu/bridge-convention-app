@@ -29,12 +29,12 @@
   const contextSummary = $derived(buildContextSummary(viewport));
 </script>
 
+{#if contextSummary}
+  <div class="px-4 py-2 bg-bg-card/50 border-b border-border-subtle text-text-secondary text-[--text-detail] shrink-0">
+    {contextSummary}
+  </div>
+{/if}
 <div class={PHASE_CONTAINER_CLASS}>
-  {#if contextSummary}
-    <div class="px-4 py-2 bg-bg-card/50 border-b border-border-subtle text-text-secondary text-[--text-detail]">
-      {contextSummary}
-    </div>
-  {/if}
   <ScaledTableArea scale={layout.tableScale} origin={layout.tableOrigin} tableWidth={layout.tableBaseW} tableHeight={layout.tableBaseH}>
     <BridgeTable visibleHands={viewport.visibleHands} handEvaluation={viewport.handEvaluation} vulnerability={viewport.vulnerability}>
       <div
