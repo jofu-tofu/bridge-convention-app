@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Seat } from "../../../service";
 import type { Call } from "../../../service";
 import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle, ntBundle } from "../../../conventions";
+import { calculateHcp } from "../../../engine/hand-evaluator";
 
 const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
-import { createStubEngine, makeDeal } from "../../../test-support/engine-stub";
 
 // GameScreen uses Svelte context heavily — test the extracted logic
 describe("GameScreen", () => {
@@ -13,32 +13,30 @@ describe("GameScreen", () => {
     registerBundle(ntBundle);
   });
 
-  it("startDrill calls engine.generateDeal", async () => {
+  it("startDrill produces a valid deal satisfying constraints", async () => {
     const { startDrill } = await import("../../../session/start-drill");
-    const deal = makeDeal();
-    const generateDeal = vi.fn().mockResolvedValue(deal);
-    const engine = createStubEngine({ generateDeal });
 
-    await startDrill(engine, ntBundleConventionConfig, Seat.South);
-    expect(generateDeal).toHaveBeenCalledTimes(1);
-    const calledConstraints = generateDeal.mock.calls[0]![0];
-    // Convention's own seat constraints are included
-    for (const seatConstraint of ntBundleConventionConfig.dealConstraints.seats) {
-      expect(calledConstraints.seats).toContainEqual(
-        expect.objectContaining({ seat: seatConstraint.seat }),
-      );
+    const bundle = await startDrill(ntBundleConventionConfig, Seat.South);
+
+    // Valid 4×13 deal
+    for (const seat of [Seat.North, Seat.East, Seat.South, Seat.West]) {
+      expect(bundle.deal.hands[seat].cards).toHaveLength(13);
     }
+    // NT bundle requires North: 15-17 HCP
+    const northHcp = calculateHcp(bundle.deal.hands[Seat.North]);
+    expect(northHcp).toBeGreaterThanOrEqual(15);
+    expect(northHcp).toBeLessThanOrEqual(17);
   });
 
   it("startDrill returns bundle with deal and session", async () => {
     const { startDrill } = await import("../../../session/start-drill");
-    const deal = makeDeal();
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(deal),
-    });
 
-    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South);
-    expect(bundle.deal).toBe(deal);
+    const bundle = await startDrill(ntBundleConventionConfig, Seat.South);
+
+    // Structural check: 4 hands of 13 cards
+    for (const seat of [Seat.North, Seat.East, Seat.South, Seat.West]) {
+      expect(bundle.deal.hands[seat].cards).toHaveLength(13);
+    }
     expect(bundle.session).toBeDefined();
   });
 

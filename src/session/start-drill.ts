@@ -1,10 +1,8 @@
-import type { EnginePort } from "../engine/port";
 import type { ConventionConfig } from "../conventions";
 import {
   Seat,
   Vulnerability,
   type Auction,
-  type Deal,
   type DealConstraints,
 } from "../engine/types";
 import type { DrillBundle, PlayPreference, PracticeRole } from "./drill-types";
@@ -72,15 +70,14 @@ export function pickVulnerability(
   return Vulnerability.Both;
 }
 
-export async function startDrill(
-  engine: EnginePort,
+export function startDrill(
   convention: ConventionConfig,
   userSeat: Seat,
   rng?: () => number,
   seed?: number,
   options?: Partial<DrillSettings>,
   baseSystem?: BaseSystemId,
-): Promise<DrillBundle> {
+): DrillBundle {
   const resolvedSystem = baseSystem ?? BASE_SYSTEM_SAYC;
   const practiceMode: PracticeMode = options?.practiceMode ?? "decision-drill";
   const targetModuleId = (options as { targetModuleId?: string } | undefined)?.targetModuleId;
@@ -184,16 +181,12 @@ export async function startDrill(
     ...(seed !== undefined ? { seed } : {}),
   };
 
-  // When a seed is provided, use the TS-side deal generator for guaranteed
-  // deterministic results.
-  let deal: Deal;
-  if (seed !== undefined) {
-    const dealRng = rng ?? mulberry32(seed);
-    const result = tsGenerateDeal(constraints, dealRng);
-    deal = result.deal;
-  } else {
-    deal = await engine.generateDeal(constraints);
-  }
+  // Deal generation uses the TS generator exclusively. The WASM/Tauri engine
+  // strips customCheck (non-serializable) via cleanConstraints(), which loses
+  // the per-surface validation gate. The TS generator evaluates the full
+  // constraint set including customCheck in one place (deal-generator.ts:checkSeatConstraint).
+  const dealRng = rng ?? (seed !== undefined ? mulberry32(seed) : undefined);
+  const { deal } = tsGenerateDeal(constraints, dealRng);
   // For full-auction mode or opener mode, skip the default auction prefix
   // (opener opens directly — no prefix needed)
   let initialAuction = (practiceMode === "full-auction" || resolvedRole === "opener")

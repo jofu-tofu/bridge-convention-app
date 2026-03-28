@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { startDrill } from "../start-drill";
-import { createStubEngine, makeDeal } from "../../test-support/engine-stub";
 import { Seat } from "../../engine/types";
 import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle, ntBundle } from "../../conventions";
 
@@ -15,17 +14,13 @@ describe("seed determinism", () => {
   });
 
   it("same seed produces identical deals through startDrill", async () => {
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
     const seed = 42;
     const bundle1 = await startDrill(
-      engine, ntBundleConventionConfig, Seat.South,
+      ntBundleConventionConfig, Seat.South,
       mulberry32(seed), seed,
     );
     const bundle2 = await startDrill(
-      engine, ntBundleConventionConfig, Seat.South,
+      ntBundleConventionConfig, Seat.South,
       mulberry32(seed), seed,
     );
 
@@ -35,40 +30,13 @@ describe("seed determinism", () => {
     }
   });
 
-  it("seeded startDrill uses TS deal generator (bypasses engine)", async () => {
-    const genDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal: genDeal });
-
-    const seed = 42;
-    await startDrill(
-      engine, ntBundleConventionConfig, Seat.South,
-      mulberry32(seed), seed,
-    );
-
-    // Engine should NOT be called — TS generator handles seeded deals
-    expect(genDeal).not.toHaveBeenCalled();
-  });
-
-  it("unseeded startDrill still uses the engine", async () => {
-    const genDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal: genDeal });
-
-    await startDrill(engine, ntBundleConventionConfig, Seat.South);
-
-    expect(genDeal).toHaveBeenCalledTimes(1);
-  });
-
   it("different seeds produce different deals", async () => {
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
     const bundle1 = await startDrill(
-      engine, ntBundleConventionConfig, Seat.South,
+      ntBundleConventionConfig, Seat.South,
       mulberry32(42), 42,
     );
     const bundle2 = await startDrill(
-      engine, ntBundleConventionConfig, Seat.South,
+      ntBundleConventionConfig, Seat.South,
       mulberry32(999), 999,
     );
 
@@ -83,16 +51,12 @@ describe("seed determinism", () => {
   });
 
   it("successive seeds produce deterministic sequence (simulates devDealCount)", async () => {
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
     // First run: seed 100, 101, 102
     const firstRun = [];
     for (let i = 0; i < 3; i++) {
       const s = 100 + i;
       const b = await startDrill(
-        engine, ntBundleConventionConfig, Seat.South,
+        ntBundleConventionConfig, Seat.South,
         mulberry32(s), s,
       );
       firstRun.push(b.deal);
@@ -103,7 +67,7 @@ describe("seed determinism", () => {
     for (let i = 0; i < 3; i++) {
       const s = 100 + i;
       const b = await startDrill(
-        engine, ntBundleConventionConfig, Seat.South,
+        ntBundleConventionConfig, Seat.South,
         mulberry32(s), s,
       );
       secondRun.push(b.deal);
@@ -119,17 +83,13 @@ describe("seed determinism", () => {
   });
 
   it("seed-only (no rng) still produces deterministic deals", async () => {
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
     // Pass seed without rng — startDrill should create its own mulberry32(seed)
     const bundle1 = await startDrill(
-      engine, ntBundleConventionConfig, Seat.South,
+      ntBundleConventionConfig, Seat.South,
       undefined, 42,
     );
     const bundle2 = await startDrill(
-      engine, ntBundleConventionConfig, Seat.South,
+      ntBundleConventionConfig, Seat.South,
       undefined, 42,
     );
 
@@ -139,17 +99,13 @@ describe("seed determinism", () => {
   });
 
   it("seeded deal satisfies convention constraints", async () => {
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
     const seed = 42;
     const bundle = await startDrill(
-      engine, ntBundleConventionConfig, Seat.South,
+      ntBundleConventionConfig, Seat.South,
       mulberry32(seed), seed,
     );
 
-    // NT bundle requires North: 15-17 HCP balanced, South: 6+ HCP with 4+ major
+    // NT bundle requires North: 15-17 HCP balanced
     const northHcp = bundle.deal.hands[Seat.North].cards.reduce((sum, c) => {
       const v: Record<string, number> = { A: 4, K: 3, Q: 2, J: 1 };
       return sum + (v[c.rank] ?? 0);

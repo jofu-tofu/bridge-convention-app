@@ -6,17 +6,22 @@ import {
   rotateAuction,
   pickVulnerability,
 } from "../start-drill";
-import {
-  createStubEngine,
-  makeDeal,
-} from "../../test-support/engine-stub";
 import { Seat, Vulnerability } from "../../engine/types";
-import type { DealConstraints, SeatConstraint } from "../../engine/types";
+import type { DealConstraints } from "../../engine/types";
+import { calculateHcp } from "../../engine/hand-evaluator";
 import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle, ntBundle, ConventionCategory } from "../../conventions";
 import type { ConventionConfig } from "../../conventions";
 import { buildAuction } from "../../engine/auction-helpers";
+import { mulberry32 } from "../../engine/seeded-rng";
 
 const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
+
+/** Returns specific values for pre-deal decisions, then delegates to a proper PRNG for deal generation. */
+function testRng(...preValues: number[]): () => number {
+  let i = 0;
+  const fallback = mulberry32(12345);
+  return () => i < preValues.length ? preValues[i++]! : fallback();
+}
 
 describe("startDrill", () => {
   beforeEach(() => {
@@ -25,91 +30,71 @@ describe("startDrill", () => {
   });
 
   it("returns bundle with generated deal and session", async () => {
-    const deal = makeDeal();
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(deal),
-    });
+    const bundle = await startDrill(ntBundleConventionConfig, Seat.South);
 
-    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South);
-
-    expect(bundle.deal).toBe(deal);
+    // TS generator produces valid 4×13 deal
+    for (const seat of [Seat.North, Seat.East, Seat.South, Seat.West]) {
+      expect(bundle.deal.hands[seat].cards).toHaveLength(13);
+    }
     expect(bundle.session).toBeDefined();
     expect(typeof bundle.session.getNextBid).toBe("function");
   });
 
   it("includes initialAuction from convention.defaultAuction when defined", async () => {
-    const deal = makeDeal();
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(deal),
-    });
-
-    // Create a test convention with a defaultAuction that has no E/W passes
     const mockAuction = { entries: [], isComplete: false };
     const conventionWithDefault: ConventionConfig = {
       ...ntBundleConventionConfig,
       defaultAuction: vi.fn().mockReturnValue(mockAuction),
     };
 
-    const bundle = await startDrill(engine, conventionWithDefault, Seat.South);
+    const bundle = await startDrill(conventionWithDefault, Seat.South);
 
     expect(conventionWithDefault.defaultAuction).toHaveBeenCalledWith(
       Seat.South,
-      deal,
+      bundle.deal,
     );
     expect(bundle.initialAuction).toBe(mockAuction);
   });
 
   it("returns undefined initialAuction when convention has no defaultAuction", async () => {
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
-    // Create convention without defaultAuction
     const { defaultAuction: _, ...conventionNoDefault } = ntBundleConventionConfig;
     const config: ConventionConfig = {
       ...conventionNoDefault,
       id: "nt-bundle",
     };
 
-    const bundle = await startDrill(engine, config, Seat.South);
+    const bundle = await startDrill(config, Seat.South);
 
     expect(bundle.initialAuction).toBeUndefined();
   });
 
-  it("passes convention constraints directly to generateDeal", async () => {
-    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal });
-
+  it("passes convention constraints directly — deal satisfies HCP envelope", async () => {
     const { defaultAuction: _, ...conventionNoDefault } = ntBundleConventionConfig;
     const config: ConventionConfig = {
       ...conventionNoDefault,
       id: "nt-bundle",
     };
 
-    await startDrill(engine, config, Seat.South);
+    const bundle = await startDrill(config, Seat.South);
 
-    const constraints = generateDeal.mock.calls[0]![0];
-    expect(constraints.seats).toEqual(config.dealConstraints.seats);
+    // NT bundle requires North: 15-17 HCP
+    const northHcp = calculateHcp(bundle.deal.hands[Seat.North]);
+    expect(northHcp).toBeGreaterThanOrEqual(15);
+    expect(northHcp).toBeLessThanOrEqual(17);
   });
 
-  it("throws when no ConventionSpec is registered for the convention", async () => {
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
-    // Use a convention ID that has no ConventionSpec registered
+  it("throws when no ConventionSpec is registered for the convention", () => {
     const unknownConvention: ConventionConfig = {
       ...ntBundleConventionConfig,
       id: "unknown-convention",
     };
 
-    await expect(
-      startDrill(engine, unknownConvention, Seat.South),
-    ).rejects.toThrowError(/No bundle registered/);
+    expect(() =>
+      startDrill(unknownConvention, Seat.South),
+    ).toThrowError(/No bundle registered/);
   });
 
   it("rotates constraints when allowedDealers picks a different dealer", async () => {
-    // Synthetic convention with East-based constraints and allowedDealers
     const rotationConvention: ConventionConfig = {
       id: "nt-bundle",
       name: "Rotation Test",
@@ -122,19 +107,11 @@ describe("startDrill", () => {
       allowedDealers: [Seat.East, Seat.West],
       defaultAuction: () => buildAuction(Seat.East, ["1NT"]),
     };
-    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal });
 
-    // RNG returns 0.7 → floor(0.7 * 2) = 1 → picks West (second element)
-    await startDrill(engine, rotationConvention, Seat.South, () => 0.7);
+    // RNG: first call 0.7 → floor(0.7 * 2) = 1 → picks West (second element)
+    const bundle = await startDrill(rotationConvention, Seat.South, testRng(0.7));
 
-    const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
-    expect(constraints.dealer).toBe(Seat.West);
-    // East seat constraints should have been rotated to West
-    const westConstraints = constraints.seats.filter(
-      (s: SeatConstraint) => s.seat === Seat.West,
-    );
-    expect(westConstraints.length).toBeGreaterThan(0);
+    expect(bundle.deal.dealer).toBe(Seat.West);
   });
 
   it("does not rotate when allowedDealers picks the base dealer", async () => {
@@ -150,25 +127,19 @@ describe("startDrill", () => {
       allowedDealers: [Seat.East, Seat.West],
       defaultAuction: () => buildAuction(Seat.East, ["1NT"]),
     };
-    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal });
 
-    // RNG returns 0.3 → floor(0.3 * 2) = 0 → picks East (first element, same as base)
-    await startDrill(engine, rotationConvention, Seat.South, () => 0.3);
+    // RNG: first call 0.3 → floor(0.3 * 2) = 0 → picks East (first element, same as base)
+    const bundle = await startDrill(rotationConvention, Seat.South, testRng(0.3));
 
-    const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
-    expect(constraints.dealer).toBe(Seat.East);
+    expect(bundle.deal.dealer).toBe(Seat.East);
   });
 
   it("uses base constraints when allowedDealers is not set", async () => {
-    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal });
+    const bundle = await startDrill(ntBundleConventionConfig, Seat.South);
 
-    await startDrill(engine, ntBundleConventionConfig, Seat.South);
-
-    const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
-    // ntBundle base dealer is North (from dealConstraints)
-    expect(constraints.dealer).toBe(ntBundleConventionConfig.dealConstraints.dealer);
+    // NT bundle has no explicit dealer — TS generator defaults to North
+    const expectedDealer = ntBundleConventionConfig.dealConstraints.dealer ?? Seat.North;
+    expect(bundle.deal.dealer).toBe(expectedDealer);
   });
 
   it("rotates initialAuction entries when dealer was rotated", async () => {
@@ -184,13 +155,9 @@ describe("startDrill", () => {
       allowedDealers: [Seat.East, Seat.West],
       defaultAuction: () => buildAuction(Seat.East, ["1NT"]),
     };
-    const deal = makeDeal();
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(deal),
-    });
 
-    // RNG picks West
-    const bundle = await startDrill(engine, rotationConvention, Seat.South, () => 0.7);
+    // RNG: first call picks West
+    const bundle = await startDrill(rotationConvention, Seat.South, testRng(0.7));
 
     // defaultAuction normally starts from East with "1NT"
     // After rotation, the entry should be from West
@@ -199,11 +166,7 @@ describe("startDrill", () => {
   });
 
   it("returns inference engines in the bundle", async () => {
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
-    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South);
+    const bundle = await startDrill(ntBundleConventionConfig, Seat.South);
 
     expect(bundle.nsInferenceEngine).not.toBeNull();
     expect(bundle.ewInferenceEngine).not.toBeNull();
@@ -323,39 +286,27 @@ describe("startDrill practiceRole", () => {
   });
 
   it("defaults to responder when no role specified", async () => {
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
-    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South);
+    const bundle = await startDrill(ntBundleConventionConfig, Seat.South);
 
     expect(bundle.resolvedRole).toBe("responder");
   });
 
   it("swaps constraints so South is dealer when role is opener", async () => {
-    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal });
-
-    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South, undefined, undefined, {
+    const bundle = await startDrill(ntBundleConventionConfig, Seat.South, undefined, undefined, {
       practiceRole: "opener",
     });
 
     expect(bundle.resolvedRole).toBe("opener");
-    // Deal constraints should have South as dealer (opener)
-    const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
-    expect(constraints.dealer).toBe(Seat.South);
-    // South should have the opener's hand constraints (15-17 HCP balanced for 1NT)
-    const southConstraints = constraints.seats.filter((s: SeatConstraint) => s.seat === Seat.South);
-    expect(southConstraints.length).toBeGreaterThan(0);
-    expect(southConstraints[0]!.minHcp).toBe(15);
+    // Deal should have South as dealer (opener)
+    expect(bundle.deal.dealer).toBe(Seat.South);
+    // South should have the opener's hand (15-17 HCP for 1NT)
+    const southHcp = calculateHcp(bundle.deal.hands[Seat.South]);
+    expect(southHcp).toBeGreaterThanOrEqual(15);
+    expect(southHcp).toBeLessThanOrEqual(17);
   });
 
   it("skips initial auction for opener mode", async () => {
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
-    const bundle = await startDrill(engine, ntBundleConventionConfig, Seat.South, undefined, undefined, {
+    const bundle = await startDrill(ntBundleConventionConfig, Seat.South, undefined, undefined, {
       practiceRole: "opener",
     });
 
@@ -363,18 +314,14 @@ describe("startDrill practiceRole", () => {
   });
 
   it("resolves 'both' using seeded RNG for deterministic results", async () => {
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
-    // RNG returns < 0.5 → opener
-    const bundle1 = await startDrill(engine, ntBundleConventionConfig, Seat.South, () => 0.3, undefined, {
+    // RNG: first call < 0.5 → opener (role), rest for deal gen
+    const bundle1 = await startDrill(ntBundleConventionConfig, Seat.South, testRng(0.3), undefined, {
       practiceRole: "both",
     });
     expect(bundle1.resolvedRole).toBe("opener");
 
-    // RNG returns >= 0.5 → responder
-    const bundle2 = await startDrill(engine, ntBundleConventionConfig, Seat.South, () => 0.7, undefined, {
+    // RNG: first call >= 0.5 → responder (role), rest for deal gen
+    const bundle2 = await startDrill(ntBundleConventionConfig, Seat.South, testRng(0.7), undefined, {
       practiceRole: "both",
     });
     expect(bundle2.resolvedRole).toBe("responder");
@@ -388,11 +335,7 @@ describe("startDrill practiceRole", () => {
     registerBundle(dontBundle);
     const dontConfig = createConventionConfigFromBundle(dontBundle);
 
-    const engine = createStubEngine({
-      generateDeal: vi.fn().mockResolvedValue(makeDeal()),
-    });
-
-    const bundle = await startDrill(engine, dontConfig, Seat.South, undefined, undefined, {
+    const bundle = await startDrill(dontConfig, Seat.South, undefined, undefined, {
       practiceRole: "opener",
     });
 
@@ -408,48 +351,30 @@ describe("startDrill vulnerability", () => {
   });
 
   it("assigns vulnerability from tuning distribution to generated deal", async () => {
-    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal });
-
-    // RNG: first call for dealer (not used — no allowedDealers), second for vulnerability
-    let callCount = 0;
-    const rng = () => {
-      callCount++;
-      return 0.76; // → Both in equal distribution
-    };
-
-    await startDrill(engine, ntBundleConventionConfig, Seat.South, rng, undefined, {
+    // RNG: first call for vulnerability (0.76 → Both in equal distribution), rest for deal gen
+    const bundle = await startDrill(ntBundleConventionConfig, Seat.South, testRng(0.76), undefined, {
       tuning: {
         vulnerabilityDistribution: { none: 1, ours: 1, theirs: 1, both: 1 },
       },
     });
 
-    const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
-    expect(constraints.vulnerability).toBe(Vulnerability.Both);
+    expect(bundle.deal.vulnerability).toBe(Vulnerability.Both);
   });
 
   it("uses default none-only distribution when no tuning provided", async () => {
-    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal });
-
     // Default distribution is none-only, so any RNG value yields None
-    await startDrill(engine, ntBundleConventionConfig, Seat.South, () => 0.1);
+    const bundle = await startDrill(ntBundleConventionConfig, Seat.South, testRng(0.1));
 
-    const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
-    expect(constraints.vulnerability).toBe(Vulnerability.None);
+    expect(bundle.deal.vulnerability).toBe(Vulnerability.None);
   });
 
   it("respects custom tuning override", async () => {
-    const generateDeal = vi.fn().mockResolvedValue(makeDeal());
-    const engine = createStubEngine({ generateDeal });
-
-    await startDrill(engine, ntBundleConventionConfig, Seat.South, () => 0.5, undefined, {
+    const bundle = await startDrill(ntBundleConventionConfig, Seat.South, testRng(0.5), undefined, {
       tuning: {
         vulnerabilityDistribution: { none: 0, ours: 0, theirs: 0, both: 1 },
       },
     });
 
-    const constraints = generateDeal.mock.calls[0]![0] as DealConstraints;
-    expect(constraints.vulnerability).toBe(Vulnerability.Both);
+    expect(bundle.deal.vulnerability).toBe(Vulnerability.Both);
   });
 });

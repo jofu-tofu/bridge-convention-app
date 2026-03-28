@@ -55,6 +55,14 @@ function dealFromShuffled(
   return { hands, dealer, vulnerability };
 }
 
+/**
+ * Single point of constraint validation for deal generation.
+ *
+ * INVARIANT: All deal generation must route through this function (via generateDeal)
+ * so that customCheck is evaluated. The WASM/Tauri engines strip customCheck during
+ * serialization (cleanConstraints) — callers needing customCheck must use the TS
+ * generator directly, not engine.generateDeal().
+ */
 function checkSeatConstraint(hand: Hand, constraint: SeatConstraint): boolean {
   const needsHcp =
     constraint.minHcp !== undefined || constraint.maxHcp !== undefined;

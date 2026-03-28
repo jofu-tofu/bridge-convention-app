@@ -887,8 +887,18 @@ export function buildModuleFlowTree(moduleId: string): ModuleFlowTreeViewport | 
   const r1Nodes: { node: MutableNode; surface: TaggedSurface }[] = [];
   if (initialStates) {
     const respStates = initialStates.filter((s) => s.turn === "responder" && !s.route);
+    const seenCK = new Set<string>();
     for (const state of respStates) {
       for (const surface of state.surfaces) {
+        const existing = rootNode.children.find((c) => c.callKey === surface.ck);
+        if (existing) {
+          if (!existing.label.includes(surface.teachingLabel)) {
+            existing.label += ` / ${surface.teachingLabel}`;
+          }
+          continue;
+        }
+        if (seenCK.has(surface.ck)) continue;
+        seenCK.add(surface.ck);
         const node = mkNode(surface, mod.local.initial, "responder", 1, counter);
         rootNode.children.push(node);
         r1Nodes.push({ node, surface });
