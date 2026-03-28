@@ -228,7 +228,7 @@ function compileSurfaceConstraint(
     }
 
     // Try direct primitive compilation
-    if (compileFactClause(builder, factId, operator, value, { suitLengthMode: "any" })) {
+    if (compileFactClause(builder, factId, operator, value)) {
       continue;
     }
 
@@ -445,7 +445,7 @@ function derivePractitionerConstraints(
   modules: readonly ConventionModule[],
   archetype: CapabilityArchetype,
   sys: SystemConfig,
-): MutableSeatConstraint {
+): { envelope: MutableSeatConstraint; perSurface: readonly MutableSeatConstraint[] } {
   const allR1Surfaces: BidMeaning[] = [];
 
   for (const mod of modules) {
@@ -470,27 +470,35 @@ function derivePractitionerConstraints(
   );
 
   // Compute activation envelope (union)
-  return computeActivationEnvelope(perSurface);
+  return { envelope: computeActivationEnvelope(perSurface), perSurface };
 }
 
 // ── Source 3: Off-convention complement ─────────────────────────────
 
-function satisfiesEnvelope(hand: Hand, envelope: MutableSeatConstraint): boolean {
+function satisfiesConstraint(hand: Hand, constraint: MutableSeatConstraint): boolean {
   const hcp = calculateHcp(hand);
-  if (envelope.minHcp !== undefined && hcp < envelope.minHcp) return false;
-  if (envelope.maxHcp !== undefined && hcp > envelope.maxHcp) return false;
+  if (constraint.minHcp !== undefined && hcp < constraint.minHcp) return false;
+  if (constraint.maxHcp !== undefined && hcp > constraint.maxHcp) return false;
 
-  if (envelope.balanced !== undefined && isBalanced(getSuitLength(hand)) !== envelope.balanced) {
+  if (constraint.balanced !== undefined && isBalanced(getSuitLength(hand)) !== constraint.balanced) {
     return false;
   }
 
   const shape = getSuitLength(hand);
 
-  // Check minLengthAny (OR semantics)
-  if (envelope.minLengthAny) {
+  // Check minLength (AND semantics — all suits must meet their minimum)
+  if (constraint.minLength) {
+    for (let i = 0; i < SUIT_ORDER.length; i++) {
+      const min = constraint.minLength[SUIT_ORDER[i]!];
+      if (min !== undefined && shape[i]! < min) return false;
+    }
+  }
+
+  // Check minLengthAny (OR semantics — at least one suit meets its minimum)
+  if (constraint.minLengthAny) {
     let anyMet = false;
     for (let i = 0; i < SUIT_ORDER.length; i++) {
-      const min = envelope.minLengthAny[SUIT_ORDER[i]!];
+      const min = constraint.minLengthAny[SUIT_ORDER[i]!];
       if (min !== undefined && shape[i]! >= min) {
         anyMet = true;
         break;
@@ -500,9 +508,9 @@ function satisfiesEnvelope(hand: Hand, envelope: MutableSeatConstraint): boolean
   }
 
   // Check maxLength
-  if (envelope.maxLength) {
+  if (constraint.maxLength) {
     for (let i = 0; i < SUIT_ORDER.length; i++) {
-      const max = envelope.maxLength[SUIT_ORDER[i]!];
+      const max = constraint.maxLength[SUIT_ORDER[i]!];
       if (max !== undefined && shape[i]! > max) return false;
     }
   }
@@ -512,15 +520,16 @@ function satisfiesEnvelope(hand: Hand, envelope: MutableSeatConstraint): boolean
 
 function deriveOffConventionConstraints(
   openerConstraint: SeatConstraint,
-  practitionerEnvelope: MutableSeatConstraint,
+  perSurface: readonly MutableSeatConstraint[],
   dealer: Seat | undefined,
 ): DealConstraints {
   return {
     seats: [
       openerConstraint,
       {
-        seat: practitionerEnvelope.seat,
-        customCheck: (hand: Hand) => !satisfiesEnvelope(hand, practitionerEnvelope),
+        seat: perSurface[0]?.seat ?? Seat.South,
+        customCheck: (hand: Hand) =>
+          !perSurface.some((c) => satisfiesConstraint(hand, c)),
       },
     ],
     dealer,
@@ -551,7 +560,13 @@ export function deriveBundleDealConstraints(
   const dealer = archetype.allowedDealers?.[0];
 
   // Source 2: practitioner constraint from R1 surface analysis
-  const practitionerEnvelope = derivePractitionerConstraints(modules, archetype, sys);
+  const practitionerResult = derivePractitionerConstraints(modules, archetype, sys);
+  const practitionerEnvelope = practitionerResult.envelope;
+  const perSurface = practitionerResult.perSurface;
+
+  const perSurfaceCheck = perSurface.length > 0
+    ? (hand: Hand) => perSurface.some((c) => satisfiesConstraint(hand, c))
+    : undefined;
 
   // Build the practitioner seat constraint
   const practitionerConstraint: SeatConstraint = {
@@ -561,6 +576,7 @@ export function deriveBundleDealConstraints(
     ...(practitionerEnvelope.balanced !== undefined ? { balanced: practitionerEnvelope.balanced } : {}),
     ...(practitionerEnvelope.minLengthAny ? { minLengthAny: practitionerEnvelope.minLengthAny } : {}),
     ...(practitionerEnvelope.maxLength ? { maxLength: practitionerEnvelope.maxLength } : {}),
+    ...(perSurfaceCheck ? { customCheck: perSurfaceCheck } : {}),
   };
 
   const dealConstraints: DealConstraints = {
@@ -568,10 +584,10 @@ export function deriveBundleDealConstraints(
     dealer,
   };
 
-  // Source 3: off-convention = negation of practitioner envelope
+  // Source 3: off-convention = negation of per-surface constraints
   const offConventionConstraints = deriveOffConventionConstraints(
     openerConstraint,
-    practitionerEnvelope,
+    perSurface,
     dealer,
   );
 
