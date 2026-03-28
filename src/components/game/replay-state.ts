@@ -5,7 +5,7 @@
  * (PlayHistoryPanel, TrickOverlay, TrickReviewPanel) derive from it.
  */
 
-import type { Trick, PlayRecommendation, Seat } from "../../service";
+import type { Trick, PlayRecommendation, Seat, Card, Hand } from "../../service";
 
 /** Position within the trick sequence. playIndex -1 = before first play of that trick. */
 export interface ReplayPosition {
@@ -108,4 +108,40 @@ export function findNextDecision(
     }
   }
   return null;
+}
+
+/**
+ * Compute remaining cards per seat at a given replay position.
+ * Cards played in completed tricks (before trickIndex) and partial plays
+ * in the current trick (up to playIndex) are removed from each hand.
+ * Returns undefined when replay is at step 0 (no cards played yet),
+ * so BridgeTable falls through to visibleHands.
+ */
+export function remainingCardsAtPosition(
+  pos: ReplayPosition,
+  tricks: readonly Trick[],
+  allHands: Record<Seat, Hand>,
+): Partial<Record<Seat, readonly Card[]>> | undefined {
+  if (pos.trickIndex === 0 && pos.playIndex === -1) return undefined;
+
+  const played = new Map<Seat, Set<string>>();
+  for (const seat of Object.keys(allHands) as Seat[]) {
+    played.set(seat, new Set());
+  }
+
+  for (let t = 0; t < tricks.length && t <= pos.trickIndex; t++) {
+    const trick = tricks[t]!;
+    const maxPlay = t < pos.trickIndex ? trick.plays.length : pos.playIndex + 1;
+    for (let p = 0; p < maxPlay; p++) {
+      const play = trick.plays[p]!;
+      played.get(play.seat)?.add(`${play.card.suit}${play.card.rank}`);
+    }
+  }
+
+  const result: Partial<Record<Seat, readonly Card[]>> = {};
+  for (const [seat, hand] of Object.entries(allHands) as [Seat, Hand][]) {
+    const seatPlayed = played.get(seat)!;
+    result[seat] = hand.cards.filter(c => !seatPlayed.has(`${c.suit}${c.rank}`));
+  }
+  return result;
 }

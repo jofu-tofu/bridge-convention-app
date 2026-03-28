@@ -58,7 +58,10 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   }
 
   // ── Practice mode/role (must be set BEFORE selectConvention) ──
-  const practiceModeParam = params.get("practiceMode");
+  // When ?phase= is specified, default to decision-drill to bypass the practice picker
+  const phaseParam = params.get("phase");
+  const practiceModeParam = params.get("practiceMode")
+    ?? (phaseParam ? "decision-drill" : null);
   if (practiceModeParam === "decision-drill" || practiceModeParam === "full-auction" || practiceModeParam === "continuation-drill") {
     store.setPracticeMode(practiceModeParam);
   }
@@ -106,7 +109,6 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   }
 
   // ── Phase skip (universal — works in prod for shareable links) ──
-  const phaseParam = params.get("phase");
   if (phaseParam === "review" || phaseParam === "playing" || phaseParam === "declarer") {
     store.setSkipToPhase(phaseParam);
   }

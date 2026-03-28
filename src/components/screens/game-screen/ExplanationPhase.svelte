@@ -32,6 +32,7 @@
     visibleTricksAtPosition,
     isDecisionPoint,
     findNextDecision,
+    remainingCardsAtPosition,
   } from "../../game/replay-state";
   import { computeVisibleSeats } from "../../game/AuctionStepPanel";
 
@@ -103,6 +104,11 @@
   );
   const hasNextDecision = $derived(
     findNextDecision(replayStep, viewport.tricks, viewport.playRecommendations, viewport.userSeat) !== null,
+  );
+
+  // Remaining cards per seat at the current replay position (cards played so far are removed)
+  const replayRemainingCards = $derived(
+    hasPlayData ? remainingCardsAtPosition(replayPos, viewport.tricks, viewport.allHands) : undefined,
   );
 
   // Derived trick selection for TrickReviewPanel sync
@@ -424,7 +430,7 @@
           tableWidth={layout.tableBaseW}
           tableHeight={layout.tableBaseH}
         >
-          <BridgeTable visibleHands={steppedVisibleHands} vulnerability={viewport.vulnerability} {trumpSuit}>
+          <BridgeTable visibleHands={steppedVisibleHands} vulnerability={viewport.vulnerability} {trumpSuit} remainingCards={replayRemainingCards}>
             {#if selectedTrick && viewport.contract}
               <TrickOverlay
                 trick={selectedTrick}

@@ -43,7 +43,7 @@
 
   let dealNumber = $state(0);
 
-  // DEV autoplay: auto-bid correct call, auto-dismiss feedback, auto-skip prompts
+  // DEV autoplay: auto-bid correct call, auto-accept prompts, auto-play cards
   // Uses requestAnimationFrame to defer actions to next frame, avoiding infinite microtask loops
   $effect(() => {
     if (!DEV || !appStore.autoplay) return;
@@ -70,7 +70,14 @@
         });
       });
     } else if (phase === "DECLARER_PROMPT") {
-      raf = requestAnimationFrame(() => gameStore.declinePrompt());
+      raf = requestAnimationFrame(() => gameStore.acceptPrompt());
+    } else if (phase === "PLAYING" && !gameStore.isProcessing) {
+      const vp = gameStore.playingViewport;
+      if (vp && vp.currentPlayer && vp.userControlledSeats.includes(vp.currentPlayer) && vp.legalPlays.length > 0) {
+        raf = requestAnimationFrame(() => {
+          gameStore.userPlayCard(vp.legalPlays[0]!, vp.currentPlayer!);
+        });
+      }
     }
 
     return () => { if (raf) cancelAnimationFrame(raf); };
