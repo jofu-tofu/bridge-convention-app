@@ -55,6 +55,26 @@ export const STAYMAN_MEANING_IDS = {
   // R3 after 2D denial: Show 5-card major (5-4 in majors, invitational)
   SHOW_FIVE_HEARTS_AFTER_DENIAL: "stayman:show-five-hearts-after-denial",
   SHOW_FIVE_SPADES_AFTER_DENIAL: "stayman:show-five-spades-after-denial",
+
+  // R3 after 2H: Additional continuations
+  CROSS_MAJOR_INVITE_2S_AFTER_2H: "stayman:cross-major-invite-2s-after-2h",
+  MINOR_GF_3C_AFTER_2H: "stayman:minor-gf-3c-after-2h",
+  MINOR_GF_3D_AFTER_2H: "stayman:minor-gf-3d-after-2h",
+  CROSS_MAJOR_GF_3S_AFTER_2H: "stayman:cross-major-gf-3s-after-2h",
+  QUANTITATIVE_4NT_AFTER_2H: "stayman:quantitative-4nt-after-2h",
+
+  // R3 after 2S: Additional continuations
+  MINOR_GF_3C_AFTER_2S: "stayman:minor-gf-3c-after-2s",
+  MINOR_GF_3D_AFTER_2S: "stayman:minor-gf-3d-after-2s",
+  CROSS_MAJOR_GF_3H_AFTER_2S: "stayman:cross-major-gf-3h-after-2s",
+  QUANTITATIVE_4NT_AFTER_2S: "stayman:quantitative-4nt-after-2s",
+
+  // R3 after 2D denial: Additional continuations
+  MINOR_GF_3C_AFTER_2D: "stayman:minor-gf-3c-after-2d",
+  MINOR_GF_3D_AFTER_2D: "stayman:minor-gf-3d-after-2d",
+  MAJOR_SIGNOFF_4H_AFTER_2D: "stayman:major-signoff-4h-after-2d",
+  MAJOR_SIGNOFF_4S_AFTER_2D: "stayman:major-signoff-4s-after-2d",
+  QUANTITATIVE_4NT_AFTER_2D: "stayman:quantitative-4nt-after-2d",
 } as const;
 
 export type StaymanMeaningId =
@@ -79,4 +99,9 @@ export const STAYMAN_R3_CLASSES = {
   NT_GAME_DENIAL: "stayman:nt-game-denial",
   NT_INVITE_DENIAL: "stayman:nt-invite-denial",
   SHOW_FIVE_CARD_MAJOR: "stayman:show-five-card-major",
+  MINOR_GF: "stayman:minor-gf",
+  CROSS_MAJOR_INVITE: "stayman:cross-major-invite",
+  CROSS_MAJOR_GF: "stayman:cross-major-gf",
+  MAJOR_SIGNOFF_64: "stayman:major-signoff-64",
+  QUANTITATIVE_4NT: "stayman:quantitative-4nt",
 } as const;
