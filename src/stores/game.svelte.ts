@@ -592,6 +592,16 @@ export function createGameStore(
           transitionTo("DECLARER_PROMPT");
           const autoHandled = await maybeAutoTransitionFromPrompt(handle);
           if (autoHandled && activeHandle !== handle) return;
+        } else if (servicePhase === "PLAYING") {
+          // playPreference="always" skipped DECLARER_PROMPT — play already initialized
+          const pvp = await activeService.getPlayingViewport(handle);
+          if (activeHandle !== handle) return;
+          viewports.playing = pvp;
+          contract = pvp?.contract ?? null;
+          effectiveUserSeat = userSeat;
+          transitionTo("PLAYING");
+          play.aborted = false;
+          void fetchPlaySuggestions(handle);
         } else if (servicePhase === "EXPLANATION") {
           // Fetch explanation viewport first so we can capture the contract
           // (non-null when playPreference="skip" bypassed DECLARER_PROMPT).
@@ -984,18 +994,46 @@ export function createGameStore(
       if (!activeHandle) return;
       const handle = activeHandle;
       resetPlay();
+      contract = viewportContract;
       effectiveUserSeat = userSeat;
       dds = freshDDSState();
-      // Transition service-side phase back to DECLARER_PROMPT, fetch viewport, then transition store
+
+      // Determine seat: if partner declares, play as declarer (swap); otherwise keep user seat
+      const declarer = viewportContract.declarer;
+      const seat = (declarer !== userSeat && partnerSeat(declarer) === userSeat)
+        ? declarer  // declarer-swap: play as declarer from partner's seat
+        : effectiveUserSeat ?? userSeat ?? Seat.South;
+      effectiveUserSeat = seat;
+
+      // Go straight to PLAYING — skip DECLARER_PROMPT UI
+      if (!transitionTo("DECLARER_PROMPT")) return; // service needs EXPLANATION → DECLARER_PROMPT first
+      if (!transitionTo("PLAYING")) return;
+      play.aborted = false;
+      animatedTrickOverride = null;
+      play.score = null;
+      play.showingTrickResult = false;
+      play.processing = false;
+      play.log = [];
+
       void (async () => {
         try {
+          // Transition service: EXPLANATION → DECLARER_PROMPT → PLAYING
           await activeService.acceptPrompt(handle, "replay");
           if (activeHandle !== handle) return;
-          const dpvp = await activeService.getDeclarerPromptViewport(handle);
+          const result = await activeService.acceptPrompt(handle, "play", seat);
           if (activeHandle !== handle) return;
-          viewports.declarerPrompt = dpvp;
-          transitionTo("DECLARER_PROMPT");
-          await tick();
+
+          viewports.playing = await activeService.getPlayingViewport(handle);
+          if (activeHandle !== handle) return;
+
+          // Animate initial AI plays (e.g., opening lead)
+          const aiPlays = result.aiPlays ?? [];
+          if (aiPlays.length > 0) {
+            const { ok } = await animateAiPlays(handle, aiPlays, []);
+            if (!ok) return;
+          }
+
+          void fetchPlaySuggestions(handle);
         } catch (err) {
           console.error('playThisHand failed:', err);
         }
@@ -1051,6 +1089,16 @@ export function createGameStore(
           transitionTo("DECLARER_PROMPT");
           const autoHandled = await maybeAutoTransitionFromPrompt(handle);
           if (autoHandled && activeHandle !== handle) return;
+        } else if (servicePhase === "PLAYING") {
+          // playPreference="always" skipped DECLARER_PROMPT — play already initialized
+          const pvp = await activeService.getPlayingViewport(handle);
+          if (activeHandle !== handle) return;
+          viewports.playing = pvp;
+          contract = pvp?.contract ?? null;
+          effectiveUserSeat = userSeat;
+          transitionTo("PLAYING");
+          play.aborted = false;
+          void fetchPlaySuggestions(handle);
         } else if (servicePhase === "EXPLANATION") {
           // Fetch explanation viewport to capture contract before transitioning
           viewports.explanation = await activeService.getExplanationViewport(handle);
@@ -1109,6 +1157,16 @@ export function createGameStore(
             contract = dpvp?.contract ?? null;
             effectiveUserSeat = userSeat;
             transitionTo("DECLARER_PROMPT");
+          } else if (servicePhase === "PLAYING") {
+            // playPreference="always" skipped DECLARER_PROMPT — play already initialized
+            const pvp = await activeService.getPlayingViewport(handle);
+            if (activeHandle !== handle) return false;
+            viewports.playing = pvp;
+            contract = pvp?.contract ?? null;
+            effectiveUserSeat = userSeat;
+            transitionTo("PLAYING");
+            play.aborted = false;
+            void fetchPlaySuggestions(handle);
           } else if (servicePhase === "EXPLANATION") {
             // Fetch explanation viewport to capture contract before transitioning
             viewports.explanation = await activeService.getExplanationViewport(handle);

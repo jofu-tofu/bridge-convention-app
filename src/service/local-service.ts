@@ -147,6 +147,18 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       const { aiBids, auctionComplete } = await runInitialAiBids(state, engine);
       console.log("[DEBUG] runInitialAiBids done", { aiBids: aiBids.length, auctionComplete });
 
+      // When playPreference="always" and the auction completed during initial AI bids,
+      // the bidding controller transitions directly to PLAYING. Set up the world-class
+      // advisor and run initial AI plays, mirroring what submitBid does.
+      if (auctionComplete && state.phase === "PLAYING" && state.contract) {
+        const advisorProvider = createWorldClassProvider(engine, Math.random);
+        if (state.playInferences) {
+          advisorProvider.onAuctionComplete!(state.playInferences);
+        }
+        state.worldClassAdvisor = advisorProvider.getStrategy();
+        await runInitialAiPlays(state, engine);
+      }
+
       // Build viewport
       const viewport = buildBiddingViewportFromState(state);
       if (!viewport) {

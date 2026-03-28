@@ -90,7 +90,7 @@
           >
         {/each}
         <th class="w-0 p-0">
-          <div class="relative inline-block">
+          <div class="relative inline-block z-[--z-tooltip]">
             <button
               class="text-text-muted/60 hover:text-text-secondary transition-colors cursor-pointer p-0.5"
               onclick={() => legendOpen = !legendOpen}
@@ -104,7 +104,7 @@
             </button>
             {#if legendOpen}
               <div
-                class="absolute right-0 top-full mt-1 z-[--z-tooltip] bg-bg-card border border-border-default rounded-[--radius-md] shadow-lg p-2 text-left whitespace-nowrap text-[--text-annotation]"
+                class="absolute right-0 top-full mt-1 bg-bg-card border border-border-default rounded-[--radius-md] shadow-lg p-2 text-left whitespace-nowrap text-[--text-annotation]"
                 role="tooltip"
               >
                 <div class="flex items-center gap-1.5 mb-1">

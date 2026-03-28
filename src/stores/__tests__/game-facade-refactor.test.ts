@@ -186,10 +186,10 @@ describe("playThisHand mutation ordering", () => {
     store.declinePlay();
     expect(store.phase).toBe("EXPLANATION");
 
-    // playThisHand should transition back to DECLARER_PROMPT
+    // playThisHand should go straight to PLAYING (skips prompt)
     store.playThisHand();
     await vi.advanceTimersByTimeAsync(100);
-    expect(store.phase).toBe("DECLARER_PROMPT");
+    expect(store.phase).toBe("PLAYING");
     expect(store.effectiveUserSeat).toBe(Seat.South);
   });
 

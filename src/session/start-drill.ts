@@ -221,8 +221,7 @@ export async function startDrill(
   // Derive default play preference from practice mode
   const defaultPlayPreference: PlayPreference =
     practiceMode === "decision-drill" ? "skip"
-      : practiceMode === "full-auction" ? "always"
-        : "prompt";
+      : "prompt";
   const playPreference = options?.playPreference ?? defaultPlayPreference;
 
   return {

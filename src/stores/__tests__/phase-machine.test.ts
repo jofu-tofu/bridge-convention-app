@@ -95,11 +95,11 @@ describe("phase state machine", () => {
       expect(store.phase).toBe("EXPLANATION");
     });
 
-    it("EXPLANATION → DECLARER_PROMPT (play this hand)", async () => {
+    it("EXPLANATION → PLAYING (play this hand skips prompt)", async () => {
       const store = await setupToExplanation();
       store.playThisHand();
       await vi.advanceTimersByTimeAsync(100);
-      expect(store.phase).toBe("DECLARER_PROMPT");
+      expect(store.phase).toBe("PLAYING");
     });
   });
 
