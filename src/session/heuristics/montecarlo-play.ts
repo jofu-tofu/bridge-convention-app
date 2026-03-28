@@ -45,8 +45,8 @@ const MAX_ATTEMPTS_MULTIPLIER = 20;
 
 // ── Batched evaluation constants ─────────────────────────────
 
-/** 3 batches of 30 → 2 early-termination checkpoints */
-const BATCH_SIZE = 10;
+/** 2 batches of 30 → 1 early-termination checkpoint */
+const BATCH_SIZE = 15;
 /** 0.5 trick gap = strong edge in bridge; conservative threshold */
 const EARLY_TERM_MARGIN = 0.5;
 
@@ -473,15 +473,14 @@ export function createMCDDSProvider(
         return expertFallback(context);
       }
 
-      // 10. Close call? Sample + solve more batches (up to 2× default)
+      // 10. Close call? Sample + solve one extra batch
       const topTwoCheck = computeTopTwo(scores, context.legalPlays);
       if (
         opts.useCloseCallExtension &&
         topTwoCheck &&
-        topTwoCheck.bestAvg - topTwoCheck.secondBestAvg < EARLY_TERM_MARGIN &&
-        cumulativeSuccessCount < sampleCount * 2
+        topTwoCheck.bestAvg - topTwoCheck.secondBestAvg < EARLY_TERM_MARGIN
       ) {
-        const extraNeeded = sampleCount * 2 - samples.length;
+        const extraNeeded = BATCH_SIZE;
         if (extraNeeded > 0) {
           const extraSamples = samplePlayDeals({
             knownHands,

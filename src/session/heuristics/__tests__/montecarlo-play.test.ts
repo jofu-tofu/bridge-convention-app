@@ -626,12 +626,12 @@ describe("createWorldClassProvider batching", () => {
 
     expect(result.card.rank).toBe(Rank.Ace);
     expect(result.reason).toContain("early-stop");
-    // Only first batch (10 calls), not all 30
-    expect(engine.solveBoard).toHaveBeenCalledTimes(10);
+    // Only first batch (15 calls), not all 30
+    expect(engine.solveBoard).toHaveBeenCalledTimes(15);
   });
 
-  it("runs all batches when scores are close, then extends to 2× default", async () => {
-    // Both cards score 7 → gap = 0 < 0.5 → triggers dynamic extension to 60
+  it("runs all batches when scores are close, then extends by one extra batch", async () => {
+    // Both cards score 7 → gap = 0 < 0.5 → triggers dynamic extension to 45
     const engine = makeStubEngine(() => ({
       cards: [
         { suit: Suit.Hearts, rank: Rank.Ace, score: 7, equals: 0 },
@@ -643,39 +643,8 @@ describe("createWorldClassProvider batching", () => {
     const result = await provider.getStrategy().suggest(makeCtx());
 
     expect(result.reason).not.toContain("early-stop");
-    // Close call: 30 initial + 30 extended = 60 total
-    expect(engine.solveBoard).toHaveBeenCalledTimes(60);
-  });
-
-  it("early-terminates after second batch when margin widens", async () => {
-    let callCount = 0;
-    const engine = makeStubEngine(() => {
-      callCount++;
-      // First 10 calls: close scores (gap < 0.5)
-      if (callCount <= 10) {
-        return {
-          cards: [
-            { suit: Suit.Hearts, rank: Rank.Ace, score: 7, equals: 0 },
-            { suit: Suit.Hearts, rank: Rank.King, score: 7, equals: 0 },
-          ],
-        };
-      }
-      // Next 10 calls: widen the gap
-      return {
-        cards: [
-          { suit: Suit.Hearts, rank: Rank.Ace, score: 10, equals: 0 },
-          { suit: Suit.Hearts, rank: Rank.King, score: 3, equals: 0 },
-        ],
-      };
-    });
-
-    const provider = createWorldClassProvider(engine, mulberry32(42));
-    const result = await provider.getStrategy().suggest(makeCtx());
-
-    expect(result.card.rank).toBe(Rank.Ace);
-    expect(result.reason).toContain("early-stop");
-    // Two batches = 20 calls
-    expect(engine.solveBoard).toHaveBeenCalledTimes(20);
+    // Close call: 30 initial + 15 extended = 45 total
+    expect(engine.solveBoard).toHaveBeenCalledTimes(45);
   });
 
   it("handles partial batch failures gracefully", async () => {
@@ -732,8 +701,8 @@ describe("createWorldClassProvider batching", () => {
     const result = await provider.getStrategy().suggest(makeCtx());
     expect(result.reason).not.toContain("early-stop");
     expect(result.reason).toContain("mc-dds");
-    // 60 samples total (30 initial + 30 extended)
-    expect(result.reason).toContain("60 samples");
+    // 45 samples total (30 initial + 15 extended)
+    expect(result.reason).toContain("45 samples");
   });
 });
 
