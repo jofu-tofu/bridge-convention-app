@@ -36,6 +36,7 @@ import type {
   BidSubmitResult,
   PromptAcceptResult,
   PlayCardResult,
+  AiPlayEntry,
   SessionViewport,
   DDSolutionResult,
   ConventionInfo,
@@ -232,9 +233,9 @@ export function createLocalService(engine: EnginePort): DevServicePort {
             advisorProvider.onAuctionComplete!(state.playInferences);
           }
           state.worldClassAdvisor = advisorProvider.getStrategy();
-          // Run initial AI plays if the opening leader is not user-controlled
-          const aiPlays = await runInitialAiPlays(state, engine);
-          return { phase: state.phase, aiPlays };
+          // AI plays are NOT run here — caller uses runInitialAiPlays() separately
+          // so the UI can show the play table immediately.
+          return { phase: state.phase };
         }
       } else if (mode === "replay") {
         // Transition back to DECLARER_PROMPT from EXPLANATION (for "Play this Hand")
@@ -266,8 +267,13 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         return { phase: state.phase };
       }
       state.initializePlay(state.contract);
-      const aiPlays = await runInitialAiPlays(state, engine);
-      return { phase: state.phase, aiPlays };
+      // AI plays are NOT run here — caller uses runInitialAiPlays() separately
+      return { phase: state.phase };
+    },
+
+    async runInitialAiPlays(handle: SessionHandle): Promise<AiPlayEntry[]> {
+      const state = manager.get(handle);
+      return runInitialAiPlays(state, engine);
     },
 
     async updatePlayProfile(handle: SessionHandle, profileId: PlayProfileId): Promise<void> {

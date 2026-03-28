@@ -734,17 +734,21 @@ export function createGameStore(
 
     void (async () => {
       try {
-        // Accept prompt on service side (initializes play + runs initial AI plays)
-        const result = await activeService.acceptPrompt(handle, "play", seat);
+        // Accept prompt on service side (initializes play state, no AI plays yet)
+        await activeService.acceptPrompt(handle, "play", seat);
         if (activeHandle !== handle) return;
 
-        // Fetch viewport (includes any AI plays already applied)
+        // Show play table immediately (before AI plays)
         viewports.playing = await activeService.getPlayingViewport(handle);
         if (activeHandle !== handle) return;
 
-        // Animate initial AI plays (e.g., opening lead by AI)
-        const aiPlays = result.aiPlays ?? [];
+        // Run AI plays in background — UI is already visible
+        const aiPlays = await activeService.runInitialAiPlays(handle);
+        if (activeHandle !== handle) return;
+
         if (aiPlays.length > 0) {
+          viewports.playing = await activeService.getPlayingViewport(handle);
+          if (activeHandle !== handle) return;
           const { ok } = await animateAiPlays(handle, aiPlays, []);
           if (!ok) return;
         }
@@ -857,15 +861,20 @@ export function createGameStore(
     void (async () => {
       try {
         play.aborted = false;
-        const result = await activeService.restartPlay(handle);
+        await activeService.restartPlay(handle);
         if (activeHandle !== handle) return;
 
-        // Replace stale viewport with fresh one
+        // Show play table immediately (before AI plays)
         viewports.playing = await activeService.getPlayingViewport(handle);
         if (activeHandle !== handle) return;
 
-        const aiPlays = result.aiPlays ?? [];
+        // Run AI plays in background — UI is already visible
+        const aiPlays = await activeService.runInitialAiPlays(handle);
+        if (activeHandle !== handle) return;
+
         if (aiPlays.length > 0) {
+          viewports.playing = await activeService.getPlayingViewport(handle);
+          if (activeHandle !== handle) return;
           const { ok } = await animateAiPlays(handle, aiPlays, []);
           if (!ok) return;
         }
@@ -913,15 +922,20 @@ export function createGameStore(
         // Transition service: EXPLANATION → DECLARER_PROMPT → PLAYING
         await activeService.acceptPrompt(handle, "replay");
         if (activeHandle !== handle) return;
-        const result = await activeService.acceptPrompt(handle, "play", seat);
+        await activeService.acceptPrompt(handle, "play", seat);
         if (activeHandle !== handle) return;
 
+        // Show play table immediately (before AI plays)
         viewports.playing = await activeService.getPlayingViewport(handle);
         if (activeHandle !== handle) return;
 
-        // Animate initial AI plays (e.g., opening lead)
-        const aiPlays = result.aiPlays ?? [];
+        // Run AI plays in background — UI is already visible
+        const aiPlays = await activeService.runInitialAiPlays(handle);
+        if (activeHandle !== handle) return;
+
         if (aiPlays.length > 0) {
+          viewports.playing = await activeService.getPlayingViewport(handle);
+          if (activeHandle !== handle) return;
           const { ok } = await animateAiPlays(handle, aiPlays, []);
           if (!ok) return;
         }

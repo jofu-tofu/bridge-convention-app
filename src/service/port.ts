@@ -25,6 +25,7 @@ import type {
   BidSubmitResult,
   PromptAcceptResult,
   PlayCardResult,
+  AiPlayEntry,
   SessionViewport,
   DDSolutionResult,
   ConventionInfo,
@@ -61,6 +62,8 @@ interface ServicePort {
   playCard(handle: SessionHandle, card: Card, seat: Seat): Promise<PlayCardResult>;
   skipToReview(handle: SessionHandle): Promise<void>;
   restartPlay(handle: SessionHandle): Promise<PromptAcceptResult>;
+  /** Run initial AI plays (opening lead, etc.). Separated from acceptPrompt/restartPlay so the UI can show the play table immediately. */
+  runInitialAiPlays(handle: SessionHandle): Promise<AiPlayEntry[]>;
   updatePlayProfile(handle: SessionHandle, profileId: PlayProfileId): Promise<void>;
 
   // ── Query ───────────────────────────────────────────────────────
