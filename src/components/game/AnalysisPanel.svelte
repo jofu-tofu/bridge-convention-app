@@ -5,6 +5,7 @@
   } from "../../service";
   import { STRAIN_SYMBOLS } from "../../service";
   import MakeableContractsTable from "./MakeableContractsTable.svelte";
+  import SectionHeader from "../shared/SectionHeader.svelte";
 
   interface Props {
     ddsSolution: DDSolution;
@@ -26,9 +27,7 @@
   <!-- Makeable Contracts Table -->
   <section>
     <div class="flex items-center gap-1.5 mb-2">
-      <h3 class="text-[--text-label] font-medium text-text-muted uppercase tracking-wide">
-        Makeable Contracts
-      </h3>
+      <SectionHeader level="h3">Makeable Contracts</SectionHeader>
       <div class="group relative">
         <button
           type="button"
@@ -57,11 +56,7 @@
   <!-- Actual vs Optimal -->
   {#if contract && score !== null && optimalTricks !== null}
     <section>
-      <h3
-        class="text-[--text-label] font-medium text-text-muted mb-2 uppercase tracking-wide"
-      >
-        Actual vs Optimal
-      </h3>
+      <SectionHeader level="h3" class="mb-2">Actual vs Optimal</SectionHeader>
       <div
         class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
       >
@@ -84,11 +79,7 @@
   <!-- Par Score -->
   {#if ddsSolution.par}
     <section>
-      <h3
-        class="text-[--text-label] font-medium text-text-muted mb-2 uppercase tracking-wide"
-      >
-        Par Score
-      </h3>
+      <SectionHeader level="h3" class="mb-2">Par Score</SectionHeader>
       <div
         class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle"
       >

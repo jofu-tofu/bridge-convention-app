@@ -23,6 +23,7 @@
   import AnalysisPanel from "../../game/AnalysisPanel.svelte";
   import TrickReviewPanel from "../../game/TrickReviewPanel.svelte";
   import Button from "../../shared/Button.svelte";
+  import Spinner from "../../shared/Spinner.svelte";
   import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";
   import { formatVulnerability, formatResult } from "./review-helpers";
   import {
@@ -362,10 +363,7 @@
 {#snippet analysisTab()}
   {#if ddsSolving}
     <div class="flex items-center gap-2 p-4" aria-live="polite">
-      <div
-        class="w-4 h-4 border-2 border-accent-primary border-t-transparent rounded-full animate-spin"
-        aria-hidden="true"
-      ></div>
+      <Spinner />
       <span class="text-text-secondary text-[--text-detail]">Analyzing deal...</span>
     </div>
   {:else if ddsError}
@@ -399,7 +397,7 @@
   {/if}
   <Button variant={onPlayHand ? "secondary" : "primary"} onclick={onNextDeal} disabled={gameStore.isTransitioning} testId="next-deal">
     {#if gameStore.isTransitioning}
-      <span class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true"></span>
+      <Spinner />
     {/if}
     Next Deal
   </Button>

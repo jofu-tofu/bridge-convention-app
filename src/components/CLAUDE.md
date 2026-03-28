@@ -57,7 +57,7 @@ components/
     replay-state.ts                  Pure replay cursor logic: step↔position conversion, progressive reveal, decision point detection
     TrickReviewPanel.svelte          Trick-by-trick review panel with recommendation badges and trick stepper
     ConventionCard.svelte            Phase-independent convention card showing system thresholds (NT range, major length, forcing level)
-    AuctionTable.svelte              4-column N/E/S/W grid, suit-colored
+    AuctionTable.svelte              4-column N/E/S/W grid, suit-colored. `minimal` prop for compact play-history rendering (no legend/annotations).
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
     BidFeedbackPanel.svelte          Three-branch bid feedback (Correct green/Acceptable teal/Incorrect red) with show-answer toggle, tree fork display, acceptable badges on siblings, optional amber practical note, convention contribution badges, WhyNot grade distinction, multi-rationale indicator, meaning landscape section, encoding explanation, partner hand space summary, elimination stage annotations
     BidFeedbackPanel.ts              Companion .ts file with convention-agnostic display helpers for TeachingProjection rendering: formatAmbiguity, formatEliminationStage, formatModuleRole, roleColorClasses, whyNotGradeClasses, isArtificialEncoder, formatEncoderKind
@@ -100,6 +100,11 @@ components/
     Button.svelte                    Primary/secondary/ghost variants
     Card.svelte                      70x98 visual playing card
     ConventionCallout.svelte         Rule badge + explanation
+    Spinner.svelte                   Inline loading spinner (sm/md sizes)
+    SectionHeader.svelte             Uppercase muted section heading (h2/h3)
+    SettingsButton.svelte            Full-width settings gear button
+    BidFeedbackShell.svelte          Variant-colored alert container for bid feedback
+    ToggleGroup.svelte               Mutually-exclusive button group (outline/filled variants)
   __tests__/
     ButtonTestWrapper.svelte         Snippet wrapper for Button tests
     BridgeTableTestWrapper.svelte    Snippet wrapper for BridgeTable tests
@@ -120,6 +125,7 @@ components/
 - **Viewport lock:** `html`, `body`, `#app` use `overflow: clip` in `app.css` to prevent page-level scrolling. Side panels scroll internally.
 - **Autoplay effect:** GameScreen has a DEV-only `$effect` for `?autoplay=true` that uses `requestAnimationFrame` to defer actions per frame (not `tick()` which causes infinite microtask loops, not `setTimeout` which is a real timer).
 - **Store methods:** `userBid`, `userPlayCard`, `retryBid`, `skipToReview` return `void` (safe for onclick). `startDrillFromHandle` returns a Promise. `startNewDrill` returns void (fire-and-forget, guarded).
+- **Never construct Tailwind class names via string interpolation** — JIT purges dynamically built strings. Use complete literal class strings in lookup Records (see BidFeedbackShell.svelte and ToggleGroup.svelte).
 - **Lifecycle action buttons** must bind `disabled` to `gameStore.isTransitioning`. Primary action per phase shows a spinner when transitioning (Next Deal in review, Restart Play in playing, New Deal in bidding).
 - GameScreen routes phases to extracted pure components (BiddingPhase, DeclarerPromptPhase, PlayingPhase, ExplanationPhase). GameScreen owns the legal-plays `$effect`.
 - BiddingPhase receives `BiddingViewport` as prop — never accesses raw `Deal` or engine internals. Viewport builders live in `src/service/`.

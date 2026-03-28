@@ -2,6 +2,7 @@
   import type { OpponentMode, PlayProfileId } from "../../../service";
   import { PLAY_PROFILES, AVAILABLE_BASE_SYSTEMS } from "../../../service";
   import { getAppStore } from "../../../stores/context";
+  import ToggleGroup from "../../shared/ToggleGroup.svelte";
 
   interface Props {
     readonly?: boolean;
@@ -27,48 +28,30 @@
     <!-- Base System -->
     <div class={isReadonly ? 'opacity-50' : ''}>
       <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">System</h3>
-      <div class="flex gap-1" role="group" aria-label="Base bidding system">
-        {#each AVAILABLE_BASE_SYSTEMS as sys (sys.id)}
-          {@const active = appStore.baseSystemId === sys.id}
-          <button
-            class="flex-1 px-2 py-1 rounded-[--radius-sm] border text-[--text-label] font-medium transition-colors
-              {active
-                ? 'bg-accent-primary/10 border-accent-primary text-accent-primary'
-                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}
-              {isReadonly ? 'cursor-not-allowed' : 'cursor-pointer'}"
-            onclick={() => appStore.setBaseSystemId(sys.id)}
-            disabled={isReadonly}
-            aria-pressed={active}
-            title={sys.label}
-            data-testid="settings-system-{sys.id}"
-          >
-            {sys.shortLabel}
-          </button>
-        {/each}
-      </div>
+      <ToggleGroup
+        items={AVAILABLE_BASE_SYSTEMS.map(sys => ({ id: sys.id, label: sys.shortLabel, title: sys.label, testId: `settings-system-${sys.id}` }))}
+        active={appStore.baseSystemId}
+        onSelect={(id) => appStore.setBaseSystemId(id as import("../../../service").BaseSystemId)}
+        ariaLabel="Base bidding system"
+        compact
+        disabled={isReadonly}
+      />
     </div>
 
     <!-- Opponent Mode -->
     <div class={isReadonly ? 'opacity-50' : ''}>
       <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">Opponents</h3>
-      <div class="flex gap-1" role="group" aria-label="Opponent mode">
-        {#each [["natural", "Natural"], ["none", "Silent"]] as [value, label] (value)}
-          {@const active = appStore.opponentMode === value}
-          <button
-            class="flex-1 px-2 py-1 rounded-[--radius-sm] border text-[--text-label] font-medium transition-colors
-              {active
-                ? 'bg-accent-primary/10 border-accent-primary text-accent-primary'
-                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}
-              {isReadonly ? 'cursor-not-allowed' : 'cursor-pointer'}"
-            onclick={() => appStore.setOpponentMode(value as OpponentMode)}
-            disabled={isReadonly}
-            aria-pressed={active}
-            data-testid="settings-opp-{value}"
-          >
-            {label}
-          </button>
-        {/each}
-      </div>
+      <ToggleGroup
+        items={[
+          { id: "natural", label: "Natural", testId: "settings-opp-natural" },
+          { id: "none", label: "Silent", testId: "settings-opp-none" },
+        ]}
+        active={appStore.opponentMode}
+        onSelect={(id) => appStore.setOpponentMode(id as OpponentMode)}
+        ariaLabel="Opponent mode"
+        compact
+        disabled={isReadonly}
+      />
       <p class="text-[--text-annotation] text-text-muted mt-1 px-1">
         {appStore.opponentMode === "natural" ? "Opponents bid naturally" : "Opponents always pass"}
       </p>
@@ -77,23 +60,13 @@
     <!-- Play Difficulty -->
     <div>
       <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">Play Skill</h3>
-      <div class="flex gap-1" role="group" aria-label="Opponent play difficulty">
-        {#each PROFILE_OPTIONS as opt (opt.id)}
-          {@const active = (appStore.playProfileId ?? "world-class") === opt.id}
-          <button
-            class="flex-1 px-2 py-1 rounded-[--radius-sm] border text-[--text-label] font-medium cursor-pointer transition-colors
-              {active
-                ? 'bg-accent-primary/10 border-accent-primary text-accent-primary'
-                : 'bg-bg-base border-border-subtle text-text-muted hover:border-border-default'}"
-            onclick={() => appStore.setPlayProfileId(opt.id)}
-            aria-pressed={active}
-            title={PLAY_PROFILES[opt.id].description}
-            data-testid="settings-play-{opt.id}"
-          >
-            {opt.label}
-          </button>
-        {/each}
-      </div>
+      <ToggleGroup
+        items={PROFILE_OPTIONS.map(opt => ({ id: opt.id, label: opt.label, title: PLAY_PROFILES[opt.id].description, testId: `settings-play-${opt.id}` }))}
+        active={appStore.playProfileId ?? "world-class"}
+        onSelect={(id) => appStore.setPlayProfileId(id as PlayProfileId)}
+        ariaLabel="Opponent play difficulty"
+        compact
+      />
       <p class="text-[--text-annotation] text-text-muted mt-1 px-1">
         {PLAY_PROFILES[appStore.playProfileId ?? "world-class"].description}
       </p>

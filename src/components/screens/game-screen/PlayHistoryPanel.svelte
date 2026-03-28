@@ -1,13 +1,15 @@
 <script lang="ts">
-  import type { Card as CardType, Seat } from "../../../service";
+  import type { Card as CardType } from "../../../service";
   import type { AuctionEntry } from "../../../service";
   import type { AuctionEntryView } from "../../../service";
   import { Suit } from "../../../service";
-  import { SUIT_ORDER, SEAT_INDEX } from "../../../service";
-  import { SUIT_SYMBOLS, displayRank, formatCall } from "../../../service";
-  import { SUIT_COLOR_CLASS, BID_SUIT_COLOR_CLASS } from "../../shared/tokens";
+  import { SUIT_ORDER } from "../../../service";
+  import { SUIT_SYMBOLS, displayRank } from "../../../service";
+  import { SUIT_COLOR_CLASS } from "../../shared/tokens";
   import { sortCards } from "../../shared/sort-cards";
   import type { PlayHistoryBaseProps, PlayHistoryReplayProps } from "./shared-props";
+  import SectionHeader from "../../shared/SectionHeader.svelte";
+  import AuctionTable from "../../game/AuctionTable.svelte";
 
   interface Props extends PlayHistoryBaseProps, PlayHistoryReplayProps {}
 
@@ -37,8 +39,6 @@
     }
   });
 
-  const SEAT_LABELS: Seat[] = ["N" as Seat, "E" as Seat, "S" as Seat, "W" as Seat];
-
   /** Collect all played cards from completed tricks, sorted by suit then rank. */
   const playedBySuit = $derived.by(() => {
     const allPlayed: CardType[] = [];
@@ -60,48 +60,14 @@
     auctionEntries ?? [],
   );
 
-  /** Build compact auction rows (same logic as AuctionTable). */
-  interface AuctionCell {
-    text: string;
-    colorClass: string;
-    alertLabel?: string;
-  }
-
-  const auctionRows = $derived.by(() => {
-    // Determine dealer: explicit prop or inferred from first auctionEntry
-    const d = dealer ?? (auctionEntries && auctionEntries.length > 0 ? auctionEntries[0]!.seat : undefined);
-    if (!d || effectiveEntries.length === 0) return [];
-    const dealerIdx = SEAT_INDEX[d];
-    const cells: AuctionCell[] = [];
-    for (let i = 0; i < dealerIdx; i++) {
-      cells.push({ text: "\u2014", colorClass: "text-text-muted" });
-    }
-    for (let i = 0; i < effectiveEntries.length; i++) {
-      const entry = effectiveEntries[i]!;
-      let colorClass = "";
-      if (entry.call.type === "bid") {
-        colorClass = BID_SUIT_COLOR_CLASS[entry.call.strain] ?? "";
-      }
-      // Viewport entries carry alertLabel directly; raw mode uses bidHistory
-      const alertLabel = "alertLabel" in entry ? entry.alertLabel : bidHistory?.[i]?.alertLabel;
-      cells.push({
-        text: "callDisplay" in entry ? entry.callDisplay : formatCall(entry.call),
-        colorClass: colorClass || "text-text-primary",
-        alertLabel,
-      });
-    }
-    const rows: AuctionCell[][] = [];
-    for (let i = 0; i < cells.length; i += 4) {
-      rows.push(cells.slice(i, i + 4));
-    }
-    return rows;
-  });
+  /** Resolve dealer: explicit prop or inferred from first entry */
+  const resolvedDealer = $derived(
+    dealer ?? (auctionEntries && auctionEntries.length > 0 ? auctionEntries[0]!.seat : undefined),
+  );
 </script>
 
 <section class="flex flex-col h-full min-h-0" aria-label="Play history">
-  <h2 class="text-[--text-label] font-medium text-text-muted mb-1 uppercase tracking-wider shrink-0 px-1">
-    Trick History
-  </h2>
+  <SectionHeader class="mb-1 shrink-0 px-1">Trick History</SectionHeader>
 
   {#if tricks.length === 0}
     <p class="text-[--text-body] text-text-muted italic px-1">No tricks played yet.</p>
@@ -142,7 +108,7 @@
     <!-- Played cards as stacked mini-cards grouped by suit -->
     {#if playedBySuit.length > 0}
       <div>
-        <h3 class="text-[--text-label] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Cards Played</h3>
+        <SectionHeader level="h3" class="px-1 mb-1">Cards Played</SectionHeader>
         <div class="space-y-0.5 px-1">
           {#each playedBySuit as group (group.suit)}
             <div class="flex items-center gap-1">
@@ -164,34 +130,10 @@
     {/if}
 
     <!-- Compact auction table (always shown) -->
-    {#if auctionRows.length > 0}
+    {#if resolvedDealer && effectiveEntries.length > 0}
       <div>
-        <h3 class="text-[--text-label] font-medium text-text-muted uppercase tracking-wider px-1 mb-1">Auction</h3>
-        <table class="w-full text-center text-[--text-label] font-mono" aria-label="Auction summary">
-          <thead>
-            <tr>
-              {#each SEAT_LABELS as label (label)}
-                <th class="px-1 py-0 text-text-muted font-medium">{label}</th>
-              {/each}
-            </tr>
-          </thead>
-          <tbody>
-            {#each auctionRows as row, rowIdx ("arow-" + rowIdx)}
-              <tr class="border-t border-border-subtle/50">
-                {#each row as cell, cellIdx (rowIdx * 4 + cellIdx)}
-                  <td class="px-1 py-0 {cell.colorClass}" title={cell.alertLabel ?? ""}>
-                    {cell.text}
-                  </td>
-                {/each}
-                {#if row.length < 4}
-                  {#each Array(4 - row.length) as _, padIdx (padIdx)}
-                    <td class="px-1 py-0"></td>
-                  {/each}
-                {/if}
-              </tr>
-            {/each}
-          </tbody>
-        </table>
+        <SectionHeader level="h3" class="px-1 mb-1">Auction</SectionHeader>
+        <AuctionTable entries={effectiveEntries} dealer={resolvedDealer} minimal />
       </div>
     {/if}
   </div>

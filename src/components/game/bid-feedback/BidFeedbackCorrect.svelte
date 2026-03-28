@@ -3,6 +3,7 @@
   import { formatCall } from "../../../service";
   import { formatAmbiguity } from "./BidFeedbackPanel";
   import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
+  import BidFeedbackShell from "../../shared/BidFeedbackShell.svelte";
 
   interface Props extends BidFeedbackBaseProps {}
 
@@ -14,10 +15,7 @@
 </script>
 
 <!-- Correct bid — green flash -->
-<div
-  class="rounded-[--radius-md] border-2 border-fb-correct/60 bg-fb-correct-bg/80 px-3 py-3 text-center min-w-0"
-  role="alert"
->
+<BidFeedbackShell variant="correct" centered>
   <p class="text-fb-correct-text font-semibold text-[--text-detail]">Correct!</p>
   <p class="text-fb-correct-emphasis font-mono text-[--text-value] mt-1">
     {formatCall(feedback.userCall)}
@@ -33,4 +31,4 @@
   {#if showPracticalNote && practicalRec}
     <PracticalRecommendationNote {practicalRec} />
   {/if}
-</div>
+</BidFeedbackShell>

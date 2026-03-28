@@ -2,6 +2,9 @@
   import { getGameStore } from "../../../stores/context";
   import BidPanel from "../../game/BidPanel.svelte";
   import BidFeedbackPanel from "../../game/bid-feedback/BidFeedbackPanel.svelte";
+  import Spinner from "../../shared/Spinner.svelte";
+  import SectionHeader from "../../shared/SectionHeader.svelte";
+  import SettingsButton from "../../shared/SettingsButton.svelte";
   interface Props {
     onNewDeal: () => void;
     onOpenSettings: () => void;
@@ -27,16 +30,13 @@
 
 <div class="flex flex-col h-full min-h-0">
 <div class="min-w-0 min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-  <h2
-    class="text-[--text-label] font-medium text-text-muted mb-2 uppercase tracking-wider"
-    aria-live="polite"
-  >
+  <SectionHeader class="mb-2" ariaLive="polite">
     {#if gameStore.isUserTurn || hasFeedback}
       Your bid
     {:else}
       Waiting...
     {/if}
-  </h2>
+  </SectionHeader>
   {#if feedbackReplacesBidTable}
     <BidFeedbackPanel
       feedback={gameStore.viewportFeedback!}
@@ -58,14 +58,7 @@
 </div>
 
   <div class="shrink-0 pt-3 mt-auto border-t border-border-subtle flex flex-col gap-2">
-    <button
-      class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-[--radius-md] font-medium text-[--text-body] transition-colors border border-border-subtle text-text-secondary hover:text-text-primary hover:border-border-default cursor-pointer"
-      onclick={onOpenSettings}
-      data-testid="bidding-open-settings"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-      Settings
-    </button>
+    <SettingsButton onclick={onOpenSettings} testId="bidding-open-settings" />
     <button
       class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-[--radius-md] font-medium text-[--text-body] transition-colors bg-accent-primary hover:bg-accent-primary-hover text-text-on-accent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       onclick={onNewDeal}
@@ -73,7 +66,7 @@
       data-testid="settings-new-deal"
     >
       {#if lifecycleDisabled}
-        <span class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true"></span>
+        <Spinner />
       {/if}
       New Deal
     </button>

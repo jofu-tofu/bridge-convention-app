@@ -4,6 +4,7 @@
   import { callsMatch } from "../../../service";
   import ParseTreePanel from "./ParseTreePanel.svelte";
   import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
+  import BidFeedbackShell from "../../shared/BidFeedbackShell.svelte";
 
   interface Props extends BidFeedbackInteractiveProps {}
 
@@ -13,10 +14,7 @@
 </script>
 
 <!-- Near miss — amber/orange feedback -->
-<div
-  class="rounded-[--radius-md] border-2 border-fb-near-miss/60 bg-fb-near-miss-bg/80 px-3 py-3 min-w-0"
-  role="alert"
->
+<BidFeedbackShell variant="near-miss">
   <div class="flex items-center justify-between mb-2">
     <div class="flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-fb-near-miss-emphasis shrink-0" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -56,4 +54,4 @@
   {#if showPracticalNote && practicalRec}
     <PracticalRecommendationNote {practicalRec} />
   {/if}
-</div>
+</BidFeedbackShell>

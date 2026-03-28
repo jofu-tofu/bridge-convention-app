@@ -3,6 +3,7 @@
   import { formatCall } from "../../../service";
   import { formatAmbiguity } from "./BidFeedbackPanel";
   import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
+  import BidFeedbackShell from "../../shared/BidFeedbackShell.svelte";
 
   interface Props extends BidFeedbackBaseProps {}
 
@@ -14,10 +15,7 @@
 </script>
 
 <!-- Acceptable bid — teal flash -->
-<div
-  class="rounded-[--radius-md] border-2 border-fb-acceptable/60 bg-fb-acceptable-bg/80 px-3 py-3 text-center min-w-0"
-  role="alert"
->
+<BidFeedbackShell variant="acceptable" centered>
   <p class="text-fb-acceptable-text font-semibold text-[--text-detail]">Acceptable!</p>
   <p class="text-fb-acceptable-emphasis font-mono text-[--text-value] mt-1">
     {formatCall(feedback.userCall)}
@@ -33,4 +31,4 @@
   {#if showPracticalNote && practicalRec}
     <PracticalRecommendationNote {practicalRec} />
   {/if}
-</div>
+</BidFeedbackShell>
