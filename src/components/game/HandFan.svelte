@@ -46,7 +46,7 @@
   {#each displayCards as card (card.suit + card.rank)}
     {@const legal = isLegal(card)}
     <div
-      class="card-wrapper"
+      class="card-wrapper {legal ? (mirrored ? 'translate-y-2' : '-translate-y-2') : ''} motion-safe:transition-transform"
       style={vertical
         ? `margin-top: var(--card-overlap-v)`
         : `margin-left: var(--card-overlap-h)`}
