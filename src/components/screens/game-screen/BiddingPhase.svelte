@@ -46,7 +46,7 @@
   <aside class="{SIDE_PANEL_CLASS}" style="font-size: var(--panel-font, 1rem);" aria-label="Bidding controls">
     <BiddingSidePanel
       {onNewDeal}
-      disabled={gameStore.isTransitioning}
+      lifecycleDisabled={gameStore.isTransitioning}
       onOpenSettings={() => settingsDialogRef?.open()}
     />
   </aside>
