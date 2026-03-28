@@ -41,6 +41,7 @@ export type HandStrength =
   | "invitational"
   | "game"
   | "slam"
+  | "slam-invite"
   | "preemptive"
   | "constructive"
   | "limit"

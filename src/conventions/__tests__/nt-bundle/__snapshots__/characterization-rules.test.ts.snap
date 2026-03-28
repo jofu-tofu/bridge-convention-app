@@ -12,15 +12,15 @@ exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P (Stayman 
 
 exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P (Stayman — opener response) > produces opener response surfaces 2`] = `"stayman:deny-major"`;
 
-exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2D-P (Stayman R3 — after denial) > produces R3 surfaces for Stayman responder after 2D denial 1`] = `6`;
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2D-P (Stayman R3 — after denial) > produces R3 surfaces for Stayman responder after 2D denial 1`] = `11`;
 
 exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2D-P (Stayman R3 — after denial) > produces R3 surfaces for Stayman responder after 2D denial 2`] = `null`;
 
-exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2D-P-3H (Smolen — after Stayman denial) > produces Smolen surfaces for responder with 5-4 hand 1`] = `6`;
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2D-P-3H (Smolen — after Stayman denial) > produces Smolen surfaces for responder with 5-4 hand 1`] = `11`;
 
 exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2D-P-3H (Smolen — after Stayman denial) > produces Smolen surfaces for responder with 5-4 hand 2`] = `null`;
 
-exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2H-P (Stayman R3 — after hearts shown) > produces R3 surfaces for Stayman responder after 2H 1`] = `4`;
+exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2H-P (Stayman R3 — after hearts shown) > produces R3 surfaces for Stayman responder after 2H 1`] = `9`;
 
 exports[`Characterization tests: NT bundle golden masters > 1NT-P-2C-P-2H-P (Stayman R3 — after hearts shown) > produces R3 surfaces for Stayman responder after 2H 2`] = `null`;
 

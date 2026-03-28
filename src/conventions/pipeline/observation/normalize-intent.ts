@@ -60,6 +60,11 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
   ["RaiseInvite", (p) => [{ act: "raise", strain: strain(p), strength: "invitational" }]],
   ["StaymanNTGame", () => [{ act: "place", strain: "notrump" }]],
   ["StaymanNTInvite", () => [{ act: "raise", strain: "notrump", strength: "invitational" }]],
+  ["CrossMajorInvite", (p) => [{ act: "show", feature: "heldSuit", suit: suit(p) }]],
+  ["CrossMajorGF", (p) => [{ act: "show", feature: "heldSuit", suit: suit(p) }, { act: "force", level: "game" }]],
+  ["MinorSuitGF", (p) => [{ act: "show", feature: "heldSuit", suit: suit(p) }, { act: "force", level: "game" }]],
+  ["MajorSignoff64", (p) => [{ act: "signoff", strain: strain(p) }]],
+  ["Quantitative4NT", () => [{ act: "raise", strain: "notrump", strength: "slam-invite" }]],
   ["RedoubleStrength", () => [{ act: "redouble", feature: "strength" }]],
 
   // ── Jacoby Transfers ─────────────────────────────────────────────
@@ -112,10 +117,10 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
 
   // ── Jacoby Transfers (new continuations) ───────────────────────
   ["InviteMajorMajor", (p) => [{ act: "raise", strain: strain(p), strength: "invitational" }]],
-  ["NewSuitGameForce", (p) => [{ act: "show", feature: "heldSuit", suit: strain(p) }]],
-  ["ShortageSlamTry", (p) => [{ act: "show", feature: "shortage", suit: strain(p) }]],
+  ["NewSuitGameForce", (p) => [{ act: "show", feature: "heldSuit", suit: suit(p) }]],
+  ["ShortageSlamTry", (p) => [{ act: "show", feature: "shortage", suit: suit(p) }]],
   ["QuantitativeSlam", () => [{ act: "raise", strain: "notrump", strength: "slam-invite" }]],
-  ["SlamTrySecondMajor", (p) => [{ act: "show", feature: "heldSuit", suit: strain(p), strength: "slam-invite" }]],
+  ["SlamTrySecondMajor", (p) => [{ act: "show", feature: "heldSuit", suit: suit(p), strength: "slam-invite" }]],
   ["GameInOtherMajor", (p) => [{ act: "raise", strain: strain(p), strength: "game" }]],
   ["WeakPass", () => [{ act: "pass" }]],
   ["OgustSolid", () => [{ act: "show", feature: "suitQuality", quality: "solid" }]],
