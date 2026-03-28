@@ -46,6 +46,16 @@
 
   const isDesktop = $derived(innerW >= DESKTOP_MIN);
 
+  // Flow tree scales with available content width (desktop only)
+  const SIDEBAR_W = 280;
+  const CONTENT_PAD = 64;    // px-8 each side = 32*2
+  const FT_REF_WIDTH = 700;  // content width where scale = 1.0
+  const FT_SCALE_MIN = 0.8;
+  const FT_SCALE_MAX = 2.0;
+  const ftScale = $derived(
+    Math.min(FT_SCALE_MAX, Math.max(FT_SCALE_MIN, (innerW - SIDEBAR_W - CONTENT_PAD) / FT_REF_WIDTH))
+  );
+
   /** All modules from the service. */
   let allModules = $state<readonly ModuleCatalogEntry[]>([]);
 
@@ -262,8 +272,9 @@
             <section class="px-4 sm:px-8 py-6">
               {#if isDesktop}
                 <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Conversation Flow</h2>
-                <div class="overflow-x-auto bg-bg-card rounded-[--radius-lg] border border-border-subtle">
-                  <ConversationFlowTree tree={flowTree} />
+                <div class="overflow-x-auto bg-bg-card rounded-[--radius-lg] border border-border-subtle"
+                     style="--ft-scale: {ftScale}">
+                  <ConversationFlowTree tree={flowTree} scale={ftScale} />
                 </div>
               {:else}
                 <MobileFlowTree tree={flowTree} />

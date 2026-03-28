@@ -5,9 +5,10 @@
 
   interface Props {
     tree: ModuleFlowTreeViewport;
+    scale?: number;
   }
 
-  const { tree }: Props = $props();
+  const { tree, scale = 1 }: Props = $props();
 
   /** Active hover tooltip state — fixed-positioned via portal to escape overflow containers. */
   let tooltip = $state<{
@@ -21,8 +22,10 @@
   let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 
   function positionTooltip(rect: DOMRect) {
-    const flipUp = rect.bottom + 120 > window.innerHeight;
-    const flipLeft = rect.right + 260 > window.innerWidth;
+    const tipH = 120 * scale;
+    const tipW = 260 * scale;
+    const flipUp = rect.bottom + tipH > window.innerHeight;
+    const flipLeft = rect.right + tipW > window.innerWidth;
     return { flipUp, flipLeft, x: flipLeft ? rect.left : rect.right + 8, y: flipUp ? rect.top : rect.bottom + 4 };
   }
 
@@ -164,7 +167,7 @@
   /* ── Tree structure ──────────────────────────────────────── */
 
   .ft-root {
-    padding: 10px 8px;
+    padding: calc(10px * var(--ft-scale, 1)) calc(8px * var(--ft-scale, 1));
   }
 
   .ft-subtree {
@@ -175,13 +178,13 @@
   .ft-children {
     display: flex;
     flex-direction: column;
-    margin-left: 22px;
+    margin-left: calc(22px * var(--ft-scale, 1));
     position: relative;
   }
 
   .ft-child {
     position: relative;
-    padding: 3px 0;
+    padding: calc(3px * var(--ft-scale, 1)) 0;
   }
 
   /* ── Connector lines ─────────────────────────────────────── */
@@ -190,10 +193,10 @@
   .ft-child::before {
     content: "";
     position: absolute;
-    left: -22px;
+    left: calc(-22px * var(--ft-scale, 1));
     top: 50%;
-    width: 22px;
-    border-top: 1.5px solid var(--color-border-subtle);
+    width: calc(22px * var(--ft-scale, 1));
+    border-top: calc(1.5px * var(--ft-scale, 1)) solid var(--color-border-subtle);
     opacity: 0.4;
   }
 
@@ -201,10 +204,10 @@
   .ft-child::after {
     content: "";
     position: absolute;
-    left: -22px;
+    left: calc(-22px * var(--ft-scale, 1));
     top: 0;
     bottom: 0;
-    border-left: 1.5px solid var(--color-border-subtle);
+    border-left: calc(1.5px * var(--ft-scale, 1)) solid var(--color-border-subtle);
     opacity: 0.4;
   }
 
@@ -228,14 +231,14 @@
   .ft-node {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
+    gap: calc(4px * var(--ft-scale, 1));
+    padding: calc(3px * var(--ft-scale, 1)) calc(8px * var(--ft-scale, 1));
     background: var(--color-bg-elevated);
     border: 1px solid color-mix(in srgb, var(--color-accent-primary) 20%, transparent);
     border-left: 2px solid var(--color-accent-primary);
-    border-radius: 4px;
+    border-radius: calc(4px * var(--ft-scale, 1));
     white-space: nowrap;
-    font-size: 10px;
+    font-size: calc(10px * var(--ft-scale, 1));
     line-height: 1;
     flex-shrink: 0;
     cursor: default;
@@ -250,22 +253,22 @@
   .ft-bid {
     font-family: ui-monospace, monospace;
     font-weight: 700;
-    font-size: 11px;
+    font-size: calc(11px * var(--ft-scale, 1));
   }
 
   .ft-label {
     color: var(--color-text-secondary);
-    font-size: 9px;
+    font-size: calc(9px * var(--ft-scale, 1));
   }
 
   .ft-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 13px;
-    height: 13px;
+    width: calc(13px * var(--ft-scale, 1));
+    height: calc(13px * var(--ft-scale, 1));
     border-radius: 50%;
-    font-size: 7px;
+    font-size: calc(7px * var(--ft-scale, 1));
     font-weight: 700;
     color: var(--color-bg-base);
     flex-shrink: 0;
@@ -276,13 +279,13 @@
   .ft-tooltip {
     position: fixed;
     z-index: var(--z-modal, 50);
-    min-width: 180px;
-    max-width: 280px;
+    min-width: calc(180px * var(--ft-scale, 1));
+    max-width: calc(280px * var(--ft-scale, 1));
     width: max-content;
-    padding: 8px 10px;
+    padding: calc(8px * var(--ft-scale, 1)) calc(10px * var(--ft-scale, 1));
     background: var(--color-bg-card);
     border: 1px solid var(--color-border-subtle);
-    border-radius: 6px;
+    border-radius: calc(6px * var(--ft-scale, 1));
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.3);
     pointer-events: none;
   }
@@ -290,27 +293,27 @@
   .ft-tooltip-header {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: calc(6px * var(--ft-scale, 1));
     flex-wrap: wrap;
   }
 
   .ft-tooltip-call {
     font-family: ui-monospace, monospace;
     font-weight: 700;
-    font-size: 13px;
+    font-size: calc(13px * var(--ft-scale, 1));
   }
 
   .ft-tooltip-meaning {
-    font-size: 12px;
+    font-size: calc(12px * var(--ft-scale, 1));
     color: var(--color-text-secondary);
     line-height: 1.3;
   }
 
   .ft-tooltip-rec {
     font-weight: 600;
-    padding: 1px 6px;
+    padding: calc(1px * var(--ft-scale, 1)) calc(6px * var(--ft-scale, 1));
     border-radius: 9999px;
-    font-size: 10px;
+    font-size: calc(10px * var(--ft-scale, 1));
   }
 
   .rec-must {
@@ -332,27 +335,27 @@
 
   .ft-tooltip-disclosure {
     color: var(--color-text-muted);
-    font-size: 10px;
+    font-size: calc(10px * var(--ft-scale, 1));
   }
 
   .ft-tooltip-explanation {
-    margin-top: 4px;
-    font-size: 11px;
+    margin-top: calc(4px * var(--ft-scale, 1));
+    font-size: calc(11px * var(--ft-scale, 1));
     color: var(--color-text-muted);
     line-height: 1.4;
   }
 
   .ft-tooltip-clauses {
-    margin-top: 5px;
-    padding-top: 5px;
+    margin-top: calc(5px * var(--ft-scale, 1));
+    padding-top: calc(5px * var(--ft-scale, 1));
     border-top: 1px solid var(--color-border-subtle);
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: calc(2px * var(--ft-scale, 1));
   }
 
   .ft-tooltip-clause {
-    font-size: 10px;
+    font-size: calc(10px * var(--ft-scale, 1));
     color: var(--color-text-secondary);
     line-height: 1.3;
   }
