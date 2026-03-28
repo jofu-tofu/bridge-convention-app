@@ -92,7 +92,7 @@ export const OPENER_TRANSFER_SPADES_SURFACES: readonly BidMeaning[] = [
 
 // ─── Transfer R3 surfaces ────────────────────────────────────
 
-export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createTransferR3HeartsSurfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.SIGNOFF_HEARTS,
@@ -374,7 +374,7 @@ export function createTransferR3HeartsSurfaces(sys: SystemConfig): readonly BidM
   ];
 }
 
-export function createTransferR3SpadesSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createTransferR3SpadesSurfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.SIGNOFF_SPADES,
@@ -748,7 +748,7 @@ export const OPENER_PLACE_SPADES_SURFACES: readonly BidMeaning[] = [
 
 // ─── Opener invite acceptance surfaces (after responder's 2NT invite) ──
 
-export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createOpenerAcceptInviteHeartsSurfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_GAME_HEARTS,
@@ -857,7 +857,7 @@ export function createOpenerAcceptInviteHeartsSurfaces(sys: SystemConfig): reado
   ];
 }
 
-export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createOpenerAcceptInviteSpadesSurfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_GAME_SPADES,
@@ -970,7 +970,7 @@ export function createOpenerAcceptInviteSpadesSurfaces(sys: SystemConfig): reado
 // After 3H/3S (6+ cards, invitational), opener knows there's a guaranteed
 // major fit (opener has 2-3+ in the suit from 1NT balanced). Accept = 4M, decline = Pass.
 
-export function createOpenerAcceptInviteRaiseHeartsSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createOpenerAcceptInviteRaiseHeartsSurfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_RAISE_HEARTS,
@@ -1013,7 +1013,7 @@ export function createOpenerAcceptInviteRaiseHeartsSurfaces(sys: SystemConfig): 
   ];
 }
 
-export function createOpenerAcceptInviteRaiseSpadesSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createOpenerAcceptInviteRaiseSpadesSurfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
     meaningId: TRANSFER_MEANING_IDS.ACCEPT_INVITE_RAISE_SPADES,

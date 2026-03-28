@@ -5,11 +5,13 @@
   interface Props {
     onNewDeal: () => void;
     onOpenSettings: () => void;
+    disabled?: boolean;
   }
 
   let {
     onNewDeal,
     onOpenSettings,
+    disabled = false,
   }: Props = $props();
 
   const gameStore = getGameStore();
@@ -65,10 +67,14 @@
       Settings
     </button>
     <button
-      class="w-full px-3 py-2 rounded-[--radius-md] font-medium text-[--text-body] transition-colors bg-accent-primary hover:bg-accent-primary-hover text-text-on-accent cursor-pointer"
+      class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-[--radius-md] font-medium text-[--text-body] transition-colors bg-accent-primary hover:bg-accent-primary-hover text-text-on-accent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       onclick={onNewDeal}
+      {disabled}
       data-testid="settings-new-deal"
     >
+      {#if disabled}
+        <span class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true"></span>
+      {/if}
       New Deal
     </button>
   </div>

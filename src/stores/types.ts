@@ -16,7 +16,7 @@ import type {
   DDSolution,
   Suit,
 } from "../service";
-import type { DevServicePort, SessionHandle } from "../service";
+import type { DevServicePort, SessionHandle, SessionConfig } from "../service";
 import type { ServicePublicBeliefs, ServiceGamePhase, ServiceInferenceSnapshot, ServicePublicBeliefState, PracticeMode, PlayPreference } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import type { PlaySuggestions } from "../service/debug-types";
@@ -54,6 +54,7 @@ export interface GameStore {
   readonly currentTurn: Seat | null;
   readonly bidHistory: BidHistoryEntry[];
   readonly isProcessing: boolean;
+  readonly isTransitioning: boolean;
   readonly isUserTurn: boolean;
   readonly legalCalls: Call[];
   readonly bidFeedback: BidFeedback | null;
@@ -143,6 +144,7 @@ export interface GameStore {
   acceptSouthPlay(): void;
   declineSouthPlay(): void;
   playThisHand(): void;
+  startNewDrill(config: SessionConfig): void;
   startDrillFromHandle(handle: SessionHandle, service?: DevServicePort): Promise<void>;
   /** Instantly auto-complete bidding and advance to target phase. */
   skipToPhase(targetPhase: "review" | "playing" | "declarer"): Promise<boolean>;

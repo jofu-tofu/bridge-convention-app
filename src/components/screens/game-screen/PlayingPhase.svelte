@@ -2,7 +2,7 @@
   import type { Seat, PlayedCard } from "../../../service";
   import type { Card as CardType } from "../../../service";
   import type { PlayingViewport } from "../../../service";
-  import { getLayoutConfig } from "../../../stores/context";
+  import { getLayoutConfig, getGameStore } from "../../../stores/context";
   import { PLAYING_PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../shared/layout-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import TrickArea from "../../game/TrickArea.svelte";
@@ -31,6 +31,7 @@
   const effectiveCurrentTrick = $derived(animatedCurrentTrick ?? viewport.currentTrick);
 
   const layout = getLayoutConfig();
+  const gameStore = getGameStore();
 
   let settingsDialogRef = $state<ReturnType<typeof SettingsDialog>>();
 </script>
@@ -72,6 +73,7 @@
       defenderTricksWon={viewport.defenderTricksWon}
       {onSkipToReview}
       {onRestartPlay}
+      disabled={gameStore.isTransitioning}
       onOpenSettings={() => settingsDialogRef?.open()}
     />
   </aside>

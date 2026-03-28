@@ -7,9 +7,8 @@
  */
 
 import type { PlayStrategy, PlayContext, PlayResult } from "../../conventions";
-import type { Card, Seat } from "../../engine/types";
+import type { Card } from "../../engine/types";
 import type { EnginePort } from "../../engine/port";
-import type { PublicBeliefs } from "../../inference/inference-types";
 import type { PlayProfile, PlayStrategyProvider } from "./play-profiles";
 import {
   type PlayHeuristic,

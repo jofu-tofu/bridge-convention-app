@@ -133,7 +133,7 @@ function clauseToEvidence(c: { factId: string; satisfied: boolean; observedValue
 
 /** Build EvidenceBundle from carriers. */
 function buildEvidenceBundleFromCarriers(
-  inputs: readonly ArbitrationInput[],
+  _inputs: readonly ArbitrationInput[],
   eliminated: readonly PipelineCarrier[],
   finalTruthSet: readonly PipelineCarrier[],
   selected: PipelineCarrier | null,

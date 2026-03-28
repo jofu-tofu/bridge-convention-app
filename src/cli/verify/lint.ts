@@ -135,7 +135,6 @@ export function detectUnreachablePhases(
         severity: "error",
         message: `Phase "${phase}" is referenced in a state entry guard but is not reachable from initial phase "${mod.local.initial}"`,
         location: { phase },
-        suggestion: `Add a transition path from "${mod.local.initial}" to "${phase}", or remove the guard`,
       });
     }
   }
@@ -165,7 +164,6 @@ export function detectDeadRules(
         severity: "error",
         message: `State entry ${i} is guarded by unreachable phase(s): ${phases.join(", ")}`,
         location: { ruleIndex: i, phase: phases[0] },
-        suggestion: "Ensure the phase is reachable or remove the state entry",
       });
     }
   }
@@ -202,7 +200,6 @@ export function detectOrphanTransitions(
         severity: "error",
         message: `Transition ${i} originates from unreachable phase(s): ${froms.join(", ")}`,
         location: { transitionIndex: i, phase: froms[0] },
-        suggestion: "Ensure the source phase is reachable or remove the transition",
       });
     }
   }
@@ -234,7 +231,6 @@ export function detectUndeclaredWrites(mod: ConventionModule): LintDiagnostic[] 
           severity: "warn",
           message: `State entry ${i} writes negotiationDelta.${field} but no NegotiationExpr in this module reads it`,
           location: { ruleIndex: i },
-          suggestion: `Add a kernel guard that reads "${field}", or remove the write if it's only for downstream modules`,
         });
       }
     }
@@ -267,7 +263,6 @@ export function detectDuplicateEncodings(mod: ConventionModule): LintDiagnostic[
           severity: "error",
           message: `State entry ${i} has duplicate encoding+meaningId "${callKey(surface.encoding.defaultCall)}" (${surface.meaningId}) in surfaces ${prev} and ${c}`,
           location: { ruleIndex: i },
-          suggestion: "Ensure each surface in a state entry has a distinct defaultCall+meaningId combination",
         });
       } else {
         seen.set(key, c);

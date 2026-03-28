@@ -57,7 +57,7 @@ export function createStaymanR1Surface(sys: SystemConfig): BidMeaning {
 }
 
 /** Factory: creates the Stayman R1 entry for 5-4 major invitational hands. */
-export function createStaymanR1FiveFourSurface(sys: SystemConfig): BidMeaning {
+export function createStaymanR1FiveFourSurface(_sys: SystemConfig): BidMeaning {
   return createSurface({
     meaningId: STAYMAN_MEANING_IDS.ASK_MAJOR,
     semanticClassId: STAYMAN_CLASSES.ASK,
@@ -168,7 +168,7 @@ export const OPENER_STAYMAN_SURFACES: readonly BidMeaning[] = [
 // ─── Stayman R3 surfaces ─────────────────────────────────────
 
 /** Factory: creates Stayman R3 surfaces after opener shows hearts, parameterized by system config. */
-export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createStaymanR3After2HSurfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
     meaningId: STAYMAN_MEANING_IDS.RAISE_GAME_HEARTS,
@@ -430,7 +430,7 @@ export function createStaymanR3After2HSurfaces(sys: SystemConfig): readonly BidM
 }
 
 /** Factory: creates Stayman R3 surfaces after opener shows spades, parameterized by system config. */
-export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createStaymanR3After2SSurfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
     meaningId: STAYMAN_MEANING_IDS.RAISE_GAME_SPADES,
@@ -659,7 +659,7 @@ export function createStaymanR3After2SSurfaces(sys: SystemConfig): readonly BidM
 
 // Stayman R3 after 2D — ONLY the 2 Stayman surfaces (not Smolen)
 /** Factory: creates Stayman R3 surfaces after opener denies a major, parameterized by system config. */
-export function createStaymanR3After2DSurfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createStaymanR3After2DSurfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
   createSurface({
     meaningId: STAYMAN_MEANING_IDS.NT_GAME_AFTER_DENIAL,

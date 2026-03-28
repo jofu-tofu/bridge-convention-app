@@ -72,13 +72,6 @@ export const POSTERIOR_FACT_IDS = {
 
 // ─── Collected vocabulary ───────────────────────────────────
 
-/** All shared fact IDs. Used for catalog validation and documentation. */
-const SHARED_FACT_ID_LIST = [
-  ...Object.values(PRIMITIVE_FACT_IDS),
-  ...Object.values(BRIDGE_DERIVED_FACT_IDS),
-  ...Object.values(POSTERIOR_FACT_IDS),
-] as const;
-
 /** Union type of all primitive fact IDs. */
 export type PrimitiveFactId = (typeof PRIMITIVE_FACT_IDS)[keyof typeof PRIMITIVE_FACT_IDS];
 

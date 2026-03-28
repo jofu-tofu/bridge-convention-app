@@ -62,5 +62,3 @@ export interface ConventionConfig {
   readonly supportsRoleSelection?: boolean;
 }
 
-/** Resolves a convention config by ID. Must throw on unknown IDs (same as getConvention). */
-type ConventionLookup = (id: string) => ConventionConfig;

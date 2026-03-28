@@ -88,7 +88,7 @@
     return appStore.devSeed + appStore.devDealCount;
   }
 
-  async function startNewDrill() {
+  function startNewDrill() {
     const baseConvention = appStore.selectedConvention;
     if (!baseConvention) return;
     dealNumber++;
@@ -110,8 +110,7 @@
       ...(practiceRole ? { practiceRole } : {}),
     };
 
-    const handle = await service.createSession(config);
-    await gameStore.startDrillFromHandle(handle, service);
+    gameStore.startNewDrill(config);
   }
 
   // Defer debug drawer mounting — DebugDrawer's $derived computations
@@ -146,25 +145,27 @@
       debugReady = true;
       return;
     }
-    // eslint-disable-next-line no-console -- startup error should surface in dev tools
-    startNewDrill().then(async () => {
-      debugReady = true;
-      // ?phase= skip: instantly advance to target phase after drill starts
-      const target = appStore.skipToPhase;
-      if (target) {
+    startNewDrill();
+    debugReady = true;
+    // ?phase= skip: handled after drill initializes via effect or manual trigger
+    const target = appStore.skipToPhase;
+    if (target) {
+      // Wait for drill to initialize, then skip to target phase
+      void (async () => {
+        // Poll briefly for initialization (startNewDrill is guarded/async internally)
+        while (!gameStore.isInitialized) await new Promise(r => setTimeout(r, 50));
         await gameStore.skipToPhase(target);
-        // Clear so subsequent drills don't auto-skip
         appStore.setSkipToPhase(null);
-      }
-    }).catch(console.error);
+      })();
+    }
   });
 
   onDestroy(() => {
     gameStore.reset();
   });
 
-  async function handleNextDeal() {
-    await startNewDrill();
+  function handleNextDeal() {
+    startNewDrill();
   }
 
   interface PhaseInfo {

@@ -395,9 +395,14 @@
 
 {#snippet reviewActions()}
   {#if onPlayHand}
-    <Button onclick={onPlayHand}>Play this Hand</Button>
+    <Button onclick={onPlayHand} disabled={gameStore.isTransitioning}>Play this Hand</Button>
   {/if}
-  <Button variant={onPlayHand ? "secondary" : "primary"} onclick={onNextDeal} testId="next-deal">Next Deal</Button>
+  <Button variant={onPlayHand ? "secondary" : "primary"} onclick={onNextDeal} disabled={gameStore.isTransitioning} testId="next-deal">
+    {#if gameStore.isTransitioning}
+      <span class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true"></span>
+    {/if}
+    Next Deal
+  </Button>
   <Button variant="secondary" onclick={onBackToMenu} testId="review-back-to-menu">Back to Menu</Button>
   <Button variant="secondary" onclick={() => settingsDialogRef?.open()} testId="review-open-settings">Settings</Button>
 {/snippet}

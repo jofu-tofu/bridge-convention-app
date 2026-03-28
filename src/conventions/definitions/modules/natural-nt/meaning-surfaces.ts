@@ -29,7 +29,7 @@ const NATURAL_BIDS_CTX: ModuleContext = { moduleId: "natural-bids" };
 
 // ─── R1 surfaces ─────────────────────────────────────────────
 
-export function createNtR1Surfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createNtR1Surfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
     createSurface({
       meaningId: NATURAL_NT_MEANING_IDS.NT_INVITE,

@@ -9,6 +9,7 @@
     onSkipToReview: () => void;
     onRestartPlay: () => void;
     onOpenSettings: () => void;
+    disabled?: boolean;
   }
 
   let {
@@ -18,6 +19,7 @@
     onSkipToReview,
     onRestartPlay,
     onOpenSettings,
+    disabled = false,
   }: Props = $props();
 </script>
 
@@ -56,12 +58,17 @@
     Settings
   </button>
   <button
-    class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-[--radius-md] font-medium text-[--text-body] transition-colors border border-border-subtle text-text-secondary hover:text-text-primary hover:border-border-default cursor-pointer"
+    class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-[--radius-md] font-medium text-[--text-body] transition-colors border border-border-subtle text-text-secondary hover:text-text-primary hover:border-border-default cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
     onclick={onRestartPlay}
+    {disabled}
     data-testid="play-restart"
   >
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+    {#if disabled}
+      <span class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true"></span>
+    {:else}
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+    {/if}
     Restart Play
   </button>
-  <Button variant="secondary" onclick={onSkipToReview}>Skip to Review</Button>
+  <Button variant="secondary" onclick={onSkipToReview} {disabled}>Skip to Review</Button>
 </div>

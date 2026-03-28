@@ -13,6 +13,7 @@ import { Seat } from "../service";
 import type {
   DevServicePort,
   SessionHandle,
+  SessionConfig,
 } from "../service";
 import type { BidResult, BidHistoryEntry } from "../service";
 import type { ServicePublicBeliefs } from "../service";
@@ -154,6 +155,36 @@ export function createGameStore(
   let dds = $state<DDSState>(freshDDSState());
   let inference = $state<InferenceState>(freshInferenceState());
   let viewports = $state<ViewportCache>(freshViewportCache());
+
+  // ── Lifecycle guard ─────────────────────────────────────────
+  let transitioning = $state(false);
+
+  function guarded<Args extends unknown[]>(
+    fn: (...args: Args) => void | Promise<void>,
+  ): (...args: Args) => void {
+    return (...args: Args): void => {
+      if (transitioning) {
+        if (import.meta.env.DEV) console.warn('[guarded] dropped concurrent call to', fn.name || 'anonymous');
+        return;
+      }
+      transitioning = true;
+      try {
+        const result = fn(...args);
+        if (result instanceof Promise) {
+          // Intentionally not returned — callers should not await lifecycle actions.
+          // The promise is tracked internally for flag cleanup.
+          void result.catch((err) => {
+            console.error('[guarded] lifecycle action failed:', err);
+          }).finally(() => { transitioning = false; });
+        } else {
+          transitioning = false;
+        }
+      } catch (err) {
+        transitioning = false;
+        console.error('[guarded] lifecycle action threw synchronously:', err);
+      }
+    };
+  }
 
   // ── Animation state (flat — independent lifecycles) ─────────
   // biddingAnim: controls incremental reveal of AI bids from the viewport.
@@ -746,6 +777,9 @@ export function createGameStore(
   // ── Reset ─────────────────────────────────────────────────────
 
   function resetImpl() {
+    // Clear lifecycle guard — any in-flight operations will bail via activeHandle check
+    transitioning = false;
+
     // Session
     activeHandle = null;
     activeService = service;
@@ -774,6 +808,167 @@ export function createGameStore(
     play = freshPlayState(true); // aborted=true cancels in-flight animations
     animatedTrickOverride = null;
     viewports.playing = null; // direct property mutation — fine-grained
+  }
+
+  // ── Lifecycle inner functions (guarded at the public boundary) ──
+
+  function skipToReviewImpl() {
+    play.aborted = true;
+    if (activeHandle) {
+      activeService.skipToReview(activeHandle)
+        .then(() => transitionToExplanation())
+        .catch((err) => { console.error('skipToReview failed:', err); });
+    }
+  }
+
+  function restartPlayImpl() {
+    if (!contract || phase !== "PLAYING") return;
+    if (!activeHandle) return;
+    const handle = activeHandle;
+
+    // Cancel in-flight animations (keep stale viewport to avoid UI flash)
+    play.aborted = true;
+    play.score = null;
+    play.showingTrickResult = false;
+    play.processing = false;
+    play.log = [];
+    play.suggestions = [];
+    animatedTrickOverride = null;
+
+    void (async () => {
+      try {
+        play.aborted = false;
+        const result = await activeService.restartPlay(handle);
+        if (activeHandle !== handle) return;
+
+        // Replace stale viewport with fresh one
+        viewports.playing = await activeService.getPlayingViewport(handle);
+        if (activeHandle !== handle) return;
+
+        const aiPlays = result.aiPlays ?? [];
+        if (aiPlays.length > 0) {
+          const { ok } = await animateAiPlays(handle, aiPlays, []);
+          if (!ok) return;
+        }
+
+        void fetchPlaySuggestions(handle);
+      } catch (err) {
+        console.error('restartPlay failed:', err);
+      }
+    })();
+  }
+
+  function playThisHandImpl() {
+    // Check viewport contract — the internal `contract` variable may be null
+    // when playPreference="skip" bypassed DECLARER_PROMPT (contract was never
+    // stored locally, but the session and viewport still have it).
+    const viewportContract = viewports.explanation?.contract ?? contract;
+    if (!viewportContract) return;
+    if (phase !== "EXPLANATION") return;
+    if (!activeHandle) return;
+    const handle = activeHandle;
+    resetPlay();
+    contract = viewportContract;
+    effectiveUserSeat = userSeat;
+    dds = freshDDSState();
+
+    // Determine seat: if partner declares, play as declarer (swap); otherwise keep user seat
+    const declarer = viewportContract.declarer;
+    const seat = (declarer !== userSeat && partnerSeat(declarer) === userSeat)
+      ? declarer  // declarer-swap: play as declarer from partner's seat
+      : effectiveUserSeat ?? userSeat ?? Seat.South;
+    effectiveUserSeat = seat;
+
+    // Go straight to PLAYING — skip DECLARER_PROMPT UI
+    if (!transitionTo("DECLARER_PROMPT")) return; // service needs EXPLANATION → DECLARER_PROMPT first
+    if (!transitionTo("PLAYING")) return;
+    play.aborted = false;
+    animatedTrickOverride = null;
+    play.score = null;
+    play.showingTrickResult = false;
+    play.processing = false;
+    play.log = [];
+
+    void (async () => {
+      try {
+        // Transition service: EXPLANATION → DECLARER_PROMPT → PLAYING
+        await activeService.acceptPrompt(handle, "replay");
+        if (activeHandle !== handle) return;
+        const result = await activeService.acceptPrompt(handle, "play", seat);
+        if (activeHandle !== handle) return;
+
+        viewports.playing = await activeService.getPlayingViewport(handle);
+        if (activeHandle !== handle) return;
+
+        // Animate initial AI plays (e.g., opening lead)
+        const aiPlays = result.aiPlays ?? [];
+        if (aiPlays.length > 0) {
+          const { ok } = await animateAiPlays(handle, aiPlays, []);
+          if (!ok) return;
+        }
+
+        void fetchPlaySuggestions(handle);
+      } catch (err) {
+        console.error('playThisHand failed:', err);
+      }
+    })();
+  }
+
+  async function startDrillFromHandleImpl(handle: SessionHandle, drillService?: DevServicePort) {
+    resetImpl();
+    activeHandle = handle;
+    activeService = drillService ?? service;
+
+    // Fetch convention name from service
+    conventionName = await activeService.getConventionName(handle);
+    if (activeHandle !== handle) return;
+
+    phase = "BIDDING";
+
+    // Start drill via service
+    const startResult = await activeService.startDrill(handle);
+    if (activeHandle !== handle) return;
+    viewports.bidding = startResult.viewport;
+    practiceMode = startResult.practiceMode;
+    playPreference = startResult.playPreference;
+
+    // Animate initial AI bids via incremental reveal
+    if (startResult.aiBids.length > 0 && !startResult.auctionComplete) {
+      biddingAnim = { totalAiBids: startResult.aiBids.length, revealed: 0 };
+
+      for (let i = 0; i < startResult.aiBids.length; i++) {
+        await delayFn(300);
+        if (activeHandle !== handle) return;
+        biddingAnim = { totalAiBids: startResult.aiBids.length, revealed: i + 1 };
+      }
+      biddingAnim = null;
+    }
+
+    // Fetch belief state from service
+    inference.publicBeliefState = await activeService.getPublicBeliefState(handle);
+    if (activeHandle !== handle) return;
+
+    // Handle auction complete during initial bids
+    if (startResult.auctionComplete) {
+      const servicePhase = await activeService.getPhase(handle);
+      if (activeHandle !== handle) return;
+      const ok = await handlePostAuction(handle, servicePhase);
+      if (!ok || activeHandle !== handle) return;
+    }
+
+    // Populate debug drawer
+    if (import.meta.env.DEV) {
+      const log = await activeService.getDebugLog(handle);
+      bidding.debugLog = [...log] as DebugLogEntry[];
+    }
+
+    await refreshViewport();
+    await tick();
+  }
+
+  async function startNewDrillImpl(config: SessionConfig) {
+    const handle = await service.createSession(config);
+    await startDrillFromHandleImpl(handle);
   }
 
   // ── Return ────────────────────────────────────────────────────
@@ -825,7 +1020,8 @@ export function createGameStore(
       }
       return [];
     },
-    get isProcessing() { return bidding.processing || play.processing; },
+    get isProcessing() { return transitioning || bidding.processing || play.processing; },
+    get isTransitioning() { return transitioning; },
     get isUserTurn() {
       return displayedIsUserTurn;
     },
@@ -972,170 +1168,22 @@ export function createGameStore(
       userPlayCardViaService(card, seat).catch((err) => { console.error('userPlayCard failed:', err); });
     },
 
-    skipToReview(): void {
-      play.aborted = true;
-      if (activeHandle) {
-        activeService.skipToReview(activeHandle)
-          .then(() => transitionToExplanation())
-          .catch((err) => { console.error('skipToReview failed:', err); });
-      }
-    },
+    skipToReview: guarded(skipToReviewImpl),
+    restartPlay: guarded(restartPlayImpl),
+    playThisHand: guarded(playThisHandImpl),
+    startDrillFromHandle: startDrillFromHandleImpl,
+    startNewDrill: guarded(startNewDrillImpl),
 
-    restartPlay(): void {
-      if (!contract || phase !== "PLAYING") return;
-      if (!activeHandle) return;
-      const handle = activeHandle;
-
-      // Cancel in-flight animations (keep stale viewport to avoid UI flash)
-      play.aborted = true;
-      play.score = null;
-      play.showingTrickResult = false;
-      play.processing = false;
-      play.log = [];
-      play.suggestions = [];
-      animatedTrickOverride = null;
-
-      void (async () => {
-        try {
-          play.aborted = false;
-          const result = await activeService.restartPlay(handle);
-          if (activeHandle !== handle) return;
-
-          // Replace stale viewport with fresh one
-          viewports.playing = await activeService.getPlayingViewport(handle);
-          if (activeHandle !== handle) return;
-
-          const aiPlays = result.aiPlays ?? [];
-          if (aiPlays.length > 0) {
-            const { ok } = await animateAiPlays(handle, aiPlays, []);
-            if (!ok) return;
-          }
-
-          void fetchPlaySuggestions(handle);
-        } catch (err) {
-          console.error('restartPlay failed:', err);
-        }
-      })();
-    },
-
-    acceptPlay,
-    declinePlay,
-    acceptPrompt,
-    declinePrompt,
-    acceptDeclarerSwap,
-    declineDeclarerSwap,
-    acceptDefend,
-    declineDefend,
-    acceptSouthPlay,
-    declineSouthPlay,
-
-    playThisHand() {
-      // Check viewport contract — the internal `contract` variable may be null
-      // when playPreference="skip" bypassed DECLARER_PROMPT (contract was never
-      // stored locally, but the session and viewport still have it).
-      const viewportContract = viewports.explanation?.contract ?? contract;
-      if (!viewportContract) return;
-      if (phase !== "EXPLANATION") return;
-      if (!activeHandle) return;
-      const handle = activeHandle;
-      resetPlay();
-      contract = viewportContract;
-      effectiveUserSeat = userSeat;
-      dds = freshDDSState();
-
-      // Determine seat: if partner declares, play as declarer (swap); otherwise keep user seat
-      const declarer = viewportContract.declarer;
-      const seat = (declarer !== userSeat && partnerSeat(declarer) === userSeat)
-        ? declarer  // declarer-swap: play as declarer from partner's seat
-        : effectiveUserSeat ?? userSeat ?? Seat.South;
-      effectiveUserSeat = seat;
-
-      // Go straight to PLAYING — skip DECLARER_PROMPT UI
-      if (!transitionTo("DECLARER_PROMPT")) return; // service needs EXPLANATION → DECLARER_PROMPT first
-      if (!transitionTo("PLAYING")) return;
-      play.aborted = false;
-      animatedTrickOverride = null;
-      play.score = null;
-      play.showingTrickResult = false;
-      play.processing = false;
-      play.log = [];
-
-      void (async () => {
-        try {
-          // Transition service: EXPLANATION → DECLARER_PROMPT → PLAYING
-          await activeService.acceptPrompt(handle, "replay");
-          if (activeHandle !== handle) return;
-          const result = await activeService.acceptPrompt(handle, "play", seat);
-          if (activeHandle !== handle) return;
-
-          viewports.playing = await activeService.getPlayingViewport(handle);
-          if (activeHandle !== handle) return;
-
-          // Animate initial AI plays (e.g., opening lead)
-          const aiPlays = result.aiPlays ?? [];
-          if (aiPlays.length > 0) {
-            const { ok } = await animateAiPlays(handle, aiPlays, []);
-            if (!ok) return;
-          }
-
-          void fetchPlaySuggestions(handle);
-        } catch (err) {
-          console.error('playThisHand failed:', err);
-        }
-      })();
-    },
-
-    async startDrillFromHandle(handle: SessionHandle, drillService?: DevServicePort) {
-      resetImpl();
-      activeHandle = handle;
-      activeService = drillService ?? service;
-
-      // Fetch convention name from service
-      conventionName = await activeService.getConventionName(handle);
-      if (activeHandle !== handle) return;
-
-      phase = "BIDDING";
-
-      // Start drill via service
-      const startResult = await activeService.startDrill(handle);
-      if (activeHandle !== handle) return;
-      viewports.bidding = startResult.viewport;
-      practiceMode = startResult.practiceMode;
-      playPreference = startResult.playPreference;
-
-      // Animate initial AI bids via incremental reveal
-      if (startResult.aiBids.length > 0 && !startResult.auctionComplete) {
-        biddingAnim = { totalAiBids: startResult.aiBids.length, revealed: 0 };
-
-        for (let i = 0; i < startResult.aiBids.length; i++) {
-          await delayFn(300);
-          if (activeHandle !== handle) return;
-          biddingAnim = { totalAiBids: startResult.aiBids.length, revealed: i + 1 };
-        }
-        biddingAnim = null;
-      }
-
-      // Fetch belief state from service
-      inference.publicBeliefState = await activeService.getPublicBeliefState(handle);
-      if (activeHandle !== handle) return;
-
-      // Handle auction complete during initial bids
-      if (startResult.auctionComplete) {
-        const servicePhase = await activeService.getPhase(handle);
-        if (activeHandle !== handle) return;
-        const ok = await handlePostAuction(handle, servicePhase);
-        if (!ok || activeHandle !== handle) return;
-      }
-
-      // Populate debug drawer
-      if (import.meta.env.DEV) {
-        const log = await activeService.getDebugLog(handle);
-        bidding.debugLog = [...log] as DebugLogEntry[];
-      }
-
-      await refreshViewport();
-      await tick();
-    },
+    acceptPlay: guarded(acceptPlay),
+    declinePlay: guarded(declinePlay),
+    acceptPrompt: guarded(acceptPrompt),
+    declinePrompt: guarded(declinePrompt),
+    acceptDeclarerSwap: guarded(acceptDeclarerSwap),
+    declineDeclarerSwap: guarded(declineDeclarerSwap),
+    acceptDefend: guarded(acceptDefend),
+    declineDefend: guarded(declineDefend),
+    acceptSouthPlay: guarded(acceptSouthPlay),
+    declineSouthPlay: guarded(declineSouthPlay),
 
     /**
      * Instantly auto-complete bidding and advance to the target phase.

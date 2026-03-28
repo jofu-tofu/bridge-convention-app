@@ -20,7 +20,7 @@ const SMOLEN_CTX: ModuleContext = { moduleId: "smolen" };
  * These override the Jacoby Transfer entry for Smolen-eligible hands.
  * After opener's 2D denial, responder follows up with 3H/3S (Smolen).
  */
-export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createSmolenEntrySurfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
     createSurface({
       meaningId: SMOLEN_MEANING_IDS.STAYMAN_ENTRY_5H4S,
@@ -90,7 +90,7 @@ export function createSmolenEntrySurfaces(sys: SystemConfig): readonly BidMeanin
 
 // ─── R3 Smolen surfaces (contributed to responder-r3-after-stayman-2d) ───
 
-export function createSmolenR3Surfaces(sys: SystemConfig): readonly BidMeaning[] {
+export function createSmolenR3Surfaces(_sys: SystemConfig): readonly BidMeaning[] {
   return [
     createSurface({
       meaningId: SMOLEN_MEANING_IDS.BID_SHORT_HEARTS,

@@ -21,7 +21,7 @@ async function init(): Promise<void> {
   // The Emscripten-generated dds.js defines a `createDDS` factory on globalThis.
   const resp = await fetch("/dds/dds.js");
   const script = await resp.text();
-  // eslint-disable-next-line no-eval -- Emscripten module must be eval'd to define createDDS on globalThis
+  // Emscripten module must be eval'd to define createDDS on globalThis
   (0, eval)(script);
 
   // any: Emscripten factory function defined by eval'd script

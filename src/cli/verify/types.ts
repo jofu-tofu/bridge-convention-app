@@ -17,7 +17,6 @@ export interface LintDiagnostic {
     readonly phase?: string;
     readonly transitionIndex?: number;
   };
-  readonly suggestion: string;
 }
 
 // ── Interference ────────────────────────────────────────────────────
@@ -29,7 +28,6 @@ export interface InterferenceEdge {
   readonly ruleA?: { readonly ruleIndex: number; readonly matchSummary: string };
   readonly ruleB?: { readonly ruleIndex: number; readonly matchSummary: string };
   readonly detail?: string;
-  readonly resolution?: string;
 }
 
 export interface PairInteraction {

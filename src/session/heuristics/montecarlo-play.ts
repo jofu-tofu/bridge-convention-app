@@ -12,7 +12,6 @@
 import type { PlayStrategy, PlayContext, PlayResult } from "../../conventions";
 import type { Card, Hand, Seat, Suit } from "../../engine/types";
 import type { EnginePort } from "../../engine/port";
-import type { SolveBoardResult } from "../../engine/dds-wasm";
 import type { PlayStrategyProvider } from "./play-profiles";
 import type { PublicBeliefs, DerivedRanges } from "../../inference/inference-types";
 import { PlayConstraintTracker } from "./play-constraint-tracker";

@@ -1,5 +1,4 @@
 import type { HandPredicate } from "../../conventions/core/agreement-module";
-import type { FactConstraint } from "../../conventions/core/agreement-module";
 
 // ─── Hand space types ───────────────────────────────────────
 export interface PublicHandSpace {
@@ -20,47 +19,17 @@ export interface PosteriorFactValue {
   readonly factId: string;
   readonly seatId: string;
   readonly expectedValue: number;
-  readonly variance?: number;
   readonly confidence: number;
   readonly conditionedOn?: readonly string[];
 }
 
 // ─── Belief view ────────────────────────────────────────────
 
-/** Reference to the subject of a belief (which seat's hand). */
-interface SubjectRef {
-  readonly seatId: string;
-  readonly role?: string;
-}
-
-/** Reference to the posterior source that produced this belief. */
-interface PosteriorSourceRef {
-  readonly sourceKind: "posterior-engine" | "announcement" | "inference";
-  readonly sampleSize?: number;
-  readonly confidence?: number;
-}
-
-/** Opaque identifier for grouping related beliefs. */
-type EvidenceGroupId = string;
-
 export interface BeliefView {
   readonly seatId: string;
   readonly observerSeat: string;
   readonly facts: readonly PosteriorFactValue[];
   readonly staleness: number;
-  /** Unique identifier: `${factId}:${seatId}` for per-fact beliefs,
-   *  or `${seatId}` for aggregate seat beliefs. */
-  readonly beliefId?: string;
-  /** The subject (seat) this belief is about. */
-  readonly subject?: SubjectRef;
-  /** Constraint derived from fact values (uses first fact with boolean/numeric value). */
-  readonly constraint?: FactConstraint;
-  /** Provenance references to the posterior sources. */
-  readonly provenance?: readonly PosteriorSourceRef[];
-  /** Human-readable explanation key for UI. */
-  readonly explanationKey?: string;
-  /** Groups related beliefs for UI display. */
-  readonly evidenceGroupId?: EvidenceGroupId;
 }
 
 // ─── Latent branches ────────────────────────────────────────

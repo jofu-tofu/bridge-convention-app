@@ -36,20 +36,8 @@ const DIMENSION_PRIORITY: readonly ConstraintDimension[] = [
 ];
 export const CANON_DIMENSION_PRIORITY = 2;
 
-/** Canon 3: Convention Depth
- *  Continuation bids (R2+) that carry forward accumulated information
- *  from prior rounds should not outrank initial bids (R1) purely on
- *  dimension count. This canon is a tiebreaker WITHIN the same round,
- *  not across rounds (cross-round conflicts are resolved by activation
- *  context, not specificity). */
-const CANON_CONVENTION_DEPTH = 3;
-
-/** Canon 4: Named Suit Override
- *  When two surfaces constrain the same number of dimensions and have
- *  the same dimension sets, a surface that names specific suits (e.g.,
- *  "hearts and spades") outranks one that uses computed/variable suits
- *  (e.g., "$suit"). This rewards precision of communication. */
-const CANON_NAMED_SUIT = 4;
+// Canons 3 (Convention Depth) and 4 (Named Suit Override) are context-dependent
+// and not resolved in this module. They exist in the design but are not yet implemented.
 
 /**
  * Compare two dimension sets using the linearization canons.
