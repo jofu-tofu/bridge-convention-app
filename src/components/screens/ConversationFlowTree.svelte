@@ -5,29 +5,47 @@
 
   interface Props {
     tree: ModuleFlowTreeViewport;
-    scale?: number;
   }
 
-  const { tree, scale = 1 }: Props = $props();
+  const { tree }: Props = $props();
 
   /** Active hover tooltip state — fixed-positioned via portal to escape overflow containers. */
   let tooltip = $state<{
     node: FlowTreeNode;
-    x: number;
-    y: number;
-    flipUp: boolean;
-    flipLeft: boolean;
+    anchorRect: DOMRect;
   } | null>(null);
 
-  let hoverTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Bound tooltip element for post-render measurement. */
+  let tooltipEl = $state<HTMLDivElement | null>(null);
 
-  function positionTooltip(rect: DOMRect) {
-    const tipH = 120 * scale;
-    const tipW = 260 * scale;
-    const flipUp = rect.bottom + tipH > window.innerHeight;
-    const flipLeft = rect.right + tipW > window.innerWidth;
-    return { flipUp, flipLeft, x: flipLeft ? rect.left : rect.right + 8, y: flipUp ? rect.top : rect.bottom + 4 };
-  }
+  /** Measured position — computed after tooltip renders via $effect. */
+  let tipPos = $state<{ top: string; bottom: string; left: string; right: string }>({
+    top: "0", bottom: "auto", left: "0", right: "auto",
+  });
+
+  // Measure tooltip after render and position to avoid viewport overflow
+  $effect(() => {
+    if (!tooltipEl || !tooltip) return;
+    const rect = tooltip.anchorRect;
+    const tip = tooltipEl.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const flipUp = rect.bottom + 4 + tip.height > vh && rect.top - 4 - tip.height >= 0;
+    const flipLeft = rect.right + 8 + tip.width > vw;
+
+    const x = flipLeft ? rect.left : rect.right + 8;
+    const y = flipUp ? rect.top : rect.bottom + 4;
+
+    tipPos = {
+      left: flipLeft ? "auto" : `${x}px`,
+      right: flipLeft ? `${vw - x + 8}px` : "auto",
+      top: flipUp ? "auto" : `${y}px`,
+      bottom: flipUp ? `${vh - y + 4}px` : "auto",
+    };
+  });
+
+  let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 
   function clearHoverTimer() {
     if (hoverTimer) { clearTimeout(hoverTimer); hoverTimer = null; }
@@ -44,8 +62,7 @@
       clearHoverTimer();
       hoverTimer = setTimeout(() => {
         const rect = el.getBoundingClientRect();
-        const pos = positionTooltip(rect);
-        tooltip = { node, ...pos };
+        tooltip = { node, anchorRect: rect };
       }, 250);
     }
     function onLeave() {
@@ -131,13 +148,9 @@
 <!-- Fixed-position tooltip portal (escapes overflow containers) -->
 {#if tooltip}
   <div
+    bind:this={tooltipEl}
     class="ft-tooltip"
-    style="
-      left: {tooltip.flipLeft ? 'auto' : `${tooltip.x}px`};
-      right: {tooltip.flipLeft ? `${window.innerWidth - tooltip.x + 8}px` : 'auto'};
-      top: {tooltip.flipUp ? 'auto' : `${tooltip.y}px`};
-      bottom: {tooltip.flipUp ? `${window.innerHeight - tooltip.y + 4}px` : 'auto'};
-    "
+    style="left: {tipPos.left}; right: {tipPos.right}; top: {tipPos.top}; bottom: {tipPos.bottom};"
     role="tooltip"
   >
     <div class="ft-tooltip-header">

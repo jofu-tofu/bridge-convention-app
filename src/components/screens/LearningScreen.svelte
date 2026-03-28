@@ -274,7 +274,7 @@
                 <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Conversation Flow</h2>
                 <div class="overflow-x-auto bg-bg-card rounded-[--radius-lg] border border-border-subtle"
                      style="--ft-scale: {ftScale}">
-                  <ConversationFlowTree tree={flowTree} scale={ftScale} />
+                  <ConversationFlowTree tree={flowTree} />
                 </div>
               {:else}
                 <MobileFlowTree tree={flowTree} />
