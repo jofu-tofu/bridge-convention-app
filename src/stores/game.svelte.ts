@@ -32,8 +32,8 @@ import type {
 import type { ViewportBidGrade } from "../service";
 import type { PracticeMode, PlayPreference } from "../service";
 import type { BidFeedbackDTO, PlaySuggestions } from "../service/debug-types";
-import { isValidTransition } from "../service";
-import type { GamePhase } from "../service";
+import { isValidTransition, resolveTransition } from "../service";
+import type { GamePhase, ViewportNeeded } from "../service";
 import { delay } from "../service";
 import { TRICK_PAUSE, AI_PLAY_DELAY } from "./animate";
 
@@ -113,11 +113,11 @@ const EMPTY_EVALUATION: StrategyEvaluation = {
 
 // ── Grouped phase state types ───────────────────────────────────────
 
-export interface BiddingPhaseState { processing: boolean; error: string | null; debugLog: DebugLogEntry[]; }
-export interface PlayPhaseState { score: number | null; aborted: boolean; showingTrickResult: boolean; processing: boolean; log: PlayLogEntry[]; suggestions: PlaySuggestions; }
-export interface DDSState { solution: DDSolution | null; solving: boolean; error: string | null; }
-export interface InferenceState { playInferences: Record<Seat, ServicePublicBeliefs> | null; publicBeliefState: ServicePublicBeliefState; }
-export interface ViewportCache { bidding: BiddingViewport | null; declarerPrompt: DeclarerPromptViewport | null; playing: PlayingViewport | null; explanation: ExplanationViewport | null; }
+interface BiddingPhaseState { processing: boolean; error: string | null; debugLog: DebugLogEntry[]; }
+interface PlayPhaseState { score: number | null; aborted: boolean; showingTrickResult: boolean; processing: boolean; log: PlayLogEntry[]; suggestions: PlaySuggestions; }
+interface DDSState { solution: DDSolution | null; solving: boolean; error: string | null; }
+interface InferenceState { playInferences: Record<Seat, ServicePublicBeliefs> | null; publicBeliefState: ServicePublicBeliefState; }
+interface ViewportCache { bidding: BiddingViewport | null; declarerPrompt: DeclarerPromptViewport | null; playing: PlayingViewport | null; explanation: ExplanationViewport | null; }
 
 function freshBiddingState(): BiddingPhaseState { return { processing: false, error: null, debugLog: [] }; }
 function freshPlayState(aborted = false): PlayPhaseState { return { score: null, aborted, showingTrickResult: false, processing: false, log: [], suggestions: [] }; }
@@ -221,6 +221,37 @@ export function createGameStore(
     }
   }
 
+  async function fetchAndCacheViewport(handle: SessionHandle, vpName: ViewportNeeded): Promise<void> {
+    switch (vpName) {
+      case "bidding":
+        viewports.bidding = await activeService.getBiddingViewport(handle);
+        break;
+      case "declarerPrompt":
+        viewports.declarerPrompt = await activeService.getDeclarerPromptViewport(handle);
+        break;
+      case "playing":
+        viewports.playing = await activeService.getPlayingViewport(handle);
+        break;
+      case "explanation":
+        viewports.explanation = await activeService.getExplanationViewport(handle);
+        break;
+    }
+  }
+
+  function extractContractFromViewport(vpName: ViewportNeeded): void {
+    switch (vpName) {
+      case "declarerPrompt":
+        contract = viewports.declarerPrompt?.contract ?? null;
+        break;
+      case "playing":
+        contract = viewports.playing?.contract ?? null;
+        break;
+      case "explanation":
+        contract = viewports.explanation?.contract ?? null;
+        break;
+    }
+  }
+
   // ── Derived ───────────────────────────────────────────────────
 
   const userSeat = $derived<Seat | null>(
@@ -238,20 +269,18 @@ export function createGameStore(
 
   /**
    * Handle auto-transition from DECLARER_PROMPT based on playPreference.
-   * Returns true if an auto-transition was performed (caller should not
-   * do normal DECLARER_PROMPT handling).
+   * Uses phase coordinator to decide whether to auto-accept or auto-skip.
+   * Returns true if still active (not cancelled).
    */
-  async function maybeAutoTransitionFromPrompt(handle: SessionHandle): Promise<boolean> {
-    if (playPreference === "prompt") return false;
+  async function handleAutoPromptTransition(handle: SessionHandle): Promise<boolean> {
+    const desc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference });
+    if (!desc.chainedEvent) return true; // "prompt" mode — stay at DECLARER_PROMPT
 
-    if (playPreference === "always") {
-      // Auto-accept play without showing the declarer prompt
+    if (desc.chainedEvent.type === "ACCEPT_PLAY") {
       acceptPrompt();
-      return true;
+      return activeHandle === handle;
     }
-
-    if (playPreference === "skip") {
-      // Auto-skip to explanation without showing the declarer prompt
+    if (desc.chainedEvent.type === "DECLINE_PLAY") {
       try {
         await activeService.acceptPrompt(handle, "skip");
       } catch (err) {
@@ -260,8 +289,51 @@ export function createGameStore(
       transitionToExplanation();
       return true;
     }
+    return true;
+  }
 
-    return false;
+  /**
+   * Handle post-auction phase transition using the phase coordinator.
+   * Replaces the duplicated if/else chain in userBidViaService, startDrillFromHandle, and skipToPhase.
+   */
+  async function handlePostAuction(
+    handle: SessionHandle,
+    servicePhase: GamePhase,
+    options?: { autoPromptTransition?: boolean },
+  ): Promise<boolean> {
+    const desc = resolveTransition("BIDDING", { type: "AUCTION_COMPLETE", servicePhase });
+    if (!desc.targetPhase) return true;
+
+    // 1. Capture inferences
+    if (desc.captureInferences) {
+      inference.playInferences = await activeService.capturePlayInferences(handle);
+      if (activeHandle !== handle) return false;
+    }
+
+    // 2. Fetch viewports + extract contract (before transition to avoid UI flash)
+    for (const vpName of desc.viewportsNeeded) {
+      await fetchAndCacheViewport(handle, vpName);
+      if (activeHandle !== handle) return false;
+      extractContractFromViewport(vpName);
+    }
+    if (desc.targetPhase === "DECLARER_PROMPT" || desc.targetPhase === "PLAYING") {
+      effectiveUserSeat = userSeat;
+    }
+
+    // 3. Phase transition
+    transitionTo(desc.targetPhase);
+
+    // 4. Post-transition actions
+    if (desc.resetPlay) play.aborted = false;
+    if (desc.targetPhase === "PLAYING") void fetchPlaySuggestions(handle);
+    if (desc.triggerDDS) void triggerDDSSolve();
+
+    // 5. Auto-transition from prompt (unless caller handles it)
+    if (options?.autoPromptTransition !== false && desc.targetPhase === "DECLARER_PROMPT") {
+      return handleAutoPromptTransition(handle);
+    }
+
+    return true;
   }
 
   // ── Phase helpers ─────────────────────────────────────────────
@@ -579,37 +651,10 @@ export function createGameStore(
       if (activeHandle !== handle) return;
 
       if (phaseTransitioned) {
-        inference.playInferences = await activeService.capturePlayInferences(handle);
-        if (activeHandle !== handle) return;
         const servicePhase = await activeService.getPhase(handle);
         if (activeHandle !== handle) return;
-        if (servicePhase === "DECLARER_PROMPT") {
-          const dpvp = await activeService.getDeclarerPromptViewport(handle);
-          if (activeHandle !== handle) return;
-          viewports.declarerPrompt = dpvp;
-          contract = dpvp?.contract ?? null;
-          effectiveUserSeat = userSeat;
-          transitionTo("DECLARER_PROMPT");
-          const autoHandled = await maybeAutoTransitionFromPrompt(handle);
-          if (autoHandled && activeHandle !== handle) return;
-        } else if (servicePhase === "PLAYING") {
-          // playPreference="always" skipped DECLARER_PROMPT — play already initialized
-          const pvp = await activeService.getPlayingViewport(handle);
-          if (activeHandle !== handle) return;
-          viewports.playing = pvp;
-          contract = pvp?.contract ?? null;
-          effectiveUserSeat = userSeat;
-          transitionTo("PLAYING");
-          play.aborted = false;
-          void fetchPlaySuggestions(handle);
-        } else if (servicePhase === "EXPLANATION") {
-          // Fetch explanation viewport first so we can capture the contract
-          // (non-null when playPreference="skip" bypassed DECLARER_PROMPT).
-          viewports.explanation = await activeService.getExplanationViewport(handle);
-          if (activeHandle !== handle) return;
-          contract = viewports.explanation?.contract ?? null;
-          transitionToExplanation();
-        }
+        const ok = await handlePostAuction(handle, servicePhase);
+        if (!ok || activeHandle !== handle) return;
         await tick();
         return;
       }
@@ -1076,36 +1121,10 @@ export function createGameStore(
 
       // Handle auction complete during initial bids
       if (startResult.auctionComplete) {
-        inference.playInferences = await activeService.capturePlayInferences(handle);
-        if (activeHandle !== handle) return;
         const servicePhase = await activeService.getPhase(handle);
         if (activeHandle !== handle) return;
-        if (servicePhase === "DECLARER_PROMPT") {
-          const dpvp = await activeService.getDeclarerPromptViewport(handle);
-          if (activeHandle !== handle) return;
-          viewports.declarerPrompt = dpvp;
-          contract = dpvp?.contract ?? null;
-          effectiveUserSeat = userSeat;
-          transitionTo("DECLARER_PROMPT");
-          const autoHandled = await maybeAutoTransitionFromPrompt(handle);
-          if (autoHandled && activeHandle !== handle) return;
-        } else if (servicePhase === "PLAYING") {
-          // playPreference="always" skipped DECLARER_PROMPT — play already initialized
-          const pvp = await activeService.getPlayingViewport(handle);
-          if (activeHandle !== handle) return;
-          viewports.playing = pvp;
-          contract = pvp?.contract ?? null;
-          effectiveUserSeat = userSeat;
-          transitionTo("PLAYING");
-          play.aborted = false;
-          void fetchPlaySuggestions(handle);
-        } else if (servicePhase === "EXPLANATION") {
-          // Fetch explanation viewport to capture contract before transitioning
-          viewports.explanation = await activeService.getExplanationViewport(handle);
-          if (activeHandle !== handle) return;
-          contract = viewports.explanation?.contract ?? null;
-          transitionToExplanation();
-        }
+        const ok = await handlePostAuction(handle, servicePhase);
+        if (!ok || activeHandle !== handle) return;
       }
 
       // Populate debug drawer
@@ -1147,33 +1166,8 @@ export function createGameStore(
         if (activeHandle !== handle) return false;
 
         if (servicePhase !== "BIDDING") {
-          inference.playInferences = await activeService.capturePlayInferences(handle);
-          if (activeHandle !== handle) return false;
-
-          if (servicePhase === "DECLARER_PROMPT") {
-            const dpvp = await activeService.getDeclarerPromptViewport(handle);
-            if (activeHandle !== handle) return false;
-            viewports.declarerPrompt = dpvp;
-            contract = dpvp?.contract ?? null;
-            effectiveUserSeat = userSeat;
-            transitionTo("DECLARER_PROMPT");
-          } else if (servicePhase === "PLAYING") {
-            // playPreference="always" skipped DECLARER_PROMPT — play already initialized
-            const pvp = await activeService.getPlayingViewport(handle);
-            if (activeHandle !== handle) return false;
-            viewports.playing = pvp;
-            contract = pvp?.contract ?? null;
-            effectiveUserSeat = userSeat;
-            transitionTo("PLAYING");
-            play.aborted = false;
-            void fetchPlaySuggestions(handle);
-          } else if (servicePhase === "EXPLANATION") {
-            // Fetch explanation viewport to capture contract before transitioning
-            viewports.explanation = await activeService.getExplanationViewport(handle);
-            if (activeHandle !== handle) return false;
-            contract = viewports.explanation?.contract ?? null;
-            transitionToExplanation();
-          }
+          const ok = await handlePostAuction(handle, servicePhase as GamePhase, { autoPromptTransition: false });
+          if (!ok) return false;
           break;
         }
       }

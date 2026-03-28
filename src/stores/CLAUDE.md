@@ -62,6 +62,12 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **AI play behavior:** Heuristic strategy chain (opening leads, second-hand-low, third-hand-high, cover honor, trump management, discard, fallback) with 500ms delay between plays. Falls back to random play if no strategy configured.
 
+**Phase coordinator pattern.** Phase transition decisions are extracted into `session/phase-coordinator.ts` (pure, stateless). The store uses two helpers:
+- **`handlePostAuction(handle, servicePhase)`** — replaces the duplicated post-auction if/else chains in `userBidViaService`, `startDrillFromHandle`, and `skipToPhase`. Uses `resolveTransition("BIDDING", { type: "AUCTION_COMPLETE", servicePhase })` to determine target phase, viewports, and DDS trigger.
+- **`handleAutoPromptTransition(handle)`** — replaces `maybeAutoTransitionFromPrompt`. Uses `resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference })` to decide auto-accept/skip chains.
+- **Phase authority:** `bidding-controller.ts` decides the phase at auction completion (mutates `SessionState.phase`). The coordinator does NOT recompute this — it receives `servicePhase` and maps it to orchestration actions.
+- **Reactive execution:** The store owns animation, cancellation (`activeHandle`), and Svelte `$state` mutations.
+
 ## Gotchas
 
 - `EnginePort` methods are async. Rust backends (TauriIpcEngine, WasmEngine) wrap sync calls in Promises.

@@ -24,12 +24,9 @@ export type {
   AuctionEntryView,
   ModuleCatalogEntry,
   ModuleLearningViewport,
-  FlowTreeNode,
-  BundleFlowTreeViewport,
   ModuleFlowTreeViewport,
   ClauseSystemVariant,
   ServiceBidHistoryEntry as BidHistoryEntry,
-  BidContext,
   BaseModuleInfo,
 } from "./response-types";
 
@@ -37,7 +34,7 @@ export type {
 export { Seat, Suit, Rank, BidSuit, Vulnerability } from "../engine/types";
 export type { Call, Card, Hand, ContractBid, Contract, Auction, AuctionEntry, Trick, PlayedCard, DDSolution, Deal } from "../engine/types";
 export type { EnginePort } from "../engine/port";
-export { SEAT_INDEX, SUIT_ORDER, RANK_INDEX, SEATS, nextSeat, partnerSeat, areSamePartnership } from "../engine/constants";
+export { SEAT_INDEX, SUIT_ORDER, RANK_INDEX, SEATS, nextSeat, partnerSeat } from "../engine/constants";
 export { callKey, callsMatch } from "../engine/call-helpers";
 export { isVulnerable } from "../engine/scoring";
 export { evaluateHand, calculateHcp } from "../engine/hand-evaluator";
@@ -51,24 +48,24 @@ export type { BidResult, BiddingContext } from "../conventions";
 export type { PlayStrategy, PlayContext, PlayResult, PosteriorSummary } from "../conventions";
 
 // ── 5. Coverage Utilities ────────────────────────────────────────────
-export { listBundleInputs, resolveBundle, getBundleInput, specFromSystem, enumerateRuleAtoms, generateRuleCoverageManifest } from "../conventions";
+export { listBundleInputs, resolveBundle, getBundleInput, enumerateRuleAtoms, generateRuleCoverageManifest } from "../conventions";
 export type { RuleCoverageManifest, ConventionBundle } from "../conventions";
 
 // ── 5b. Session viewport builders (re-exported for UI consumption) ───
 export { buildBaseModuleInfos } from "../session/learning-viewport";
 
 // ── 6. Session Configuration ─────────────────────────────────────────
-export type { OpponentMode, VulnerabilityDistribution, DrillSettings, PracticeMode, PracticeRole, PracticeFocus, PlayPreference } from "../session";
-export { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, ALL_TARGETS_FOCUS } from "../session";
+export type { OpponentMode, VulnerabilityDistribution, DrillSettings, PracticeMode, PracticeRole, PlayPreference } from "../session";
+export { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../session";
 export type { PlayProfileId } from "../session";
 export { PLAY_PROFILES } from "../session";
-export { isValidTransition } from "../session";
-export type { GamePhase } from "../session";
+export { isValidTransition, resolveTransition } from "../session";
+export type { GamePhase, PhaseEvent, TransitionDescriptor, ViewportNeeded, ServiceAction } from "../session";
 export type { PracticePreferences, DisplayPreferences } from "../session";
 export { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../session";
 
 // ── 7. Display & Formatting ─────────────────────────────────────────
-export { displayConventionName, formatCall, formatContractWithDeclarer, formatRuleName, displayRank, formatCardLabel, formatBidReferences, SUIT_SYMBOLS, STRAIN_SYMBOLS } from "./display/format";
+export { displayConventionName, formatCall, formatContractWithDeclarer, formatRuleName, displayRank, formatCardLabel, SUIT_SYMBOLS, STRAIN_SYMBOLS } from "./display/format";
 export { buildConventionCard } from "./display/convention-card";
 
 // ── 8. Evaluation Facade (CLI grading) ──────────────────────────────
