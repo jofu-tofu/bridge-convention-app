@@ -3,7 +3,7 @@ import type { ConventionModule } from "../../../core/convention-module";
 import type { NegotiationDelta } from "../../../core/committed-step";
 import type { SystemConfig } from "../../system-config";
 
-import { createSmolenEntrySurfaces, createSmolenR3Surfaces, OPENER_SMOLEN_HEARTS_SURFACES, OPENER_SMOLEN_SPADES_SURFACES } from "./meaning-surfaces";
+import { createSmolenEntrySurfaces, createSmolenR3Surfaces, OPENER_SMOLEN_HEARTS_SURFACES, OPENER_SMOLEN_SPADES_SURFACES, RESPONDER_SMOLEN_COMPLETE_SPADES_SURFACES } from "./meaning-surfaces";
 import { createSmolenFacts } from "./facts";
 import { SMOLEN_EXPLANATION_ENTRIES } from "./explanation-catalog";
 
@@ -12,11 +12,12 @@ export { createSmolenFacts } from "./facts";
 
 // ─── Local FSM + States ──────────────────────────────────────
 
-type SmolenPhase = "idle" | "post-r1" | "placing-hearts" | "placing-spades" | "done";
+type SmolenPhase = "idle" | "post-r1" | "placing-hearts" | "placing-spades" | "accepted-spades" | "done";
 
 const SMOLEN_ENTRY_DELTA: NegotiationDelta = { forcing: "one-round", captain: "responder" };
 const SMOLEN_3H_DELTA: NegotiationDelta = { forcing: "game", captain: "opener", fitAgreed: { strain: "spades", confidence: "tentative" } };
 const SMOLEN_3S_DELTA: NegotiationDelta = { forcing: "game", captain: "opener", fitAgreed: { strain: "hearts", confidence: "tentative" } };
+const SMOLEN_ACCEPT_SPADES_DELTA: NegotiationDelta = { forcing: "game", fitAgreed: { strain: "spades", confidence: "final" } };
 
 const AFTER_STAYMAN_DENIAL: RouteExpr = {
   kind: "subseq",
@@ -38,7 +39,9 @@ const smolenLocal: LocalFsm<SmolenPhase> = {
     { from: "post-r1", to: "placing-hearts", on: { act: "show", feature: "shortMajor", suit: "hearts" } },
     { from: "post-r1", to: "placing-spades", on: { act: "show", feature: "shortMajor", suit: "spades" } },
     { from: "placing-hearts", to: "done", on: { act: "place" } },
+    { from: "placing-spades", to: "accepted-spades", on: { act: "accept", feature: "heldSuit", suit: "spades" } },
     { from: "placing-spades", to: "done", on: { act: "place" } },
+    { from: "accepted-spades", to: "done", on: { act: "place" } },
   ],
 };
 
@@ -63,7 +66,8 @@ function createSmolenStates(sys: SystemConfig): readonly StateEntry<SmolenPhase>
       route: AFTER_STAYMAN_DENIAL, negotiationDelta: SMOLEN_3S_DELTA, surfaces: smolenR3Spades,
     }] : []),
     { phase: "placing-hearts", turn: "opener" as const, surfaces: OPENER_SMOLEN_HEARTS_SURFACES },
-    { phase: "placing-spades", turn: "opener" as const, surfaces: OPENER_SMOLEN_SPADES_SURFACES },
+    { phase: "placing-spades", turn: "opener" as const, negotiationDelta: SMOLEN_ACCEPT_SPADES_DELTA, surfaces: OPENER_SMOLEN_SPADES_SURFACES },
+    { phase: "accepted-spades", turn: "responder" as const, surfaces: RESPONDER_SMOLEN_COMPLETE_SPADES_SURFACES },
   ];
 }
 
