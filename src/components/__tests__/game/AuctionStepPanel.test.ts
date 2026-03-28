@@ -27,14 +27,21 @@ const bidHistory: readonly BidHistoryEntry[] = [
 ] as unknown as BidHistoryEntry[];
 
 describe("computeVisibleSeats", () => {
-  it("returns all hands when step is null", () => {
+  it("returns only user seat when step is null and no dummy", () => {
     const result = computeVisibleSeats(allHands, Seat.South, bidHistory, null);
-    expect(Object.keys(result)).toHaveLength(4);
+    expect(Object.keys(result)).toEqual([Seat.South]);
   });
 
-  it("returns only user seat when step is 0", () => {
-    const result = computeVisibleSeats(allHands, Seat.South, bidHistory, 0);
-    expect(Object.keys(result)).toEqual([Seat.South]);
+  it("returns user + dummy when step is null with dummy", () => {
+    const result = computeVisibleSeats(allHands, Seat.South, bidHistory, null, Seat.North);
+    const seats = Object.keys(result).sort();
+    expect(seats).toEqual([Seat.North, Seat.South].sort());
+  });
+
+  it("returns only user seat + dummy when step is 0", () => {
+    const result = computeVisibleSeats(allHands, Seat.South, bidHistory, 0, Seat.North);
+    const seats = Object.keys(result).sort();
+    expect(seats).toEqual([Seat.North, Seat.South].sort());
   });
 
   it("reveals North after step 1 (North bid first)", () => {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SvelteMap } from "svelte/reactivity";
-  import { Seat, Suit, BidSuit, Vulnerability as Vul } from "../../../service";
+  import { Seat, Suit, BidSuit, Vulnerability as Vul, partnerSeat } from "../../../service";
   import type { ExplanationViewport } from "../../../service";
   import type { ConventionConfig, ConventionContribution } from "../../../service";
   import { formatRuleName } from "../../../service";
@@ -62,6 +62,11 @@
 
   const practiceMode = $derived(gameStore.practiceMode);
 
+  // Dummy seat: partner of declarer (undefined if passed out)
+  const dummySeat = $derived(
+    viewport.contract ? partnerSeat(viewport.contract.declarer) : undefined,
+  );
+
   let showAllCards = $state(false);
   let settingsDialogRef = $state<ReturnType<typeof SettingsDialog>>();
 
@@ -84,7 +89,7 @@
 
   // Derived: visible hands based on bid step
   const steppedVisibleHands = $derived(
-    computeVisibleSeats(viewport.allHands, viewport.userSeat, viewport.bidHistory, selectedBidStep),
+    computeVisibleSeats(viewport.allHands, viewport.userSeat, viewport.bidHistory, selectedBidStep, dummySeat),
   );
 
   // Replay state — single source of truth for card-by-card stepping
@@ -221,10 +226,11 @@
         Hide Hands
       </button>
     </div>
-    <div class="grid grid-cols-2 gap-3" style="--card-overlap-h: -38px;">
+    <div class="grid grid-cols-2 gap-3">
       {#each [Seat.North, Seat.East, Seat.South, Seat.West] as seat (seat)}
         <section
-          class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3"
+          class="bg-bg-card border-border-subtle rounded-[--radius-lg] overflow-hidden border p-3"
+          style="--card-overlap-h: calc((100% - 13 * var(--card-width)) / 12);"
           aria-label="{seat} hand"
         >
           <div class="mb-2 flex items-center gap-2">
