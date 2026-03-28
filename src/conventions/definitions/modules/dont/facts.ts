@@ -80,6 +80,46 @@ const hasClubSupportEntry = defineBooleanFact({
   derivesFrom: [],
 });
 
+const longDiamondsEntry = defineBooleanFact({
+  id: DONT_FACT_IDS.LONG_DIAMONDS,
+  description: "D6+ — long diamonds for bypass/escape",
+  factId: "hand.suitLength.diamonds",
+  operator: "gte",
+  value: 6,
+  constrainsDimensions: ["suitIdentity", "suitLength"],
+  derivesFrom: [],
+});
+
+const longHeartsEntry = defineBooleanFact({
+  id: DONT_FACT_IDS.LONG_HEARTS,
+  description: "H6+ — long hearts for bypass/escape",
+  factId: "hand.suitLength.hearts",
+  operator: "gte",
+  value: 6,
+  constrainsDimensions: ["suitIdentity", "suitLength"],
+  derivesFrom: [],
+});
+
+const longSpadesEntry = defineBooleanFact({
+  id: DONT_FACT_IDS.LONG_SPADES,
+  description: "S6+ — long spades for bypass/escape",
+  factId: "hand.suitLength.spades",
+  operator: "gte",
+  value: 6,
+  constrainsDimensions: ["suitIdentity", "suitLength"],
+  derivesFrom: [],
+});
+
+const longClubsEntry = defineBooleanFact({
+  id: DONT_FACT_IDS.LONG_CLUBS,
+  description: "C6+ — long clubs for escape",
+  factId: "hand.suitLength.clubs",
+  operator: "gte",
+  value: 6,
+  constrainsDimensions: ["suitIdentity", "suitLength"],
+  derivesFrom: [],
+});
+
 // ─── Hand-written facts (complex evaluators with composition) ─
 
 function handWrittenEntry(
@@ -125,11 +165,11 @@ const bothMajorsEntry = handWrittenEntry(
   },
 );
 
-// Composition: D5+ AND (H4+ OR S4+)
+// Composition: D4+ AND (H4+ OR S4+)
 const DIAMONDS_AND_MAJOR_COMPOSITION: FactComposition = {
   kind: "and",
   operands: [
-    { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: "gte", value: 5 } },
+    { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: "gte", value: 4 } },
     { kind: "or", operands: [
       { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 4 } },
       { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: "gte", value: 4 } },
@@ -142,7 +182,7 @@ const diamondsAndMajorEntry = handWrittenEntry(
     id: DONT_FACT_IDS.DIAMONDS_AND_MAJOR,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
-    description: "D5+ and (H4+ or S4+) — diamonds + a major for 2D bid",
+    description: "D4+ and (H4+ or S4+) — diamonds + a major for 2D bid",
     valueType: "boolean",
     derivesFrom: [],
     constrainsDimensions: ["suitIdentity", "suitLength", "suitRelation"],
@@ -154,16 +194,16 @@ const diamondsAndMajorEntry = handWrittenEntry(
     const spades = suitLengthOf(h, Suit.Spades);
     return fv(
       DONT_FACT_IDS.DIAMONDS_AND_MAJOR,
-      diamonds >= 5 && (hearts >= 4 || spades >= 4),
+      diamonds >= 4 && (hearts >= 4 || spades >= 4),
     );
   },
 );
 
-// Composition: C5+ AND (D4+ OR H4+ OR S4+)
+// Composition: C4+ AND (D4+ OR H4+ OR S4+)
 const CLUBS_AND_HIGHER_COMPOSITION: FactComposition = {
   kind: "and",
   operands: [
-    { kind: "primitive", clause: { factId: "hand.suitLength.clubs", operator: "gte", value: 5 } },
+    { kind: "primitive", clause: { factId: "hand.suitLength.clubs", operator: "gte", value: 4 } },
     { kind: "or", operands: [
       { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: "gte", value: 4 } },
       { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 4 } },
@@ -177,7 +217,7 @@ const clubsAndHigherEntry = handWrittenEntry(
     id: DONT_FACT_IDS.CLUBS_AND_HIGHER,
     layer: FactLayer.ModuleDerived,
     world: "acting-hand",
-    description: "C5+ and (D4+ or H4+ or S4+) — clubs + higher suit for 2C bid",
+    description: "C4+ and (D4+ or H4+ or S4+) — clubs + higher suit for 2C bid",
     valueType: "boolean",
     derivesFrom: [],
     constrainsDimensions: ["suitIdentity", "suitLength", "suitRelation"],
@@ -190,7 +230,7 @@ const clubsAndHigherEntry = handWrittenEntry(
     const spades = suitLengthOf(h, Suit.Spades);
     return fv(
       DONT_FACT_IDS.CLUBS_AND_HIGHER,
-      clubs >= 5 && (diamonds >= 4 || hearts >= 4 || spades >= 4),
+      clubs >= 4 && (diamonds >= 4 || hearts >= 4 || spades >= 4),
     );
   },
 );
@@ -464,6 +504,11 @@ const { definitions, evaluators } = buildExtension([
   clubsAndHigherEntry,
   naturalSpadesEntry,
   singleSuitedEntry,
+  // Advancer bypass/escape facts
+  longDiamondsEntry,
+  longHeartsEntry,
+  longSpadesEntry,
+  longClubsEntry,
   // Overcaller reveal facts
   singleSuitClubsEntry,
   singleSuitDiamondsEntry,

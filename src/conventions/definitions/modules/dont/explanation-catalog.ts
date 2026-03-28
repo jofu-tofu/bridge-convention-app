@@ -231,6 +231,48 @@ const FACT_EXPLANATIONS: Record<DontFactId, FactExplanationEntry> = {
     preferredLevel: "semantic",
     roles: ["supporting", "blocking"],
   },
+
+  // ── Advancer bypass/escape facts ──────────────────────────────
+  [DONT_FACT_IDS.LONG_DIAMONDS]: {
+    explanationId: "dont.longDiamonds",
+    factId: DONT_FACT_IDS.LONG_DIAMONDS,
+    templateKey: "dont.longDiamonds.supporting",
+    displayText: "6+ diamonds (own long suit)",
+    contrastiveTemplateKey: "dont.longDiamonds.whyNot",
+    contrastiveDisplayText: "Fewer than 6 diamonds",
+    preferredLevel: "semantic",
+    roles: ["supporting", "blocking"],
+  },
+  [DONT_FACT_IDS.LONG_HEARTS]: {
+    explanationId: "dont.longHearts",
+    factId: DONT_FACT_IDS.LONG_HEARTS,
+    templateKey: "dont.longHearts.supporting",
+    displayText: "6+ hearts (own long suit)",
+    contrastiveTemplateKey: "dont.longHearts.whyNot",
+    contrastiveDisplayText: "Fewer than 6 hearts",
+    preferredLevel: "semantic",
+    roles: ["supporting", "blocking"],
+  },
+  [DONT_FACT_IDS.LONG_SPADES]: {
+    explanationId: "dont.longSpades",
+    factId: DONT_FACT_IDS.LONG_SPADES,
+    templateKey: "dont.longSpades.supporting",
+    displayText: "6+ spades (own long suit)",
+    contrastiveTemplateKey: "dont.longSpades.whyNot",
+    contrastiveDisplayText: "Fewer than 6 spades",
+    preferredLevel: "semantic",
+    roles: ["supporting", "blocking"],
+  },
+  [DONT_FACT_IDS.LONG_CLUBS]: {
+    explanationId: "dont.longClubs",
+    factId: DONT_FACT_IDS.LONG_CLUBS,
+    templateKey: "dont.longClubs.supporting",
+    displayText: "6+ clubs (own long suit)",
+    contrastiveTemplateKey: "dont.longClubs.whyNot",
+    contrastiveDisplayText: "Fewer than 6 clubs",
+    preferredLevel: "semantic",
+    roles: ["supporting", "blocking"],
+  },
 };
 
 // ── Meaning explanations ──────────────────────────────────────────
@@ -347,6 +389,14 @@ const MEANING_EXPLANATIONS: Record<DontMeaningId, MeaningExplanationEntry> = {
     preferredLevel: "mechanical",
     roles: ["pedagogical"],
   },
+  [DONT_MEANING_IDS.BYPASS_2S_AFTER_2D]: {
+    explanationId: "dont.adv.bypass2sAfter2d",
+    meaningId: DONT_MEANING_IDS.BYPASS_2S_AFTER_2D,
+    templateKey: "dont.adv.bypass2sAfter2d.semantic",
+    displayText: "2S: Bypass relay with 6+ spades",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
 
   // ── Advancer after 2C (clubs + higher) ─────────────────────────
   [DONT_MEANING_IDS.ACCEPT_CLUBS_PASS]: {
@@ -363,6 +413,22 @@ const MEANING_EXPLANATIONS: Record<DontMeaningId, MeaningExplanationEntry> = {
     templateKey: "dont.adv.relay2dAfter2c.semantic",
     displayText: "2D: Relay asking which higher suit partner holds",
     preferredLevel: "mechanical",
+    roles: ["pedagogical"],
+  },
+  [DONT_MEANING_IDS.BYPASS_2H_AFTER_2C]: {
+    explanationId: "dont.adv.bypass2hAfter2c",
+    meaningId: DONT_MEANING_IDS.BYPASS_2H_AFTER_2C,
+    templateKey: "dont.adv.bypass2hAfter2c.semantic",
+    displayText: "2H: Bypass relay with 6+ hearts",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [DONT_MEANING_IDS.BYPASS_2S_AFTER_2C]: {
+    explanationId: "dont.adv.bypass2sAfter2c",
+    meaningId: DONT_MEANING_IDS.BYPASS_2S_AFTER_2C,
+    templateKey: "dont.adv.bypass2sAfter2c.semantic",
+    displayText: "2S: Bypass relay with 6+ spades",
+    preferredLevel: "semantic",
     roles: ["pedagogical"],
   },
 
@@ -383,6 +449,30 @@ const MEANING_EXPLANATIONS: Record<DontMeaningId, MeaningExplanationEntry> = {
     preferredLevel: "semantic",
     roles: ["pedagogical"],
   },
+  [DONT_MEANING_IDS.ESCAPE_3C_AFTER_2S]: {
+    explanationId: "dont.adv.escape3cAfter2s",
+    meaningId: DONT_MEANING_IDS.ESCAPE_3C_AFTER_2S,
+    templateKey: "dont.adv.escape3cAfter2s.semantic",
+    displayText: "3C: Escape to 6+ clubs (no spade fit)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [DONT_MEANING_IDS.ESCAPE_3D_AFTER_2S]: {
+    explanationId: "dont.adv.escape3dAfter2s",
+    meaningId: DONT_MEANING_IDS.ESCAPE_3D_AFTER_2S,
+    templateKey: "dont.adv.escape3dAfter2s.semantic",
+    displayText: "3D: Escape to 6+ diamonds (no spade fit)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [DONT_MEANING_IDS.ESCAPE_3H_AFTER_2S]: {
+    explanationId: "dont.adv.escape3hAfter2s",
+    meaningId: DONT_MEANING_IDS.ESCAPE_3H_AFTER_2S,
+    templateKey: "dont.adv.escape3hAfter2s.semantic",
+    displayText: "3H: Escape to 6+ hearts (no spade fit)",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
 
   // ── Advancer after X (double -- single suited) ─────────────────
   [DONT_MEANING_IDS.FORCED_RELAY_2C]: {
@@ -391,6 +481,30 @@ const MEANING_EXPLANATIONS: Record<DontMeaningId, MeaningExplanationEntry> = {
     templateKey: "dont.adv.forcedRelay.semantic",
     displayText: "2C: Forced relay after partner's double",
     preferredLevel: "mechanical",
+    roles: ["pedagogical"],
+  },
+  [DONT_MEANING_IDS.BYPASS_DIAMONDS_2D]: {
+    explanationId: "dont.adv.bypassDiamonds",
+    meaningId: DONT_MEANING_IDS.BYPASS_DIAMONDS_2D,
+    templateKey: "dont.adv.bypassDiamonds.semantic",
+    displayText: "2D: Bypass relay with 6+ diamonds",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [DONT_MEANING_IDS.BYPASS_HEARTS_2H]: {
+    explanationId: "dont.adv.bypassHearts",
+    meaningId: DONT_MEANING_IDS.BYPASS_HEARTS_2H,
+    templateKey: "dont.adv.bypassHearts.semantic",
+    displayText: "2H: Bypass relay with 6+ hearts",
+    preferredLevel: "semantic",
+    roles: ["pedagogical"],
+  },
+  [DONT_MEANING_IDS.BYPASS_SPADES_2S]: {
+    explanationId: "dont.adv.bypassSpades",
+    meaningId: DONT_MEANING_IDS.BYPASS_SPADES_2S,
+    templateKey: "dont.adv.bypassSpades.semantic",
+    displayText: "2S: Bypass relay with 6+ spades",
+    preferredLevel: "semantic",
     roles: ["pedagogical"],
   },
 

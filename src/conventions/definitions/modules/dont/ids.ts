@@ -38,6 +38,12 @@ export const DONT_FACT_IDS = {
   HAS_LONG_MINOR: "module.dont.hasLongMinor",
   LONG_MINOR_IS_CLUBS: "module.dont.longMinorIsClubs",
   LONG_MINOR_IS_DIAMONDS: "module.dont.longMinorIsDiamonds",
+
+  // Advancer bypass / escape facts (6+ in a suit)
+  LONG_DIAMONDS: "module.dont.longDiamonds",
+  LONG_HEARTS: "module.dont.longHearts",
+  LONG_SPADES: "module.dont.longSpades",
+  LONG_CLUBS: "module.dont.longClubs",
 } as const;
 
 export type DontFactId = (typeof DONT_FACT_IDS)[keyof typeof DONT_FACT_IDS];
@@ -72,17 +78,26 @@ export const DONT_MEANING_IDS = {
   // Advancer after 2D (diamonds + major)
   ACCEPT_DIAMONDS_PASS: "dont:accept-diamonds-pass",
   RELAY_2H_AFTER_2D: "dont:relay-2h-after-2d",
+  BYPASS_2S_AFTER_2D: "dont:bypass-2s-after-2d",
 
   // Advancer after 2C (clubs + higher)
   ACCEPT_CLUBS_PASS: "dont:accept-clubs-pass",
   RELAY_2D_AFTER_2C: "dont:relay-2d-after-2c",
+  BYPASS_2H_AFTER_2C: "dont:bypass-2h-after-2c",
+  BYPASS_2S_AFTER_2C: "dont:bypass-2s-after-2c",
 
   // Advancer after 2S (natural spades)
   ACCEPT_SPADES_PASS: "dont:accept-spades-pass",
   ACCEPT_SPADES_FALLBACK: "dont:accept-spades-fallback",
+  ESCAPE_3C_AFTER_2S: "dont:escape-3c-after-2s",
+  ESCAPE_3D_AFTER_2S: "dont:escape-3d-after-2s",
+  ESCAPE_3H_AFTER_2S: "dont:escape-3h-after-2s",
 
   // Advancer after X (double — single suited)
   FORCED_RELAY_2C: "dont:forced-relay-2c",
+  BYPASS_DIAMONDS_2D: "dont:bypass-diamonds-2d",
+  BYPASS_HEARTS_2H: "dont:bypass-hearts-2h",
+  BYPASS_SPADES_2S: "dont:bypass-spades-2s",
 
   // Overcaller reveal after X -> 2C
   REVEAL_CLUBS_PASS: "dont:reveal-clubs-pass",
@@ -119,6 +134,8 @@ export const DONT_CLASSES = {
   PREFER_SPADES: "dont:prefer-spades",        // 2S after 2H — prefer spades
   RELAY_ASK: "dont:relay-ask",               // Next step relay
   ESCAPE_MINOR: "dont:escape-minor",          // 3C/3D escape with 6+ minor
+  BYPASS_SUIT: "dont:bypass-suit",            // Bypass relay with own long suit
+  ESCAPE_SUIT: "dont:escape-suit",            // 3-level escape with own long suit
   FORCED_RELAY: "dont:forced-relay",          // 2C after double — must relay
 
   // Overcaller reveal/relay responses

@@ -315,7 +315,30 @@ export const DONT_ADVANCER_2D_SURFACES = [
     DONT_CTX,
   ),
 
-  // 2. 2H — relay asking for the major
+  // 2. 2S — bypass relay with 6+ spades
+  createSurface(
+    {
+      meaningId: DONT_MEANING_IDS.BYPASS_2S_AFTER_2D,
+      semanticClassId: DONT_CLASSES.BYPASS_SUIT,
+      encoding: { defaultCall: bid(2, BidSuit.Spades) },
+      clauses: [
+        {
+          factId: DONT_FACT_IDS.LONG_SPADES,
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+        },
+      ],
+      band: "should",
+      declarationOrder: 1,
+      sourceIntent: { type: "DONTBypassSpadesAfter2D", params: {} },
+      disclosure: "natural",
+      teachingLabel: "2S — bypass (6+ spades)",
+    },
+    DONT_CTX,
+  ),
+
+  // 3. 2H — relay asking for the major (catch-all)
   createSurface(
     {
       meaningId: DONT_MEANING_IDS.RELAY_2H_AFTER_2D,
@@ -323,7 +346,7 @@ export const DONT_ADVANCER_2D_SURFACES = [
       encoding: { defaultCall: bid(2, BidSuit.Hearts) },
       clauses: [],
       band: "should",
-      declarationOrder: 1,
+      declarationOrder: 2,
       sourceIntent: { type: "DONTRelayAskMajor", params: {} },
       disclosure: "alert",
       teachingLabel: "2H — relay (ask for major)",
@@ -361,7 +384,53 @@ export const DONT_ADVANCER_2C_SURFACES = [
     DONT_CTX,
   ),
 
-  // 2. 2D — relay asking for higher suit
+  // 2. 2H — bypass relay with 6+ hearts
+  createSurface(
+    {
+      meaningId: DONT_MEANING_IDS.BYPASS_2H_AFTER_2C,
+      semanticClassId: DONT_CLASSES.BYPASS_SUIT,
+      encoding: { defaultCall: bid(2, BidSuit.Hearts) },
+      clauses: [
+        {
+          factId: DONT_FACT_IDS.LONG_HEARTS,
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+        },
+      ],
+      band: "should",
+      declarationOrder: 1,
+      sourceIntent: { type: "DONTBypassHeartsAfter2C", params: {} },
+      disclosure: "natural",
+      teachingLabel: "2H — bypass (6+ hearts)",
+    },
+    DONT_CTX,
+  ),
+
+  // 3. 2S — bypass relay with 6+ spades
+  createSurface(
+    {
+      meaningId: DONT_MEANING_IDS.BYPASS_2S_AFTER_2C,
+      semanticClassId: DONT_CLASSES.BYPASS_SUIT,
+      encoding: { defaultCall: bid(2, BidSuit.Spades) },
+      clauses: [
+        {
+          factId: DONT_FACT_IDS.LONG_SPADES,
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+        },
+      ],
+      band: "should",
+      declarationOrder: 2,
+      sourceIntent: { type: "DONTBypassSpadesAfter2C", params: {} },
+      disclosure: "natural",
+      teachingLabel: "2S — bypass (6+ spades)",
+    },
+    DONT_CTX,
+  ),
+
+  // 4. 2D — relay asking for higher suit (catch-all)
   createSurface(
     {
       meaningId: DONT_MEANING_IDS.RELAY_2D_AFTER_2C,
@@ -369,7 +438,7 @@ export const DONT_ADVANCER_2C_SURFACES = [
       encoding: { defaultCall: bid(2, BidSuit.Diamonds) },
       clauses: [],
       band: "should",
-      declarationOrder: 1,
+      declarationOrder: 3,
       sourceIntent: { type: "DONTRelayAskHigher", params: {} },
       disclosure: "alert",
       teachingLabel: "2D — relay (ask for higher suit)",
@@ -407,7 +476,76 @@ export const DONT_ADVANCER_2S_SURFACES = [
     DONT_CTX,
   ),
 
-  // 2. Pass fallback — no alternative
+  // 2. 3C — escape with 6+ clubs
+  createSurface(
+    {
+      meaningId: DONT_MEANING_IDS.ESCAPE_3C_AFTER_2S,
+      semanticClassId: DONT_CLASSES.ESCAPE_SUIT,
+      encoding: { defaultCall: bid(3, BidSuit.Clubs) },
+      clauses: [
+        {
+          factId: DONT_FACT_IDS.LONG_CLUBS,
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+        },
+      ],
+      band: "should",
+      declarationOrder: 1,
+      sourceIntent: { type: "DONTEscape3CAfter2S", params: {} },
+      disclosure: "natural",
+      teachingLabel: "3C — escape (6+ clubs)",
+    },
+    DONT_CTX,
+  ),
+
+  // 3. 3D — escape with 6+ diamonds
+  createSurface(
+    {
+      meaningId: DONT_MEANING_IDS.ESCAPE_3D_AFTER_2S,
+      semanticClassId: DONT_CLASSES.ESCAPE_SUIT,
+      encoding: { defaultCall: bid(3, BidSuit.Diamonds) },
+      clauses: [
+        {
+          factId: DONT_FACT_IDS.LONG_DIAMONDS,
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+        },
+      ],
+      band: "should",
+      declarationOrder: 2,
+      sourceIntent: { type: "DONTEscape3DAfter2S", params: {} },
+      disclosure: "natural",
+      teachingLabel: "3D — escape (6+ diamonds)",
+    },
+    DONT_CTX,
+  ),
+
+  // 4. 3H — escape with 6+ hearts
+  createSurface(
+    {
+      meaningId: DONT_MEANING_IDS.ESCAPE_3H_AFTER_2S,
+      semanticClassId: DONT_CLASSES.ESCAPE_SUIT,
+      encoding: { defaultCall: bid(3, BidSuit.Hearts) },
+      clauses: [
+        {
+          factId: DONT_FACT_IDS.LONG_HEARTS,
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+        },
+      ],
+      band: "should",
+      declarationOrder: 3,
+      sourceIntent: { type: "DONTEscape3HAfter2S", params: {} },
+      disclosure: "natural",
+      teachingLabel: "3H — escape (6+ hearts)",
+    },
+    DONT_CTX,
+  ),
+
+  // 5. Pass fallback — no alternative
   createSurface(
     {
       meaningId: DONT_MEANING_IDS.ACCEPT_SPADES_FALLBACK,
@@ -415,7 +553,7 @@ export const DONT_ADVANCER_2S_SURFACES = [
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
       band: "avoid",
-      declarationOrder: 1,
+      declarationOrder: 4,
       sourceIntent: { type: "DONTAcceptSpadesFallback", params: {} },
       disclosure: "natural",
       teachingLabel: "Pass (no alternative)",
@@ -429,6 +567,76 @@ export const DONT_ADVANCER_2S_SURFACES = [
 // 2C = forced relay (must bid, unconditional)
 
 export const DONT_ADVANCER_DOUBLE_SURFACES = [
+  // 1. 2D bypass — 6+ diamonds, non-forcing
+  createSurface(
+    {
+      meaningId: DONT_MEANING_IDS.BYPASS_DIAMONDS_2D,
+      semanticClassId: DONT_CLASSES.BYPASS_SUIT,
+      encoding: { defaultCall: bid(2, BidSuit.Diamonds) },
+      clauses: [
+        {
+          factId: DONT_FACT_IDS.LONG_DIAMONDS,
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+        },
+      ],
+      band: "should",
+      declarationOrder: 0,
+      sourceIntent: { type: "DONTBypassDiamonds", params: {} },
+      disclosure: "natural",
+      teachingLabel: "2D — bypass (6+ diamonds)",
+    },
+    DONT_CTX,
+  ),
+
+  // 2. 2H bypass — 6+ hearts, non-forcing
+  createSurface(
+    {
+      meaningId: DONT_MEANING_IDS.BYPASS_HEARTS_2H,
+      semanticClassId: DONT_CLASSES.BYPASS_SUIT,
+      encoding: { defaultCall: bid(2, BidSuit.Hearts) },
+      clauses: [
+        {
+          factId: DONT_FACT_IDS.LONG_HEARTS,
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+        },
+      ],
+      band: "should",
+      declarationOrder: 1,
+      sourceIntent: { type: "DONTBypassHearts", params: {} },
+      disclosure: "natural",
+      teachingLabel: "2H — bypass (6+ hearts)",
+    },
+    DONT_CTX,
+  ),
+
+  // 3. 2S bypass — 6+ spades, non-forcing
+  createSurface(
+    {
+      meaningId: DONT_MEANING_IDS.BYPASS_SPADES_2S,
+      semanticClassId: DONT_CLASSES.BYPASS_SUIT,
+      encoding: { defaultCall: bid(2, BidSuit.Spades) },
+      clauses: [
+        {
+          factId: DONT_FACT_IDS.LONG_SPADES,
+          operator: "boolean",
+          value: true,
+          isPublic: true,
+        },
+      ],
+      band: "should",
+      declarationOrder: 2,
+      sourceIntent: { type: "DONTBypassSpades", params: {} },
+      disclosure: "natural",
+      teachingLabel: "2S — bypass (6+ spades)",
+    },
+    DONT_CTX,
+  ),
+
+  // 4. 2C — forced relay (must bid, unconditional catch-all)
   createSurface(
     {
       meaningId: DONT_MEANING_IDS.FORCED_RELAY_2C,
@@ -436,7 +644,7 @@ export const DONT_ADVANCER_DOUBLE_SURFACES = [
       encoding: { defaultCall: bid(2, BidSuit.Clubs) },
       clauses: [],
       band: "must",
-      declarationOrder: 0,
+      declarationOrder: 3,
       sourceIntent: { type: "DONTForcedRelay", params: {} },
       disclosure: "alert",
       teachingLabel: "2C — forced relay after double",
