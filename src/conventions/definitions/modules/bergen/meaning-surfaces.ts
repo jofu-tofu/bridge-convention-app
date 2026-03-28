@@ -25,6 +25,8 @@ export const BERGEN_THRESHOLDS = {
 
   // R2: Opener rebids after constructive raise
   OPENER_GAME_AFTER_CONSTRUCTIVE_MIN: 17,
+  OPENER_GAME_TRY_AFTER_CONSTRUCTIVE_MIN: 14,
+  OPENER_GAME_TRY_AFTER_CONSTRUCTIVE_MAX: 16,
   OPENER_SIGNOFF_AFTER_CONSTRUCTIVE_MAX: 13,
 
   // R2: Opener rebids after limit raise
@@ -218,19 +220,18 @@ function createBergenR1Surfaces(
 /**
  * R2 surfaces after constructive raise (1M-P-3C-P).
  *
- * Opener evaluates HCP to accept or decline:
+ * Opener evaluates HCP to decide:
  * - 17+ HCP → bid game (4M)
- * - ≤13 HCP → pass (decline)
- *
- * The 14-16 HCP help-suit game try is omitted here because it requires
- * dynamic call selection based on hand shape (weakest side suit) that
- * static meaning surfaces cannot express.
+ * - 14-16 HCP → game try (cheapest non-trump suit: 3D after 1H, 3H after 1S)
+ * - ≤13 HCP → sign off (3M)
  */
 function createBergenR2AfterConstructiveSurfaces(
   suit: "hearts" | "spades",
 ): readonly BidMeaning[] {
   const bindings = { suit } as const;
   const majorStrain = suitToBidSuit(suit);
+  // Game try encoding: cheapest non-trump suit above 3C
+  const gameTryStrain = suit === "hearts" ? BidSuit.Diamonds : BidSuit.Hearts;
 
   const ids = BERGEN_MEANING_BY_SUIT[suit];
 
@@ -256,6 +257,30 @@ function createBergenR2AfterConstructiveSurfaces(
       surfaceBindings: bindings,
     }, BERGEN_CTX),
 
+    // Opener game try: 14-16 HCP → cheapest non-trump suit (3D after 1H, 3H after 1S)
+    createSurface({
+      meaningId: ids.openerGameTryAfterConstructive,
+      semanticClassId: BERGEN_CLASSES.OPENER_GAME_TRY_AFTER_CONSTRUCTIVE,
+      encoding: { defaultCall: bid(3, gameTryStrain) },
+      clauses: [
+        {
+          factId: BERGEN_CLAUSE_FACT_IDS.HAND_HCP,
+          operator: "range",
+          value: {
+            min: BERGEN_THRESHOLDS.OPENER_GAME_TRY_AFTER_CONSTRUCTIVE_MIN,
+            max: BERGEN_THRESHOLDS.OPENER_GAME_TRY_AFTER_CONSTRUCTIVE_MAX,
+          },
+          isPublic: true,
+        },
+      ],
+      band: "should",
+      declarationOrder: 1,
+      sourceIntent: { type: "GameTry", params: { suit } },
+      disclosure: "natural",
+      teachingLabel: `Game try (3${suit === "hearts" ? "D" : "H"})`,
+      surfaceBindings: bindings,
+    }, BERGEN_CTX),
+
     // Opener signoff: ≤13 HCP → 3M (return to trump suit)
     createSurface({
       meaningId: ids.openerSignoffAfterConstructive,
@@ -270,7 +295,7 @@ function createBergenR2AfterConstructiveSurfaces(
         },
       ],
       band: "must",
-      declarationOrder: 1,
+      declarationOrder: 2,
       sourceIntent: { type: "DeclineInvitation", params: { suit } },
       disclosure: "natural",
       teachingLabel: "Decline constructive",
