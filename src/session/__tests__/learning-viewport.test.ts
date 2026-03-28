@@ -232,11 +232,14 @@ describe("clause system variance", () => {
 
       expect(systemFactClause.systemVariants).toBeDefined();
       expect(systemFactClause.systemVariants!.length).toBe(3);
-      // Verify concrete per-system descriptions (should show HCP ranges, not raw boolean)
+      // Verify concrete per-system descriptions (should show numeric thresholds, not raw boolean)
       for (const variant of systemFactClause.systemVariants!) {
         expect(variant.systemLabel).toBeTruthy();
         expect(variant.description).toBeTruthy();
-        expect(variant.description).toContain("HCP");
+        expect(variant.description).toMatch(/\d/);
+        // TP-aware facts should have trump and NT total-point descriptions
+        expect(variant.trumpTpDescription).toBeTruthy();
+        expect(variant.ntTpDescription).toBeTruthy();
       }
     });
   });

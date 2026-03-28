@@ -372,6 +372,10 @@ export interface PhaseGroupView {
 export interface ClauseSystemVariant {
   readonly systemLabel: string;
   readonly description: string;
+  /** Trump total-point equivalent (HCP + shortage) — present for facts with TP thresholds. */
+  readonly trumpTpDescription?: string;
+  /** NT total-point equivalent (HCP + length) — present for facts with TP thresholds. */
+  readonly ntTpDescription?: string;
 }
 
 /** A single fact requirement on a learning surface. */

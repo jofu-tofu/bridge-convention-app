@@ -65,30 +65,47 @@ const ALL_SYSTEMS: readonly { sys: SystemConfig; label: string }[] =
 
 /**
  * Describe what a system-derived fact concretely means for a given SystemConfig.
- * Returns the human-readable threshold/value, or null for unrecognized facts.
+ * Returns the HCP description + optional trump/NT total-point descriptions, or null for unrecognized facts.
  */
-function describeSystemFactValue(factId: string, sys: SystemConfig): string | null {
+function describeSystemFactValue(
+  factId: string,
+  sys: SystemConfig,
+): { hcp: string; trumpTp?: string; ntTp?: string } | null {
   switch (factId) {
-    case "system.responder.weakHand":
-      return `< ${sys.responderThresholds.inviteMin} HCP`;
-    case "system.responder.inviteValues":
-      return `${sys.responderThresholds.inviteMin}\u2013${sys.responderThresholds.inviteMax} HCP`;
-    case "system.responder.gameValues":
-      return `${sys.responderThresholds.gameMin}+ HCP`;
-    case "system.responder.slamValues":
-      return `${sys.responderThresholds.slamMin}+ HCP`;
-    case "system.opener.notMinimum":
-      return `${sys.openerRebid.notMinimum}+ HCP`;
+    case "system.responder.weakHand": {
+      const t = sys.responderThresholds;
+      return { hcp: `< ${t.inviteMin}`, trumpTp: `< ${t.inviteMinTp.trump}`, ntTp: `< ${t.inviteMinTp.nt}` };
+    }
+    case "system.responder.inviteValues": {
+      const t = sys.responderThresholds;
+      return {
+        hcp: `${t.inviteMin}\u2013${t.inviteMax}`,
+        trumpTp: `${t.inviteMinTp.trump}\u2013${t.inviteMaxTp.trump}`,
+        ntTp: `${t.inviteMinTp.nt}\u2013${t.inviteMaxTp.nt}`,
+      };
+    }
+    case "system.responder.gameValues": {
+      const t = sys.responderThresholds;
+      return { hcp: `${t.gameMin}+`, trumpTp: `${t.gameMinTp.trump}+`, ntTp: `${t.gameMinTp.nt}+` };
+    }
+    case "system.responder.slamValues": {
+      const t = sys.responderThresholds;
+      return { hcp: `${t.slamMin}+`, trumpTp: `${t.slamMinTp.trump}+`, ntTp: `${t.slamMinTp.nt}+` };
+    }
+    case "system.opener.notMinimum": {
+      const r = sys.openerRebid;
+      return { hcp: `${r.notMinimum}+`, trumpTp: `${r.notMinimumTp.trump}+`, ntTp: `${r.notMinimumTp.nt}+` };
+    }
     case "system.responder.twoLevelNewSuit":
-      return `${sys.suitResponse.twoLevelMin}+ HCP`;
+      return { hcp: `${sys.suitResponse.twoLevelMin}+ HCP` };
     case "system.suitResponse.isGameForcing":
-      return sys.suitResponse.twoLevelForcingDuration === "game" ? "Game-forcing" : "One-round forcing";
+      return { hcp: sys.suitResponse.twoLevelForcingDuration === "game" ? "Game-forcing" : "One-round forcing" };
     case "system.oneNtResponseAfterMajor.forcing":
-      return `1NT is ${sys.oneNtResponseAfterMajor.forcing}`;
+      return { hcp: `1NT is ${sys.oneNtResponseAfterMajor.forcing}` };
     case "system.responder.oneNtRange":
-      return `${sys.oneNtResponseAfterMajor.minHcp}\u2013${sys.oneNtResponseAfterMajor.maxHcp} HCP`;
+      return { hcp: `${sys.oneNtResponseAfterMajor.minHcp}\u2013${sys.oneNtResponseAfterMajor.maxHcp} HCP` };
     case "system.dontOvercall.inRange":
-      return `${sys.dontOvercall.minHcp}\u2013${sys.dontOvercall.maxHcp} HCP`;
+      return { hcp: `${sys.dontOvercall.minHcp}\u2013${sys.dontOvercall.maxHcp} HCP` };
     default:
       return null;
   }
@@ -96,10 +113,16 @@ function describeSystemFactValue(factId: string, sys: SystemConfig): string | nu
 
 /** Build system variants for a system.* fact — one entry per known base system. */
 function buildSystemVariants(factId: string): readonly ClauseSystemVariant[] {
-  return ALL_SYSTEMS.map(({ sys, label }) => ({
-    systemLabel: label,
-    description: describeSystemFactValue(factId, sys) ?? factId,
-  }));
+  return ALL_SYSTEMS.map(({ sys, label }) => {
+    const result = describeSystemFactValue(factId, sys);
+    if (!result) return { systemLabel: label, description: factId };
+    return {
+      systemLabel: label,
+      description: result.hcp,
+      trumpTpDescription: result.trumpTp,
+      ntTpDescription: result.ntTp,
+    };
+  });
 }
 
 /** Read the description runtime-property from a BidMeaningClause (set by createSurface). */

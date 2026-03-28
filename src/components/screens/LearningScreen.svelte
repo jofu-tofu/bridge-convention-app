@@ -390,16 +390,40 @@
       aria-label="Close popover"
       onclick={hideVariance}
     ></button>
+    {@const hasTp = variancePopover.variants.some((v) => v.trumpTpDescription)}
     <div
-      class="fixed z-[--z-modal] rounded-[--radius-md] border border-border-subtle bg-bg-card shadow-lg px-3 py-2 min-w-[140px] w-max max-w-[240px]"
+      class="fixed z-[--z-modal] rounded-[--radius-md] border border-border-subtle bg-bg-card shadow-lg px-3 py-2 min-w-[140px] w-max max-w-[360px]"
       style="left: {variancePopover.x}px; top: {variancePopover.flipUp ? 'auto' : `${variancePopover.y}px`}; bottom: {variancePopover.flipUp ? `${window.innerHeight - variancePopover.y + 4}px` : 'auto'}"
       role="tooltip"
     >
-      {#each variancePopover.variants as variant (variant.systemLabel)}
-        <span class="block text-[11px] leading-relaxed text-text-muted">
-          <span class="font-semibold text-text-secondary">{variant.systemLabel}:</span> {variant.description}
-        </span>
-      {/each}
+      {#if hasTp}
+        <table class="text-[11px] leading-relaxed w-full">
+          <thead>
+            <tr class="text-text-muted">
+              <th class="text-left font-medium pr-3 pb-0.5"></th>
+              <th class="text-right font-medium pr-3 pb-0.5">HCP</th>
+              <th class="text-right font-medium pr-3 pb-0.5">Trump TP</th>
+              <th class="text-right font-medium pb-0.5">NT TP</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each variancePopover.variants as variant (variant.systemLabel)}
+              <tr>
+                <td class="font-semibold text-text-secondary pr-3">{variant.systemLabel}</td>
+                <td class="text-right text-text-muted pr-3">{variant.description}</td>
+                <td class="text-right text-text-muted pr-3">{variant.trumpTpDescription ?? '\u2014'}</td>
+                <td class="text-right text-text-muted">{variant.ntTpDescription ?? '\u2014'}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      {:else}
+        {#each variancePopover.variants as variant (variant.systemLabel)}
+          <span class="block text-[11px] leading-relaxed text-text-muted">
+            <span class="font-semibold text-text-secondary">{variant.systemLabel}:</span> {variant.description}
+          </span>
+        {/each}
+      {/if}
     </div>
   {/if}
 </main>
