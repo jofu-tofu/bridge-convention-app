@@ -69,3 +69,11 @@ The learning screen should render meaning surfaces as multiple synchronized view
 **Learning science principles applied:** Cognitive load theory (progressive disclosure, segmenting), worked examples → faded practice (expertise reversal effect), retrieval practice (Roediger & Karpicke), spaced practice (Cepeda).
 
 **Current status:** LearningScreen shell exists with sidebar + about card. Surface→display adapter, guided flow, quiz mode, and skill-adaptive presentation are not yet started. The research strongly supports one source of truth (meaning surfaces + fact catalog) → multiple rendered views.
+
+## Total Points & System Facts
+
+### `TotalPointEquivalent.nt` is display-only
+`TotalPointEquivalent.nt` values (Profiles screen reference) are NOT used in runtime fact evaluation. Only `.trump` is used at runtime by system-fact relational evaluators when `fitAgreed` is present. Standard bridge uses HCP for NT evaluation.
+
+### System facts auto-detect HCP vs trump TP via `fitAgreed`
+System facts (`system.responder.inviteValues`, etc.) use `fitAgreed` from the negotiation kernel to detect trump context — not `bindings.suit`. `bindings.suit` means "parameterized suit" (not "agreed suit"). Using it for system facts would mis-detect non-support modules (e.g., a future "New Suit Response" module parameterized with `$suit` is not a fit agreement). Both standard (HCP-only) and relational (fitAgreed-aware) evaluators exist for these facts — the standard evaluator runs as baseline, and the relational evaluator overrides when relational context is provided.

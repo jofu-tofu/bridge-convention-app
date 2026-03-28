@@ -28,6 +28,9 @@ import { topologicalSort } from "./fact-utils";
 export interface RelationalFactContext {
   readonly bindings?: Readonly<Record<string, string>>;
   readonly publicCommitments?: readonly PublicConstraint[];
+  /** Agreed strain from kernel state. Used by system-fact relational evaluators to
+   *  auto-detect trump context and switch to total-point thresholds. */
+  readonly fitAgreed?: { readonly strain: string; readonly confidence: "tentative" | "final" } | null;
 }
 
 /** Optional parameters for evaluateFacts(), grouped to reduce positional parameter count. */
@@ -76,11 +79,14 @@ export function evaluateFacts(
     effectiveRelationalEvaluators = undefined;
   }
 
-  // Standard evaluators: run all non-relational facts
+  // Standard evaluators: run facts that have a standard evaluator. Facts with BOTH
+  // standard and relational evaluators run in the standard pass first (HCP-only baseline),
+  // then get overridden in the relational pass when relationalContext is provided.
+  // Facts with ONLY relational evaluators are excluded from the standard pass.
   const actingHandDefs = effectiveDefinitions.filter((f) => f.world === "acting-hand");
   const relEvals = effectiveRelationalEvaluators;
   const standardDefs = relEvals
-    ? actingHandDefs.filter((f) => !relEvals.has(f.id))
+    ? actingHandDefs.filter((f) => !relEvals.has(f.id) || effectiveEvaluators.has(f.id))
     : actingHandDefs;
   const sorted = topologicalSort(standardDefs);
 
@@ -99,7 +105,9 @@ export function evaluateFacts(
     }
   }
 
-  // Relational evaluators: run after standard facts, only when relationalContext provided
+  // Relational evaluators: run after standard facts, only when relationalContext provided.
+  // They override any standard evaluator values for the same fact ID (e.g., system facts
+  // have both a standard HCP-only evaluator and a relational fitAgreed-aware evaluator).
   if (relationalContext && relEvals) {
     const relationalDefs = actingHandDefs.filter((f) => relEvals.has(f.id));
     const relationalSorted = topologicalSort(relationalDefs);

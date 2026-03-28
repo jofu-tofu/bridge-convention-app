@@ -2,25 +2,33 @@
  * Pure display logic for the System Profiles screen.
  * Categories, field accessors, value formatting, comparison helpers.
  */
-import type { SystemConfig } from "../../service";
+import type { SystemConfig, TotalPointEquivalent } from "../../service";
 
 // ─── Types ────────────────────────────────────────────────────
 
-type FieldFormat =
+export type FieldFormat =
   | { type: "range"; min: (c: SystemConfig) => number; max: (c: SystemConfig) => number }
   | { type: "threshold"; value: (c: SystemConfig) => number }
+  | { type: "rangeWithTp";
+      min: (c: SystemConfig) => number; max: (c: SystemConfig) => number;
+      minTp: (c: SystemConfig) => TotalPointEquivalent;
+      maxTp: (c: SystemConfig) => TotalPointEquivalent }
+  | { type: "thresholdWithTp";
+      value: (c: SystemConfig) => number;
+      tp: (c: SystemConfig) => TotalPointEquivalent }
   | { type: "enum"; value: (c: SystemConfig) => string; labels: Record<string, string> }
   | { type: "majorLength"; value: (c: SystemConfig) => 4 | 5 };
 
-interface ProfileField {
+export interface ProfileField {
   label: string;
   accessor: (c: SystemConfig) => unknown;
   format: FieldFormat;
 }
 
-interface ProfileCategory {
+export interface ProfileCategory {
   label: string;
   fields: ProfileField[];
+  hasTotalPoints?: boolean;
 }
 
 // ─── Formatting ───────────────────────────────────────────────
@@ -30,7 +38,11 @@ export function formatFieldValue(config: SystemConfig, field: ProfileField): str
   switch (fmt.type) {
     case "range":
       return `${fmt.min(config)}\u2013${fmt.max(config)} HCP`;
+    case "rangeWithTp":
+      return `${fmt.min(config)}\u2013${fmt.max(config)} HCP`;
     case "threshold":
+      return `${fmt.value(config)}+ HCP`;
+    case "thresholdWithTp":
       return `${fmt.value(config)}+ HCP`;
     case "enum":
       return fmt.labels[fmt.value(config)] ?? fmt.value(config);
@@ -41,12 +53,48 @@ export function formatFieldValue(config: SystemConfig, field: ProfileField): str
   }
 }
 
+/** Format the trump total-point value for a field. Returns "" for non-TP fields. */
+export function formatTrumpTpValue(config: SystemConfig, field: ProfileField): string {
+  const fmt = field.format;
+  if (fmt.type === "rangeWithTp") {
+    return `${fmt.minTp(config).trump}\u2013${fmt.maxTp(config).trump} TP`;
+  }
+  if (fmt.type === "thresholdWithTp") {
+    return `${fmt.tp(config).trump}+ TP`;
+  }
+  return "";
+}
+
+/** Format the NT total-point value for a field. Returns "" for non-TP fields. */
+export function formatNtTpValue(config: SystemConfig, field: ProfileField): string {
+  const fmt = field.format;
+  if (fmt.type === "rangeWithTp") {
+    return `${fmt.minTp(config).nt}\u2013${fmt.maxTp(config).nt} TP`;
+  }
+  if (fmt.type === "thresholdWithTp") {
+    return `${fmt.tp(config).nt}+ TP`;
+  }
+  return "";
+}
+
 // ─── Comparison ───────────────────────────────────────────────
 
 export function valuesMatch(configs: SystemConfig[], field: ProfileField): boolean {
   if (configs.length <= 1) return true;
   const first = formatFieldValue(configs[0]!, field);
   return configs.every((c) => formatFieldValue(c, field) === first);
+}
+
+export function valuesMatchTrumpTp(configs: SystemConfig[], field: ProfileField): boolean {
+  if (configs.length <= 1) return true;
+  const first = formatTrumpTpValue(configs[0]!, field);
+  return configs.every((c) => formatTrumpTpValue(c, field) === first);
+}
+
+export function valuesMatchNtTp(configs: SystemConfig[], field: ProfileField): boolean {
+  if (configs.length <= 1) return true;
+  const first = formatNtTpValue(configs[0]!, field);
+  return configs.every((c) => formatNtTpValue(c, field) === first);
 }
 
 // ─── Category definitions ─────────────────────────────────────
@@ -64,31 +112,51 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
   },
   {
     label: "Responder Thresholds",
+    hasTotalPoints: true,
     fields: [
       {
         label: "Invite Range",
         accessor: (c) => c.responderThresholds,
-        format: { type: "range", min: (c) => c.responderThresholds.inviteMin, max: (c) => c.responderThresholds.inviteMax },
+        format: {
+          type: "rangeWithTp",
+          min: (c) => c.responderThresholds.inviteMin,
+          max: (c) => c.responderThresholds.inviteMax,
+          minTp: (c) => c.responderThresholds.inviteMinTp,
+          maxTp: (c) => c.responderThresholds.inviteMaxTp,
+        },
       },
       {
         label: "Game Minimum",
         accessor: (c) => c.responderThresholds.gameMin,
-        format: { type: "threshold", value: (c) => c.responderThresholds.gameMin },
+        format: {
+          type: "thresholdWithTp",
+          value: (c) => c.responderThresholds.gameMin,
+          tp: (c) => c.responderThresholds.gameMinTp,
+        },
       },
       {
         label: "Slam Explore",
         accessor: (c) => c.responderThresholds.slamMin,
-        format: { type: "threshold", value: (c) => c.responderThresholds.slamMin },
+        format: {
+          type: "thresholdWithTp",
+          value: (c) => c.responderThresholds.slamMin,
+          tp: (c) => c.responderThresholds.slamMinTp,
+        },
       },
     ],
   },
   {
     label: "Opener Rebid",
+    hasTotalPoints: true,
     fields: [
       {
         label: "Not Minimum",
         accessor: (c) => c.openerRebid.notMinimum,
-        format: { type: "threshold", value: (c) => c.openerRebid.notMinimum },
+        format: {
+          type: "thresholdWithTp",
+          value: (c) => c.openerRebid.notMinimum,
+          tp: (c) => c.openerRebid.notMinimumTp,
+        },
       },
     ],
   },

@@ -10,7 +10,7 @@ Convention bundles that each implement a bridge bidding convention using the mea
 - `capability-constraint-registry.ts` — Maps each capability ID to a `CapabilityArchetype` defining opener constraints, default auction, allowed dealers, and practitioner turn/seat. `archetypeSupportsRoleSelection()` derives whether a convention supports opener/responder role selection from archetype partnership membership.
 - `module-registry.ts` — Convention module registry.
 - `capability-vocabulary.ts` — Stable host-attachment capability IDs (`CAP_OPENING_1NT`, `CAP_OPENING_MAJOR`, `CAP_OPENING_WEAK_TWO`, `CAP_OPPONENT_1NT`).
-- `system-config.ts` — Merged from former `core/contracts/system-config.ts` + `core/contracts/base-system-vocabulary.ts`. Contains `BaseSystemId`, `BASE_SYSTEM_SAYC`, `BASE_SYSTEM_TWO_OVER_ONE`, `BASE_SYSTEM_ACOL`, `SystemConfig`, concrete system configs (`SAYC_SYSTEM_CONFIG`, etc.), `getSystemConfig()`, `AVAILABLE_BASE_SYSTEMS`.
+- `system-config.ts` — Merged from former `core/contracts/system-config.ts` + `core/contracts/base-system-vocabulary.ts`. Contains `BaseSystemId`, `BASE_SYSTEM_SAYC`, `BASE_SYSTEM_TWO_OVER_ONE`, `BASE_SYSTEM_ACOL`, `SystemConfig`, `TotalPointEquivalent` (trump = shortage-based TP, nt = display-only Profiles screen reference — NOT used at runtime), concrete system configs (`SAYC_SYSTEM_CONFIG`, etc.), `getSystemConfig()`, `AVAILABLE_BASE_SYSTEMS`.
 - `system-fact-vocabulary.ts` — System-provided fact IDs that modules reference for system-dependent thresholds and properties. Modules import these IDs, never concrete system configs. Moved from former `core/contracts/`.
 
 **Base system modules** (at `definitions/modules/` root, not inside any bundle):

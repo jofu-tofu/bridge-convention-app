@@ -88,8 +88,13 @@ export function protocolSpecToStrategy(
       // Extract relational context from surface bindings — all surfaces in a
       // given state share bindings (e.g. { suit: "hearts" }), so take the first.
       const firstBindings = visibleSurfaces.find(s => s.surfaceBindings)?.surfaceBindings;
-      const relationalContext = firstBindings
-        ? { bindings: firstBindings }
+      // Extract fitAgreed from the last committed step's kernel state
+      const lastKernel = log.length > 0 ? log[log.length - 1]!.stateAfter : null;
+      const relationalContext = (firstBindings || lastKernel?.fitAgreed)
+        ? {
+            ...(firstBindings ? { bindings: firstBindings } : {}),
+            ...(lastKernel?.fitAgreed ? { fitAgreed: lastKernel.fitAgreed } : {}),
+          }
         : undefined;
 
       const { result, facts } = runPipeline({

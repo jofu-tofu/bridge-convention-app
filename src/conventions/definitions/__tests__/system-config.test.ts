@@ -18,12 +18,10 @@ describe("getSystemConfig", () => {
     expect(cfg.systemId).toBe(BASE_SYSTEM_SAYC);
     expect(cfg.displayName).toBe("Standard American Yellow Card");
     expect(cfg.ntOpening).toEqual({ minHcp: 15, maxHcp: 17 });
-    expect(cfg.responderThresholds).toEqual({
-      inviteMin: 8,
-      inviteMax: 9,
-      gameMin: 10,
-      slamMin: 15,
-    });
+    expect(cfg.responderThresholds.inviteMin).toBe(8);
+    expect(cfg.responderThresholds.inviteMax).toBe(9);
+    expect(cfg.responderThresholds.gameMin).toBe(10);
+    expect(cfg.responderThresholds.slamMin).toBe(15);
     expect(cfg.openerRebid.notMinimum).toBe(16);
     expect(cfg.interference.redoubleMin).toBe(10);
   });
@@ -41,12 +39,10 @@ describe("getSystemConfig", () => {
     expect(cfg.systemId).toBe(BASE_SYSTEM_ACOL);
     expect(cfg.displayName).toBe("Acol");
     expect(cfg.ntOpening).toEqual({ minHcp: 12, maxHcp: 14 });
-    expect(cfg.responderThresholds).toEqual({
-      inviteMin: 10,
-      inviteMax: 12,
-      gameMin: 13,
-      slamMin: 19,
-    });
+    expect(cfg.responderThresholds.inviteMin).toBe(10);
+    expect(cfg.responderThresholds.inviteMax).toBe(12);
+    expect(cfg.responderThresholds.gameMin).toBe(13);
+    expect(cfg.responderThresholds.slamMin).toBe(19);
     expect(cfg.openerRebid.notMinimum).toBe(13);
     expect(cfg.interference.redoubleMin).toBe(9);
   });
@@ -147,6 +143,38 @@ describe("1NT response minHcp", () => {
       const cfg = getSystemConfig(meta.id);
       expect(cfg.oneNtResponseAfterMajor.minHcp).toBeGreaterThanOrEqual(5);
       expect(cfg.oneNtResponseAfterMajor.minHcp).toBeLessThanOrEqual(7);
+    }
+  });
+});
+
+describe("total-point equivalents", () => {
+  const allConfigs = AVAILABLE_BASE_SYSTEMS.map((s) => getSystemConfig(s.id));
+
+  it("TP ranges are valid (min <= max for trump and nt)", () => {
+    for (const cfg of allConfigs) {
+      const t = cfg.responderThresholds;
+      expect(t.inviteMinTp.trump).toBeLessThanOrEqual(t.inviteMaxTp.trump);
+      expect(t.inviteMinTp.nt).toBeLessThanOrEqual(t.inviteMaxTp.nt);
+    }
+  });
+
+  it("trump TP values are >= corresponding HCP values (distribution adds, never subtracts)", () => {
+    for (const cfg of allConfigs) {
+      const t = cfg.responderThresholds;
+      expect(t.inviteMinTp.trump).toBeGreaterThanOrEqual(t.inviteMin);
+      expect(t.inviteMaxTp.trump).toBeGreaterThanOrEqual(t.inviteMax);
+      expect(t.gameMinTp.trump).toBeGreaterThanOrEqual(t.gameMin);
+      expect(t.slamMinTp.trump).toBeGreaterThanOrEqual(t.slamMin);
+      expect(cfg.openerRebid.notMinimumTp.trump).toBeGreaterThanOrEqual(cfg.openerRebid.notMinimum);
+    }
+  });
+
+  it("TP threshold ordering matches HCP ordering", () => {
+    for (const cfg of allConfigs) {
+      const t = cfg.responderThresholds;
+      expect(t.inviteMinTp.trump).toBeLessThanOrEqual(t.inviteMaxTp.trump);
+      expect(t.inviteMaxTp.trump).toBeLessThanOrEqual(t.gameMinTp.trump);
+      expect(t.gameMinTp.trump).toBeLessThan(t.slamMinTp.trump);
     }
   });
 });

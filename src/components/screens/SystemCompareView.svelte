@@ -1,7 +1,15 @@
 <script lang="ts">
   import { AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../../service";
   import type { BaseSystemId } from "../../service";
-  import { PROFILE_CATEGORIES, formatFieldValue, valuesMatch } from "./profile-display";
+  import {
+    PROFILE_CATEGORIES,
+    formatFieldValue,
+    formatTrumpTpValue,
+    formatNtTpValue,
+    valuesMatch,
+    valuesMatchTrumpTp,
+    valuesMatchNtTp,
+  } from "./profile-display";
 
   const allConfigs = AVAILABLE_BASE_SYSTEMS.map((s) => getSystemConfig(s.id as BaseSystemId));
 </script>
@@ -33,21 +41,82 @@
           </td>
         </tr>
         {#each category.fields as field (field.label)}
-          {@const differs = !valuesMatch(allConfigs, field)}
-          <tr
-            class="border-t border-border-subtle/30 transition-colors
-              {differs ? 'diff-row' : ''}"
-          >
-            <td class="px-4 py-2.5 text-text-secondary">{field.label}</td>
-            {#each allConfigs as config (config.systemId)}
-              <td
-                class="px-3 py-2.5 text-center tabular-nums tracking-tight
-                  {differs ? 'font-semibold text-accent-primary' : 'text-text-primary'}"
-              >
-                {formatFieldValue(config, field)}
+          {#if category.hasTotalPoints}
+            <!-- HCP sub-row -->
+            {@const hcpDiffers = !valuesMatch(allConfigs, field)}
+            <tr
+              class="border-t border-border-subtle/30 transition-colors
+                {hcpDiffers ? 'diff-row' : ''}"
+            >
+              <td class="px-4 py-1.5 text-text-secondary">
+                <span class="text-xs text-text-muted mr-1">HCP</span>
+                {field.label}
               </td>
-            {/each}
-          </tr>
+              {#each allConfigs as config (config.systemId)}
+                <td
+                  class="px-3 py-1.5 text-center tabular-nums tracking-tight
+                    {hcpDiffers ? 'font-semibold text-accent-primary' : 'text-text-primary'}"
+                >
+                  {formatFieldValue(config, field)}
+                </td>
+              {/each}
+            </tr>
+            <!-- Trump TP sub-row -->
+            {@const trumpDiffers = !valuesMatchTrumpTp(allConfigs, field)}
+            <tr
+              class="border-t border-border-subtle/20 transition-colors
+                {trumpDiffers ? 'diff-row' : ''}"
+            >
+              <td class="px-4 py-1.5 text-text-secondary">
+                <span class="text-xs text-text-muted mr-1">Trump</span>
+                {field.label}
+              </td>
+              {#each allConfigs as config (config.systemId)}
+                <td
+                  class="px-3 py-1.5 text-center tabular-nums tracking-tight
+                    {trumpDiffers ? 'font-semibold text-accent-primary' : 'text-text-primary'}"
+                >
+                  {formatTrumpTpValue(config, field)}
+                </td>
+              {/each}
+            </tr>
+            <!-- NT TP sub-row -->
+            {@const ntDiffers = !valuesMatchNtTp(allConfigs, field)}
+            <tr
+              class="border-t border-border-subtle/20 transition-colors
+                {ntDiffers ? 'diff-row' : ''}"
+            >
+              <td class="px-4 py-1.5 text-text-secondary">
+                <span class="text-xs text-text-muted mr-1">NT</span>
+                {field.label}
+              </td>
+              {#each allConfigs as config (config.systemId)}
+                <td
+                  class="px-3 py-1.5 text-center tabular-nums tracking-tight
+                    {ntDiffers ? 'font-semibold text-accent-primary' : 'text-text-primary'}"
+                >
+                  {formatNtTpValue(config, field)}
+                </td>
+              {/each}
+            </tr>
+          {:else}
+            <!-- Standard single row for non-TP fields -->
+            {@const differs = !valuesMatch(allConfigs, field)}
+            <tr
+              class="border-t border-border-subtle/30 transition-colors
+                {differs ? 'diff-row' : ''}"
+            >
+              <td class="px-4 py-2.5 text-text-secondary">{field.label}</td>
+              {#each allConfigs as config (config.systemId)}
+                <td
+                  class="px-3 py-2.5 text-center tabular-nums tracking-tight
+                    {differs ? 'font-semibold text-accent-primary' : 'text-text-primary'}"
+                >
+                  {formatFieldValue(config, field)}
+                </td>
+              {/each}
+            </tr>
+          {/if}
         {/each}
       {/each}
     </tbody>

@@ -72,7 +72,7 @@ export { archetypeSupportsRoleSelection, getPrimaryCapability } from "./definiti
 export { getBundleInput, listBundleInputs, resolveBundle, specFromBundle, specFromSystem, getBaseModuleIds } from "./definitions/system-registry";
 
 // ── Definitions (system config) ──────────────────────────────────────────
-export type { BaseSystemId, SystemConfig } from "./definitions/system-config";
+export type { BaseSystemId, SystemConfig, TotalPointEquivalent } from "./definitions/system-config";
 export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, BASE_SYSTEM_SAYC, BASE_SYSTEM_ACOL, getSystemConfig } from "./definitions/system-config";
 
 // ── Definitions (concrete bundles — for test setup) ─────────────────────

@@ -7,7 +7,7 @@ Bridges the convention pipeline to the BiddingStrategy interface. This is the co
 | File | Role |
 |------|------|
 | `meaning-strategy.ts` | meaningToStrategy() — wraps MeaningSurfaces as ConventionStrategy |
-| `protocol-adapter.ts` | protocolSpecToStrategy() — ConventionSpec → ConventionStrategy. Exports buildObservationLogViaRules(), findMatchingClaimForCall() |
+| `protocol-adapter.ts` | protocolSpecToStrategy() — ConventionSpec → ConventionStrategy. Exports buildObservationLogViaRules(), findMatchingClaimForCall(). Threads `fitAgreed` from the observation log's last kernel state into `RelationalFactContext` for trump-context-aware system facts. |
 | `bid-result-builder.ts` | Builds BidResult from pipeline output |
 | `practical-scorer.ts` | scoreCandidatePractically(), buildPracticalRecommendation(), LEVEL_HCP_TABLE |
 | `practical-types.ts` | ScoredCandidate, ScorableCandidate — local types |

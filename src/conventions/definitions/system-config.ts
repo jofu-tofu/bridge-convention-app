@@ -29,6 +29,18 @@ export type BaseSystemId =
   | typeof BASE_SYSTEM_TWO_OVER_ONE
   | typeof BASE_SYSTEM_ACOL;
 
+// ─── Total-point equivalents ────────────────────────────────
+
+/** Total-point equivalents for a threshold (trump = shortage-based, nt = length-based).
+ *  `trump` is used by pipeline system-fact evaluators when fitAgreed is present.
+ *  `nt` is display-only (Profiles screen reference) — NOT used in runtime evaluation.
+ *  Standard bridge uses HCP for NT evaluation; the NT TP column exists purely as a
+ *  teaching reference so students can see the full picture. */
+export interface TotalPointEquivalent {
+  readonly trump: number;
+  readonly nt: number;
+}
+
 // ─── 1NT system parameters ──────────────────────────────────
 
 export interface NtOpeningConfig {
@@ -47,11 +59,21 @@ export interface ResponderThresholds {
   readonly gameMin: number;
   /** Minimum HCP for slam exploration (e.g. 15 in SAYC). */
   readonly slamMin: number;
+  /** Total-point equivalent of inviteMin (trump = HCP+shortage, nt = HCP+length). */
+  readonly inviteMinTp: TotalPointEquivalent;
+  /** Total-point equivalent of inviteMax. */
+  readonly inviteMaxTp: TotalPointEquivalent;
+  /** Total-point equivalent of gameMin. */
+  readonly gameMinTp: TotalPointEquivalent;
+  /** Total-point equivalent of slamMin. */
+  readonly slamMinTp: TotalPointEquivalent;
 }
 
 export interface OpenerRebidThresholds {
   /** HCP at which opener is "not minimum" — typically ntOpening.minHcp + 1. */
   readonly notMinimum: number;
+  /** Total-point equivalent of notMinimum. */
+  readonly notMinimumTp: TotalPointEquivalent;
 }
 
 export interface InterferenceThresholds {
@@ -140,8 +162,12 @@ export const SAYC_SYSTEM_CONFIG: SystemConfig = {
     inviteMax: 9,
     gameMin: 10,
     slamMin: 15,
+    inviteMinTp: { trump: 8, nt: 8 },
+    inviteMaxTp: { trump: 10, nt: 9 },
+    gameMinTp: { trump: 10, nt: 10 },
+    slamMinTp: { trump: 16, nt: 15 },
   },
-  openerRebid: { notMinimum: 16 },
+  openerRebid: { notMinimum: 16, notMinimumTp: { trump: 16, nt: 16 } },
   interference: { redoubleMin: 10 },
   suitResponse: { twoLevelMin: 10, twoLevelForcingDuration: "one-round" },
   oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 10, minHcp: 6 },
@@ -158,8 +184,12 @@ export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
     inviteMax: 9,
     gameMin: 10,
     slamMin: 15,
+    inviteMinTp: { trump: 8, nt: 8 },
+    inviteMaxTp: { trump: 10, nt: 9 },
+    gameMinTp: { trump: 10, nt: 10 },
+    slamMinTp: { trump: 16, nt: 15 },
   },
-  openerRebid: { notMinimum: 16 },
+  openerRebid: { notMinimum: 16, notMinimumTp: { trump: 16, nt: 16 } },
   interference: { redoubleMin: 10 },
   suitResponse: { twoLevelMin: 12, twoLevelForcingDuration: "game" },
   oneNtResponseAfterMajor: { forcing: "semi-forcing", maxHcp: 12, minHcp: 6 },
@@ -178,9 +208,13 @@ export const ACOL_SYSTEM_CONFIG: SystemConfig = {
     inviteMax: 12,  // invite range: 10-12
     gameMin: 13,    // 13+12=25 combined for game
     slamMin: 19,    // 19+14=33 combined for slam
+    inviteMinTp: { trump: 10, nt: 10 },
+    inviteMaxTp: { trump: 13, nt: 12 },
+    gameMinTp: { trump: 13, nt: 13 },
+    slamMinTp: { trump: 20, nt: 19 },
   },
   // minHcp+1 pattern: accepts invite with 13-14, declines with 12
-  openerRebid: { notMinimum: 13 },
+  openerRebid: { notMinimum: 13, notMinimumTp: { trump: 13, nt: 13 } },
   // 9+12=21 min combined for penalty interest (cf. SAYC: 10+15=25). Assumes strength redouble — not Wriggle/SOS escape.
   interference: { redoubleMin: 9 },
   // Practical guideline; Acol forces new suit by structure regardless of HCP. Simplified for teaching.

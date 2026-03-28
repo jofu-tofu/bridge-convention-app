@@ -68,9 +68,9 @@ Root files are cross-cutting — imported by 2+ subfolders or by many external c
 
 | File | Role |
 | ---- | ---- |
-| `fact-evaluator.ts` | `evaluateFacts()` — 3-tier evaluation: primitive, bridge-derived, module-derived. Optional relational + posterior tiers. |
+| `fact-evaluator.ts` | `evaluateFacts()` — 3-tier evaluation: primitive, bridge-derived, module-derived. Optional relational + posterior tiers. `RelationalFactContext` includes `fitAgreed` for trump-context detection. Facts with both standard and relational evaluators run standard as baseline; relational overrides when context provided. |
 | `shared-fact-catalog.ts` | `createSharedFactCatalog()`, `SHARED_EVALUATORS` — shared fact catalog |
-| `system-fact-catalog.ts` | System-level fact definitions (HCP thresholds, forcing durations) per bidding system |
+| `system-fact-catalog.ts` | System-level fact definitions and evaluators per bidding system. 6 hand-dependent facts have BOTH standard (HCP-only) and relational (fitAgreed-aware, trump TP) evaluators. Standard runs as baseline; relational overrides when `RelationalFactContext.fitAgreed` is present. Exports `computeTrumpTotalPoints()` and `detectTrumpSuit()`. |
 | `hand-fact-resolver.ts` | `createHandFactResolver()` — bridge between fact catalog and posterior sampler |
 | `fact-factory.ts` | `defineBooleanFact()`, `definePerSuitFacts()`, `defineHcpRangeFact()`, `buildExtension()` |
 | `fact-helpers.ts` | Re-exports `num`, `bool`, `fv` fact constraint builder helpers |

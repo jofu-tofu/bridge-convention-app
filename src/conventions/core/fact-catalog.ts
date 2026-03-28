@@ -102,7 +102,11 @@ export type RelationalFactEvaluatorFn = (
   hand: Hand,
   evaluation: HandEvaluation,
   evaluated: ReadonlyMap<string, FactValue>,
-  context: { bindings?: Readonly<Record<string, string>>; publicCommitments?: readonly PublicConstraint[] },
+  context: {
+    bindings?: Readonly<Record<string, string>>;
+    publicCommitments?: readonly PublicConstraint[];
+    fitAgreed?: { readonly strain: string; readonly confidence: "tentative" | "final" } | null;
+  },
 ) => FactValue;
 
 /** Evaluator that bridges posterior engine probabilities into the fact catalog. */

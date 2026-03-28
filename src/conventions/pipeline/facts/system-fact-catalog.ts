@@ -15,9 +15,12 @@ import type {
   FactCatalogExtension,
   FactDefinition,
   FactEvaluatorFn,
+  FactValue,
+  RelationalFactEvaluatorFn,
 } from "../../core/fact-catalog";
 import { num, fv } from "./fact-helpers";
 import type { SystemConfig } from "../../definitions/system-config";
+import type { SuitName } from "../../../engine/types";
 import {
   SYSTEM_RESPONDER_WEAK_HAND,
   SYSTEM_RESPONDER_INVITE_VALUES,
@@ -55,6 +58,12 @@ import {
 // one on the 2/1 rule — and the pipeline selects the right one.
 // The evaluators receive SystemConfig via closure (createSystemEvaluators),
 // not via the FactEvaluatorFn signature.
+//
+// CONTEXT-AWARE EVALUATORS (Phase B): Six hand-dependent system facts
+// are promoted to relational evaluators so they auto-detect trump context
+// via fitAgreed. When fitAgreed.strain is a suit, they compute HCP +
+// shortage points and compare against *Tp.trump thresholds. Otherwise
+// they fall back to HCP-only (current behavior preserved).
 
 const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   // ── Hand-dependent system facts ─────────────────────────────
@@ -160,13 +169,50 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   },
 ];
 
-// ─── Evaluator factory ──────────────────────────────────────
+// ─── Trump total-point helpers ─────────────────────────────────
 
-/** Creates system-semantic fact evaluators parameterized by the active SystemConfig.
- *  SystemConfig is captured via closure — not passed through FactEvaluatorFn. */
-function createSystemEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn> {
+const SUIT_FACT_IDS: Record<SuitName, string> = {
+  spades: "hand.suitLength.spades",
+  hearts: "hand.suitLength.hearts",
+  diamonds: "hand.suitLength.diamonds",
+  clubs: "hand.suitLength.clubs",
+};
+const ALL_SUITS: readonly SuitName[] = ["spades", "hearts", "diamonds", "clubs"];
+
+/** Convert a strain string to SuitName (returns undefined for "notrump"). */
+function strainToSuitName(strain: string): SuitName | undefined {
+  if (strain === "hearts" || strain === "spades" || strain === "diamonds" || strain === "clubs") return strain;
+  return undefined;
+}
+
+/** Compute HCP + shortage points (excluding agreed suit). */
+export function computeTrumpTotalPoints(evaluated: ReadonlyMap<string, FactValue>, agreedSuit: SuitName): number {
+  const hcp = num(evaluated, "hand.hcp");
+  let shortagePoints = 0;
+  for (const s of ALL_SUITS) {
+    if (s === agreedSuit) continue;
+    const length = num(evaluated, SUIT_FACT_IDS[s]!);
+    if (length === 0) shortagePoints += 3;
+    else if (length === 1) shortagePoints += 2;
+    else if (length === 2) shortagePoints += 1;
+  }
+  return hcp + shortagePoints;
+}
+
+/** Detect the agreed trump suit from relational context. */
+export function detectTrumpSuit(ctx: { fitAgreed?: { strain: string } | null }): SuitName | undefined {
+  if (ctx.fitAgreed?.strain) return strainToSuitName(ctx.fitAgreed.strain);
+  return undefined;
+}
+
+// ─── Evaluator factories ──────────────────────────────────────
+
+/** Standard evaluators: all system facts have HCP-only evaluators as baseline.
+ *  The 6 context-aware facts also have relational evaluators that override these
+ *  when fitAgreed is present in the relational context. */
+function createStandardSystemEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn> {
   return new Map<string, FactEvaluatorFn>([
-    // Hand-dependent: combine hand.hcp with system thresholds
+    // ── Context-aware facts: HCP-only baseline (overridden by relational evaluators when context present) ──
     [SYSTEM_RESPONDER_WEAK_HAND, (_h, _ev, m) =>
       fv(SYSTEM_RESPONDER_WEAK_HAND, num(m, "hand.hcp") < sys.responderThresholds.inviteMin)],
     [SYSTEM_RESPONDER_INVITE_VALUES, (_h, _ev, m) => {
@@ -182,20 +228,79 @@ function createSystemEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn>
       fv(SYSTEM_OPENER_NOT_MINIMUM, num(m, "hand.hcp") >= sys.openerRebid.notMinimum)],
     [SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT, (_h, _ev, m) =>
       fv(SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT, num(m, "hand.hcp") >= sys.suitResponse.twoLevelMin)],
-    [SYSTEM_RESPONDER_ONE_NT_RANGE, (_h, _ev, m) => {
-      const hcp = num(m, "hand.hcp");
-      return fv(SYSTEM_RESPONDER_ONE_NT_RANGE, hcp >= sys.oneNtResponseAfterMajor.minHcp && hcp <= sys.oneNtResponseAfterMajor.maxHcp);
-    }],
-    // System-constant: pure config values, no hand data
+    // ── System-constant: pure config values, no hand data ──
     [SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING, () =>
       fv(SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING, sys.suitResponse.twoLevelForcingDuration === "game")],
     [SYSTEM_ONE_NT_FORCING_AFTER_MAJOR, () =>
       fv(SYSTEM_ONE_NT_FORCING_AFTER_MAJOR, sys.oneNtResponseAfterMajor.forcing)],
+    // ── Hand-dependent but not context-aware ──
+    [SYSTEM_RESPONDER_ONE_NT_RANGE, (_h, _ev, m) => {
+      const hcp = num(m, "hand.hcp");
+      return fv(SYSTEM_RESPONDER_ONE_NT_RANGE, hcp >= sys.oneNtResponseAfterMajor.minHcp && hcp <= sys.oneNtResponseAfterMajor.maxHcp);
+    }],
     // DONT overcall: boolean HCP range check
     [SYSTEM_DONT_OVERCALL_IN_RANGE, (_h, _ev, m) => {
       const hcp = num(m, "hand.hcp");
       return fv(SYSTEM_DONT_OVERCALL_IN_RANGE,
         hcp >= sys.dontOvercall.minHcp && hcp <= sys.dontOvercall.maxHcp);
+    }],
+  ]);
+}
+
+/** Context-aware relational evaluators: auto-detect trump context via fitAgreed. */
+function createRelationalSystemEvaluators(sys: SystemConfig): Map<string, RelationalFactEvaluatorFn> {
+  return new Map<string, RelationalFactEvaluatorFn>([
+    [SYSTEM_RESPONDER_WEAK_HAND, (_h, _ev, m, ctx) => {
+      const trumpSuit = detectTrumpSuit(ctx);
+      if (trumpSuit) {
+        const tp = computeTrumpTotalPoints(m, trumpSuit);
+        return fv(SYSTEM_RESPONDER_WEAK_HAND, tp < sys.responderThresholds.inviteMinTp.trump);
+      }
+      return fv(SYSTEM_RESPONDER_WEAK_HAND, num(m, "hand.hcp") < sys.responderThresholds.inviteMin);
+    }],
+    [SYSTEM_RESPONDER_INVITE_VALUES, (_h, _ev, m, ctx) => {
+      const trumpSuit = detectTrumpSuit(ctx);
+      if (trumpSuit) {
+        const tp = computeTrumpTotalPoints(m, trumpSuit);
+        return fv(SYSTEM_RESPONDER_INVITE_VALUES,
+          tp >= sys.responderThresholds.inviteMinTp.trump
+          && tp <= sys.responderThresholds.inviteMaxTp.trump);
+      }
+      const hcp = num(m, "hand.hcp");
+      return fv(SYSTEM_RESPONDER_INVITE_VALUES,
+        hcp >= sys.responderThresholds.inviteMin && hcp <= sys.responderThresholds.inviteMax);
+    }],
+    [SYSTEM_RESPONDER_GAME_VALUES, (_h, _ev, m, ctx) => {
+      const trumpSuit = detectTrumpSuit(ctx);
+      if (trumpSuit) {
+        const tp = computeTrumpTotalPoints(m, trumpSuit);
+        return fv(SYSTEM_RESPONDER_GAME_VALUES, tp >= sys.responderThresholds.gameMinTp.trump);
+      }
+      return fv(SYSTEM_RESPONDER_GAME_VALUES, num(m, "hand.hcp") >= sys.responderThresholds.gameMin);
+    }],
+    [SYSTEM_RESPONDER_SLAM_VALUES, (_h, _ev, m, ctx) => {
+      const trumpSuit = detectTrumpSuit(ctx);
+      if (trumpSuit) {
+        const tp = computeTrumpTotalPoints(m, trumpSuit);
+        return fv(SYSTEM_RESPONDER_SLAM_VALUES, tp >= sys.responderThresholds.slamMinTp.trump);
+      }
+      return fv(SYSTEM_RESPONDER_SLAM_VALUES, num(m, "hand.hcp") >= sys.responderThresholds.slamMin);
+    }],
+    [SYSTEM_OPENER_NOT_MINIMUM, (_h, _ev, m, ctx) => {
+      const trumpSuit = detectTrumpSuit(ctx);
+      if (trumpSuit) {
+        const tp = computeTrumpTotalPoints(m, trumpSuit);
+        return fv(SYSTEM_OPENER_NOT_MINIMUM, tp >= sys.openerRebid.notMinimumTp.trump);
+      }
+      return fv(SYSTEM_OPENER_NOT_MINIMUM, num(m, "hand.hcp") >= sys.openerRebid.notMinimum);
+    }],
+    [SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT, (_h, _ev, m, ctx) => {
+      const trumpSuit = detectTrumpSuit(ctx);
+      if (trumpSuit) {
+        const tp = computeTrumpTotalPoints(m, trumpSuit);
+        return fv(SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT, tp >= sys.suitResponse.twoLevelMin);
+      }
+      return fv(SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT, num(m, "hand.hcp") >= sys.suitResponse.twoLevelMin);
     }],
   ]);
 }
@@ -212,6 +317,7 @@ function createSystemEvaluators(sys: SystemConfig): Map<string, FactEvaluatorFn>
 export function createSystemFactCatalog(sys: SystemConfig): FactCatalogExtension {
   return {
     definitions: SYSTEM_FACT_DEFINITIONS,
-    evaluators: createSystemEvaluators(sys),
+    evaluators: createStandardSystemEvaluators(sys),
+    relationalEvaluators: createRelationalSystemEvaluators(sys),
   };
 }

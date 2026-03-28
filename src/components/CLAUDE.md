@@ -31,9 +31,9 @@ components/
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     ProfilesScreen.svelte            Read-only base system profiles (SAYC/2-1/Acol) with detail + compare views
-    SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards
-    SystemCompareView.svelte         Side-by-side 4-column comparison table with diff highlighting
-    profile-display.ts               Pure display logic: category definitions, value formatting, comparison helpers
+    SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards. TP-enabled categories render 4-column mini-table (HCP / Trump TP / NT TP).
+    SystemCompareView.svelte         Side-by-side comparison table with diff highlighting. TP-enabled fields render 3 sub-rows (HCP / Trump TP / NT TP) with independent diff highlighting per metric.
+    profile-display.ts               Pure display logic: category definitions, value formatting (formatFieldValue, formatTrumpTpValue, formatNtTpValue), comparison helpers. FieldFormat includes rangeWithTp/thresholdWithTp variants for TP-enabled categories.
     game-screen/
       GameScreen.svelte              Phase router + responsive layout + drill lifecycle (~280 LOC)
       BiddingPhase.svelte            Bidding phase template (pure — data via props)

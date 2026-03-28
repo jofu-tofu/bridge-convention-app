@@ -42,7 +42,7 @@ export { evaluateHand, calculateHcp } from "../engine/hand-evaluator";
 // ── 4. Convention Catalog & Strategy ─────────────────────────────────
 export { ConventionCategory, getConvention, getModule, listConventions } from "../conventions";
 export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../conventions";
-export type { ConventionConfig, ConventionContribution, ParseTreeView, TeachingProjection, EncoderKind, BaseSystemId, SystemConfig } from "../conventions";
+export type { ConventionConfig, ConventionContribution, ParseTreeView, TeachingProjection, EncoderKind, BaseSystemId, SystemConfig, TotalPointEquivalent } from "../conventions";
 export { createBiddingContext } from "../conventions";
 export type { BidResult, BiddingContext } from "../conventions";
 export type { PlayStrategy, PlayContext, PlayResult, PosteriorSummary } from "../conventions";

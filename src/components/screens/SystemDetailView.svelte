@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { SystemConfig } from "../../service";
-  import { PROFILE_CATEGORIES, formatFieldValue } from "./profile-display";
+  import { PROFILE_CATEGORIES, formatFieldValue, formatTrumpTpValue, formatNtTpValue } from "./profile-display";
 
   interface Props {
     config: SystemConfig;
@@ -25,17 +25,48 @@
 
       <!-- Fields -->
       <div class="px-5 pb-4">
-        {#each category.fields as field, fi (field.label)}
-          {#if fi > 0}
-            <div class="border-t border-border-subtle/50 my-0" aria-hidden="true"></div>
-          {/if}
-          <div class="flex items-baseline justify-between py-2.5 gap-4">
-            <span class="text-sm text-text-secondary">{field.label}</span>
-            <span class="text-sm font-semibold text-text-primary tabular-nums tracking-tight">
-              {formatFieldValue(config, field)}
-            </span>
-          </div>
-        {/each}
+        {#if category.hasTotalPoints}
+          <!-- 4-column layout for TP-enabled categories -->
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-xs text-text-muted">
+                <th class="text-left font-medium pb-1.5 w-[30%]"></th>
+                <th class="text-right font-medium pb-1.5 px-2">HCP</th>
+                <th class="text-right font-medium pb-1.5 px-2">Trump TP</th>
+                <th class="text-right font-medium pb-1.5 px-2">NT TP</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each category.fields as field, fi (field.label)}
+                <tr class={fi > 0 ? "border-t border-border-subtle/50" : ""}>
+                  <td class="py-2.5 text-text-secondary">{field.label}</td>
+                  <td class="py-2.5 px-2 text-right font-semibold text-text-primary tabular-nums tracking-tight">
+                    {formatFieldValue(config, field)}
+                  </td>
+                  <td class="py-2.5 px-2 text-right font-semibold text-text-primary tabular-nums tracking-tight">
+                    {formatTrumpTpValue(config, field)}
+                  </td>
+                  <td class="py-2.5 px-2 text-right font-semibold text-text-primary tabular-nums tracking-tight">
+                    {formatNtTpValue(config, field)}
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        {:else}
+          <!-- Standard 2-column layout -->
+          {#each category.fields as field, fi (field.label)}
+            {#if fi > 0}
+              <div class="border-t border-border-subtle/50 my-0" aria-hidden="true"></div>
+            {/if}
+            <div class="flex items-baseline justify-between py-2.5 gap-4">
+              <span class="text-sm text-text-secondary">{field.label}</span>
+              <span class="text-sm font-semibold text-text-primary tabular-nums tracking-tight">
+                {formatFieldValue(config, field)}
+              </span>
+            </div>
+          {/each}
+        {/if}
       </div>
     </section>
   {/each}
