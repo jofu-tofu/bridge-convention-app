@@ -101,7 +101,7 @@ export function createSurface(input: SurfaceInput, ctx?: ModuleContext, preceden
   const clauses: readonly BidMeaningClause[] = input.clauses.map((c) => {
     let description = deriveClauseDescription(c.factId, c.operator, c.value, c.rationale);
     if (bindings) {
-      description = description.replace(/\$(\w+)/g, (match, key) => bindings[key] ?? match);
+      description = description.replace(/\$(\w+)/g, (match, key: string) => bindings[key] ?? match);
     }
     return {
       factId: c.factId,

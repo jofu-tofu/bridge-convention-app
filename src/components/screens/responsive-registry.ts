@@ -88,6 +88,12 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     minWidth: 280,
     mobileNotes: "Desktop-only SVG tree; hidden on mobile via isDesktop check in LearningScreen",
   },
+  {
+    path: "MobileFlowTree.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Compact vertical flow tree for mobile; collapsible, depth-capped",
+  },
 
   // --- Game screen orchestrator ---
   {

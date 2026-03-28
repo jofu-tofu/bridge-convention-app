@@ -13,6 +13,11 @@ export type {
   ServicePublicBeliefState,
   ServiceInferenceSnapshot,
   ConventionCardView,
+  ConventionCardSectionId,
+  ConventionCardLineItem,
+  ConventionCardModuleDetail,
+  ConventionCardSection,
+  ConventionCardPanelView,
   BiddingViewport,
   ViewportBidFeedback,
   TeachingDetail,
@@ -66,7 +71,7 @@ export { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../se
 
 // ── 7. Display & Formatting ─────────────────────────────────────────
 export { displayConventionName, formatCall, formatContractWithDeclarer, formatRuleName, displayRank, formatCardLabel, SUIT_SYMBOLS, STRAIN_SYMBOLS } from "./display/format";
-export { buildConventionCard } from "./display/convention-card";
+export { buildConventionCard, buildConventionCardPanel } from "./display/convention-card";
 
 // ── 8. Evaluation Facade (CLI grading) ──────────────────────────────
 export { buildAtomViewport, gradeAtomBid, validateAtomId, parseAtomId } from "./evaluation/atom-evaluator";

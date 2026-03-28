@@ -393,7 +393,7 @@ export function createMCDDSProvider(
 
       // 7. Fallback if no samples
       if (samples.length === 0) {
-        console.warn(`[mc-dds] fallback: 0 samples (seat=${context.seat}, unknownSeats=[${unknownSeats}], hasBeliefs=${!!beliefConstraints})`);
+        console.warn(`[mc-dds] fallback: 0 samples (seat=${context.seat}, unknownSeats=[${unknownSeats.join(",")}], hasBeliefs=${String(!!beliefConstraints)})`);
         return expertFallback(context);
       }
 

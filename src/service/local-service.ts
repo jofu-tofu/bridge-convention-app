@@ -106,8 +106,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         ...(config.targetModuleId ? { targetModuleId: config.targetModuleId } : {}),
         ...(config.practiceRole ? { practiceRole: config.practiceRole } : {}),
       };
-      const bundle = await assembleNewDrill(
-        engine,
+      const bundle = assembleNewDrill(
         convention,
         userSeat,
         undefined,

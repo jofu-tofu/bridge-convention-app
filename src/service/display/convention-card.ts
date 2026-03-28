@@ -1,5 +1,15 @@
 import type { SystemConfig } from "../../conventions";
-import type { ConventionCardView } from "../response-types";
+import { getModule, getBaseModuleIds, getBundleInput } from "../../conventions";
+import type {
+  ConventionCardView,
+  ConventionCardPanelView,
+  ConventionCardSection,
+  ConventionCardSectionId,
+  ConventionCardLineItem,
+  ConventionCardModuleDetail,
+} from "../response-types";
+
+// ── Shared helpers ─────────────────────────────────────────────
 
 /** Short system label for UI display. */
 function systemShortLabel(config: SystemConfig): string {
@@ -24,6 +34,8 @@ function formatOneNtResponse(config: SystemConfig): string {
   return `${status} ${minHcp}\u2013${maxHcp}`;
 }
 
+// ── Old convention card (flat summary) ─────────────────────────
+
 /** Build a convention card summary from system config. */
 export function buildConventionCard(
   systemConfig: SystemConfig,
@@ -36,5 +48,161 @@ export function buildConventionCard(
     twoLevelForcing: formatForcingDuration(systemConfig.suitResponse.twoLevelForcingDuration),
     oneNtResponse: formatOneNtResponse(systemConfig),
     majorLength: `${systemConfig.openingRequirements.majorSuitMinLength}-card majors`,
+  };
+}
+
+// ── Convention card panel (structured sections) ────────────────
+
+/** Known bridge abbreviations that should be fully uppercased. */
+const BRIDGE_ABBREVIATIONS = new Set(["nt", "sayc", "hcp", "dont"]);
+
+/** Convert kebab-case module ID to display name. */
+function formatModuleName(moduleId: string): string {
+  if (moduleId === "") return "";
+  return moduleId
+    .split("-")
+    .map((w) => {
+      const lower = w.toLowerCase();
+      if (BRIDGE_ABBREVIATIONS.has(lower)) return w.toUpperCase();
+      const match = lower.match(/^(\d+)(.+)$/);
+      if (match && BRIDGE_ABBREVIATIONS.has(match[2]!)) {
+        return match[1] + match[2]!.toUpperCase();
+      }
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    })
+    .join(" ");
+}
+
+/** Section definition for the convention card panel. */
+interface SectionDef {
+  readonly id: ConventionCardSectionId;
+  readonly title: string;
+  readonly moduleIds: readonly string[];
+  readonly buildItems: (sys: SystemConfig) => readonly ConventionCardLineItem[];
+}
+
+const SECTION_DEFS: readonly SectionDef[] = [
+  {
+    id: "general",
+    title: "General",
+    moduleIds: [],
+    buildItems: (sys) => [
+      { label: "System", value: systemShortLabel(sys) },
+      { label: "Majors", value: `${sys.openingRequirements.majorSuitMinLength}-card majors` },
+    ],
+  },
+  {
+    id: "notrump-opening",
+    title: "1NT Opening & Responses",
+    moduleIds: ["stayman", "jacoby-transfers", "smolen"],
+    buildItems: (sys) => [
+      { label: "1NT Range", value: `${sys.ntOpening.minHcp}\u2013${sys.ntOpening.maxHcp}` },
+      { label: "Invite Range", value: `${sys.responderThresholds.inviteMin}\u2013${sys.responderThresholds.inviteMax} HCP` },
+      { label: "Game Forcing", value: `${sys.responderThresholds.gameMin}+ HCP` },
+      { label: "Slam Zone", value: `${sys.responderThresholds.slamMin}+ HCP` },
+    ],
+  },
+  {
+    id: "major-opening",
+    title: "Major Openings",
+    moduleIds: ["bergen"],
+    buildItems: (sys) => [
+      { label: "Length", value: `${sys.openingRequirements.majorSuitMinLength}+ cards` },
+      { label: "New Suit at 2-Level", value: `${sys.suitResponse.twoLevelMin}+ HCP, ${formatForcingDuration(sys.suitResponse.twoLevelForcingDuration)}` },
+      { label: "1NT Response", value: formatOneNtResponse(sys) },
+    ],
+  },
+  {
+    id: "minor-opening",
+    title: "Minor Openings",
+    moduleIds: [],
+    buildItems: () => [
+      { label: "Style", value: "Standard" },
+    ],
+  },
+  {
+    id: "two-level-opening",
+    title: "2-Level Openings",
+    moduleIds: ["weak-twos"],
+    buildItems: () => [],
+  },
+  {
+    id: "competitive",
+    title: "Competitive",
+    moduleIds: ["dont"],
+    buildItems: (sys) => [
+      { label: "Redouble", value: `${sys.interference.redoubleMin}+ HCP` },
+      { label: "vs 1NT", value: `DONT ${sys.dontOvercall.minHcp}\u2013${sys.dontOvercall.maxHcp} HCP` },
+    ],
+  },
+  {
+    id: "slam",
+    title: "Slam Conventions",
+    moduleIds: ["blackwood"],
+    buildItems: (sys) => [
+      { label: "Slam Zone", value: `${sys.responderThresholds.slamMin}+ HCP` },
+    ],
+  },
+];
+
+function buildModuleDetail(moduleId: string, sys: SystemConfig): ConventionCardModuleDetail | undefined {
+  const mod = getModule(moduleId, sys);
+  if (!mod) return undefined;
+  return {
+    moduleId: mod.moduleId,
+    moduleName: formatModuleName(mod.moduleId),
+    description: mod.description,
+    principle: mod.teaching.principle || undefined,
+    tradeoff: mod.teaching.tradeoff || undefined,
+    commonMistakes: mod.teaching.commonMistakes.length > 0
+      ? mod.teaching.commonMistakes.map((m) => String(m))
+      : undefined,
+  };
+}
+
+/** Build a full convention card panel view with structured sections. */
+export function buildConventionCardPanel(
+  systemConfig: SystemConfig,
+  conventionId?: string,
+): ConventionCardPanelView {
+  // Collect active module IDs from base system + optional bundle
+  const activeModuleIds = new Set<string>([
+    ...getBaseModuleIds(systemConfig.systemId),
+    ...(conventionId ? (getBundleInput(conventionId)?.memberIds ?? []) : []),
+  ]);
+
+  const sections: ConventionCardSection[] = [];
+
+  for (const def of SECTION_DEFS) {
+    const items = def.buildItems(systemConfig);
+    const modules: ConventionCardModuleDetail[] = [];
+
+    for (const mid of def.moduleIds) {
+      if (!activeModuleIds.has(mid)) continue;
+      const detail = buildModuleDetail(mid, systemConfig);
+      if (detail) modules.push(detail);
+    }
+
+    // Omit empty sections
+    if (items.length === 0 && modules.length === 0) continue;
+
+    const summaryParts = [
+      ...items.map((i) => i.value),
+      ...modules.map((m) => m.moduleName),
+    ];
+
+    sections.push({
+      id: def.id,
+      title: def.title,
+      compactSummary: summaryParts.join(" \u00b7 "),
+      items,
+      modules,
+    });
+  }
+
+  return {
+    partnership: "N-S",
+    systemName: systemShortLabel(systemConfig),
+    sections,
   };
 }

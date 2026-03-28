@@ -813,6 +813,46 @@ export interface ConventionCardView {
   readonly majorLength: string;      // "5-card majors" or "4-card majors"
 }
 
+// ── Convention Card Panel ────────────────────────────────────────
+
+export type ConventionCardSectionId =
+  | "general"
+  | "notrump-opening"
+  | "major-opening"
+  | "minor-opening"
+  | "two-level-opening"
+  | "competitive"
+  | "slam";
+
+export interface ConventionCardLineItem {
+  readonly label: string;
+  readonly value: string;
+  readonly isConvention?: boolean;
+}
+
+export interface ConventionCardModuleDetail {
+  readonly moduleId: string;
+  readonly moduleName: string;
+  readonly description: string;
+  readonly principle?: string;
+  readonly tradeoff?: string;
+  readonly commonMistakes?: readonly string[];
+}
+
+export interface ConventionCardSection {
+  readonly id: ConventionCardSectionId;
+  readonly title: string;
+  readonly compactSummary: string;
+  readonly items: readonly ConventionCardLineItem[];
+  readonly modules: readonly ConventionCardModuleDetail[];
+}
+
+export interface ConventionCardPanelView {
+  readonly partnership: string;
+  readonly systemName: string;
+  readonly sections: readonly ConventionCardSection[];
+}
+
 // ── Base Module Info ────────────────────────────────────────────
 
 /** Read-only metadata about a base system module for settings display. */

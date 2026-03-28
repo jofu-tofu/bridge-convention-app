@@ -36,7 +36,8 @@ components/
     profile-display.ts               Pure display logic: category definitions, value formatting (formatFieldValue, formatTrumpTpValue, formatNtTpValue), comparison helpers. FieldFormat includes rangeWithTp/thresholdWithTp variants for TP-enabled categories.
     game-screen/
       GameScreen.svelte              Phase router + responsive layout + drill lifecycle (~280 LOC)
-      BiddingPhase.svelte            Bidding phase template (pure — data via props)
+      BiddingPhase.svelte            Bidding phase template (pure — data via props). Shows context banner in Decision Drill mode.
+      context-banner.ts              Pure function: buildContextSummary() — plain-English auction context for Decision Drill pre-filled bids
       DeclarerPromptPhase.svelte     Declarer/defender prompt (pure — data via props)
       PlayingPhase.svelte            Play phase template (pure — data via props, legal plays from parent)
       ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping, auction step-through. Defines tab content snippets (bidding/play/analysis) + action buttons passed to ReviewSidePanel.
@@ -56,12 +57,13 @@ components/
     ReplayControls.svelte            Forward/back/jump navigation bar for review-phase card-by-card replay
     replay-state.ts                  Pure replay cursor logic: step↔position conversion, progressive reveal, decision point detection
     TrickReviewPanel.svelte          Trick-by-trick review panel with recommendation badges and trick stepper
-    ConventionCard.svelte            Phase-independent convention card showing system thresholds (NT range, major length, forcing level)
+    ConventionCardPanel.svelte       Convention card side drawer — full system projection with progressive disclosure (system thresholds + active convention modules + teaching detail)
     AuctionTable.svelte              4-column N/E/S/W grid, suit-colored. `minimal` prop for compact play-history rendering (no legend/annotations).
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
     BidFeedbackPanel.svelte          Three-branch bid feedback (Correct green/Acceptable teal/Incorrect red) with show-answer toggle, tree fork display, acceptable badges on siblings, optional amber practical note, convention contribution badges, WhyNot grade distinction, multi-rationale indicator, meaning landscape section, encoding explanation, partner hand space summary, elimination stage annotations
     BidFeedbackPanel.ts              Companion .ts file with convention-agnostic display helpers for TeachingProjection rendering: formatAmbiguity, formatEliminationStage, formatModuleRole, roleColorClasses, whyNotGradeClasses, isArtificialEncoder, formatEncoderKind
     bid-feedback/
+      BidFeedbackCorrect.svelte      Correct bid feedback — green flash with explanation + passed conditions (shown as non-blocking feedback for all correct/acceptable bids)
       BidFeedbackIncorrect.svelte    Incorrect bid feedback panel (integrates ParseTreePanel)
       BidFeedbackNearMiss.svelte     Near-miss bid feedback panel (integrates ParseTreePanel)
       ParseTreePanel.svelte          Post-bid decision chain visualization — shows which convention modules were considered, accepted, or eliminated, with per-module conditions and verdicts (selected/applicable/eliminated)

@@ -53,7 +53,6 @@
   }
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class="flex items-center gap-2 bg-bg-card border border-border-subtle rounded-[--radius-lg] px-3 py-1.5 shadow-sm"
   onkeydown={handleKeydown}

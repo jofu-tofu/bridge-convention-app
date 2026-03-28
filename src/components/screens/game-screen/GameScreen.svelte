@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { Seat } from "../../../service";
   import type { Call } from "../../../service";
-  import { getSystemConfig, buildConventionCard } from "../../../service";
+  import { getSystemConfig, buildConventionCardPanel } from "../../../service";
   import { getGameStore, getAppStore, setLayoutConfig, getService } from "../../../stores/context";
   import type { SessionConfig } from "../../../service";
 
@@ -14,7 +14,7 @@
   import DeclarerPromptPhase from "./DeclarerPromptPhase.svelte";
   import PlayingPhase from "./PlayingPhase.svelte";
   import ExplanationPhase from "./ExplanationPhase.svelte";
-  import ConventionCard from "../../game/ConventionCard.svelte";
+  import ConventionCardPanel from "../../game/ConventionCardPanel.svelte";
   import DebugDrawer from "../../game/DebugDrawer.svelte";
 
   const DEV = import.meta.env.DEV;
@@ -60,8 +60,8 @@
           gameStore.userBid(call);
         });
       });
-    } else if (phase === "BIDDING" && feedback) {
-      // Correct-path-only: auto-retry then re-bid the correct answer
+    } else if (phase === "BIDDING" && feedback && gameStore.isFeedbackBlocking) {
+      // Blocking feedback only: auto-retry then re-bid the correct answer
       raf = requestAnimationFrame(() => {
         gameStore.retryBid();
         void gameStore.getExpectedBid().then((result: { call: Call } | null) => {
@@ -267,12 +267,10 @@
     tableBaseH,
   });
 
-  // Convention card — static for the drill, derived from appStore.baseSystemId
+  // Convention card panel — structured sections from system config + active modules
   const systemConfig = $derived(getSystemConfig(appStore.baseSystemId));
-  const conventionCards = $derived([
-    buildConventionCard(systemConfig, "N-S"),
-    buildConventionCard(systemConfig, "E-W"), // same system for now
-  ] as const);
+  const ccPanelView = $derived(buildConventionCardPanel(systemConfig, appStore.selectedConvention?.id));
+  let ccPanelOpen = $state(false);
 
   function handleBackToMenu() {
     gameStore.reset();
@@ -310,10 +308,34 @@
           </span>
         {/if}
         <span class="sr-only" aria-live="polite">Phase: {phaseInfo.label}</span>
-        <ConventionCard cards={conventionCards} />
+        <button
+          class="px-1.5 py-0.5 text-[--text-annotation] font-bold tracking-wide
+                 bg-bg-card border border-border-subtle rounded-[--radius-sm]
+                 text-text-secondary hover:text-text-primary hover:border-accent-primary
+                 cursor-pointer transition-colors"
+          class:border-accent-primary={ccPanelOpen}
+          class:text-text-primary={ccPanelOpen}
+          onclick={() => { ccPanelOpen = !ccPanelOpen; }}
+          aria-label="Convention card"
+          aria-expanded={ccPanelOpen}
+          data-testid="convention-card-trigger"
+        >
+          CC
+        </button>
       </div>
       <div class="flex items-center gap-3 shrink-0">
-        <span class="text-text-secondary text-[--text-body]">Deal #{dealNumber}</span>
+        <span class="text-text-secondary text-[--text-body]">
+          Deal #{dealNumber}
+          {#if gameStore.sessionStats.correct + gameStore.sessionStats.incorrect > 0}
+            <span class="text-text-muted mx-1">&middot;</span>
+            <span class="text-fb-correct-text">{gameStore.sessionStats.correct}</span><!--
+            -->/<span class="text-text-muted">{gameStore.sessionStats.correct + gameStore.sessionStats.incorrect}</span>
+            {#if gameStore.sessionStats.streak >= 2}
+              <span class="text-text-muted mx-1">&middot;</span>
+              <span class="text-fb-correct-text">{gameStore.sessionStats.streak} streak</span>
+            {/if}
+          {/if}
+        </span>
         {#if DEV}
           <button
             class="min-w-[--size-touch-target] min-h-[--size-touch-target] flex items-center justify-center text-text-secondary hover:text-text-primary cursor-pointer transition-colors rounded-[--radius-md]"
@@ -369,6 +391,8 @@
     {#if DEV && debugReady}
       <DebugDrawer open={appStore.debugPanelOpen} />
     {/if}
+
+    <ConventionCardPanel panelView={ccPanelView} open={ccPanelOpen} onclose={() => { ccPanelOpen = false; }} />
   </main>
 {:else}
   <div class="flex items-center justify-center h-full">
