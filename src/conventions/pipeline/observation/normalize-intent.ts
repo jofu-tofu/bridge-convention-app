@@ -82,6 +82,7 @@ const INTENT_MAP: ReadonlyMap<string, IntentMapper> = new Map<string, IntentMapp
     { act: "force", level: "game" },
   ]],
   ["SmolenPlacement", (p) => [{ act: "place", strain: strain(p) }]],
+  ["SmolenAcceptance", (p) => [{ act: "accept", feature: "heldSuit", suit: suit(p) }]],
 
   // ── Major Opening (stub for rule module phase transitions) ───────
   ["MajorOpen", (p) => [{ act: "open", strain: strain(p) }]],

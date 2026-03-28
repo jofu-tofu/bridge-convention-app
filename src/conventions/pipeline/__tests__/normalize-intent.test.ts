@@ -224,6 +224,12 @@ describe("normalizeIntent", () => {
         { act: "place", strain: "notrump" },
       ]);
     });
+
+    it("normalizes SmolenAcceptance with suit", () => {
+      expect(normalize("SmolenAcceptance", { suit: "spades" })).toEqual([
+        { act: "accept", feature: "heldSuit", suit: "spades" },
+      ]);
+    });
   });
 
   // ── Bergen (9 intents) ─────────────────────────────────────────

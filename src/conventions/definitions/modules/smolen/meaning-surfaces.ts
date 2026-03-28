@@ -206,9 +206,9 @@ export const OPENER_SMOLEN_HEARTS_SURFACES: readonly BidMeaning[] = [
 
 export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
   createSurface({
-    meaningId: SMOLEN_MEANING_IDS.PLACE_FOUR_SPADES,
-    semanticClassId: SMOLEN_CLASSES.PLACE_FOUR_SPADES,
-    encoding: bid(4, BidSuit.Spades),
+    meaningId: SMOLEN_MEANING_IDS.ACCEPT_SPADES_3S,
+    semanticClassId: SMOLEN_CLASSES.ACCEPT_SPADES_3S,
+    encoding: bid(3, BidSuit.Spades),
     clauses: [
       {
         factId: SMOLEN_FACT_IDS.OPENER_HAS_SPADES_FIT,
@@ -220,9 +220,9 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
     ],
     band: "must",
     declarationOrder: 0,
-    sourceIntent: { type: "SmolenPlacement", params: { suit: "spades" } },
+    sourceIntent: { type: "SmolenAcceptance", params: { suit: "spades" } },
     disclosure: "alert",
-    teachingLabel: "4S (spade fit found)",
+    teachingLabel: "3S (spade fit found)",
   }, SMOLEN_CTX),
   createSurface({
     meaningId: SMOLEN_MEANING_IDS.PLACE_THREE_NT_NO_SPADE_FIT,
@@ -242,5 +242,21 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
     sourceIntent: { type: "SmolenPlacement", params: { suit: "notrump" } },
     disclosure: "alert",
     teachingLabel: "3NT (no spade fit)",
+  }, SMOLEN_CTX),
+];
+
+// ─── Responder completion surface (after opener's 3S acceptance) ──
+
+export const RESPONDER_SMOLEN_COMPLETE_SPADES_SURFACES: readonly BidMeaning[] = [
+  createSurface({
+    meaningId: SMOLEN_MEANING_IDS.RESPONDER_PLACE_FOUR_SPADES,
+    semanticClassId: SMOLEN_CLASSES.RESPONDER_PLACE_FOUR_SPADES,
+    encoding: bid(4, BidSuit.Spades),
+    clauses: [],
+    band: "must",
+    declarationOrder: 0,
+    sourceIntent: { type: "SmolenPlacement", params: { suit: "spades" } },
+    disclosure: "alert",
+    teachingLabel: "4S (complete to game)",
   }, SMOLEN_CTX),
 ];

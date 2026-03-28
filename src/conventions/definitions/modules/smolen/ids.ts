@@ -30,7 +30,8 @@ export const SMOLEN_MEANING_IDS = {
   BID_SHORT_HEARTS: "smolen:bid-short-hearts",
   BID_SHORT_SPADES: "smolen:bid-short-spades",
   PLACE_FOUR_HEARTS: "smolen:place-four-hearts",
-  PLACE_FOUR_SPADES: "smolen:place-four-spades",
+  ACCEPT_SPADES_3S: "smolen:accept-spades-3s",
+  RESPONDER_PLACE_FOUR_SPADES: "smolen:responder-place-four-spades",
   PLACE_THREE_NT_NO_HEART_FIT: "smolen:place-three-nt-no-heart-fit",
   PLACE_THREE_NT_NO_SPADE_FIT: "smolen:place-three-nt-no-spade-fit",
   STAYMAN_ENTRY_5H4S: "smolen:stayman-entry-5h4s",
@@ -46,6 +47,7 @@ export const SMOLEN_CLASSES = {
   BID_SHORT_HEARTS: "smolen:bid-short-hearts",
   BID_SHORT_SPADES: "smolen:bid-short-spades",
   PLACE_FOUR_HEARTS: "smolen:place-four-hearts",
-  PLACE_FOUR_SPADES: "smolen:place-four-spades",
+  ACCEPT_SPADES_3S: "smolen:accept-spades-3s",
+  RESPONDER_PLACE_FOUR_SPADES: "smolen:responder-place-four-spades",
   PLACE_THREE_NT: "smolen:place-three-nt",
 } as const;
