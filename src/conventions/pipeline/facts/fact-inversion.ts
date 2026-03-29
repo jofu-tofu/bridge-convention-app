@@ -15,6 +15,7 @@
 import type { Suit } from "../../../engine/types";
 import type { FactComposition, PrimitiveClause } from "../../core/fact-catalog";
 import { SUIT_FACT_MAP } from "../../core/runtime/fact-compiler";
+import { FactOperator } from "../evaluation/meaning";
 
 // ── Result type ─────────────────────────────────────────────────────
 
@@ -74,20 +75,21 @@ function invertPrimitive(clause: PrimitiveClause): InvertedConstraint {
 }
 
 function invertHcp(clause: PrimitiveClause): InvertedConstraint {
-  if (clause.operator === "range") {
+  if (clause.operator === FactOperator.Range) {
     const range = clause.value as { min: number; max: number };
     return { minHcp: range.min, maxHcp: range.max };
   }
   const v = clause.value as number;
   switch (clause.operator) {
-    case "gte": return { minHcp: v };
-    case "lte": return { maxHcp: v };
-    case "eq": return { minHcp: v, maxHcp: v };
+    case FactOperator.Gte: return { minHcp: v };
+    case FactOperator.Lte: return { maxHcp: v };
+    case FactOperator.Eq: return { minHcp: v, maxHcp: v };
+    default: return {};
   }
 }
 
 function invertSuitLength(suit: Suit, clause: PrimitiveClause): InvertedConstraint {
-  if (clause.operator === "range") {
+  if (clause.operator === FactOperator.Range) {
     const range = clause.value as { min: number; max: number };
     return {
       minLength: { [suit]: range.min },
@@ -96,9 +98,10 @@ function invertSuitLength(suit: Suit, clause: PrimitiveClause): InvertedConstrai
   }
   const v = clause.value as number;
   switch (clause.operator) {
-    case "gte": return { minLength: { [suit]: v } };
-    case "lte": return { maxLength: { [suit]: v } };
-    case "eq": return { minLength: { [suit]: v }, maxLength: { [suit]: v } };
+    case FactOperator.Gte: return { minLength: { [suit]: v } };
+    case FactOperator.Lte: return { maxLength: { [suit]: v } };
+    case FactOperator.Eq: return { minLength: { [suit]: v }, maxLength: { [suit]: v } };
+    default: return {};
   }
 }
 

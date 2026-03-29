@@ -17,7 +17,8 @@ import type { BidMeaning } from "../evaluation/meaning";
 import type { AuctionContext, CommittedStep, NegotiationState } from "../../core/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import type { ConventionModule } from "../../core/convention-module";
-import type { TurnRole, ResolvedSurface, StateEntry } from "../../core/rule-module";
+import { TurnRole } from "../../core/rule-module";
+import type { ResolvedSurface, StateEntry } from "../../core/rule-module";
 import { advanceLocalFsm } from "./local-fsm";
 import { matchKernel } from "./negotiation-matcher";
 import { matchRoute } from "./route-matcher";
@@ -56,14 +57,14 @@ export function deriveTurnRole(
 
   if (openerSeat === null) {
     // No bids yet — next seat is the opener
-    return "opener";
+    return TurnRole.Opener;
   }
 
   const responderSeat = partnerSeat(openerSeat);
 
-  if (nextSeat === openerSeat) return "opener";
-  if (nextSeat === responderSeat) return "responder";
-  return "opponent";
+  if (nextSeat === openerSeat) return TurnRole.Opener;
+  if (nextSeat === responderSeat) return TurnRole.Responder;
+  return TurnRole.Opponent;
 }
 
 /**

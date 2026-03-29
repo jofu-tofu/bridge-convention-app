@@ -5,6 +5,7 @@ import type {
   FactEvaluatorFn,
   FactComposition,
 } from "../../../core/fact-catalog";
+import { EvaluationWorld } from "../../../core/fact-catalog";
 import { num, fv } from "../../../pipeline/facts/fact-helpers";
 import {
   definePerSuitFacts,
@@ -20,6 +21,7 @@ import {
   WEAK_TWO_TOP_HONOR_COUNT_BY_SUIT,
   WEAK_TWO_IS_SOLID_BY_SUIT,
 } from "./ids";
+import { FactOperator } from "../../../pipeline/evaluation/meaning";
 
 // ─── Top honor counting helper ──────────────────────────────
 
@@ -72,7 +74,7 @@ const isMaximumEntry = defineHcpRangeFact({
 const isMinimumDef: FactDefinition = {
   id: WEAK_TWO_FACT_IDS.IS_MINIMUM,
   layer: FactLayer.ModuleDerived,
-  world: "acting-hand",
+  world: EvaluationWorld.ActingHand,
   description: "Opener is minimum for weak two (5-7 NV, 6-7 vul)",
   valueType: "boolean",
   derivesFrom: ["hand.hcp", "bridge.isVulnerable"],
@@ -80,8 +82,8 @@ const isMinimumDef: FactDefinition = {
   composition: {
     kind: "and",
     operands: [
-      { kind: "primitive", clause: { factId: "hand.hcp", operator: "gte", value: 5 } },
-      { kind: "primitive", clause: { factId: "hand.hcp", operator: "lte", value: 7 } },
+      { kind: "primitive", clause: { factId: "hand.hcp", operator: FactOperator.Gte, value: 5 } },
+      { kind: "primitive", clause: { factId: "hand.hcp", operator: FactOperator.Lte, value: 7 } },
     ],
   },
 };
@@ -102,15 +104,15 @@ const isMinimumEntry: FactEntry = {
 const IN_OPENING_HCP_RANGE_COMPOSITION: FactComposition = {
   kind: "and",
   operands: [
-    { kind: "primitive", clause: { factId: "hand.hcp", operator: "gte", value: 5 } },
-    { kind: "primitive", clause: { factId: "hand.hcp", operator: "lte", value: 11 } },
+    { kind: "primitive", clause: { factId: "hand.hcp", operator: FactOperator.Gte, value: 5 } },
+    { kind: "primitive", clause: { factId: "hand.hcp", operator: FactOperator.Lte, value: 11 } },
   ],
 };
 
 const inOpeningHcpRangeDef: FactDefinition = {
   id: WEAK_TWO_FACT_IDS.IN_OPENING_HCP_RANGE,
   layer: FactLayer.ModuleDerived,
-  world: "acting-hand",
+  world: EvaluationWorld.ActingHand,
   description: "HCP in weak two opening range (5-11 NV, 6-11 vul)",
   valueType: "boolean",
   derivesFrom: ["hand.hcp", "bridge.isVulnerable"],

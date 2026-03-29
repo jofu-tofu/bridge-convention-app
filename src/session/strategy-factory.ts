@@ -5,7 +5,7 @@
 // directly into strategy/bidding/ internals.
 
 import type { ConventionSpec, ConventionStrategy, BiddingStrategy } from "../conventions";
-import type { OpponentMode } from "./drill-types";
+import { OpponentMode } from "./drill-types";
 import { protocolSpecToStrategy } from "../conventions";
 import { createStrategyChain } from "../session/heuristics/strategy-chain";
 import { naturalFallbackStrategy } from "../session/heuristics/natural-fallback";
@@ -23,7 +23,7 @@ export function createSpecStrategyWithFallback(spec: ConventionSpec): BiddingStr
 
 /** Create an opponent bidding strategy based on opponent mode. */
 export function createOpponentStrategy(mode: OpponentMode): BiddingStrategy {
-  return mode === "natural"
+  return mode === OpponentMode.Natural
     ? createStrategyChain([naturalFallbackStrategy])
     : passStrategy;
 }

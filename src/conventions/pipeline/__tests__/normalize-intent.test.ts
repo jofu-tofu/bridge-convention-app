@@ -10,6 +10,7 @@ import { normalizeIntent } from "../observation/normalize-intent";
 import type { BidAction } from "../bid-action";
 import { getAllModules } from "../../definitions/module-registry";
 import { moduleSurfaces } from "../../core/convention-module";
+import { HandStrength, ObsSuit, SuitQuality } from "../bid-action";
 
 // ── Helper ─────────────────────────────────────────────────────────
 
@@ -49,13 +50,13 @@ describe("normalizeIntent", () => {
 
     it("normalizes NTInvite", () => {
       expect(normalize("NTInvite")).toEqual([
-        { act: "raise", strain: "notrump", strength: "invitational" },
+        { act: "raise", strain: "notrump", strength: HandStrength.Invitational },
       ]);
     });
 
     it("normalizes NTGame", () => {
       expect(normalize("NTGame")).toEqual([
-        { act: "raise", strain: "notrump", strength: "game" },
+        { act: "raise", strain: "notrump", strength: HandStrength.Game },
       ]);
     });
 
@@ -80,14 +81,14 @@ describe("normalizeIntent", () => {
     });
 
     it("normalizes ShowHeldSuit with hearts", () => {
-      expect(normalize("ShowHeldSuit", { suit: "hearts" })).toEqual([
-        { act: "show", feature: "heldSuit", suit: "hearts" },
+      expect(normalize("ShowHeldSuit", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts },
       ]);
     });
 
     it("normalizes ShowHeldSuit with spades", () => {
-      expect(normalize("ShowHeldSuit", { suit: "spades" })).toEqual([
-        { act: "show", feature: "heldSuit", suit: "spades" },
+      expect(normalize("ShowHeldSuit", { suit: ObsSuit.Spades })).toEqual([
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Spades },
       ]);
     });
 
@@ -98,14 +99,14 @@ describe("normalizeIntent", () => {
     });
 
     it("normalizes RaiseGame with suit", () => {
-      expect(normalize("RaiseGame", { suit: "hearts" })).toEqual([
-        { act: "raise", strain: "hearts", strength: "game" },
+      expect(normalize("RaiseGame", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Game },
       ]);
     });
 
     it("normalizes RaiseInvite with suit", () => {
-      expect(normalize("RaiseInvite", { suit: "spades" })).toEqual([
-        { act: "raise", strain: "spades", strength: "invitational" },
+      expect(normalize("RaiseInvite", { suit: ObsSuit.Spades })).toEqual([
+        { act: "raise", strain: ObsSuit.Spades, strength: HandStrength.Invitational },
       ]);
     });
 
@@ -117,7 +118,7 @@ describe("normalizeIntent", () => {
 
     it("normalizes StaymanNTInvite", () => {
       expect(normalize("StaymanNTInvite")).toEqual([
-        { act: "raise", strain: "notrump", strength: "invitational" },
+        { act: "raise", strain: "notrump", strength: HandStrength.Invitational },
       ]);
     });
 
@@ -133,31 +134,31 @@ describe("normalizeIntent", () => {
   describe("Jacoby Transfers", () => {
     it("normalizes TransferToHearts", () => {
       expect(normalize("TransferToHearts")).toEqual([
-        { act: "transfer", targetSuit: "hearts" },
+        { act: "transfer", targetSuit: ObsSuit.Hearts },
       ]);
     });
 
     it("normalizes TransferToSpades", () => {
       expect(normalize("TransferToSpades")).toEqual([
-        { act: "transfer", targetSuit: "spades" },
+        { act: "transfer", targetSuit: ObsSuit.Spades },
       ]);
     });
 
     it("normalizes AcceptTransfer with suit", () => {
-      expect(normalize("AcceptTransfer", { suit: "hearts" })).toEqual([
-        { act: "accept", feature: "heldSuit", suit: "hearts" },
+      expect(normalize("AcceptTransfer", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "accept", feature: "heldSuit", suit: ObsSuit.Hearts },
       ]);
     });
 
     it("normalizes Signoff with suit", () => {
-      expect(normalize("Signoff", { suit: "hearts" })).toEqual([
-        { act: "signoff", strain: "hearts" },
+      expect(normalize("Signoff", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "signoff", strain: ObsSuit.Hearts },
       ]);
     });
 
     it("normalizes GameInMajor with suit", () => {
-      expect(normalize("GameInMajor", { suit: "spades" })).toEqual([
-        { act: "raise", strain: "spades", strength: "game" },
+      expect(normalize("GameInMajor", { suit: ObsSuit.Spades })).toEqual([
+        { act: "raise", strain: ObsSuit.Spades, strength: HandStrength.Game },
       ]);
     });
 
@@ -168,14 +169,14 @@ describe("normalizeIntent", () => {
     });
 
     it("normalizes Invite with suit", () => {
-      expect(normalize("Invite", { suit: "hearts" })).toEqual([
-        { act: "raise", strain: "hearts", strength: "invitational" },
+      expect(normalize("Invite", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Invitational },
       ]);
     });
 
     it("normalizes AcceptInvite", () => {
       expect(normalize("AcceptInvite")).toEqual([
-        { act: "accept", feature: "strength", strength: "invitational" },
+        { act: "accept", feature: "strength", strength: HandStrength.Invitational },
       ]);
     });
 
@@ -186,8 +187,8 @@ describe("normalizeIntent", () => {
     });
 
     it("normalizes PlacementCorrection with suit", () => {
-      expect(normalize("PlacementCorrection", { suit: "hearts" })).toEqual([
-        { act: "place", strain: "hearts" },
+      expect(normalize("PlacementCorrection", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "place", strain: ObsSuit.Hearts },
       ]);
     });
 
@@ -201,21 +202,21 @@ describe("normalizeIntent", () => {
   describe("Smolen", () => {
     it("normalizes Smolen with longMajor=spades → shortMajor=hearts", () => {
       expect(normalize("Smolen", { longMajor: "spades" })).toEqual([
-        { act: "show", feature: "shortMajor", suit: "hearts" },
-        { act: "force", level: "game" },
+        { act: "show", feature: "shortMajor", suit: ObsSuit.Hearts },
+        { act: "force", level: HandStrength.Game },
       ]);
     });
 
     it("normalizes Smolen with longMajor=hearts → shortMajor=spades", () => {
       expect(normalize("Smolen", { longMajor: "hearts" })).toEqual([
-        { act: "show", feature: "shortMajor", suit: "spades" },
-        { act: "force", level: "game" },
+        { act: "show", feature: "shortMajor", suit: ObsSuit.Spades },
+        { act: "force", level: HandStrength.Game },
       ]);
     });
 
     it("normalizes SmolenPlacement with suit", () => {
-      expect(normalize("SmolenPlacement", { suit: "hearts" })).toEqual([
-        { act: "place", strain: "hearts" },
+      expect(normalize("SmolenPlacement", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "place", strain: ObsSuit.Hearts },
       ]);
     });
 
@@ -226,8 +227,8 @@ describe("normalizeIntent", () => {
     });
 
     it("normalizes SmolenAcceptance with suit", () => {
-      expect(normalize("SmolenAcceptance", { suit: "spades" })).toEqual([
-        { act: "accept", feature: "heldSuit", suit: "spades" },
+      expect(normalize("SmolenAcceptance", { suit: ObsSuit.Spades })).toEqual([
+        { act: "accept", feature: "heldSuit", suit: ObsSuit.Spades },
       ]);
     });
   });
@@ -236,51 +237,51 @@ describe("normalizeIntent", () => {
 
   describe("Bergen", () => {
     it("normalizes Splinter with suit", () => {
-      expect(normalize("Splinter", { suit: "hearts" })).toEqual([
-        { act: "show", feature: "shortage", suit: "hearts" },
-        { act: "raise", strain: "hearts", strength: "game" },
+      expect(normalize("Splinter", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "show", feature: "shortage", suit: ObsSuit.Hearts },
+        { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Game },
       ]);
     });
 
     it("normalizes GameRaise with suit", () => {
-      expect(normalize("GameRaise", { suit: "spades" })).toEqual([
-        { act: "raise", strain: "spades", strength: "game" },
+      expect(normalize("GameRaise", { suit: ObsSuit.Spades })).toEqual([
+        { act: "raise", strain: ObsSuit.Spades, strength: HandStrength.Game },
       ]);
     });
 
     it("normalizes LimitRaise with suit", () => {
-      expect(normalize("LimitRaise", { suit: "hearts" })).toEqual([
-        { act: "raise", strain: "hearts", strength: "limit" },
+      expect(normalize("LimitRaise", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Limit },
       ]);
     });
 
     it("normalizes ConstructiveRaise with suit", () => {
-      expect(normalize("ConstructiveRaise", { suit: "hearts" })).toEqual([
-        { act: "raise", strain: "hearts", strength: "constructive" },
+      expect(normalize("ConstructiveRaise", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Constructive },
       ]);
     });
 
     it("normalizes PreemptiveRaise with suit", () => {
-      expect(normalize("PreemptiveRaise", { suit: "spades" })).toEqual([
-        { act: "raise", strain: "spades", strength: "preemptive" },
+      expect(normalize("PreemptiveRaise", { suit: ObsSuit.Spades })).toEqual([
+        { act: "raise", strain: ObsSuit.Spades, strength: HandStrength.Preemptive },
       ]);
     });
 
     it("normalizes AcceptInvitation with suit", () => {
-      expect(normalize("AcceptInvitation", { suit: "hearts" })).toEqual([
-        { act: "accept", feature: "strength", suit: "hearts", strength: "invitational" },
+      expect(normalize("AcceptInvitation", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "accept", feature: "strength", suit: ObsSuit.Hearts, strength: HandStrength.Invitational },
       ]);
     });
 
     it("normalizes DeclineInvitation with suit", () => {
-      expect(normalize("DeclineInvitation", { suit: "spades" })).toEqual([
-        { act: "decline", feature: "strength", suit: "spades" },
+      expect(normalize("DeclineInvitation", { suit: ObsSuit.Spades })).toEqual([
+        { act: "decline", feature: "strength", suit: ObsSuit.Spades },
       ]);
     });
 
     it("normalizes RaiseToGame with suit", () => {
-      expect(normalize("RaiseToGame", { suit: "hearts" })).toEqual([
-        { act: "raise", strain: "hearts", strength: "game" },
+      expect(normalize("RaiseToGame", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Game },
       ]);
     });
 
@@ -293,8 +294,8 @@ describe("normalizeIntent", () => {
 
   describe("Weak Twos", () => {
     it("normalizes WeakTwoOpen with suit", () => {
-      expect(normalize("WeakTwoOpen", { suit: "hearts" })).toEqual([
-        { act: "open", strain: "hearts", strength: "weak" },
+      expect(normalize("WeakTwoOpen", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "open", strain: ObsSuit.Hearts, strength: HandStrength.Weak },
       ]);
     });
 
@@ -305,8 +306,8 @@ describe("normalizeIntent", () => {
     });
 
     it("normalizes InviteRaise with suit", () => {
-      expect(normalize("InviteRaise", { suit: "diamonds" })).toEqual([
-        { act: "raise", strain: "diamonds", strength: "invitational", feature: "heldSuit" },
+      expect(normalize("InviteRaise", { suit: ObsSuit.Diamonds })).toEqual([
+        { act: "raise", strain: ObsSuit.Diamonds, strength: HandStrength.Invitational, feature: "heldSuit" },
       ]);
     });
 
@@ -316,53 +317,53 @@ describe("normalizeIntent", () => {
 
     it("normalizes OgustSolid", () => {
       expect(normalize("OgustSolid")).toEqual([
-        { act: "show", feature: "suitQuality", quality: "solid" },
+        { act: "show", feature: "suitQuality", quality: SuitQuality.Solid },
       ]);
     });
 
     it("normalizes OgustMinBad", () => {
       expect(normalize("OgustMinBad")).toEqual([
-        { act: "show", feature: "strength", strength: "minimum" },
-        { act: "show", feature: "suitQuality", quality: "bad" },
+        { act: "show", feature: "strength", strength: HandStrength.Minimum },
+        { act: "show", feature: "suitQuality", quality: SuitQuality.Bad },
       ]);
     });
 
     it("normalizes OgustMinGood", () => {
       expect(normalize("OgustMinGood")).toEqual([
-        { act: "show", feature: "strength", strength: "minimum" },
-        { act: "show", feature: "suitQuality", quality: "good" },
+        { act: "show", feature: "strength", strength: HandStrength.Minimum },
+        { act: "show", feature: "suitQuality", quality: SuitQuality.Good },
       ]);
     });
 
     it("normalizes OgustMaxBad", () => {
       expect(normalize("OgustMaxBad")).toEqual([
-        { act: "show", feature: "strength", strength: "maximum" },
-        { act: "show", feature: "suitQuality", quality: "bad" },
+        { act: "show", feature: "strength", strength: HandStrength.Maximum },
+        { act: "show", feature: "suitQuality", quality: SuitQuality.Bad },
       ]);
     });
 
     it("normalizes OgustMaxGood", () => {
       expect(normalize("OgustMaxGood")).toEqual([
-        { act: "show", feature: "strength", strength: "maximum" },
-        { act: "show", feature: "suitQuality", quality: "good" },
+        { act: "show", feature: "strength", strength: HandStrength.Maximum },
+        { act: "show", feature: "suitQuality", quality: SuitQuality.Good },
       ]);
     });
 
     it("normalizes PostOgustGame with suit", () => {
-      expect(normalize("PostOgustGame", { suit: "hearts" })).toEqual([
-        { act: "raise", strain: "hearts", strength: "game" },
+      expect(normalize("PostOgustGame", { suit: ObsSuit.Hearts })).toEqual([
+        { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Game },
       ]);
     });
 
     it("normalizes PostOgust3NT", () => {
       expect(normalize("PostOgust3NT")).toEqual([
-        { act: "raise", strain: "notrump", strength: "game" },
+        { act: "raise", strain: "notrump", strength: HandStrength.Game },
       ]);
     });
 
     it("normalizes PostOgustSignoff with suit", () => {
-      expect(normalize("PostOgustSignoff", { suit: "spades" })).toEqual([
-        { act: "signoff", strain: "spades" },
+      expect(normalize("PostOgustSignoff", { suit: ObsSuit.Spades })).toEqual([
+        { act: "signoff", strain: ObsSuit.Spades },
       ]);
     });
 
@@ -377,28 +378,28 @@ describe("normalizeIntent", () => {
     it("normalizes DONTBothMajors", () => {
       expect(normalize("DONTBothMajors")).toEqual([
         { act: "overcall", feature: "twoSuited" },
-        { act: "show", feature: "heldSuit", suit: "hearts" },
-        { act: "show", feature: "heldSuit", suit: "spades" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Spades },
       ]);
     });
 
     it("normalizes DONTDiamondsMajor", () => {
       expect(normalize("DONTDiamondsMajor")).toEqual([
         { act: "overcall", feature: "twoSuited" },
-        { act: "show", feature: "heldSuit", suit: "diamonds" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Diamonds },
       ]);
     });
 
     it("normalizes DONTClubsHigher", () => {
       expect(normalize("DONTClubsHigher")).toEqual([
         { act: "overcall", feature: "twoSuited" },
-        { act: "show", feature: "heldSuit", suit: "clubs" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Clubs },
       ]);
     });
 
     it("normalizes DONTNaturalSpades", () => {
       expect(normalize("DONTNaturalSpades")).toEqual([
-        { act: "overcall", feature: "heldSuit", suit: "spades" },
+        { act: "overcall", feature: "heldSuit", suit: ObsSuit.Spades },
       ]);
     });
 
@@ -414,31 +415,31 @@ describe("normalizeIntent", () => {
 
     it("normalizes DONTAcceptHearts", () => {
       expect(normalize("DONTAcceptHearts")).toEqual([
-        { act: "accept", feature: "heldSuit", suit: "hearts" },
+        { act: "accept", feature: "heldSuit", suit: ObsSuit.Hearts },
       ]);
     });
 
     it("normalizes DONTPreferSpades", () => {
       expect(normalize("DONTPreferSpades")).toEqual([
-        { act: "show", feature: "heldSuit", suit: "spades" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Spades },
       ]);
     });
 
     it("normalizes DONTEscapeClubs", () => {
       expect(normalize("DONTEscapeClubs")).toEqual([
-        { act: "show", feature: "heldSuit", suit: "clubs" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Clubs },
       ]);
     });
 
     it("normalizes DONTEscapeDiamonds", () => {
       expect(normalize("DONTEscapeDiamonds")).toEqual([
-        { act: "show", feature: "heldSuit", suit: "diamonds" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Diamonds },
       ]);
     });
 
     it("normalizes DONTAcceptDiamonds", () => {
       expect(normalize("DONTAcceptDiamonds")).toEqual([
-        { act: "accept", feature: "heldSuit", suit: "diamonds" },
+        { act: "accept", feature: "heldSuit", suit: ObsSuit.Diamonds },
       ]);
     });
 
@@ -450,7 +451,7 @@ describe("normalizeIntent", () => {
 
     it("normalizes DONTAcceptClubs", () => {
       expect(normalize("DONTAcceptClubs")).toEqual([
-        { act: "accept", feature: "heldSuit", suit: "clubs" },
+        { act: "accept", feature: "heldSuit", suit: ObsSuit.Clubs },
       ]);
     });
 
@@ -462,13 +463,13 @@ describe("normalizeIntent", () => {
 
     it("normalizes DONTAcceptSpades", () => {
       expect(normalize("DONTAcceptSpades")).toEqual([
-        { act: "accept", feature: "heldSuit", suit: "spades" },
+        { act: "accept", feature: "heldSuit", suit: ObsSuit.Spades },
       ]);
     });
 
     it("normalizes DONTAcceptSpadesFallback", () => {
       expect(normalize("DONTAcceptSpadesFallback")).toEqual([
-        { act: "accept", feature: "heldSuit", suit: "spades" },
+        { act: "accept", feature: "heldSuit", suit: ObsSuit.Spades },
       ]);
     });
 
@@ -480,49 +481,49 @@ describe("normalizeIntent", () => {
 
     it("normalizes DONTRevealClubs", () => {
       expect(normalize("DONTRevealClubs")).toEqual([
-        { act: "show", feature: "heldSuit", suit: "clubs" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Clubs },
       ]);
     });
 
     it("normalizes DONTRevealDiamonds", () => {
       expect(normalize("DONTRevealDiamonds")).toEqual([
-        { act: "show", feature: "heldSuit", suit: "diamonds" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Diamonds },
       ]);
     });
 
     it("normalizes DONTRevealHearts", () => {
       expect(normalize("DONTRevealHearts")).toEqual([
-        { act: "show", feature: "heldSuit", suit: "hearts" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts },
       ]);
     });
 
     it("normalizes DONTShowDiamonds", () => {
       expect(normalize("DONTShowDiamonds")).toEqual([
-        { act: "show", feature: "heldSuit", suit: "diamonds" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Diamonds },
       ]);
     });
 
     it("normalizes DONTShowHearts", () => {
       expect(normalize("DONTShowHearts")).toEqual([
-        { act: "show", feature: "heldSuit", suit: "hearts" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts },
       ]);
     });
 
     it("normalizes DONTShowSpades", () => {
       expect(normalize("DONTShowSpades")).toEqual([
-        { act: "show", feature: "heldSuit", suit: "spades" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Spades },
       ]);
     });
 
     it("normalizes DONTShowHeartsFromDiamonds", () => {
       expect(normalize("DONTShowHeartsFromDiamonds")).toEqual([
-        { act: "show", feature: "heldSuit", suit: "hearts" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts },
       ]);
     });
 
     it("normalizes DONTShowSpadesFromDiamonds", () => {
       expect(normalize("DONTShowSpadesFromDiamonds")).toEqual([
-        { act: "show", feature: "heldSuit", suit: "spades" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Spades },
       ]);
     });
   });

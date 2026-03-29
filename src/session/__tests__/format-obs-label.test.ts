@@ -4,13 +4,14 @@ import { BID_ACTION_TYPES } from "../../conventions/pipeline/bid-action";
 import type { ObsPattern } from "../../conventions";
 import type { Call } from "../../engine/types";
 import { BidSuit } from "../../engine/types";
+import { ObsSuit } from "../../conventions/pipeline/bid-action";
 
 describe("formatObsAction", () => {
   it("open with strain", () => {
     expect(formatObsAction({ act: "open", strain: "notrump" })).toBe("opening notrump");
   });
   it("show with feature and suit", () => {
-    expect(formatObsAction({ act: "show", feature: "heldSuit", suit: "hearts" })).toBe("showing hearts");
+    expect(formatObsAction({ act: "show", feature: "heldSuit", suit: ObsSuit.Hearts })).toBe("showing hearts");
   });
   it("deny with feature", () => {
     expect(formatObsAction({ act: "deny", feature: "majorSuit" })).toBe("denying a major");
@@ -19,7 +20,7 @@ describe("formatObsAction", () => {
     expect(formatObsAction({ act: "inquire", feature: "majorSuit" })).toBe("asking for a major");
   });
   it("transfer with suit", () => {
-    expect(formatObsAction({ act: "transfer", suit: "hearts" })).toBe("transferring to hearts");
+    expect(formatObsAction({ act: "transfer", suit: ObsSuit.Hearts })).toBe("transferring to hearts");
   });
   it("pass", () => {
     expect(formatObsAction({ act: "pass" })).toBe("passing");
@@ -37,7 +38,7 @@ describe("formatObsAction", () => {
 });
 
 describe("formatTransitionLabel", () => {
-  const heartsObs: ObsPattern = { act: "show", feature: "heldSuit", suit: "hearts" };
+  const heartsObs: ObsPattern = { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts };
   const twoHearts: Call = { type: "bid", level: 2, strain: BidSuit.Hearts };
   it("full label with call and turn", () => {
     expect(formatTransitionLabel(heartsObs, twoHearts, "opener")).toBe(

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { arbitrateMeanings } from "../evaluation/meaning-arbitrator";
 import { BidSuit } from "../../../engine/types";
 import { makeCall, makeArbitrationInput } from "./pipeline-test-helpers";
+import { RecommendationBand } from "../evaluation/meaning";
 
 describe("semantic class aliasing in arbitrateMeanings", () => {
   it("without aliases, two proposals with different semanticClassIds both remain in truth set", () => {
@@ -10,7 +11,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
         meaningId: "stayman:ask-major",
         semanticClassId: "stayman:ask-major",
         ranking: {
-          recommendationBand: "should",
+          recommendationBand: RecommendationBand.Should,
           specificity: 5,
           modulePrecedence: 0,
           declarationOrder: 0,
@@ -24,7 +25,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
         meaningId: "precision-stayman:ask-major",
         semanticClassId: "precision-stayman:ask-major",
         ranking: {
-          recommendationBand: "should",
+          recommendationBand: RecommendationBand.Should,
           specificity: 3,
           modulePrecedence: 1,
           declarationOrder: 0,
@@ -46,7 +47,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
         meaningId: "stayman:ask-major",
         semanticClassId: "stayman:ask-major",
         ranking: {
-          recommendationBand: "should",
+          recommendationBand: RecommendationBand.Should,
           specificity: 5,
           modulePrecedence: 0,
           declarationOrder: 0,
@@ -60,7 +61,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
         meaningId: "precision-stayman:ask-major",
         semanticClassId: "precision-stayman:ask-major",
         ranking: {
-          recommendationBand: "should",
+          recommendationBand: RecommendationBand.Should,
           specificity: 3,
           modulePrecedence: 1,
           declarationOrder: 0,
@@ -93,7 +94,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
         meaningId: "transfer:hearts",
         semanticClassId: "transfer:hearts",
         ranking: {
-          recommendationBand: "should",
+          recommendationBand: RecommendationBand.Should,
           specificity: 3,
           modulePrecedence: 0,
           declarationOrder: 0,
@@ -107,7 +108,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
         meaningId: "natural:weak-diamonds",
         semanticClassId: "natural:weak-diamonds",
         ranking: {
-          recommendationBand: "may",
+          recommendationBand: RecommendationBand.May,
           specificity: 1,
           modulePrecedence: 1,
           declarationOrder: 0,
@@ -134,7 +135,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
         meaningId: "moduleA:nt-invite",
         semanticClassId: "moduleA:nt-invite",
         ranking: {
-          recommendationBand: "must",
+          recommendationBand: RecommendationBand.Must,
           specificity: 5,
           modulePrecedence: 0,
           declarationOrder: 0,
@@ -148,7 +149,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
         meaningId: "moduleB:nt-invite",
         semanticClassId: "moduleB:nt-invite",
         ranking: {
-          recommendationBand: "should",
+          recommendationBand: RecommendationBand.Should,
           specificity: 3,
           modulePrecedence: 1,
           declarationOrder: 0,
@@ -162,7 +163,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
         meaningId: "moduleC:pass",
         semanticClassId: "bridge:pass",
         ranking: {
-          recommendationBand: "may",
+          recommendationBand: RecommendationBand.May,
           specificity: 1,
           modulePrecedence: 0,
           declarationOrder: 0,
@@ -193,7 +194,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
         meaningId: "stayman:ask-major",
         semanticClassId: "stayman:ask-major",
         ranking: {
-          recommendationBand: "should",
+          recommendationBand: RecommendationBand.Should,
           specificity: 5,
           modulePrecedence: 0,
           declarationOrder: 0,
@@ -207,7 +208,7 @@ describe("semantic class aliasing in arbitrateMeanings", () => {
         meaningId: "other:bid",
         // no semanticClassId
         ranking: {
-          recommendationBand: "should",
+          recommendationBand: RecommendationBand.Should,
           specificity: 3,
           modulePrecedence: 1,
           declarationOrder: 0,

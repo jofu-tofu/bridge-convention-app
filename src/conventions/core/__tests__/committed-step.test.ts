@@ -8,7 +8,8 @@ import type {
   CommittedStep,
   AuctionContext,
 } from "../committed-step";
-import { INITIAL_NEGOTIATION } from "../committed-step";
+import { INITIAL_NEGOTIATION, ConfidenceLevel } from "../committed-step";
+import { ObsSuit } from "../../pipeline/bid-action";
 
 describe("INITIAL_NEGOTIATION", () => {
   it("has expected defaults", () => {
@@ -28,7 +29,7 @@ describe("INITIAL_NEGOTIATION", () => {
 describe("type-level construction", () => {
   it("constructs a valid NegotiationState", () => {
     const kernel: NegotiationState = {
-      fitAgreed: { strain: "hearts", confidence: "tentative" },
+      fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Tentative },
       forcing: "game",
       captain: "responder",
       competition: "uncontested",
@@ -41,11 +42,11 @@ describe("type-level construction", () => {
       fitAgreed: null,
       forcing: "none",
       captain: "undecided",
-      competition: { kind: "overcalled", strain: "hearts", level: 2 },
+      competition: { kind: "overcalled", strain: ObsSuit.Hearts, level: 2 },
     };
     expect(kernel.competition).toEqual({
       kind: "overcalled",
-      strain: "hearts",
+      strain: ObsSuit.Hearts,
       level: 2,
     });
   });

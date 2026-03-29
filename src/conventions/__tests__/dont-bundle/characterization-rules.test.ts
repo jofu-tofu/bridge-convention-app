@@ -13,6 +13,7 @@ import { Seat } from "../../../engine/types";
 import { flattenSurfaces } from "../../pipeline/observation/rule-interpreter";
 
 import { getModule } from "../../definitions/module-registry";
+import { ObsSuit } from "../../pipeline/bid-action";
 
 const allRuleModules: ConventionModule[] = [getModule("dont")!];
 
@@ -79,8 +80,8 @@ describe("DONT rules: characterization tests", () => {
       makeStep(Seat.East, [{ act: "open", strain: "notrump" }]),
       makeStep(Seat.South, [
         { act: "overcall", feature: "twoSuited" },
-        { act: "show", feature: "heldSuit", suit: "hearts" },
-        { act: "show", feature: "heldSuit", suit: "spades" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Spades },
       ]),
       passStep(Seat.West),
     ];
@@ -100,7 +101,7 @@ describe("DONT rules: characterization tests", () => {
       makeStep(Seat.East, [{ act: "open", strain: "notrump" }]),
       makeStep(Seat.South, [
         { act: "overcall", feature: "twoSuited" },
-        { act: "show", feature: "heldSuit", suit: "diamonds" },
+        { act: "show", feature: "heldSuit", suit: ObsSuit.Diamonds },
       ]),
       passStep(Seat.West),
     ];

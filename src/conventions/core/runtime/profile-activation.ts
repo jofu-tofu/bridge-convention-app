@@ -5,6 +5,7 @@ import type { Auction, Seat } from "../../../engine/types";
 import { partnerSeat, nextSeat } from "../../../engine/constants";
 import { auctionMatchesPrefix } from "../../../engine/auction-helpers";
 import { callKey } from "../../../engine/call-helpers";
+import { FactOperator } from "../../pipeline/evaluation/meaning";
 
 /**
  * Resolve a semantic role (e.g. "opener", "responder") to a compass Seat

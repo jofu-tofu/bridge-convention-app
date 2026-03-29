@@ -1,9 +1,11 @@
 import { describe, it, expect } from "vitest";
 import type { BidMeaning, BidMeaningClause } from "../evaluation/meaning";
+import { Disclosure } from "../evaluation/meaning";
 import type { Call } from "../../../engine/types";
 import { BidSuit } from "../../../engine/types";
 import { bidName, bidSummary } from "../../core/authored-text";
 import type { TeachingLabel } from "../../core/authored-text";
+import { FactOperator, RecommendationBand } from "../evaluation/meaning";
 
 const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
@@ -20,12 +22,12 @@ describe("BidMeaning", () => {
         {
           clauseId: "hcp-min",
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 8,
         },
       ],
       ranking: {
-        recommendationBand: "should",
+        recommendationBand: RecommendationBand.Should,
         modulePrecedence: 0,
         declarationOrder: 0,
       },
@@ -33,7 +35,7 @@ describe("BidMeaning", () => {
         type: "stayman-ask",
         params: {},
       },
-      disclosure: "alert" as const,
+      disclosure: Disclosure.Alert,
       teachingLabel: tl("Stayman 2C"),
     };
 
@@ -64,7 +66,7 @@ describe("BidMeaning", () => {
       },
       clauses: [],
       ranking: {
-        recommendationBand: "should",
+        recommendationBand: RecommendationBand.Should,
         modulePrecedence: 0,
         declarationOrder: 0,
       },
@@ -72,7 +74,7 @@ describe("BidMeaning", () => {
         type: "stayman-ask",
         params: { level: 2 },
       },
-      disclosure: "alert" as const,
+      disclosure: Disclosure.Alert,
       teachingLabel: tl("Stayman Convention"),
     };
 
@@ -89,37 +91,37 @@ describe("BidMeaning", () => {
       {
         clauseId: "hcp-min",
         factId: "hand.hcp",
-        operator: "gte",
+        operator: FactOperator.Gte,
         value: 8,
       },
       {
         clauseId: "hcp-max",
         factId: "hand.hcp",
-        operator: "lte",
+        operator: FactOperator.Lte,
         value: 14,
       },
       {
         clauseId: "exact-length",
         factId: "hand.suitLength.spades",
-        operator: "eq",
+        operator: FactOperator.Eq,
         value: 5,
       },
       {
         clauseId: "hcp-range",
         factId: "hand.hcp",
-        operator: "range",
+        operator: FactOperator.Range,
         value: { min: 8, max: 9 },
       },
       {
         clauseId: "has-major",
         factId: "bridge.hasFourCardMajor",
-        operator: "boolean",
+        operator: FactOperator.Boolean,
         value: true,
       },
       {
         clauseId: "pattern-check",
         factId: "bridge.majorPattern",
-        operator: "in",
+        operator: FactOperator.In,
         value: ["one-four", "both-four"],
       },
     ];
@@ -144,12 +146,12 @@ describe("BidMeaning", () => {
       },
       clauses: [],
       ranking: {
-        recommendationBand: "must",
+        recommendationBand: RecommendationBand.Must,
         modulePrecedence: 0,
         declarationOrder: 0,
       },
       sourceIntent: { type: "test", params: {} },
-      disclosure: "alert" as const,
+      disclosure: Disclosure.Alert,
       teachingLabel: tl("3NT contract bid"),
     };
 
@@ -162,12 +164,12 @@ describe("BidMeaning", () => {
       },
       clauses: [],
       ranking: {
-        recommendationBand: "may",
+        recommendationBand: RecommendationBand.May,
         modulePrecedence: 0,
         declarationOrder: 0,
       },
       sourceIntent: { type: "test", params: {} },
-      disclosure: "alert" as const,
+      disclosure: Disclosure.Alert,
       teachingLabel: tl("Pass"),
     };
 

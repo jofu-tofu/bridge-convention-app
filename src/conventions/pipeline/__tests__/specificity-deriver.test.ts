@@ -3,7 +3,10 @@ import { deriveSpecificity } from "../evaluation/specificity-deriver";
 import { makeSurface } from "../../../test-support/convention-factories";
 import { FactLayer } from '../../core/fact-layer';
 import type { FactCatalogExtension, FactDefinition } from "../../core/fact-catalog";
+import { EvaluationWorld } from "../../core/fact-catalog";
 import type { BidMeaningClause } from "../evaluation/meaning";
+import { FactOperator } from "../evaluation/meaning";
+import { ObsSuit } from "../bid-action";
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -11,7 +14,7 @@ function clause(factId: string, value: number = 4): BidMeaningClause {
   return {
     clauseId: `clause-${factId}`,
     factId,
-    operator: "gte",
+    operator: FactOperator.Gte,
     value,
   };
 }
@@ -20,7 +23,7 @@ function boolClause(factId: string): BidMeaningClause {
   return {
     clauseId: `clause-${factId}`,
     factId,
-    operator: "boolean",
+    operator: FactOperator.Boolean,
     value: true,
   };
 }
@@ -38,7 +41,7 @@ const bridgeExtension = makeExtension([
   {
     id: "bridge.hasFourCardMajor",
     layer: FactLayer.BridgeDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Has at least one 4+ card major",
     valueType: "boolean",
     constrainsDimensions: ["suitIdentity"],
@@ -46,7 +49,7 @@ const bridgeExtension = makeExtension([
   {
     id: "bridge.hasFiveCardMajor",
     layer: FactLayer.BridgeDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Has at least one 5+ card major",
     valueType: "boolean",
     constrainsDimensions: ["suitIdentity"],
@@ -54,7 +57,7 @@ const bridgeExtension = makeExtension([
   {
     id: "bridge.hasShortage",
     layer: FactLayer.BridgeDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Has singleton or void",
     valueType: "boolean",
     constrainsDimensions: ["shapeClass"],
@@ -65,7 +68,7 @@ const dontExtension = makeExtension([
   {
     id: "module.dont.bothMajors",
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Both majors",
     valueType: "boolean",
     constrainsDimensions: ["suitIdentity", "suitLength", "suitRelation"],
@@ -73,7 +76,7 @@ const dontExtension = makeExtension([
   {
     id: "module.dont.singleSuited",
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Single suited",
     valueType: "boolean",
     constrainsDimensions: ["shapeClass", "suitLength"],
@@ -84,7 +87,7 @@ const ntExtension = makeExtension([
   {
     id: "module.ntResponse.gameValues",
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Game values",
     valueType: "boolean",
     constrainsDimensions: ["pointRange"],
@@ -92,7 +95,7 @@ const ntExtension = makeExtension([
   {
     id: "module.ntResponse.inviteValues",
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Invite values",
     valueType: "boolean",
     constrainsDimensions: ["pointRange"],
@@ -117,7 +120,7 @@ describe("deriveSpecificity", () => {
         clause("hand.suitLength.$suit"),
         boolClause("bridge.hasShortage"),
       ],
-      surfaceBindings: { suit: "hearts" },
+      surfaceBindings: { suit: ObsSuit.Hearts },
     });
 
     const result = deriveSpecificity(surface, allExtensions);

@@ -8,6 +8,7 @@ import {
 import type { WitnessGeneratorResult } from "../deal-spec-generator";
 import { Seat, Suit, Vulnerability } from "../../../engine/types";
 import type { DealSpec, UnsatisfiableResult } from "../../core/deal-spec-types";
+import { SeatRole } from "../../core/deal-spec-types";
 import type { HandPredicate } from "../../core/agreement-module";
 import { CAP_OPENING_1NT } from "../../definitions/capability-vocabulary";
 import { FactOperator } from "../evaluation/meaning";
@@ -24,14 +25,14 @@ function makeMinimalSpec(overrides: Partial<DealSpec> = {}): DealSpec {
   };
 }
 
-function hcpPredicate(op: "gte" | "lte" | "range", value: number | { min: number; max: number }): HandPredicate {
+function hcpPredicate(op: FactOperator.Gte | FactOperator.Lte | FactOperator.Range, value: number | { min: number; max: number }): HandPredicate {
   return {
     clauses: [{ factId: "hcp", operator: op, value }],
     conjunction: "all",
   };
 }
 
-function suitLengthPredicate(suit: string, op: "gte" | "lte" | "eq", value: number): HandPredicate {
+function suitLengthPredicate(suit: string, op: FactOperator.Gte | FactOperator.Lte | FactOperator.Eq, value: number): HandPredicate {
   return {
     clauses: [{ factId: suit, operator: op, value }],
     conjunction: "all",
@@ -90,7 +91,7 @@ describe("compileDealSpec", () => {
           {
             kind: "seat",
             role: SeatRole.Self,
-            predicate: hcpPredicate("gte", 12),
+            predicate: hcpPredicate(FactOperator.Gte, 12),
           },
         ],
       });
@@ -106,7 +107,7 @@ describe("compileDealSpec", () => {
           {
             kind: "seat",
             role: SeatRole.Partner,
-            predicate: hcpPredicate("gte", 6),
+            predicate: hcpPredicate(FactOperator.Gte, 6),
           },
         ],
       });
@@ -121,12 +122,12 @@ describe("compileDealSpec", () => {
           {
             kind: "seat",
             role: SeatRole.Lho,
-            predicate: hcpPredicate("lte", 10),
+            predicate: hcpPredicate(FactOperator.Lte, 10),
           },
           {
             kind: "seat",
             role: SeatRole.Rho,
-            predicate: hcpPredicate("lte", 10),
+            predicate: hcpPredicate(FactOperator.Lte, 10),
           },
         ],
       });
@@ -143,7 +144,7 @@ describe("compileDealSpec", () => {
     it("translates hcp gte to minHcp", () => {
       const spec = makeMinimalSpec({
         layers: [
-          { kind: "seat", role: SeatRole.Self, predicate: hcpPredicate("gte", 15) },
+          { kind: "seat", role: SeatRole.Self, predicate: hcpPredicate(FactOperator.Gte, 15) },
         ],
       });
 
@@ -155,7 +156,7 @@ describe("compileDealSpec", () => {
     it("translates hcp lte to maxHcp", () => {
       const spec = makeMinimalSpec({
         layers: [
-          { kind: "seat", role: SeatRole.Self, predicate: hcpPredicate("lte", 17) },
+          { kind: "seat", role: SeatRole.Self, predicate: hcpPredicate(FactOperator.Lte, 17) },
         ],
       });
 
@@ -169,7 +170,7 @@ describe("compileDealSpec", () => {
           {
             kind: "seat",
             role: SeatRole.Self,
-            predicate: hcpPredicate("range", { min: 15, max: 17 }),
+            predicate: hcpPredicate(FactOperator.Range, { min: 15, max: 17 }),
           },
         ],
       });
@@ -549,7 +550,7 @@ describe("generateDealSpec", () => {
         {
           kind: "seat",
           role: SeatRole.Self,
-          predicate: hcpPredicate("gte", 10),
+          predicate: hcpPredicate(FactOperator.Gte, 10),
         },
       ],
       maxAttempts: 50_000,
@@ -569,10 +570,10 @@ describe("generateDealSpec", () => {
       const spec = makeMinimalSpec({
         diagnosticMode: true,
         layers: [
-          { kind: "seat", role: SeatRole.Self, predicate: hcpPredicate("gte", 15) },
-          { kind: "seat", role: SeatRole.Partner, predicate: hcpPredicate("gte", 15) },
-          { kind: "seat", role: SeatRole.Lho, predicate: hcpPredicate("gte", 15) },
-          { kind: "seat", role: SeatRole.Rho, predicate: hcpPredicate("gte", 15) },
+          { kind: "seat", role: SeatRole.Self, predicate: hcpPredicate(FactOperator.Gte, 15) },
+          { kind: "seat", role: SeatRole.Partner, predicate: hcpPredicate(FactOperator.Gte, 15) },
+          { kind: "seat", role: SeatRole.Lho, predicate: hcpPredicate(FactOperator.Gte, 15) },
+          { kind: "seat", role: SeatRole.Rho, predicate: hcpPredicate(FactOperator.Gte, 15) },
         ],
       });
 

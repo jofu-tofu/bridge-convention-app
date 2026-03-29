@@ -10,11 +10,13 @@ import type { FactCatalogExtension } from "../../../core/fact-catalog";
 import type { ExplanationEntry } from "../../../core/explanation-catalog";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
+import { TurnRole } from "../../../core/rule-module";
 import type { NegotiationDelta } from "../../../core/committed-step";
+import { ConfidenceLevel } from "../../../core/committed-step";
 import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
 import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
-import { createSurface } from "../../../core/surface-builder";
+import { createSurface, Disclosure } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple, teachingItem } from "../../../core/authored-text";
 import { bergenFacts } from "./facts";
@@ -37,6 +39,8 @@ import {
   BERGEN_R3_AFTER_GAME_TRY_SPADES_SURFACES,
   BERGEN_R4_SURFACES,
 } from "./meaning-surfaces";
+import { RecommendationBand } from "../../../pipeline/evaluation/meaning";
+import { HandStrength, ObsSuit } from "../../../pipeline/bid-action";
 
 // ── Stub opening surfaces ─────────────────────────────────────────
 // Bergen needs 1H/1S opening observations for phase transitions.
@@ -51,11 +55,11 @@ const OPENER_1H_SURFACE: BidMeaning = createSurface({
   semanticClassId: "bergen:major-open",
   encoding: bid(1, BidSuit.Hearts),
   clauses: [],
-  band: "must",
+  band: RecommendationBand.Must,
   declarationOrder: 0,
-  sourceIntent: { type: "MajorOpen", params: { suit: "hearts" } },
+  sourceIntent: { type: "MajorOpen", params: { suit: ObsSuit.Hearts } },
   teachingLabel: { name: bidName("1\u2665 opening"), summary: bidSummary("Open 1 heart to show 5+ hearts and 12-21 HCP") },
-  disclosure: "natural",
+  disclosure: Disclosure.Natural,
 }, BERGEN_CTX);
 
 const OPENER_1S_SURFACE: BidMeaning = createSurface({
@@ -63,11 +67,11 @@ const OPENER_1S_SURFACE: BidMeaning = createSurface({
   semanticClassId: "bergen:major-open",
   encoding: bid(1, BidSuit.Spades),
   clauses: [],
-  band: "must",
+  band: RecommendationBand.Must,
   declarationOrder: 0,
-  sourceIntent: { type: "MajorOpen", params: { suit: "spades" } },
+  sourceIntent: { type: "MajorOpen", params: { suit: ObsSuit.Spades } },
   teachingLabel: { name: bidName("1\u2660 opening"), summary: bidSummary("Open 1 spade to show 5+ spades and 12-21 HCP") },
-  disclosure: "natural",
+  disclosure: Disclosure.Natural,
 }, BERGEN_CTX);
 
 // ── Phase type ────────────────────────────────────────────────────
@@ -94,11 +98,11 @@ type Phase =
 /** R1 responder: captain is responder, fit tentatively agreed. */
 const R1_HEARTS_DELTA: NegotiationDelta = {
   captain: "responder",
-  fitAgreed: { strain: "hearts", confidence: "tentative" },
+  fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Tentative },
 };
 const R1_SPADES_DELTA: NegotiationDelta = {
   captain: "responder",
-  fitAgreed: { strain: "spades", confidence: "tentative" },
+  fitAgreed: { strain: ObsSuit.Spades, confidence: ConfidenceLevel.Tentative },
 };
 
 /** R2 opener: captain transfers to opener. */
@@ -116,52 +120,52 @@ const bergenLocal: LocalFsm<Phase> = {
   initial: "idle",
   transitions: [
     // Opening observations advance to suit-specific opened phase
-    { from: "idle", to: "opened-hearts", on: { act: "open", strain: "hearts" } },
-    { from: "idle", to: "opened-spades", on: { act: "open", strain: "spades" } },
+    { from: "idle", to: "opened-hearts", on: { act: "open", strain: ObsSuit.Hearts } },
+    { from: "idle", to: "opened-spades", on: { act: "open", strain: ObsSuit.Spades } },
 
     // R1 raise observations → suit-specific R2 phases
-    { from: "opened-hearts", to: "after-constructive-hearts", on: { act: "raise", strain: "hearts", strength: "constructive" } },
-    { from: "opened-hearts", to: "after-limit-hearts", on: { act: "raise", strain: "hearts", strength: "limit" } },
-    { from: "opened-hearts", to: "after-preemptive-hearts", on: { act: "raise", strain: "hearts", strength: "preemptive" } },
-    { from: "opened-hearts", to: "done", on: { act: "raise", strain: "hearts", strength: "game" } },
+    { from: "opened-hearts", to: "after-constructive-hearts", on: { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Constructive } },
+    { from: "opened-hearts", to: "after-limit-hearts", on: { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Limit } },
+    { from: "opened-hearts", to: "after-preemptive-hearts", on: { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Preemptive } },
+    { from: "opened-hearts", to: "done", on: { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Game } },
     { from: "opened-hearts", to: "done", on: { act: "show", feature: "shortage" } },
 
     // Natural 1NT response terminates Bergen (no further raise conversation)
     { from: "opened-hearts", to: "done", on: { act: "place", strain: "notrump" } },
 
-    { from: "opened-spades", to: "after-constructive-spades", on: { act: "raise", strain: "spades", strength: "constructive" } },
-    { from: "opened-spades", to: "after-limit-spades", on: { act: "raise", strain: "spades", strength: "limit" } },
-    { from: "opened-spades", to: "after-preemptive-spades", on: { act: "raise", strain: "spades", strength: "preemptive" } },
-    { from: "opened-spades", to: "done", on: { act: "raise", strain: "spades", strength: "game" } },
+    { from: "opened-spades", to: "after-constructive-spades", on: { act: "raise", strain: ObsSuit.Spades, strength: HandStrength.Constructive } },
+    { from: "opened-spades", to: "after-limit-spades", on: { act: "raise", strain: ObsSuit.Spades, strength: HandStrength.Limit } },
+    { from: "opened-spades", to: "after-preemptive-spades", on: { act: "raise", strain: ObsSuit.Spades, strength: HandStrength.Preemptive } },
+    { from: "opened-spades", to: "done", on: { act: "raise", strain: ObsSuit.Spades, strength: HandStrength.Game } },
     { from: "opened-spades", to: "done", on: { act: "show", feature: "shortage" } },
 
     // Natural 1NT response terminates Bergen (no further raise conversation)
     { from: "opened-spades", to: "done", on: { act: "place", strain: "notrump" } },
 
     // R2 opener → R3 phases
-    { from: "after-constructive-hearts", to: "after-game", on: { act: "raise", strength: "game" } },
+    { from: "after-constructive-hearts", to: "after-game", on: { act: "raise", strength: HandStrength.Game } },
     { from: "after-constructive-hearts", to: "after-signoff", on: { act: "decline" } },
-    { from: "after-constructive-hearts", to: "after-game-try-hearts", on: { act: "accept", strength: "invitational" } },
-    { from: "after-constructive-spades", to: "after-game", on: { act: "raise", strength: "game" } },
+    { from: "after-constructive-hearts", to: "after-game-try-hearts", on: { act: "accept", strength: HandStrength.Invitational } },
+    { from: "after-constructive-spades", to: "after-game", on: { act: "raise", strength: HandStrength.Game } },
     { from: "after-constructive-spades", to: "after-signoff", on: { act: "decline" } },
-    { from: "after-constructive-spades", to: "after-game-try-spades", on: { act: "accept", strength: "invitational" } },
+    { from: "after-constructive-spades", to: "after-game-try-spades", on: { act: "accept", strength: HandStrength.Invitational } },
 
-    { from: "after-limit-hearts", to: "after-game", on: { act: "raise", strength: "game" } },
+    { from: "after-limit-hearts", to: "after-game", on: { act: "raise", strength: HandStrength.Game } },
     { from: "after-limit-hearts", to: "after-signoff", on: { act: "decline" } },
-    { from: "after-limit-hearts", to: "after-game-try-hearts", on: { act: "accept", strength: "invitational" } },
-    { from: "after-limit-spades", to: "after-game", on: { act: "raise", strength: "game" } },
+    { from: "after-limit-hearts", to: "after-game-try-hearts", on: { act: "accept", strength: HandStrength.Invitational } },
+    { from: "after-limit-spades", to: "after-game", on: { act: "raise", strength: HandStrength.Game } },
     { from: "after-limit-spades", to: "after-signoff", on: { act: "decline" } },
-    { from: "after-limit-spades", to: "after-game-try-spades", on: { act: "accept", strength: "invitational" } },
+    { from: "after-limit-spades", to: "after-game-try-spades", on: { act: "accept", strength: HandStrength.Invitational } },
 
     // Preemptive: opener just passes or bids game
-    { from: "after-preemptive-hearts", to: "done", on: { act: "raise", strength: "game" } },
+    { from: "after-preemptive-hearts", to: "done", on: { act: "raise", strength: HandStrength.Game } },
     { from: "after-preemptive-hearts", to: "done", on: { act: "pass" } },
-    { from: "after-preemptive-spades", to: "done", on: { act: "raise", strength: "game" } },
+    { from: "after-preemptive-spades", to: "done", on: { act: "raise", strength: HandStrength.Game } },
     { from: "after-preemptive-spades", to: "done", on: { act: "pass" } },
 
     // R3 responder → R4 or terminal
     { from: "after-game", to: "done", on: { act: "pass" } },
-    { from: "after-signoff", to: "done", on: { act: "raise", strength: "game" } },
+    { from: "after-signoff", to: "done", on: { act: "raise", strength: HandStrength.Game } },
     { from: "after-signoff", to: "done", on: { act: "pass" } },
     { from: "after-game-try-hearts", to: "r4", on: { act: "accept" } },
     { from: "after-game-try-hearts", to: "r4", on: { act: "decline" } },
@@ -181,48 +185,48 @@ function createBergenStates(_sys: SystemConfig): readonly StateEntry<Phase>[] {
     // Opening stubs (idle, opener turn)
     {
       phase: "idle",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       surfaces: [OPENER_1H_SURFACE, OPENER_1S_SURFACE],
     },
 
     // R1: responder raises (hearts) — Bergen surfaces with delta
     {
       phase: "opened-hearts",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: R1_HEARTS_DELTA,
       surfaces: BERGEN_R1_HEARTS_SURFACES,
     },
     // R1: responder (hearts) — natural 1NT surfaces without delta
     {
       phase: "opened-hearts",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       surfaces: BERGEN_NATURAL_1NT_HEARTS_SURFACES,
     },
 
     // R1: responder raises (spades) — Bergen surfaces with delta
     {
       phase: "opened-spades",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: R1_SPADES_DELTA,
       surfaces: BERGEN_R1_SPADES_SURFACES,
     },
     // R1: responder (spades) — natural 1NT surfaces without delta
     {
       phase: "opened-spades",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       surfaces: BERGEN_NATURAL_1NT_SPADES_SURFACES,
     },
 
     // R2: opener after constructive (hearts/spades)
     {
       phase: "after-constructive-hearts",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: R2_OPENER_DELTA,
       surfaces: BERGEN_R2_AFTER_CONSTRUCTIVE_HEARTS_SURFACES,
     },
     {
       phase: "after-constructive-spades",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: R2_OPENER_DELTA,
       surfaces: BERGEN_R2_AFTER_CONSTRUCTIVE_SPADES_SURFACES,
     },
@@ -230,13 +234,13 @@ function createBergenStates(_sys: SystemConfig): readonly StateEntry<Phase>[] {
     // R2: opener after limit (hearts/spades)
     {
       phase: "after-limit-hearts",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: R2_OPENER_DELTA,
       surfaces: BERGEN_R2_AFTER_LIMIT_HEARTS_SURFACES,
     },
     {
       phase: "after-limit-spades",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: R2_OPENER_DELTA,
       surfaces: BERGEN_R2_AFTER_LIMIT_SPADES_SURFACES,
     },
@@ -244,13 +248,13 @@ function createBergenStates(_sys: SystemConfig): readonly StateEntry<Phase>[] {
     // R2: opener after preemptive (hearts/spades)
     {
       phase: "after-preemptive-hearts",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: R2_OPENER_DELTA,
       surfaces: BERGEN_R2_AFTER_PREEMPTIVE_HEARTS_SURFACES,
     },
     {
       phase: "after-preemptive-spades",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: R2_OPENER_DELTA,
       surfaces: BERGEN_R2_AFTER_PREEMPTIVE_SPADES_SURFACES,
     },
@@ -258,7 +262,7 @@ function createBergenStates(_sys: SystemConfig): readonly StateEntry<Phase>[] {
     // R3: responder after game bid
     {
       phase: "after-game",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: R3_RESPONDER_DELTA,
       surfaces: BERGEN_R3_AFTER_GAME_SURFACES,
     },
@@ -266,7 +270,7 @@ function createBergenStates(_sys: SystemConfig): readonly StateEntry<Phase>[] {
     // R3: responder after signoff
     {
       phase: "after-signoff",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: R3_RESPONDER_DELTA,
       surfaces: BERGEN_R3_AFTER_SIGNOFF_SURFACES,
     },
@@ -274,7 +278,7 @@ function createBergenStates(_sys: SystemConfig): readonly StateEntry<Phase>[] {
     // R3: responder after game try (hearts)
     {
       phase: "after-game-try-hearts",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: R3_RESPONDER_DELTA,
       surfaces: BERGEN_R3_AFTER_GAME_TRY_HEARTS_SURFACES,
     },
@@ -282,7 +286,7 @@ function createBergenStates(_sys: SystemConfig): readonly StateEntry<Phase>[] {
     // R3: responder after game try (spades)
     {
       phase: "after-game-try-spades",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: R3_RESPONDER_DELTA,
       surfaces: BERGEN_R3_AFTER_GAME_TRY_SPADES_SURFACES,
     },
@@ -290,7 +294,7 @@ function createBergenStates(_sys: SystemConfig): readonly StateEntry<Phase>[] {
     // R4: opener final acceptance
     {
       phase: "r4",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: R4_OPENER_DELTA,
       surfaces: BERGEN_R4_SURFACES,
     },

@@ -6,7 +6,7 @@
  */
 
 import type { GamePhase } from "./phase-machine";
-import type { PlayPreference } from "./drill-types";
+import { PlayPreference } from "./drill-types";
 import type { Seat } from "../engine/types";
 
 // ── Event types ────────────────────────────────────────────────────
@@ -127,10 +127,10 @@ function resolveAuctionComplete(servicePhase: GamePhase): TransitionDescriptor {
 }
 
 function resolvePromptEntered(playPreference: PlayPreference): TransitionDescriptor {
-  if (playPreference === "always") {
+  if (playPreference === PlayPreference.Always) {
     return { ...noTransition(), chainedEvent: { type: "ACCEPT_PLAY" } };
   }
-  if (playPreference === "skip") {
+  if (playPreference === PlayPreference.Skip) {
     return { ...noTransition(), chainedEvent: { type: "DECLINE_PLAY" } };
   }
   return noTransition();

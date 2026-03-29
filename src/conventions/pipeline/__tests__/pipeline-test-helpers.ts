@@ -6,6 +6,7 @@ import type { MeaningProposal } from "../evaluation/meaning";
 import type { ArbitrationInput } from "../evaluation/meaning-arbitrator";
 import type { CandidateEligibility } from "../tree-evaluation";
 import { makeCall, makePass, makeRanking } from "../../../test-support/convention-factories";
+import { FactOperator } from "../evaluation/meaning";
 
 // Re-export shared factories so existing consumers don't break.
 export { makeCall, makePass, makeRanking };
@@ -31,7 +32,7 @@ export function makeMeaningProposal(
     moduleId: "test",
     clauses: [{
       factId: "hand.hcp",
-      operator: "gte",
+      operator: FactOperator.Gte,
       value: 8,
       satisfied: allSatisfied,
       description: "8+ HCP",

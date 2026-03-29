@@ -19,6 +19,7 @@ import type { CommittedStep, AuctionContext, NegotiationState, NegotiationDelta 
 import { INITIAL_NEGOTIATION } from "../core/committed-step";
 import type { PublicSnapshot } from "../core/module-surface";
 import type { Seat, Call } from "../../engine/types";
+import { ObsSuit } from "../pipeline/bid-action";
 
 /**
  * Convert a ConventionSpec into a ConventionStrategy.
@@ -86,7 +87,7 @@ export function protocolSpecToStrategy(
 
       // Step 3: Run the meaning pipeline on visible surfaces
       // Extract relational context from surface bindings — all surfaces in a
-      // given state share bindings (e.g. { suit: "hearts" }), so take the first.
+      // given state share bindings (e.g. { suit: ObsSuit.Hearts }), so take the first.
       const firstBindings = visibleSurfaces.find(s => s.surfaceBindings)?.surfaceBindings;
       // Extract fitAgreed from the last committed step's kernel state
       const lastKernel = log.length > 0 ? log[log.length - 1]!.stateAfter : null;

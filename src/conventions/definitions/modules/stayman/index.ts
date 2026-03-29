@@ -1,4 +1,5 @@
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
+import { TurnRole } from "../../../core/rule-module";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { NegotiationDelta } from "../../../core/committed-step";
 import type { SystemConfig } from "../../system-config";
@@ -14,6 +15,7 @@ import {
 } from "./meaning-surfaces";
 import { createStaymanFacts } from "./facts";
 import { STAYMAN_EXPLANATION_ENTRIES } from "./explanation-catalog";
+import { ObsSuit } from "../../../pipeline/bid-action";
 
 // ── Re-exports ────────────────────────────────────────────────────
 
@@ -34,19 +36,19 @@ const staymanLocal: LocalFsm<StaymanPhase> = {
     { from: "idle", to: "inactive", on: { act: "raise" } },
     { from: "idle", to: "inactive", on: { act: "place" } },
     { from: "idle", to: "inactive", on: { act: "signoff" } },
-    { from: "asked", to: "shown-hearts", on: { act: "show", feature: "heldSuit", suit: "hearts" } },
-    { from: "asked", to: "shown-spades", on: { act: "show", feature: "heldSuit", suit: "spades" } },
+    { from: "asked", to: "shown-hearts", on: { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts } },
+    { from: "asked", to: "shown-spades", on: { act: "show", feature: "heldSuit", suit: ObsSuit.Spades } },
     { from: "asked", to: "denied", on: { act: "deny", feature: "majorSuit" } },
   ],
 };
 
 function createStaymanStates(sys: SystemConfig): readonly StateEntry<StaymanPhase>[] {
   return [
-    { phase: "idle", turn: "responder" as const, negotiationDelta: STAYMAN_ASK_DELTA, surfaces: [createStaymanR1Surface(sys), createStaymanR1FiveFourSurface(sys)] },
-    { phase: "asked", turn: "opener" as const, negotiationDelta: STAYMAN_RESPONSE_DELTA, surfaces: OPENER_STAYMAN_SURFACES },
-    { phase: "shown-hearts", turn: "responder" as const, surfaces: createStaymanR3After2HSurfaces(sys) },
-    { phase: "shown-spades", turn: "responder" as const, surfaces: createStaymanR3After2SSurfaces(sys) },
-    { phase: "denied", turn: "responder" as const, surfaces: createStaymanR3After2DSurfaces(sys) },
+    { phase: "idle", turn: TurnRole.Responder, negotiationDelta: STAYMAN_ASK_DELTA, surfaces: [createStaymanR1Surface(sys), createStaymanR1FiveFourSurface(sys)] },
+    { phase: "asked", turn: TurnRole.Opener, negotiationDelta: STAYMAN_RESPONSE_DELTA, surfaces: OPENER_STAYMAN_SURFACES },
+    { phase: "shown-hearts", turn: TurnRole.Responder, surfaces: createStaymanR3After2HSurfaces(sys) },
+    { phase: "shown-spades", turn: TurnRole.Responder, surfaces: createStaymanR3After2SSurfaces(sys) },
+    { phase: "denied", turn: TurnRole.Responder, surfaces: createStaymanR3After2DSurfaces(sys) },
   ];
 }
 

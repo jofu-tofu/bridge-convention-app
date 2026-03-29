@@ -15,6 +15,7 @@ import type {
 } from "../posterior-boundary";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";
+import { ObsSuit } from "../../../conventions/pipeline/bid-action";
 
 // ─── Helpers ────────────────────────────────────────────────
 const origin: FactorOrigin = {
@@ -54,7 +55,7 @@ describe("FactorSpec discriminated union", () => {
     const factor: SuitLengthFactor = {
       kind: "suit-length",
       seat: "S",
-      suit: "hearts",
+      suit: ObsSuit.Hearts,
       min: 5,
       max: 7,
       strength: "soft",
@@ -97,7 +98,7 @@ describe("FactorSpec discriminated union", () => {
     const factor: FitFactor = {
       kind: "fit",
       seats: ["N", "S"],
-      suit: "spades",
+      suit: ObsSuit.Spades,
       minCombined: 8,
       strength: "soft",
       origin,
@@ -111,10 +112,10 @@ describe("FactorSpec discriminated union", () => {
   it("supports exhaustive switch on kind discriminant", () => {
     const factors: FactorSpec[] = [
       { kind: "hcp-range", seat: "N", min: 12, max: 14, strength: "hard", origin },
-      { kind: "suit-length", seat: "N", suit: "spades", min: 4, max: 6, strength: "hard", origin },
+      { kind: "suit-length", seat: "N", suit: ObsSuit.Spades, min: 4, max: 6, strength: "hard", origin },
       { kind: "shape", seat: "N", pattern: "balanced", strength: "hard", origin },
       { kind: "exclusion", seat: "N", constraint: "none", strength: "hard", origin },
-      { kind: "fit", seats: ["N", "S"], suit: "hearts", minCombined: 8, strength: "soft", origin },
+      { kind: "fit", seats: ["N", "S"], suit: ObsSuit.Hearts, minCombined: 8, strength: "soft", origin },
     ];
 
     const kinds = factors.map((f) => {
@@ -240,10 +241,10 @@ describe("FactorGraph", () => {
     const fg: FactorGraph = {
       factors: [
         { kind: "hcp-range", seat: "N", min: 15, max: 17, strength: "hard", origin },
-        { kind: "suit-length", seat: "S", suit: "hearts", min: 5, max: 7, strength: "soft", origin },
+        { kind: "suit-length", seat: "S", suit: ObsSuit.Hearts, min: 5, max: 7, strength: "soft", origin },
         { kind: "shape", seat: "E", pattern: "semi-balanced", strength: "hard", origin },
         { kind: "exclusion", seat: "W", constraint: "no void", strength: "hard", origin },
-        { kind: "fit", seats: ["N", "S"], suit: "spades", minCombined: 8, strength: "soft", origin },
+        { kind: "fit", seats: ["N", "S"], suit: ObsSuit.Spades, minCombined: 8, strength: "soft", origin },
       ],
       ambiguitySchema: [
         {

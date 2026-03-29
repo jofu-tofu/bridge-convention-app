@@ -4,6 +4,7 @@ import {
   generateRuleCoverageManifest,
 } from "../rule-enumeration";
 import type { ConventionModule } from "../../core/convention-module";
+import { TurnRole } from "../../core/rule-module";
 import type { BidMeaning } from "../evaluation/meaning";
 import { BidSuit } from "../../../engine/types";
 import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple } from "../../core/authored-text";
@@ -60,7 +61,7 @@ describe("enumerateRuleAtoms", () => {
       teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: { initial: "idle", transitions: [] },
       states: [
-        { phase: "idle", turn: "responder", surfaces: [s1, s2] },
+        { phase: "idle", turn: TurnRole.Responder, surfaces: [s1, s2] },
       ],
       facts: { definitions: [], evaluators: new Map() },
       explanationEntries: [],
@@ -72,7 +73,7 @@ describe("enumerateRuleAtoms", () => {
     expect(atoms[0]!.meaningId).toBe("s1");
     expect(atoms[0]!.encoding).toEqual({ type: "bid", level: 1, strain: BidSuit.Clubs });
     expect(atoms[0]!.primaryPhaseGuard).toBe("idle");
-    expect(atoms[0]!.turnGuard).toBe("responder");
+    expect(atoms[0]!.turnGuard).toBe(TurnRole.Responder);
     expect(atoms[1]!.meaningId).toBe("s2");
   });
 

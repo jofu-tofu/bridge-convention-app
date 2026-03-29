@@ -20,6 +20,7 @@ import type { BidMeaning, ConstraintDimension, SpecificityBasis } from "./meanin
 import type { BidMeaningClause } from "./meaning";
 import type { FactCatalogExtension, FactDefinition } from "../../core/fact-catalog";
 import { classifySpecificityBasis } from "./specificity-classifier";
+import { FactOperator } from "./meaning";
 
 /**
  * Full derivation result including advisory specificity, dimension set,
@@ -55,11 +56,11 @@ const MEANINGFUL_SUIT_LENGTH_THRESHOLD = 3;
  * - lte on suit length → always contributes shapeClass ("no fit" is shape info)
  */
 function isNegativeBooleanClause(clause: BidMeaningClause): boolean {
-  return clause.operator === "boolean" && clause.value === false;
+  return clause.operator === FactOperator.Boolean && clause.value === false;
 }
 
 function isSuitLengthUpperBound(clause: BidMeaningClause): boolean {
-  return clause.operator === "lte" && clause.factId.startsWith("hand.suitLength.");
+  return clause.operator === FactOperator.Lte && clause.factId.startsWith("hand.suitLength.");
 }
 
 /**
@@ -69,7 +70,7 @@ function isSuitLengthUpperBound(clause: BidMeaningClause): boolean {
  */
 function isVacuousSuitLength(clause: BidMeaningClause): boolean {
   if (!clause.factId.startsWith("hand.suitLength.")) return false;
-  if (clause.operator === "gte" && typeof clause.value === "number") {
+  if (clause.operator === FactOperator.Gte && typeof clause.value === "number") {
     return clause.value < MEANINGFUL_SUIT_LENGTH_THRESHOLD;
   }
   return false;

@@ -6,14 +6,16 @@ export { createLocalService } from "./local-service";
 export type { SessionHandle, SessionConfig } from "./request-types";
 
 // ── 2. Viewports & Response Types (service-owned) ────────────────────
-export type {
+export {
   ServiceGamePhase,
   ViewportBidGrade,
+  ConventionCardSectionId,
+} from "./response-types";
+export type {
   ServicePublicBeliefs,
   ServicePublicBeliefState,
   ServiceInferenceSnapshot,
   ConventionCardView,
-  ConventionCardSectionId,
   ConventionCardLineItem,
   ConventionCardModuleDetail,
   ConventionCardSection,
@@ -61,8 +63,8 @@ export type { RuleCoverageManifest, ConventionBundle } from "../conventions";
 export { buildBaseModuleInfos } from "../session/learning-viewport";
 
 // ── 6. Session Configuration ─────────────────────────────────────────
-export type { OpponentMode, VulnerabilityDistribution, DrillSettings, PracticeMode, PracticeRole, PlayPreference } from "../session";
-export { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../session";
+export { OpponentMode, PracticeMode, PracticeRole, PlayPreference, PromptMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../session";
+export type { VulnerabilityDistribution, DrillSettings } from "../session";
 export type { PlayProfileId } from "../session";
 export { PLAY_PROFILES } from "../session";
 export { isValidTransition, resolveTransition } from "../session";

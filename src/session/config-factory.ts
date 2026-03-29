@@ -2,7 +2,7 @@ import { Seat } from "../engine/types";
 import type { BiddingStrategy, BaseSystemId } from "../conventions";
 import type { EnginePort } from "../engine/port";
 import type { DrillConfig } from "./drill-types";
-import type { OpponentMode, PracticeMode } from "./drill-types";
+import { OpponentMode, PracticeMode } from "./drill-types";
 import { getSystemConfig } from "../conventions";
 import type { InferenceConfig } from "../inference/types";
 import { createSpecStrategyWithFallback, createOpponentStrategy } from "./strategy-factory";
@@ -38,7 +38,7 @@ export function createProtocolDrillConfig(
   // For full-auction and continuation-drill, build strategy from the full system
   // so the user can bid through prerequisite and follow-up modules too.
   const mode = options.practiceMode;
-  const useSystemSpec = mode === "full-auction" || mode === "continuation-drill";
+  const useSystemSpec = mode === PracticeMode.FullAuction || mode === PracticeMode.ContinuationDrill;
   const spec = useSystemSpec
     ? specFromSystem(options.baseSystem)
     : specFromBundle(input, systemConfig);
@@ -51,7 +51,7 @@ export function createProtocolDrillConfig(
   }
 
   const strategy = createSpecStrategyWithFallback(spec);
-  const ewStrategy = createOpponentStrategy(options?.opponentMode ?? "natural");
+  const ewStrategy = createOpponentStrategy(options?.opponentMode ?? OpponentMode.Natural);
 
   // N/S = protocol strategy, E/W = natural fallback, user seat = "user"
   function seatStrategy(seat: Seat): BiddingStrategy | "user" {

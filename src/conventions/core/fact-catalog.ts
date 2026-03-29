@@ -1,12 +1,17 @@
 import type { Hand, HandEvaluation } from "../../engine/types";
 import type { PublicConstraint } from "./agreement-module";
+import { ConfidenceLevel } from "./committed-step";
 import type { PosteriorFactProvider, PosteriorFactRequest } from "../../inference/posterior/posterior-types";
-import type { ConstraintDimension } from "../pipeline/evaluation/meaning";
+import type { ConstraintDimension, FactOperator } from "../pipeline/evaluation/meaning";
 import type { FactLayer } from "./fact-layer";
 
 
 /** World scope for fact evaluation. */
-export type EvaluationWorld = "public" | "acting-hand" | "full-deal";
+export enum EvaluationWorld {
+  Public = "public",
+  ActingHand = "acting-hand",
+  FullDeal = "full-deal",
+}
 
 // ─── Composable fact types ────────────────────────────────────
 
@@ -17,7 +22,7 @@ export type EvaluationWorld = "public" | "acting-hand" | "full-deal";
  */
 export interface PrimitiveClause {
   readonly factId: string;
-  readonly operator: "gte" | "lte" | "eq" | "range";
+  readonly operator: FactOperator.Gte | FactOperator.Lte | FactOperator.Eq | FactOperator.Range;
   readonly value: number | { readonly min: number; readonly max: number };
 }
 
@@ -105,7 +110,7 @@ export type RelationalFactEvaluatorFn = (
   context: {
     bindings?: Readonly<Record<string, string>>;
     publicCommitments?: readonly PublicConstraint[];
-    fitAgreed?: { readonly strain: string; readonly confidence: "tentative" | "final" } | null;
+    fitAgreed?: { readonly strain: string; readonly confidence: ConfidenceLevel } | null;
   },
 ) => FactValue;
 

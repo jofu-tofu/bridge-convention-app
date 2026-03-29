@@ -4,7 +4,7 @@ import AppShell from "../../../AppShell.svelte";
 import { createAppStore } from "../../../stores/app.svelte";
 import { createGameStore } from "../../../stores/game.svelte";
 import { createStubEngine } from "../../../test-support/engine-stub";
-import { createLocalService } from "../../../service";
+import { createLocalService, PracticeMode } from "../../../service";
 import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle, ntBundle } from "../../../conventions";
 
 const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
@@ -34,7 +34,7 @@ describe("AppShell", () => {
 
     // Simulate what applyDevParams does: set debug panel on + skip practice picker
     appStore.setDebugPanel(true);
-    appStore.setPracticeMode("decision-drill");
+    appStore.setPracticeMode(PracticeMode.DecisionDrill);
     expect(appStore.debugPanelOpen).toBe(true);
 
     // Navigate to game (this is what caused the $effect to re-run)
@@ -49,7 +49,7 @@ describe("AppShell", () => {
     const { appStore } = renderShell();
 
     appStore.setAutoplay(true);
-    appStore.setPracticeMode("decision-drill");
+    appStore.setPracticeMode(PracticeMode.DecisionDrill);
     appStore.selectConvention(ntBundleConventionConfig);
     expect(appStore.autoplay).toBe(true);
 

@@ -6,8 +6,8 @@
 
 import type { Deal, Auction, AuctionEntry, Contract, Call, Seat, Card, Trick, PlayedCard } from "../engine/types";
 import { BidSuit, Suit } from "../engine/types";
-import type { DrillSession, DrillBundle, PracticeMode, PracticeFocus, PlayPreference } from "./drill-types";
-import { ALL_TARGETS_FOCUS } from "./drill-types";
+import type { DrillSession, DrillBundle, PracticeFocus } from "./drill-types";
+import { PracticeMode, PlayPreference, ALL_TARGETS_FOCUS } from "./drill-types";
 import type { BidResult, BidHistoryEntry } from "../conventions";
 import type { PlayStrategy } from "../conventions";
 import type { PlayStrategyProvider } from "./heuristics/play-profiles";
@@ -107,9 +107,9 @@ export class SessionState {
     this.conventionId = bundle.session.config.conventionId;
     this.conventionName = conventionName ?? bundle.session.config.conventionId;
     this.isOffConvention = bundle.isOffConvention ?? false;
-    this.practiceMode = bundle.practiceMode ?? "decision-drill";
+    this.practiceMode = bundle.practiceMode ?? PracticeMode.DecisionDrill;
     this.practiceFocus = bundle.practiceFocus ?? ALL_TARGETS_FOCUS;
-    this.playPreference = bundle.playPreference ?? "prompt";
+    this.playPreference = bundle.playPreference ?? PlayPreference.Prompt;
     this.bundle = bundle;
 
     this.playInferences = null;

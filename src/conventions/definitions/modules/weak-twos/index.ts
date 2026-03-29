@@ -10,6 +10,7 @@ import type { FactCatalogExtension } from "../../../core/fact-catalog";
 import type { ExplanationEntry } from "../../../core/explanation-catalog";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
+import { TurnRole } from "../../../core/rule-module";
 import type { NegotiationDelta } from "../../../core/committed-step";
 import { moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple, teachingItem } from "../../../core/authored-text";
 import { weakTwoFacts } from "./facts";
@@ -29,6 +30,7 @@ import {
   POST_OGUST_SPADES_SURFACES,
   POST_OGUST_DIAMONDS_SURFACES,
 } from "./meaning-surfaces";
+import { ObsSuit } from "../../../pipeline/bid-action";
 
 // ── Phase type ──────────────────────────────────────────────────
 
@@ -68,9 +70,9 @@ const weakTwosLocal: LocalFsm<Phase> = {
   initial: "idle",
   transitions: [
     // Opening observations
-    { from: "idle", to: "opened-hearts", on: { act: "open", strain: "hearts" } },
-    { from: "idle", to: "opened-spades", on: { act: "open", strain: "spades" } },
-    { from: "idle", to: "opened-diamonds", on: { act: "open", strain: "diamonds" } },
+    { from: "idle", to: "opened-hearts", on: { act: "open", strain: ObsSuit.Hearts } },
+    { from: "idle", to: "opened-spades", on: { act: "open", strain: ObsSuit.Spades } },
+    { from: "idle", to: "opened-diamonds", on: { act: "open", strain: ObsSuit.Diamonds } },
 
     // Ogust ask (2NT inquiry)
     { from: "opened-hearts", to: "ogust-asked-hearts", on: { act: "inquire", feature: "suitQuality" } },
@@ -127,28 +129,28 @@ function createWeakTwosStates(): readonly StateEntry<Phase>[] {
     // R0: Weak Two opening (opener bids 2H/2S/2D)
     {
       phase: "idle",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       surfaces: WEAK_TWO_R1_SURFACES,
     },
 
     // R1: Responder after hearts opening — Ogust surfaces (with forcing delta)
     {
       phase: "opened-hearts",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: OGUST_ASK_DELTA,
       surfaces: WEAK_TWO_R2_HEARTS_SURFACES.filter((s) => s.sourceIntent.type === "OgustAsk"),
     },
     // R1: Responder after hearts opening — new suit forcing (with forcing delta)
     {
       phase: "opened-hearts",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: NSF_DELTA,
       surfaces: WEAK_TWO_R2_HEARTS_SURFACES.filter((s) => s.sourceIntent.type === "NewSuitForcing"),
     },
     // R1: Responder after hearts opening — non-forcing surfaces (no delta)
     {
       phase: "opened-hearts",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       surfaces: WEAK_TWO_R2_HEARTS_SURFACES.filter((s) =>
         s.sourceIntent.type !== "OgustAsk" && s.sourceIntent.type !== "NewSuitForcing"),
     },
@@ -156,21 +158,21 @@ function createWeakTwosStates(): readonly StateEntry<Phase>[] {
     // R1: Responder after spades opening — Ogust surfaces (with forcing delta)
     {
       phase: "opened-spades",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: OGUST_ASK_DELTA,
       surfaces: WEAK_TWO_R2_SPADES_SURFACES.filter((s) => s.sourceIntent.type === "OgustAsk"),
     },
     // R1: Responder after spades opening — new suit forcing (with forcing delta)
     {
       phase: "opened-spades",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: NSF_DELTA,
       surfaces: WEAK_TWO_R2_SPADES_SURFACES.filter((s) => s.sourceIntent.type === "NewSuitForcing"),
     },
     // R1: Responder after spades opening — non-forcing surfaces (no delta)
     {
       phase: "opened-spades",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       surfaces: WEAK_TWO_R2_SPADES_SURFACES.filter((s) =>
         s.sourceIntent.type !== "OgustAsk" && s.sourceIntent.type !== "NewSuitForcing"),
     },
@@ -178,21 +180,21 @@ function createWeakTwosStates(): readonly StateEntry<Phase>[] {
     // R1: Responder after diamonds opening — Ogust surfaces (with forcing delta)
     {
       phase: "opened-diamonds",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: OGUST_ASK_DELTA,
       surfaces: WEAK_TWO_R2_DIAMONDS_SURFACES.filter((s) => s.sourceIntent.type === "OgustAsk"),
     },
     // R1: Responder after diamonds opening — new suit forcing (with forcing delta)
     {
       phase: "opened-diamonds",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       negotiationDelta: NSF_DELTA,
       surfaces: WEAK_TWO_R2_DIAMONDS_SURFACES.filter((s) => s.sourceIntent.type === "NewSuitForcing"),
     },
     // R1: Responder after diamonds opening — non-forcing surfaces (no delta)
     {
       phase: "opened-diamonds",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       surfaces: WEAK_TWO_R2_DIAMONDS_SURFACES.filter((s) =>
         s.sourceIntent.type !== "OgustAsk" && s.sourceIntent.type !== "NewSuitForcing"),
     },
@@ -200,19 +202,19 @@ function createWeakTwosStates(): readonly StateEntry<Phase>[] {
     // Ogust response: opener shows hand quality
     {
       phase: "ogust-asked-hearts",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: OGUST_RESPONSE_DELTA,
       surfaces: WEAK_TWO_OGUST_HEARTS_SURFACES,
     },
     {
       phase: "ogust-asked-spades",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: OGUST_RESPONSE_DELTA,
       surfaces: WEAK_TWO_OGUST_SPADES_SURFACES,
     },
     {
       phase: "ogust-asked-diamonds",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: OGUST_RESPONSE_DELTA,
       surfaces: WEAK_TWO_OGUST_DIAMONDS_SURFACES,
     },
@@ -220,19 +222,19 @@ function createWeakTwosStates(): readonly StateEntry<Phase>[] {
     // NSF rebid: opener responds to new suit forcing
     {
       phase: "nsf-hearts",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: NSF_RESPONSE_DELTA,
       surfaces: NSF_REBID_HEARTS_SURFACES,
     },
     {
       phase: "nsf-spades",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: NSF_RESPONSE_DELTA,
       surfaces: NSF_REBID_SPADES_SURFACES,
     },
     {
       phase: "nsf-diamonds",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: NSF_RESPONSE_DELTA,
       surfaces: NSF_REBID_DIAMONDS_SURFACES,
     },
@@ -240,17 +242,17 @@ function createWeakTwosStates(): readonly StateEntry<Phase>[] {
     // Post-Ogust: responder decides (terminal)
     {
       phase: "post-ogust-hearts",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       surfaces: POST_OGUST_HEARTS_SURFACES,
     },
     {
       phase: "post-ogust-spades",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       surfaces: POST_OGUST_SPADES_SURFACES,
     },
     {
       phase: "post-ogust-diamonds",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       surfaces: POST_OGUST_DIAMONDS_SURFACES,
     },
   ];

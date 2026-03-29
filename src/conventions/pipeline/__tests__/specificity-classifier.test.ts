@@ -3,7 +3,9 @@ import { classifySpecificityBasis } from "../evaluation/specificity-classifier";
 import { makeSurface } from "../../../test-support/convention-factories";
 import { FactLayer } from '../../core/fact-layer';
 import type { FactCatalogExtension, FactDefinition } from "../../core/fact-catalog";
+import { EvaluationWorld } from "../../core/fact-catalog";
 import type { BidMeaningClause } from "../evaluation/meaning";
+import { FactOperator } from "../evaluation/meaning";
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -11,7 +13,7 @@ function clause(factId: string): BidMeaningClause {
   return {
     clauseId: `clause-${factId}`,
     factId,
-    operator: "gte",
+    operator: FactOperator.Gte,
     value: 1,
   };
 }
@@ -20,7 +22,7 @@ function boolClause(factId: string): BidMeaningClause {
   return {
     clauseId: `clause-${factId}`,
     factId,
-    operator: "boolean",
+    operator: FactOperator.Boolean,
     value: true,
   };
 }
@@ -38,7 +40,7 @@ const bridgeExtension = makeExtension([
   {
     id: "bridge.hasFourCardMajor",
     layer: FactLayer.BridgeDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Has at least one 4+ card major",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades", "hand.suitLength.hearts"],
@@ -47,7 +49,7 @@ const bridgeExtension = makeExtension([
   {
     id: "bridge.hasFiveCardMajor",
     layer: FactLayer.BridgeDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Has at least one 5+ card major",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades", "hand.suitLength.hearts"],
@@ -61,7 +63,7 @@ const opaqueModuleExtension = makeExtension([
   {
     id: "module.dont.bothMajors",
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Both majors for DONT 2H",
     valueType: "boolean",
     derivesFrom: [],
@@ -70,7 +72,7 @@ const opaqueModuleExtension = makeExtension([
   {
     id: "module.dont.hasHeartSupport",
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "3+ hearts",
     valueType: "boolean",
     derivesFrom: [],
@@ -84,7 +86,7 @@ const transparentModuleExtension = makeExtension([
   {
     id: "module.stayman.hasFourCardMajor",
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Has 4+ card major (derived from primitives)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades", "hand.suitLength.hearts"],
@@ -98,7 +100,7 @@ const transitiveModuleExtension = makeExtension([
   {
     id: "module.dont.singleSuitClubs",
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Single suit is clubs",
     valueType: "boolean",
     derivesFrom: ["module.dont.singleSuited"],
@@ -107,7 +109,7 @@ const transitiveModuleExtension = makeExtension([
   {
     id: "module.dont.singleSuited",
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Single-suited hand (opaque — derivesFrom is empty)",
     valueType: "boolean",
     derivesFrom: [],

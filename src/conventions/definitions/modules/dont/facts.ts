@@ -5,6 +5,7 @@ import type {
   FactEvaluatorFn,
   FactComposition,
 } from "../../../core/fact-catalog";
+import { EvaluationWorld } from "../../../core/fact-catalog";
 import { fv } from "../../../pipeline/facts/fact-helpers";
 import {
   defineBooleanFact,
@@ -15,6 +16,7 @@ import type { Hand } from "../../../../engine/types";
 import { Suit } from "../../../../engine/types";
 import { suitLengthOf } from "../../../../engine/hand-evaluator";
 import { DONT_FACT_IDS } from "./ids";
+import { FactOperator } from "../../../pipeline/evaluation/meaning";
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -44,7 +46,7 @@ const naturalSpadesEntry = defineBooleanFact({
   id: DONT_FACT_IDS.NATURAL_SPADES,
   description: "S6+ — natural spades for 2S bid",
   factId: "hand.suitLength.spades",
-  operator: "gte",
+  operator: FactOperator.Gte,
   value: 6,
   constrainsDimensions: ["suitIdentity", "suitLength"],
   derivesFrom: [],
@@ -54,7 +56,7 @@ const hasSpadeSupportEntry = defineBooleanFact({
   id: DONT_FACT_IDS.HAS_SPADE_SUPPORT,
   description: "3+ spades",
   factId: "hand.suitLength.spades",
-  operator: "gte",
+  operator: FactOperator.Gte,
   value: 3,
   constrainsDimensions: ["suitIdentity", "suitLength"],
   derivesFrom: [],
@@ -64,7 +66,7 @@ const hasDiamondSupportEntry = defineBooleanFact({
   id: DONT_FACT_IDS.HAS_DIAMOND_SUPPORT,
   description: "3+ diamonds",
   factId: "hand.suitLength.diamonds",
-  operator: "gte",
+  operator: FactOperator.Gte,
   value: 3,
   constrainsDimensions: ["suitIdentity", "suitLength"],
   derivesFrom: [],
@@ -74,7 +76,7 @@ const hasClubSupportEntry = defineBooleanFact({
   id: DONT_FACT_IDS.HAS_CLUB_SUPPORT,
   description: "3+ clubs",
   factId: "hand.suitLength.clubs",
-  operator: "gte",
+  operator: FactOperator.Gte,
   value: 3,
   constrainsDimensions: ["suitIdentity", "suitLength"],
   derivesFrom: [],
@@ -84,7 +86,7 @@ const longDiamondsEntry = defineBooleanFact({
   id: DONT_FACT_IDS.LONG_DIAMONDS,
   description: "D6+ — long diamonds for bypass/escape",
   factId: "hand.suitLength.diamonds",
-  operator: "gte",
+  operator: FactOperator.Gte,
   value: 6,
   constrainsDimensions: ["suitIdentity", "suitLength"],
   derivesFrom: [],
@@ -94,7 +96,7 @@ const longHeartsEntry = defineBooleanFact({
   id: DONT_FACT_IDS.LONG_HEARTS,
   description: "H6+ — long hearts for bypass/escape",
   factId: "hand.suitLength.hearts",
-  operator: "gte",
+  operator: FactOperator.Gte,
   value: 6,
   constrainsDimensions: ["suitIdentity", "suitLength"],
   derivesFrom: [],
@@ -104,7 +106,7 @@ const longSpadesEntry = defineBooleanFact({
   id: DONT_FACT_IDS.LONG_SPADES,
   description: "S6+ — long spades for bypass/escape",
   factId: "hand.suitLength.spades",
-  operator: "gte",
+  operator: FactOperator.Gte,
   value: 6,
   constrainsDimensions: ["suitIdentity", "suitLength"],
   derivesFrom: [],
@@ -114,7 +116,7 @@ const longClubsEntry = defineBooleanFact({
   id: DONT_FACT_IDS.LONG_CLUBS,
   description: "C6+ — long clubs for escape",
   factId: "hand.suitLength.clubs",
-  operator: "gte",
+  operator: FactOperator.Gte,
   value: 6,
   constrainsDimensions: ["suitIdentity", "suitLength"],
   derivesFrom: [],
@@ -134,12 +136,12 @@ const BOTH_MAJORS_COMPOSITION: FactComposition = {
   kind: "or",
   operands: [
     { kind: "and", operands: [
-      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 5 } },
-      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: "gte", value: 4 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: FactOperator.Gte, value: 5 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: FactOperator.Gte, value: 4 } },
     ]},
     { kind: "and", operands: [
-      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: "gte", value: 5 } },
-      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 4 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: FactOperator.Gte, value: 5 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: FactOperator.Gte, value: 4 } },
     ]},
   ],
 };
@@ -148,7 +150,7 @@ const bothMajorsEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.BOTH_MAJORS,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "H5+S4+ or S5+H4+ — both majors for 2H bid",
     valueType: "boolean",
     derivesFrom: [],
@@ -169,10 +171,10 @@ const bothMajorsEntry = handWrittenEntry(
 const DIAMONDS_AND_MAJOR_COMPOSITION: FactComposition = {
   kind: "and",
   operands: [
-    { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: "gte", value: 4 } },
+    { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: FactOperator.Gte, value: 4 } },
     { kind: "or", operands: [
-      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 4 } },
-      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: "gte", value: 4 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: FactOperator.Gte, value: 4 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: FactOperator.Gte, value: 4 } },
     ]},
   ],
 };
@@ -181,7 +183,7 @@ const diamondsAndMajorEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.DIAMONDS_AND_MAJOR,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "D4+ and (H4+ or S4+) — diamonds + a major for 2D bid",
     valueType: "boolean",
     derivesFrom: [],
@@ -203,11 +205,11 @@ const diamondsAndMajorEntry = handWrittenEntry(
 const CLUBS_AND_HIGHER_COMPOSITION: FactComposition = {
   kind: "and",
   operands: [
-    { kind: "primitive", clause: { factId: "hand.suitLength.clubs", operator: "gte", value: 4 } },
+    { kind: "primitive", clause: { factId: "hand.suitLength.clubs", operator: FactOperator.Gte, value: 4 } },
     { kind: "or", operands: [
-      { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: "gte", value: 4 } },
-      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 4 } },
-      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: "gte", value: 4 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: FactOperator.Gte, value: 4 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: FactOperator.Gte, value: 4 } },
+      { kind: "primitive", clause: { factId: "hand.suitLength.spades", operator: FactOperator.Gte, value: 4 } },
     ]},
   ],
 };
@@ -216,7 +218,7 @@ const clubsAndHigherEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.CLUBS_AND_HIGHER,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "C4+ and (D4+ or H4+ or S4+) — clubs + higher suit for 2C bid",
     valueType: "boolean",
     derivesFrom: [],
@@ -240,9 +242,9 @@ const clubsAndHigherEntry = handWrittenEntry(
 const SINGLE_SUITED_COMPOSITION: FactComposition = {
   kind: "or",
   operands: [
-    { kind: "primitive", clause: { factId: "hand.suitLength.clubs", operator: "gte", value: 6 } },
-    { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: "gte", value: 6 } },
-    { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: "gte", value: 6 } },
+    { kind: "primitive", clause: { factId: "hand.suitLength.clubs", operator: FactOperator.Gte, value: 6 } },
+    { kind: "primitive", clause: { factId: "hand.suitLength.diamonds", operator: FactOperator.Gte, value: 6 } },
+    { kind: "primitive", clause: { factId: "hand.suitLength.hearts", operator: FactOperator.Gte, value: 6 } },
   ],
 };
 
@@ -250,7 +252,7 @@ const singleSuitedEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.SINGLE_SUITED,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "One suit 6+, no other suit 4+, longest suit is not spades — for double",
     valueType: "boolean",
     derivesFrom: [],
@@ -280,7 +282,7 @@ const singleSuitClubsEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.SINGLE_SUIT_CLUBS,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "The 6+ single suit is clubs",
     valueType: "boolean",
     derivesFrom: [DONT_FACT_IDS.SINGLE_SUITED],
@@ -299,7 +301,7 @@ const singleSuitDiamondsEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.SINGLE_SUIT_DIAMONDS,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "The 6+ single suit is diamonds",
     valueType: "boolean",
     derivesFrom: [DONT_FACT_IDS.SINGLE_SUITED],
@@ -318,7 +320,7 @@ const singleSuitHeartsEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.SINGLE_SUIT_HEARTS,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "The 6+ single suit is hearts",
     valueType: "boolean",
     derivesFrom: [DONT_FACT_IDS.SINGLE_SUITED],
@@ -338,7 +340,7 @@ const clubsHigherDiamondsEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.CLUBS_HIGHER_DIAMONDS,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "With clubs as anchor, higher suit is diamonds",
     valueType: "boolean",
     derivesFrom: [DONT_FACT_IDS.CLUBS_AND_HIGHER],
@@ -357,7 +359,7 @@ const clubsHigherHeartsEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.CLUBS_HIGHER_HEARTS,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "With clubs as anchor, higher suit is hearts",
     valueType: "boolean",
     derivesFrom: [DONT_FACT_IDS.CLUBS_AND_HIGHER],
@@ -376,7 +378,7 @@ const clubsHigherSpadesEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.CLUBS_HIGHER_SPADES,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "With clubs as anchor, higher suit is spades",
     valueType: "boolean",
     derivesFrom: [DONT_FACT_IDS.CLUBS_AND_HIGHER],
@@ -396,7 +398,7 @@ const diamondsMajorHeartsEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.DIAMONDS_MAJOR_HEARTS,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "With diamonds as anchor, the major is hearts",
     valueType: "boolean",
     derivesFrom: [DONT_FACT_IDS.DIAMONDS_AND_MAJOR],
@@ -413,7 +415,7 @@ const diamondsMajorSpadesEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.DIAMONDS_MAJOR_SPADES,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "With diamonds as anchor, the major is spades",
     valueType: "boolean",
     derivesFrom: [DONT_FACT_IDS.DIAMONDS_AND_MAJOR],
@@ -431,7 +433,7 @@ const hasHeartSupportEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.HAS_HEART_SUPPORT,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "3+ hearts, or equal length in both majors (2-2)",
     valueType: "boolean",
     derivesFrom: [],
@@ -448,7 +450,7 @@ const hasLongMinorEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.HAS_LONG_MINOR,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "6+ in clubs or diamonds (for minor escape)",
     valueType: "boolean",
     derivesFrom: [],
@@ -465,7 +467,7 @@ const longMinorIsClubsEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.LONG_MINOR_IS_CLUBS,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Longer minor is clubs (for 3C escape)",
     valueType: "boolean",
     derivesFrom: [DONT_FACT_IDS.HAS_LONG_MINOR],
@@ -482,7 +484,7 @@ const longMinorIsDiamondsEntry = handWrittenEntry(
   {
     id: DONT_FACT_IDS.LONG_MINOR_IS_DIAMONDS,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Longer minor is diamonds (for 3D escape)",
     valueType: "boolean",
     derivesFrom: [DONT_FACT_IDS.HAS_LONG_MINOR],

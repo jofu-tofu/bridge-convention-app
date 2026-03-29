@@ -2,116 +2,118 @@ import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
 import { BidSuit } from "../../../../engine/types";
 import { WEAK_TWO_CLASSES, WEAK_TWO_FACT_IDS, WEAK_TWO_MEANING_IDS } from "./ids";
 import { bid, suitToBidSuit } from "../../../core/surface-helpers";
-import { createSurface } from "../../../core/surface-builder";
+import { createSurface, Disclosure } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import { bidName, bidSummary } from "../../../core/authored-text";
+import { FactOperator, RecommendationBand } from "../../../pipeline/evaluation/meaning";
+import { ObsSuit } from "../../../pipeline/bid-action";
 
-type WeakTwoSuit = "hearts" | "spades" | "diamonds";
+type WeakTwoSuit = ObsSuit.Hearts | ObsSuit.Spades | ObsSuit.Diamonds;
 
 const WEAK_TWOS_CTX: ModuleContext = { moduleId: "weak-twos" };
 
 // ─── Per-suit meaning ID lookups ─────────────────────────────
 
 const R1_MEANING_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.OPEN_2H,
-  spades: WEAK_TWO_MEANING_IDS.OPEN_2S,
-  diamonds: WEAK_TWO_MEANING_IDS.OPEN_2D,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.OPEN_2H,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.OPEN_2S,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.OPEN_2D,
 };
 
 const R2_GAME_RAISE_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.GAME_RAISE_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.GAME_RAISE_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.GAME_RAISE_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.GAME_RAISE_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.GAME_RAISE_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.GAME_RAISE_DIAMONDS,
 };
 
 const R2_OGUST_ASK_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.OGUST_ASK_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.OGUST_ASK_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.OGUST_ASK_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.OGUST_ASK_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.OGUST_ASK_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.OGUST_ASK_DIAMONDS,
 };
 
 const R2_INVITE_RAISE_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.INVITE_RAISE_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.INVITE_RAISE_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.INVITE_RAISE_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.INVITE_RAISE_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.INVITE_RAISE_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.INVITE_RAISE_DIAMONDS,
 };
 
 const R2_PREEMPTIVE_RAISE_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.PREEMPTIVE_RAISE_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.PREEMPTIVE_RAISE_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.PREEMPTIVE_RAISE_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.PREEMPTIVE_RAISE_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.PREEMPTIVE_RAISE_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.PREEMPTIVE_RAISE_DIAMONDS,
 };
 
 const R2_NEW_SUIT_FORCING_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.NEW_SUIT_FORCING_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.NEW_SUIT_FORCING_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.NEW_SUIT_FORCING_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.NEW_SUIT_FORCING_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.NEW_SUIT_FORCING_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.NEW_SUIT_FORCING_DIAMONDS,
 };
 
 const R2_WEAK_PASS_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.WEAK_PASS_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.WEAK_PASS_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.WEAK_PASS_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.WEAK_PASS_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.WEAK_PASS_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.WEAK_PASS_DIAMONDS,
 };
 
 const NSF_SUPPORT_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.NSF_SUPPORT_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.NSF_SUPPORT_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.NSF_SUPPORT_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.NSF_SUPPORT_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.NSF_SUPPORT_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.NSF_SUPPORT_DIAMONDS,
 };
 
 const NSF_REBID_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.NSF_REBID_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.NSF_REBID_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.NSF_REBID_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.NSF_REBID_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.NSF_REBID_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.NSF_REBID_DIAMONDS,
 };
 
 const OGUST_SOLID_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.OGUST_SOLID_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.OGUST_SOLID_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.OGUST_SOLID_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.OGUST_SOLID_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.OGUST_SOLID_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.OGUST_SOLID_DIAMONDS,
 };
 
 const OGUST_MIN_BAD_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.OGUST_MIN_BAD_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.OGUST_MIN_BAD_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.OGUST_MIN_BAD_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.OGUST_MIN_BAD_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.OGUST_MIN_BAD_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.OGUST_MIN_BAD_DIAMONDS,
 };
 
 const OGUST_MIN_GOOD_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.OGUST_MIN_GOOD_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.OGUST_MIN_GOOD_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.OGUST_MIN_GOOD_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.OGUST_MIN_GOOD_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.OGUST_MIN_GOOD_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.OGUST_MIN_GOOD_DIAMONDS,
 };
 
 const OGUST_MAX_BAD_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.OGUST_MAX_BAD_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.OGUST_MAX_BAD_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.OGUST_MAX_BAD_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.OGUST_MAX_BAD_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.OGUST_MAX_BAD_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.OGUST_MAX_BAD_DIAMONDS,
 };
 
 const OGUST_MAX_GOOD_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.OGUST_MAX_GOOD_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.OGUST_MAX_GOOD_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.OGUST_MAX_GOOD_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.OGUST_MAX_GOOD_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.OGUST_MAX_GOOD_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.OGUST_MAX_GOOD_DIAMONDS,
 };
 
 const POST_OGUST_GAME_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.POST_OGUST_GAME_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.POST_OGUST_GAME_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.POST_OGUST_GAME_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.POST_OGUST_GAME_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.POST_OGUST_GAME_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.POST_OGUST_GAME_DIAMONDS,
 };
 
 const POST_OGUST_SIGNOFF_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.POST_OGUST_SIGNOFF_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.POST_OGUST_SIGNOFF_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.POST_OGUST_SIGNOFF_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.POST_OGUST_SIGNOFF_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.POST_OGUST_SIGNOFF_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.POST_OGUST_SIGNOFF_DIAMONDS,
 };
 
 const POST_OGUST_PASS_ID: Record<WeakTwoSuit, string> = {
-  hearts: WEAK_TWO_MEANING_IDS.POST_OGUST_PASS_HEARTS,
-  spades: WEAK_TWO_MEANING_IDS.POST_OGUST_PASS_SPADES,
-  diamonds: WEAK_TWO_MEANING_IDS.POST_OGUST_PASS_DIAMONDS,
+  [ObsSuit.Hearts]: WEAK_TWO_MEANING_IDS.POST_OGUST_PASS_HEARTS,
+  [ObsSuit.Spades]: WEAK_TWO_MEANING_IDS.POST_OGUST_PASS_SPADES,
+  [ObsSuit.Diamonds]: WEAK_TWO_MEANING_IDS.POST_OGUST_PASS_DIAMONDS,
 };
 
 // ─── Convention-intrinsic thresholds ────────────────────────
@@ -153,14 +155,14 @@ export const WEAK_TWO_THRESHOLDS = {
 
 function suitLabel(suit: WeakTwoSuit): string {
   switch (suit) {
-    case "hearts": return "H";
-    case "spades": return "S";
-    case "diamonds": return "D";
+    case ObsSuit.Hearts: return "H";
+    case ObsSuit.Spades: return "S";
+    case ObsSuit.Diamonds: return "D";
   }
 }
 
 function gameRaiseBid(suit: WeakTwoSuit) {
-  if (suit === "diamonds") return bid(5, BidSuit.Diamonds);
+  if (suit === ObsSuit.Diamonds) return bid(5, BidSuit.Diamonds);
   return bid(4, suitToBidSuit(suit));
 }
 
@@ -170,9 +172,9 @@ function cheapestNewSuitBid(suit: WeakTwoSuit) {
   // After 2H: 2S is cheapest new suit
   // After 2S: 3C is cheapest new suit
   switch (suit) {
-    case "diamonds": return bid(2, BidSuit.Hearts);
-    case "hearts": return bid(2, BidSuit.Spades);
-    case "spades": return bid(3, BidSuit.Clubs);
+    case ObsSuit.Diamonds: return bid(2, BidSuit.Hearts);
+    case ObsSuit.Hearts: return bid(2, BidSuit.Spades);
+    case ObsSuit.Spades: return bid(3, BidSuit.Clubs);
   }
 }
 
@@ -184,9 +186,9 @@ function cheapestNewSuitBid(suit: WeakTwoSuit) {
 
 function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
   const suits: readonly { suit: WeakTwoSuit; order: number; cls: string }[] = [
-    { suit: "hearts", order: 0, cls: WEAK_TWO_CLASSES.OPEN_2H },
-    { suit: "spades", order: 1, cls: WEAK_TWO_CLASSES.OPEN_2S },
-    { suit: "diamonds", order: 2, cls: WEAK_TWO_CLASSES.OPEN_2D },
+    { suit: ObsSuit.Hearts, order: 0, cls: WEAK_TWO_CLASSES.OPEN_2H },
+    { suit: ObsSuit.Spades, order: 1, cls: WEAK_TWO_CLASSES.OPEN_2S },
+    { suit: ObsSuit.Diamonds, order: 2, cls: WEAK_TWO_CLASSES.OPEN_2D },
   ];
 
   return suits.map(({ suit, order, cls }) => createSurface({
@@ -196,22 +198,22 @@ function createWeakTwoR1Surfaces(): readonly BidMeaning[] {
     clauses: [
       {
         factId: "hand.suitLength.$suit",
-        operator: "gte",
+        operator: FactOperator.Gte,
         value: WEAK_TWO_THRESHOLDS.MIN_SUIT_LENGTH,
         isPublic: true,
       },
       {
         factId: WEAK_TWO_FACT_IDS.IN_OPENING_HCP_RANGE,
-        operator: "boolean",
+        operator: FactOperator.Boolean,
         value: true,
         isPublic: true,
         rationale: "6-11 vul, 5-11 NV",
       },
     ],
-    band: "must",
+    band: RecommendationBand.Must,
     declarationOrder: order,
     sourceIntent: { type: "WeakTwoOpen", params: { suit } },
-    disclosure: "standard",
+    disclosure: Disclosure.Standard,
     teachingLabel: { name: bidName(`Open 2${suitLabel(suit)}`), summary: bidSummary("Open preemptively showing a 6+ card suit and weak hand strength") },
     surfaceBindings: { suit },
   }, WEAK_TWOS_CTX));
@@ -235,7 +237,7 @@ function createWeakTwoR2Surfaces(
   const bindings = { suit } as const;
   const sl = suitLabel(suit);
   const gameCall = gameRaiseBid(suit);
-  const gameLevel = suit === "diamonds" ? 5 : 4;
+  const gameLevel = suit === ObsSuit.Diamonds ? 5 : 4;
 
   return [
     // 1. Game raise: 16+ total points (HCP + shortage), 3+ fit (highest priority)
@@ -246,22 +248,22 @@ function createWeakTwoR2Surfaces(
       clauses: [
         {
           factId: "bridge.totalPointsForRaise",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: WEAK_TWO_THRESHOLDS.GAME_RAISE_MIN,
           isPublic: true,
           rationale: "HCP + shortage",
         },
         {
           factId: "hand.suitLength.$suit",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: WEAK_TWO_THRESHOLDS.GAME_RAISE_FIT,
           isPublic: true,
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 0,
       sourceIntent: { type: "GameRaise", params: { suit } },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName(`Game raise (${gameLevel}${sl})`), summary: bidSummary("Raise directly to game with 16+ total points and 3+ card fit") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -274,21 +276,21 @@ function createWeakTwoR2Surfaces(
       clauses: [
         {
           factId: "bridge.totalPointsForRaise",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: WEAK_TWO_THRESHOLDS.OGUST_ASK_MIN,
           isPublic: true,
         },
         {
           factId: `hand.suitLength.$suit`,
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: WEAK_TWO_THRESHOLDS.OGUST_FIT,
           rationale: "usually shows fit",
         },
       ],
-      band: "should",
+      band: RecommendationBand.Should,
       declarationOrder: 1,
       sourceIntent: { type: "OgustAsk", params: { suit } },
-      disclosure: "alert",
+      disclosure: Disclosure.Alert,
       teachingLabel: { name: bidName("Ogust ask (2NT)"), summary: bidSummary("Ask opener to describe hand strength and suit quality via Ogust responses") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -301,22 +303,22 @@ function createWeakTwoR2Surfaces(
       clauses: [
         {
           factId: "bridge.totalPointsForRaise",
-          operator: "range",
+          operator: FactOperator.Range,
           value: { min: WEAK_TWO_THRESHOLDS.INVITE_RAISE_MIN, max: WEAK_TWO_THRESHOLDS.INVITE_RAISE_MAX },
           isPublic: true,
           rationale: "HCP + shortage",
         },
         {
           factId: "hand.suitLength.$suit",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: WEAK_TWO_THRESHOLDS.INVITE_FIT,
           isPublic: true,
         },
       ],
-      band: "should",
+      band: RecommendationBand.Should,
       declarationOrder: 2,
       sourceIntent: { type: "InviteRaise", params: { suit } },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName(`Invite raise (3${sl})`), summary: bidSummary("Invite game with 14-15 total points and 3+ card support") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -329,22 +331,22 @@ function createWeakTwoR2Surfaces(
       clauses: [
         {
           factId: "bridge.totalPointsForRaise",
-          operator: "range",
+          operator: FactOperator.Range,
           value: { min: WEAK_TWO_THRESHOLDS.PREEMPTIVE_RAISE_MIN, max: WEAK_TWO_THRESHOLDS.PREEMPTIVE_RAISE_MAX },
           isPublic: true,
           rationale: "HCP + shortage",
         },
         {
           factId: "hand.suitLength.$suit",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: WEAK_TWO_THRESHOLDS.PREEMPTIVE_RAISE_FIT,
           isPublic: true,
         },
       ],
-      band: "should",
+      band: RecommendationBand.Should,
       declarationOrder: 3,
       sourceIntent: { type: "PreemptiveRaise", params: { suit } },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName(`Preemptive raise (3${sl})`), summary: bidSummary("Raise preemptively with 3+ fit to block opponents despite weak values") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -357,22 +359,22 @@ function createWeakTwoR2Surfaces(
       clauses: [
         {
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: WEAK_TWO_THRESHOLDS.NEW_SUIT_FORCING_MIN_HCP,
           isPublic: true,
         },
         {
           factId: `module.weakTwo.hasNewSuit.$suit`,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
           rationale: "5+ in a non-opener suit",
         },
       ],
-      band: "should",
+      band: RecommendationBand.Should,
       declarationOrder: 4,
       sourceIntent: { type: "NewSuitForcing", params: { suit } },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName("New suit forcing"), summary: bidSummary("Bid a new 5+ card suit forcing opener to rebid, exploring for a better fit") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -383,10 +385,10 @@ function createWeakTwoR2Surfaces(
       semanticClassId: WEAK_TWO_CLASSES.WEAK_PASS,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
-      band: "avoid",
+      band: RecommendationBand.Avoid,
       declarationOrder: 5,
       sourceIntent: { type: "WeakPass", params: { suit } },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName("Pass (no action)"), summary: bidSummary("Decline to act with insufficient values or fit for any conventional response") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -418,16 +420,16 @@ function createWeakTwoOgustSurfaces(
       clauses: [
         {
           factId: "module.weakTwo.isSolid.$suit",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
           rationale: "solid",
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 0,
       sourceIntent: { type: "OgustSolid", params: { suit } },
-      disclosure: "alert",
+      disclosure: Disclosure.Alert,
       teachingLabel: { name: bidName("Ogust solid (3NT)"), summary: bidSummary("Show a solid suit headed by AKQ, suggesting 3NT as the final contract") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -440,23 +442,23 @@ function createWeakTwoOgustSurfaces(
       clauses: [
         {
           factId: WEAK_TWO_FACT_IDS.IS_MINIMUM,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
           rationale: "5-7 NV, 6-7 vul",
         },
         {
           factId: "module.weakTwo.topHonorCount.$suit",
-          operator: "lte",
+          operator: FactOperator.Lte,
           value: 1,
           isPublic: true,
           rationale: "bad suit",
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 1,
       sourceIntent: { type: "OgustMinBad", params: { suit } },
-      disclosure: "alert",
+      disclosure: Disclosure.Alert,
       teachingLabel: { name: bidName("Ogust min/bad (3C)"), summary: bidSummary("Show minimum strength with a bad suit (0-1 top honors)") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -469,23 +471,23 @@ function createWeakTwoOgustSurfaces(
       clauses: [
         {
           factId: WEAK_TWO_FACT_IDS.IS_MINIMUM,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
           rationale: "5-7 NV, 6-7 vul",
         },
         {
           factId: "module.weakTwo.topHonorCount.$suit",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 2,
           isPublic: true,
           rationale: "good suit",
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 2,
       sourceIntent: { type: "OgustMinGood", params: { suit } },
-      disclosure: "alert",
+      disclosure: Disclosure.Alert,
       teachingLabel: { name: bidName("Ogust min/good (3D)"), summary: bidSummary("Show minimum strength with a good suit (2+ top honors)") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -498,23 +500,23 @@ function createWeakTwoOgustSurfaces(
       clauses: [
         {
           factId: WEAK_TWO_FACT_IDS.IS_MAXIMUM,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
           rationale: "8-11 HCP",
         },
         {
           factId: "module.weakTwo.topHonorCount.$suit",
-          operator: "lte",
+          operator: FactOperator.Lte,
           value: 1,
           isPublic: true,
           rationale: "bad suit",
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 3,
       sourceIntent: { type: "OgustMaxBad", params: { suit } },
-      disclosure: "alert",
+      disclosure: Disclosure.Alert,
       teachingLabel: { name: bidName("Ogust max/bad (3H)"), summary: bidSummary("Show maximum strength with a bad suit (0-1 top honors)") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -527,23 +529,23 @@ function createWeakTwoOgustSurfaces(
       clauses: [
         {
           factId: WEAK_TWO_FACT_IDS.IS_MAXIMUM,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
           rationale: "8-11 HCP",
         },
         {
           factId: "module.weakTwo.topHonorCount.$suit",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 2,
           isPublic: true,
           rationale: "good suit",
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 4,
       sourceIntent: { type: "OgustMaxGood", params: { suit } },
-      disclosure: "alert",
+      disclosure: Disclosure.Alert,
       teachingLabel: { name: bidName("Ogust max/good (3S)"), summary: bidSummary("Show maximum strength with a good suit (2+ top honors)") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -576,22 +578,22 @@ function createPostOgustSurfaces(
       clauses: [
         {
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: WEAK_TWO_THRESHOLDS.POST_OGUST_GAME_MIN,
           isPublic: true,
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 0,
       sourceIntent: { type: "PostOgustGame", params: { suit } },
-      disclosure: "alert",
+      disclosure: Disclosure.Alert,
       teachingLabel: { name: bidName(`Bid game in ${suit}`), summary: bidSummary("Bid game after Ogust confirms sufficient combined strength") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
 
     // 1.5. 3NT alternative (diamonds only): when responder has game values
     // and may prefer 3NT to 5D with balanced hand / stoppers
-    ...(suit === "diamonds" ? [
+    ...(suit === ObsSuit.Diamonds ? [
       createSurface({
         meaningId: WEAK_TWO_MEANING_IDS.POST_OGUST_3NT_DIAMONDS,
         semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_3NT,
@@ -599,15 +601,15 @@ function createPostOgustSurfaces(
         clauses: [
           {
             factId: "hand.hcp",
-            operator: "gte",
+            operator: FactOperator.Gte,
             value: WEAK_TWO_THRESHOLDS.POST_OGUST_GAME_MIN,
             isPublic: true,
           },
         ],
-        band: "must",
+        band: RecommendationBand.Must,
         declarationOrder: 0,
         sourceIntent: { type: "PostOgust3NT", params: { suit } },
-        disclosure: "alert",
+        disclosure: Disclosure.Alert,
         teachingLabel: { name: bidName("3NT game (alternative to 5D)"), summary: bidSummary("Choose 3NT over 5D as a more practical nine-trick game contract") },
         surfaceBindings: bindings,
       }, WEAK_TWOS_CTX),
@@ -619,10 +621,10 @@ function createPostOgustSurfaces(
       semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_SIGNOFF,
       encoding: { defaultCall: bid(3, suitToBidSuit(suit)) },
       clauses: [],
-      band: "should",
+      band: RecommendationBand.Should,
       declarationOrder: 1,
       sourceIntent: { type: "PostOgustSignoff", params: { suit } },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName(`Sign off in ${suit}`), summary: bidSummary("Return to the agreed suit at the 3-level to stop below game") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -633,10 +635,10 @@ function createPostOgustSurfaces(
       semanticClassId: WEAK_TWO_CLASSES.POST_OGUST_PASS,
       encoding: { defaultCall: { type: "pass" } },
       clauses: [],
-      band: "avoid",
+      band: RecommendationBand.Avoid,
       declarationOrder: 2,
       sourceIntent: { type: "PostOgustPass", params: { suit } },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName("Pass"), summary: bidSummary("Accept the current Ogust response as the final contract") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -664,16 +666,16 @@ function createNsfRebidSurfaces(
       clauses: [
         {
           factId: `module.weakTwo.hasNsfSupport.$suit`,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
           rationale: "3+ cards in responder's suit",
         },
       ],
-      band: "should",
+      band: RecommendationBand.Should,
       declarationOrder: 0,
       sourceIntent: { type: "NsfSupport", params: { suit } },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName("Support new suit"), summary: bidSummary("Raise responder's new suit showing 3+ card support") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -684,10 +686,10 @@ function createNsfRebidSurfaces(
       semanticClassId: WEAK_TWO_CLASSES.NSF_REBID,
       encoding: { defaultCall: bid(3, suitToBidSuit(suit)) },
       clauses: [],
-      band: "should",
+      band: RecommendationBand.Should,
       declarationOrder: 1,
       sourceIntent: { type: "NsfRebid", params: { suit } },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName(`Rebid ${sl}`), summary: bidSummary("Rebid the original suit denying support for responder's new suit") },
       surfaceBindings: bindings,
     }, WEAK_TWOS_CTX),
@@ -700,21 +702,21 @@ function createNsfRebidSurfaces(
 export const WEAK_TWO_R1_SURFACES = createWeakTwoR1Surfaces();
 
 /** R2: Responder surfaces per suit. */
-export const WEAK_TWO_R2_HEARTS_SURFACES = createWeakTwoR2Surfaces("hearts");
-export const WEAK_TWO_R2_SPADES_SURFACES = createWeakTwoR2Surfaces("spades");
-export const WEAK_TWO_R2_DIAMONDS_SURFACES = createWeakTwoR2Surfaces("diamonds");
+export const WEAK_TWO_R2_HEARTS_SURFACES = createWeakTwoR2Surfaces(ObsSuit.Hearts);
+export const WEAK_TWO_R2_SPADES_SURFACES = createWeakTwoR2Surfaces(ObsSuit.Spades);
+export const WEAK_TWO_R2_DIAMONDS_SURFACES = createWeakTwoR2Surfaces(ObsSuit.Diamonds);
 
 /** R3: Ogust response surfaces per suit. */
-export const WEAK_TWO_OGUST_HEARTS_SURFACES = createWeakTwoOgustSurfaces("hearts");
-export const WEAK_TWO_OGUST_SPADES_SURFACES = createWeakTwoOgustSurfaces("spades");
-export const WEAK_TWO_OGUST_DIAMONDS_SURFACES = createWeakTwoOgustSurfaces("diamonds");
+export const WEAK_TWO_OGUST_HEARTS_SURFACES = createWeakTwoOgustSurfaces(ObsSuit.Hearts);
+export const WEAK_TWO_OGUST_SPADES_SURFACES = createWeakTwoOgustSurfaces(ObsSuit.Spades);
+export const WEAK_TWO_OGUST_DIAMONDS_SURFACES = createWeakTwoOgustSurfaces(ObsSuit.Diamonds);
 
 /** R3: Opener rebid after new suit forcing per suit. */
-export const NSF_REBID_HEARTS_SURFACES = createNsfRebidSurfaces("hearts");
-export const NSF_REBID_SPADES_SURFACES = createNsfRebidSurfaces("spades");
-export const NSF_REBID_DIAMONDS_SURFACES = createNsfRebidSurfaces("diamonds");
+export const NSF_REBID_HEARTS_SURFACES = createNsfRebidSurfaces(ObsSuit.Hearts);
+export const NSF_REBID_SPADES_SURFACES = createNsfRebidSurfaces(ObsSuit.Spades);
+export const NSF_REBID_DIAMONDS_SURFACES = createNsfRebidSurfaces(ObsSuit.Diamonds);
 
 /** R4: Responder rebid after Ogust surfaces per suit. */
-export const POST_OGUST_HEARTS_SURFACES = createPostOgustSurfaces("hearts");
-export const POST_OGUST_SPADES_SURFACES = createPostOgustSurfaces("spades");
-export const POST_OGUST_DIAMONDS_SURFACES = createPostOgustSurfaces("diamonds");
+export const POST_OGUST_HEARTS_SURFACES = createPostOgustSurfaces(ObsSuit.Hearts);
+export const POST_OGUST_SPADES_SURFACES = createPostOgustSurfaces(ObsSuit.Spades);
+export const POST_OGUST_DIAMONDS_SURFACES = createPostOgustSurfaces(ObsSuit.Diamonds);

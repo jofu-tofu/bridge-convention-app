@@ -12,6 +12,7 @@ import {
   type BuildPlayingViewportInput,
   type BuildExplanationViewportInput,
 } from "../build-viewport";
+import { PromptMode } from "../drill-types";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -159,7 +160,7 @@ describe("buildDeclarerPromptViewport", () => {
       auction: emptyAuction,
       bidHistory: [],
       contract: makeContract(Seat.South),
-      promptMode: "south-declarer",
+      promptMode: PromptMode.SouthDeclarer,
       ...overrides,
     };
   }
@@ -193,10 +194,10 @@ describe("buildDeclarerPromptViewport", () => {
 
   it("passes through promptMode", () => {
     const vp = buildDeclarerPromptViewport(
-      makeInput({ promptMode: "defender" }),
+      makeInput({ promptMode: PromptMode.Defender }),
     );
 
-    expect(vp.promptMode).toBe("defender");
+    expect(vp.promptMode).toBe(PromptMode.Defender);
   });
 
   it("passes through deal metadata", () => {
@@ -414,7 +415,7 @@ describe("information boundary", () => {
       auction: emptyAuction,
       bidHistory: [],
       contract: makeContract(Seat.South),
-      promptMode: "south-declarer",
+      promptMode: PromptMode.SouthDeclarer,
     });
     assertNoOracleFields(vp as unknown as Record<string, unknown>, "DeclarerPromptViewport");
   });

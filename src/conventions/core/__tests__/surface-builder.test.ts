@@ -1,10 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { createSurface } from "../surface-builder";
+import { createSurface, Disclosure } from "../surface-builder";
 import type { ModuleContext, SurfaceInput } from "../surface-builder";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { bidName, bidSummary } from "../authored-text";
 import type { TeachingLabel } from "../authored-text";
+import { FactOperator, RecommendationBand } from "../../pipeline/evaluation/meaning";
+import { ObsSuit } from "../../pipeline/bid-action";
 
 const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
@@ -22,12 +24,12 @@ function baseInput(overrides?: Partial<SurfaceInput>): SurfaceInput {
     semanticClassId: "test:class",
     encoding: { defaultCall: bid(2, BidSuit.Clubs) },
     clauses: [
-      { factId: "hand.hcp", operator: "gte", value: 12 },
+      { factId: "hand.hcp", operator: FactOperator.Gte, value: 12 },
     ],
-    band: "must",
+    band: RecommendationBand.Must,
     declarationOrder: 0,
     sourceIntent: { type: "Test", params: {} },
-    disclosure: "alert",
+    disclosure: Disclosure.Alert,
     teachingLabel: tl("Test surface"),
     ...overrides,
   };
@@ -88,7 +90,7 @@ describe("createSurface", () => {
         clauses: [
           {
             factId: "hand.hcp",
-            operator: "gte",
+            operator: FactOperator.Gte,
             value: 12,
             rationale: "for splinter",
           },
@@ -133,7 +135,7 @@ describe("createSurface", () => {
     const surface = createSurface(
       baseInput({
         clauses: [
-          { factId: "bridge.hasFourCardMajor", operator: "boolean", value: true, isPublic: true },
+          { factId: "bridge.hasFourCardMajor", operator: FactOperator.Boolean, value: true, isPublic: true },
         ],
       }),
       CTX,
@@ -143,10 +145,10 @@ describe("createSurface", () => {
 
   it("preserves surfaceBindings", () => {
     const surface = createSurface(
-      baseInput({ surfaceBindings: { suit: "hearts" } }),
+      baseInput({ surfaceBindings: { suit: ObsSuit.Hearts } }),
       CTX,
     );
-    expect(surface.surfaceBindings).toEqual({ suit: "hearts" });
+    expect(surface.surfaceBindings).toEqual({ suit: ObsSuit.Hearts });
   });
 
   it("handles empty clauses array", () => {
@@ -158,7 +160,7 @@ describe("createSurface", () => {
     const surface = createSurface(
       baseInput({
         clauses: [
-          { factId: "hand.hcp", operator: "range", value: { min: 10, max: 12 } },
+          { factId: "hand.hcp", operator: FactOperator.Range, value: { min: 10, max: 12 } },
         ],
       }),
       CTX,
@@ -171,7 +173,7 @@ describe("createSurface", () => {
     const surface = createSurface(
       baseInput({
         clauses: [
-          { factId: "bridge.hasFiveCardMajor", operator: "boolean", value: false },
+          { factId: "bridge.hasFiveCardMajor", operator: FactOperator.Boolean, value: false },
         ],
       }),
       CTX,
@@ -184,9 +186,9 @@ describe("createSurface", () => {
     const surface = createSurface(
       baseInput({
         clauses: [
-          { factId: "hand.hcp", operator: "gte", value: 12 },
-          { factId: "hand.suitLength.$suit", operator: "gte", value: 4 },
-          { factId: "bridge.hasShortage", operator: "boolean", value: true },
+          { factId: "hand.hcp", operator: FactOperator.Gte, value: 12 },
+          { factId: "hand.suitLength.$suit", operator: FactOperator.Gte, value: 4 },
+          { factId: "bridge.hasShortage", operator: FactOperator.Boolean, value: true },
         ],
       }),
       CTX,

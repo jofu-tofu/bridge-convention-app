@@ -1,12 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { BidSuit, Seat } from "../../../engine/types";
-import { INITIAL_NEGOTIATION } from "../../../conventions/core/committed-step";
+import { INITIAL_NEGOTIATION, ConfidenceLevel } from "../../../conventions/core/committed-step";
 import type { VerificationSnapshot } from "../types";
 import type { NegotiationState, CommittedStep } from "../../../conventions/core/committed-step";
 import type { BidMeaning } from "../../../conventions/pipeline/evaluation/meaning";
 import type { BidAction } from "../../../conventions/pipeline/bid-action";
 import { bidName, bidSummary } from "../../../conventions/core/authored-text";
 import type { TeachingLabel } from "../../../conventions/core/authored-text";
+import { HandStrength, ObsSuit } from "../../../conventions/pipeline/bid-action";
 
 const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 import {
@@ -32,7 +33,7 @@ function makeSnapshot(overrides: Partial<VerificationSnapshot> = {}): Verificati
   };
 }
 
-const openerObs: BidAction = { act: "open", strain: "notrump", strength: "strong" };
+const openerObs: BidAction = { act: "open", strain: "notrump", strength: HandStrength.Strong };
 
 const openerLog: readonly CommittedStep[] = [
   {
@@ -151,7 +152,7 @@ describe("kernel-consistency", () => {
   it("accepts valid overcalled competition", () => {
     const kernel: NegotiationState = {
       ...INITIAL_NEGOTIATION,
-      competition: { kind: "overcalled", level: 2, strain: "hearts" },
+      competition: { kind: "overcalled", level: 2, strain: ObsSuit.Hearts },
     };
     const snapshot = makeSnapshot({ kernel });
     const result = checkKernelConsistency(snapshot);
@@ -159,9 +160,9 @@ describe("kernel-consistency", () => {
   });
 
   it("flags invalid fitAgreed confidence", () => {
-    const badKernel = {
+    const badKernel: NegotiationState = {
       ...INITIAL_NEGOTIATION,
-      fitAgreed: { strain: "hearts" as const, confidence: "maybe" as "tentative" | "final" },
+      fitAgreed: { strain: ObsSuit.Hearts as const, confidence: "maybe" as unknown as ConfidenceLevel },
     };
     const snapshot = makeSnapshot({ kernel: badKernel });
     const result = checkKernelConsistency(snapshot);

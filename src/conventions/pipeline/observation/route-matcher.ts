@@ -9,7 +9,8 @@ import type { Seat } from "../../../engine/types";
 import { partnerSeat } from "../../../engine/constants";
 import type { BidAction } from "../bid-action";
 import type { CommittedStep } from "../../core/committed-step";
-import type { ObsPattern, RouteExpr, TurnRole } from "../../core/rule-module";
+import { TurnRole } from "../../core/rule-module";
+import type { ObsPattern, RouteExpr } from "../../core/rule-module";
 
 /**
  * Match a single ObsPattern against a single BidAction.
@@ -92,9 +93,9 @@ export function matchRoute(
 
 /** Derive actor role from seat and opener seat (inline to avoid circular dep). */
 function deriveActorRole(actor: Seat, openerSeat: Seat): TurnRole {
-  if (actor === openerSeat) return "opener";
-  if (actor === partnerSeat(openerSeat)) return "responder";
-  return "opponent";
+  if (actor === openerSeat) return TurnRole.Opener;
+  if (actor === partnerSeat(openerSeat)) return TurnRole.Responder;
+  return TurnRole.Opponent;
 }
 
 /** Does any observation in a step match the pattern? */

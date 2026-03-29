@@ -11,6 +11,7 @@ import { makeSurface, makeRanking } from "../../../test-support/convention-facto
 import { SAYC_SYSTEM_CONFIG } from "../../definitions/system-config";
 import { bidName, bidSummary } from "../../core/authored-text";
 import type { TeachingLabel } from "../../core/authored-text";
+import { FactOperator, RecommendationBand } from "../../pipeline/evaluation/meaning";
 
 const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
@@ -51,7 +52,7 @@ describe("meaningToStrategy", () => {
       meaningId: "strong-bid",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
       clauses: [
-        { factId: "hand.hcp", operator: "gte" as const, value: 15 },
+        { factId: "hand.hcp", operator: FactOperator.Gte as const, value: 15 },
       ],
     });
 
@@ -68,9 +69,9 @@ describe("meaningToStrategy", () => {
       meaningId: "strong-bid",
       encoding: { defaultCall: { type: "bid", level: 1, strain: BidSuit.NoTrump } },
       clauses: [
-        { factId: "hand.hcp", operator: "gte" as const, value: 15 },
+        { factId: "hand.hcp", operator: FactOperator.Gte as const, value: 15 },
       ],
-      ranking: makeRanking({ recommendationBand: "should", modulePrecedence: 0, declarationOrder: 0 }),
+      ranking: makeRanking({ recommendationBand: RecommendationBand.Should, modulePrecedence: 0, declarationOrder: 0 }),
       sourceIntent: { type: "OpenNT", params: {} },
       teachingLabel: tl("1NT Opening"),
     });
@@ -192,13 +193,13 @@ describe("runPipeline", () => {
       meaningId: "must-bid",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
       clauses: [],
-      ranking: makeRanking({ recommendationBand: "must", declarationOrder: 0 }),
+      ranking: makeRanking({ recommendationBand: RecommendationBand.Must, declarationOrder: 0 }),
     });
     const shouldSurface = makeSurface({
       meaningId: "should-bid",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Diamonds } },
       clauses: [],
-      ranking: makeRanking({ recommendationBand: "should", declarationOrder: 0 }),
+      ranking: makeRanking({ recommendationBand: RecommendationBand.Should, declarationOrder: 0 }),
     });
 
     const h = hand("SA", "SK", "S8", "S7", "S6", "H4", "H3", "DQ", "D5", "D3", "CJ", "C4", "C2");

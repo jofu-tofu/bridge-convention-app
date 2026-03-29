@@ -2,14 +2,16 @@ import { describe, it, expect } from "vitest";
 import {
   BAND_PRIORITY,
   compareRanking,
+  FactOperator,
+  RecommendationBand,
   type MeaningProposal,
   type RankingMetadata,
-  type RecommendationBand,
 } from "../evaluation/meaning";
+import { ConditionRole } from "../evidence-bundle";
 
 function makeRanking(overrides: Partial<RankingMetadata> = {}): RankingMetadata {
   return {
-    recommendationBand: "should",
+    recommendationBand: RecommendationBand.Should,
     specificity: 1,
     modulePrecedence: 1,
     declarationOrder: 1,
@@ -19,13 +21,13 @@ function makeRanking(overrides: Partial<RankingMetadata> = {}): RankingMetadata 
 
 describe("BAND_PRIORITY", () => {
   it("assigns lower values to higher-priority bands", () => {
-    expect(BAND_PRIORITY.must).toBeLessThan(BAND_PRIORITY.should);
-    expect(BAND_PRIORITY.should).toBeLessThan(BAND_PRIORITY.may);
-    expect(BAND_PRIORITY.may).toBeLessThan(BAND_PRIORITY.avoid);
+    expect(BAND_PRIORITY[RecommendationBand.Must]).toBeLessThan(BAND_PRIORITY[RecommendationBand.Should]);
+    expect(BAND_PRIORITY[RecommendationBand.Should]).toBeLessThan(BAND_PRIORITY[RecommendationBand.May]);
+    expect(BAND_PRIORITY[RecommendationBand.May]).toBeLessThan(BAND_PRIORITY[RecommendationBand.Avoid]);
   });
 
   it("covers all four bands", () => {
-    const bands: RecommendationBand[] = ["must", "should", "may", "avoid"];
+    const bands: RecommendationBand[] = [RecommendationBand.Must, RecommendationBand.Should, RecommendationBand.May, RecommendationBand.Avoid];
     for (const band of bands) {
       expect(BAND_PRIORITY[band]).toBeTypeOf("number");
     }
@@ -34,26 +36,26 @@ describe("BAND_PRIORITY", () => {
 
 describe("compareRanking", () => {
   it("ranks must above should", () => {
-    const a = makeRanking({ recommendationBand: "must" });
-    const b = makeRanking({ recommendationBand: "should" });
+    const a = makeRanking({ recommendationBand: RecommendationBand.Must });
+    const b = makeRanking({ recommendationBand: RecommendationBand.Should });
     expect(compareRanking(a, b)).toBeLessThan(0);
   });
 
   it("ranks should above may", () => {
-    const a = makeRanking({ recommendationBand: "should" });
-    const b = makeRanking({ recommendationBand: "may" });
+    const a = makeRanking({ recommendationBand: RecommendationBand.Should });
+    const b = makeRanking({ recommendationBand: RecommendationBand.May });
     expect(compareRanking(a, b)).toBeLessThan(0);
   });
 
   it("ranks may above avoid", () => {
-    const a = makeRanking({ recommendationBand: "may" });
-    const b = makeRanking({ recommendationBand: "avoid" });
+    const a = makeRanking({ recommendationBand: RecommendationBand.May });
+    const b = makeRanking({ recommendationBand: RecommendationBand.Avoid });
     expect(compareRanking(a, b)).toBeLessThan(0);
   });
 
   it("ranks avoid below must", () => {
-    const a = makeRanking({ recommendationBand: "avoid" });
-    const b = makeRanking({ recommendationBand: "must" });
+    const a = makeRanking({ recommendationBand: RecommendationBand.Avoid });
+    const b = makeRanking({ recommendationBand: RecommendationBand.Must });
     expect(compareRanking(a, b)).toBeGreaterThan(0);
   });
 
@@ -82,8 +84,8 @@ describe("compareRanking", () => {
   });
 
   it("is antisymmetric (swapping a and b negates the result)", () => {
-    const a = makeRanking({ recommendationBand: "must", specificity: 3 });
-    const b = makeRanking({ recommendationBand: "should", specificity: 1 });
+    const a = makeRanking({ recommendationBand: RecommendationBand.Must, specificity: 3 });
+    const b = makeRanking({ recommendationBand: RecommendationBand.Should, specificity: 1 });
     expect(Math.sign(compareRanking(a, b))).toBe(
       -Math.sign(compareRanking(b, a)),
     );
@@ -99,13 +101,13 @@ describe("MeaningProposal", () => {
       clauses: [
         {
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 8,
           satisfied: true,
           description: "At least 8 HCP",
         },
       ],
-      ranking: makeRanking({ recommendationBand: "must" }),
+      ranking: makeRanking({ recommendationBand: RecommendationBand.Must }),
       evidence: {
         factDependencies: ["hand.hcp"],
         evaluatedConditions: [
@@ -113,7 +115,7 @@ describe("MeaningProposal", () => {
             conditionId: "hasEnoughHCP",
             satisfied: true,
             description: "HCP >= 8",
-            conditionRole: "semantic",
+            conditionRole: ConditionRole.Semantic,
           },
         ],
         provenance: {

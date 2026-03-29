@@ -1,5 +1,5 @@
 import type { BidMeaningClause } from "./meaning";
-import type { FactOperator } from "./meaning";
+import { FactOperator } from "./meaning";
 
 /**
  * Derive a deterministic clauseId from fact constraint fields.
@@ -16,11 +16,11 @@ export function deriveClauseId(
   operator: FactOperator,
   value: number | boolean | string | { min: number; max: number } | readonly string[],
 ): string {
-  if (operator === "range") {
+  if (operator === FactOperator.Range) {
     const range = value as { min: number; max: number };
     return `${factId}:range:${range.min}-${range.max}`;
   }
-  if (operator === "in") {
+  if (operator === FactOperator.In) {
     const arr = value as readonly string[];
     return `${factId}:in:${arr.join(",")}`;
   }
@@ -119,22 +119,22 @@ export function deriveClauseDescription(
   let base: string;
 
   switch (operator) {
-    case "gte":
+    case FactOperator.Gte:
       base = `${value as number}+ ${dn}`; break;
-    case "lte":
+    case FactOperator.Lte:
       base = `At most ${value as number} ${dn}`; break;
-    case "eq":
+    case FactOperator.Eq:
       base = `Exactly ${String(value as number | boolean | string)} ${dn}`; break;
-    case "range": {
+    case FactOperator.Range: {
       const range = value as { min: number; max: number };
       base = `${range.min}\u2013${range.max} ${dn}`; break;
     }
-    case "boolean":
+    case FactOperator.Boolean:
       base = (value === true)
         ? (isAdjectiveLike(dn) ? dn.charAt(0).toUpperCase() + dn.slice(1) : `Has a ${dn}`)
         : `No ${dn}`;
       break;
-    case "in": {
+    case FactOperator.In: {
       const arr = value as readonly string[];
       base = `${dn} in [${arr.join(", ")}]`; break;
     }

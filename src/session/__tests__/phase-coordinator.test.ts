@@ -3,6 +3,7 @@ import { Seat } from "../../engine/types";
 import { resolveTransition } from "../phase-coordinator";
 import type { PhaseEvent, TransitionDescriptor } from "../phase-coordinator";
 import type { GamePhase } from "../phase-machine";
+import { PlayPreference } from "../drill-types";
 
 function expectNoTransition(desc: TransitionDescriptor): void {
   expect(desc.targetPhase).toBeNull();
@@ -56,19 +57,19 @@ describe("AUCTION_COMPLETE", () => {
 
 describe("PROMPT_ENTERED", () => {
   it("always → chains ACCEPT_PLAY", () => {
-    const desc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference: "always" });
+    const desc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference: PlayPreference.Always });
     expect(desc.targetPhase).toBeNull();
     expect(desc.chainedEvent).toEqual({ type: "ACCEPT_PLAY" });
   });
 
   it("skip → chains DECLINE_PLAY", () => {
-    const desc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference: "skip" });
+    const desc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference: PlayPreference.Skip });
     expect(desc.targetPhase).toBeNull();
     expect(desc.chainedEvent).toEqual({ type: "DECLINE_PLAY" });
   });
 
   it("prompt → no transition", () => {
-    const desc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference: "prompt" });
+    const desc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference: PlayPreference.Prompt });
     expectNoTransition(desc);
   });
 });
@@ -185,7 +186,7 @@ describe("chained events", () => {
     const auctionDesc = resolveTransition("BIDDING", { type: "AUCTION_COMPLETE", servicePhase: "DECLARER_PROMPT" });
     expect(auctionDesc.targetPhase).toBe("DECLARER_PROMPT");
 
-    const promptDesc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference: "always" });
+    const promptDesc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference: PlayPreference.Always });
     expect(promptDesc.chainedEvent).toEqual({ type: "ACCEPT_PLAY" });
 
     const chainedDesc = resolveTransition("DECLARER_PROMPT", promptDesc.chainedEvent!);
@@ -194,7 +195,7 @@ describe("chained events", () => {
   });
 
   it("PROMPT_ENTERED(skip) → DECLINE_PLAY chain", () => {
-    const promptDesc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference: "skip" });
+    const promptDesc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference: PlayPreference.Skip });
     const chainedDesc = resolveTransition("DECLARER_PROMPT", promptDesc.chainedEvent!);
     expect(chainedDesc.targetPhase).toBe("EXPLANATION");
     expect(chainedDesc.triggerDDS).toBe(true);
@@ -216,7 +217,7 @@ describe("chained events", () => {
       }
     }
 
-    for (const pref of ["always", "skip"] as const) {
+    for (const pref of [PlayPreference.Always, PlayPreference.Skip] as const) {
       const desc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference: pref });
       if (desc.chainedEvent) {
         const chainedDesc = resolveTransition("DECLARER_PROMPT", desc.chainedEvent);
@@ -229,7 +230,7 @@ describe("chained events", () => {
 function createEvent(type: PhaseEvent["type"]): PhaseEvent {
   switch (type) {
     case "AUCTION_COMPLETE": return { type, servicePhase: "EXPLANATION" };
-    case "PROMPT_ENTERED": return { type, playPreference: "prompt" };
+    case "PROMPT_ENTERED": return { type, playPreference: PlayPreference.Prompt };
     case "ACCEPT_PLAY": return { type, seat: Seat.South };
     case "DECLINE_PLAY": return { type };
     case "SKIP_TO_REVIEW": return { type };

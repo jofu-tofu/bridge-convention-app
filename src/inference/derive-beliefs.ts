@@ -5,6 +5,7 @@ import type { Seat, Suit } from "../engine/types";
 import { Suit as SuitEnum } from "../engine/types";
 import type { FactConstraint } from "../conventions/core/agreement-module";
 import type { PublicBeliefs, DerivedRanges, QualitativeConstraint } from "./inference-types";
+import { FactOperator } from "../conventions/pipeline/evaluation/meaning";
 
 const ALL_SUITS: Suit[] = [SuitEnum.Spades, SuitEnum.Hearts, SuitEnum.Diamonds, SuitEnum.Clubs];
 
@@ -163,13 +164,13 @@ export function handInferenceToConstraints(inf: {
   const constraints: FactConstraint[] = [];
 
   if (inf.minHcp !== undefined) {
-    constraints.push({ factId: "hand.hcp", operator: "gte", value: inf.minHcp });
+    constraints.push({ factId: "hand.hcp", operator: FactOperator.Gte, value: inf.minHcp });
   }
   if (inf.maxHcp !== undefined) {
-    constraints.push({ factId: "hand.hcp", operator: "lte", value: inf.maxHcp });
+    constraints.push({ factId: "hand.hcp", operator: FactOperator.Lte, value: inf.maxHcp });
   }
   if (inf.isBalanced === true) {
-    constraints.push({ factId: "hand.isBalanced", operator: "boolean", value: true });
+    constraints.push({ factId: "hand.isBalanced", operator: FactOperator.Boolean, value: true });
   }
 
   for (const [suit, si] of Object.entries(inf.suits)) {
@@ -177,10 +178,10 @@ export function handInferenceToConstraints(inf: {
     const suffix = suitToSuffix(suit as Suit);
     if (!suffix) continue;
     if (si.minLength !== undefined) {
-      constraints.push({ factId: `hand.suitLength.${suffix}`, operator: "gte", value: si.minLength });
+      constraints.push({ factId: `hand.suitLength.${suffix}`, operator: FactOperator.Gte, value: si.minLength });
     }
     if (si.maxLength !== undefined) {
-      constraints.push({ factId: `hand.suitLength.${suffix}`, operator: "lte", value: si.maxLength });
+      constraints.push({ factId: `hand.suitLength.${suffix}`, operator: FactOperator.Lte, value: si.maxLength });
     }
   }
 

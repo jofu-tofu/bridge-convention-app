@@ -9,6 +9,7 @@ import {
 import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG, BASE_SYSTEM_SAYC, BASE_SYSTEM_TWO_OVER_ONE, BASE_SYSTEM_ACOL } from "../system-config";
 import { getModule } from "../module-registry";
 import { moduleSurfaces } from "../../core/convention-module";
+import { FactOperator } from "../../pipeline/evaluation/meaning";
 
 const ALL_IDS = ["nt-bundle", "nt-stayman", "nt-transfers", "bergen-bundle", "dont-bundle", "weak-twos-bundle"] as const;
 
@@ -88,7 +89,7 @@ describe("resolveBundle", () => {
     const allSurfaces = spec.modules.flatMap((m) => moduleSurfaces(m));
     const opening = allSurfaces.find((s) => s.meaningId === "bridge:1nt-opening");
     expect(opening).toBeDefined();
-    const gteClause = opening!.clauses.find((c) => c.factId === "hand.hcp" && c.operator === "gte");
+    const gteClause = opening!.clauses.find((c) => c.factId === "hand.hcp" && c.operator === FactOperator.Gte);
     expect(gteClause!.value).toBe(12);
     expect(opening!.teachingLabel.name).toBe("12 to 14");
   });
@@ -99,7 +100,7 @@ describe("resolveBundle", () => {
     const allSurfaces = spec.modules.flatMap((m) => moduleSurfaces(m));
     const opening = allSurfaces.find((s) => s.meaningId === "bridge:1nt-opening");
     expect(opening).toBeDefined();
-    const gteClause = opening!.clauses.find((c) => c.factId === "hand.hcp" && c.operator === "gte");
+    const gteClause = opening!.clauses.find((c) => c.factId === "hand.hcp" && c.operator === FactOperator.Gte);
     expect(gteClause!.value).toBe(15);
     expect(opening!.teachingLabel.name).toBe("15 to 17");
   });

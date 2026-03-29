@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PracticeMode, PracticeRole } from "../../service";
+  import { PracticeMode, PracticeRole } from "../../service";
 
   interface Props {
     conventionName: string;
@@ -9,7 +9,7 @@
   }
   let { conventionName, supportsRoleSelection = false, onSelect, onCancel }: Props = $props();
 
-  let selectedRole = $state<PracticeRole>("responder");
+  let selectedRole = $state<PracticeRole>(PracticeRole.Responder);
 
   interface ModeOption {
     mode: PracticeMode;
@@ -20,13 +20,13 @@
 
   const modes: ModeOption[] = [
     {
-      mode: "decision-drill",
+      mode: PracticeMode.DecisionDrill,
       title: "Decision Drill",
       description: "Jump to the key decision point",
       isDefault: true,
     },
     {
-      mode: "full-auction",
+      mode: PracticeMode.FullAuction,
       title: "Full Auction",
       description: "Bid the complete auction from the opening",
       isDefault: false,
@@ -39,9 +39,9 @@
   }
 
   const roleOptions: RoleOption[] = [
-    { role: "responder", label: "Responder" },
-    { role: "opener", label: "Opener" },
-    { role: "both", label: "Both" },
+    { role: PracticeRole.Responder, label: "Responder" },
+    { role: PracticeRole.Opener, label: "Opener" },
+    { role: PracticeRole.Both, label: "Both" },
   ];
 </script>
 

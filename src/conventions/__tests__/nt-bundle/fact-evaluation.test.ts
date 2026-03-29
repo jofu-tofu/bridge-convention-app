@@ -8,7 +8,7 @@ import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { evaluateFacts } from "../../pipeline/facts/fact-evaluator";
 import { createSharedFactCatalog } from "../../pipeline/facts/shared-fact-catalog";
-import { createFactCatalog } from "../../core/fact-catalog";
+import { createFactCatalog, EvaluationWorld } from "../../core/fact-catalog";
 import { createStaymanFacts } from "../../definitions/modules/stayman";
 import { createTransferFacts } from "../../definitions/modules/jacoby-transfers";
 import { createSystemFactCatalog } from "../../pipeline/facts/system-fact-catalog";
@@ -42,7 +42,7 @@ describe("NT bundle fact evaluation", () => {
       "C7", "C3",
     );
     expect(result.facts.size).toBe(27);
-    expect(result.world).toBe("acting-hand");
+    expect(result.world).toBe(EvaluationWorld.ActingHand);
   });
 
   it("10 HCP, 4S 4H → stayman eligible, transfer ineligible", () => {

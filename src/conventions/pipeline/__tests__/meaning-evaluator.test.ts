@@ -5,9 +5,14 @@ import {
 } from "../evaluation/meaning-evaluator";
 import type { BidMeaning } from "../evaluation/meaning";
 import type { EvaluatedFacts, FactValue } from "../../core/fact-catalog";
+import { EvaluationWorld } from "../../core/fact-catalog";
 import { BidSuit } from "../../../engine/types";
 import { bidName, bidSummary } from "../../core/authored-text";
 import type { TeachingLabel } from "../../core/authored-text";
+import { FactOperator, RecommendationBand } from "../evaluation/meaning";
+import { ObsSuit } from "../bid-action";
+import { ConditionRole } from "../evidence-bundle";
+import { HandStrength } from "../bid-action";
 
 const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
@@ -18,7 +23,7 @@ function buildFacts(
   for (const [id, value] of Object.entries(entries)) {
     map.set(id, { factId: id, value });
   }
-  return { world: "acting-hand", facts: map };
+  return { world: EvaluationWorld.ActingHand, facts: map };
 }
 
 function makeSurface(
@@ -33,7 +38,7 @@ function makeSurface(
     },
     clauses: [],
     ranking: {
-      recommendationBand: "should",
+      recommendationBand: RecommendationBand.Should,
       modulePrecedence: 0,
       declarationOrder: 0,
     },
@@ -50,7 +55,7 @@ describe("evaluateBidMeaning", () => {
         {
           clauseId: "has-major",
           factId: "bridge.hasFourCardMajor",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
         },
       ],
@@ -67,7 +72,7 @@ describe("evaluateBidMeaning", () => {
         {
           clauseId: "has-major",
           factId: "bridge.hasFourCardMajor",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
         },
       ],
@@ -84,7 +89,7 @@ describe("evaluateBidMeaning", () => {
         {
           clauseId: "hcp-min",
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 8,
         },
       ],
@@ -107,7 +112,7 @@ describe("evaluateBidMeaning", () => {
         {
           clauseId: "hcp-max",
           factId: "hand.hcp",
-          operator: "lte",
+          operator: FactOperator.Lte,
           value: 9,
         },
       ],
@@ -130,7 +135,7 @@ describe("evaluateBidMeaning", () => {
         {
           clauseId: "suit-match",
           factId: "bridge.trumpSuit",
-          operator: "eq",
+          operator: FactOperator.Eq,
           value: "spades",
         },
       ],
@@ -153,7 +158,7 @@ describe("evaluateBidMeaning", () => {
         {
           clauseId: "hcp-range",
           factId: "hand.hcp",
-          operator: "range",
+          operator: FactOperator.Range,
           value: { min: 8, max: 9 },
         },
       ],
@@ -186,7 +191,7 @@ describe("evaluateBidMeaning", () => {
         {
           clauseId: "pattern-check",
           factId: "bridge.majorPattern",
-          operator: "in",
+          operator: FactOperator.In,
           value: ["one-four", "both-four"],
         },
       ],
@@ -213,7 +218,7 @@ describe("evaluateBidMeaning", () => {
         {
           clauseId: "pattern-check",
           factId: "bridge.majorPattern",
-          operator: "in",
+          operator: FactOperator.In,
           value: ["one-four", "both-four"],
         },
       ],
@@ -234,7 +239,7 @@ describe("evaluateBidMeaning", () => {
         {
           clauseId: "hcp-min",
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 8,
         },
       ],
@@ -254,13 +259,13 @@ describe("evaluateBidMeaning", () => {
         {
           clauseId: "hcp-min",
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 8,
         },
         {
           clauseId: "has-major",
           factId: "bridge.hasFourCardMajor",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
         },
       ],
@@ -283,13 +288,13 @@ describe("evaluateBidMeaning", () => {
       conditionId: "hcp-min",
       satisfied: true,
       description: "8+ HCP",
-      conditionRole: "semantic",
+      conditionRole: ConditionRole.Semantic,
     });
     expect(proposal.evidence.evaluatedConditions[1]!).toEqual({
       conditionId: "has-major",
       satisfied: true,
       description: "Has a 4-card major",
-      conditionRole: "semantic",
+      conditionRole: ConditionRole.Semantic,
     });
 
     expect(proposal.evidence.provenance).toEqual({
@@ -329,19 +334,19 @@ describe("evaluateBidMeaning", () => {
         {
           clauseId: "hcp-min",
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 8,
         },
         {
           clauseId: "has-major",
           factId: "bridge.hasFourCardMajor",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
         },
         {
           clauseId: "balanced",
           factId: "hand.isBalanced",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: false,
         },
       ],
@@ -377,7 +382,7 @@ describe("evaluateAllBidMeanings", () => {
         {
           clauseId: "hcp-check",
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 10,
         },
       ],
@@ -388,7 +393,7 @@ describe("evaluateAllBidMeanings", () => {
         {
           clauseId: "balanced",
           factId: "hand.isBalanced",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
         },
       ],
@@ -408,12 +413,12 @@ describe("evaluateAllBidMeanings", () => {
 describe("surface bindings", () => {
   it("resolves $-prefixed factId via surfaceBindings", () => {
     const surface = makeSurface({
-      surfaceBindings: { suit: "hearts" },
+      surfaceBindings: { suit: ObsSuit.Hearts },
       clauses: [
         {
           clauseId: "suit-length",
           factId: "hand.suitLength.$suit",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 5,
         },
       ],
@@ -439,7 +444,7 @@ describe("surface bindings", () => {
         {
           clauseId: "suit-length",
           factId: "hand.suitLength.$suit",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 5,
         },
       ],
@@ -455,18 +460,18 @@ describe("surface bindings", () => {
 
   it("multiple bindings in one surface resolve correctly", () => {
     const surface = makeSurface({
-      surfaceBindings: { suit: "spades", level: "game" },
+      surfaceBindings: { suit: ObsSuit.Spades, level: HandStrength.Game },
       clauses: [
         {
           clauseId: "suit-length",
           factId: "hand.suitLength.$suit",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 4,
         },
         {
           clauseId: "strength-check",
           factId: "bridge.$level.values",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
         },
       ],
@@ -492,7 +497,7 @@ describe("surface bindings", () => {
         {
           clauseId: "hcp-min",
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 8,
         },
       ],
@@ -513,7 +518,7 @@ describe("observedValue on MeaningClause", () => {
         {
           clauseId: "hcp-min",
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 8,
         },
       ],
@@ -531,7 +536,7 @@ describe("observedValue on MeaningClause", () => {
         {
           clauseId: "hcp-min",
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 8,
         },
       ],
@@ -549,7 +554,7 @@ describe("observedValue on MeaningClause", () => {
         {
           clauseId: "balanced",
           factId: "hand.isBalanced",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
         },
       ],
@@ -567,7 +572,7 @@ describe("observedValue on MeaningClause", () => {
         {
           clauseId: "pattern-check",
           factId: "bridge.majorPattern",
-          operator: "in",
+          operator: FactOperator.In,
           value: ["one-four", "both-four"],
         },
       ],
@@ -588,7 +593,7 @@ describe("evaluateBidMeaning preserves authored recommendationBand", () => {
   it("preserves the authored recommendationBand on the output proposal", () => {
     const surface = makeSurface({
       ranking: {
-        recommendationBand: "should",
+        recommendationBand: RecommendationBand.Should,
         modulePrecedence: 0,
         declarationOrder: 0,
       },
@@ -600,7 +605,7 @@ describe("evaluateBidMeaning preserves authored recommendationBand", () => {
   });
 
   it("different authored bands produce different output bands", () => {
-    const bands = ["must", "should", "may", "avoid"] as const;
+    const bands = [RecommendationBand.Must, RecommendationBand.Should, RecommendationBand.May, RecommendationBand.Avoid] as const;
 
     for (const band of bands) {
       const surface = makeSurface({
@@ -620,7 +625,7 @@ describe("evaluateBidMeaning preserves authored recommendationBand", () => {
   it("preserves all ranking fields alongside the authored band", () => {
     const surface = makeSurface({
       ranking: {
-        recommendationBand: "avoid",
+        recommendationBand: RecommendationBand.Avoid,
         modulePrecedence: 3,
         declarationOrder: 7,
       },
@@ -640,7 +645,7 @@ describe("evaluateAllBidMeanings preserves authored recommendationBand", () => {
     const surface1 = makeSurface({
       meaningId: "test:must-band",
       ranking: {
-        recommendationBand: "must",
+        recommendationBand: RecommendationBand.Must,
         modulePrecedence: 0,
         declarationOrder: 0,
       },
@@ -648,7 +653,7 @@ describe("evaluateAllBidMeanings preserves authored recommendationBand", () => {
     const surface2 = makeSurface({
       meaningId: "test:may-band",
       ranking: {
-        recommendationBand: "may",
+        recommendationBand: RecommendationBand.May,
         modulePrecedence: 0,
         declarationOrder: 1,
       },

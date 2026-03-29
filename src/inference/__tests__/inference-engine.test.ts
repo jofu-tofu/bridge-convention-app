@@ -3,6 +3,7 @@ import { createInferenceEngine } from "../inference-engine";
 import type { InferenceProvider, HandInference, InferenceConfig } from "../types";
 import { Seat, BidSuit } from "../../engine/types";
 import type { AuctionEntry, Auction } from "../../engine/types";
+import { FactOperator } from "../../conventions/pipeline/evaluation/meaning";
 
 function makeProvider(result: HandInference | null = null): InferenceProvider & { calls: AuctionEntry[] } {
   const calls: AuctionEntry[] = [];
@@ -158,7 +159,7 @@ describe("createInferenceEngine", () => {
     expect(timeline).toHaveLength(1);
     expect(timeline[0]!.entry).toBe(entry);
     expect(timeline[0]!.newConstraints).toEqual([
-      { factId: "hand.hcp", operator: "gte", value: 12 },
+      { factId: "hand.hcp", operator: FactOperator.Gte, value: 12 },
     ]);
     expect(timeline[0]!.cumulativeBeliefs[Seat.North].ranges.hcp.min).toBe(12);
   });

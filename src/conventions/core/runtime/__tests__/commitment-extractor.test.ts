@@ -4,6 +4,8 @@ import { callKey } from "../../../../engine/call-helpers";
 import type { Auction, Call } from "../../../../engine/types";
 import { Seat } from "../../../../engine/types";
 import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
+import { Disclosure } from "../../../pipeline/evaluation/meaning";
+import { FactOperator, RecommendationBand } from "../../../pipeline/evaluation/meaning";
 
 describe("callKey", () => {
   it("formats contract bids as level+strain", () => {
@@ -39,13 +41,13 @@ function makeSurface(
     },
     clauses: [],
     ranking: {
-      recommendationBand: "should",
+      recommendationBand: RecommendationBand.Should,
       specificity: 1,
       modulePrecedence: 1,
       declarationOrder: 1,
     },
     sourceIntent: { type: "test", params: {} },
-    disclosure: "alert" as const,
+    disclosure: Disclosure.Alert,
     teachingLabel: "Test meaning",
     ...overrides,
   } as BidMeaning;
@@ -57,7 +59,7 @@ const surfaceA = makeSurface({
   moduleId: "mod-alpha",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "C" } as Call },
   clauses: [
-    { clauseId: "hcp-10", factId: "hand.hcp", operator: "gte", value: 10, isPublic: true },
+    { clauseId: "hcp-10", factId: "hand.hcp", operator: FactOperator.Gte, value: 10, isPublic: true },
   ],
 });
 
@@ -67,7 +69,7 @@ const surfaceB = makeSurface({
   moduleId: "mod-alpha",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "D" } as Call },
   clauses: [
-    { clauseId: "hearts-5", factId: "hand.suitLength.hearts", operator: "gte", value: 5, isPublic: true },
+    { clauseId: "hearts-5", factId: "hand.suitLength.hearts", operator: FactOperator.Gte, value: 5, isPublic: true },
   ],
 });
 
@@ -77,7 +79,7 @@ const surfaceC = makeSurface({
   moduleId: "mod-beta",
   encoding: { defaultCall: { type: "bid", level: 2, strain: "H" } as Call },
   clauses: [
-    { clauseId: "spades-4", factId: "hand.suitLength.spades", operator: "gte", value: 4 },
+    { clauseId: "spades-4", factId: "hand.suitLength.spades", operator: FactOperator.Gte, value: 4 },
   ],
 });
 

@@ -2,6 +2,7 @@ import { FactLayer } from "../../../core/fact-layer";
 import type {
   FactCatalogExtension,
 } from "../../../core/fact-catalog";
+import { EvaluationWorld } from "../../../core/fact-catalog";
 import { num, fv } from "../../../pipeline/facts/fact-helpers";
 import { buildExtension } from "../../../pipeline/facts/fact-factory";
 import type { FactEntry } from "../../../pipeline/facts/fact-factory";
@@ -16,7 +17,7 @@ const hasMajorSupportEntry: FactEntry = {
   definition: {
     id: BERGEN_FACT_IDS.HAS_MAJOR_SUPPORT,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Has exactly 4-card support in at least one major",
     valueType: "boolean",
     derivesFrom: [BERGEN_CLAUSE_FACT_IDS.HAND_SUIT_LENGTH_HEARTS, BERGEN_CLAUSE_FACT_IDS.HAND_SUIT_LENGTH_SPADES],

@@ -20,7 +20,7 @@ import type {
 } from "../engine/types";
 import type { ConventionSpec, ConventionBundle, BaseSystemId } from "../conventions";
 import type { BiddingContext } from "../service";
-import type { OpponentMode } from "../session/drill-types";
+import { OpponentMode } from "../session/drill-types";
 
 // ── Re-exports for convenience ──────────────────────────────────────
 
@@ -108,8 +108,8 @@ export function parseBaseSystem(args: Flags): BaseSystemId {
 
 export function parseOpponentMode(args: Flags): OpponentMode {
   const val = args["opponents"];
-  if (val === undefined || val === true) return "natural";
-  if (val === "natural" || val === "none") return val;
+  if (val === undefined || val === true) return OpponentMode.Natural;
+  if (val === OpponentMode.Natural || val === OpponentMode.None) return val;
   console.error(`Invalid --opponents value: "${val}" (expected: natural, none)`);
   process.exit(2);
 }
@@ -156,10 +156,10 @@ export function parseScenarioConfig(args: Flags): ScenarioConfig {
   let opponents: OpponentsModeConfig;
   const oppVal = args["opponents"];
   if (oppVal === undefined || oppVal === true) {
-    opponents = { type: "fixed", value: "natural" };
+    opponents = { type: "fixed", value: OpponentMode.Natural };
   } else if (typeof oppVal === "string" && oppVal.toLowerCase() === "mixed") {
     opponents = { type: "mixed", naturalRate: 0.5 };
-  } else if (oppVal === "natural" || oppVal === "none") {
+  } else if (oppVal === OpponentMode.Natural || oppVal === OpponentMode.None) {
     opponents = { type: "fixed", value: oppVal };
   } else {
     console.error(`Invalid --opponents value: "${oppVal}" (expected: natural, none, mixed)`);
@@ -182,7 +182,7 @@ export function assignSeedScenario(
 
   const opponents = config.opponents.type === "fixed"
     ? config.opponents.value
-    : (mulberry32(seed ^ 0xA7E2_B93D)() < config.opponents.naturalRate ? "natural" : "none");
+    : (mulberry32(seed ^ 0xA7E2_B93D)() < config.opponents.naturalRate ? OpponentMode.Natural : OpponentMode.None);
 
   return { vulnerability, opponents };
 }

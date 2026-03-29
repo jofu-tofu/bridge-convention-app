@@ -12,6 +12,7 @@ import { Seat, Suit, type Hand, type Deal, type SeatConstraint, type Auction } f
 import { suitLengthOf } from "../../engine/hand-evaluator";
 import { buildAuction } from "../../engine/auction-helpers";
 import type { SystemConfig } from "./system-config";
+import { TurnRole } from "../core/rule-module";
 import {
   CAP_OPENING_1NT,
   CAP_OPENING_MAJOR,
@@ -31,7 +32,7 @@ export interface CapabilityArchetype {
   /** If set, drill infrastructure picks a random dealer from this list. */
   readonly allowedDealers?: readonly Seat[];
   /** The practitioner's turn role for identifying R1 surfaces. */
-  readonly practitionerTurn: "responder" | "opponent" | undefined;
+  readonly practitionerTurn: TurnRole | undefined;
   /** The practitioner's seat. */
   readonly practitionerSeat: Seat;
   /**
@@ -77,7 +78,7 @@ const ARCHETYPE_MAP = new Map<string, CapabilityArchetype>([
         return buildAuction(Seat.North, ["1NT", "P"]);
       return undefined;
     },
-    practitionerTurn: "responder",
+    practitionerTurn: TurnRole.Responder,
     practitionerSeat: Seat.South,
     minPhaseDistance: 0,
   }],
@@ -100,7 +101,7 @@ const ARCHETYPE_MAP = new Map<string, CapabilityArchetype>([
       }
       return undefined;
     },
-    practitionerTurn: "responder",
+    practitionerTurn: TurnRole.Responder,
     practitionerSeat: Seat.South,
     minPhaseDistance: 0,
   }],
@@ -121,7 +122,7 @@ const ARCHETYPE_MAP = new Map<string, CapabilityArchetype>([
       return undefined;
     },
     allowedDealers: [Seat.North],
-    practitionerTurn: "responder",
+    practitionerTurn: TurnRole.Responder,
     practitionerSeat: Seat.South,
     minPhaseDistance: 0,
   }],

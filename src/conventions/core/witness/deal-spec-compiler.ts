@@ -7,6 +7,7 @@ import type { HandPredicate } from "../agreement-module";
 import { resolveRole } from "../../pipeline/deal-spec-generator";
 import { VULNERABILITY_MAP } from "../../pipeline/witness-constants";
 import { compileFactClause, SUIT_FACT_MAP, type MutableSeatConstraint } from "../runtime/fact-compiler";
+import { FactOperator } from "../../pipeline/evaluation/meaning";
 
 /**
  * Extended DealConstraints that carries pedagogical metadata alongside
@@ -32,7 +33,7 @@ function applyPredicate(
     if (isAnyConjunction) {
       // For "any" conjunction with suit gte, use minLengthAny
       const suit = SUIT_FACT_MAP[clause.factId];
-      if (suit !== undefined && clause.operator === "gte") {
+      if (suit !== undefined && clause.operator === FactOperator.Gte) {
         if (!builder.minLengthAny) builder.minLengthAny = {};
         builder.minLengthAny[suit] = clause.value as number;
         continue;

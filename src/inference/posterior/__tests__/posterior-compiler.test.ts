@@ -2,20 +2,21 @@ import { describe, it, expect } from "vitest";
 import { compilePublicHandSpace } from "../posterior-compiler";
 import type { PublicSnapshot } from "../../../conventions/core/module-surface";
 import { makeSnapshot } from "./posterior-test-fixtures";
+import { FactOperator } from "../../../conventions/pipeline/evaluation/meaning";
 
 describe("compilePublicHandSpace", () => {
   it("extracts HCP range constraints from 1NT opening commitment (15-17 HCP)", () => {
     const snapshot = makeSnapshot([
       {
         subject: "S", // South opened 1NT
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
         sourceCall: "1NT",
       },
       {
         subject: "S",
-        constraint: { factId: "hand.hcp", operator: "lte", value: 17 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
         origin: "call-meaning",
         strength: "hard",
         sourceCall: "1NT",
@@ -33,12 +34,12 @@ describe("compilePublicHandSpace", () => {
     expect(predicate.clauses).toHaveLength(2);
     expect(predicate.clauses[0]).toEqual({
       factId: "hand.hcp",
-      operator: "gte",
+      operator: FactOperator.Gte,
       value: 15,
     });
     expect(predicate.clauses[1]).toEqual({
       factId: "hand.hcp",
-      operator: "lte",
+      operator: FactOperator.Lte,
       value: 17,
     });
   });
@@ -47,13 +48,13 @@ describe("compilePublicHandSpace", () => {
     const snapshot = makeSnapshot([
       {
         subject: "S",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 20 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 20 },
         origin: "call-meaning",
         strength: "hard",
       },
       {
         subject: "S",
-        constraint: { factId: "hand.hcp", operator: "lte", value: 10 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Lte, value: 10 },
         origin: "call-meaning",
         strength: "hard",
       },
@@ -74,13 +75,13 @@ describe("compilePublicHandSpace", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 6 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 6 },
         origin: "call-meaning",
         strength: "hard",
       },
       {
         subject: "S",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
       },
@@ -97,7 +98,7 @@ describe("compilePublicHandSpace", () => {
       ...makeSnapshot([
         {
           subject: "N",
-          constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+          constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
           origin: "call-meaning",
           strength: "hard",
         },
@@ -123,7 +124,7 @@ describe("compilePublicHandSpace", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
       },

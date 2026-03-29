@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { OpponentMode } from "../../session/drill-types";
 import {
   parseArgs,
   requireArg,
@@ -150,7 +151,7 @@ describe("parseScenarioConfig", () => {
   it("default: fixed None + fixed natural", () => {
     const cfg = parseScenarioConfig({});
     expect(cfg.vuln).toEqual({ type: "fixed", value: Vulnerability.None });
-    expect(cfg.opponents).toEqual({ type: "fixed", value: "natural" });
+    expect(cfg.opponents).toEqual({ type: "fixed", value: OpponentMode.Natural });
   });
 
   it("--vuln=mixed -> mixed vuln mode", () => {
@@ -170,7 +171,7 @@ describe("parseScenarioConfig", () => {
 
   it("--opponents=none -> fixed none", () => {
     const cfg = parseScenarioConfig({ opponents: "none" });
-    expect(cfg.opponents).toEqual({ type: "fixed", value: "none" });
+    expect(cfg.opponents).toEqual({ type: "fixed", value: OpponentMode.None });
   });
 });
 
@@ -179,7 +180,7 @@ describe("parseScenarioConfig", () => {
 describe("assignSeedScenario", () => {
   const fixedConfig: ScenarioConfig = {
     vuln: { type: "fixed", value: Vulnerability.EastWest },
-    opponents: { type: "fixed", value: "none" },
+    opponents: { type: "fixed", value: OpponentMode.None },
   };
 
   const mixedConfig: ScenarioConfig = {

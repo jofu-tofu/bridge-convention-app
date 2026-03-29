@@ -15,11 +15,17 @@
  */
 
 import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Suit, DDSolution, AuctionEntry, NumberRange } from "../engine/types";
-import type { PracticeMode, PlayPreference } from "../session/drill-types";
+import type { PracticeMode, PlayPreference, PromptMode } from "../session/drill-types";
 import type { TeachingProjection } from "../conventions";
 
 /** Bid context relative to the practice target. */
-export type BidContext = "prerequisite" | "target" | "follow-up" | "background" | "off-convention";
+export enum BidContext {
+  Prerequisite = "prerequisite",
+  Target = "target",
+  FollowUp = "follow-up",
+  Background = "background",
+  OffConvention = "off-convention",
+}
 
 // ── Service-owned type replacements ─────────────────────────────────
 //
@@ -29,30 +35,40 @@ export type BidContext = "prerequisite" | "target" | "follow-up" | "background" 
 // file is readable without chasing imports across 7 modules.
 
 /** Game phase — service-owned mirror of session/phase-machine GamePhase. */
-export type ServiceGamePhase =
-  | "BIDDING"
-  | "DECLARER_PROMPT"
-  | "PLAYING"
-  | "EXPLANATION";
+export enum ServiceGamePhase {
+  Bidding = "BIDDING",
+  DeclarerPrompt = "DECLARER_PROMPT",
+  Playing = "PLAYING",
+  Explanation = "EXPLANATION",
+}
 
 /** Bid grade — service-owned string union (mirror of BidGrade enum values). */
-export type ViewportBidGrade =
-  | "correct"
-  | "correct-not-preferred"
-  | "acceptable"
-  | "near-miss"
-  | "incorrect";
+export enum ViewportBidGrade {
+  Correct = "correct",
+  CorrectNotPreferred = "correct-not-preferred",
+  Acceptable = "acceptable",
+  NearMiss = "near-miss",
+  Incorrect = "incorrect",
+}
 
 /** Encoder kind — service-owned mirror of pipeline/provenance EncoderKind. */
-export type ServiceEncoderKind =
-  | "default-call"
-  | "resolver"
-  | "alternate-encoding"
-  | "frontier-step"
-  | "relay-map";
+export enum ServiceEncoderKind {
+  DefaultCall = "default-call",
+  Resolver = "resolver",
+  AlternateEncoding = "alternate-encoding",
+  FrontierStep = "frontier-step",
+  RelayMap = "relay-map",
+}
 
 /** Fact operator — service-owned mirror of pipeline/meaning FactOperator. */
-export type ServiceFactOperator = "gte" | "lte" | "eq" | "range" | "boolean" | "in";
+export enum ServiceFactOperator {
+  Gte = "gte",
+  Lte = "lte",
+  Eq = "eq",
+  Range = "range",
+  Boolean = "boolean",
+  In = "in",
+}
 
 // ── Service-owned teaching label ───────────────────────────────────
 
@@ -66,7 +82,12 @@ export interface ServiceTeachingLabel {
 // ── Service-owned teaching types ────────────────────────────────────
 
 /** Condition role — service-owned mirror of pipeline/evidence-bundle ConditionRole. */
-export type ServiceConditionRole = "semantic" | "inferential" | "pedagogical" | "routing";
+export enum ServiceConditionRole {
+  Semantic = "semantic",
+  Inferential = "inferential",
+  Pedagogical = "pedagogical",
+  Routing = "routing",
+}
 
 /** Condition evidence — service-owned mirror of pipeline/evidence-bundle ConditionEvidence.
  *  Flattened from ConditionResult + ConditionEvidence inheritance. */
@@ -125,7 +146,11 @@ export interface ServiceCallProjection {
 }
 
 /** Parse tree module verdict — service-owned mirror. */
-export type ServiceParseTreeModuleVerdict = "selected" | "applicable" | "eliminated";
+export enum ServiceParseTreeModuleVerdict {
+  Selected = "selected",
+  Applicable = "applicable",
+  Eliminated = "eliminated",
+}
 
 /** Parse tree condition — service-owned mirror of teaching-types ParseTreeCondition. */
 export interface ServiceParseTreeCondition {
@@ -759,7 +784,7 @@ export interface DeclarerPromptViewport extends AuctionContextBase {
   readonly visibleHands: Partial<Record<Seat, Hand>>;
   readonly auctionEntries: readonly AuctionEntryView[];
   readonly contract: Contract;
-  readonly promptMode: "defender" | "south-declarer" | "declarer-swap";
+  readonly promptMode: PromptMode;
 }
 
 /** Viewport for the play phase. */
@@ -820,14 +845,15 @@ export interface ConventionCardView {
 
 // ── Convention Card Panel ────────────────────────────────────────
 
-export type ConventionCardSectionId =
-  | "general"
-  | "notrump-opening"
-  | "major-opening"
-  | "minor-opening"
-  | "two-level-opening"
-  | "competitive"
-  | "slam";
+export enum ConventionCardSectionId {
+  General = "general",
+  NotrumpOpening = "notrump-opening",
+  MajorOpening = "major-opening",
+  MinorOpening = "minor-opening",
+  TwoLevelOpening = "two-level-opening",
+  Competitive = "competitive",
+  Slam = "slam",
+}
 
 export interface ConventionCardLineItem {
   readonly label: string;

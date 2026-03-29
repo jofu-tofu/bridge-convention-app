@@ -3,6 +3,7 @@ import type {
   FactCatalog,
   FactValue,
 } from "../../core/fact-catalog";
+import { EvaluationWorld } from "../../core/fact-catalog";
 import type { HandFactResolverFn } from "../../core/fact-catalog";
 import { createSharedFactCatalog } from "./shared-fact-catalog";
 import { topologicalSort } from "./fact-utils";
@@ -24,7 +25,7 @@ export function createHandFactResolver(
   const definitions = effectiveCatalog.definitions;
 
   // Pre-compute topological order once
-  const actingHandDefs = definitions.filter((f) => f.world === "acting-hand");
+  const actingHandDefs = definitions.filter((f) => f.world === EvaluationWorld.ActingHand);
   // Filter out relational evaluators — they need context the sampler doesn't have
   const relEvals = effectiveCatalog.relationalEvaluators;
   const standardDefs = relEvals

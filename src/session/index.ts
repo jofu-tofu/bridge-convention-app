@@ -5,8 +5,8 @@ export { isValidTransition } from "./phase-machine";
 export type { GamePhase } from "./phase-machine";
 
 // Drill configuration
-export type { OpponentMode, VulnerabilityDistribution, DrillSettings, PracticeMode, PracticeRole, PlayPreference } from "./drill-types";
-export { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "./drill-types";
+export { OpponentMode, PracticeMode, PracticeRole, PlayPreference, PromptMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "./drill-types";
+export type { VulnerabilityDistribution, DrillSettings } from "./drill-types";
 
 // Play profiles
 export type { PlayProfileId } from "./heuristics/play-profiles";

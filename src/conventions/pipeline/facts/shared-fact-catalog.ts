@@ -7,6 +7,7 @@ import { SHARED_FACTS } from "../../core/shared-facts";
 import { num, fv } from "./fact-helpers";
 import { isBalanced } from "../../../engine/hand-evaluator";
 import type { SuitName } from "../../../engine/types";
+import { FactOperator } from "../evaluation/meaning";
 
 // ─── Evaluator registry ─────────────────────────────────────
 
@@ -97,7 +98,7 @@ const RELATIONAL_EVALUATORS = new Map<string, RelationalFactEvaluatorFn>([
     let partnerMin = 0;
     if (ctx.publicCommitments) {
       for (const c of ctx.publicCommitments) {
-        if (c.constraint.factId === suitFactId && c.constraint.operator === "gte"
+        if (c.constraint.factId === suitFactId && c.constraint.operator === FactOperator.Gte
             && typeof c.constraint.value === "number") {
           partnerMin = Math.max(partnerMin, c.constraint.value);
         }

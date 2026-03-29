@@ -7,7 +7,8 @@ import { enumerateRuleAtoms } from "../conventions";
 import type { ConventionModule } from "../conventions";
 import { createSpecStrategy, createOpponentStrategy } from "../session/strategy-factory";
 
-import type { ConventionSpec, ConventionBundle, Auction, Call, OpponentMode, Seat, Deal } from "./shared";
+import type { ConventionSpec, ConventionBundle, Auction, Call, Seat, Deal } from "./shared";
+import { OpponentMode } from "../session/drill-types";
 import { Vulnerability,
   callKey,
   generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, nextSeatClockwise, partnerOf,
@@ -80,14 +81,14 @@ export function runSinglePlaythrough(
   seed: number,
   atomCallMap: Map<string, { atomId: string; meaningLabel: string }>,
   vulnerability: Vulnerability = Vulnerability.None,
-  opponents: OpponentMode = "natural",
+  opponents: OpponentMode = OpponentMode.Natural,
 ): PlaythroughResult {
   const deal = generateSeededDeal(bundle, seed, vulnerability);
   const userSeat = resolveUserSeat(bundle, deal);
   const partner = partnerOf(userSeat);
   const strategy = createSpecStrategy(spec);
-  const ewStrategy = opponents === "natural"
-    ? createOpponentStrategy("natural")
+  const ewStrategy = opponents === OpponentMode.Natural
+    ? createOpponentStrategy(OpponentMode.Natural)
     : null;
 
   const initAuction = buildInitialAuction(bundle, userSeat, deal);

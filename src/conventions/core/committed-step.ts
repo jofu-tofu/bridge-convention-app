@@ -20,10 +20,16 @@ import type { PublicSnapshot } from "./module-surface";
 
 // ── NegotiationState ──────────────────────────────────────────────────────
 
+/** Confidence level for an agreed fit. */
+export enum ConfidenceLevel {
+  Tentative = "tentative",
+  Final = "final",
+}
+
 export interface NegotiationState {
   readonly fitAgreed: {
     readonly strain: BidSuitName;
-    readonly confidence: "tentative" | "final";
+    readonly confidence: ConfidenceLevel;
   } | null;
   readonly forcing: "none" | "one-round" | "game";
   readonly captain: "opener" | "responder" | "undecided";

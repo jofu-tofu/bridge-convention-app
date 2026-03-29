@@ -1,8 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { matchKernel } from "../observation/negotiation-matcher";
-import { INITIAL_NEGOTIATION } from "../../core/committed-step";
+import { INITIAL_NEGOTIATION, ConfidenceLevel } from "../../core/committed-step";
 import type { NegotiationState } from "../../core/committed-step";
 import type { NegotiationExpr } from "../../core/rule-module";
+import { ObsSuit } from "../bid-action";
+import { HandStrength } from "../bid-action";
 
 function kernel(overrides: Partial<NegotiationState> = {}): NegotiationState {
   return { ...INITIAL_NEGOTIATION, ...overrides };
@@ -12,17 +14,17 @@ describe("matchKernel", () => {
   describe("fit / no-fit", () => {
     it("fit() matches any fitAgreed", () => {
       const k = kernel({
-        fitAgreed: { strain: "hearts", confidence: "tentative" },
+        fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Tentative },
       });
       expect(matchKernel({ kind: "fit" }, k)).toBe(true);
     });
 
     it("fit(hearts) matches specific strain", () => {
       const k = kernel({
-        fitAgreed: { strain: "hearts", confidence: "tentative" },
+        fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Tentative },
       });
-      expect(matchKernel({ kind: "fit", strain: "hearts" }, k)).toBe(true);
-      expect(matchKernel({ kind: "fit", strain: "spades" }, k)).toBe(false);
+      expect(matchKernel({ kind: "fit", strain: ObsSuit.Hearts }, k)).toBe(true);
+      expect(matchKernel({ kind: "fit", strain: ObsSuit.Spades }, k)).toBe(false);
     });
 
     it("fit() does not match null fitAgreed", () => {
@@ -35,7 +37,7 @@ describe("matchKernel", () => {
 
     it("no-fit does not match when fit is agreed", () => {
       const k = kernel({
-        fitAgreed: { strain: "spades", confidence: "final" },
+        fitAgreed: { strain: ObsSuit.Spades, confidence: ConfidenceLevel.Final },
       });
       expect(matchKernel({ kind: "no-fit" }, k)).toBe(false);
     });
@@ -44,7 +46,7 @@ describe("matchKernel", () => {
   describe("forcing", () => {
     it("matches forcing level", () => {
       const k = kernel({ forcing: "game" });
-      expect(matchKernel({ kind: "forcing", level: "game" }, k)).toBe(true);
+      expect(matchKernel({ kind: "forcing", level: HandStrength.Game }, k)).toBe(true);
       expect(matchKernel({ kind: "forcing", level: "none" }, k)).toBe(false);
     });
 
@@ -72,14 +74,14 @@ describe("matchKernel", () => {
 
     it("uncontested does not match overcalled", () => {
       const k = kernel({
-        competition: { kind: "overcalled", strain: "hearts", level: 2 },
+        competition: { kind: "overcalled", strain: ObsSuit.Hearts, level: 2 },
       });
       expect(matchKernel({ kind: "uncontested" }, k)).toBe(false);
     });
 
     it("overcalled matches any overcall", () => {
       const k = kernel({
-        competition: { kind: "overcalled", strain: "hearts", level: 2 },
+        competition: { kind: "overcalled", strain: ObsSuit.Hearts, level: 2 },
       });
       expect(matchKernel({ kind: "overcalled" }, k)).toBe(true);
     });
@@ -90,21 +92,21 @@ describe("matchKernel", () => {
 
     it("overcalled(below) matches overcalls below threshold", () => {
       const k = kernel({
-        competition: { kind: "overcalled", strain: "clubs", level: 2 },
+        competition: { kind: "overcalled", strain: ObsSuit.Clubs, level: 2 },
       });
       // 2C is below 3C
       expect(matchKernel(
-        { kind: "overcalled", below: { level: 3, strain: "clubs" } },
+        { kind: "overcalled", below: { level: 3, strain: ObsSuit.Clubs } },
         k,
       )).toBe(true);
       // 2C is below 2H (same level, clubs < hearts)
       expect(matchKernel(
-        { kind: "overcalled", below: { level: 2, strain: "hearts" } },
+        { kind: "overcalled", below: { level: 2, strain: ObsSuit.Hearts } },
         k,
       )).toBe(true);
       // 2C is NOT below 2C (equal)
       expect(matchKernel(
-        { kind: "overcalled", below: { level: 2, strain: "clubs" } },
+        { kind: "overcalled", below: { level: 2, strain: ObsSuit.Clubs } },
         k,
       )).toBe(false);
     });
@@ -140,7 +142,7 @@ describe("matchKernel", () => {
       const expr: NegotiationExpr = {
         kind: "or",
         exprs: [
-          { kind: "forcing", level: "game" },
+          { kind: "forcing", level: HandStrength.Game },
           { kind: "uncontested" },
         ],
       };
@@ -149,7 +151,7 @@ describe("matchKernel", () => {
 
     it("not inverts", () => {
       expect(matchKernel(
-        { kind: "not", expr: { kind: "forcing", level: "game" } },
+        { kind: "not", expr: { kind: "forcing", level: HandStrength.Game } },
         INITIAL_NEGOTIATION,
       )).toBe(true);
       expect(matchKernel(

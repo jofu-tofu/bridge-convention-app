@@ -6,6 +6,7 @@ import type { BidAlert } from "../../conventions";
 import type { FactConstraint } from "../../conventions/core/agreement-module";
 import type { InferenceExtractor, InferenceExtractorInput, InferenceProvider } from "../types";
 import { produceAnnotation } from "../annotation-producer";
+import { FactOperator } from "../../conventions/pipeline/evaluation/meaning";
 
 const emptyAuction: Auction = { entries: [], isComplete: false };
 
@@ -39,7 +40,7 @@ describe("produceAnnotation", () => {
     };
     const ruleResult = makeRuleResult({
       alert,
-      constraints: [{ factId: "hand.hcp", operator: "gte", value: 8 }],
+      constraints: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 8 }],
       meaning: "Asks for a 4-card major",
     });
     const entry: AuctionEntry = { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" as never } };
@@ -59,7 +60,7 @@ describe("produceAnnotation", () => {
 
   it("convention bid: constraints from extractor.extractConstraints()", () => {
     const testConstraints: FactConstraint[] = [
-      { factId: "hand.hcp", operator: "gte", value: 8 },
+      { factId: "hand.hcp", operator: FactOperator.Gte, value: 8 },
     ];
     const ruleResult = makeRuleResult();
     const entry: AuctionEntry = { seat: Seat.South, call: { type: "bid", level: 2, strain: "C" as never } };
@@ -99,7 +100,7 @@ describe("produceAnnotation", () => {
 
     expect(annotation.meaning).toBe("Natural bid");
     expect(annotation.constraints).toEqual([
-      { factId: "hand.hcp", operator: "gte", value: 12 },
+      { factId: "hand.hcp", operator: FactOperator.Gte, value: 12 },
     ]);
     expect(annotation.conventionId).toBeNull();
   });
@@ -159,8 +160,8 @@ describe("produceAnnotation", () => {
     const ruleResult = makeRuleResult({
       alert,
       constraints: [
-        { factId: "hand.hcp", operator: "gte", value: 8 },
-        { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
+        { factId: "hand.hcp", operator: FactOperator.Gte, value: 8 },
+        { factId: "hand.suitLength.hearts", operator: FactOperator.Gte, value: 5 },
       ],
       meaning: "Transfer to hearts",
     });
@@ -176,8 +177,8 @@ describe("produceAnnotation", () => {
     );
 
     expect(annotation.constraints).toEqual([
-      { factId: "hand.hcp", operator: "gte", value: 8 },
-      { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
+      { factId: "hand.hcp", operator: FactOperator.Gte, value: 8 },
+      { factId: "hand.suitLength.hearts", operator: FactOperator.Gte, value: 5 },
     ]);
   });
 
@@ -204,7 +205,7 @@ describe("produceAnnotation", () => {
     );
 
     expect(annotation.constraints).toEqual([
-      { factId: "hand.hcp", operator: "gte", value: 10 },
+      { factId: "hand.hcp", operator: FactOperator.Gte, value: 10 },
     ]);
   });
 });

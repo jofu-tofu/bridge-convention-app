@@ -2,12 +2,14 @@ import type {
   BidMeaning,
   BidMeaningClause,
 } from "./meaning";
-import type {
-  MeaningProposal,
-  MeaningClause,
-  EvaluationEvidence,
-  RankingMetadata,
+import {
+  FactOperator,
+  type MeaningProposal,
+  type MeaningClause,
+  type EvaluationEvidence,
+  type RankingMetadata,
 } from "./meaning";
+import { ConditionRole } from "../evidence-bundle";
 import type {
   EvaluatedFacts,
   FactValue,
@@ -34,8 +36,8 @@ function evaluateClause(
     const desc = clause.rationale ? `${derived} (${clause.rationale})` : derived;
     return {
       factId: resolvedFactId,
-      operator: clause.operator === "in" ? "eq" : clause.operator,
-      value: clause.operator === "in" ? false : (clause.value as MeaningClause["value"]),
+      operator: clause.operator === FactOperator.In ? FactOperator.Eq : clause.operator,
+      value: clause.operator === FactOperator.In ? false : (clause.value as MeaningClause["value"]),
       satisfied: false,
       description: desc,
       ...(clause.isPublic ? { isPublic: true } : {}),
@@ -46,25 +48,25 @@ function evaluateClause(
   let satisfied = false;
 
   switch (clause.operator) {
-    case "boolean":
+    case FactOperator.Boolean:
       satisfied = factValue === clause.value;
       break;
-    case "gte":
+    case FactOperator.Gte:
       satisfied =
         typeof factValue === "number" &&
         typeof clause.value === "number" &&
         factValue >= clause.value;
       break;
-    case "lte":
+    case FactOperator.Lte:
       satisfied =
         typeof factValue === "number" &&
         typeof clause.value === "number" &&
         factValue <= clause.value;
       break;
-    case "eq":
+    case FactOperator.Eq:
       satisfied = factValue === clause.value;
       break;
-    case "range": {
+    case FactOperator.Range: {
       const range = clause.value as { min: number; max: number };
       satisfied =
         typeof factValue === "number" &&
@@ -72,7 +74,7 @@ function evaluateClause(
         factValue <= range.max;
       break;
     }
-    case "in": {
+    case FactOperator.In: {
       const allowed = clause.value as readonly string[];
       satisfied =
         typeof factValue === "string" && allowed.includes(factValue);
@@ -82,12 +84,12 @@ function evaluateClause(
 
   // Map "in" operator to "eq" in the output MeaningClause
   const outputOperator: MeaningClause["operator"] =
-    clause.operator === "in" ? "eq" : clause.operator;
+    clause.operator === FactOperator.In ? FactOperator.Eq : clause.operator;
 
   // For "in" operator, store the matched value (or false placeholder) since
   // MeaningClause.value doesn't support string arrays
   const outputValue: MeaningClause["value"] =
-    clause.operator === "in"
+    clause.operator === FactOperator.In
       ? (satisfied ? factValue : false) as MeaningClause["value"]
       : (clause.value as MeaningClause["value"]);
 
@@ -132,7 +134,7 @@ export function evaluateBidMeaning(
         conditionId: sourceClause?.clauseId ?? clause.factId,
         satisfied: clause.satisfied,
         description: clause.description,
-        conditionRole: "semantic" as const,
+        conditionRole: ConditionRole.Semantic,
       };
     }),
     provenance: {

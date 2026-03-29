@@ -9,6 +9,7 @@ import type { PublicSnapshot } from "../../core/module-surface";
 import { Seat } from "../../../engine/types";
 import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple } from "../../core/authored-text";
 import type { TeachingLabel } from "../../core/authored-text";
+import { HandStrength } from "../bid-action";
 
 const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
@@ -125,7 +126,7 @@ describe("collectMatchingClaims", () => {
       states: [
         {
           phase: "idle",
-          kernel: { kind: "forcing", level: "game" },
+          kernel: { kind: "forcing", level: HandStrength.Game },
           surfaces: [surface],
         },
       ],
@@ -233,7 +234,7 @@ describe("collectMatchingClaims", () => {
       states: [
         {
           phase: "idle",
-          kernel: { kind: "forcing", level: "game" },
+          kernel: { kind: "forcing", level: HandStrength.Game },
           surfaces: [makeSurface("test")],
         },
       ],

@@ -4,10 +4,12 @@ import type {
   FactValue,
   FactComposition,
 } from "../../core/fact-catalog";
+import { EvaluationWorld } from "../../core/fact-catalog";
 import { FactLayer } from "../../core/fact-layer";
 import type { ConstraintDimension } from "../evaluation/meaning";
 import type { Hand } from "../../../engine/types";
 import { num, fv } from "./fact-helpers";
+import { FactOperator } from "../evaluation/meaning";
 
 // ─── Uniform return type ─────────────────────────────────────
 
@@ -23,7 +25,7 @@ interface DefineBooleanFactOpts {
   readonly id: string;
   readonly description: string;
   readonly factId: string;
-  readonly operator: "gte" | "lte" | "eq";
+  readonly operator: FactOperator.Gte | FactOperator.Lte | FactOperator.Eq;
   readonly value: number;
   readonly constrainsDimensions: ConstraintDimension[];
   readonly derivesFrom?: string[];
@@ -39,7 +41,7 @@ export function defineBooleanFact(opts: DefineBooleanFactOpts): FactEntry {
   const definition: FactDefinition = {
     id: opts.id,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: opts.description,
     valueType: "boolean",
     derivesFrom,
@@ -60,15 +62,15 @@ export function defineBooleanFact(opts: DefineBooleanFactOpts): FactEntry {
 }
 
 function buildComparator(
-  operator: "gte" | "lte" | "eq",
+  operator: FactOperator.Gte | FactOperator.Lte | FactOperator.Eq,
   value: number,
 ): (v: number) => boolean {
   switch (operator) {
-    case "gte":
+    case FactOperator.Gte:
       return (v) => v >= value;
-    case "lte":
+    case FactOperator.Lte:
       return (v) => v <= value;
-    case "eq":
+    case FactOperator.Eq:
       return (v) => v === value;
   }
 }
@@ -97,7 +99,7 @@ export function definePerSuitFacts(opts: DefinePerSuitFactsOpts): FactEntry[] {
     const definition: FactDefinition = {
       id,
       layer: FactLayer.ModuleDerived,
-      world: "acting-hand",
+      world: EvaluationWorld.ActingHand,
       description: opts.description(suit),
       valueType: opts.valueType,
       derivesFrom,
@@ -126,14 +128,14 @@ export function defineHcpRangeFact(opts: DefineHcpRangeFactOpts): FactEntry {
   const composition: FactComposition = {
     kind: "and",
     operands: [
-      { kind: "primitive", clause: { factId: "hand.hcp", operator: "gte", value: opts.range.min } },
-      { kind: "primitive", clause: { factId: "hand.hcp", operator: "lte", value: opts.range.max } },
+      { kind: "primitive", clause: { factId: "hand.hcp", operator: FactOperator.Gte, value: opts.range.min } },
+      { kind: "primitive", clause: { factId: "hand.hcp", operator: FactOperator.Lte, value: opts.range.max } },
     ],
   };
   const definition: FactDefinition = {
     id: opts.id,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: opts.description,
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { ConventionModule } from "../../../conventions";
+import { TurnRole } from "../../../conventions";
 import type { BidMeaning } from "../../../conventions/pipeline/evaluation/meaning";
 import type { InterferenceEdge } from "../types";
 import {
@@ -13,6 +14,7 @@ import {
 
 import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple } from "../../../conventions/core/authored-text";
 import type { TeachingLabel } from "../../../conventions/core/authored-text";
+import { RecommendationBand } from "../../../conventions/pipeline/evaluation/meaning";
 
 const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
@@ -46,7 +48,7 @@ function makeSurface(
       kind: "direct",
       defaultCall: callType ?? { type: "bid", level: 1, strain: "NT" },
     },
-    ranking: { recommendationBand: "should", declarationOrder: 0 },
+    ranking: { recommendationBand: RecommendationBand.Should, declarationOrder: 0 },
   } as unknown as BidMeaning;
 }
 
@@ -56,12 +58,12 @@ describe("detectActivationOverlap", () => {
   it("detects overlap when both modules have compatible turn+phase guards", () => {
     const a = makeModule("mod-a", {
       states: [
-        { phase: "idle", turn: "responder", surfaces: [makeSurface("a1")] },
+        { phase: "idle", turn: TurnRole.Responder, surfaces: [makeSurface("a1")] },
       ],
     });
     const b = makeModule("mod-b", {
       states: [
-        { phase: "idle", turn: "responder", surfaces: [makeSurface("b1")] },
+        { phase: "idle", turn: TurnRole.Responder, surfaces: [makeSurface("b1")] },
       ],
     });
 
@@ -79,7 +81,7 @@ describe("detectActivationOverlap", () => {
     });
     const b = makeModule("mod-b", {
       states: [
-        { phase: "idle", turn: "responder", surfaces: [makeSurface("b1")] },
+        { phase: "idle", turn: TurnRole.Responder, surfaces: [makeSurface("b1")] },
       ],
     });
 
@@ -90,12 +92,12 @@ describe("detectActivationOverlap", () => {
   it("reports no overlap when turn guards are incompatible", () => {
     const a = makeModule("mod-a", {
       states: [
-        { phase: "idle", turn: "opener", surfaces: [makeSurface("a1")] },
+        { phase: "idle", turn: TurnRole.Opener, surfaces: [makeSurface("a1")] },
       ],
     });
     const b = makeModule("mod-b", {
       states: [
-        { phase: "idle", turn: "opponent", surfaces: [makeSurface("b1")] },
+        { phase: "idle", turn: TurnRole.Opponent, surfaces: [makeSurface("b1")] },
       ],
     });
 
@@ -111,12 +113,12 @@ describe("detectEncodingCollision", () => {
     const sameBid = { type: "bid" as const, level: 2, strain: "C" };
     const a = makeModule("mod-a", {
       states: [
-        { phase: "idle", turn: "responder", surfaces: [makeSurface("a1", sameBid)] },
+        { phase: "idle", turn: TurnRole.Responder, surfaces: [makeSurface("a1", sameBid)] },
       ],
     });
     const b = makeModule("mod-b", {
       states: [
-        { phase: "idle", turn: "responder", surfaces: [makeSurface("b1", sameBid)] },
+        { phase: "idle", turn: TurnRole.Responder, surfaces: [makeSurface("b1", sameBid)] },
       ],
     });
 
@@ -129,12 +131,12 @@ describe("detectEncodingCollision", () => {
   it("reports no collision when bids differ", () => {
     const a = makeModule("mod-a", {
       states: [
-        { phase: "idle", turn: "responder", surfaces: [makeSurface("a1", { type: "bid", level: 2, strain: "C" })] },
+        { phase: "idle", turn: TurnRole.Responder, surfaces: [makeSurface("a1", { type: "bid", level: 2, strain: "C" })] },
       ],
     });
     const b = makeModule("mod-b", {
       states: [
-        { phase: "idle", turn: "responder", surfaces: [makeSurface("b1", { type: "bid", level: 3, strain: "D" })] },
+        { phase: "idle", turn: TurnRole.Responder, surfaces: [makeSurface("b1", { type: "bid", level: 3, strain: "D" })] },
       ],
     });
 
@@ -152,7 +154,7 @@ describe("detectObservationCrosstalk", () => {
       states: [
         {
           phase: "idle",
-          turn: "responder",
+          turn: TurnRole.Responder,
           surfaces: [
             {
               ...makeSurface("a1"),
@@ -182,7 +184,7 @@ describe("detectObservationCrosstalk", () => {
   it("reports no crosstalk for unknown intents (empty canonical obs)", () => {
     const a = makeModule("mod-a", {
       states: [
-        { phase: "idle", turn: "responder", surfaces: [makeSurface("a1")] },
+        { phase: "idle", turn: TurnRole.Responder, surfaces: [makeSurface("a1")] },
       ],
     });
     const b = makeModule("mod-b", {
@@ -209,7 +211,7 @@ describe("detectKernelConflict", () => {
       states: [
         {
           phase: "idle",
-          turn: "responder",
+          turn: TurnRole.Responder,
           surfaces: [makeSurface("a1")],
           negotiationDelta: { forcing: "game" },
         },
@@ -219,7 +221,7 @@ describe("detectKernelConflict", () => {
       states: [
         {
           phase: "idle",
-          turn: "responder",
+          turn: TurnRole.Responder,
           surfaces: [makeSurface("b1")],
           negotiationDelta: { forcing: "one-round" },
         },
@@ -237,7 +239,7 @@ describe("detectKernelConflict", () => {
       states: [
         {
           phase: "idle",
-          turn: "responder",
+          turn: TurnRole.Responder,
           surfaces: [makeSurface("a1")],
           negotiationDelta: { forcing: "game" },
         },
@@ -247,7 +249,7 @@ describe("detectKernelConflict", () => {
       states: [
         {
           phase: "idle",
-          turn: "responder",
+          turn: TurnRole.Responder,
           surfaces: [makeSurface("b1")],
           negotiationDelta: { captain: "responder" },
         },
@@ -265,12 +267,12 @@ describe("analyzeBundle", () => {
   it("returns no edges for two clean modules with no overlap", () => {
     const a = makeModule("mod-a", {
       states: [
-        { phase: "idle", turn: "opener", surfaces: [makeSurface("a1", { type: "bid", level: 1, strain: "H" })] },
+        { phase: "idle", turn: TurnRole.Opener, surfaces: [makeSurface("a1", { type: "bid", level: 1, strain: "H" })] },
       ],
     });
     const b = makeModule("mod-b", {
       states: [
-        { phase: "idle", turn: "opponent", surfaces: [makeSurface("b1", { type: "bid", level: 2, strain: "D" })] },
+        { phase: "idle", turn: TurnRole.Opponent, surfaces: [makeSurface("b1", { type: "bid", level: 2, strain: "D" })] },
       ],
     });
 

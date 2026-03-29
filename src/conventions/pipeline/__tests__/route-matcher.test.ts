@@ -1,11 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { matchRoute, matchObs } from "../observation/route-matcher";
 import type { RouteExpr } from "../../core/rule-module";
+import { TurnRole } from "../../core/rule-module";
 import type { CommittedStep } from "../../core/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import type { BidAction } from "../bid-action";
 import { Seat } from "../../../engine/types";
 import type { SpecialCall } from "../../../engine/types";
+import { HandStrength, ObsSuit } from "../bid-action";
 
 function makeStep(
   publicActions: readonly BidAction[],
@@ -42,25 +44,25 @@ describe("matchObs", () => {
   });
 
   it("matches with suit constraint", () => {
-    const obs: BidAction = { act: "show", feature: "heldSuit", suit: "hearts" };
-    expect(matchObs({ act: "show", suit: "hearts" }, obs)).toBe(true);
-    expect(matchObs({ act: "show", suit: "spades" }, obs)).toBe(false);
+    const obs: BidAction = { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts };
+    expect(matchObs({ act: "show", suit: ObsSuit.Hearts }, obs)).toBe(true);
+    expect(matchObs({ act: "show", suit: ObsSuit.Spades }, obs)).toBe(false);
   });
 
   it("matches with strain constraint", () => {
     const obs: BidAction = { act: "open", strain: "notrump" };
     expect(matchObs({ act: "open", strain: "notrump" }, obs)).toBe(true);
-    expect(matchObs({ act: "open", strain: "hearts" }, obs)).toBe(false);
+    expect(matchObs({ act: "open", strain: ObsSuit.Hearts }, obs)).toBe(false);
   });
 
   it("matches with strength constraint", () => {
-    const obs: BidAction = { act: "raise", strain: "hearts", strength: "invitational" };
-    expect(matchObs({ act: "raise", strength: "invitational" }, obs)).toBe(true);
-    expect(matchObs({ act: "raise", strength: "game" }, obs)).toBe(false);
+    const obs: BidAction = { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Invitational };
+    expect(matchObs({ act: "raise", strength: HandStrength.Invitational }, obs)).toBe(true);
+    expect(matchObs({ act: "raise", strength: HandStrength.Game }, obs)).toBe(false);
   });
 
   it("unspecified fields are wildcards", () => {
-    const obs: BidAction = { act: "show", feature: "heldSuit", suit: "hearts", strength: "minimum" };
+    const obs: BidAction = { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts, strength: HandStrength.Minimum };
     // Pattern only specifies act — other fields are wildcards
     expect(matchObs({ act: "show" }, obs)).toBe(true);
   });
@@ -222,20 +224,20 @@ describe("matchRoute", () => {
 
     it("matchObs with actor matches correctly", () => {
       const obs: BidAction = { act: "open", strain: "notrump" };
-      expect(matchObs({ act: "open", actor: "opener" }, obs, "opener")).toBe(true);
-      expect(matchObs({ act: "open", actor: "responder" }, obs, "opener")).toBe(false);
+      expect(matchObs({ act: "open", actor: TurnRole.Opener }, obs, TurnRole.Opener)).toBe(true);
+      expect(matchObs({ act: "open", actor: TurnRole.Responder }, obs, TurnRole.Opener)).toBe(false);
     });
 
     it("matchObs with actor mismatch rejects", () => {
-      const obs: BidAction = { act: "overcall", feature: "heldSuit", suit: "hearts" };
-      expect(matchObs({ act: "overcall", actor: "opener" }, obs, "opponent")).toBe(false);
+      const obs: BidAction = { act: "overcall", feature: "heldSuit", suit: ObsSuit.Hearts };
+      expect(matchObs({ act: "overcall", actor: TurnRole.Opener }, obs, TurnRole.Opponent)).toBe(false);
     });
 
     it("matchObs without actor (backward compat) matches any actor", () => {
       const obs: BidAction = { act: "open", strain: "notrump" };
       // No actor on pattern — should match regardless of actorRole
-      expect(matchObs({ act: "open" }, obs, "opener")).toBe(true);
-      expect(matchObs({ act: "open" }, obs, "opponent")).toBe(true);
+      expect(matchObs({ act: "open" }, obs, TurnRole.Opener)).toBe(true);
+      expect(matchObs({ act: "open" }, obs, TurnRole.Opponent)).toBe(true);
       expect(matchObs({ act: "open" }, obs)).toBe(true);
     });
 
@@ -243,17 +245,17 @@ describe("matchRoute", () => {
       const log = [
         makeStep([{ act: "open", strain: "notrump" }], "resolved", Seat.South),
         makeStep([], "raw-only", Seat.West),  // opponent pass
-        makeStep([{ act: "overcall", feature: "heldSuit", suit: "hearts" }], "resolved", Seat.West),
+        makeStep([{ act: "overcall", feature: "heldSuit", suit: ObsSuit.Hearts }], "resolved", Seat.West),
       ];
       // "contains overcall by opponent" — should match (West is opponent)
       expect(matchRoute(
-        { kind: "contains", pattern: { act: "overcall", actor: "opponent" } },
+        { kind: "contains", pattern: { act: "overcall", actor: TurnRole.Opponent } },
         log,
         openerSeat,
       )).toBe(true);
       // "contains overcall by opener" — should NOT match
       expect(matchRoute(
-        { kind: "contains", pattern: { act: "overcall", actor: "opener" } },
+        { kind: "contains", pattern: { act: "overcall", actor: TurnRole.Opener } },
         log,
         openerSeat,
       )).toBe(false);
@@ -266,13 +268,13 @@ describe("matchRoute", () => {
       ];
       // Last step by responder — should match (North is South's partner)
       expect(matchRoute(
-        { kind: "last", pattern: { act: "inquire", actor: "responder" } },
+        { kind: "last", pattern: { act: "inquire", actor: TurnRole.Responder } },
         log,
         openerSeat,
       )).toBe(true);
       // Last step by opener — should NOT match
       expect(matchRoute(
-        { kind: "last", pattern: { act: "inquire", actor: "opener" } },
+        { kind: "last", pattern: { act: "inquire", actor: TurnRole.Opener } },
         log,
         openerSeat,
       )).toBe(false);
@@ -291,8 +293,8 @@ describe("matchRoute", () => {
         {
           kind: "subseq",
           steps: [
-            { act: "open", actor: "opener" },
-            { act: "inquire", actor: "responder" },
+            { act: "open", actor: TurnRole.Opener },
+            { act: "inquire", actor: TurnRole.Responder },
           ],
         },
         log,
@@ -303,8 +305,8 @@ describe("matchRoute", () => {
         {
           kind: "subseq",
           steps: [
-            { act: "open", actor: "opener" },
-            { act: "inquire", actor: "opener" },
+            { act: "open", actor: TurnRole.Opener },
+            { act: "inquire", actor: TurnRole.Opener },
           ],
         },
         log,
@@ -318,7 +320,7 @@ describe("matchRoute", () => {
       ];
       // Pattern has actor but no openerSeat provided — should still match on act alone
       expect(matchRoute(
-        { kind: "contains", pattern: { act: "open", actor: "opponent" } },
+        { kind: "contains", pattern: { act: "open", actor: TurnRole.Opponent } },
         log,
       )).toBe(true);
     });

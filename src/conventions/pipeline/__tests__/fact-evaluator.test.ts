@@ -3,11 +3,13 @@ import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
 import { evaluateFacts } from "../facts/fact-evaluator";
 import { createSharedFactCatalog } from "../facts/shared-fact-catalog";
-import { createFactCatalog } from "../../core/fact-catalog";
+import { createFactCatalog, EvaluationWorld } from "../../core/fact-catalog";
 import { SHARED_FACTS } from "../../core/shared-facts";
 import type { PublicConstraint } from "../../core/agreement-module";
 import type { RelationalFactContext } from "../facts/fact-evaluator";
 import { FactLayer } from "../../core/fact-layer";
+import { FactOperator } from "../evaluation/meaning";
+import { ObsSuit } from "../bid-action";
 
 function sharedFactsFor(...notations: string[]) {
   const h = hand(...notations);
@@ -33,7 +35,7 @@ describe("evaluateFacts", () => {
     // (6 primitive + 4 bridge-derived; relational facts require a RelationalFactContext;
     //  1NT-specific value facts moved to module.ntResponse.*)
     expect(result.facts.size).toBe(10);
-    expect(result.world).toBe("acting-hand");
+    expect(result.world).toBe(EvaluationWorld.ActingHand);
   });
 
   it("classifies bridge.majorPattern correctly", () => {
@@ -99,7 +101,7 @@ describe("evaluateFacts", () => {
       definitions: [{
         id: "synth.test",
         layer: FactLayer.ModuleDerived as const,
-        world: "acting-hand" as const,
+        world: EvaluationWorld.ActingHand as const,
         description: "Synthetic test fact",
         valueType: "boolean" as const,
         derivesFrom: ["bridge.hasFourCardMajor"],
@@ -128,7 +130,7 @@ describe("evaluateFacts", () => {
       definitions: [{
         id: "module.test.noEvaluator",
         layer: FactLayer.ModuleDerived,
-        world: "acting-hand",
+        world: EvaluationWorld.ActingHand,
         description: "Has no evaluator",
         valueType: "boolean",
         derivesFrom: [],
@@ -191,7 +193,7 @@ describe("relational facts", () => {
     // 4S, 5H, 2D, 2C — binding asks for hearts
     const result = relationalFactsFor(
       ["SA", "SK", "S5", "S2", "HQ", "HJ", "H9", "H7", "H3", "D6", "D4", "C8", "C3"],
-      { bindings: { suit: "hearts" } },
+      { bindings: { suit: ObsSuit.Hearts } },
     );
     expect(result.facts.get("bridge.supportForBoundSuit")?.value).toBe(5);
   });
@@ -202,7 +204,7 @@ describe("relational facts", () => {
       subject: "partner",
       constraint: {
         factId: "hand.suitLength.hearts",
-        operator: "gte",
+        operator: FactOperator.Gte,
         value: 5,
       },
       origin: "call-meaning",
@@ -212,7 +214,7 @@ describe("relational facts", () => {
     };
     const result = relationalFactsFor(
       ["SA", "SK", "S5", "S2", "HQ", "HJ", "H9", "H3", "D6", "D4", "D3", "C8", "C3"],
-      { bindings: { suit: "hearts" }, publicCommitments: [commitment] },
+      { bindings: { suit: ObsSuit.Hearts }, publicCommitments: [commitment] },
     );
     // Own 4 + partner min 5 = 9 >= 8 → fit
     expect(result.facts.get("bridge.fitWithBoundSuit")?.value).toBe(true);
@@ -222,7 +224,7 @@ describe("relational facts", () => {
     // 4S, 4H, 4D, 1C — singleton club
     const result = relationalFactsFor(
       ["SA", "SK", "S5", "S2", "HQ", "HJ", "H9", "H3", "D8", "D6", "D4", "D3", "C3"],
-      { bindings: { suit: "clubs" } },
+      { bindings: { suit: ObsSuit.Clubs } },
     );
     expect(result.facts.get("bridge.shortageInSuit")?.value).toBe(true);
   });
@@ -235,7 +237,7 @@ describe("relational facts", () => {
     // Total = 10 + 1 = 11
     const result = relationalFactsFor(
       ["SA", "SK", "S5", "S2", "HQ", "HJ", "H9", "H3", "D8", "D6", "D4", "C8", "C3"],
-      { bindings: { suit: "hearts" } },
+      { bindings: { suit: ObsSuit.Hearts } },
     );
     expect(result.facts.get("bridge.totalPointsForRaise")?.value).toBe(11);
   });
@@ -259,7 +261,7 @@ describe("relational facts", () => {
     const ev = evaluateHand(h);
 
     const withoutRelational = evaluateFacts(h, ev);
-    const withRelational = evaluateFacts(h, ev, undefined, { relationalContext: { bindings: { suit: "hearts" } } });
+    const withRelational = evaluateFacts(h, ev, undefined, { relationalContext: { bindings: { suit: ObsSuit.Hearts } } });
 
     // Standard facts should be identical
     expect(withoutRelational.facts.get("hand.hcp")?.value).toBe(

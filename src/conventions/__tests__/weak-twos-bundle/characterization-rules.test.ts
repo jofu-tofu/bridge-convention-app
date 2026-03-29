@@ -13,6 +13,7 @@ import { Seat } from "../../../engine/types";
 import { flattenSurfaces } from "../../pipeline/observation/rule-interpreter";
 
 import { getModule } from "../../definitions/module-registry";
+import { HandStrength, ObsSuit } from "../../pipeline/bid-action";
 
 const allRuleModules: ConventionModule[] = [getModule("weak-twos")!];
 
@@ -59,7 +60,7 @@ function ruleSurfaceIds(log: readonly CommittedStep[], nextSeat: Seat = Seat.Sou
 describe("Weak Two rules: characterization tests", () => {
   describe("2H-P (R1 — responder surfaces)", () => {
     const log: CommittedStep[] = [
-      makeStep(Seat.North, [{ act: "open", strain: "hearts", strength: "weak" }]),
+      makeStep(Seat.North, [{ act: "open", strain: ObsSuit.Hearts, strength: HandStrength.Weak }]),
       passStep(Seat.East),
     ];
 

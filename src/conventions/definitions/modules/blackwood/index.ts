@@ -1,4 +1,5 @@
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
+import { TurnRole } from "../../../core/rule-module";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { NegotiationDelta } from "../../../core/committed-step";
 import type { SystemConfig } from "../../system-config";
@@ -37,31 +38,31 @@ function createBlackwoodStates(sys: SystemConfig): readonly StateEntry<Blackwood
   return [
     {
       phase: "idle",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       kernel: { kind: "fit" },
       negotiationDelta: BLACKWOOD_ASK_DELTA,
       surfaces: [createBlackwood4NTSurface(sys)],
     },
     {
       phase: "asked",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: BLACKWOOD_RESPONSE_DELTA,
       surfaces: ACE_RESPONSE_SURFACES,
     },
     {
       phase: "responded",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       surfaces: createBlackwoodR3Surfaces(sys),
     },
     {
       phase: "king-ask",
-      turn: "opener" as const,
+      turn: TurnRole.Opener,
       negotiationDelta: BLACKWOOD_RESPONSE_DELTA,
       surfaces: KING_RESPONSE_SURFACES,
     },
     {
       phase: "king-responded",
-      turn: "responder" as const,
+      turn: TurnRole.Responder,
       surfaces: createBlackwoodR5Surfaces(sys),
     },
   ];

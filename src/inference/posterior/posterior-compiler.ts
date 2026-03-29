@@ -2,6 +2,7 @@ import type { PublicSnapshot } from "../../conventions/core/module-surface";
 import type { PublicConstraint } from "../../conventions/core/agreement-module";
 import type { PublicHandSpace } from "./posterior-types";
 import type { HandPredicate } from "../../conventions/core/agreement-module";
+import { FactOperator } from "../../conventions/pipeline/evaluation/meaning";
 
 /**
  * Check if a set of clauses contains contradictions.
@@ -62,7 +63,7 @@ export function compilePublicHandSpace(snapshot: PublicSnapshot): PublicHandSpac
   for (const [seatId, constraints] of bySeat) {
     const clauses: {
       factId: string;
-      operator: "gte" | "lte" | "eq" | "range" | "boolean" | "in";
+      operator: FactOperator;
       value: number | boolean | string | { min: number; max: number } | readonly string[];
     }[] = [];
 

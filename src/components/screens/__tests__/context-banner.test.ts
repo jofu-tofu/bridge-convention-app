@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildContextSummary } from "../game-screen/context-banner";
-import { Seat, BidSuit } from "../../../service";
+import { Seat, BidSuit, PracticeMode } from "../../../service";
 import type { BiddingViewport, AuctionEntryView, Call } from "../../../service";
 
 function makeEntry(seat: Seat, callDisplay: string, type: "pass" | "bid" = "bid", alertLabel?: string): AuctionEntryView {
@@ -21,7 +21,7 @@ function makeViewport(overrides: Partial<BiddingViewport> & { auctionEntries: re
     legalCalls: [],
     biddingOptions: [],
     visibleHands: {},
-    practiceMode: "decision-drill",
+    practiceMode: PracticeMode.DecisionDrill,
     ...overrides,
   } as BiddingViewport;
 }
@@ -30,7 +30,7 @@ describe("buildContextSummary", () => {
   it("returns null for full-auction mode", () => {
     const vp = makeViewport({
       auctionEntries: [makeEntry(Seat.North, "1NT")],
-      practiceMode: "full-auction",
+      practiceMode: PracticeMode.FullAuction,
     });
     expect(buildContextSummary(vp)).toBeNull();
   });

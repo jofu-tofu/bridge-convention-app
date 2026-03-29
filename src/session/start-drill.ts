@@ -5,8 +5,9 @@ import {
   type Auction,
   type DealConstraints,
 } from "../engine/types";
-import type { DrillBundle, PlayPreference, PracticeRole } from "./drill-types";
-import type { VulnerabilityDistribution, DrillSettings, PracticeMode } from "./drill-types";
+import type { DrillBundle } from "./drill-types";
+import { PlayPreference, PracticeRole, PracticeMode } from "./drill-types";
+import type { VulnerabilityDistribution, DrillSettings } from "./drill-types";
 import { DEFAULT_DRILL_TUNING } from "./drill-types";
 import { createProtocolDrillConfig } from "./config-factory";
 import { createDrillSession } from "./drill-session";
@@ -79,7 +80,7 @@ export function startDrill(
   baseSystem?: BaseSystemId,
 ): DrillBundle {
   const resolvedSystem = baseSystem ?? BASE_SYSTEM_SAYC;
-  const practiceMode: PracticeMode = options?.practiceMode ?? "decision-drill";
+  const practiceMode: PracticeMode = options?.practiceMode ?? PracticeMode.DecisionDrill;
   const targetModuleId = (options as { targetModuleId?: string } | undefined)?.targetModuleId;
 
   // ── Role enforcement ─────────────────────────────────────────
@@ -91,14 +92,14 @@ export function startDrill(
   const eligibleForRoleSelection = primaryCapId
     ? archetypeSupportsRoleSelection(primaryCapId)
     : false;
-  const requestedRole: PracticeRole = options?.practiceRole ?? "responder";
-  const effectiveRole: PracticeRole = eligibleForRoleSelection ? requestedRole : "responder";
+  const requestedRole: PracticeRole = options?.practiceRole ?? PracticeRole.Responder;
+  const effectiveRole: PracticeRole = eligibleForRoleSelection ? requestedRole : PracticeRole.Responder;
 
   // Resolve "both" to a concrete role
-  let resolvedRole: "opener" | "responder";
-  if (effectiveRole === "both") {
+  let resolvedRole: PracticeRole.Opener | PracticeRole.Responder;
+  if (effectiveRole === PracticeRole.Both) {
     const roleRoll = rng ? rng() : Math.random();
-    resolvedRole = roleRoll < 0.5 ? "opener" : "responder";
+    resolvedRole = roleRoll < 0.5 ? PracticeRole.Opener : PracticeRole.Responder;
   } else {
     resolvedRole = effectiveRole;
   }
@@ -161,7 +162,7 @@ export function startDrill(
 
   // ── Role-based constraint swapping ──────────────────────────
   // When practicing as opener, swap N↔S so South gets the opener's hand.
-  if (resolvedRole === "opener") {
+  if (resolvedRole === PracticeRole.Opener) {
     if (resolvedConstraints.dealer === undefined) {
       // No explicit dealer — set dealer to South and swap seat constraints
       resolvedConstraints = {
@@ -189,7 +190,7 @@ export function startDrill(
   const { deal } = tsGenerateDeal(constraints, dealRng);
   // For full-auction mode or opener mode, skip the default auction prefix
   // (opener opens directly — no prefix needed)
-  let initialAuction = (practiceMode === "full-auction" || resolvedRole === "opener")
+  let initialAuction = (practiceMode === PracticeMode.FullAuction || resolvedRole === PracticeRole.Opener)
     ? undefined
     : convention.defaultAuction
       ? convention.defaultAuction(userSeat, deal)
@@ -213,8 +214,8 @@ export function startDrill(
 
   // Derive default play preference from practice mode
   const defaultPlayPreference: PlayPreference =
-    practiceMode === "decision-drill" ? "skip"
-      : "prompt";
+    practiceMode === PracticeMode.DecisionDrill ? PlayPreference.Skip
+      : PlayPreference.Prompt;
   const playPreference = options?.playPreference ?? defaultPlayPreference;
 
   return {

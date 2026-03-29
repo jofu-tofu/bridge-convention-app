@@ -5,11 +5,13 @@ import {
   type ArbitrationInput,
 } from "../evaluation/meaning-arbitrator";
 import type { MeaningProposal } from "../evaluation/meaning";
+import { Disclosure } from "../evaluation/meaning";
 import { BidSuit } from "../../../engine/types";
 import type { Call } from "../../../engine/types";
 import { makeCall, makeMeaningProposal, makeArbitrationInput } from "./pipeline-test-helpers";
 import { bidName, bidSummary } from "../../core/authored-text";
 import type { TeachingLabel } from "../../core/authored-text";
+import { FactOperator, RecommendationBand } from "../evaluation/meaning";
 
 const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
@@ -38,7 +40,7 @@ describe("arbitrateMeanings", () => {
     const mustInput = makeArbitrationInput({
       meaningId: "test:must",
       ranking: {
-        recommendationBand: "must",
+        recommendationBand: RecommendationBand.Must,
         specificity: 1,
         modulePrecedence: 0,
         declarationOrder: 0,
@@ -48,7 +50,7 @@ describe("arbitrateMeanings", () => {
     const shouldInput = makeArbitrationInput({
       meaningId: "test:should",
       ranking: {
-        recommendationBand: "should",
+        recommendationBand: RecommendationBand.Should,
         specificity: 1,
         modulePrecedence: 0,
         declarationOrder: 1,
@@ -58,7 +60,7 @@ describe("arbitrateMeanings", () => {
     const mayInput = makeArbitrationInput({
       meaningId: "test:may",
       ranking: {
-        recommendationBand: "may",
+        recommendationBand: RecommendationBand.May,
         specificity: 1,
         modulePrecedence: 0,
         declarationOrder: 2,
@@ -77,7 +79,7 @@ describe("arbitrateMeanings", () => {
     const specificInput = makeArbitrationInput({
       meaningId: "test:specific",
       ranking: {
-        recommendationBand: "should",
+        recommendationBand: RecommendationBand.Should,
         specificity: 5,
         modulePrecedence: 0,
         declarationOrder: 0,
@@ -87,7 +89,7 @@ describe("arbitrateMeanings", () => {
     const generalInput = makeArbitrationInput({
       meaningId: "test:general",
       ranking: {
-        recommendationBand: "should",
+        recommendationBand: RecommendationBand.Should,
         specificity: 1,
         modulePrecedence: 0,
         declarationOrder: 1,
@@ -161,7 +163,7 @@ describe("arbitrateMeanings", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
       ranking: {
-        recommendationBand: "may",
+        recommendationBand: RecommendationBand.May,
         specificity: 1,
         modulePrecedence: 0,
         declarationOrder: 0,
@@ -193,10 +195,10 @@ describe("arbitrateMeanings", () => {
         meaningId: "test:fail",
         moduleId: "test",
         clauses: [
-          { factId: "hand.hcp", operator: "gte", value: 8, satisfied: false, description: "8+ HCP" },
-          { factId: "bridge.hasFourCardMajor", operator: "boolean", value: true, satisfied: true, description: "Has 4-card major" },
+          { factId: "hand.hcp", operator: FactOperator.Gte, value: 8, satisfied: false, description: "8+ HCP" },
+          { factId: "bridge.hasFourCardMajor", operator: FactOperator.Boolean, value: true, satisfied: true, description: "Has 4-card major" },
         ],
-        ranking: { recommendationBand: "should", specificity: 1, modulePrecedence: 0, declarationOrder: 0 },
+        ranking: { recommendationBand: RecommendationBand.Should, specificity: 1, modulePrecedence: 0, declarationOrder: 0 },
         evidence: {
           factDependencies: ["hand.hcp", "bridge.hasFourCardMajor"],
           evaluatedConditions: [],
@@ -224,7 +226,7 @@ describe("arbitrateMeanings", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
       ranking: {
-        recommendationBand: "should",
+        recommendationBand: RecommendationBand.Should,
         specificity: 1,
         modulePrecedence: 0,
         declarationOrder: 0,
@@ -241,7 +243,7 @@ describe("arbitrateMeanings", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
       ranking: {
-        recommendationBand: "avoid",
+        recommendationBand: RecommendationBand.Avoid,
         specificity: 1,
         modulePrecedence: 0,
         declarationOrder: 0,
@@ -262,7 +264,7 @@ describe("evidenceBundle production", () => {
       clauses: [
         {
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: 8,
           satisfied: true,
           description: "8+ HCP",
@@ -270,7 +272,7 @@ describe("evidenceBundle production", () => {
         },
         {
           factId: "bridge.hasFourCardMajor",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           satisfied: true,
           description: "Has 4-card major",
@@ -299,7 +301,7 @@ describe("evidenceBundle production", () => {
       meaningId: "test:rejected",
       allSatisfied: false,
       ranking: {
-        recommendationBand: "avoid",
+        recommendationBand: RecommendationBand.Avoid,
         specificity: 1,
         modulePrecedence: 0,
         declarationOrder: 0,
@@ -319,7 +321,7 @@ describe("evidenceBundle production", () => {
     const input1 = makeArbitrationInput({
       meaningId: "test:winner",
       ranking: {
-        recommendationBand: "must",
+        recommendationBand: RecommendationBand.Must,
         specificity: 5,
         modulePrecedence: 0,
         declarationOrder: 0,
@@ -329,7 +331,7 @@ describe("evidenceBundle production", () => {
     const input2 = makeArbitrationInput({
       meaningId: "test:alternative",
       ranking: {
-        recommendationBand: "should",
+        recommendationBand: RecommendationBand.Should,
         specificity: 1,
         modulePrecedence: 0,
         declarationOrder: 1,
@@ -351,7 +353,7 @@ describe("evidenceBundle production", () => {
     const failingInput = makeArbitrationInput({
       allSatisfied: false,
       ranking: {
-        recommendationBand: "avoid",
+        recommendationBand: RecommendationBand.Avoid,
         specificity: 1,
         modulePrecedence: 0,
         declarationOrder: 0,
@@ -401,8 +403,8 @@ describe("zipProposalsWithSurfaces", () => {
   it("pairs proposals with their source surfaces by index", () => {
     const proposals: MeaningProposal[] = [makeMeaningProposal({ meaningId: "a" }), makeMeaningProposal({ meaningId: "b" })];
     const surfaces = [
-      { meaningId: "a", semanticClassId: "test:a", moduleId: "test", encoding: { defaultCall: makeCall(1, BidSuit.Clubs) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 0 }, sourceIntent: { type: "t", params: {} }, disclosure: "alert" as const, teachingLabel: tl("Test A") },
-      { meaningId: "b", semanticClassId: "test:b", moduleId: "test", encoding: { defaultCall: makeCall(2, BidSuit.Hearts) }, clauses: [], ranking: { recommendationBand: "should" as const, specificity: 1, modulePrecedence: 0, declarationOrder: 1 }, sourceIntent: { type: "t", params: {} }, disclosure: "alert" as const, teachingLabel: tl("Test B") },
+      { meaningId: "a", semanticClassId: "test:a", moduleId: "test", encoding: { defaultCall: makeCall(1, BidSuit.Clubs) }, clauses: [], ranking: { recommendationBand: RecommendationBand.Should as const, specificity: 1, modulePrecedence: 0, declarationOrder: 0 }, sourceIntent: { type: "t", params: {} }, disclosure: Disclosure.Alert, teachingLabel: tl("Test A") },
+      { meaningId: "b", semanticClassId: "test:b", moduleId: "test", encoding: { defaultCall: makeCall(2, BidSuit.Hearts) }, clauses: [], ranking: { recommendationBand: RecommendationBand.Should as const, specificity: 1, modulePrecedence: 0, declarationOrder: 1 }, sourceIntent: { type: "t", params: {} }, disclosure: Disclosure.Alert, teachingLabel: tl("Test B") },
     ];
 
     const inputs = zipProposalsWithSurfaces(proposals, surfaces);

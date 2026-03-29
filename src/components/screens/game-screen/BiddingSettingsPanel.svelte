@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { OpponentMode, PlayProfileId } from "../../../service";
+  import { OpponentMode } from "../../../service";
+  import type { PlayProfileId } from "../../../service";
   import { PLAY_PROFILES, AVAILABLE_BASE_SYSTEMS } from "../../../service";
   import { getAppStore } from "../../../stores/context";
   import ToggleGroup from "../../shared/ToggleGroup.svelte";
@@ -43,8 +44,8 @@
       <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">Opponents</h3>
       <ToggleGroup
         items={[
-          { id: "natural", label: "Natural", testId: "settings-opp-natural" },
-          { id: "none", label: "Silent", testId: "settings-opp-none" },
+          { id: OpponentMode.Natural, label: "Natural", testId: "settings-opp-natural" },
+          { id: OpponentMode.None, label: "Silent", testId: "settings-opp-none" },
         ]}
         active={appStore.opponentMode}
         onSelect={(id) => appStore.setOpponentMode(id as OpponentMode)}
@@ -53,7 +54,7 @@
         disabled={isReadonly}
       />
       <p class="text-[--text-annotation] text-text-muted mt-1 px-1">
-        {appStore.opponentMode === "natural" ? "Opponents bid naturally" : "Opponents always pass"}
+        {appStore.opponentMode === OpponentMode.Natural ? "Opponents bid naturally" : "Opponents always pass"}
       </p>
     </div>
 

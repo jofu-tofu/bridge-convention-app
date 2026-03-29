@@ -34,6 +34,7 @@ import {
 } from "./system-fact-vocabulary";
 import { calculateHcp, getSuitLength, isBalanced } from "../../engine/hand-evaluator";
 import { SUIT_ORDER } from "../../engine/constants";
+import { FactOperator } from "../pipeline/evaluation/meaning";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -277,13 +278,13 @@ function compileTotalPointsAsHcp(
   // For gte: hcp >= totalPoints - margin (loose lower bound)
   // For lte: hcp <= totalPoints (shortage ≥ 0, so HCP ≤ totalPoints)
   // For range: apply both
-  if (operator === "gte") {
+  if (operator === FactOperator.Gte) {
     const v = value as number;
     builder.minHcp = Math.max(builder.minHcp ?? 0, v - SHORTAGE_MARGIN);
-  } else if (operator === "lte") {
+  } else if (operator === FactOperator.Lte) {
     const v = value as number;
     builder.maxHcp = Math.min(builder.maxHcp ?? 37, v);
-  } else if (operator === "range") {
+  } else if (operator === FactOperator.Range) {
     const range = value as { min: number; max: number };
     builder.minHcp = Math.max(builder.minHcp ?? 0, range.min - SHORTAGE_MARGIN);
     builder.maxHcp = Math.min(builder.maxHcp ?? 37, range.max);

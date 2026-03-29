@@ -10,6 +10,7 @@ import type {
 } from "./types";
 import { callKey } from "../../engine/call-helpers";
 import { deriveTurnRole } from "../../conventions";
+import { ConfidenceLevel } from "../../conventions/core/committed-step";
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ const VALID_COMPETITION_STRINGS = new Set([
   "doubled",
   "redoubled",
 ]);
-const VALID_FIT_CONFIDENCE = new Set(["tentative", "final"]);
+const VALID_FIT_CONFIDENCE = new Set<string>([ConfidenceLevel.Tentative, ConfidenceLevel.Final]);
 
 /**
  * All kernel fields must hold valid values.
@@ -122,7 +123,7 @@ export function checkKernelConsistency(
     );
   }
 
-  // fitAgreed: null or { strain: string, confidence: "tentative" | "final" }
+  // fitAgreed: null or { strain: string, confidence: ConfidenceLevel }
   if (kernel.fitAgreed !== null) {
     if (
       typeof kernel.fitAgreed.strain !== "string" ||

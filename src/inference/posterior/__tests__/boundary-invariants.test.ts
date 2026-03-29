@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { compileFactorGraph } from "../factor-compiler";
 import { makeSnapshot } from "./posterior-test-fixtures";
+import { FactOperator } from "../../../conventions/pipeline/evaluation/meaning";
 
 describe("posterior boundary invariants", () => {
   it("schema closure: no file in posterior/ imports from conventions/definitions/", async () => {
@@ -29,19 +30,19 @@ describe("posterior boundary invariants", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
       },
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "lte", value: 17 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
         origin: "call-meaning",
         strength: "hard",
       },
       {
         subject: "N",
-        constraint: { factId: "hand.isBalanced", operator: "boolean", value: true },
+        constraint: { factId: "hand.isBalanced", operator: FactOperator.Boolean, value: true },
         origin: "call-meaning",
         strength: "hard",
       },
@@ -66,13 +67,13 @@ describe("posterior boundary invariants", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
       },
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "lte", value: 17 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
         origin: "call-meaning",
         strength: "hard",
       },
@@ -94,13 +95,13 @@ describe("posterior boundary invariants", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
       },
       {
         subject: "N",
-        constraint: { factId: "hand.suitLength.H", operator: "gte", value: 4 },
+        constraint: { factId: "hand.suitLength.H", operator: FactOperator.Gte, value: 4 },
         origin: "call-meaning",
         strength: "hard",
       },
@@ -116,7 +117,7 @@ describe("posterior boundary invariants", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
       },

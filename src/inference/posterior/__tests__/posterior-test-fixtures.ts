@@ -11,6 +11,7 @@ import type { PublicConstraint } from "../../../conventions/core/agreement-modul
 import { ForcingState } from "../../../conventions";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand, Card } from "../../../engine/types";
+import { FactOperator } from "../../../conventions/pipeline/evaluation/meaning";
 
 /** Create a minimal PublicSnapshot from commitments. */
 export function makeSnapshot(
@@ -57,19 +58,19 @@ export const southHand: Hand = makeHand([
 export const oneNtCommitments: readonly PublicConstraint[] = [
   {
     subject: "N",
-    constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+    constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
     origin: "call-meaning",
     strength: "hard",
   },
   {
     subject: "N",
-    constraint: { factId: "hand.hcp", operator: "lte", value: 17 },
+    constraint: { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
     origin: "call-meaning",
     strength: "hard",
   },
   {
     subject: "N",
-    constraint: { factId: "hand.isBalanced", operator: "boolean", value: true },
+    constraint: { factId: "hand.isBalanced", operator: FactOperator.Boolean, value: true },
     origin: "call-meaning",
     strength: "hard",
   },

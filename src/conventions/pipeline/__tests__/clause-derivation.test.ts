@@ -4,45 +4,46 @@ import {
   deriveClauseDescription,
   fillClauseDefaults,
 } from "../evaluation/clause-derivation";
+import { FactOperator } from "../evaluation/meaning";
 
 describe("deriveClauseId", () => {
   it("produces deterministic ID for number + gte", () => {
-    expect(deriveClauseId("hand.hcp", "gte", 12)).toBe("hand.hcp:gte:12");
+    expect(deriveClauseId("hand.hcp", FactOperator.Gte, 12)).toBe("hand.hcp:gte:12");
   });
 
   it("produces deterministic ID for number + lte", () => {
-    expect(deriveClauseId("hand.hcp", "lte", 6)).toBe("hand.hcp:lte:6");
+    expect(deriveClauseId("hand.hcp", FactOperator.Lte, 6)).toBe("hand.hcp:lte:6");
   });
 
   it("produces deterministic ID for number + eq", () => {
-    expect(deriveClauseId("hand.suitLength.hearts", "eq", 5)).toBe(
+    expect(deriveClauseId("hand.suitLength.hearts", FactOperator.Eq, 5)).toBe(
       "hand.suitLength.hearts:eq:5",
     );
   });
 
   it("produces deterministic ID for boolean", () => {
-    expect(deriveClauseId("bridge.hasFourCardMajor", "boolean", true)).toBe(
+    expect(deriveClauseId("bridge.hasFourCardMajor", FactOperator.Boolean, true)).toBe(
       "bridge.hasFourCardMajor:boolean:true",
     );
-    expect(deriveClauseId("bridge.hasFiveCardMajor", "boolean", false)).toBe(
+    expect(deriveClauseId("bridge.hasFiveCardMajor", FactOperator.Boolean, false)).toBe(
       "bridge.hasFiveCardMajor:boolean:false",
     );
   });
 
   it("produces deterministic ID for range", () => {
-    expect(deriveClauseId("hand.hcp", "range", { min: 10, max: 12 })).toBe(
+    expect(deriveClauseId("hand.hcp", FactOperator.Range, { min: 10, max: 12 })).toBe(
       "hand.hcp:range:10-12",
     );
   });
 
   it("produces deterministic ID for in operator", () => {
-    expect(deriveClauseId("hand.suit", "in", ["hearts", "spades"])).toBe(
+    expect(deriveClauseId("hand.suit", FactOperator.In, ["hearts", "spades"])).toBe(
       "hand.suit:in:hearts,spades",
     );
   });
 
   it("preserves $suit binding references", () => {
-    expect(deriveClauseId("hand.suitLength.$suit", "gte", 4)).toBe(
+    expect(deriveClauseId("hand.suitLength.$suit", FactOperator.Gte, 4)).toBe(
       "hand.suitLength.$suit:gte:4",
     );
   });
@@ -50,81 +51,81 @@ describe("deriveClauseId", () => {
 
 describe("deriveClauseDescription", () => {
   it("produces natural language for gte", () => {
-    expect(deriveClauseDescription("hand.hcp", "gte", 12)).toBe("12+ HCP");
+    expect(deriveClauseDescription("hand.hcp", FactOperator.Gte, 12)).toBe("12+ HCP");
   });
 
   it("produces natural language for lte", () => {
-    expect(deriveClauseDescription("hand.hcp", "lte", 6)).toBe("At most 6 HCP");
+    expect(deriveClauseDescription("hand.hcp", FactOperator.Lte, 6)).toBe("At most 6 HCP");
   });
 
   it("produces natural language for eq", () => {
-    expect(deriveClauseDescription("hand.suitLength.hearts", "eq", 5)).toBe(
+    expect(deriveClauseDescription("hand.suitLength.hearts", FactOperator.Eq, 5)).toBe(
       "Exactly 5 hearts",
     );
   });
 
   it("produces natural language for range", () => {
-    expect(deriveClauseDescription("hand.hcp", "range", { min: 10, max: 12 })).toBe(
+    expect(deriveClauseDescription("hand.hcp", FactOperator.Range, { min: 10, max: 12 })).toBe(
       "10–12 HCP",
     );
   });
 
   it("produces natural language for boolean true (noun-like)", () => {
-    expect(deriveClauseDescription("bridge.hasFourCardMajor", "boolean", true)).toBe(
+    expect(deriveClauseDescription("bridge.hasFourCardMajor", FactOperator.Boolean, true)).toBe(
       "Has a 4-card major",
     );
   });
 
   it("produces natural language for boolean false", () => {
-    expect(deriveClauseDescription("bridge.hasFiveCardMajor", "boolean", false)).toBe(
+    expect(deriveClauseDescription("bridge.hasFiveCardMajor", FactOperator.Boolean, false)).toBe(
       "No 5-card major",
     );
   });
 
   it("strips module prefix", () => {
-    expect(deriveClauseDescription("module.stayman.eligible", "boolean", true)).toBe(
+    expect(deriveClauseDescription("module.stayman.eligible", FactOperator.Boolean, true)).toBe(
       "Eligible",
     );
   });
 
   it("strips hand prefix for isBalanced", () => {
-    expect(deriveClauseDescription("hand.isBalanced", "boolean", true)).toBe(
+    expect(deriveClauseDescription("hand.isBalanced", FactOperator.Boolean, true)).toBe(
       "Balanced",
     );
   });
 
   it("preserves $suit binding references", () => {
-    expect(deriveClauseDescription("hand.suitLength.$suit", "gte", 4)).toBe(
+    expect(deriveClauseDescription("hand.suitLength.$suit", FactOperator.Gte, 4)).toBe(
       "4+ $suit",
     );
   });
 
   it("handles multi-segment module facts", () => {
     expect(
-      deriveClauseDescription("module.weakTwo.topHonorCount.$suit", "gte", 2),
+      deriveClauseDescription("module.weakTwo.topHonorCount.$suit", FactOperator.Gte, 2),
     ).toBe("2+ top honor count $suit");
   });
 
   it("extracts suit name from suitLength path", () => {
-    expect(deriveClauseDescription("hand.suitLength.spades", "gte", 5)).toBe("5+ spades");
+    expect(deriveClauseDescription("hand.suitLength.spades", FactOperator.Gte, 5)).toBe("5+ spades");
   });
 
   it("handles bridge.hasShortage", () => {
-    expect(deriveClauseDescription("bridge.hasShortage", "boolean", true)).toBe("Has a short suit");
+    expect(deriveClauseDescription("bridge.hasShortage", FactOperator.Boolean, true)).toBe("Has a short suit");
   });
 
   it("handles bridge.fitWithBoundSuit", () => {
-    expect(deriveClauseDescription("bridge.fitWithBoundSuit", "boolean", true)).toBe(
+    expect(deriveClauseDescription("bridge.fitWithBoundSuit", FactOperator.Boolean, true)).toBe(
       "Has a fit with partner's suit",
     );
   });
 
   it("handles bridge.totalPointsForRaise", () => {
-    expect(deriveClauseDescription("bridge.totalPointsForRaise", "gte", 10)).toBe("10+ total points");
+    expect(deriveClauseDescription("bridge.totalPointsForRaise", FactOperator.Gte, 10)).toBe("10+ total points");
   });
 
   it("handles in operator", () => {
-    expect(deriveClauseDescription("hand.suit", "in", ["hearts", "spades"])).toBe(
+    expect(deriveClauseDescription("hand.suit", FactOperator.In, ["hearts", "spades"])).toBe(
       "suit in [hearts, spades]",
     );
   });
@@ -134,7 +135,7 @@ describe("fillClauseDefaults", () => {
   it("returns clause unchanged when both clauseId and description are present", () => {
     const clause = {
       factId: "hand.hcp",
-      operator: "gte" as const,
+      operator: FactOperator.Gte as const,
       value: 12,
       clauseId: "custom-id",
       description: "Custom desc",
@@ -146,7 +147,7 @@ describe("fillClauseDefaults", () => {
   it("fills missing clauseId", () => {
     const clause = {
       factId: "hand.hcp",
-      operator: "gte" as const,
+      operator: FactOperator.Gte as const,
       value: 12,
       description: "Custom desc",
     } as Parameters<typeof fillClauseDefaults>[0] & { description: string };
@@ -158,7 +159,7 @@ describe("fillClauseDefaults", () => {
   it("fills missing description", () => {
     const clause = {
       factId: "hand.hcp",
-      operator: "gte" as const,
+      operator: FactOperator.Gte as const,
       value: 12,
       clauseId: "custom-id",
     };
@@ -170,7 +171,7 @@ describe("fillClauseDefaults", () => {
   it("fills both missing clauseId and description", () => {
     const clause = {
       factId: "bridge.hasFourCardMajor",
-      operator: "boolean" as const,
+      operator: FactOperator.Boolean as const,
       value: true,
     };
     const result = fillClauseDefaults(clause);

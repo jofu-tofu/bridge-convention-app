@@ -1,6 +1,12 @@
 import type { HandPredicate, DealConstraint, PublicGuard } from "./agreement-module";
 
-export type SeatRole = "self" | "partner" | "lho" | "rho" | "openingSide";
+export enum SeatRole {
+  Self = "self",
+  Partner = "partner",
+  Lho = "lho",
+  Rho = "rho",
+  OpeningSide = "openingSide",
+}
 
 interface DealSeatConstraint {
   readonly kind: "seat";

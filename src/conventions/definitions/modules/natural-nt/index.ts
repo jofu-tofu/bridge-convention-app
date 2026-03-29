@@ -1,6 +1,7 @@
 import type { SystemConfig } from "../../system-config";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
+import { TurnRole } from "../../../core/rule-module";
 import { moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple, teachingItem } from "../../../core/authored-text";
 
 import { createOpener1NtSurface, createNtR1Surfaces, createSuitOpeningSurfaces } from "./meaning-surfaces";
@@ -27,8 +28,8 @@ const naturalBidsLocal: LocalFsm<NaturalBidsPhase> = {
 
 function createNaturalBidsStates(sys: SystemConfig): readonly StateEntry<NaturalBidsPhase>[] {
   return [
-    { phase: "idle", turn: "opener" as const, surfaces: [...createOpener1NtSurface(sys), ...createSuitOpeningSurfaces(sys)] },
-    { phase: "opened-nt", turn: "responder" as const, surfaces: createNtR1Surfaces(sys) },
+    { phase: "idle", turn: TurnRole.Opener, surfaces: [...createOpener1NtSurface(sys), ...createSuitOpeningSurfaces(sys)] },
+    { phase: "opened-nt", turn: TurnRole.Responder, surfaces: createNtR1Surfaces(sys) },
   ];
 }
 

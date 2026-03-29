@@ -22,7 +22,11 @@ import type { BidMeaning } from "../pipeline/evaluation/meaning";
 // ── TurnRole ─────────────────────────────────────────────────────────
 
 /** Role of a bidder relative to the opening bid. */
-export type TurnRole = "opener" | "responder" | "opponent";
+export enum TurnRole {
+  Opener = "opener",
+  Responder = "responder",
+  Opponent = "opponent",
+}
 
 // ── ObsPattern ───────────────────────────────────────────────────────
 

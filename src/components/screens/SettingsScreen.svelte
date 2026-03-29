@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { OpponentMode, PlayProfileId, VulnerabilityDistribution, BaseModuleInfo } from "../../service";
+  import { OpponentMode } from "../../service";
+  import type { PlayProfileId, VulnerabilityDistribution, BaseModuleInfo } from "../../service";
   import { AVAILABLE_BASE_SYSTEMS, DEFAULT_DRILL_TUNING, PLAY_PROFILES, buildBaseModuleInfos } from "../../service";
   import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../shared/vulnerability-labels";
   import type { VulnKey } from "../shared/vulnerability-labels";
@@ -176,11 +177,11 @@
         onchange={(e) => appStore.setOpponentMode(e.currentTarget.value as OpponentMode)}
         data-testid="opponent-mode-select"
       >
-        <option value="natural">Natural</option>
-        <option value="none">None</option>
+        <option value={OpponentMode.Natural}>Natural</option>
+        <option value={OpponentMode.None}>None</option>
       </select>
       <p class="text-xs text-text-muted mt-2">
-        {appStore.opponentMode === "natural"
+        {appStore.opponentMode === OpponentMode.Natural
           ? "Opponents bid naturally with 6+ HCP and a 5+ card suit."
           : "Opponents always pass."}
       </p>

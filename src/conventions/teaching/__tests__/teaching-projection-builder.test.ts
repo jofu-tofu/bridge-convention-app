@@ -23,6 +23,7 @@ import {
   makeProvenance,
   makeCarrier,
 } from "../../../test-support/convention-factories";
+import { FactOperator } from "../../pipeline/evaluation/meaning";
 
 // -- Test helper: convert legacy ArbitrationResult + DecisionProvenance → PipelineResult --
 // The sub-builders internally use ArbitrationResult/DecisionProvenance, but
@@ -290,7 +291,7 @@ describe("projectTeaching", () => {
       moduleId: "natural-bids",
       clauses: [
         makeClause({ factId: "hand.hcp", value: 8, satisfied: false, description: "HCP >= 8" }),
-        makeClause({ factId: "hand.hcp", value: 9, operator: "lte", satisfied: true, description: "HCP <= 9" }),
+        makeClause({ factId: "hand.hcp", value: 9, operator: FactOperator.Lte, satisfied: true, description: "HCP <= 9" }),
       ],
     });
     const nearMissEncoded = makeEncoded({

@@ -1,7 +1,9 @@
 import type { BidMeaning } from "../../../pipeline/evaluation/meaning";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
+import { TurnRole } from "../../../core/rule-module";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { NegotiationDelta } from "../../../core/committed-step";
+import { ConfidenceLevel } from "../../../core/committed-step";
 import type { SystemConfig } from "../../system-config";
 import { moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple, teachingItem } from "../../../core/authored-text";
 
@@ -20,6 +22,7 @@ import {
   createOpenerAcceptInviteRaiseHeartsSurfaces,
   createOpenerAcceptInviteRaiseSpadesSurfaces,
 } from "./meaning-surfaces";
+import { HandStrength, ObsSuit } from "../../../pipeline/bid-action";
 
 export { createTransferFacts } from "./facts";
 
@@ -30,27 +33,27 @@ type TransferPhase = "idle" | "inactive" | "transferred-hearts" | "transferred-s
   | "invited-hearts" | "invited-spades" | "invite-raised-hearts" | "invite-raised-spades";
 
 const TRANSFER_BID_DELTA: NegotiationDelta = { forcing: "one-round", captain: "responder" };
-const ACCEPT_HEARTS_DELTA: NegotiationDelta = { forcing: "none", fitAgreed: { strain: "hearts", confidence: "tentative" } };
-const ACCEPT_SPADES_DELTA: NegotiationDelta = { forcing: "none", fitAgreed: { strain: "spades", confidence: "tentative" } };
+const ACCEPT_HEARTS_DELTA: NegotiationDelta = { forcing: "none", fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Tentative } };
+const ACCEPT_SPADES_DELTA: NegotiationDelta = { forcing: "none", fitAgreed: { strain: ObsSuit.Spades, confidence: ConfidenceLevel.Tentative } };
 const CAPTAIN_TO_OPENER_DELTA: NegotiationDelta = { captain: "opener" };
 
 const jacobyTransfersLocal: LocalFsm<TransferPhase> = {
   initial: "idle",
   transitions: [
-    { from: "idle", to: "transferred-hearts", on: { act: "transfer", suit: "hearts" } },
-    { from: "idle", to: "transferred-spades", on: { act: "transfer", suit: "spades" } },
+    { from: "idle", to: "transferred-hearts", on: { act: "transfer", suit: ObsSuit.Hearts } },
+    { from: "idle", to: "transferred-spades", on: { act: "transfer", suit: ObsSuit.Spades } },
     { from: "idle", to: "inactive", on: { act: "inquire" } },
     { from: "idle", to: "inactive", on: { act: "raise" } },
     { from: "idle", to: "inactive", on: { act: "place" } },
     { from: "idle", to: "inactive", on: { act: "signoff" } },
-    { from: "transferred-hearts", to: "accepted-hearts", on: { act: "accept", feature: "heldSuit", suit: "hearts" } },
-    { from: "transferred-spades", to: "accepted-spades", on: { act: "accept", feature: "heldSuit", suit: "spades" } },
+    { from: "transferred-hearts", to: "accepted-hearts", on: { act: "accept", feature: "heldSuit", suit: ObsSuit.Hearts } },
+    { from: "transferred-spades", to: "accepted-spades", on: { act: "accept", feature: "heldSuit", suit: ObsSuit.Spades } },
     { from: "accepted-hearts", to: "placing-hearts", on: { act: "place", strain: "notrump" } },
     { from: "accepted-spades", to: "placing-spades", on: { act: "place", strain: "notrump" } },
-    { from: "accepted-hearts", to: "invite-raised-hearts", on: { act: "raise", strength: "invitational", feature: "heldSuit" } },
-    { from: "accepted-spades", to: "invite-raised-spades", on: { act: "raise", strength: "invitational", feature: "heldSuit" } },
-    { from: "accepted-hearts", to: "invited-hearts", on: { act: "raise", strength: "invitational" } },
-    { from: "accepted-spades", to: "invited-spades", on: { act: "raise", strength: "invitational" } },
+    { from: "accepted-hearts", to: "invite-raised-hearts", on: { act: "raise", strength: HandStrength.Invitational, feature: "heldSuit" } },
+    { from: "accepted-spades", to: "invite-raised-spades", on: { act: "raise", strength: HandStrength.Invitational, feature: "heldSuit" } },
+    { from: "accepted-hearts", to: "invited-hearts", on: { act: "raise", strength: HandStrength.Invitational } },
+    { from: "accepted-spades", to: "invited-spades", on: { act: "raise", strength: HandStrength.Invitational } },
   ],
 };
 
@@ -77,19 +80,19 @@ function createJacobyTransfersStates(sys: SystemConfig): readonly StateEntry<Tra
   const openerAcceptInviteRaiseSpades = createOpenerAcceptInviteRaiseSpadesSurfaces(sys);
 
   return [
-    { phase: "idle", turn: "responder" as const, negotiationDelta: TRANSFER_BID_DELTA, surfaces: TRANSFER_R1_SURFACES },
-    { phase: "transferred-hearts", turn: "opener" as const, negotiationDelta: ACCEPT_HEARTS_DELTA, surfaces: OPENER_TRANSFER_HEARTS_SURFACES },
-    { phase: "transferred-spades", turn: "opener" as const, negotiationDelta: ACCEPT_SPADES_DELTA, surfaces: OPENER_TRANSFER_SPADES_SURFACES },
-    ...(r3H.captainTransfer.length > 0 ? [{ phase: "accepted-hearts" as const, turn: "responder" as const, negotiationDelta: CAPTAIN_TO_OPENER_DELTA, surfaces: r3H.captainTransfer }] : []),
-    ...(r3H.terminal.length > 0 ? [{ phase: "accepted-hearts" as const, turn: "responder" as const, surfaces: r3H.terminal }] : []),
-    ...(r3S.captainTransfer.length > 0 ? [{ phase: "accepted-spades" as const, turn: "responder" as const, negotiationDelta: CAPTAIN_TO_OPENER_DELTA, surfaces: r3S.captainTransfer }] : []),
-    ...(r3S.terminal.length > 0 ? [{ phase: "accepted-spades" as const, turn: "responder" as const, surfaces: r3S.terminal }] : []),
-    { phase: "placing-hearts", turn: "opener" as const, surfaces: OPENER_PLACE_HEARTS_SURFACES },
-    { phase: "placing-spades", turn: "opener" as const, surfaces: OPENER_PLACE_SPADES_SURFACES },
-    { phase: "invited-hearts", turn: "opener" as const, surfaces: openerAcceptInviteHearts },
-    { phase: "invited-spades", turn: "opener" as const, surfaces: openerAcceptInviteSpades },
-    { phase: "invite-raised-hearts", turn: "opener" as const, surfaces: openerAcceptInviteRaiseHearts },
-    { phase: "invite-raised-spades", turn: "opener" as const, surfaces: openerAcceptInviteRaiseSpades },
+    { phase: "idle", turn: TurnRole.Responder, negotiationDelta: TRANSFER_BID_DELTA, surfaces: TRANSFER_R1_SURFACES },
+    { phase: "transferred-hearts", turn: TurnRole.Opener, negotiationDelta: ACCEPT_HEARTS_DELTA, surfaces: OPENER_TRANSFER_HEARTS_SURFACES },
+    { phase: "transferred-spades", turn: TurnRole.Opener, negotiationDelta: ACCEPT_SPADES_DELTA, surfaces: OPENER_TRANSFER_SPADES_SURFACES },
+    ...(r3H.captainTransfer.length > 0 ? [{ phase: "accepted-hearts" as const, turn: TurnRole.Responder, negotiationDelta: CAPTAIN_TO_OPENER_DELTA, surfaces: r3H.captainTransfer }] : []),
+    ...(r3H.terminal.length > 0 ? [{ phase: "accepted-hearts" as const, turn: TurnRole.Responder, surfaces: r3H.terminal }] : []),
+    ...(r3S.captainTransfer.length > 0 ? [{ phase: "accepted-spades" as const, turn: TurnRole.Responder, negotiationDelta: CAPTAIN_TO_OPENER_DELTA, surfaces: r3S.captainTransfer }] : []),
+    ...(r3S.terminal.length > 0 ? [{ phase: "accepted-spades" as const, turn: TurnRole.Responder, surfaces: r3S.terminal }] : []),
+    { phase: "placing-hearts", turn: TurnRole.Opener, surfaces: OPENER_PLACE_HEARTS_SURFACES },
+    { phase: "placing-spades", turn: TurnRole.Opener, surfaces: OPENER_PLACE_SPADES_SURFACES },
+    { phase: "invited-hearts", turn: TurnRole.Opener, surfaces: openerAcceptInviteHearts },
+    { phase: "invited-spades", turn: TurnRole.Opener, surfaces: openerAcceptInviteSpades },
+    { phase: "invite-raised-hearts", turn: TurnRole.Opener, surfaces: openerAcceptInviteRaiseHearts },
+    { phase: "invite-raised-spades", turn: TurnRole.Opener, surfaces: openerAcceptInviteRaiseSpades },
   ];
 }
 

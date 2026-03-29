@@ -18,6 +18,7 @@ import type { BidFeedbackDTO } from "./bid-feedback-builder";
 import type { EnginePort } from "../engine/port";
 import { getCurrentTurn, type SessionState } from "./session-state";
 import type { AiBidEntry } from "../service/response-types";
+import { PlayPreference } from "./drill-types";
 import type { GamePhase } from "./phase-machine";
 import { isValidTransition } from "./phase-machine";
 import { buildViewportFeedback, buildTeachingDetail } from "./build-viewport";
@@ -101,7 +102,7 @@ export async function processBid(
       feedback,
       viewportFeedback,
       teaching,
-      grade: `${feedback.grade}` as ViewportBidGrade,
+      grade: `${feedback.grade}` as unknown as ViewportBidGrade,
       aiBids: [],
       auctionComplete: false,
       phaseTransition: null,
@@ -240,7 +241,7 @@ async function applyBidAndRunAi(
   if (preFeedback) {
     viewportFeedback = buildViewportFeedback(preFeedback);
     teaching = buildTeachingDetail(preFeedback);
-    grade = `${preFeedback.grade}` as ViewportBidGrade;
+    grade = `${preFeedback.grade}` as unknown as ViewportBidGrade;
   }
 
   return {
@@ -272,9 +273,9 @@ async function handleAuctionComplete(
   if (contract) {
     state.effectiveUserSeat = state.userSeat;
     const pref = state.playPreference;
-    if (pref === "skip") {
+    if (pref === PlayPreference.Skip) {
       if (isValidTransition(state.phase, "EXPLANATION")) state.phase = "EXPLANATION";
-    } else if (pref === "always") {
+    } else if (pref === PlayPreference.Always) {
       state.initializePlay(contract);
       if (isValidTransition(state.phase, "PLAYING")) state.phase = "PLAYING";
     } else {
@@ -291,7 +292,7 @@ async function handleAuctionComplete(
     feedback: null,
     viewportFeedback: preFeedback ? buildViewportFeedback(preFeedback) : null,
     teaching: preFeedback ? buildTeachingDetail(preFeedback) : null,
-    grade: preFeedback ? `${preFeedback.grade}` as ViewportBidGrade : null,
+    grade: preFeedback ? `${preFeedback.grade}` as unknown as ViewportBidGrade : null,
     aiBids: [],
     auctionComplete: true,
     phaseTransition: { from: "BIDDING", to: state.phase },
@@ -350,9 +351,9 @@ async function runAiBidLoop(
       if (contract) {
         state.effectiveUserSeat = state.userSeat;
         const pref = state.playPreference;
-        if (pref === "skip") {
+        if (pref === PlayPreference.Skip) {
           if (isValidTransition(state.phase, "EXPLANATION")) state.phase = "EXPLANATION";
-        } else if (pref === "always") {
+        } else if (pref === PlayPreference.Always) {
           state.initializePlay(contract);
           if (isValidTransition(state.phase, "PLAYING")) state.phase = "PLAYING";
         } else {

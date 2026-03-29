@@ -1,3 +1,4 @@
+import { ObsSuit } from "./bid-action";
 /**
  * Evidence types for decision program representations.
  *
@@ -9,7 +10,12 @@
  */
 
 /** Role a condition plays in the evaluation pipeline. */
-export type ConditionRole = "semantic" | "inferential" | "pedagogical" | "routing";
+export enum ConditionRole {
+  Semantic = "semantic",
+  Inferential = "inferential",
+  Pedagogical = "pedagogical",
+  Routing = "routing",
+}
 
 /** Base condition evaluation result — shared across evidence, teaching, and pipeline types. */
 export interface ConditionResult {
@@ -25,7 +31,7 @@ export interface ConditionResult {
 /** Evidence for a single condition evaluation. */
 export interface ConditionEvidence extends ConditionResult {
   readonly conditionId: string;
-  /** Parameters for parameterized facts (e.g. `{ suit: "hearts" }` for `suitLength(hearts)`). */
+  /** Parameters for parameterized facts (e.g. `{ suit: ObsSuit.Hearts }` for `suitLength(hearts)`). */
   readonly params?: Readonly<Record<string, unknown>>;
 }
 

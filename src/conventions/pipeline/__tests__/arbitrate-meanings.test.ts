@@ -4,6 +4,7 @@ import { describe, it, expect } from "vitest";
 import { arbitrateMeanings } from "../evaluation/meaning-arbitrator";
 import { BidSuit } from "../../../engine/types";
 import { makeArbitrationInput, makeCall } from "./pipeline-test-helpers";
+import { FactOperator, RecommendationBand } from "../evaluation/meaning";
 
 describe("arbitrateMeanings — provenance characterization", () => {
   it("applicability evidence from selected candidate", () => {
@@ -11,7 +12,7 @@ describe("arbitrateMeanings — provenance characterization", () => {
       meaningId: "test:selected",
       clauses: [{
         factId: "hand.hcp",
-        operator: "gte",
+        operator: FactOperator.Gte,
         value: 8,
         satisfied: true,
         description: "8+ HCP",
@@ -49,7 +50,7 @@ describe("arbitrateMeanings — provenance characterization", () => {
     const input = makeArbitrationInput({
       meaningId: "test:arb",
       ranking: {
-        recommendationBand: "must",
+        recommendationBand: RecommendationBand.Must,
         specificity: 5,
         modulePrecedence: 1,
         declarationOrder: 0,
@@ -90,12 +91,12 @@ describe("arbitrateMeanings — multi-proposal characterization", () => {
     const eliminated = makeArbitrationInput({
       meaningId: "eliminated",
       allSatisfied: false,
-      ranking: { recommendationBand: "avoid", specificity: 1, modulePrecedence: 0, declarationOrder: 2 },
+      ranking: { recommendationBand: RecommendationBand.Avoid, specificity: 1, modulePrecedence: 0, declarationOrder: 2 },
     }, makeCall(2, BidSuit.Hearts));
     const acceptable = makeArbitrationInput({
       meaningId: "acceptable",
       allSatisfied: false,
-      ranking: { recommendationBand: "may", specificity: 1, modulePrecedence: 0, declarationOrder: 1 },
+      ranking: { recommendationBand: RecommendationBand.May, specificity: 1, modulePrecedence: 0, declarationOrder: 1 },
     }, makeCall(2, BidSuit.Diamonds));
 
     const result = arbitrateMeanings([truth, eliminated, acceptable]);

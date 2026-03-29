@@ -18,6 +18,7 @@ import type {
   FactValue,
   RelationalFactEvaluatorFn,
 } from "../../core/fact-catalog";
+import { EvaluationWorld } from "../../core/fact-catalog";
 import { num, fv } from "./fact-helpers";
 import type { SystemConfig } from "../../definitions/system-config";
 import type { SuitName } from "../../../engine/types";
@@ -33,6 +34,7 @@ import {
   SYSTEM_RESPONDER_ONE_NT_RANGE,
   SYSTEM_DONT_OVERCALL_IN_RANGE,
 } from "../../definitions/system-fact-vocabulary";
+import { FactOperator } from "../evaluation/meaning";
 
 // ─── Fact definitions ───────────────────────────────────────
 //
@@ -71,7 +73,7 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   {
     id: SYSTEM_RESPONDER_WEAK_HAND,
     layer: FactLayer.SystemDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Responder is below the invite threshold — too weak to act",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
@@ -80,7 +82,7 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   {
     id: SYSTEM_RESPONDER_INVITE_VALUES,
     layer: FactLayer.SystemDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Responder has invitational values opposite a 1NT opening",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
@@ -89,7 +91,7 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   {
     id: SYSTEM_RESPONDER_GAME_VALUES,
     layer: FactLayer.SystemDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Responder has game-forcing values opposite a 1NT opening",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
@@ -98,7 +100,7 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   {
     id: SYSTEM_RESPONDER_SLAM_VALUES,
     layer: FactLayer.SystemDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Responder has slam-exploration values opposite a 1NT opening",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
@@ -107,7 +109,7 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   {
     id: SYSTEM_OPENER_NOT_MINIMUM,
     layer: FactLayer.SystemDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Opener is above the minimum of their 1NT range",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
@@ -116,7 +118,7 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   {
     id: SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT,
     layer: FactLayer.SystemDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Responder has enough HCP for a 2-level new-suit response",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
@@ -126,14 +128,14 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   // These are pure system properties — same value for every hand.
   // They exist in the catalog so surfaces can gate on them in clause
   // arrays (e.g., { factId: "system.suitResponse.isGameForcing",
-  // operator: "boolean", value: true } to fire only in 2/1).
+  // operator: FactOperator.Boolean, value: true } to fire only in 2/1).
   // derivesFrom is empty because they read no hand data.
   // constrainsDimensions is empty because they communicate system
   // rules, not hand shape.
   {
     id: SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING,
     layer: FactLayer.SystemDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "The 2-level new-suit response is game-forcing in this system",
     valueType: "boolean",
     derivesFrom: [],
@@ -142,7 +144,7 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   {
     id: SYSTEM_ONE_NT_FORCING_AFTER_MAJOR,
     layer: FactLayer.SystemDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "1NT forcing status after 1M in this system",
     valueType: "string",
     derivesFrom: [],
@@ -151,7 +153,7 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   {
     id: SYSTEM_RESPONDER_ONE_NT_RANGE,
     layer: FactLayer.SystemDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Responder is within the 1NT-response-to-1M HCP range",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
@@ -161,7 +163,7 @@ const SYSTEM_FACT_DEFINITIONS: readonly FactDefinition[] = [
   {
     id: SYSTEM_DONT_OVERCALL_IN_RANGE,
     layer: FactLayer.SystemDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Overcaller HCP is within the DONT overcall range",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],

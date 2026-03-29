@@ -5,9 +5,12 @@ import type {
   StateEntry,
   PhaseTransition,
 } from "../rule-module";
+import { TurnRole } from "../rule-module";
 import type { ConventionModule } from "../convention-module";
 import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple } from "../authored-text";
 import type { TeachingLabel } from "../authored-text";
+import { ObsSuit } from "../../pipeline/bid-action";
+import { HandStrength } from "../../pipeline/bid-action";
 
 const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
@@ -67,7 +70,7 @@ describe("ConventionModule type construction", () => {
 
     const contains: RouteExpr = {
       kind: "contains",
-      pattern: { act: "transfer", suit: "hearts" },
+      pattern: { act: "transfer", suit: ObsSuit.Hearts },
     };
     expect(contains.kind).toBe("contains");
 
@@ -82,18 +85,18 @@ describe("ConventionModule type construction", () => {
   });
 
   it("constructs NegotiationExpr variants", () => {
-    const fit: NegotiationExpr = { kind: "fit", strain: "hearts" };
+    const fit: NegotiationExpr = { kind: "fit", strain: ObsSuit.Hearts };
     expect(fit.kind).toBe("fit");
 
     const noFit: NegotiationExpr = { kind: "no-fit" };
     expect(noFit.kind).toBe("no-fit");
 
-    const forcing: NegotiationExpr = { kind: "forcing", level: "game" };
+    const forcing: NegotiationExpr = { kind: "forcing", level: HandStrength.Game };
     expect(forcing.kind).toBe("forcing");
 
     const overcalled: NegotiationExpr = {
       kind: "overcalled",
-      below: { level: 2, strain: "hearts" },
+      below: { level: 2, strain: ObsSuit.Hearts },
     };
     expect(overcalled.kind).toBe("overcalled");
 
@@ -101,7 +104,7 @@ describe("ConventionModule type construction", () => {
       kind: "and",
       exprs: [
         { kind: "uncontested" },
-        { kind: "not", expr: { kind: "forcing", level: "game" } },
+        { kind: "not", expr: { kind: "forcing", level: HandStrength.Game } },
       ],
     };
     expect(combined.kind).toBe("and");
@@ -110,7 +113,7 @@ describe("ConventionModule type construction", () => {
   it("constructs StateEntry with match conditions and surfaces", () => {
     const entry: StateEntry<"idle" | "asked"> = {
       phase: "asked",
-      turn: "responder",
+      turn: TurnRole.Responder,
       kernel: { kind: "uncontested" },
       route: {
         kind: "last",
@@ -125,14 +128,14 @@ describe("ConventionModule type construction", () => {
         } as never,
       ],
     };
-    expect(entry.turn).toBe("responder");
+    expect(entry.turn).toBe(TurnRole.Responder);
     expect(entry.surfaces).toHaveLength(1);
   });
 
   it("constructs StateEntry with optional negotiationDelta", () => {
     const entry: StateEntry<"idle" | "active"> = {
       phase: "active",
-      turn: "opener",
+      turn: TurnRole.Opener,
       surfaces: [
         { meaningId: "test", semanticClassId: "test:class", teachingLabel: tl("Test") } as never,
       ],

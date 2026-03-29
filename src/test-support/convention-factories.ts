@@ -13,6 +13,7 @@ import type { CandidateEligibility } from "../conventions/pipeline/tree-evaluati
 import type { DecisionProvenance, EncodingTrace, LegalityTrace } from "../conventions/pipeline/evaluation/provenance";
 import type { FactExplanationEntry } from "../conventions/core/explanation-catalog";
 import { bidName, bidSummary } from "../conventions/core/authored-text";
+import { FactOperator, RecommendationBand } from "../conventions/pipeline/evaluation/meaning";
 /** Create a minimal BidMeaning with override support. */
 export function makeSurface(overrides: Partial<BidMeaning> & { meaningId?: string; moduleId?: string } = {}): BidMeaning {
   return {
@@ -31,7 +32,7 @@ export function makeSurface(overrides: Partial<BidMeaning> & { meaningId?: strin
 /** Create a default AuthoredRankingMetadata with override support. */
 export function makeRanking(overrides?: Partial<AuthoredRankingMetadata>): AuthoredRankingMetadata {
   return {
-    recommendationBand: "should",
+    recommendationBand: RecommendationBand.Should,
     modulePrecedence: 0,
     declarationOrder: 0,
     ...overrides,
@@ -51,7 +52,7 @@ export function makePass(): Call {
 /** Create a RankingMetadata (with derived specificity) for teaching tests. */
 function makeRankingMetadata(overrides: Partial<RankingMetadata> = {}): RankingMetadata {
   return {
-    recommendationBand: "should",
+    recommendationBand: RecommendationBand.Should,
     specificity: 1,
     modulePrecedence: 1,
     declarationOrder: 1,
@@ -63,7 +64,7 @@ function makeRankingMetadata(overrides: Partial<RankingMetadata> = {}): RankingM
 export function makeClause(overrides: Partial<MeaningClause> = {}): MeaningClause {
   return {
     factId: "hand.hcp",
-    operator: "gte",
+    operator: FactOperator.Gte,
     value: 15,
     satisfied: true,
     description: "HCP >= 15",

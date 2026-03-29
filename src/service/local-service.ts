@@ -14,10 +14,11 @@
 import { type Call, type Card, Seat } from "../engine/types";
 import type { EnginePort } from "../engine/port";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ServicePublicBeliefState, ServicePublicBeliefs } from "./response-types";
-import { buildBiddingViewport, buildDeclarerPromptViewport, buildPlayingViewport, buildExplanationViewport } from "../session/build-viewport";
+import { ServiceGamePhase } from "./response-types";
+import { buildBiddingViewportFromState, buildDeclarerPromptViewportFromState, buildPlayingViewportFromState, buildExplanationViewportFromState } from "./viewport-builders";
 import type { ModuleCatalogEntry, ModuleLearningViewport } from "./response-types";
-import { buildModuleCatalog, buildModuleLearningViewport, buildBundleFlowTree, buildModuleFlowTree } from "../session/learning-viewport";
-import type { GamePhase } from "../session/phase-machine";
+import { buildModuleCatalog, buildModuleLearningViewport } from "../session/learning-viewport";
+import { buildBundleFlowTree, buildModuleFlowTree } from "../session/flow-tree-builder";
 import { isValidTransition } from "../session/phase-machine";
 import { createInferenceCoordinator } from "../inference/inference-coordinator";
 import { evaluateHand } from "../engine/hand-evaluator";
@@ -61,7 +62,6 @@ import {
   processPlayCard,
   runInitialAiPlays,
 } from "../session/play-controller";
-import { partnerSeat } from "../engine/constants";
 import type { PlayContext } from "../conventions";
 import type { PlayProfileId } from "../session/heuristics/play-profiles";
 import { PLAY_PROFILES } from "../session/heuristics/play-profiles";
@@ -200,7 +200,9 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         grade: result.grade,
         aiBids: result.aiBids,
         nextViewport,
-        phaseTransition: result.phaseTransition,
+        phaseTransition: result.phaseTransition
+          ? { from: result.phaseTransition.from as ServiceGamePhase, to: result.phaseTransition.to as ServiceGamePhase }
+          : null,
         userHistoryEntry: result.userHistoryEntry,
       };
     },
@@ -228,7 +230,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
           state.worldClassAdvisor = advisorProvider.getStrategy();
           // AI plays are NOT run here — caller uses runInitialAiPlays() separately
           // so the UI can show the play table immediately.
-          return { phase: state.phase };
+          return { phase: state.phase as ServiceGamePhase };
         }
       } else if (mode === "replay") {
         // Transition back to DECLARER_PROMPT from EXPLANATION (for "Play this Hand")
@@ -237,7 +239,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         }
       }
 
-      return { phase: state.phase };
+      return { phase: state.phase as ServiceGamePhase };
     },
 
     // ── Play ──────────────────────────────────────────────────────
@@ -257,11 +259,11 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     async restartPlay(handle: SessionHandle): Promise<PromptAcceptResult> {
       const state = manager.get(handle);
       if (state.phase !== "PLAYING" || !state.contract) {
-        return { phase: state.phase };
+        return { phase: state.phase as ServiceGamePhase };
       }
       state.initializePlay(state.contract);
       // AI plays are NOT run here — caller uses runInitialAiPlays() separately
-      return { phase: state.phase };
+      return { phase: state.phase as ServiceGamePhase };
     },
 
     async runInitialAiPlays(handle: SessionHandle): Promise<AiPlayEntry[]> {
@@ -283,13 +285,13 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
     async getViewport(handle: SessionHandle): Promise<SessionViewport> {      const state = manager.get(handle);
       return {
-        phase: state.phase,
+        phase: state.phase as ServiceGamePhase,
         biddingViewport: buildBiddingViewportFromState(state),
       };
     },
 
-    async getPhase(handle: SessionHandle): Promise<GamePhase> {      const state = manager.get(handle);
-      return state.phase;
+    async getPhase(handle: SessionHandle): Promise<ServiceGamePhase> {      const state = manager.get(handle);
+      return state.phase as ServiceGamePhase;
     },
 
     async getBiddingViewport(handle: SessionHandle): Promise<BiddingViewport | null> {
@@ -320,7 +322,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
     async getPublicBeliefState(handle: SessionHandle): Promise<ServicePublicBeliefState> {
       const state = manager.get(handle);
-      return state.publicBeliefState as ServicePublicBeliefState;
+      return state.publicBeliefState as unknown as ServicePublicBeliefState;
     },
 
     async capturePlayInferences(handle: SessionHandle) {
@@ -407,7 +409,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     async getDebugSnapshot(handle: SessionHandle): Promise<ServiceDebugSnapshot> {
       const state = manager.get(handle);
       const snap = state.captureSnapshot();
-      return { ...snap, sessionPhase: state.phase };
+      return { ...snap, sessionPhase: state.phase as ServiceGamePhase };
     },
 
     async getDebugLog(handle: SessionHandle): Promise<readonly ServiceDebugLogEntry[]> {
@@ -417,7 +419,7 @@ export function createLocalService(engine: EnginePort): DevServicePort {
 
     async getInferenceTimeline(handle: SessionHandle): Promise<readonly ServiceInferenceSnapshot[]> {
       const state = manager.get(handle);
-      return state.getNSTimeline();
+      return state.getNSTimeline() as unknown as readonly ServiceInferenceSnapshot[];
     },
 
     async getPlaySuggestions(handle: SessionHandle): Promise<PlaySuggestions> {
@@ -496,155 +498,4 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       return handle;
     },
   };
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────
-
-/** Build a BiddingViewport from session state. */
-function buildBiddingViewportFromState(state: SessionState): BiddingViewport | null {
-  const currentTurn = getCurrentTurnFromState(state);
-  if (!currentTurn) return null;
-
-  const seat = state.userSeat;
-  const faceUpSeats = new Set<Seat>([seat]);
-
-  // In DECLARER_PROMPT, show additional seats
-  if (state.phase === "DECLARER_PROMPT" && state.contract) {
-    if (state.contract.declarer === seat) {
-      faceUpSeats.add(partnerSeat(state.contract.declarer));
-    } else if (partnerSeat(state.contract.declarer) === seat) {
-      faceUpSeats.add(state.contract.declarer);
-    }
-  }
-
-  return buildBiddingViewport({
-    deal: state.deal,
-    userSeat: seat,
-    auction: state.auction,
-    bidHistory: state.bidHistory,
-    legalCalls: state.legalCalls,
-    faceUpSeats,
-    conventionName: state.conventionId,
-    isUserTurn: state.isUserSeat(currentTurn) && state.phase === "BIDDING",
-    currentBidder: currentTurn,
-    practiceMode: state.practiceMode,
-  });
-}
-
-/** Determine the prompt mode from session state. */
-function getPromptMode(state: SessionState): "defender" | "south-declarer" | "declarer-swap" | null {
-  if (state.phase !== "DECLARER_PROMPT" || !state.contract) return null;
-  const userSeat = state.userSeat;
-  if (state.contract.declarer !== userSeat && partnerSeat(state.contract.declarer) !== userSeat) return "defender";
-  if (state.contract.declarer === userSeat) return "south-declarer";
-  return "declarer-swap";
-}
-
-/** Compute face-up seats for the declarer prompt phase. */
-function getDeclarerPromptFaceUpSeats(state: SessionState): Set<Seat> {
-  const seat = state.effectiveUserSeat ?? state.userSeat;
-  const seats = new Set<Seat>([seat]);
-
-  if (state.contract) {
-    const mode = getPromptMode(state);
-    if (mode === "south-declarer") {
-      seats.add(partnerSeat(state.contract.declarer));
-    } else if (mode === "declarer-swap") {
-      seats.add(state.contract.declarer);
-    }
-  }
-
-  return seats;
-}
-
-/** Build a DeclarerPromptViewport from session state. */
-function buildDeclarerPromptViewportFromState(state: SessionState): DeclarerPromptViewport | null {
-  if (!state.contract || state.phase !== "DECLARER_PROMPT") return null;
-
-  const mode = getPromptMode(state);
-  if (!mode) return null;
-
-  return buildDeclarerPromptViewport({
-    deal: state.deal,
-    userSeat: state.userSeat,
-    faceUpSeats: getDeclarerPromptFaceUpSeats(state),
-    auction: state.auction,
-    bidHistory: state.bidHistory,
-    contract: state.contract,
-    promptMode: mode,
-  });
-}
-
-/** Build a PlayingViewport from session state. Requires engine for legal plays. */
-async function buildPlayingViewportFromState(state: SessionState, engine: EnginePort): Promise<PlayingViewport | null> {
-  if (state.phase !== "PLAYING") return null;
-
-  const effectiveSeat = state.effectiveUserSeat ?? state.userSeat;
-  const contract = state.contract;
-
-  // Compute face-up seats: user + dummy (dummy is always visible in bridge)
-  const faceUpSeats = new Set<Seat>([effectiveSeat]);
-  if (contract) {
-    const dummy = partnerSeat(contract.declarer);
-    faceUpSeats.add(dummy);
-  }
-
-  // Compute user-controlled seats
-  const userControlledSeats: Seat[] = [effectiveSeat];
-  if (contract && state.effectiveUserSeat) {
-    const dummy = partnerSeat(contract.declarer);
-    if (dummy !== state.effectiveUserSeat && contract.declarer === state.effectiveUserSeat) {
-      userControlledSeats.push(dummy);
-    }
-  }
-
-  // Compute remaining cards per seat
-  const remainingCards: Partial<Record<Seat, readonly Card[]>> = {};
-  for (const s of [Seat.North, Seat.East, Seat.South, Seat.West] as Seat[]) {
-    remainingCards[s] = state.getRemainingCards(s);
-  }
-
-  // Compute legal plays for the current player
-  let legalPlays: readonly Card[] = [];
-  if (state.currentPlayer) {
-    const remaining = state.getRemainingCards(state.currentPlayer);
-    legalPlays = await engine.getLegalPlays({ cards: remaining }, state.getLeadSuit());
-  }
-
-  return buildPlayingViewport({
-    deal: state.deal,
-    userSeat: effectiveSeat,
-    faceUpSeats,
-    auction: state.auction,
-    bidHistory: state.bidHistory,
-    rotated: state.effectiveUserSeat === Seat.North,
-    contract,
-    currentPlayer: state.currentPlayer,
-    currentTrick: state.currentTrick,
-    trumpSuit: state.trumpSuit,
-    legalPlays,
-    userControlledSeats,
-    remainingCards,
-    tricks: state.tricks,
-    declarerTricksWon: state.declarerTricksWon,
-    defenderTricksWon: state.defenderTricksWon,
-  });
-}
-
-/** Build an ExplanationViewport from session state. */
-function buildExplanationViewportFromState(state: SessionState): ExplanationViewport | null {
-  if (state.phase !== "EXPLANATION") return null;
-
-  return buildExplanationViewport({
-    deal: state.deal,
-    userSeat: state.userSeat,
-    auction: state.auction,
-    bidHistory: state.bidHistory,
-    contract: state.contract,
-    score: state.playScore,
-    declarerTricksWon: state.declarerTricksWon,
-    defenderTricksWon: state.defenderTricksWon,
-    tricks: state.tricks,
-    playRecommendations: state.playRecommendations,
-  });
 }

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createAppStore } from "../app.svelte";
+import { OpponentMode } from "../../session/drill-types";
 
 const SETTINGS_KEY = "bridge-app:practice-preferences";
 
@@ -124,7 +125,7 @@ describe("setter behavior", () => {
 
   it("setOpponentMode changes value", () => {
     const store = createAppStore();
-    store.setOpponentMode("none");
+    store.setOpponentMode(OpponentMode.None);
     expect(store.opponentMode).toBe("none");
   });
 

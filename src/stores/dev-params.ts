@@ -1,5 +1,5 @@
 import type { createAppStore } from "./app.svelte";
-import { getConvention, getModule } from "../service";
+import { getConvention, getModule, PracticeMode, PracticeRole } from "../service";
 
 /**
  * Consolidated URL parameter API for deep-linking and dev/test workflows.
@@ -61,13 +61,13 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   // When ?phase= is specified, default to decision-drill to bypass the practice picker
   const phaseParam = params.get("phase");
   const practiceModeParam = params.get("practiceMode")
-    ?? (phaseParam ? "decision-drill" : null);
-  if (practiceModeParam === "decision-drill" || practiceModeParam === "full-auction" || practiceModeParam === "continuation-drill") {
+    ?? (phaseParam ? PracticeMode.DecisionDrill : null);
+  if (practiceModeParam === PracticeMode.DecisionDrill || practiceModeParam === PracticeMode.FullAuction || practiceModeParam === PracticeMode.ContinuationDrill) {
     store.setPracticeMode(practiceModeParam);
   }
 
   const practiceRoleParam = params.get("practiceRole");
-  if (practiceRoleParam === "opener" || practiceRoleParam === "responder" || practiceRoleParam === "both") {
+  if (practiceRoleParam === PracticeRole.Opener || practiceRoleParam === PracticeRole.Responder || practiceRoleParam === PracticeRole.Both) {
     store.setDevPracticeRole(practiceRoleParam);
   }
 

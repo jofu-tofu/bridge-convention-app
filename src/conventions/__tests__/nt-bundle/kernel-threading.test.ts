@@ -11,13 +11,14 @@
 import { describe, it, expect } from "vitest";
 import { Seat, BidSuit } from "../../../engine/types";
 import type { Call, ContractBid } from "../../../engine/types";
-import { INITIAL_NEGOTIATION } from "../../core/committed-step";
+import { INITIAL_NEGOTIATION, ConfidenceLevel } from "../../core/committed-step";
 import type { ConventionModule } from "../../core/convention-module";
 
 import { getModules } from "../../definitions/module-registry";
 
 import { buildObservationLogViaRules } from "../../adapter/protocol-adapter";
 import { collectMatchingClaims } from "../../pipeline/observation/rule-interpreter";
+import { ObsSuit } from "../../pipeline/bid-action";
 
 const allRuleModules: readonly ConventionModule[] = getModules([
   "natural-bids",
@@ -129,7 +130,7 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
       const log = buildObservationLogViaRules(history, Seat.South, allRuleModules);
 
       const showStep = log[4]!;
-      expect(showStep.publicActions).toEqual([{ act: "show", feature: "heldSuit", suit: "hearts" }]);
+      expect(showStep.publicActions).toEqual([{ act: "show", feature: "heldSuit", suit: ObsSuit.Hearts }]);
       expect(showStep.stateAfter).toEqual({
         ...INITIAL_NEGOTIATION,
         forcing: "none",
@@ -149,7 +150,7 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
       const log = buildObservationLogViaRules(history, Seat.South, allRuleModules);
 
       const transferStep = log[2]!;
-      expect(transferStep.publicActions).toEqual([{ act: "transfer", targetSuit: "hearts" }]);
+      expect(transferStep.publicActions).toEqual([{ act: "transfer", targetSuit: ObsSuit.Hearts }]);
       expect(transferStep.stateAfter).toEqual({
         ...INITIAL_NEGOTIATION,
         forcing: "one-round",
@@ -170,12 +171,12 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
       const log = buildObservationLogViaRules(history, Seat.South, allRuleModules);
 
       const acceptStep = log[4]!;
-      expect(acceptStep.publicActions).toEqual([{ act: "accept", feature: "heldSuit", suit: "hearts" }]);
+      expect(acceptStep.publicActions).toEqual([{ act: "accept", feature: "heldSuit", suit: ObsSuit.Hearts }]);
       expect(acceptStep.stateAfter).toEqual({
         ...INITIAL_NEGOTIATION,
         forcing: "none",
         captain: "responder",
-        fitAgreed: { strain: "hearts", confidence: "tentative" },
+        fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Tentative },
       });
     });
   });
@@ -194,11 +195,11 @@ describe("Kernel threading: buildObservationLogViaRules", () => {
       const log = buildObservationLogViaRules(history, Seat.South, allRuleModules);
 
       const smolenStep = log[6]!;
-      expect(smolenStep.publicActions).toContainEqual({ act: "show", feature: "shortMajor", suit: "hearts" });
+      expect(smolenStep.publicActions).toContainEqual({ act: "show", feature: "shortMajor", suit: ObsSuit.Hearts });
       expect(smolenStep.stateAfter).toEqual({
         forcing: "game",
         captain: "opener",
-        fitAgreed: { strain: "spades", confidence: "tentative" },
+        fitAgreed: { strain: ObsSuit.Spades, confidence: ConfidenceLevel.Tentative },
         competition: "uncontested",
       });
     });

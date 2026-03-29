@@ -18,7 +18,12 @@
 
 // ── Parameter domains ──────────────────────────────────────────────
 
-export type ObsSuit = "clubs" | "diamonds" | "hearts" | "spades";
+export enum ObsSuit {
+  Clubs = "clubs",
+  Diamonds = "diamonds",
+  Hearts = "hearts",
+  Spades = "spades",
+}
 export type BidSuitName = ObsSuit | "notrump";
 
 export type HandFeature =
@@ -35,20 +40,25 @@ export type HandFeature =
   | "keyCards" // RKCB keycards
   | "stopper"; // suit stopper for NT
 
-export type HandStrength =
-  | "minimum"
-  | "maximum"
-  | "invitational"
-  | "game"
-  | "slam"
-  | "slam-invite"
-  | "preemptive"
-  | "constructive"
-  | "limit"
-  | "weak"
-  | "strong";
+export enum HandStrength {
+  Minimum = "minimum",
+  Maximum = "maximum",
+  Invitational = "invitational",
+  Game = "game",
+  Slam = "slam",
+  SlamInvite = "slam-invite",
+  Preemptive = "preemptive",
+  Constructive = "constructive",
+  Limit = "limit",
+  Weak = "weak",
+  Strong = "strong",
+}
 
-export type SuitQuality = "good" | "bad" | "solid";
+export enum SuitQuality {
+  Good = "good",
+  Bad = "bad",
+  Solid = "solid",
+}
 
 // ── Observation acts ───────────────────────────────────────────────
 

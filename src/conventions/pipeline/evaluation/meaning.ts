@@ -5,6 +5,18 @@ import type {
 } from "../../core/agreement-module";
 import type { TeachingLabel } from "../../core/authored-text";
 
+/** How a bid's meaning is disclosed to opponents at the table. */
+export enum Disclosure {
+  /** Conventional bid, opponents must be told. */
+  Alert = "alert",
+  /** Partner speaks the meaning aloud (e.g., transfers). */
+  Announcement = "announcement",
+  /** Natural meaning, no disclosure needed. */
+  Natural = "natural",
+  /** Universally known convention, not ACBL-alerted (e.g., Stayman). */
+  Standard = "standard",
+}
+
 // MeaningId — string, colon-namespaced (e.g., "stayman:ask-major", "bridge:nt-invite")
 export type MeaningId = string;
 
@@ -19,7 +31,12 @@ export interface MeaningRef {
 }
 
 /** Recommendation band — authored semantic priority. */
-export type RecommendationBand = "must" | "should" | "may" | "avoid";
+export enum RecommendationBand {
+  Must = "must",
+  Should = "should",
+  May = "may",
+  Avoid = "avoid",
+}
 
 /** How the specificity value was determined. */
 export type SpecificityBasis = "derived" | "asserted" | "partial";
@@ -35,10 +52,17 @@ export type ConstraintDimension =
   | "suitQuality";   // honor holdings, suit solidity (A/K/Q count, "solid suit")
 
 /** Operator for fact-based clause evaluation. */
-export type FactOperator = "gte" | "lte" | "eq" | "range" | "boolean" | "in";
+export enum FactOperator {
+  Gte = "gte",
+  Lte = "lte",
+  Eq = "eq",
+  Range = "range",
+  Boolean = "boolean",
+  In = "in",
+}
 
 /** Operator subset for evaluated meaning clauses (excludes "in" which is resolved during evaluation). */
-export type MeaningClauseOperator = Exclude<FactOperator, "in">;
+export type MeaningClauseOperator = Exclude<FactOperator, FactOperator.In>;
 
 /** Authored ranking metadata — what convention authors write.
  *  Excludes `specificity` and `specificityBasis`, which are derived by the
@@ -113,10 +137,10 @@ export interface MeaningProposal extends MeaningRef {
 
 /** Recommendation band priority values for comparison (lower = higher priority). */
 export const BAND_PRIORITY: Record<RecommendationBand, number> = {
-  must: 0,
-  should: 1,
-  may: 2,
-  avoid: 3,
+  [RecommendationBand.Must]: 0,
+  [RecommendationBand.Should]: 1,
+  [RecommendationBand.May]: 2,
+  [RecommendationBand.Avoid]: 3,
 };
 
 /**
@@ -186,12 +210,8 @@ export interface BidMeaning {
     readonly type: string;
     readonly params: Readonly<Record<string, string | number | boolean>>;
   };
-  /** How this bid's meaning is disclosed to opponents at the table.
-   *  - "alert": conventional bid, opponents must be told
-   *  - "announcement": partner speaks the meaning aloud (e.g., transfers)
-   *  - "standard": universally known convention, not ACBL-alerted (e.g., Stayman)
-   *  - "natural": natural meaning, no disclosure needed */
-  readonly disclosure: "alert" | "announcement" | "natural" | "standard";
+  /** How this bid's meaning is disclosed to opponents at the table. */
+  readonly disclosure: Disclosure;
   readonly teachingLabel: TeachingLabel;
   readonly surfaceBindings?: Readonly<Record<string, string>>;
 }

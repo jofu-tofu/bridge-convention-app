@@ -10,6 +10,7 @@ import type { PublicSnapshot } from "../../../conventions/core/module-surface";
 import { ForcingState } from "../../../conventions";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";
+import { ObsSuit } from "../../../conventions/pipeline/bid-action";
 
 // ─── Helpers ────────────────────────────────────────────────
 const origin: FactorOrigin = {
@@ -141,7 +142,7 @@ describe("PosteriorQuery discriminated union", () => {
   });
 
   it("can construct suit-length query", () => {
-    const q: PosteriorQuery = { kind: "suit-length", seat: "E", suit: "hearts" };
+    const q: PosteriorQuery = { kind: "suit-length", seat: "E", suit: ObsSuit.Hearts };
     expect(q.kind).toBe("suit-length");
   });
 
@@ -149,7 +150,7 @@ describe("PosteriorQuery discriminated union", () => {
     const q: PosteriorQuery = {
       kind: "fit-probability",
       seats: ["N", "S"],
-      suit: "spades",
+      suit: ObsSuit.Spades,
       threshold: 8,
     };
     expect(q.kind).toBe("fit-probability");
@@ -182,8 +183,8 @@ describe("PosteriorQuery discriminated union", () => {
   it("supports exhaustive switch on kind discriminant", () => {
     const queries: PosteriorQuery[] = [
       { kind: "marginal-hcp", seat: "N" },
-      { kind: "suit-length", seat: "N", suit: "spades" },
-      { kind: "fit-probability", seats: ["N", "S"], suit: "hearts", threshold: 8 },
+      { kind: "suit-length", seat: "N", suit: ObsSuit.Spades },
+      { kind: "fit-probability", seats: ["N", "S"], suit: ObsSuit.Hearts, threshold: 8 },
       { kind: "is-balanced", seat: "E" },
       { kind: "joint-hcp", seats: ["N", "S"], min: 25, max: 40 },
       { kind: "branch-probability", familyId: "fam1", branchId: "br1" },

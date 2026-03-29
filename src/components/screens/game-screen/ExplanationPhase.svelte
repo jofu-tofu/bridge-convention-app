@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SvelteMap } from "svelte/reactivity";
-  import { Seat, Suit, BidSuit, Vulnerability as Vul, partnerSeat } from "../../../service";
+  import { Seat, Suit, BidSuit, Vulnerability as Vul, partnerSeat, PracticeMode } from "../../../service";
   import type { ExplanationViewport } from "../../../service";
   import type { ConventionConfig, ConventionContribution } from "../../../service";
   import { formatRuleName } from "../../../service";
@@ -298,9 +298,9 @@
     </div>
   {/if}
 
-  {#if practiceMode !== "decision-drill"}
+  {#if practiceMode !== PracticeMode.DecisionDrill}
     <p class="text-[--text-annotation] text-text-muted">
-      Mode: {practiceMode === "full-auction" ? "Full Auction" : "Continuation"}
+      Mode: {practiceMode === PracticeMode.FullAuction ? "Full Auction" : "Continuation"}
     </p>
   {/if}
 

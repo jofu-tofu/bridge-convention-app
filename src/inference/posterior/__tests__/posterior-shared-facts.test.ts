@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   createFactCatalog,
+  EvaluationWorld,
 } from "../../../conventions/core/fact-catalog";
 import { SHARED_FACTS, POSTERIOR_DERIVED_FACTS } from "../../../conventions/core/shared-facts";
 import { FactLayer } from '../../../conventions/core/fact-layer';
@@ -15,7 +16,7 @@ describe("POSTERIOR_DERIVED_FACTS", () => {
 
   it("all entries have world=acting-hand, layer=bridge-derived, valueType=number", () => {
     for (const fact of POSTERIOR_DERIVED_FACTS) {
-      expect(fact.world).toBe("acting-hand");
+      expect(fact.world).toBe(EvaluationWorld.ActingHand);
       expect(fact.layer).toBe(FactLayer.BridgeDerived);
       expect(fact.valueType).toBe("number");
     }

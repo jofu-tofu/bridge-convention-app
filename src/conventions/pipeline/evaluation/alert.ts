@@ -1,5 +1,5 @@
 import type { BidAlert } from "../../core/strategy-types";
-import type { BidMeaningClause } from "./meaning";
+import { Disclosure, type BidMeaningClause } from "./meaning";
 import type { TeachingLabel } from "../../core/authored-text";
 
 // ─── Disclosure-based conventionality derivation ─────────────────────
@@ -11,7 +11,7 @@ import type { TeachingLabel } from "../../core/authored-text";
 /** Minimal shape for alert resolution — only needs disclosure and teachingLabel.
  *  Alertability is derived from the `disclosure` field. */
 export interface AlertResolvable {
-  readonly disclosure: "alert" | "announcement" | "natural" | "standard";
+  readonly disclosure: Disclosure;
   readonly clauses: readonly BidMeaningClause[];
   readonly teachingLabel: TeachingLabel;
 }
@@ -20,9 +20,9 @@ export interface AlertResolvable {
  *  A bid is alertable (requires some form of opponent notification) unless
  *  it has natural meaning (disclosure === "natural"). */
 export function isAlertable(
-  disclosure: "alert" | "announcement" | "natural" | "standard",
+  disclosure: Disclosure,
 ): boolean {
-  return disclosure !== "natural";
+  return disclosure !== Disclosure.Natural;
 }
 
 /** Resolve whether a surface is alertable.
@@ -32,9 +32,9 @@ export function isAlertable(
 export function resolveAlert(surface: AlertResolvable): BidAlert | null {
   if (!isAlertable(surface.disclosure)) return null;
 
-  const annotationType = surface.disclosure === "announcement"
+  const annotationType = surface.disclosure === Disclosure.Announcement
     ? "announce" as const
-    : surface.disclosure === "standard"
+    : surface.disclosure === Disclosure.Standard
       ? "educational" as const
       : "alert" as const;
 

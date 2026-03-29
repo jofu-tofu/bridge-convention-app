@@ -4,6 +4,7 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/fact-catalog";
+import { EvaluationWorld } from "../../../core/fact-catalog";
 import { num, bool, fv } from "../../../pipeline/facts/fact-helpers";
 import type { SystemConfig } from "../../system-config";
 import { TRANSFER_FACT_IDS } from "./ids";
@@ -14,7 +15,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
   {
     id: TRANSFER_FACT_IDS.TARGET_SUIT,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Transfer target suit (hearts, spades, or none)",
     valueType: "string",
     derivesFrom: ["hand.suitLength.hearts", "hand.suitLength.spades"],
@@ -23,7 +24,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
   {
     id: TRANSFER_FACT_IDS.ELIGIBLE,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Eligible for Jacoby transfer (5+ card major)",
     valueType: "boolean",
     derivesFrom: ["bridge.hasFiveCardMajor"],
@@ -32,7 +33,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
   {
     id: TRANSFER_FACT_IDS.PREFERRED,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Transfer preferred (eligible with 5+ card suit)",
     valueType: "boolean",
     derivesFrom: ["module.transfer.eligible"],
@@ -41,7 +42,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
   {
     id: TRANSFER_FACT_IDS.OPENER_HAS_HEART_FIT,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Opener has 3+ hearts (fit with responder's 5-card suit)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.hearts"],
@@ -50,7 +51,7 @@ const TRANSFER_FACTS: readonly FactDefinition[] = [
   {
     id: TRANSFER_FACT_IDS.OPENER_HAS_SPADES_FIT,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Opener has 3+ spades (fit with responder's 5-card suit)",
     valueType: "boolean",
     derivesFrom: ["hand.suitLength.spades"],

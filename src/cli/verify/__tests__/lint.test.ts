@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { StateEntry, NegotiationExpr, ConventionModule } from "../../../conventions";
+import { TurnRole } from "../../../conventions";
 import type { BidMeaning } from "../../../conventions/pipeline/evaluation/meaning";
 import {
   lintModule,
@@ -14,6 +15,8 @@ import {
 
 import { bidName, bidSummary, moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple } from "../../../conventions/core/authored-text";
 import type { TeachingLabel } from "../../../conventions/core/authored-text";
+import { RecommendationBand } from "../../../conventions/pipeline/evaluation/meaning";
+import { HandStrength } from "../../../conventions/pipeline/bid-action";
 
 const tl = (name: string): TeachingLabel => ({ name: bidName(name), summary: bidSummary("[TODO] test") });
 
@@ -47,7 +50,7 @@ function makeSurface(
       kind: "direct",
       defaultCall: callOverride ?? { type: "bid", level: 1, strain: "NT" },
     },
-    ranking: { recommendationBand: "should", declarationOrder: 0 },
+    ranking: { recommendationBand: RecommendationBand.Should, declarationOrder: 0 },
   } as unknown as BidMeaning;
 }
 
@@ -167,7 +170,7 @@ describe("detectBroadRules", () => {
     // are NOT flagged as broad (they always have a local guard).
     const mod = makeModule({
       states: [
-        makeStateEntry({ phase: "idle", turn: "opener" }),
+        makeStateEntry({ phase: "idle", turn: TurnRole.Opener }),
       ],
     });
     const diags = detectBroadRules(mod);
@@ -257,7 +260,7 @@ describe("detectUndeclaredWrites", () => {
   });
 
   it("no diagnostic when negotiationDelta field is read by a kernel expr", () => {
-    const kernelExpr: NegotiationExpr = { kind: "forcing", level: "game" };
+    const kernelExpr: NegotiationExpr = { kind: "forcing", level: HandStrength.Game };
     const mod = makeModule({
       states: [
         makeStateEntry({

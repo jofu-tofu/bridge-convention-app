@@ -1,9 +1,7 @@
 <script lang="ts">
   import type { Contract } from "../../service";
-  import { Seat } from "../../service";
+  import { Seat, PromptMode } from "../../service";
   import { formatContractWithDeclarer } from "../../service";
-
-  type PromptMode = "declarer-swap" | "defender" | "south-declarer";
 
   interface Props {
     contract: Contract;
@@ -16,23 +14,23 @@
   let { contract, userSeat, mode, onAccept, onSkip }: Props = $props();
 
   const ariaLabel = $derived(
-    mode === "defender"
+    mode === PromptMode.Defender
       ? "Defender prompt"
-      : mode === "south-declarer"
+      : mode === PromptMode.SouthDeclarer
         ? "Declarer prompt"
         : "Declarer swap prompt",
   );
 
   const promptText = $derived(
-    mode === "defender"
+    mode === PromptMode.Defender
       ? `Defend as ${userSeat}?`
-      : mode === "south-declarer"
+      : mode === PromptMode.SouthDeclarer
         ? "Play as declarer?"
         : `Play as ${contract.declarer} (declarer)?`,
   );
 
   const acceptLabel = $derived(
-    mode === "defender" ? "Defend" : "Play",
+    mode === PromptMode.Defender ? "Defend" : "Play",
   );
 </script>
 

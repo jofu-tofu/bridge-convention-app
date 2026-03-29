@@ -1,12 +1,15 @@
 import type { LocalFsm, StateEntry, RouteExpr } from "../../../core/rule-module";
+import { TurnRole } from "../../../core/rule-module";
 import type { ConventionModule } from "../../../core/convention-module";
 import type { NegotiationDelta } from "../../../core/committed-step";
+import { ConfidenceLevel } from "../../../core/committed-step";
 import type { SystemConfig } from "../../system-config";
 import { moduleDescription, modulePurpose, teachingTradeoff, teachingPrinciple, teachingItem } from "../../../core/authored-text";
 
 import { createSmolenEntrySurfaces, createSmolenR3Surfaces, OPENER_SMOLEN_HEARTS_SURFACES, OPENER_SMOLEN_SPADES_SURFACES, RESPONDER_SMOLEN_COMPLETE_SPADES_SURFACES } from "./meaning-surfaces";
 import { createSmolenFacts } from "./facts";
 import { SMOLEN_EXPLANATION_ENTRIES } from "./explanation-catalog";
+import { ObsSuit } from "../../../pipeline/bid-action";
 
 // Re-export everything external consumers need
 export { createSmolenFacts } from "./facts";
@@ -16,9 +19,9 @@ export { createSmolenFacts } from "./facts";
 type SmolenPhase = "idle" | "post-r1" | "placing-hearts" | "placing-spades" | "accepted-spades" | "done";
 
 const SMOLEN_ENTRY_DELTA: NegotiationDelta = { forcing: "one-round", captain: "responder" };
-const SMOLEN_3H_DELTA: NegotiationDelta = { forcing: "game", captain: "opener", fitAgreed: { strain: "spades", confidence: "tentative" } };
-const SMOLEN_3S_DELTA: NegotiationDelta = { forcing: "game", captain: "opener", fitAgreed: { strain: "hearts", confidence: "tentative" } };
-const SMOLEN_ACCEPT_SPADES_DELTA: NegotiationDelta = { forcing: "game", fitAgreed: { strain: "spades", confidence: "final" } };
+const SMOLEN_3H_DELTA: NegotiationDelta = { forcing: "game", captain: "opener", fitAgreed: { strain: ObsSuit.Spades, confidence: ConfidenceLevel.Tentative } };
+const SMOLEN_3S_DELTA: NegotiationDelta = { forcing: "game", captain: "opener", fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Tentative } };
+const SMOLEN_ACCEPT_SPADES_DELTA: NegotiationDelta = { forcing: "game", fitAgreed: { strain: ObsSuit.Spades, confidence: ConfidenceLevel.Final } };
 
 const AFTER_STAYMAN_DENIAL: RouteExpr = {
   kind: "subseq",
@@ -37,10 +40,10 @@ const smolenLocal: LocalFsm<SmolenPhase> = {
     { from: "idle", to: "post-r1", on: { act: "place" } },
     { from: "idle", to: "post-r1", on: { act: "signoff" } },
     { from: "idle", to: "post-r1", on: { act: "show" } },
-    { from: "post-r1", to: "placing-hearts", on: { act: "show", feature: "shortMajor", suit: "hearts" } },
-    { from: "post-r1", to: "placing-spades", on: { act: "show", feature: "shortMajor", suit: "spades" } },
+    { from: "post-r1", to: "placing-hearts", on: { act: "show", feature: "shortMajor", suit: ObsSuit.Hearts } },
+    { from: "post-r1", to: "placing-spades", on: { act: "show", feature: "shortMajor", suit: ObsSuit.Spades } },
     { from: "placing-hearts", to: "done", on: { act: "place" } },
-    { from: "placing-spades", to: "accepted-spades", on: { act: "accept", feature: "heldSuit", suit: "spades" } },
+    { from: "placing-spades", to: "accepted-spades", on: { act: "accept", feature: "heldSuit", suit: ObsSuit.Spades } },
     { from: "placing-spades", to: "done", on: { act: "place" } },
     { from: "accepted-spades", to: "done", on: { act: "place" } },
   ],
@@ -55,20 +58,20 @@ function createSmolenStates(sys: SystemConfig): readonly StateEntry<SmolenPhase>
   const smolenR3Spades = smolenR3Surfaces.filter(s => s.meaningId === "smolen:bid-short-spades");
 
   return [
-    { phase: "idle", turn: "responder" as const, negotiationDelta: SMOLEN_ENTRY_DELTA, surfaces: smolenEntrySurfaces },
+    { phase: "idle", turn: TurnRole.Responder, negotiationDelta: SMOLEN_ENTRY_DELTA, surfaces: smolenEntrySurfaces },
     // R3 Smolen 3H (short hearts → 5 spades): game-forcing, spade fit
     ...(smolenR3Hearts.length > 0 ? [{
-      phase: "post-r1" as const, turn: "responder" as const,
+      phase: "post-r1" as const, turn: TurnRole.Responder,
       route: AFTER_STAYMAN_DENIAL, negotiationDelta: SMOLEN_3H_DELTA, surfaces: smolenR3Hearts,
     }] : []),
     // R3 Smolen 3S (short spades → 5 hearts): game-forcing, heart fit
     ...(smolenR3Spades.length > 0 ? [{
-      phase: "post-r1" as const, turn: "responder" as const,
+      phase: "post-r1" as const, turn: TurnRole.Responder,
       route: AFTER_STAYMAN_DENIAL, negotiationDelta: SMOLEN_3S_DELTA, surfaces: smolenR3Spades,
     }] : []),
-    { phase: "placing-hearts", turn: "opener" as const, surfaces: OPENER_SMOLEN_HEARTS_SURFACES },
-    { phase: "placing-spades", turn: "opener" as const, negotiationDelta: SMOLEN_ACCEPT_SPADES_DELTA, surfaces: OPENER_SMOLEN_SPADES_SURFACES },
-    { phase: "accepted-spades", turn: "responder" as const, surfaces: RESPONDER_SMOLEN_COMPLETE_SPADES_SURFACES },
+    { phase: "placing-hearts", turn: TurnRole.Opener, surfaces: OPENER_SMOLEN_HEARTS_SURFACES },
+    { phase: "placing-spades", turn: TurnRole.Opener, negotiationDelta: SMOLEN_ACCEPT_SPADES_DELTA, surfaces: OPENER_SMOLEN_SPADES_SURFACES },
+    { phase: "accepted-spades", turn: TurnRole.Responder, surfaces: RESPONDER_SMOLEN_COMPLETE_SPADES_SURFACES },
   ];
 }
 

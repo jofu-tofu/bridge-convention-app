@@ -4,6 +4,7 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/fact-catalog";
+import { EvaluationWorld } from "../../../core/fact-catalog";
 import { num, bool, fv } from "../../../pipeline/facts/fact-helpers";
 import { createPosteriorFactEvaluators } from "../../../../inference/posterior";
 
@@ -16,7 +17,7 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
   {
     id: STAYMAN_FACT_IDS.NS_HAVE_EIGHT_CARD_FIT_LIKELY,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Posterior probability that N/S have an 8+ card major fit",
     valueType: "number",
     constrainsDimensions: [],
@@ -24,7 +25,7 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
   {
     id: STAYMAN_FACT_IDS.OPENER_STILL_BALANCED_LIKELY,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Posterior probability that opener has balanced shape",
     valueType: "number",
     constrainsDimensions: [],
@@ -32,7 +33,7 @@ const NT_POSTERIOR_FACTS: readonly FactDefinition[] = [
   {
     id: STAYMAN_FACT_IDS.OPENER_HAS_SECOND_MAJOR_LIKELY,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Posterior probability that opener has a second 4-card major",
     valueType: "number",
     constrainsDimensions: [],
@@ -43,7 +44,7 @@ const STAYMAN_FACTS: readonly FactDefinition[] = [
   {
     id: STAYMAN_FACT_IDS.ELIGIBLE,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Eligible for Stayman (4+ card major AND 8+ HCP)",
     valueType: "boolean",
     derivesFrom: ["bridge.hasFourCardMajor", "hand.hcp"],
@@ -52,7 +53,7 @@ const STAYMAN_FACTS: readonly FactDefinition[] = [
   {
     id: STAYMAN_FACT_IDS.PREFERRED,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Stayman preferred (eligible AND either no 5-card major OR 5-4 in both majors)",
     valueType: "boolean",
     derivesFrom: [STAYMAN_FACT_IDS.ELIGIBLE, "bridge.hasFiveCardMajor", "hand.suitLength.hearts", "hand.suitLength.spades"],

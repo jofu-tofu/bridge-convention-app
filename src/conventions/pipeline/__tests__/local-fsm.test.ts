@@ -4,6 +4,8 @@ import type { PhaseTransition } from "../../core/rule-module";
 import type { CommittedStep } from "../../core/committed-step";
 import { INITIAL_NEGOTIATION } from "../../core/committed-step";
 import { Seat } from "../../../engine/types";
+import { ObsSuit } from "../bid-action";
+import { HandStrength } from "../bid-action";
 
 type Phase = "idle" | "asked" | "shown" | "denied";
 
@@ -53,7 +55,7 @@ describe("advanceLocalFsm", () => {
   it("first matching transition wins", () => {
     // Both show and deny could match from "asked" — show is first
     const step = makeStep([
-      { act: "show", feature: "heldSuit", suit: "hearts" },
+      { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts },
     ]);
     expect(advanceLocalFsm("asked", step, transitions)).toBe("shown");
   });
@@ -80,8 +82,8 @@ describe("advanceLocalFsm", () => {
   it("matches ANY observation in the step's publicActions", () => {
     // Step has multiple observations; transition should fire if any matches
     const step = makeStep([
-      { act: "show", feature: "shortMajor", suit: "hearts" },
-      { act: "force", level: "game" },
+      { act: "show", feature: "shortMajor", suit: ObsSuit.Hearts },
+      { act: "force", level: HandStrength.Game },
     ]);
     const smolTransitions: readonly PhaseTransition<"idle" | "placing">[] = [
       {

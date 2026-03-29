@@ -4,11 +4,13 @@ import type {
   FactDefinition,
   FactEvaluatorFn,
 } from "../../../core/fact-catalog";
+import { EvaluationWorld } from "../../../core/fact-catalog";
 import { num, fv } from "../../../pipeline/facts/fact-helpers";
 import { Rank } from "../../../../engine/types";
 
 import type { SystemConfig } from "../../system-config";
 import { BLACKWOOD_FACT_IDS } from "./ids";
+import { FactOperator } from "../../../pipeline/evaluation/meaning";
 
 // ─── Facts ───────────────────────────────────────────────────
 
@@ -16,20 +18,20 @@ const BLACKWOOD_FACTS: readonly FactDefinition[] = [
   {
     id: BLACKWOOD_FACT_IDS.SLAM_INTEREST,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Hand has slam-level values (HCP meets system slam threshold)",
     valueType: "boolean",
     derivesFrom: ["hand.hcp"],
     constrainsDimensions: ["pointRange"],
     composition: {
       kind: "primitive",
-      clause: { factId: "hand.hcp", operator: "gte", value: 15 },
+      clause: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
     },
   },
   {
     id: BLACKWOOD_FACT_IDS.ACE_COUNT,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Number of aces held in hand (0-4)",
     valueType: "number",
     constrainsDimensions: [],
@@ -37,7 +39,7 @@ const BLACKWOOD_FACTS: readonly FactDefinition[] = [
   {
     id: BLACKWOOD_FACT_IDS.KING_COUNT,
     layer: FactLayer.ModuleDerived,
-    world: "acting-hand",
+    world: EvaluationWorld.ActingHand,
     description: "Number of kings held in hand (0-4)",
     valueType: "number",
     constrainsDimensions: [],

@@ -3,11 +3,13 @@ import type { SystemConfig } from "../../system-config";
 import { SYSTEM_RESPONDER_GAME_VALUES } from "../../system-fact-vocabulary";
 import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
-import { createSurface } from "../../../core/surface-builder";
+import { createSurface, Disclosure } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import { bidName, bidSummary } from "../../../core/authored-text";
 
 import { SMOLEN_FACT_IDS, SMOLEN_MEANING_IDS, SMOLEN_CLASSES } from "./ids";
+import { FactOperator, RecommendationBand } from "../../../pipeline/evaluation/meaning";
+import { ObsSuit } from "../../../pipeline/bid-action";
 
 // ─── Module context ──────────────────────────────────────────
 
@@ -29,28 +31,28 @@ export function createSmolenEntrySurfaces(_sys: SystemConfig): readonly BidMeani
       clauses: [
         {
           factId: SYSTEM_RESPONDER_GAME_VALUES,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           rationale: "game values opposite 1NT",
           isPublic: true,
         },
         {
           factId: SMOLEN_FACT_IDS.HAS_FIVE_HEARTS,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
         },
         {
           factId: SMOLEN_FACT_IDS.HAS_FOUR_SPADES,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 0,
       sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
-      disclosure: "alert",
+      disclosure: Disclosure.Alert,
       teachingLabel: { name: bidName("Stayman 2♣"), summary: bidSummary("Initiate Stayman with 5 hearts and 4 spades, planning a Smolen jump if opener denies") },
     }, SMOLEN_CTX),
 
@@ -61,28 +63,28 @@ export function createSmolenEntrySurfaces(_sys: SystemConfig): readonly BidMeani
       clauses: [
         {
           factId: SYSTEM_RESPONDER_GAME_VALUES,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           rationale: "game values opposite 1NT",
           isPublic: true,
         },
         {
           factId: SMOLEN_FACT_IDS.HAS_FIVE_SPADES,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
         },
         {
           factId: SMOLEN_FACT_IDS.HAS_FOUR_HEARTS,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 1,
       sourceIntent: { type: "StaymanAsk", params: { reason: "smolen" } },
-      disclosure: "alert",
+      disclosure: Disclosure.Alert,
       teachingLabel: { name: bidName("Stayman 2♣"), summary: bidSummary("Initiate Stayman with 5 spades and 4 hearts, planning a Smolen jump if opener denies") },
     }, SMOLEN_CTX),
   ];
@@ -99,30 +101,30 @@ export function createSmolenR3Surfaces(_sys: SystemConfig): readonly BidMeaning[
       clauses: [
         {
           factId: SYSTEM_RESPONDER_GAME_VALUES,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           rationale: "game values opposite 1NT",
           isPublic: true,
         },
         {
           factId: SMOLEN_FACT_IDS.HAS_FIVE_SPADES,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           rationale: "long major",
           isPublic: true,
         },
         {
           factId: SMOLEN_FACT_IDS.HAS_FOUR_HEARTS,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           rationale: "short major, bid this suit",
           isPublic: true,
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 0,
       sourceIntent: { type: "Smolen", params: { longMajor: "spades" } },
-      disclosure: "alert",
+      disclosure: Disclosure.Alert,
       teachingLabel: { name: bidName("Smolen 3♥"), summary: bidSummary("Show 5 spades and 4 hearts with game-forcing values after Stayman denial") },
     }, SMOLEN_CTX),
 
@@ -133,30 +135,30 @@ export function createSmolenR3Surfaces(_sys: SystemConfig): readonly BidMeaning[
       clauses: [
         {
           factId: SYSTEM_RESPONDER_GAME_VALUES,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           rationale: "game values opposite 1NT",
           isPublic: true,
         },
         {
           factId: SMOLEN_FACT_IDS.HAS_FIVE_HEARTS,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           rationale: "long major",
           isPublic: true,
         },
         {
           factId: SMOLEN_FACT_IDS.HAS_FOUR_SPADES,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           rationale: "short major, bid this suit",
           isPublic: true,
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 1,
       sourceIntent: { type: "Smolen", params: { longMajor: "hearts" } },
-      disclosure: "alert",
+      disclosure: Disclosure.Alert,
       teachingLabel: { name: bidName("Smolen 3♠"), summary: bidSummary("Show 5 hearts and 4 spades with game-forcing values after Stayman denial") },
     }, SMOLEN_CTX),
   ];
@@ -172,16 +174,16 @@ export const OPENER_SMOLEN_HEARTS_SURFACES: readonly BidMeaning[] = [
     clauses: [
       {
         factId: SMOLEN_FACT_IDS.OPENER_HAS_HEART_FIT,
-        operator: "boolean",
+        operator: FactOperator.Boolean,
         value: true,
         rationale: "fit with responder's 5",
         isPublic: true,
       },
     ],
-    band: "must",
+    band: RecommendationBand.Must,
     declarationOrder: 0,
-    sourceIntent: { type: "SmolenPlacement", params: { suit: "hearts" } },
-    disclosure: "alert",
+    sourceIntent: { type: "SmolenPlacement", params: { suit: ObsSuit.Hearts } },
+    disclosure: Disclosure.Alert,
     teachingLabel: { name: bidName("4H (heart fit found)"), summary: bidSummary("Place the contract in 4♥ after confirming a fit with responder's 5-card heart suit") },
   }, SMOLEN_CTX),
   createSurface({
@@ -191,16 +193,16 @@ export const OPENER_SMOLEN_HEARTS_SURFACES: readonly BidMeaning[] = [
     clauses: [
       {
         factId: SMOLEN_FACT_IDS.OPENER_HAS_HEART_FIT,
-        operator: "boolean",
+        operator: FactOperator.Boolean,
         value: false,
         rationale: "no fit",
         isPublic: true,
       },
     ],
-    band: "must",
+    band: RecommendationBand.Must,
     declarationOrder: 1,
     sourceIntent: { type: "SmolenPlacement", params: { suit: "notrump" } },
-    disclosure: "alert",
+    disclosure: Disclosure.Alert,
     teachingLabel: { name: bidName("3NT (no heart fit)"), summary: bidSummary("Sign off in 3NT when opener lacks 3-card heart support for responder's 5-card suit") },
   }, SMOLEN_CTX),
 ];
@@ -213,16 +215,16 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
     clauses: [
       {
         factId: SMOLEN_FACT_IDS.OPENER_HAS_SPADES_FIT,
-        operator: "boolean",
+        operator: FactOperator.Boolean,
         value: true,
         rationale: "fit with responder's 5",
         isPublic: true,
       },
     ],
-    band: "must",
+    band: RecommendationBand.Must,
     declarationOrder: 0,
-    sourceIntent: { type: "SmolenAcceptance", params: { suit: "spades" } },
-    disclosure: "alert",
+    sourceIntent: { type: "SmolenAcceptance", params: { suit: ObsSuit.Spades } },
+    disclosure: Disclosure.Alert,
     teachingLabel: { name: bidName("3S (spade fit found)"), summary: bidSummary("Confirm a spade fit after responder's Smolen 3♥ showed 5 spades") },
   }, SMOLEN_CTX),
   createSurface({
@@ -232,16 +234,16 @@ export const OPENER_SMOLEN_SPADES_SURFACES: readonly BidMeaning[] = [
     clauses: [
       {
         factId: SMOLEN_FACT_IDS.OPENER_HAS_SPADES_FIT,
-        operator: "boolean",
+        operator: FactOperator.Boolean,
         value: false,
         rationale: "no fit",
         isPublic: true,
       },
     ],
-    band: "must",
+    band: RecommendationBand.Must,
     declarationOrder: 1,
     sourceIntent: { type: "SmolenPlacement", params: { suit: "notrump" } },
-    disclosure: "alert",
+    disclosure: Disclosure.Alert,
     teachingLabel: { name: bidName("3NT (no spade fit)"), summary: bidSummary("Sign off in 3NT when opener lacks 3-card spade support for responder's 5-card suit") },
   }, SMOLEN_CTX),
 ];
@@ -254,10 +256,10 @@ export const RESPONDER_SMOLEN_COMPLETE_SPADES_SURFACES: readonly BidMeaning[] = 
     semanticClassId: SMOLEN_CLASSES.RESPONDER_PLACE_FOUR_SPADES,
     encoding: bid(4, BidSuit.Spades),
     clauses: [],
-    band: "must",
+    band: RecommendationBand.Must,
     declarationOrder: 0,
-    sourceIntent: { type: "SmolenPlacement", params: { suit: "spades" } },
-    disclosure: "alert",
+    sourceIntent: { type: "SmolenPlacement", params: { suit: ObsSuit.Spades } },
+    disclosure: Disclosure.Alert,
     teachingLabel: { name: bidName("4S (complete to game)"), summary: bidSummary("Raise opener's 3♠ acceptance to the 4♠ game contract") },
   }, SMOLEN_CTX),
 ];

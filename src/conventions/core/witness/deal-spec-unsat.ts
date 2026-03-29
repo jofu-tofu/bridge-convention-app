@@ -3,6 +3,7 @@ import type {
   UnsatisfiableResult,
   SeatRole,
 } from "../deal-spec-types";
+import { FactOperator } from "../../pipeline/evaluation/meaning";
 
 /** Maximum HCP a single 13-card hand can hold (AKQJ x 4 suits = 37). */
 const MAX_HAND_HCP = 37;
@@ -88,17 +89,17 @@ function applyHcpBounds(
   value: number | boolean | string | { min: number; max: number } | readonly string[],
 ): void {
   switch (operator) {
-    case "gte":
+    case FactOperator.Gte:
       bounds.minHcp = Math.max(bounds.minHcp, value as number);
       break;
-    case "lte":
+    case FactOperator.Lte:
       bounds.maxHcp = Math.min(bounds.maxHcp, value as number);
       break;
-    case "eq":
+    case FactOperator.Eq:
       bounds.minHcp = Math.max(bounds.minHcp, value as number);
       bounds.maxHcp = Math.min(bounds.maxHcp, value as number);
       break;
-    case "range": {
+    case FactOperator.Range: {
       const range = value as { min: number; max: number };
       bounds.minHcp = Math.max(bounds.minHcp, range.min);
       bounds.maxHcp = Math.min(bounds.maxHcp, range.max);
@@ -114,17 +115,17 @@ function applySuitBounds(
   value: number | boolean | string | { min: number; max: number } | readonly string[],
 ): void {
   switch (operator) {
-    case "gte":
+    case FactOperator.Gte:
       bounds.minLengths[idx] = Math.max(bounds.minLengths[idx]!, value as number);
       break;
-    case "lte":
+    case FactOperator.Lte:
       bounds.maxLengths[idx] = Math.min(bounds.maxLengths[idx]!, value as number);
       break;
-    case "eq":
+    case FactOperator.Eq:
       bounds.minLengths[idx] = Math.max(bounds.minLengths[idx]!, value as number);
       bounds.maxLengths[idx] = Math.min(bounds.maxLengths[idx]!, value as number);
       break;
-    case "range": {
+    case FactOperator.Range: {
       const range = value as { min: number; max: number };
       bounds.minLengths[idx] = Math.max(bounds.minLengths[idx]!, range.min);
       bounds.maxLengths[idx] = Math.min(bounds.maxLengths[idx]!, range.max);

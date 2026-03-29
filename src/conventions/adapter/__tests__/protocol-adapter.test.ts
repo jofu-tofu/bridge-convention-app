@@ -12,7 +12,7 @@ import type { Call } from "../../../engine/types";
 import { buildAuction } from "../../../engine/auction-helpers";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
-import { createBiddingContext, specFromBundle, ntBundle, getBundleInput, SAYC_SYSTEM_CONFIG } from "../..";
+import { createBiddingContext, specFromBundle, ntBundle, getBundleInput, SAYC_SYSTEM_CONFIG, TurnRole } from "../..";
 import type { ConventionModule, ConventionSpec } from "../..";
 import { makeSurface, makeRanking } from "../../../test-support/convention-factories";
 import type { BidMeaning } from "../../pipeline/evaluation/meaning";
@@ -26,6 +26,7 @@ import {
   buildObservationLogViaRules,
   findMatchingClaimForCall,
 } from "../protocol-adapter";
+import { RecommendationBand } from "../../pipeline/evaluation/meaning";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ const emptyFacts: FactCatalogExtension = {
 function makeRuleModule(overrides: {
   id?: string;
   surfaces?: BidMeaning[];
-  turn?: "opener" | "responder" | "opponent";
+  turn?: TurnRole;
   local?: string;
 }): ConventionModule {
   const surfaces = overrides.surfaces ?? [
@@ -46,7 +47,7 @@ function makeRuleModule(overrides: {
       meaningId: "test:bid",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
       clauses: [],
-      ranking: makeRanking({ recommendationBand: "should" }),
+      ranking: makeRanking({ recommendationBand: RecommendationBand.Should }),
       sourceIntent: { type: "TestBid", params: {} },
       teachingLabel: tl("Test bid"),
     }),
@@ -64,7 +65,7 @@ function makeRuleModule(overrides: {
     states: [
       {
         phase: overrides.local ?? "idle",
-        turn: overrides.turn ?? "responder",
+        turn: overrides.turn ?? TurnRole.Responder,
         surfaces,
       },
     ],
@@ -121,7 +122,7 @@ describe("protocolSpecToStrategy", () => {
     // Module only fires for responder, but we're querying as opener (North)
     // after an empty auction. With no resolved bids in history, North is opener.
     // But our module requires local phase "other-phase" which doesn't exist.
-    const mod = makeRuleModule({ turn: "responder", local: "nonexistent-phase" });
+    const mod = makeRuleModule({ turn: TurnRole.Responder, local: "nonexistent-phase" });
     const spec = makeSpec([mod]);
     const strategy = protocolSpecToStrategy(spec);
 
@@ -143,12 +144,12 @@ describe("protocolSpecToStrategy", () => {
       meaningId: "test:always-bid",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
       clauses: [],
-      ranking: makeRanking({ recommendationBand: "should" }),
+      ranking: makeRanking({ recommendationBand: RecommendationBand.Should }),
       sourceIntent: { type: "TestBid", params: {} },
       teachingLabel: tl("Always bid 2C"),
     });
 
-    const mod = makeRuleModule({ surfaces: [surface], turn: "opener" });
+    const mod = makeRuleModule({ surfaces: [surface], turn: TurnRole.Opener });
     const spec = makeSpec([mod]);
     const strategy = protocolSpecToStrategy(spec);
 
@@ -174,13 +175,13 @@ describe("protocolSpecToStrategy", () => {
       meaningId: "test:eval-check",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
       clauses: [],
-      ranking: makeRanking({ recommendationBand: "should" }),
+      ranking: makeRanking({ recommendationBand: RecommendationBand.Should }),
       sourceIntent: { type: "TestBid", params: {} },
       teachingLabel: tl("Eval check"),
     });
 
     // Use opener turn — synthetic module doesn't resolve 1NT, so South = opener
-    const mod = makeRuleModule({ surfaces: [surface], turn: "opener" });
+    const mod = makeRuleModule({ surfaces: [surface], turn: TurnRole.Opener });
     const spec = makeSpec([mod]);
     const strategy = protocolSpecToStrategy(spec);
 
@@ -228,7 +229,7 @@ describe("buildObservationLogViaRules", () => {
       meaningId: "test:1nt",
       encoding: { defaultCall: { type: "bid", level: 1, strain: BidSuit.NoTrump } },
       clauses: [],
-      ranking: makeRanking({ recommendationBand: "should" }),
+      ranking: makeRanking({ recommendationBand: RecommendationBand.Should }),
       sourceIntent: { type: "Open1NT", params: {} },
       teachingLabel: tl("1NT opening"),
     });
@@ -240,7 +241,7 @@ describe("buildObservationLogViaRules", () => {
       teaching: { tradeoff: teachingTradeoff("test tradeoff for module"), principle: teachingPrinciple("test principle for module"), commonMistakes: [] },
       local: { initial: "idle", transitions: [] },
       states: [
-        { phase: "idle", turn: "opener", surfaces: [surface] },
+        { phase: "idle", turn: TurnRole.Opener, surfaces: [surface] },
       ],
       facts: emptyFacts,
       explanationEntries: [],
@@ -300,10 +301,10 @@ describe("buildObservationLogViaRules", () => {
         ],
       },
       states: [
-        { phase: "idle", turn: "opener", surfaces: [surface1] },
+        { phase: "idle", turn: TurnRole.Opener, surfaces: [surface1] },
         {
           phase: "opened",
-          turn: "responder",
+          turn: TurnRole.Responder,
           surfaces: [surface2],
           negotiationDelta: { forcing: "one-round", captain: "responder" },
         },
@@ -397,12 +398,12 @@ describe("findMatchingClaimForCall", () => {
     const mustSurface = makeSurface({
       meaningId: "test:must-bid",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
-      ranking: makeRanking({ recommendationBand: "must" }),
+      ranking: makeRanking({ recommendationBand: RecommendationBand.Must }),
     });
     const shouldSurface = makeSurface({
       meaningId: "test:should-bid",
       encoding: { defaultCall: { type: "bid", level: 2, strain: BidSuit.Clubs } },
-      ranking: makeRanking({ recommendationBand: "should" }),
+      ranking: makeRanking({ recommendationBand: RecommendationBand.Should }),
     });
 
     const results = [

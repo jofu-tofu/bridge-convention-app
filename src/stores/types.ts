@@ -17,7 +17,7 @@ import type {
   Suit,
 } from "../service";
 import type { DevServicePort, SessionHandle, SessionConfig } from "../service";
-import type { ServicePublicBeliefs, ServiceGamePhase, ServiceInferenceSnapshot, ServicePublicBeliefState, PracticeMode, PlayPreference } from "../service";
+import type { ServicePublicBeliefs, ServiceGamePhase, ServiceInferenceSnapshot, ServicePublicBeliefState, PracticeMode, PlayPreference, PromptMode } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import type { PlaySuggestions } from "../service/debug-types";
 import type {
@@ -38,7 +38,6 @@ export interface SessionStats {
 
 // ── Game Store ──────────────────────────────────────────────────────
 
-type PromptMode = "defender" | "south-declarer" | "declarer-swap";
 
 export interface GameStore {
   // Session identity
@@ -49,7 +48,7 @@ export interface GameStore {
 
   // Coordinator state
   readonly deal: Deal | null;
-  readonly phase: ServiceGamePhase;
+  readonly phase: `${ServiceGamePhase}`;
   readonly contract: Contract | null;
   readonly effectiveUserSeat: Seat | null;
   readonly practiceMode: PracticeMode;

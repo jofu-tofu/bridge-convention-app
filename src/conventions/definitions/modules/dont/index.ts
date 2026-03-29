@@ -21,7 +21,7 @@ import type { ConventionModule } from "../../../core/convention-module";
 import type { LocalFsm, StateEntry } from "../../../core/rule-module";
 import { BidSuit } from "../../../../engine/types";
 import { bid } from "../../../core/surface-helpers";
-import { createSurface } from "../../../core/surface-builder";
+import { createSurface, Disclosure } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import { dontFacts } from "./facts";
 import { DONT_ENTRIES } from "./explanation-catalog";
@@ -38,6 +38,8 @@ import {
   DONT_2C_RELAY_SURFACES,
   DONT_2D_RELAY_SURFACES,
 } from "./meaning-surfaces";
+import { RecommendationBand } from "../../../pipeline/evaluation/meaning";
+import { ObsSuit } from "../../../pipeline/bid-action";
 
 // ── Stub 1NT opening surface ──────────────────────────────────────
 
@@ -48,11 +50,11 @@ const OPPONENT_1NT_SURFACE: BidMeaning = createSurface({
   semanticClassId: "dont:opponent-open",
   encoding: bid(1, BidSuit.NoTrump),
   clauses: [],
-  band: "must",
+  band: RecommendationBand.Must,
   declarationOrder: 0,
   sourceIntent: { type: "NTOpening", params: {} },
   teachingLabel: { name: bidName("Opponent's 1NT"), summary: bidSummary("Opponent opens 1NT, triggering the DONT convention") },
-  disclosure: "natural",
+  disclosure: Disclosure.Natural,
 }, DONT_CTX);
 
 // ── Phase type ────────────────────────────────────────────────────
@@ -76,10 +78,10 @@ const dontLocal: LocalFsm<Phase> = {
   initial: "idle",
   transitions: [
       { from: "idle", to: "r1", on: { act: "open", strain: "notrump" } },
-      { from: "r1", to: "after-2h", on: { act: "show", feature: "heldSuit", suit: "spades" } },
-      { from: "r1", to: "after-2d", on: { act: "show", feature: "heldSuit", suit: "diamonds" } },
-      { from: "r1", to: "after-2c", on: { act: "show", feature: "heldSuit", suit: "clubs" } },
-      { from: "r1", to: "after-2s", on: { act: "overcall", feature: "heldSuit", suit: "spades" } },
+      { from: "r1", to: "after-2h", on: { act: "show", feature: "heldSuit", suit: ObsSuit.Spades } },
+      { from: "r1", to: "after-2d", on: { act: "show", feature: "heldSuit", suit: ObsSuit.Diamonds } },
+      { from: "r1", to: "after-2c", on: { act: "show", feature: "heldSuit", suit: ObsSuit.Clubs } },
+      { from: "r1", to: "after-2s", on: { act: "overcall", feature: "heldSuit", suit: ObsSuit.Spades } },
       { from: "r1", to: "after-double", on: { act: "overcall", feature: "heldSuit" } },
       { from: "r1", to: "done", on: { act: "pass" } },
       { from: "after-2h", to: "done", on: { act: "accept" } },

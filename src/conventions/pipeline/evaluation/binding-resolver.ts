@@ -2,12 +2,13 @@
  * Canonical binding resolution for $-prefixed placeholders in fact IDs.
  *
  * Surface clauses use parameterized fact IDs like `hand.suitLength.$suit`
- * with surfaceBindings `{ suit: "hearts" }`. This module provides the
+ * with surfaceBindings `{ suit: ObsSuit.Hearts }`. This module provides the
  * single source of truth for resolving those placeholders into concrete
  * fact IDs before any downstream lookup.
  */
 
 import type { BidMeaningClause } from "./meaning";
+import { ObsSuit } from "../bid-action";
 
 /**
  * Resolve $-prefixed binding references in a factId.

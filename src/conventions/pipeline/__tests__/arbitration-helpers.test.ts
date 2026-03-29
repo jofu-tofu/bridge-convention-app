@@ -13,6 +13,7 @@ import {
   makeRanking,
   makeEligibility,
 } from "./pipeline-test-helpers";
+import { RecommendationBand } from "../evaluation/meaning";
 
 // ─── evaluateProposal ───────────────────────────────────────
 
@@ -54,7 +55,7 @@ describe("evaluateProposal", () => {
   it("sets addToAcceptable=true for failed-semantic may-band proposals", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
-      ranking: { ...makeRanking({ recommendationBand: "may" }), specificity: 0 },
+      ranking: { ...makeRanking({ recommendationBand: RecommendationBand.May }), specificity: 0 },
     });
 
     const result = evaluateProposal(input);
@@ -67,7 +68,7 @@ describe("evaluateProposal", () => {
   it("sets addToAcceptable=true for failed-semantic should-band proposals", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
-      ranking: { ...makeRanking({ recommendationBand: "should" }), specificity: 0 },
+      ranking: { ...makeRanking({ recommendationBand: RecommendationBand.Should }), specificity: 0 },
     });
 
     const result = evaluateProposal(input);
@@ -79,7 +80,7 @@ describe("evaluateProposal", () => {
   it("sets addToAcceptable=false for failed-semantic avoid-band proposals", () => {
     const input = makeArbitrationInput({
       allSatisfied: false,
-      ranking: { ...makeRanking({ recommendationBand: "avoid" }), specificity: 0 },
+      ranking: { ...makeRanking({ recommendationBand: RecommendationBand.Avoid }), specificity: 0 },
     });
 
     const result = evaluateProposal(input);

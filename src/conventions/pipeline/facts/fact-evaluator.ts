@@ -7,6 +7,8 @@ import type {
   FactEvaluatorFn,
   RelationalFactEvaluatorFn,
 } from "../../core/fact-catalog";
+import { EvaluationWorld } from "../../core/fact-catalog";
+import { ConfidenceLevel } from "../../core/committed-step";
 import type { PosteriorFactProvider, PosteriorFactRequest } from "../../../inference/posterior/posterior-types";
 import type { PublicConstraint } from "../../core/agreement-module";
 import { createSharedFactCatalog, SHARED_EVALUATORS } from "./shared-fact-catalog";
@@ -30,7 +32,7 @@ export interface RelationalFactContext {
   readonly publicCommitments?: readonly PublicConstraint[];
   /** Agreed strain from kernel state. Used by system-fact relational evaluators to
    *  auto-detect trump context and switch to total-point thresholds. */
-  readonly fitAgreed?: { readonly strain: string; readonly confidence: "tentative" | "final" } | null;
+  readonly fitAgreed?: { readonly strain: string; readonly confidence: ConfidenceLevel } | null;
 }
 
 /** Optional parameters for evaluateFacts(), grouped to reduce positional parameter count. */
@@ -83,7 +85,7 @@ export function evaluateFacts(
   // standard and relational evaluators run in the standard pass first (HCP-only baseline),
   // then get overridden in the relational pass when relationalContext is provided.
   // Facts with ONLY relational evaluators are excluded from the standard pass.
-  const actingHandDefs = effectiveDefinitions.filter((f) => f.world === "acting-hand");
+  const actingHandDefs = effectiveDefinitions.filter((f) => f.world === EvaluationWorld.ActingHand);
   const relEvals = effectiveRelationalEvaluators;
   const standardDefs = relEvals
     ? actingHandDefs.filter((f) => !relEvals.has(f.id) || effectiveEvaluators.has(f.id))
@@ -130,5 +132,5 @@ export function evaluateFacts(
     }
   }
 
-  return { world: "acting-hand", facts };
+  return { world: EvaluationWorld.ActingHand, facts };
 }

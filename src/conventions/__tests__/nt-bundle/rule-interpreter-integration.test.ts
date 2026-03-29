@@ -16,6 +16,7 @@ import { Seat } from "../../../engine/types";
 
 // Rule modules under test
 import { getModules } from "../../definitions/module-registry";
+import { ObsSuit } from "../../pipeline/bid-action";
 
 const allRuleModules: ConventionModule[] = [
   ...getModules(["natural-bids", "stayman", "jacoby-transfers", "smolen"]),
@@ -120,7 +121,7 @@ describe("Rule interpreter integration: NT bundle", () => {
       passStep(Seat.East),
       makeStep(Seat.South, [{ act: "inquire", feature: "majorSuit" }]),
       passStep(Seat.West),
-      makeStep(Seat.North, [{ act: "show", feature: "heldSuit", suit: "hearts" }]),
+      makeStep(Seat.North, [{ act: "show", feature: "heldSuit", suit: ObsSuit.Hearts }]),
       passStep(Seat.East),
     ];
 
@@ -134,7 +135,7 @@ describe("Rule interpreter integration: NT bundle", () => {
     const log: CommittedStep[] = [
       makeStep(Seat.North, [{ act: "open", strain: "notrump" }]),
       passStep(Seat.East),
-      makeStep(Seat.South, [{ act: "transfer", targetSuit: "hearts" }]),
+      makeStep(Seat.South, [{ act: "transfer", targetSuit: ObsSuit.Hearts }]),
       passStep(Seat.West),
     ];
 
@@ -148,9 +149,9 @@ describe("Rule interpreter integration: NT bundle", () => {
     const log: CommittedStep[] = [
       makeStep(Seat.North, [{ act: "open", strain: "notrump" }]),
       passStep(Seat.East),
-      makeStep(Seat.South, [{ act: "transfer", targetSuit: "hearts" }]),
+      makeStep(Seat.South, [{ act: "transfer", targetSuit: ObsSuit.Hearts }]),
       passStep(Seat.West),
-      makeStep(Seat.North, [{ act: "accept", feature: "heldSuit", suit: "hearts" }]),
+      makeStep(Seat.North, [{ act: "accept", feature: "heldSuit", suit: ObsSuit.Hearts }]),
       passStep(Seat.East),
     ];
 
@@ -188,7 +189,7 @@ describe("Rule interpreter integration: NT bundle", () => {
         passStep(Seat.East),
         makeStep(Seat.South, [{ act: "inquire", feature: "majorSuit" }]),
         passStep(Seat.West),
-        makeStep(Seat.North, [{ act: "show", feature: "heldSuit", suit: "hearts" }]),
+        makeStep(Seat.North, [{ act: "show", feature: "heldSuit", suit: ObsSuit.Hearts }]),
         passStep(Seat.East),
       ];
 

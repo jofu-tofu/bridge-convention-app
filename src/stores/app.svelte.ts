@@ -1,5 +1,5 @@
-import type { ConventionConfig, BaseSystemId, OpponentMode, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
-import { DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
+import type { ConventionConfig, BaseSystemId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences } from "../service";
+import { OpponentMode, PracticeMode, PracticeRole, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 
 export type Screen = "conventions" | "practice-picker" | "game" | "learning" | "settings" | "coverage" | "profiles";
 
@@ -25,7 +25,7 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
   const baseSystemIdRaw = partial.baseSystemId;
 
   // Validate opponentMode
-  if (opponentMode !== "none" && opponentMode !== "natural") {
+  if (opponentMode !== OpponentMode.None && opponentMode !== OpponentMode.Natural) {
     opponentMode = DEFAULT_DRILL_SETTINGS.opponentMode;
   }
 

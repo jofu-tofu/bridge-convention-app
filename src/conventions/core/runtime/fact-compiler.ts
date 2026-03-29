@@ -11,6 +11,7 @@
 
 import { Suit } from "../../../engine/types";
 import type { Seat } from "../../../engine/types";
+import { FactOperator } from "../../pipeline/evaluation/meaning";
 
 // ── Clause value type (union of all representable clause values) ─────
 
@@ -85,7 +86,7 @@ export function compileFactClause(
 
   // ── Balanced ────────────────────────────────────────────────
   if (factId === "hand.isBalanced" || factId === "bridge.isBalanced") {
-    if (operator === "boolean") {
+    if (operator === FactOperator.Boolean) {
       builder.balanced = value as boolean;
     }
     return true;
@@ -119,17 +120,17 @@ function applyHcpConstraint(
   value: ClauseValue,
 ): void {
   switch (operator) {
-    case "gte":
+    case FactOperator.Gte:
       builder.minHcp = Math.max(builder.minHcp ?? 0, value as number);
       break;
-    case "lte":
+    case FactOperator.Lte:
       builder.maxHcp = Math.min(builder.maxHcp ?? 37, value as number);
       break;
-    case "eq":
+    case FactOperator.Eq:
       builder.minHcp = value as number;
       builder.maxHcp = value as number;
       break;
-    case "range": {
+    case FactOperator.Range: {
       const range = value as { min: number; max: number };
       builder.minHcp = Math.max(builder.minHcp ?? 0, range.min);
       builder.maxHcp = Math.min(builder.maxHcp ?? 37, range.max);
@@ -148,28 +149,28 @@ function applySuitConstraint(
   const useAny = options?.suitLengthMode === "any";
 
   // For "any" mode, suit-length gte goes to minLengthAny
-  if (useAny && operator === "gte") {
+  if (useAny && operator === FactOperator.Gte) {
     if (!builder.minLengthAny) builder.minLengthAny = {};
     builder.minLengthAny[suit] = value as number;
     return;
   }
 
   switch (operator) {
-    case "gte":
+    case FactOperator.Gte:
       if (!builder.minLength) builder.minLength = {};
       builder.minLength[suit] = Math.max(builder.minLength[suit] ?? 0, value as number);
       break;
-    case "lte":
+    case FactOperator.Lte:
       if (!builder.maxLength) builder.maxLength = {};
       builder.maxLength[suit] = Math.min(builder.maxLength[suit] ?? 13, value as number);
       break;
-    case "eq":
+    case FactOperator.Eq:
       if (!builder.minLength) builder.minLength = {};
       if (!builder.maxLength) builder.maxLength = {};
       builder.minLength[suit] = value as number;
       builder.maxLength[suit] = value as number;
       break;
-    case "range": {
+    case FactOperator.Range: {
       const range = value as { min: number; max: number };
       if (!builder.minLength) builder.minLength = {};
       if (!builder.maxLength) builder.maxLength = {};

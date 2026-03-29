@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createSuitOpeningSurfaces, NATURAL_BIDS_THRESHOLDS } from "../meaning-surfaces";
 import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../../system-config";
+import { FactOperator } from "../../../../pipeline/evaluation/meaning";
 
 describe("suit opening surfaces", () => {
   const saycSurfaces = createSuitOpeningSurfaces(SAYC_SYSTEM_CONFIG);
@@ -21,7 +22,7 @@ describe("suit opening surfaces", () => {
   it("all surfaces require minOpeningHcp", () => {
     for (const s of saycSurfaces) {
       const hcpClause = s.clauses.find(
-        (c) => c.factId === "hand.hcp" && c.operator === "gte",
+        (c) => c.factId === "hand.hcp" && c.operator === FactOperator.Gte,
       );
       expect(hcpClause).toBeDefined();
       expect(hcpClause!.value).toBe(NATURAL_BIDS_THRESHOLDS.minOpeningHcp);

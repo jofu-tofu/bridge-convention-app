@@ -5,6 +5,7 @@ import type { HandFactResolverFn } from "../../../conventions/core/fact-catalog"
 import { Suit, Rank, Seat } from "../../../engine/types";
 import type { Hand, Card } from "../../../engine/types";
 import { HCP_VALUES } from "../../../engine/constants";
+import { FactOperator } from "../../../conventions/pipeline/evaluation/meaning";
 
 function makeHand(cards: Card[]): Hand {
   return { cards };
@@ -37,8 +38,8 @@ describe("sampleDeals", () => {
           {
             conjunction: "all",
             clauses: [
-              { factId: "hand.hcp", operator: "gte", value: 15 },
-              { factId: "hand.hcp", operator: "lte", value: 17 },
+              { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
+              { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
             ],
           },
         ],
@@ -146,7 +147,7 @@ describe("sampleDeals with fact resolver", () => {
       constraints: [{
         conjunction: "all",
         clauses: [
-          { factId: "bridge.hasFourCardMajor", operator: "boolean", value: true },
+          { factId: "bridge.hasFourCardMajor", operator: FactOperator.Boolean, value: true },
         ],
       }],
     }];
@@ -174,7 +175,7 @@ describe("sampleDeals with fact resolver", () => {
       constraints: [{
         conjunction: "all",
         clauses: [
-          { factId: "bridge.hasFourCardMajor", operator: "boolean", value: true },
+          { factId: "bridge.hasFourCardMajor", operator: FactOperator.Boolean, value: true },
         ],
       }],
     }];
@@ -200,7 +201,7 @@ describe("sampleDeals with fact resolver", () => {
       constraints: [{
         conjunction: "all",
         clauses: [
-          { factId: "bridge.hasShortage", operator: "boolean", value: true },
+          { factId: "bridge.hasShortage", operator: FactOperator.Boolean, value: true },
         ],
       }],
     }];
@@ -229,8 +230,8 @@ describe("sampleDeals with fact resolver", () => {
           {
             conjunction: "all",
             clauses: [
-              { factId: "hand.hcp", operator: "gte", value: 15 },
-              { factId: "hand.hcp", operator: "lte", value: 17 },
+              { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
+              { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
             ],
           },
         ],

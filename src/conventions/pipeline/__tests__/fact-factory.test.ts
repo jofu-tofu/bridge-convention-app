@@ -7,9 +7,11 @@ import {
 } from "../facts/fact-factory";
 import type { FactEntry } from "../facts/fact-factory";
 import type { FactValue } from "../../core/fact-catalog";
+import { EvaluationWorld } from "../../core/fact-catalog";
 import { FactLayer } from "../../core/fact-layer";
 import { hand } from "../../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../../engine/hand-evaluator";
+import { FactOperator } from "../evaluation/meaning";
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -35,14 +37,14 @@ describe("defineBooleanFact", () => {
       id: "test.fact",
       description: "Test fact",
       factId: "hand.hcp",
-      operator: "gte",
+      operator: FactOperator.Gte,
       value: 10,
       constrainsDimensions: ["pointRange"],
     });
 
     expect(entry.definition.id).toBe("test.fact");
     expect(entry.definition.layer).toBe(FactLayer.ModuleDerived);
-    expect(entry.definition.world).toBe("acting-hand");
+    expect(entry.definition.world).toBe(EvaluationWorld.ActingHand);
     expect(entry.definition.valueType).toBe("boolean");
     expect(entry.definition.constrainsDimensions).toEqual(["pointRange"]);
     expect(entry.definition.derivesFrom).toEqual(["hand.hcp"]);
@@ -53,7 +55,7 @@ describe("defineBooleanFact", () => {
       id: "test.fact",
       description: "Test fact",
       factId: "hand.hcp",
-      operator: "gte",
+      operator: FactOperator.Gte,
       value: 10,
       constrainsDimensions: ["pointRange"],
       derivesFrom: ["hand.hcp", "bridge.isVulnerable"],
@@ -67,7 +69,7 @@ describe("defineBooleanFact", () => {
       id: "test.gte",
       description: "HCP >= 10",
       factId: "hand.hcp",
-      operator: "gte",
+      operator: FactOperator.Gte,
       value: 10,
       constrainsDimensions: ["pointRange"],
     });
@@ -81,7 +83,7 @@ describe("defineBooleanFact", () => {
       id: "test.gte",
       description: "HCP >= 10",
       factId: "hand.hcp",
-      operator: "gte",
+      operator: FactOperator.Gte,
       value: 10,
       constrainsDimensions: ["pointRange"],
     });
@@ -95,7 +97,7 @@ describe("defineBooleanFact", () => {
       id: "test.lte",
       description: "HCP <= 5",
       factId: "hand.hcp",
-      operator: "lte",
+      operator: FactOperator.Lte,
       value: 5,
       constrainsDimensions: ["pointRange"],
     });
@@ -110,7 +112,7 @@ describe("defineBooleanFact", () => {
       id: "test.eq",
       description: "HCP == 15",
       factId: "hand.hcp",
-      operator: "eq",
+      operator: FactOperator.Eq,
       value: 15,
       constrainsDimensions: ["pointRange"],
     });
@@ -125,7 +127,7 @@ describe("defineBooleanFact", () => {
       id: "module.test.myFact",
       description: "Test",
       factId: "hand.hcp",
-      operator: "gte",
+      operator: FactOperator.Gte,
       value: 10,
       constrainsDimensions: ["pointRange"],
     });
@@ -232,7 +234,7 @@ describe("definePerSuitFacts", () => {
 
     for (const e of entries) {
       expect(e.definition.layer).toBe(FactLayer.ModuleDerived);
-      expect(e.definition.world).toBe("acting-hand");
+      expect(e.definition.world).toBe(EvaluationWorld.ActingHand);
     }
   });
 });
@@ -306,7 +308,7 @@ describe("buildExtension", () => {
       id: "module.test.simple",
       description: "Test",
       factId: "hand.hcp",
-      operator: "gte",
+      operator: FactOperator.Gte,
       value: 10,
       constrainsDimensions: ["pointRange"],
     });
@@ -323,7 +325,7 @@ describe("buildExtension", () => {
       id: "module.test.bool",
       description: "Boolean test",
       factId: "hand.hcp",
-      operator: "gte",
+      operator: FactOperator.Gte,
       value: 10,
       constrainsDimensions: ["pointRange"],
     });
@@ -365,7 +367,7 @@ describe("buildExtension", () => {
       id: "module.test.compat",
       description: "Compat test",
       factId: "hand.hcp",
-      operator: "eq",
+      operator: FactOperator.Eq,
       value: 15,
       constrainsDimensions: ["pointRange"],
     });

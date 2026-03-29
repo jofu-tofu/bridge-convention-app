@@ -4,8 +4,10 @@ import { ConventionCategory } from "../../convention-types";
 import type { ConventionBundle } from "../bundle-types";
 import type { ConventionConfig } from "../../convention-types";
 import type { ConventionModule } from "../../convention-module";
+import { Disclosure } from "../../../pipeline/evaluation/meaning";
 import { SAYC_SYSTEM_CONFIG } from "../../../definitions/system-config";
 import { Seat } from "../../../../engine/types";
+import { FactOperator } from "../../../pipeline/evaluation/meaning";
 
 function stubBundle(overrides: Partial<ConventionBundle> = {}): ConventionBundle {
   return {
@@ -106,11 +108,11 @@ describe("variesBySystem derivation", () => {
         surfaces: [{
           meaningId: "test-meaning",
           semanticClassId: "test:class",
-          clauses: clauses.map((c) => ({ ...c, operator: "boolean" as const, value: true })),
+          clauses: clauses.map((c) => ({ ...c, operator: FactOperator.Boolean as const, value: true })),
           encoding: { defaultCall: { type: "bid" as const, level: 2, strain: "C" as const } },
           ranking: { recommendationBand: "preferred" as const, declarationOrder: 0 },
           sourceIntent: { type: "test", params: {} },
-          disclosure: "natural" as const,
+          disclosure: Disclosure.Natural,
           teachingLabel: "Test",
         }],
       }],

@@ -13,6 +13,7 @@ import { clearBundleRegistry, registerBundle, createConventionConfigFromBundle, 
 import type { ConventionConfig } from "../../conventions";
 import { buildAuction } from "../../engine/auction-helpers";
 import { mulberry32 } from "../../engine/seeded-rng";
+import { PracticeRole } from "../drill-types";
 
 const ntBundleConventionConfig = createConventionConfigFromBundle(ntBundle);
 
@@ -288,15 +289,15 @@ describe("startDrill practiceRole", () => {
   it("defaults to responder when no role specified", async () => {
     const bundle = await startDrill(ntBundleConventionConfig, Seat.South);
 
-    expect(bundle.resolvedRole).toBe("responder");
+    expect(bundle.resolvedRole).toBe(PracticeRole.Responder);
   });
 
   it("swaps constraints so South is dealer when role is opener", async () => {
     const bundle = await startDrill(ntBundleConventionConfig, Seat.South, undefined, undefined, {
-      practiceRole: "opener",
+      practiceRole: PracticeRole.Opener,
     });
 
-    expect(bundle.resolvedRole).toBe("opener");
+    expect(bundle.resolvedRole).toBe(PracticeRole.Opener);
     // Deal should have South as dealer (opener)
     expect(bundle.deal.dealer).toBe(Seat.South);
     // South should have the opener's hand (15-17 HCP for 1NT)
@@ -307,7 +308,7 @@ describe("startDrill practiceRole", () => {
 
   it("skips initial auction for opener mode", async () => {
     const bundle = await startDrill(ntBundleConventionConfig, Seat.South, undefined, undefined, {
-      practiceRole: "opener",
+      practiceRole: PracticeRole.Opener,
     });
 
     expect(bundle.initialAuction).toBeUndefined();
@@ -316,15 +317,15 @@ describe("startDrill practiceRole", () => {
   it("resolves 'both' using seeded RNG for deterministic results", async () => {
     // RNG: first call < 0.5 → opener (role), rest for deal gen
     const bundle1 = await startDrill(ntBundleConventionConfig, Seat.South, testRng(0.3), undefined, {
-      practiceRole: "both",
+      practiceRole: PracticeRole.Both,
     });
-    expect(bundle1.resolvedRole).toBe("opener");
+    expect(bundle1.resolvedRole).toBe(PracticeRole.Opener);
 
     // RNG: first call >= 0.5 → responder (role), rest for deal gen
     const bundle2 = await startDrill(ntBundleConventionConfig, Seat.South, testRng(0.7), undefined, {
-      practiceRole: "both",
+      practiceRole: PracticeRole.Both,
     });
-    expect(bundle2.resolvedRole).toBe("responder");
+    expect(bundle2.resolvedRole).toBe(PracticeRole.Responder);
   });
 
   it("coerces opener role to responder for opponent conventions", async () => {
@@ -336,11 +337,11 @@ describe("startDrill practiceRole", () => {
     const dontConfig = createConventionConfigFromBundle(dontBundle);
 
     const bundle = await startDrill(dontConfig, Seat.South, undefined, undefined, {
-      practiceRole: "opener",
+      practiceRole: PracticeRole.Opener,
     });
 
     // Should be coerced to responder since DONT is an opponent convention
-    expect(bundle.resolvedRole).toBe("responder");
+    expect(bundle.resolvedRole).toBe(PracticeRole.Responder);
   });
 });
 

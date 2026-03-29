@@ -8,6 +8,7 @@
 import { describe, it, expect } from "vitest";
 import type { BidAction, BidActionType } from "../bid-action";
 import { BID_ACTION_TYPES } from "../bid-action";
+import { HandStrength, ObsSuit, SuitQuality } from "../bid-action";
 
 // ── Helper: exhaustive switch over BidActionType ─────────────────────────
 function describeAct(obs: BidAction): string {
@@ -53,19 +54,19 @@ describe("BidAction type definitions", () => {
   it("each act variant satisfies BidAction with correct shape", () => {
     // These are compile-time assertions — if the types are wrong, TS errors.
     const open = { act: "open", strain: "notrump" } as const satisfies BidAction;
-    const show = { act: "show", feature: "heldSuit", suit: "hearts" } as const satisfies BidAction;
+    const show = { act: "show", feature: "heldSuit", suit: ObsSuit.Hearts } as const satisfies BidAction;
     const deny = { act: "deny", feature: "majorSuit" } as const satisfies BidAction;
     const inquire = { act: "inquire", feature: "majorSuit" } as const satisfies BidAction;
-    const transfer = { act: "transfer", targetSuit: "spades" } as const satisfies BidAction;
-    const accept = { act: "accept", feature: "heldSuit", suit: "clubs" } as const satisfies BidAction;
+    const transfer = { act: "transfer", targetSuit: ObsSuit.Spades } as const satisfies BidAction;
+    const accept = { act: "accept", feature: "heldSuit", suit: ObsSuit.Clubs } as const satisfies BidAction;
     const decline = { act: "decline", feature: "strength" } as const satisfies BidAction;
-    const raise = { act: "raise", strain: "hearts", strength: "game" } as const satisfies BidAction;
+    const raise = { act: "raise", strain: ObsSuit.Hearts, strength: HandStrength.Game } as const satisfies BidAction;
     const place = { act: "place", strain: "notrump" } as const satisfies BidAction;
-    const signoff = { act: "signoff", strain: "spades" } as const satisfies BidAction;
-    const force = { act: "force", level: "game" } as const satisfies BidAction;
-    const agree = { act: "agree", strain: "hearts" } as const satisfies BidAction;
+    const signoff = { act: "signoff", strain: ObsSuit.Spades } as const satisfies BidAction;
+    const force = { act: "force", level: HandStrength.Game } as const satisfies BidAction;
+    const agree = { act: "agree", strain: ObsSuit.Hearts } as const satisfies BidAction;
     const relay = { act: "relay", forced: true } as const satisfies BidAction;
-    const overcall = { act: "overcall", feature: "heldSuit", suit: "spades" } as const satisfies BidAction;
+    const overcall = { act: "overcall", feature: "heldSuit", suit: ObsSuit.Spades } as const satisfies BidAction;
     const double = { act: "double", feature: "strength" } as const satisfies BidAction;
     const pass = { act: "pass" } as const satisfies BidAction;
     const redouble = { act: "redouble", feature: "strength" } as const satisfies BidAction;
@@ -94,11 +95,11 @@ describe("BidAction type definitions", () => {
 
   it("optional fields are correctly optional", () => {
     // open without strength
-    const openNoStrength = { act: "open", strain: "hearts" } as const satisfies BidAction;
+    const openNoStrength = { act: "open", strain: ObsSuit.Hearts } as const satisfies BidAction;
     // open with strength
-    const openWithStrength = { act: "open", strain: "hearts", strength: "weak" } as const satisfies BidAction;
+    const openWithStrength = { act: "open", strain: ObsSuit.Hearts, strength: HandStrength.Weak } as const satisfies BidAction;
     // show without suit
-    const showNoSuit = { act: "show", feature: "suitQuality", quality: "good" } as const satisfies BidAction;
+    const showNoSuit = { act: "show", feature: "suitQuality", quality: SuitQuality.Good } as const satisfies BidAction;
     // signoff without strain
     const signoffNoStrain = { act: "signoff" } as const satisfies BidAction;
 

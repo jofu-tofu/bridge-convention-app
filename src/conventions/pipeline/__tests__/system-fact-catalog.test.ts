@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { ConfidenceLevel } from "../../core/committed-step";
 import { createSystemFactCatalog, computeTrumpTotalPoints, detectTrumpSuit } from "../facts/system-fact-catalog";
 import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../definitions/system-config";
 import type { SystemConfig } from "../../definitions/system-config";
@@ -16,7 +17,9 @@ import {
 } from "../../definitions/system-fact-vocabulary";
 import { TWO_OVER_ONE_SYSTEM_CONFIG } from "../../definitions/system-config";
 import type { FactValue } from "../../core/fact-catalog";
+import { EvaluationWorld } from "../../core/fact-catalog";
 import { FactLayer } from "../../core/fact-layer";
+import { ObsSuit } from "../bid-action";
 
 function hcpMap(hcp: number): ReadonlyMap<string, FactValue> {
   return new Map([["hand.hcp", { factId: "hand.hcp", value: hcp }]]);
@@ -57,7 +60,7 @@ describe("createSystemFactCatalog", () => {
     it('all definitions have layer FactLayer.SystemDerived and world "acting-hand"', () => {
       for (const def of catalog.definitions) {
         expect(def.layer).toBe(FactLayer.SystemDerived);
-        expect(def.world).toBe("acting-hand");
+        expect(def.world).toBe(EvaluationWorld.ActingHand);
       }
     });
 
@@ -288,7 +291,7 @@ describe("computeTrumpTotalPoints", () => {
 
 describe("detectTrumpSuit", () => {
   it("returns suit name for hearts fit", () => {
-    expect(detectTrumpSuit({ fitAgreed: { strain: "hearts" } })).toBe("hearts");
+    expect(detectTrumpSuit({ fitAgreed: { strain: ObsSuit.Hearts } })).toBe("hearts");
   });
 
   it("returns undefined for notrump fit", () => {
@@ -312,7 +315,7 @@ describe("context-aware relational evaluators (SAYC, with fitAgreed)", () => {
     // 8 HCP, shape [3,4,2,4], agreed hearts → tp = 8 + 1 (doubleton diamonds) = 9
     // SAYC inviteMinTp.trump = 8, inviteMaxTp.trump = 10 → 9 is in range → true
     const m = handMap(8, [3, 4, 2, 4]);
-    const ctx = { fitAgreed: { strain: "hearts", confidence: "final" as const } };
+    const ctx = { fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Final as const } };
     const result = relEv.get(SYSTEM_RESPONDER_INVITE_VALUES)!(undefined as any, undefined as any, m, ctx);
     expect(result.value).toBe(true);
   });
@@ -321,7 +324,7 @@ describe("context-aware relational evaluators (SAYC, with fitAgreed)", () => {
     // 11 HCP, shape [3,4,3,0], agreed hearts → tp = 11 + 3 (void clubs) = 14
     // 14 > inviteMaxTp.trump (10) → false
     const m = handMap(11, [3, 4, 3, 0]);
-    const ctx = { fitAgreed: { strain: "hearts", confidence: "final" as const } };
+    const ctx = { fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Final as const } };
     const result = relEv.get(SYSTEM_RESPONDER_INVITE_VALUES)!(undefined as any, undefined as any, m, ctx);
     expect(result.value).toBe(false);
   });
@@ -337,7 +340,7 @@ describe("context-aware relational evaluators (SAYC, with fitAgreed)", () => {
     // 8 HCP, shape [3,4,2,4], agreed hearts → tp = 8 + 1 = 9
     // SAYC gameMinTp.trump = 10 → 9 < 10 → false
     const m = handMap(8, [3, 4, 2, 4]);
-    const ctx = { fitAgreed: { strain: "hearts", confidence: "final" as const } };
+    const ctx = { fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Final as const } };
     const result = relEv.get(SYSTEM_RESPONDER_GAME_VALUES)!(undefined as any, undefined as any, m, ctx);
     expect(result.value).toBe(false);
   });
@@ -346,7 +349,7 @@ describe("context-aware relational evaluators (SAYC, with fitAgreed)", () => {
     // 14 HCP, shape [3,5,0,5], agreed hearts → tp = 14 + 3 (void diamonds) = 17
     // SAYC slamMinTp.trump = 16 → 17 >= 16 → true
     const m = handMap(14, [3, 5, 0, 5]);
-    const ctx = { fitAgreed: { strain: "hearts", confidence: "final" as const } };
+    const ctx = { fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Final as const } };
     const result = relEv.get(SYSTEM_RESPONDER_SLAM_VALUES)!(undefined as any, undefined as any, m, ctx);
     expect(result.value).toBe(true);
   });

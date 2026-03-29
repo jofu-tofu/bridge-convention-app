@@ -9,6 +9,7 @@ import { getModule } from "../../definitions/module-registry";
 import { moduleSurfaces } from "../../core/convention-module";
 import { SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG } from "../../definitions/system-config";
 import { resolveBundle, getBundleInput } from "../../definitions/system-registry";
+import { FactOperator } from "../../pipeline/evaluation/meaning";
 
 describe("Module registry produces unified ConventionModule", () => {
   it("getModule returns object with all ConventionModule fields", () => {
@@ -42,8 +43,8 @@ describe("System-dependent surfaces differ between SAYC and ACOL", () => {
     expect(saycR1).toBeDefined();
     expect(acolR1).toBeDefined();
 
-    const saycHcp = saycR1!.clauses.find(c => c.factId === "hand.hcp" && c.operator === "gte");
-    const acolHcp = acolR1!.clauses.find(c => c.factId === "hand.hcp" && c.operator === "gte");
+    const saycHcp = saycR1!.clauses.find(c => c.factId === "hand.hcp" && c.operator === FactOperator.Gte);
+    const acolHcp = acolR1!.clauses.find(c => c.factId === "hand.hcp" && c.operator === FactOperator.Gte);
 
     expect(saycHcp).toBeDefined();
     expect(acolHcp).toBeDefined();
@@ -62,8 +63,8 @@ describe("System-dependent surfaces differ between SAYC and ACOL", () => {
     expect(saycOpener).toBeDefined();
     expect(acolOpener).toBeDefined();
 
-    const saycMin = saycOpener!.clauses.find(c => c.factId === "hand.hcp" && c.operator === "gte");
-    const acolMin = acolOpener!.clauses.find(c => c.factId === "hand.hcp" && c.operator === "gte");
+    const saycMin = saycOpener!.clauses.find(c => c.factId === "hand.hcp" && c.operator === FactOperator.Gte);
+    const acolMin = acolOpener!.clauses.find(c => c.factId === "hand.hcp" && c.operator === FactOperator.Gte);
 
     // SAYC: 15, ACOL: 12
     expect(saycMin!.value).toBe(15);

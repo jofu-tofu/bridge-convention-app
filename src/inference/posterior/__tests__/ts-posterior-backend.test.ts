@@ -6,6 +6,8 @@ import type { ConditioningContext } from "../posterior-boundary";
 import { Suit, Rank } from "../../../engine/types";
 import type { Hand } from "../../../engine/types";
 import { makeSnapshot, makeHand, southHand, oneNtCommitments } from "./posterior-test-fixtures";
+import { FactOperator } from "../../../conventions/pipeline/evaluation/meaning";
+import { ObsSuit } from "../../../conventions/pipeline/bid-action";
 
 function makeConditioningContext(
   commitments: readonly PublicConstraint[],
@@ -86,7 +88,7 @@ describe("createTsBackend", () => {
     const context = makeConditioningContext(oneNtCommitments);
     const state = backend.initialize(context);
 
-    const result = backend.query(state, { kind: "suit-length", seat: "N", suit: "spades" });
+    const result = backend.query(state, { kind: "suit-length", seat: "N", suit: ObsSuit.Spades });
     // Balanced hand: each suit between 2 and 5
     expect(result.value).toBeGreaterThanOrEqual(2);
     expect(result.value).toBeLessThanOrEqual(5);
@@ -171,7 +173,7 @@ describe("createTsBackend", () => {
     const result = backend.query(state, {
       kind: "fit-probability",
       seats: ["N", "S"],
-      suit: "spades",
+      suit: ObsSuit.Spades,
       threshold: 8,
     });
     expect(result.value).toBeGreaterThanOrEqual(0);
@@ -200,7 +202,7 @@ describe("createTsBackend", () => {
       ...oneNtCommitments,
       {
         subject: "N",
-        constraint: { factId: "bridge.hasFourCardMajor", operator: "boolean", value: false },
+        constraint: { factId: "bridge.hasFourCardMajor", operator: FactOperator.Boolean, value: false },
         origin: "call-meaning",
         strength: "hard",
       },

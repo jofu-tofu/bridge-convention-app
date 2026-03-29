@@ -1,12 +1,12 @@
 import type { BiddingViewport, AuctionEntryView, Seat } from "../../../service";
-import { partnerSeat, nextSeat } from "../../../service";
+import { partnerSeat, nextSeat, PracticeMode } from "../../../service";
 
 /**
  * Build a plain-English summary of the pre-filled auction context.
  * Only shown in Decision Drill mode when there are pre-filled bids.
  */
 export function buildContextSummary(viewport: BiddingViewport): string | null {
-  if (viewport.practiceMode !== "decision-drill") return null;
+  if (viewport.practiceMode !== PracticeMode.DecisionDrill) return null;
   if (viewport.auctionEntries.length === 0) return null;
 
   const userSeat = viewport.seat;

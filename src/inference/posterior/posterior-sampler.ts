@@ -5,6 +5,7 @@ import type { HandFactResolverFn } from "../../conventions/core/fact-catalog";
 import { createDeck, SUIT_NAME_MAP } from "../../engine/constants";
 import { mulberry32 } from "../../engine/seeded-rng";
 import { calculateHcp, calculateHcpAndShape, isBalanced, evaluateHand } from "../../engine/hand-evaluator";
+import { FactOperator } from "../../conventions/pipeline/evaluation/meaning";
 
 export interface WeightedDealSample {
   readonly hands: ReadonlyMap<string, Hand>;
@@ -65,7 +66,7 @@ function checkClause(
   hand: Hand,
   clause: {
     readonly factId: string;
-    readonly operator: "gte" | "lte" | "eq" | "range" | "boolean" | "in";
+    readonly operator: FactOperator.Gte | "lte" | "eq" | "range" | "boolean" | "in";
     readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
   },
   resolver?: HandFactResolverFn,

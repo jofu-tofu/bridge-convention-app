@@ -1,18 +1,26 @@
 /** Opponent bidding behavior for drills. */
-export type OpponentMode = "natural" | "none";
+export enum OpponentMode {
+  Natural = "natural",
+  None = "none",
+}
 
 // ─── Practice role ─────────────────────────────────────────────
 
 /** Which role the user plays: opener, responder, or both (random per deal). */
-export type PracticeRole = "responder" | "opener" | "both";
+export enum PracticeRole {
+  Responder = "responder",
+  Opener = "opener",
+  Both = "both",
+}
 
 // ─── Practice modes ────────────────────────────────────────────
 
 /** Controls what portion of the auction the user bids through. */
-export type PracticeMode =
-  | "decision-drill"       // Drop-in at convention decision point (current behavior)
-  | "full-auction"         // User bids from opening through convention and beyond
-  | "continuation-drill";  // Drop-in at a specific continuation phase
+export enum PracticeMode {
+  DecisionDrill = "decision-drill",       // Drop-in at convention decision point (current behavior)
+  FullAuction = "full-auction",           // User bids from opening through convention and beyond
+  ContinuationDrill = "continuation-drill", // Drop-in at a specific continuation phase
+}
 
 /** Module roles relative to the practice target. Computed at session creation. */
 export interface PracticeFocus {
@@ -86,7 +94,18 @@ export const DEFAULT_DRILL_TUNING: DrillTuning = {
 // that would be sent to a backend API to start a practice session.
 
 /** Play phase behavior after bidding completes. */
-export type PlayPreference = "always" | "prompt" | "skip";
+export enum PlayPreference {
+  Always = "always",
+  Prompt = "prompt",
+  Skip = "skip",
+}
+
+/** Prompt mode for the declarer prompt phase. */
+export enum PromptMode {
+  SouthDeclarer = "south-declarer",
+  DeclarerSwap = "declarer-swap",
+  Defender = "defender",
+}
 
 /** Complete drill execution parameters (opponent behavior + deal generation). */
 export interface DrillSettings {
@@ -100,7 +119,7 @@ export interface DrillSettings {
 }
 
 export const DEFAULT_DRILL_SETTINGS: DrillSettings = {
-  opponentMode: "none",
+  opponentMode: OpponentMode.None,
   tuning: DEFAULT_DRILL_TUNING,
   playProfileId: "world-class",
 };
@@ -148,5 +167,5 @@ export interface DrillBundle {
   /** Play phase behavior — defaults to mode-derived preference when omitted. */
   readonly playPreference?: PlayPreference;
   /** The resolved practice role for this deal ("opener" or "responder"). */
-  readonly resolvedRole?: "opener" | "responder";
+  readonly resolvedRole?: PracticeRole.Opener | PracticeRole.Responder;
 }

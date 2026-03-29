@@ -10,9 +10,11 @@
  * deal generation, and optional diagnostic-mode unsat analysis.
  */
 
+import {
+  SeatRole,
+} from "../core/deal-spec-types";
 import type {
   DealSpec,
-  SeatRole,
   JointConstraint,
   UnsatisfiableResult,
 } from "../core/deal-spec-types";
@@ -50,15 +52,15 @@ function rhoSeat(s: Seat): Seat {
  */
 export function resolveRole(role: SeatRole, userSeat: Seat): Seat {
   switch (role) {
-    case "self":
+    case SeatRole.Self:
       return userSeat;
-    case "partner":
+    case SeatRole.Partner:
       return oppositeSeat(userSeat);
-    case "lho":
+    case SeatRole.Lho:
       return lhoSeat(userSeat);
-    case "rho":
+    case SeatRole.Rho:
       return rhoSeat(userSeat);
-    case "openingSide":
+    case SeatRole.OpeningSide:
       return userSeat;
   }
 }

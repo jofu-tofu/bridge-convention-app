@@ -1,4 +1,5 @@
 import { describe, test, expect } from "vitest";
+import { ConfidenceLevel } from "../committed-step";
 import { buildPublicSnapshot } from "../module-surface";
 import type { PublicSnapshot } from "../module-surface";
 import { ForcingState } from "../../core/strategy-types";
@@ -59,13 +60,13 @@ describe("buildPublicSnapshot", () => {
   test("preserves agreedStrain with optional suit field", () => {
     const snapshot = buildPublicSnapshot({
       ...baseParams,
-      agreedStrain: { type: "suit", suit: "H", confidence: "tentative" },
+      agreedStrain: { type: "suit", suit: "H", confidence: ConfidenceLevel.Tentative },
     });
 
     expect(snapshot.agreedStrain).toEqual({
       type: "suit",
       suit: "H",
-      confidence: "tentative",
+      confidence: ConfidenceLevel.Tentative,
     });
   });
 });

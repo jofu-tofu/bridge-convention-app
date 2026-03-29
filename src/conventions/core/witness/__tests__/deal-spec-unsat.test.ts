@@ -1,6 +1,8 @@
+import { SeatRole } from "../../deal-spec-types";
 import { describe, it, expect } from "vitest";
 import { detectUnsat } from "../deal-spec-unsat";
 import { makeSpec } from "./witness-test-helpers";
+import { FactOperator } from "../../../pipeline/evaluation/meaning";
 
 // ─── Satisfiable specs return null ────────────────────────────
 describe("detectUnsat - satisfiable specs", () => {
@@ -14,12 +16,12 @@ describe("detectUnsat - satisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.hcp", operator: "gte", value: 15 },
-              { factId: "hand.hcp", operator: "lte", value: 17 },
+              { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
+              { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
             ],
           },
         },
@@ -33,13 +35,13 @@ describe("detectUnsat - satisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
               {
                 factId: "hand.suitLength.spades",
-                operator: "range",
+                operator: FactOperator.Range,
                 value: { min: 4, max: 8 },
               },
             ],
@@ -55,13 +57,13 @@ describe("detectUnsat - satisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.hcp", operator: "gte", value: 15 },
-              { factId: "hand.hcp", operator: "lte", value: 17 },
-              { factId: "hand.isBalanced", operator: "boolean", value: true },
+              { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
+              { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
+              { factId: "hand.isBalanced", operator: FactOperator.Boolean, value: true },
             ],
           },
         },
@@ -75,14 +77,14 @@ describe("detectUnsat - satisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.suitLength.spades", operator: "eq", value: 5 },
-              { factId: "hand.suitLength.hearts", operator: "eq", value: 4 },
-              { factId: "hand.suitLength.diamonds", operator: "eq", value: 3 },
-              { factId: "hand.suitLength.clubs", operator: "eq", value: 1 },
+              { factId: "hand.suitLength.spades", operator: FactOperator.Eq, value: 5 },
+              { factId: "hand.suitLength.hearts", operator: FactOperator.Eq, value: 4 },
+              { factId: "hand.suitLength.diamonds", operator: FactOperator.Eq, value: 3 },
+              { factId: "hand.suitLength.clubs", operator: FactOperator.Eq, value: 1 },
             ],
           },
         },
@@ -100,10 +102,10 @@ describe("detectUnsat - unsatisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 38 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 38 }],
           },
         },
       ],
@@ -120,10 +122,10 @@ describe("detectUnsat - unsatisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "lte", value: -1 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Lte, value: -1 }],
           },
         },
       ],
@@ -139,12 +141,12 @@ describe("detectUnsat - unsatisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.hcp", operator: "gte", value: 20 },
-              { factId: "hand.hcp", operator: "lte", value: 10 },
+              { factId: "hand.hcp", operator: FactOperator.Gte, value: 20 },
+              { factId: "hand.hcp", operator: FactOperator.Lte, value: 10 },
             ],
           },
         },
@@ -161,11 +163,11 @@ describe("detectUnsat - unsatisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.suitLength.spades", operator: "gte", value: 14 },
+              { factId: "hand.suitLength.spades", operator: FactOperator.Gte, value: 14 },
             ],
           },
         },
@@ -181,12 +183,12 @@ describe("detectUnsat - unsatisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.suitLength.spades", operator: "gte", value: 7 },
-              { factId: "hand.suitLength.hearts", operator: "gte", value: 7 },
+              { factId: "hand.suitLength.spades", operator: FactOperator.Gte, value: 7 },
+              { factId: "hand.suitLength.hearts", operator: FactOperator.Gte, value: 7 },
             ],
           },
         },
@@ -203,13 +205,13 @@ describe("detectUnsat - unsatisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
               {
                 factId: "hand.suitLength.hearts",
-                operator: "range",
+                operator: FactOperator.Range,
                 value: { min: 8, max: 3 },
               },
             ],
@@ -227,18 +229,18 @@ describe("detectUnsat - unsatisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 25 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 25 }],
           },
         },
         {
           kind: "seat",
-          role: "partner",
+          role: SeatRole.Partner,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 20 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 20 }],
           },
         },
       ],
@@ -254,10 +256,10 @@ describe("detectUnsat - unsatisfiable specs", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 38 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 38 }],
           },
         },
       ],
@@ -278,34 +280,34 @@ describe("detectUnsat - cross-seat checks", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 10 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 10 }],
           },
         },
         {
           kind: "seat",
-          role: "partner",
+          role: SeatRole.Partner,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 10 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 10 }],
           },
         },
         {
           kind: "seat",
-          role: "lho",
+          role: SeatRole.Lho,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 10 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 10 }],
           },
         },
         {
           kind: "seat",
-          role: "rho",
+          role: SeatRole.Rho,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 10 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 10 }],
           },
         },
       ],
@@ -321,34 +323,34 @@ describe("detectUnsat - cross-seat checks", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 11 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 11 }],
           },
         },
         {
           kind: "seat",
-          role: "partner",
+          role: SeatRole.Partner,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 11 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 11 }],
           },
         },
         {
           kind: "seat",
-          role: "lho",
+          role: SeatRole.Lho,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 11 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 11 }],
           },
         },
         {
           kind: "seat",
-          role: "rho",
+          role: SeatRole.Rho,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 11 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 11 }],
           },
         },
       ],
@@ -366,7 +368,7 @@ describe("detectUnsat - ignores non-seat layers", () => {
       layers: [
         {
           kind: "public-guard",
-          guard: { field: "force", operator: "eq", value: "forcing" },
+          guard: { field: "force", operator: FactOperator.Eq, value: "forcing" },
         },
       ],
     });

@@ -19,7 +19,7 @@ import { Vulnerability } from "../../engine/types";
 import type { Auction, Call, Deal,  Seat} from "../../engine/types";
 import type { ConventionBundle } from "../../conventions";
 import type { ConventionSpec } from "../../conventions";
-import type { OpponentMode } from "../../session/drill-types";
+import { OpponentMode } from "../../session/drill-types";
 import type { PlaythroughHandle, PlaythroughGradeResult, RevealStep } from "./types";
 import { nextSeat, partnerSeat, generateSeededDeal, resolveUserSeat, buildInitialAuction, buildContext, makeViewport } from "./helpers";
 
@@ -63,7 +63,7 @@ function runPlaythroughInternal(
   const userSeat = resolveUserSeat(bundle, deal);
   const partner = partnerSeat(userSeat);
   const strategy = protocolSpecToStrategy(spec);
-  const ewStrategy = opponents === "natural"
+  const ewStrategy = opponents === OpponentMode.Natural
     ? createStrategyChain([naturalFallbackStrategy])
     : null;
 
@@ -175,7 +175,7 @@ function getOrRunPlaythrough(
 export function startPlaythrough(
   bundleId: string, seed: number,
   vuln: Vulnerability = Vulnerability.None,
-  opponents: OpponentMode = "none",
+  opponents: OpponentMode = OpponentMode.None,
   baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): { handle: PlaythroughHandle; firstStep: BiddingViewport | null } {
   const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents, baseSystem);
@@ -194,7 +194,7 @@ export function startPlaythrough(
 export function getPlaythroughStepViewport(
   bundleId: string, seed: number, stepIdx: number,
   vuln: Vulnerability = Vulnerability.None,
-  opponents: OpponentMode = "none",
+  opponents: OpponentMode = OpponentMode.None,
   baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): BiddingViewport {
   const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents, baseSystem);
@@ -212,7 +212,7 @@ export function getPlaythroughStepViewport(
 export function gradePlaythroughBid(
   bundleId: string, seed: number, stepIdx: number, bidStr: string,
   vuln: Vulnerability = Vulnerability.None,
-  opponents: OpponentMode = "none",
+  opponents: OpponentMode = OpponentMode.None,
   baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): PlaythroughGradeResult {
   const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents, baseSystem);
@@ -297,7 +297,7 @@ export function gradePlaythroughBid(
 export function getPlaythroughRevealSteps(
   bundleId: string, seed: number,
   vuln: Vulnerability = Vulnerability.None,
-  opponents: OpponentMode = "none",
+  opponents: OpponentMode = OpponentMode.None,
   baseSystem: BaseSystemId = BASE_SYSTEM_SAYC,
 ): { totalSteps: number; steps: readonly RevealStep[]; atomsCovered: readonly string[] } {
   const pt = getOrRunPlaythrough(bundleId, seed, vuln, opponents, baseSystem);

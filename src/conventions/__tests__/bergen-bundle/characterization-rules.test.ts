@@ -13,6 +13,7 @@ import { Seat } from "../../../engine/types";
 import { flattenSurfaces } from "../../pipeline/observation/rule-interpreter";
 
 import { getModule } from "../../definitions/module-registry";
+import { ObsSuit } from "../../pipeline/bid-action";
 
 const allRuleModules: ConventionModule[] = [getModule("bergen")!];
 
@@ -60,7 +61,7 @@ function ruleSurfaceIds(log: readonly CommittedStep[], nextSeat: Seat = Seat.Sou
 describe("Bergen rules: characterization tests", () => {
   describe("1H-P (R1 hearts — responder surfaces)", () => {
     const log: CommittedStep[] = [
-      makeStep(Seat.North, [{ act: "open", strain: "hearts" }]),
+      makeStep(Seat.North, [{ act: "open", strain: ObsSuit.Hearts }]),
       passStep(Seat.East),
     ];
 
@@ -78,7 +79,7 @@ describe("Bergen rules: characterization tests", () => {
 
   describe("1S-P (R1 spades — responder surfaces)", () => {
     const log: CommittedStep[] = [
-      makeStep(Seat.North, [{ act: "open", strain: "spades" }]),
+      makeStep(Seat.North, [{ act: "open", strain: ObsSuit.Spades }]),
       passStep(Seat.East),
     ];
 

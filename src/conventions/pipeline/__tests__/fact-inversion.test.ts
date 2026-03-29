@@ -3,6 +3,7 @@ import { invertComposition } from "../facts/fact-inversion";
 import type { FactComposition, PrimitiveClause } from "../../core/fact-catalog";
 import { SUIT_FACT_MAP } from "../../core/runtime/fact-compiler";
 import { Suit } from "../../../engine/types";
+import { FactOperator } from "../evaluation/meaning";
 
 // ─── Factory helpers ────────────────────────────────────────────────
 

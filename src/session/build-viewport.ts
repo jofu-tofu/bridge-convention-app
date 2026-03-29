@@ -25,13 +25,15 @@ interface BidFeedbackLike {
   readonly observationHistory?: readonly ObservationStepView[];
 }
 
+import {
+  ViewportBidGrade,
+} from "../service/response-types";
 import type {
   BiddingViewport,
   HandEvaluationView,
   AuctionEntryView,
   BiddingOptionView,
   ViewportBidFeedback,
-  ViewportBidGrade,
   ConditionView,
   AlternativeView,
   NearMissView,
@@ -46,6 +48,7 @@ import type {
   BidContext,
 } from "../service/response-types";
 import type { PracticeMode } from "./drill-types";
+import type { PromptMode } from "./drill-types";
 
 // ── Build Bidding Viewport ──────────────────────────────────────────
 
@@ -153,8 +156,8 @@ export function buildBiddingViewport(input: BuildBiddingViewportInput): BiddingV
  * would see in the feedback panel.
  */
 export function buildViewportFeedback(feedback: BidFeedbackLike): ViewportBidFeedback {
-  const grade = feedback.grade as ViewportBidGrade;
-  const requiresRetry = grade === "near-miss" || grade === "incorrect";
+  const grade = feedback.grade as unknown as ViewportBidGrade;
+  const requiresRetry = grade === ViewportBidGrade.NearMiss || grade === ViewportBidGrade.Incorrect;
 
   // Correct answer (from expected result)
   const correctCall = feedback.expectedResult.call;
@@ -254,7 +257,7 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
     primaryExplanation: projection?.primaryExplanation,
     whyNot: projection?.whyNot,
     conventionsApplied: projection?.conventionsApplied,
-    meaningViews: projection?.meaningViews,
+    meaningViews: projection?.meaningViews as unknown as TeachingDetail["meaningViews"],
     callViews: projection?.callViews,
 
     // Partner hand space
@@ -266,7 +269,7 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
     })),
 
     // Encoding trace
-    encoderKind: projection?.encoderKind,
+    encoderKind: projection?.encoderKind as unknown as TeachingDetail["encoderKind"],
 
     // Practical recommendation
     practicalRecommendation: feedback.practicalRecommendation
@@ -300,7 +303,7 @@ export function buildTeachingDetail(feedback: BidFeedbackLike): TeachingDetail {
     fallbackReached: projection?.fallbackReached ?? false,
 
     // Parse tree (from teaching projection)
-    parseTree: projection?.parseTree,
+    parseTree: projection?.parseTree as unknown as TeachingDetail["parseTree"],
 
     // Observation history (from AuctionContext, viewport-safe projection)
     observationHistory: feedback.observationHistory,
@@ -393,7 +396,7 @@ export interface BuildDeclarerPromptViewportInput {
   readonly auction: Auction;
   readonly bidHistory: readonly BidHistoryEntry[];
   readonly contract: Contract;
-  readonly promptMode: "defender" | "south-declarer" | "declarer-swap";
+  readonly promptMode: PromptMode;
 }
 
 /**

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { BidFeedbackBaseProps } from "./types";
-  import { formatCall } from "../../../service";
+  import { formatCall, ViewportBidGrade } from "../../../service";
   import { formatAmbiguity } from "./BidFeedbackPanel";
   import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
   import BidFeedbackShell from "../../shared/BidFeedbackShell.svelte";
@@ -27,7 +27,7 @@
   {#if feedback.correctBidExplanation}
     <p class="text-fb-correct-dim/70 text-[--text-label] mt-1">{feedback.correctBidExplanation}</p>
   {/if}
-  {#if feedback.grade === "correct-not-preferred" && teaching?.primaryBid}
+  {#if feedback.grade === ViewportBidGrade.CorrectNotPreferred && teaching?.primaryBid}
     <p class="text-fb-correct-dim/70 text-[--text-label] mt-1" data-testid="not-preferred-note">
       Though <span class="font-mono font-semibold">{formatCall(teaching.primaryBid)}</span> is preferred
     </p>

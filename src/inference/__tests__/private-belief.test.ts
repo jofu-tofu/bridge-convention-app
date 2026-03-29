@@ -6,6 +6,7 @@ import type { FactConstraint } from "../../conventions/core/agreement-module";
 import { hand } from "../../engine/__tests__/fixtures";
 import { evaluateHand } from "../../engine/hand-evaluator";
 import { createInitialBeliefState, applyAnnotation } from "../belief-accumulator";
+import { FactOperator } from "../../conventions/pipeline/evaluation/meaning";
 
 function makeAnnotation(seat: Seat, constraints: readonly FactConstraint[]): BidAnnotation {
   return { call: { type: "pass" }, seat, conventionId: null, meaning: "test", constraints };
@@ -29,14 +30,14 @@ function makeBeliefState(overrides?: Partial<Record<Seat, { hcpRange?: { min: nu
     const seat = seatStr as Seat;
     const constraints: FactConstraint[] = [];
     if (data.hcpRange) {
-      if (data.hcpRange.min > 0) constraints.push({ factId: "hand.hcp", operator: "gte", value: data.hcpRange.min });
-      if (data.hcpRange.max < 40) constraints.push({ factId: "hand.hcp", operator: "lte", value: data.hcpRange.max });
+      if (data.hcpRange.min > 0) constraints.push({ factId: "hand.hcp", operator: FactOperator.Gte, value: data.hcpRange.min });
+      if (data.hcpRange.max < 40) constraints.push({ factId: "hand.hcp", operator: FactOperator.Lte, value: data.hcpRange.max });
     }
     if (data.suitLengths) {
       for (const [suit, range] of Object.entries(data.suitLengths)) {
         if (range) {
-          if (range.min > 0) constraints.push({ factId: `hand.suitLength.${suitToName(suit as Suit)}`, operator: "gte", value: range.min });
-          if (range.max < 13) constraints.push({ factId: `hand.suitLength.${suitToName(suit as Suit)}`, operator: "lte", value: range.max });
+          if (range.min > 0) constraints.push({ factId: `hand.suitLength.${suitToName(suit as Suit)}`, operator: FactOperator.Gte, value: range.min });
+          if (range.max < 13) constraints.push({ factId: `hand.suitLength.${suitToName(suit as Suit)}`, operator: FactOperator.Lte, value: range.max });
         }
       }
     }

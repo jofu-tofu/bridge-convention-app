@@ -17,6 +17,7 @@ import { INITIAL_NEGOTIATION } from "../core/committed-step";
 import type { PublicSnapshot } from "../core/module-surface";
 import { Seat } from "../../engine/types";
 import { getModules } from "../definitions/module-registry";
+import { ObsSuit } from "../pipeline/bid-action";
 
 // Both modules active (simulates Bergen practice with base modules)
 const modules: ConventionModule[] = [
@@ -95,7 +96,7 @@ describe("Bergen + natural-bids integration", () => {
 
   it("Bergen FSM advances to opened-hearts after 1H open observation", () => {
     const log: CommittedStep[] = [
-      makeStep(Seat.South, [{ act: "open", strain: "hearts" }]),
+      makeStep(Seat.South, [{ act: "open", strain: ObsSuit.Hearts }]),
       passStep(Seat.West),
     ];
 
@@ -107,7 +108,7 @@ describe("Bergen + natural-bids integration", () => {
 
   it("Bergen FSM advances to opened-spades after 1S open observation", () => {
     const log: CommittedStep[] = [
-      makeStep(Seat.South, [{ act: "open", strain: "spades" }]),
+      makeStep(Seat.South, [{ act: "open", strain: ObsSuit.Spades }]),
       passStep(Seat.West),
     ];
 
@@ -118,7 +119,7 @@ describe("Bergen + natural-bids integration", () => {
 
   it("natural-bids FSM advances to opened-suit (no response surfaces)", () => {
     const log: CommittedStep[] = [
-      makeStep(Seat.South, [{ act: "open", strain: "hearts" }]),
+      makeStep(Seat.South, [{ act: "open", strain: ObsSuit.Hearts }]),
       passStep(Seat.West),
     ];
 

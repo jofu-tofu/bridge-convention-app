@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { Seat, Suit, Vulnerability } from "../../../../engine/types";
-import type { SeatRole } from "../../deal-spec-types";
+import { SeatRole } from "../../deal-spec-types";
 import { compileDealSpec } from "../deal-spec-compiler";
 import { makeSpec } from "./witness-test-helpers";
+import { FactOperator } from "../../../pipeline/evaluation/meaning";
 
 // ─── Basic constraint compilation ─────────────────────────────
 describe("compileDealSpec", () => {
@@ -16,12 +17,12 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.hcp", operator: "gte", value: 15 },
-              { factId: "hand.hcp", operator: "lte", value: 17 },
+              { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
+              { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
             ],
           },
         },
@@ -40,13 +41,13 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
               {
                 factId: "hand.hcp",
-                operator: "range",
+                operator: FactOperator.Range,
                 value: { min: 12, max: 14 },
               },
             ],
@@ -65,11 +66,11 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.suitLength.spades", operator: "gte", value: 5 },
+              { factId: "hand.suitLength.spades", operator: FactOperator.Gte, value: 5 },
             ],
           },
         },
@@ -85,11 +86,11 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.suitLength.hearts", operator: "lte", value: 3 },
+              { factId: "hand.suitLength.hearts", operator: FactOperator.Lte, value: 3 },
             ],
           },
         },
@@ -105,11 +106,11 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.isBalanced", operator: "boolean", value: true },
+              { factId: "hand.isBalanced", operator: FactOperator.Boolean, value: true },
             ],
           },
         },
@@ -125,11 +126,11 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.isBalanced", operator: "boolean", value: false },
+              { factId: "hand.isBalanced", operator: FactOperator.Boolean, value: false },
             ],
           },
         },
@@ -145,13 +146,13 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
               {
                 factId: "hand.suitLength.diamonds",
-                operator: "range",
+                operator: FactOperator.Range,
                 value: { min: 4, max: 6 },
               },
             ],
@@ -170,13 +171,13 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.hcp", operator: "gte", value: 15 },
-              { factId: "hand.suitLength.spades", operator: "gte", value: 5 },
-              { factId: "hand.isBalanced", operator: "boolean", value: false },
+              { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
+              { factId: "hand.suitLength.spades", operator: FactOperator.Gte, value: 5 },
+              { factId: "hand.isBalanced", operator: FactOperator.Boolean, value: false },
             ],
           },
         },
@@ -195,21 +196,21 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.hcp", operator: "gte", value: 15 },
+              { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
             ],
           },
         },
         {
           kind: "seat",
-          role: "partner",
+          role: SeatRole.Partner,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.hcp", operator: "gte", value: 8 },
+              { factId: "hand.hcp", operator: FactOperator.Gte, value: 8 },
             ],
           },
         },
@@ -236,12 +237,12 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "any",
             clauses: [
-              { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
-              { factId: "hand.suitLength.spades", operator: "gte", value: 5 },
+              { factId: "hand.suitLength.hearts", operator: FactOperator.Gte, value: 5 },
+              { factId: "hand.suitLength.spades", operator: FactOperator.Gte, value: 5 },
             ],
           },
         },
@@ -266,7 +267,7 @@ describe("compileDealSpec", () => {
 
   it("maps setup.dealerRole to DealConstraints.dealer using role resolution", () => {
     const spec = makeSpec({
-      setup: { dealerRole: "partner" },
+      setup: { dealerRole: SeatRole.Partner },
     });
     const result = compileDealSpec(spec, Seat.South);
     expect(result.dealer).toBe(Seat.North);
@@ -278,7 +279,7 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "public-guard",
-          guard: { field: "force", operator: "eq", value: "forcing" },
+          guard: { field: "force", operator: FactOperator.Eq, value: "forcing" },
         },
       ],
     });
@@ -304,7 +305,7 @@ describe("compileDealSpec", () => {
       layers: [
         {
           kind: "joint",
-          roles: ["self", "partner"] as [SeatRole, SeatRole],
+          roles: [SeatRole.Self, SeatRole.Partner],
           predicate: {
             kind: "combined-hcp",
             params: { min: 25, max: 30 },
@@ -325,10 +326,10 @@ describe("compileDealSpec role rotation", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 10 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 10 }],
           },
         },
       ],
@@ -342,10 +343,10 @@ describe("compileDealSpec role rotation", () => {
       layers: [
         {
           kind: "seat",
-          role: "partner",
+          role: SeatRole.Partner,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 10 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 10 }],
           },
         },
       ],
@@ -359,10 +360,10 @@ describe("compileDealSpec role rotation", () => {
       layers: [
         {
           kind: "seat",
-          role: "lho",
+          role: SeatRole.Lho,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "lte", value: 10 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Lte, value: 10 }],
           },
         },
       ],
@@ -376,10 +377,10 @@ describe("compileDealSpec role rotation", () => {
       layers: [
         {
           kind: "seat",
-          role: "rho",
+          role: SeatRole.Rho,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "lte", value: 10 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Lte, value: 10 }],
           },
         },
       ],
@@ -393,34 +394,34 @@ describe("compileDealSpec role rotation", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 10 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 10 }],
           },
         },
         {
           kind: "seat",
-          role: "partner",
+          role: SeatRole.Partner,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 8 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 8 }],
           },
         },
         {
           kind: "seat",
-          role: "lho",
+          role: SeatRole.Lho,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "lte", value: 12 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Lte, value: 12 }],
           },
         },
         {
           kind: "seat",
-          role: "rho",
+          role: SeatRole.Rho,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "lte", value: 14 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Lte, value: 14 }],
           },
         },
       ],
@@ -440,18 +441,18 @@ describe("compileDealSpec role rotation", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 10 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 10 }],
           },
         },
         {
           kind: "seat",
-          role: "partner",
+          role: SeatRole.Partner,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 8 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 8 }],
           },
         },
       ],
@@ -469,10 +470,10 @@ describe("compileDealSpec role rotation", () => {
       layers: [
         {
           kind: "seat",
-          role: "openingSide",
+          role: SeatRole.OpeningSide,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "gte", value: 12 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Gte, value: 12 }],
           },
         },
       ],
@@ -510,10 +511,10 @@ describe("compileDealSpec eq operator", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
-            clauses: [{ factId: "hand.hcp", operator: "eq", value: 15 }],
+            clauses: [{ factId: "hand.hcp", operator: FactOperator.Eq, value: 15 }],
           },
         },
       ],
@@ -529,11 +530,11 @@ describe("compileDealSpec eq operator", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: {
             conjunction: "all",
             clauses: [
-              { factId: "hand.suitLength.clubs", operator: "eq", value: 4 },
+              { factId: "hand.suitLength.clubs", operator: FactOperator.Eq, value: 4 },
             ],
           },
         },

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   getFactValue,
   createFactCatalog,
+  EvaluationWorld,
   type EvaluatedFacts,
   type FactValue,
   type FactDefinition,
@@ -116,7 +117,7 @@ describe("SHARED_FACTS", () => {
 
   it("all shared facts are acting-hand world", () => {
     for (const fact of SHARED_FACTS) {
-      expect(fact.world).toBe("acting-hand");
+      expect(fact.world).toBe(EvaluationWorld.ActingHand);
     }
   });
 
@@ -147,7 +148,7 @@ describe("createFactCatalog", () => {
         {
           id: "module.test.fact",
           layer: FactLayer.ModuleDerived,
-          world: "acting-hand",
+          world: EvaluationWorld.ActingHand,
           description: "Test fact",
           valueType: "boolean",
           derivesFrom: ["hand.hcp"],
@@ -192,7 +193,7 @@ describe("createFactCatalog", () => {
       definitions: [{
         id: "ext1.fact",
         layer: FactLayer.ModuleDerived,
-        world: "acting-hand",
+        world: EvaluationWorld.ActingHand,
         description: "ext1",
         valueType: "boolean",
         derivesFrom: [],
@@ -204,7 +205,7 @@ describe("createFactCatalog", () => {
       definitions: [{
         id: "ext2.fact",
         layer: FactLayer.ModuleDerived,
-        world: "acting-hand",
+        world: EvaluationWorld.ActingHand,
         description: "ext2",
         valueType: "number",
         derivesFrom: [],
@@ -222,7 +223,7 @@ describe("createFactCatalog", () => {
       definitions: [{
         id: "module.test.fact",
         layer: FactLayer.ModuleDerived,
-        world: "acting-hand",
+        world: EvaluationWorld.ActingHand,
         description: "Test",
         valueType: "boolean",
         derivesFrom: [],
@@ -241,7 +242,7 @@ describe("getFactValue", () => {
     ["hand.hcp", { factId: "hand.hcp", value: 15 }],
     ["hand.isBalanced", { factId: "hand.isBalanced", value: true }],
   ]);
-  const evaluated: EvaluatedFacts = { world: "acting-hand", facts };
+  const evaluated: EvaluatedFacts = { world: EvaluationWorld.ActingHand, facts };
 
   it("returns the fact value for an existing factId", () => {
     const result = getFactValue(evaluated, "hand.hcp");
@@ -260,7 +261,7 @@ describe("topological evaluation order", () => {
     const moduleFactDef: FactDefinition = {
       id: "module.test.derived",
       layer: FactLayer.ModuleDerived,
-      world: "acting-hand",
+      world: EvaluationWorld.ActingHand,
       description: "Derives from bridge.hasFourCardMajor",
       valueType: "boolean",
       derivesFrom: ["bridge.hasFourCardMajor"],
@@ -295,7 +296,7 @@ describe("topological evaluation order", () => {
     const orphanDef: FactDefinition = {
       id: "module.orphan.noEvaluator",
       layer: FactLayer.ModuleDerived,
-      world: "acting-hand",
+      world: EvaluationWorld.ActingHand,
       description: "Has no evaluator registered",
       valueType: "boolean",
       derivesFrom: [],
@@ -322,9 +323,9 @@ describe("EvaluatedFacts", () => {
     const facts = new Map<string, FactValue>([
       ["hand.hcp", { factId: "hand.hcp", value: 12 }],
     ]);
-    const evaluated: EvaluatedFacts = { world: "full-deal", facts };
+    const evaluated: EvaluatedFacts = { world: EvaluationWorld.FullDeal, facts };
 
-    expect(evaluated.world).toBe("full-deal");
+    expect(evaluated.world).toBe(EvaluationWorld.FullDeal);
     expect(evaluated.facts.size).toBe(1);
     expect(evaluated.facts.get("hand.hcp")?.value).toBe(12);
   });

@@ -8,11 +8,13 @@ import {
 } from "../../system-fact-vocabulary";
 
 import { bid } from "../../../core/surface-helpers";
-import { createSurface } from "../../../core/surface-builder";
+import { createSurface, Disclosure } from "../../../core/surface-builder";
 import type { ModuleContext } from "../../../core/surface-builder";
 import { bidName, bidSummary } from "../../../core/authored-text";
 
 import { NATURAL_NT_MEANING_IDS } from "./ids";
+import { FactOperator, RecommendationBand } from "../../../pipeline/evaluation/meaning";
+import { ObsSuit } from "../../../pipeline/bid-action";
 
 // ─── Thresholds ─────────────────────────────────────────────
 
@@ -38,28 +40,28 @@ export function createNtR1Surfaces(_sys: SystemConfig): readonly BidMeaning[] {
       clauses: [
         {
           factId: SYSTEM_RESPONDER_INVITE_VALUES,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           rationale: "invite values opposite 1NT",
           isPublic: true,
         },
         {
           factId: "bridge.hasFourCardMajor",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: false,
           isPublic: true,
         },
         {
           factId: "bridge.hasFiveCardMajor",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: false,
           isPublic: true,
         },
       ],
-      band: "may",
+      band: RecommendationBand.May,
       declarationOrder: 0,
       sourceIntent: { type: "NTInvite", params: {} },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName("NT invite"), summary: bidSummary("Invite game in notrump with no 4-card or 5-card major") },
     }, NATURAL_BIDS_CTX),
 
@@ -70,28 +72,28 @@ export function createNtR1Surfaces(_sys: SystemConfig): readonly BidMeaning[] {
       clauses: [
         {
           factId: SYSTEM_RESPONDER_GAME_VALUES,
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           rationale: "game values opposite 1NT",
           isPublic: true,
         },
         {
           factId: "bridge.hasFourCardMajor",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: false,
           isPublic: true,
         },
         {
           factId: "bridge.hasFiveCardMajor",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: false,
           isPublic: true,
         },
       ],
-      band: "may",
+      band: RecommendationBand.May,
       declarationOrder: 1,
       sourceIntent: { type: "NTGame", params: {} },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName("3NT game"), summary: bidSummary("Bid game in notrump with game-forcing values and no 4-card or 5-card major") },
     }, NATURAL_BIDS_CTX),
   ];
@@ -110,27 +112,27 @@ export function createOpener1NtSurface(sys: SystemConfig): readonly BidMeaning[]
       clauses: [
         {
           factId: "hand.hcp",
-          operator: "gte",
+          operator: FactOperator.Gte,
           value: sys.ntOpening.minHcp,
           isPublic: true,
         },
         {
           factId: "hand.hcp",
-          operator: "lte",
+          operator: FactOperator.Lte,
           value: sys.ntOpening.maxHcp,
           isPublic: true,
         },
         {
           factId: "hand.isBalanced",
-          operator: "boolean",
+          operator: FactOperator.Boolean,
           value: true,
           isPublic: true,
         },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 0,
       sourceIntent: { type: "NTOpening", params: {} },
-      disclosure: "natural",
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName(`${sys.ntOpening.minHcp} to ${sys.ntOpening.maxHcp}`), summary: bidSummary("Open 1NT showing a balanced hand within the system HCP range") },
     }, NATURAL_BIDS_CTX),
   ];
@@ -148,13 +150,13 @@ export function createSuitOpeningSurfaces(sys: SystemConfig): readonly BidMeanin
       semanticClassId: BRIDGE_SEMANTIC_CLASSES.SUIT_OPENING_1C,
       encoding: bid(1, BidSuit.Clubs),
       clauses: [
-        { factId: "hand.hcp", operator: "gte", value: minOpeningHcp, isPublic: true },
-        { factId: "hand.clubs", operator: "gte", value: minClubLength, isPublic: true },
+        { factId: "hand.hcp", operator: FactOperator.Gte, value: minOpeningHcp, isPublic: true },
+        { factId: "hand.clubs", operator: FactOperator.Gte, value: minClubLength, isPublic: true },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 1,
-      sourceIntent: { type: "SuitOpen", params: { suit: "clubs" } },
-      disclosure: "natural",
+      sourceIntent: { type: "SuitOpen", params: { suit: ObsSuit.Clubs } },
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName("1♣ opening"), summary: bidSummary("Open 1♣ with 12+ HCP and 3+ clubs") },
     }, NATURAL_BIDS_CTX),
 
@@ -163,13 +165,13 @@ export function createSuitOpeningSurfaces(sys: SystemConfig): readonly BidMeanin
       semanticClassId: BRIDGE_SEMANTIC_CLASSES.SUIT_OPENING_1D,
       encoding: bid(1, BidSuit.Diamonds),
       clauses: [
-        { factId: "hand.hcp", operator: "gte", value: minOpeningHcp, isPublic: true },
-        { factId: "hand.diamonds", operator: "gte", value: minDiamondLength, isPublic: true },
+        { factId: "hand.hcp", operator: FactOperator.Gte, value: minOpeningHcp, isPublic: true },
+        { factId: "hand.diamonds", operator: FactOperator.Gte, value: minDiamondLength, isPublic: true },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 2,
-      sourceIntent: { type: "SuitOpen", params: { suit: "diamonds" } },
-      disclosure: "natural",
+      sourceIntent: { type: "SuitOpen", params: { suit: ObsSuit.Diamonds } },
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName("1♦ opening"), summary: bidSummary("Open 1♦ with 12+ HCP and 4+ diamonds") },
     }, NATURAL_BIDS_CTX),
 
@@ -178,13 +180,13 @@ export function createSuitOpeningSurfaces(sys: SystemConfig): readonly BidMeanin
       semanticClassId: BRIDGE_SEMANTIC_CLASSES.SUIT_OPENING_1H,
       encoding: bid(1, BidSuit.Hearts),
       clauses: [
-        { factId: "hand.hcp", operator: "gte", value: minOpeningHcp, isPublic: true },
-        { factId: "hand.hearts", operator: "gte", value: majorMin, isPublic: true },
+        { factId: "hand.hcp", operator: FactOperator.Gte, value: minOpeningHcp, isPublic: true },
+        { factId: "hand.hearts", operator: FactOperator.Gte, value: majorMin, isPublic: true },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 3,
-      sourceIntent: { type: "SuitOpen", params: { suit: "hearts" } },
-      disclosure: "natural",
+      sourceIntent: { type: "SuitOpen", params: { suit: ObsSuit.Hearts } },
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName("1♥ opening"), summary: bidSummary("Open 1♥ with 12+ HCP and a 5-card or longer heart suit") },
     }, NATURAL_BIDS_CTX),
 
@@ -193,13 +195,13 @@ export function createSuitOpeningSurfaces(sys: SystemConfig): readonly BidMeanin
       semanticClassId: BRIDGE_SEMANTIC_CLASSES.SUIT_OPENING_1S,
       encoding: bid(1, BidSuit.Spades),
       clauses: [
-        { factId: "hand.hcp", operator: "gte", value: minOpeningHcp, isPublic: true },
-        { factId: "hand.spades", operator: "gte", value: majorMin, isPublic: true },
+        { factId: "hand.hcp", operator: FactOperator.Gte, value: minOpeningHcp, isPublic: true },
+        { factId: "hand.spades", operator: FactOperator.Gte, value: majorMin, isPublic: true },
       ],
-      band: "must",
+      band: RecommendationBand.Must,
       declarationOrder: 4,
-      sourceIntent: { type: "SuitOpen", params: { suit: "spades" } },
-      disclosure: "natural",
+      sourceIntent: { type: "SuitOpen", params: { suit: ObsSuit.Spades } },
+      disclosure: Disclosure.Natural,
       teachingLabel: { name: bidName("1♠ opening"), summary: bidSummary("Open 1♠ with 12+ HCP and a 5-card or longer spade suit") },
     }, NATURAL_BIDS_CTX),
   ];

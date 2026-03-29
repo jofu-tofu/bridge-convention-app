@@ -1,11 +1,14 @@
-import type {
-  BidMeaning,
-  BidMeaningClause,
-  RecommendationBand,
+import {
+  Disclosure,
+  type BidMeaning,
+  type BidMeaningClause,
+  type RecommendationBand,
 } from "../pipeline/evaluation/meaning";
 import type { Call } from "../../engine/types";
 import type { TeachingLabel } from "./authored-text";
 import { deriveClauseId, deriveClauseDescription } from "../pipeline/evaluation/clause-derivation";
+
+export { Disclosure } from "../pipeline/evaluation/meaning";
 
 /**
  * Simplified clause input for the surface builder.
@@ -40,12 +43,8 @@ export interface SurfaceInput {
     readonly type: string;
     readonly params: Readonly<Record<string, string | number | boolean>>;
   };
-  /** How this bid's meaning is disclosed to opponents at the table.
-   *  - "alert": conventional bid, opponents must be told
-   *  - "announcement": partner speaks the meaning aloud (e.g., transfers)
-   *  - "standard": universally known convention, not ACBL-alerted (e.g., Stayman)
-   *  - "natural": natural meaning, no disclosure needed */
-  readonly disclosure: "alert" | "announcement" | "natural" | "standard";
+  /** How this bid's meaning is disclosed to opponents at the table. */
+  readonly disclosure: Disclosure;
   readonly teachingLabel: TeachingLabel;
   // Optional overrides:
   readonly moduleId?: string;

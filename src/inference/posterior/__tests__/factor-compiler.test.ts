@@ -6,20 +6,21 @@ import type {
   ShapeFactor,
 } from "../posterior-boundary";
 import { makeSnapshot } from "./posterior-test-fixtures";
+import { FactOperator } from "../../../conventions/pipeline/evaluation/meaning";
 
 describe("compileFactorGraph", () => {
   it("compiles HCP range from call-meaning (1NT: 15-17 HCP)", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
         sourceCall: "1NT",
       },
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "lte", value: 17 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
         origin: "call-meaning",
         strength: "hard",
         sourceCall: "1NT",
@@ -48,13 +49,13 @@ describe("compileFactorGraph", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
       },
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "lte", value: 17 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
         origin: "call-meaning",
         strength: "hard",
       },
@@ -74,13 +75,13 @@ describe("compileFactorGraph", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
       },
       {
         subject: "S",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 6 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 6 },
         origin: "call-meaning",
         strength: "hard",
       },
@@ -110,7 +111,7 @@ describe("compileFactorGraph", () => {
       [
         {
           subject: "N",
-          constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+          constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
           origin: "call-meaning",
           strength: "hard",
         },
@@ -141,14 +142,14 @@ describe("compileFactorGraph", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
         sourceCall: "1NT",
       },
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "lte", value: 17 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
         origin: "call-meaning",
         strength: "hard",
         sourceCall: "1NT",
@@ -165,7 +166,7 @@ describe("compileFactorGraph", () => {
   it("populates FactorOrigin with correct originKind and sourceConstraint", () => {
     const commitment: PublicConstraint = {
       subject: "N",
-      constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+      constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
       origin: "call-meaning",
       strength: "hard",
       sourceCall: "1NT",
@@ -185,7 +186,7 @@ describe("compileFactorGraph", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.isBalanced", operator: "boolean", value: true },
+        constraint: { factId: "hand.isBalanced", operator: FactOperator.Boolean, value: true },
         origin: "call-meaning",
         strength: "hard",
         sourceCall: "1NT",
@@ -209,13 +210,13 @@ describe("validateFactorGraph", () => {
     const snapshot = makeSnapshot([
       {
         subject: "S",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 20 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 20 },
         origin: "call-meaning",
         strength: "hard",
       },
       {
         subject: "S",
-        constraint: { factId: "hand.hcp", operator: "lte", value: 10 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Lte, value: 10 },
         origin: "call-meaning",
         strength: "hard",
       },
@@ -236,13 +237,13 @@ describe("validateFactorGraph", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "gte", value: 15 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Gte, value: 15 },
         origin: "call-meaning",
         strength: "hard",
       },
       {
         subject: "N",
-        constraint: { factId: "hand.hcp", operator: "lte", value: 17 },
+        constraint: { factId: "hand.hcp", operator: FactOperator.Lte, value: 17 },
         origin: "call-meaning",
         strength: "hard",
       },
@@ -259,13 +260,13 @@ describe("validateFactorGraph", () => {
     const snapshot = makeSnapshot([
       {
         subject: "N",
-        constraint: { factId: "hand.suitLength.S", operator: "gte", value: 8 },
+        constraint: { factId: "hand.suitLength.S", operator: FactOperator.Gte, value: 8 },
         origin: "call-meaning",
         strength: "hard",
       },
       {
         subject: "N",
-        constraint: { factId: "hand.suitLength.S", operator: "lte", value: 3 },
+        constraint: { factId: "hand.suitLength.S", operator: FactOperator.Lte, value: 3 },
         origin: "call-meaning",
         strength: "hard",
       },

@@ -2,10 +2,11 @@ import { describe, test, expect } from "vitest";
 import { render, fireEvent, screen } from "@testing-library/svelte";
 import BidFeedbackPanel from "../../game/bid-feedback/BidFeedbackPanel.svelte";
 import type { ViewportBidFeedback, TeachingDetail } from "../../../service";
+import { ViewportBidGrade } from "../../../service";
 
 function makeWrongViewportFeedback(): ViewportBidFeedback {
   return {
-    grade: "incorrect",
+    grade: ViewportBidGrade.Incorrect,
     userCall: { type: "pass" },
     userCallDisplay: "Pass",
     correctCall: { type: "bid", level: 2, strain: "C" as never },
@@ -70,7 +71,7 @@ describe("BidFeedbackPanel", () => {
 
   test("shows correct bid display for correct feedback", () => {
     const feedback: ViewportBidFeedback = {
-      grade: "correct",
+      grade: ViewportBidGrade.Correct,
       userCall: { type: "bid", level: 2, strain: "C" as never },
       userCallDisplay: "2C",
       requiresRetry: false,
@@ -84,7 +85,7 @@ describe("BidFeedbackPanel", () => {
 
   test("shows Acceptable feedback with teal styling and auto-dismiss", () => {
     const feedback: ViewportBidFeedback = {
-      grade: "acceptable",
+      grade: ViewportBidGrade.Acceptable,
       userCall: { type: "bid", level: 2, strain: "D" as never },
       userCallDisplay: "2D",
       requiresRetry: false,
@@ -110,7 +111,7 @@ describe("BidFeedbackPanel", () => {
 
   test("shows practical note when practical call differs from teaching call", () => {
     const feedback: ViewportBidFeedback = {
-      grade: "correct",
+      grade: ViewportBidGrade.Correct,
       userCall: { type: "bid", level: 2, strain: "C" as never },
       userCallDisplay: "2C",
       correctCall: { type: "bid", level: 2, strain: "C" as never },
@@ -135,7 +136,7 @@ describe("BidFeedbackPanel", () => {
 
   test("does not show practical note when practical call matches teaching call", () => {
     const feedback: ViewportBidFeedback = {
-      grade: "correct",
+      grade: ViewportBidGrade.Correct,
       userCall: { type: "bid", level: 2, strain: "C" as never },
       userCallDisplay: "2C",
       correctCall: { type: "bid", level: 2, strain: "C" as never },
@@ -158,7 +159,7 @@ describe("BidFeedbackPanel", () => {
 
   test("does not show practical note when practicalRecommendation is undefined", () => {
     const feedback: ViewportBidFeedback = {
-      grade: "correct",
+      grade: ViewportBidGrade.Correct,
       userCall: { type: "bid", level: 2, strain: "C" as never },
       userCallDisplay: "2C",
       requiresRetry: false,
@@ -173,7 +174,7 @@ describe("BidFeedbackPanel", () => {
 
   test("shows practical note on incorrect feedback too", async () => {
     const feedback: ViewportBidFeedback = {
-      grade: "incorrect",
+      grade: ViewportBidGrade.Incorrect,
       userCall: { type: "pass" },
       userCallDisplay: "Pass",
       correctCall: { type: "bid", level: 2, strain: "C" as never },

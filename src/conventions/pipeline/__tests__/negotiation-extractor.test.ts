@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { extractKernelState, computeKernelDelta } from "../observation/negotiation-extractor";
-import { INITIAL_NEGOTIATION } from "../../core/committed-step";
+import { INITIAL_NEGOTIATION, ConfidenceLevel } from "../../core/committed-step";
 import type { NegotiationState } from "../../core/committed-step";
 import type { MachineRegisters } from "../../core/module-surface";
 import { ForcingState } from "../../core/strategy-types";
+import { ObsSuit } from "../bid-action";
 
 function makeRegisters(
   overrides: Partial<MachineRegisters> = {},
@@ -68,38 +69,38 @@ describe("extractKernelState", () => {
         makeRegisters({
           agreedStrain: {
             type: "suit",
-            suit: "hearts",
-            confidence: "tentative",
+            suit: ObsSuit.Hearts,
+            confidence: ConfidenceLevel.Tentative,
           },
         }),
       );
       expect(result.fitAgreed).toEqual({
-        strain: "hearts",
-        confidence: "tentative",
+        strain: ObsSuit.Hearts,
+        confidence: ConfidenceLevel.Tentative,
       });
     });
 
     it("maps agreedStrain type:'notrump'", () => {
       const result = extractKernelState(
         makeRegisters({
-          agreedStrain: { type: "notrump", confidence: "final" },
+          agreedStrain: { type: "notrump", confidence: ConfidenceLevel.Final },
         }),
       );
       expect(result.fitAgreed).toEqual({
         strain: "notrump",
-        confidence: "final",
+        confidence: ConfidenceLevel.Final,
       });
     });
 
     it("defaults confidence to 'tentative' when not specified", () => {
       const result = extractKernelState(
         makeRegisters({
-          agreedStrain: { type: "suit", suit: "spades" },
+          agreedStrain: { type: "suit", suit: ObsSuit.Spades },
         }),
       );
       expect(result.fitAgreed).toEqual({
-        strain: "spades",
-        confidence: "tentative",
+        strain: ObsSuit.Spades,
+        confidence: ConfidenceLevel.Tentative,
       });
     });
   });
@@ -193,11 +194,11 @@ describe("computeKernelDelta", () => {
     const before = INITIAL_NEGOTIATION;
     const after: NegotiationState = {
       ...INITIAL_NEGOTIATION,
-      fitAgreed: { strain: "hearts", confidence: "tentative" },
+      fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Tentative },
     };
     const delta = computeKernelDelta(before, after);
     expect(delta).toEqual({
-      fitAgreed: { strain: "hearts", confidence: "tentative" },
+      fitAgreed: { strain: ObsSuit.Hearts, confidence: ConfidenceLevel.Tentative },
     });
   });
 
@@ -205,11 +206,11 @@ describe("computeKernelDelta", () => {
     const before = INITIAL_NEGOTIATION;
     const after: NegotiationState = {
       ...INITIAL_NEGOTIATION,
-      competition: { kind: "overcalled", strain: "hearts", level: 2 },
+      competition: { kind: "overcalled", strain: ObsSuit.Hearts, level: 2 },
     };
     const delta = computeKernelDelta(before, after);
     expect(delta).toEqual({
-      competition: { kind: "overcalled", strain: "hearts", level: 2 },
+      competition: { kind: "overcalled", strain: ObsSuit.Hearts, level: 2 },
     });
   });
 });

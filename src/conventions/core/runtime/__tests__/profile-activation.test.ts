@@ -6,6 +6,7 @@ import { buildAuction } from "../../../../engine/auction-helpers";
 import { Seat } from "../../../../engine/types";
 import { ForcingState } from "../../strategy-types";
 import { BASE_SYSTEM_SAYC } from "../../../definitions/system-config";
+import { FactOperator } from "../../../pipeline/evaluation/meaning";
 
 /** Minimal PublicSnapshot for testing — only publicRegisters and publicCommitments matter. */
 function makeSnapshot(overrides: Partial<PublicSnapshot> = {}): PublicSnapshot {
@@ -164,7 +165,7 @@ describe("resolveActiveModules", () => {
     function commitment(sourceMeaning: string): PublicConstraint {
       return {
         subject: "responder",
-        constraint: { factId: "hcp", operator: "gte", value: 10 },
+        constraint: { factId: "hcp", operator: FactOperator.Gte, value: 10 },
         origin: "call-meaning",
         strength: "hard",
         sourceMeaning,

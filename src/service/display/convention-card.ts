@@ -1,10 +1,12 @@
 import type { SystemConfig } from "../../conventions";
 import { getModule, getBaseModuleIds, getBundleInput } from "../../conventions";
+import {
+  ConventionCardSectionId,
+} from "../response-types";
 import type {
   ConventionCardView,
   ConventionCardPanelView,
   ConventionCardSection,
-  ConventionCardSectionId,
   ConventionCardLineItem,
   ConventionCardModuleDetail,
 } from "../response-types";
@@ -83,7 +85,7 @@ interface SectionDef {
 
 const SECTION_DEFS: readonly SectionDef[] = [
   {
-    id: "general",
+    id: ConventionCardSectionId.General,
     title: "General",
     moduleIds: [],
     buildItems: (sys) => [
@@ -92,7 +94,7 @@ const SECTION_DEFS: readonly SectionDef[] = [
     ],
   },
   {
-    id: "notrump-opening",
+    id: ConventionCardSectionId.NotrumpOpening,
     title: "1NT Opening & Responses",
     moduleIds: ["stayman", "jacoby-transfers", "smolen"],
     buildItems: (sys) => [
@@ -103,7 +105,7 @@ const SECTION_DEFS: readonly SectionDef[] = [
     ],
   },
   {
-    id: "major-opening",
+    id: ConventionCardSectionId.MajorOpening,
     title: "Major Openings",
     moduleIds: ["bergen"],
     buildItems: (sys) => [
@@ -113,7 +115,7 @@ const SECTION_DEFS: readonly SectionDef[] = [
     ],
   },
   {
-    id: "minor-opening",
+    id: ConventionCardSectionId.MinorOpening,
     title: "Minor Openings",
     moduleIds: [],
     buildItems: () => [
@@ -121,13 +123,13 @@ const SECTION_DEFS: readonly SectionDef[] = [
     ],
   },
   {
-    id: "two-level-opening",
+    id: ConventionCardSectionId.TwoLevelOpening,
     title: "2-Level Openings",
     moduleIds: ["weak-twos"],
     buildItems: () => [],
   },
   {
-    id: "competitive",
+    id: ConventionCardSectionId.Competitive,
     title: "Competitive",
     moduleIds: ["dont"],
     buildItems: (sys) => [
@@ -136,7 +138,7 @@ const SECTION_DEFS: readonly SectionDef[] = [
     ],
   },
   {
-    id: "slam",
+    id: ConventionCardSectionId.Slam,
     title: "Slam Conventions",
     moduleIds: ["blackwood"],
     buildItems: (sys) => [

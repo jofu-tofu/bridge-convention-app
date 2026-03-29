@@ -1,5 +1,6 @@
-import type { PracticeFocus, PracticeMode } from "./drill-types";
-import type { BidContext } from "../service/response-types";
+import type { PracticeFocus } from "./drill-types";
+import { PracticeMode } from "./drill-types";
+import { BidContext } from "../service/response-types";
 
 /**
  * Determine bidContext for a user bid.
@@ -15,29 +16,29 @@ export function resolveBidContext(
   practiceFocus: PracticeFocus,
   practiceMode: PracticeMode,
 ): BidContext {
-  if (practiceMode === "decision-drill") {
-    return "target";
+  if (practiceMode === PracticeMode.DecisionDrill) {
+    return BidContext.Target;
   }
 
   if (!matchedModuleId) {
-    return "off-convention";
+    return BidContext.OffConvention;
   }
 
   if (practiceFocus.targetModuleIds.includes(matchedModuleId)) {
-    return "target";
+    return BidContext.Target;
   }
 
   if (practiceFocus.prerequisiteModuleIds.includes(matchedModuleId)) {
-    return "prerequisite";
+    return BidContext.Prerequisite;
   }
 
   if (practiceFocus.followUpModuleIds.includes(matchedModuleId)) {
-    return "follow-up";
+    return BidContext.FollowUp;
   }
 
   if (practiceFocus.backgroundModuleIds.includes(matchedModuleId)) {
-    return "background";
+    return BidContext.Background;
   }
 
-  return "off-convention";
+  return BidContext.OffConvention;
 }

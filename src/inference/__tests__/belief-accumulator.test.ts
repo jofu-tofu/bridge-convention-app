@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Seat, Suit } from "../../engine/types";
 import type { FactConstraint } from "../../conventions/core/agreement-module";
 import type { BidAnnotation } from "../types";
+import { FactOperator } from "../../conventions/pipeline/evaluation/meaning";
 import {
   createInitialBeliefState,
   applyAnnotation,
@@ -22,15 +23,15 @@ function makeAnnotation(
 
 function hcpConstraints(min?: number, max?: number): FactConstraint[] {
   const result: FactConstraint[] = [];
-  if (min !== undefined) result.push({ factId: "hand.hcp", operator: "gte", value: min });
-  if (max !== undefined) result.push({ factId: "hand.hcp", operator: "lte", value: max });
+  if (min !== undefined) result.push({ factId: "hand.hcp", operator: FactOperator.Gte, value: min });
+  if (max !== undefined) result.push({ factId: "hand.hcp", operator: FactOperator.Lte, value: max });
   return result;
 }
 
 function suitConstraint(suit: string, min?: number, max?: number): FactConstraint[] {
   const result: FactConstraint[] = [];
-  if (min !== undefined) result.push({ factId: `hand.suitLength.${suit}`, operator: "gte", value: min });
-  if (max !== undefined) result.push({ factId: `hand.suitLength.${suit}`, operator: "lte", value: max });
+  if (min !== undefined) result.push({ factId: `hand.suitLength.${suit}`, operator: FactOperator.Gte, value: min });
+  if (max !== undefined) result.push({ factId: `hand.suitLength.${suit}`, operator: FactOperator.Lte, value: max });
   return result;
 }
 
@@ -128,15 +129,15 @@ describe("applyAnnotation", () => {
     state = applyAnnotation(state, makeAnnotation(Seat.South, suitConstraint("hearts", 5)));
 
     expect(state.beliefs[Seat.South].constraints).toEqual([
-      { factId: "hand.hcp", operator: "gte", value: 12 },
-      { factId: "hand.suitLength.hearts", operator: "gte", value: 5 },
+      { factId: "hand.hcp", operator: FactOperator.Gte, value: 12 },
+      { factId: "hand.suitLength.hearts", operator: FactOperator.Gte, value: 5 },
     ]);
   });
 
   it("balanced constraint derives qualitative and min suit lengths", () => {
     let state = createInitialBeliefState();
     state = applyAnnotation(state, makeAnnotation(Seat.South, [
-      { factId: "hand.isBalanced", operator: "boolean", value: true },
+      { factId: "hand.isBalanced", operator: FactOperator.Boolean, value: true },
     ]));
 
     expect(state.beliefs[Seat.South].ranges.isBalanced).toBe(true);

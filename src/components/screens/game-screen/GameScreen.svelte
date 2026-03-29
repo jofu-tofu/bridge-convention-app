@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { Seat } from "../../../service";
+  import { Seat, PracticeMode, PromptMode } from "../../../service";
   import type { Call } from "../../../service";
   import { getSystemConfig, buildConventionCardPanel } from "../../../service";
   import { getGameStore, getAppStore, setLayoutConfig, getService } from "../../../stores/context";
@@ -190,7 +190,7 @@
 
   // Phase display info
   const phaseInfo = $derived.by(() => {
-    if (gameStore.phase === "DECLARER_PROMPT" && gameStore.promptMode === "defender") {
+    if (gameStore.phase === "DECLARER_PROMPT" && gameStore.promptMode === PromptMode.Defender) {
       return DEFENDER_PHASE;
     }
     return PHASE_DISPLAY[gameStore.phase] ?? { label: "Unknown", color: "bg-phase-unknown", textColor: "text-phase-unknown-text" };
@@ -302,9 +302,9 @@
         >
           {phaseInfo.label}
         </span>
-        {#if gameStore.practiceMode !== "decision-drill"}
+        {#if gameStore.practiceMode !== PracticeMode.DecisionDrill}
           <span class="text-[--text-annotation] text-text-muted" data-testid="practice-mode-label">
-            {gameStore.practiceMode === "full-auction" ? "Full Auction" : "Continuation"}
+            {gameStore.practiceMode === PracticeMode.FullAuction ? "Full Auction" : "Continuation"}
           </span>
         {/if}
         <span class="sr-only" aria-live="polite">Phase: {phaseInfo.label}</span>
