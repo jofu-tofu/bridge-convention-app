@@ -1,6 +1,6 @@
 # Rust Backend (src-tauri/)
 
-Cargo workspace with three crates implementing the bridge engine in Rust.
+Cargo workspace with four crates implementing the bridge engine and convention data model in Rust.
 
 ## Commands
 
@@ -9,6 +9,7 @@ Cargo workspace with three crates implementing the bridge engine in Rust.
 | `cargo build --workspace`     | Build all crates (run from `src-tauri/`)                    |
 | `cargo test --workspace`      | Run all Rust tests                                          |
 | `cargo test -p bridge-engine` | Test engine crate only                                      |
+| `cargo test -p bridge-conventions` | Test conventions crate (includes golden-master fixture tests) |
 | `wasm-pack build crates/bridge-wasm --target web --out-dir pkg` | Build WASM package        |
 | `wasm-pack test --node crates/bridge-wasm` | Run WASM integration tests                   |
 
@@ -16,9 +17,14 @@ Cargo workspace with three crates implementing the bridge engine in Rust.
 
 ```
 crates/
-  bridge-engine/   Pure Rust game logic (types, eval, deal gen, auction, scoring, play)
-  bridge-tauri/    Tauri v2 app — #[tauri::command] handlers delegating to bridge-engine
-  bridge-wasm/     WASM bindings via wasm-bindgen — wraps bridge-engine for browser deployment
+  bridge-engine/       Pure Rust game logic (types, eval, deal gen, auction, scoring, play)
+  bridge-conventions/  Rust convention data model (types only, no evaluation logic).
+                       Mirrors TS types from src/conventions/. Depends on bridge-engine for Call/Seat/etc.
+                       Key design choices: newtype wrappers for branded strings, FactDefinitionSet (not
+                       FactCatalogExtension — data only, no evaluator functions), typed enums for unknown
+                       fields, serde_json::Number to preserve integer/float distinction in round-trips.
+  bridge-tauri/        Tauri v2 app — #[tauri::command] handlers delegating to bridge-engine
+  bridge-wasm/         WASM bindings via wasm-bindgen — wraps bridge-engine for browser deployment
 ```
 
 ## Conventions

@@ -1,0 +1,13 @@
+[package]
+name = "bridge-conventions"
+version = "0.1.0"
+edition = "2021"
+description = "Convention data model types for bridge bidding — Rust mirror of TypeScript convention types"
+
+[dependencies]
+bridge-engine = { path = "../bridge-engine" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dev-dependencies]
+serde_json = "1.0"

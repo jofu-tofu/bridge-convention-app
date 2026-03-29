@@ -292,6 +292,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bridge-conventions"
+version = "0.1.0"
+dependencies = [
+ "bridge-engine",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "bridge-engine"
 version = "0.1.0"
 dependencies = [

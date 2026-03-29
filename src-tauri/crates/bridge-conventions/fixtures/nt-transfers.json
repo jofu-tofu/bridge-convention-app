@@ -1,0 +1,2818 @@
+{
+  "id": "nt-transfers",
+  "name": "Jacoby Transfers",
+  "description": "Ensure the strong hand declares in a major-suit contract",
+  "category": "Constructive",
+  "systemProfile": {
+    "profileId": "1nt-transfers-only",
+    "baseSystem": "sayc",
+    "systemConfig": {
+      "systemId": "sayc",
+      "displayName": "Standard American Yellow Card",
+      "ntOpening": {
+        "minHcp": 15,
+        "maxHcp": 17
+      },
+      "responderThresholds": {
+        "inviteMin": 8,
+        "inviteMax": 9,
+        "gameMin": 10,
+        "slamMin": 15,
+        "inviteMinTp": {
+          "trump": 8,
+          "nt": 8
+        },
+        "inviteMaxTp": {
+          "trump": 10,
+          "nt": 9
+        },
+        "gameMinTp": {
+          "trump": 10,
+          "nt": 10
+        },
+        "slamMinTp": {
+          "trump": 16,
+          "nt": 15
+        }
+      },
+      "openerRebid": {
+        "notMinimum": 16,
+        "notMinimumTp": {
+          "trump": 16,
+          "nt": 16
+        }
+      },
+      "interference": {
+        "redoubleMin": 10
+      },
+      "suitResponse": {
+        "twoLevelMin": 10,
+        "twoLevelForcingDuration": "one-round"
+      },
+      "oneNtResponseAfterMajor": {
+        "forcing": "non-forcing",
+        "maxHcp": 10,
+        "minHcp": 6
+      },
+      "openingRequirements": {
+        "majorSuitMinLength": 5
+      },
+      "dontOvercall": {
+        "minHcp": 8,
+        "maxHcp": 15
+      }
+    },
+    "modules": [
+      {
+        "moduleId": "jacoby-transfers",
+        "kind": "add-on",
+        "attachments": [
+          {
+            "whenAuction": {
+              "kind": "sequence",
+              "calls": [
+                "1NT"
+              ]
+            },
+            "requiresCapabilities": [
+              "opening.1nt"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "memberIds": [
+    "jacoby-transfers"
+  ],
+  "declaredCapabilities": {
+    "opening.1nt": "active"
+  },
+  "teaching": {
+    "purpose": "Transfer the contract to opener's hand when responder has a 5+ card major after 1NT opening",
+    "whenToUse": "Partner opens 1NT (15-17 HCP balanced). You have a 5+ card major suit.",
+    "whenNotToUse": [
+      "Only a 4-card major — use Stayman instead",
+      "No major suits — bid notrump directly"
+    ],
+    "principle": "2D transfers to hearts, 2H transfers to spades — opener always accepts, making the strong hand declarer",
+    "roles": "Responder initiates the transfer; opener mechanically accepts; responder then decides the final contract level"
+  },
+  "dealConstraints": {
+    "seats": [
+      {
+        "seat": "N",
+        "minHcp": 15,
+        "maxHcp": 17,
+        "balanced": true
+      },
+      {
+        "seat": "S",
+        "minLengthAny": {
+          "H": 5,
+          "S": 5
+        }
+      }
+    ]
+  },
+  "offConventionConstraints": {
+    "seats": [
+      {
+        "seat": "N",
+        "minHcp": 15,
+        "maxHcp": 17,
+        "balanced": true
+      },
+      {
+        "seat": "S"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "moduleId": "jacoby-transfers",
+      "description": "Bid 2D/2H over 1NT to show a 5+ card major and let opener declare",
+      "purpose": "Right-side the contract so the strong 1NT hand stays hidden, while guaranteeing a trump fit when responder has a 5+ card major",
+      "teaching": {
+        "tradeoff": "Using 2D and 2H as transfers means you can't play in a natural 2D or 2H contract.",
+        "principle": "Transfer principle: let the strong hand be declarer to protect tenaces from the opening lead.",
+        "commonMistakes": [
+          "Remember to complete the transfer — after opener bids 2H/2S, you must rebid to show your strength and shape",
+          "With exactly 5 cards in the major and invitational values, bid 2NT after the transfer to give opener a choice"
+        ]
+      },
+      "explanationEntries": [
+        {
+          "explanationId": "nt.transfer.eligible",
+          "factId": "module.transfer.eligible",
+          "templateKey": "nt.transfer.eligible.supporting",
+          "displayText": "Eligible for Jacoby Transfer",
+          "contrastiveTemplateKey": "nt.transfer.eligible.whyNot",
+          "contrastiveDisplayText": "Not eligible for transfer",
+          "preferredLevel": "semantic",
+          "roles": [
+            "supporting",
+            "blocking",
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.preferred",
+          "factId": "module.transfer.preferred",
+          "templateKey": "nt.transfer.preferred.supporting",
+          "displayText": "Transfer is the preferred convention",
+          "preferredLevel": "semantic",
+          "roles": [
+            "supporting",
+            "inferential"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.targetSuit",
+          "factId": "module.transfer.targetSuit",
+          "templateKey": "nt.transfer.targetSuit.supporting",
+          "displayText": "Transfer target suit determined by longest major",
+          "preferredLevel": "mechanical",
+          "roles": [
+            "supporting"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.openerHasHeartFit",
+          "factId": "module.transfer.openerHasHeartFit",
+          "templateKey": "nt.transfer.openerHasHeartFit.supporting",
+          "displayText": "Opener has 3+ hearts to fit responder's suit",
+          "contrastiveTemplateKey": "nt.transfer.openerHasHeartFit.whyNot",
+          "contrastiveDisplayText": "Opener lacks heart fit (fewer than 3 hearts)",
+          "preferredLevel": "semantic",
+          "roles": [
+            "supporting",
+            "blocking"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.openerHasSpadesFit",
+          "factId": "module.transfer.openerHasSpadesFit",
+          "templateKey": "nt.transfer.openerHasSpadesFit.supporting",
+          "displayText": "Opener has 3+ spades to fit responder's suit",
+          "contrastiveTemplateKey": "nt.transfer.openerHasSpadesFit.whyNot",
+          "contrastiveDisplayText": "Opener lacks spade fit (fewer than 3 spades)",
+          "preferredLevel": "semantic",
+          "roles": [
+            "supporting",
+            "blocking"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.toHearts",
+          "meaningId": "transfer:to-hearts",
+          "templateKey": "nt.transfer.toHearts.semantic",
+          "displayText": "Transfer to hearts: bid 2♦ to show 5+ hearts",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.toSpades",
+          "meaningId": "transfer:to-spades",
+          "templateKey": "nt.transfer.toSpades.semantic",
+          "displayText": "Transfer to spades: bid 2♥ to show 5+ spades",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.accept",
+          "meaningId": "transfer:accept",
+          "templateKey": "nt.transfer.accept.semantic",
+          "displayText": "Accept transfer: bid the target major (hearts)",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.acceptSpades",
+          "meaningId": "transfer:accept-spades",
+          "templateKey": "nt.transfer.acceptSpades.semantic",
+          "displayText": "Accept transfer: bid the target major (spades)",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.signoffHearts",
+          "meaningId": "transfer:signoff-hearts",
+          "templateKey": "nt.transfer.signoffHearts.semantic",
+          "displayText": "Sign off in hearts: weak hand, pass and play in the major",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.gameHearts",
+          "meaningId": "transfer:game-hearts",
+          "templateKey": "nt.transfer.gameHearts.semantic",
+          "displayText": "Raise to 4♥: game values with 5+ hearts",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.ntGameHearts",
+          "meaningId": "transfer:nt-game-hearts",
+          "templateKey": "nt.transfer.ntGameHearts.semantic",
+          "displayText": "Bid 3NT: game values, offers opener choice between 3NT and 4♥",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.inviteRaiseHearts",
+          "meaningId": "transfer:invite-raise-hearts",
+          "templateKey": "nt.transfer.inviteRaiseHearts.semantic",
+          "displayText": "Raise to 3♥: invitational with 6+ hearts, opener decides game",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.inviteHearts",
+          "meaningId": "transfer:invite-hearts",
+          "templateKey": "nt.transfer.inviteHearts.semantic",
+          "displayText": "Bid 2NT: invitational with exactly 5 hearts, opener decides",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.inviteMajorsHearts",
+          "meaningId": "transfer:invite-majors-hearts",
+          "templateKey": "nt.transfer.inviteMajorsHearts.semantic",
+          "displayText": "Bid 2♠: invitational with 5 hearts and 5 spades, non-forcing",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.newSuitClubsHearts",
+          "meaningId": "transfer:new-suit-clubs-hearts",
+          "templateKey": "nt.transfer.newSuitClubsHearts.semantic",
+          "displayText": "Bid 3♣: game forcing with 5+ hearts and 4+ clubs",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.newSuitDiamondsHearts",
+          "meaningId": "transfer:new-suit-diamonds-hearts",
+          "templateKey": "nt.transfer.newSuitDiamondsHearts.semantic",
+          "displayText": "Bid 3♦: game forcing with 5+ hearts and 4+ diamonds",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.splinterSpades",
+          "meaningId": "transfer:splinter-spades",
+          "templateKey": "nt.transfer.splinterSpades.semantic",
+          "displayText": "Bid 3♠: singleton/void in spades with slam interest",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.quantitativeHearts",
+          "meaningId": "transfer:quantitative-hearts",
+          "templateKey": "nt.transfer.quantitativeHearts.semantic",
+          "displayText": "Bid 4NT: quantitative slam invite in hearts or notrump",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.signoffSpades",
+          "meaningId": "transfer:signoff-spades",
+          "templateKey": "nt.transfer.signoffSpades.semantic",
+          "displayText": "Sign off in spades: weak hand, pass and play in the major",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.gameSpades",
+          "meaningId": "transfer:game-spades",
+          "templateKey": "nt.transfer.gameSpades.semantic",
+          "displayText": "Raise to 4♠: game values with 5+ spades",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.ntGameSpades",
+          "meaningId": "transfer:nt-game-spades",
+          "templateKey": "nt.transfer.ntGameSpades.semantic",
+          "displayText": "Bid 3NT: game values, offers opener choice between 3NT and 4♠",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.inviteRaiseSpades",
+          "meaningId": "transfer:invite-raise-spades",
+          "templateKey": "nt.transfer.inviteRaiseSpades.semantic",
+          "displayText": "Raise to 3♠: invitational with 6+ spades, opener decides game",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.inviteSpades",
+          "meaningId": "transfer:invite-spades",
+          "templateKey": "nt.transfer.inviteSpades.semantic",
+          "displayText": "Bid 2NT: invitational with exactly 5 spades, opener decides",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.newSuitClubsSpades",
+          "meaningId": "transfer:new-suit-clubs-spades",
+          "templateKey": "nt.transfer.newSuitClubsSpades.semantic",
+          "displayText": "Bid 3♣: game forcing with 5+ spades and 4+ clubs",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.newSuitDiamondsSpades",
+          "meaningId": "transfer:new-suit-diamonds-spades",
+          "templateKey": "nt.transfer.newSuitDiamondsSpades.semantic",
+          "displayText": "Bid 3♦: game forcing with 5+ spades and 4+ diamonds",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.slamTryHearts",
+          "meaningId": "transfer:slam-try-hearts",
+          "templateKey": "nt.transfer.slamTryHearts.semantic",
+          "displayText": "Bid 3♥: 5-5 majors with slam interest (stronger than 4♥)",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.gameOtherMajorSpades",
+          "meaningId": "transfer:game-other-major-spades",
+          "templateKey": "nt.transfer.gameOtherMajorSpades.semantic",
+          "displayText": "Bid 4♥: game values with 5+ spades and 5+ hearts",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.quantitativeSpades",
+          "meaningId": "transfer:quantitative-spades",
+          "templateKey": "nt.transfer.quantitativeSpades.semantic",
+          "displayText": "Bid 4NT: quantitative slam invite in spades or notrump",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.correctTo4H",
+          "meaningId": "transfer:correct-to-4h",
+          "templateKey": "nt.transfer.correctTo4H.semantic",
+          "displayText": "Correct to 4♥: opener has 3+ hearts, prefer the major game",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.pass3NTHearts",
+          "meaningId": "transfer:pass-3nt-hearts",
+          "templateKey": "nt.transfer.pass3NTHearts.semantic",
+          "displayText": "Pass 3NT: opener lacks heart fit, stay in notrump",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.correctTo4S",
+          "meaningId": "transfer:correct-to-4s",
+          "templateKey": "nt.transfer.correctTo4S.semantic",
+          "displayText": "Correct to 4♠: opener has 3+ spades, prefer the major game",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.pass3NTSpades",
+          "meaningId": "transfer:pass-3nt-spades",
+          "templateKey": "nt.transfer.pass3NTSpades.semantic",
+          "displayText": "Pass 3NT: opener lacks spade fit, stay in notrump",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.acceptInviteGameHearts",
+          "meaningId": "transfer:accept-invite-game-hearts",
+          "templateKey": "nt.transfer.acceptInviteGameHearts.semantic",
+          "displayText": "Accept heart invite: bid 4♥ with maximum and heart fit",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.acceptInviteHearts",
+          "meaningId": "transfer:accept-invite-hearts",
+          "templateKey": "nt.transfer.acceptInviteHearts.semantic",
+          "displayText": "Accept heart invite: bid 3NT with maximum but no heart fit",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.signoffWithFitHearts",
+          "meaningId": "transfer:signoff-with-fit-hearts",
+          "templateKey": "nt.transfer.signoffWithFitHearts.semantic",
+          "displayText": "Sign off in 3♥: minimum hand but 3+ hearts (fit found)",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.declineInviteHearts",
+          "meaningId": "transfer:decline-invite-hearts",
+          "templateKey": "nt.transfer.declineInviteHearts.semantic",
+          "displayText": "Decline heart invite: pass 2NT with minimum and no heart fit",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.acceptInviteGameSpades",
+          "meaningId": "transfer:accept-invite-game-spades",
+          "templateKey": "nt.transfer.acceptInviteGameSpades.semantic",
+          "displayText": "Accept spade invite: bid 4♠ with maximum and spade fit",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.acceptInviteSpades",
+          "meaningId": "transfer:accept-invite-spades",
+          "templateKey": "nt.transfer.acceptInviteSpades.semantic",
+          "displayText": "Accept spade invite: bid 3NT with maximum but no spade fit",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.signoffWithFitSpades",
+          "meaningId": "transfer:signoff-with-fit-spades",
+          "templateKey": "nt.transfer.signoffWithFitSpades.semantic",
+          "displayText": "Sign off in 3♠: minimum hand but 3+ spades (fit found)",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.declineInviteSpades",
+          "meaningId": "transfer:decline-invite-spades",
+          "templateKey": "nt.transfer.declineInviteSpades.semantic",
+          "displayText": "Decline spade invite: pass 2NT with minimum and no spade fit",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.acceptInviteRaiseHearts",
+          "meaningId": "transfer:accept-invite-raise-hearts",
+          "templateKey": "nt.transfer.acceptInviteRaiseHearts.semantic",
+          "displayText": "Accept heart invite raise: bid 4♥ with maximum, fit and extras",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.declineInviteRaiseHearts",
+          "meaningId": "transfer:decline-invite-raise-hearts",
+          "templateKey": "nt.transfer.declineInviteRaiseHearts.semantic",
+          "displayText": "Decline heart invite raise: pass 3♥ with minimum",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.acceptInviteRaiseSpades",
+          "meaningId": "transfer:accept-invite-raise-spades",
+          "templateKey": "nt.transfer.acceptInviteRaiseSpades.semantic",
+          "displayText": "Accept spade invite raise: bid 4♠ with maximum, fit and extras",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        },
+        {
+          "explanationId": "nt.transfer.declineInviteRaiseSpades",
+          "meaningId": "transfer:decline-invite-raise-spades",
+          "templateKey": "nt.transfer.declineInviteRaiseSpades.semantic",
+          "displayText": "Decline spade invite raise: pass 3♠ with minimum",
+          "preferredLevel": "semantic",
+          "roles": [
+            "pedagogical"
+          ]
+        }
+      ],
+      "local": {
+        "initial": "idle",
+        "transitions": [
+          {
+            "from": "idle",
+            "to": "transferred-hearts",
+            "on": {
+              "act": "transfer",
+              "suit": "hearts"
+            }
+          },
+          {
+            "from": "idle",
+            "to": "transferred-spades",
+            "on": {
+              "act": "transfer",
+              "suit": "spades"
+            }
+          },
+          {
+            "from": "idle",
+            "to": "inactive",
+            "on": {
+              "act": "inquire"
+            }
+          },
+          {
+            "from": "idle",
+            "to": "inactive",
+            "on": {
+              "act": "raise"
+            }
+          },
+          {
+            "from": "idle",
+            "to": "inactive",
+            "on": {
+              "act": "place"
+            }
+          },
+          {
+            "from": "idle",
+            "to": "inactive",
+            "on": {
+              "act": "signoff"
+            }
+          },
+          {
+            "from": "transferred-hearts",
+            "to": "accepted-hearts",
+            "on": {
+              "act": "accept",
+              "feature": "heldSuit",
+              "suit": "hearts"
+            }
+          },
+          {
+            "from": "transferred-spades",
+            "to": "accepted-spades",
+            "on": {
+              "act": "accept",
+              "feature": "heldSuit",
+              "suit": "spades"
+            }
+          },
+          {
+            "from": "accepted-hearts",
+            "to": "placing-hearts",
+            "on": {
+              "act": "place",
+              "strain": "notrump"
+            }
+          },
+          {
+            "from": "accepted-spades",
+            "to": "placing-spades",
+            "on": {
+              "act": "place",
+              "strain": "notrump"
+            }
+          },
+          {
+            "from": "accepted-hearts",
+            "to": "invite-raised-hearts",
+            "on": {
+              "act": "raise",
+              "strength": "invitational",
+              "feature": "heldSuit"
+            }
+          },
+          {
+            "from": "accepted-spades",
+            "to": "invite-raised-spades",
+            "on": {
+              "act": "raise",
+              "strength": "invitational",
+              "feature": "heldSuit"
+            }
+          },
+          {
+            "from": "accepted-hearts",
+            "to": "invited-hearts",
+            "on": {
+              "act": "raise",
+              "strength": "invitational"
+            }
+          },
+          {
+            "from": "accepted-spades",
+            "to": "invited-spades",
+            "on": {
+              "act": "raise",
+              "strength": "invitational"
+            }
+          }
+        ]
+      },
+      "states": [
+        {
+          "phase": "idle",
+          "turn": "responder",
+          "negotiationDelta": {
+            "forcing": "one-round",
+            "captain": "responder"
+          },
+          "surfaces": [
+            {
+              "meaningId": "transfer:to-hearts",
+              "semanticClassId": "transfer:to-hearts",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 2,
+                  "strain": "D"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "hand.suitLength.hearts",
+                  "operator": "gte",
+                  "value": 5,
+                  "clauseId": "hand.suitLength.hearts:gte:5",
+                  "description": "5+ hearts",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 1
+              },
+              "sourceIntent": {
+                "type": "TransferToHearts",
+                "params": {}
+              },
+              "disclosure": "announcement",
+              "teachingLabel": {
+                "name": "Transfer to hearts",
+                "summary": "Bid 2D to ask opener to bid 2H, keeping the strong hand as declarer"
+              }
+            },
+            {
+              "meaningId": "transfer:to-spades",
+              "semanticClassId": "transfer:to-spades",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 2,
+                  "strain": "H"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "hand.suitLength.spades",
+                  "operator": "gte",
+                  "value": 5,
+                  "clauseId": "hand.suitLength.spades:gte:5",
+                  "description": "5+ spades",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 0
+              },
+              "sourceIntent": {
+                "type": "TransferToSpades",
+                "params": {}
+              },
+              "disclosure": "announcement",
+              "teachingLabel": {
+                "name": "Transfer to spades",
+                "summary": "Bid 2H to ask opener to bid 2S, keeping the strong hand as declarer"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "transferred-hearts",
+          "turn": "opener",
+          "negotiationDelta": {
+            "forcing": "none",
+            "fitAgreed": {
+              "strain": "hearts",
+              "confidence": "tentative"
+            }
+          },
+          "surfaces": [
+            {
+              "meaningId": "transfer:accept",
+              "semanticClassId": "transfer:accept",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 2,
+                  "strain": "H"
+                }
+              },
+              "clauses": [],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 0
+              },
+              "sourceIntent": {
+                "type": "AcceptTransfer",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "standard",
+              "teachingLabel": {
+                "name": "Accept transfer to hearts",
+                "summary": "Complete the transfer by bidding 2H as requested"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "transferred-spades",
+          "turn": "opener",
+          "negotiationDelta": {
+            "forcing": "none",
+            "fitAgreed": {
+              "strain": "spades",
+              "confidence": "tentative"
+            }
+          },
+          "surfaces": [
+            {
+              "meaningId": "transfer:accept-spades",
+              "semanticClassId": "transfer:accept-spades",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 2,
+                  "strain": "S"
+                }
+              },
+              "clauses": [],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 0
+              },
+              "sourceIntent": {
+                "type": "AcceptTransfer",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "standard",
+              "teachingLabel": {
+                "name": "Accept transfer to spades",
+                "summary": "Complete the transfer by bidding 2S as requested"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "accepted-hearts",
+          "turn": "responder",
+          "negotiationDelta": {
+            "captain": "opener"
+          },
+          "surfaces": [
+            {
+              "meaningId": "transfer:nt-game-hearts",
+              "semanticClassId": "transfer:nt-game",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "NT"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.gameValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.gameValues:boolean:true",
+                  "description": "Has a game values (game values opposite 1NT)",
+                  "rationale": "game values opposite 1NT",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.hearts",
+                  "operator": "eq",
+                  "value": 5,
+                  "clauseId": "hand.suitLength.hearts:eq:5",
+                  "description": "Exactly 5 hearts (offer 3NT as alternative to 4H)",
+                  "rationale": "offer 3NT as alternative to 4H",
+                  "isPublic": true
+                },
+                {
+                  "factId": "bridge.hasShortage",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "bridge.hasShortage:boolean:false",
+                  "description": "No short suit (balanced enough for NT)",
+                  "rationale": "balanced enough for NT",
+                  "isPublic": true
+                },
+                {
+                  "factId": "system.responder.slamValues",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "system.responder.slamValues:boolean:false",
+                  "description": "No slam values (game values, not slam (use 4NT for slam invite))",
+                  "rationale": "game values, not slam (use 4NT for slam invite)"
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 2
+              },
+              "sourceIntent": {
+                "type": "TransferNTGame",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "3NT choice",
+                "summary": "Offer opener a choice between 3NT and 4H with exactly 5 balanced hearts"
+              }
+            },
+            {
+              "meaningId": "transfer:invite-hearts",
+              "semanticClassId": "transfer:invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 2,
+                  "strain": "NT"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.inviteValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.inviteValues:boolean:true",
+                  "description": "Has a invite values (invite values opposite 1NT)",
+                  "rationale": "invite values opposite 1NT",
+                  "isPublic": true
+                },
+                {
+                  "factId": "bridge.hasShortage",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "bridge.hasShortage:boolean:false",
+                  "description": "No short suit (balanced enough for NT invite)",
+                  "rationale": "balanced enough for NT invite",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 4
+              },
+              "sourceIntent": {
+                "type": "Invite",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "2NT invite",
+                "summary": "Invite game with a balanced hand, letting opener choose between 3NT and hearts"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "accepted-hearts",
+          "turn": "responder",
+          "surfaces": [
+            {
+              "meaningId": "transfer:signoff-hearts",
+              "semanticClassId": "transfer:signoff",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "pass"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.weakHand",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.weakHand:boolean:true",
+                  "description": "Has a weak hand (weak hand, signoff)",
+                  "rationale": "weak hand, signoff",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 0
+              },
+              "sourceIntent": {
+                "type": "Signoff",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "natural",
+              "teachingLabel": {
+                "name": "Signoff",
+                "summary": "Pass to play in 2H with a weak hand, ending the auction"
+              }
+            },
+            {
+              "meaningId": "transfer:game-hearts",
+              "semanticClassId": "transfer:game-in-major",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 4,
+                  "strain": "H"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.gameValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.gameValues:boolean:true",
+                  "description": "Has a game values (game values opposite 1NT)",
+                  "rationale": "game values opposite 1NT",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.hearts",
+                  "operator": "gte",
+                  "value": 6,
+                  "clauseId": "hand.suitLength.hearts:gte:6",
+                  "description": "6+ hearts (game in major with long suit)",
+                  "rationale": "game in major with long suit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 1
+              },
+              "sourceIntent": {
+                "type": "GameInMajor",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "4H game",
+                "summary": "Jump to 4H with game values and 6+ hearts to play in the major"
+              }
+            },
+            {
+              "meaningId": "transfer:invite-raise-hearts",
+              "semanticClassId": "transfer:invite-raise",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "H"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.inviteValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.inviteValues:boolean:true",
+                  "description": "Has a invite values (invite values opposite 1NT)",
+                  "rationale": "invite values opposite 1NT",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.hearts",
+                  "operator": "gte",
+                  "value": 6,
+                  "clauseId": "hand.suitLength.hearts:gte:6",
+                  "description": "6+ hearts (invite in major with long suit)",
+                  "rationale": "invite in major with long suit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 3
+              },
+              "sourceIntent": {
+                "type": "InviteRaise",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "3H invite (6+ hearts)",
+                "summary": "Invite game in hearts with 6+ cards and invitational values"
+              }
+            },
+            {
+              "meaningId": "transfer:invite-majors-hearts",
+              "semanticClassId": "transfer:invite-majors",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 2,
+                  "strain": "S"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.inviteValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.inviteValues:boolean:true",
+                  "description": "Has a invite values (invitational values)",
+                  "rationale": "invitational values",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.spades",
+                  "operator": "gte",
+                  "value": 5,
+                  "clauseId": "hand.suitLength.spades:gte:5",
+                  "description": "5+ spades (5-5 in the majors)",
+                  "rationale": "5-5 in the majors",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 5
+              },
+              "sourceIntent": {
+                "type": "InviteMajorMajor",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "2S invite (5-5 majors)",
+                "summary": "Show 5-5 in both majors with invitational values after a heart transfer"
+              }
+            },
+            {
+              "meaningId": "transfer:new-suit-clubs-hearts",
+              "semanticClassId": "transfer:new-suit-gf",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "C"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.gameValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.gameValues:boolean:true",
+                  "description": "Has a game values (game forcing)",
+                  "rationale": "game forcing",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.clubs",
+                  "operator": "gte",
+                  "value": 4,
+                  "clauseId": "hand.suitLength.clubs:gte:4",
+                  "description": "4+ clubs (4+ clubs, second suit)",
+                  "rationale": "4+ clubs, second suit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 6
+              },
+              "sourceIntent": {
+                "type": "NewSuitGameForce",
+                "params": {
+                  "suit": "clubs"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "3C game force",
+                "summary": "Show a 4+ club side suit with game-forcing values to explore the best contract"
+              }
+            },
+            {
+              "meaningId": "transfer:new-suit-diamonds-hearts",
+              "semanticClassId": "transfer:new-suit-gf",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "D"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.gameValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.gameValues:boolean:true",
+                  "description": "Has a game values (game forcing)",
+                  "rationale": "game forcing",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.diamonds",
+                  "operator": "gte",
+                  "value": 4,
+                  "clauseId": "hand.suitLength.diamonds:gte:4",
+                  "description": "4+ diamonds (4+ diamonds, second suit)",
+                  "rationale": "4+ diamonds, second suit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 7
+              },
+              "sourceIntent": {
+                "type": "NewSuitGameForce",
+                "params": {
+                  "suit": "diamonds"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "3D game force",
+                "summary": "Show a 4+ diamond side suit with game-forcing values to explore the best contract"
+              }
+            },
+            {
+              "meaningId": "transfer:splinter-spades",
+              "semanticClassId": "transfer:splinter-slam-try",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "S"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.slamValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.slamValues:boolean:true",
+                  "description": "Has a slam values (slam interest)",
+                  "rationale": "slam interest",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.spades",
+                  "operator": "lte",
+                  "value": 1,
+                  "clauseId": "hand.suitLength.spades:lte:1",
+                  "description": "At most 1 spades (singleton or void in spades)",
+                  "rationale": "singleton or void in spades",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 8
+              },
+              "sourceIntent": {
+                "type": "ShortageSlamTry",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "3S splinter (slam try)",
+                "summary": "Show shortness in spades with slam interest in hearts"
+              }
+            },
+            {
+              "meaningId": "transfer:quantitative-hearts",
+              "semanticClassId": "transfer:quantitative",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 4,
+                  "strain": "NT"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.slamValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.slamValues:boolean:true",
+                  "description": "Has a slam values (slam invite values)",
+                  "rationale": "slam invite values",
+                  "isPublic": true
+                },
+                {
+                  "factId": "bridge.hasShortage",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "bridge.hasShortage:boolean:false",
+                  "description": "No short suit (balanced for quantitative)",
+                  "rationale": "balanced for quantitative",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 9
+              },
+              "sourceIntent": {
+                "type": "QuantitativeSlam",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "4NT quantitative",
+                "summary": "Invite slam with balanced slam values, asking opener to bid 6 with a maximum"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "accepted-spades",
+          "turn": "responder",
+          "negotiationDelta": {
+            "captain": "opener"
+          },
+          "surfaces": [
+            {
+              "meaningId": "transfer:nt-game-spades",
+              "semanticClassId": "transfer:nt-game",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "NT"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.gameValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.gameValues:boolean:true",
+                  "description": "Has a game values (game values opposite 1NT)",
+                  "rationale": "game values opposite 1NT",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.spades",
+                  "operator": "eq",
+                  "value": 5,
+                  "clauseId": "hand.suitLength.spades:eq:5",
+                  "description": "Exactly 5 spades (offer 3NT as alternative to 4S)",
+                  "rationale": "offer 3NT as alternative to 4S",
+                  "isPublic": true
+                },
+                {
+                  "factId": "bridge.hasShortage",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "bridge.hasShortage:boolean:false",
+                  "description": "No short suit (balanced enough for NT)",
+                  "rationale": "balanced enough for NT",
+                  "isPublic": true
+                },
+                {
+                  "factId": "system.responder.slamValues",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "system.responder.slamValues:boolean:false",
+                  "description": "No slam values (game values, not slam (use 4NT for slam invite))",
+                  "rationale": "game values, not slam (use 4NT for slam invite)"
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 2
+              },
+              "sourceIntent": {
+                "type": "TransferNTGame",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "3NT choice",
+                "summary": "Offer opener a choice between 3NT and 4S with exactly 5 balanced spades"
+              }
+            },
+            {
+              "meaningId": "transfer:invite-spades",
+              "semanticClassId": "transfer:invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 2,
+                  "strain": "NT"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.inviteValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.inviteValues:boolean:true",
+                  "description": "Has a invite values (invite values opposite 1NT)",
+                  "rationale": "invite values opposite 1NT",
+                  "isPublic": true
+                },
+                {
+                  "factId": "bridge.hasShortage",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "bridge.hasShortage:boolean:false",
+                  "description": "No short suit (balanced enough for NT invite)",
+                  "rationale": "balanced enough for NT invite",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 4
+              },
+              "sourceIntent": {
+                "type": "Invite",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "2NT invite",
+                "summary": "Invite game with a balanced hand, letting opener choose between 3NT and spades"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "accepted-spades",
+          "turn": "responder",
+          "surfaces": [
+            {
+              "meaningId": "transfer:signoff-spades",
+              "semanticClassId": "transfer:signoff",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "pass"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.weakHand",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.weakHand:boolean:true",
+                  "description": "Has a weak hand (weak hand, signoff)",
+                  "rationale": "weak hand, signoff",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 0
+              },
+              "sourceIntent": {
+                "type": "Signoff",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "natural",
+              "teachingLabel": {
+                "name": "Signoff",
+                "summary": "Pass to play in 2S with a weak hand, ending the auction"
+              }
+            },
+            {
+              "meaningId": "transfer:game-spades",
+              "semanticClassId": "transfer:game-in-major",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 4,
+                  "strain": "S"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.gameValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.gameValues:boolean:true",
+                  "description": "Has a game values (game values opposite 1NT)",
+                  "rationale": "game values opposite 1NT",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.spades",
+                  "operator": "gte",
+                  "value": 6,
+                  "clauseId": "hand.suitLength.spades:gte:6",
+                  "description": "6+ spades (game in major with long suit)",
+                  "rationale": "game in major with long suit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 1
+              },
+              "sourceIntent": {
+                "type": "GameInMajor",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "4S game",
+                "summary": "Jump to 4S with game values and 6+ spades to play in the major"
+              }
+            },
+            {
+              "meaningId": "transfer:invite-raise-spades",
+              "semanticClassId": "transfer:invite-raise",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "S"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.inviteValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.inviteValues:boolean:true",
+                  "description": "Has a invite values (invite values opposite 1NT)",
+                  "rationale": "invite values opposite 1NT",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.spades",
+                  "operator": "gte",
+                  "value": 6,
+                  "clauseId": "hand.suitLength.spades:gte:6",
+                  "description": "6+ spades (invite in major with long suit)",
+                  "rationale": "invite in major with long suit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 3
+              },
+              "sourceIntent": {
+                "type": "InviteRaise",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "3S invite (6+ spades)",
+                "summary": "Invite game in spades with 6+ cards and invitational values"
+              }
+            },
+            {
+              "meaningId": "transfer:new-suit-clubs-spades",
+              "semanticClassId": "transfer:new-suit-gf",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "C"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.gameValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.gameValues:boolean:true",
+                  "description": "Has a game values (game forcing)",
+                  "rationale": "game forcing",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.clubs",
+                  "operator": "gte",
+                  "value": 4,
+                  "clauseId": "hand.suitLength.clubs:gte:4",
+                  "description": "4+ clubs (4+ clubs, second suit)",
+                  "rationale": "4+ clubs, second suit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 5
+              },
+              "sourceIntent": {
+                "type": "NewSuitGameForce",
+                "params": {
+                  "suit": "clubs"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "3C game force",
+                "summary": "Show a 4+ club side suit with game-forcing values after a spade transfer"
+              }
+            },
+            {
+              "meaningId": "transfer:new-suit-diamonds-spades",
+              "semanticClassId": "transfer:new-suit-gf",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "D"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.gameValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.gameValues:boolean:true",
+                  "description": "Has a game values (game forcing)",
+                  "rationale": "game forcing",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.diamonds",
+                  "operator": "gte",
+                  "value": 4,
+                  "clauseId": "hand.suitLength.diamonds:gte:4",
+                  "description": "4+ diamonds (4+ diamonds, second suit)",
+                  "rationale": "4+ diamonds, second suit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 6
+              },
+              "sourceIntent": {
+                "type": "NewSuitGameForce",
+                "params": {
+                  "suit": "diamonds"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "3D game force",
+                "summary": "Show a 4+ diamond side suit with game-forcing values after a spade transfer"
+              }
+            },
+            {
+              "meaningId": "transfer:slam-try-hearts",
+              "semanticClassId": "transfer:slam-try-second-major",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "H"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.slamValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.slamValues:boolean:true",
+                  "description": "Has a slam values (slam interest (stronger than 4H))",
+                  "rationale": "slam interest (stronger than 4H)",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.hearts",
+                  "operator": "gte",
+                  "value": 5,
+                  "clauseId": "hand.suitLength.hearts:gte:5",
+                  "description": "5+ hearts (5+ hearts with 5+ spades)",
+                  "rationale": "5+ hearts with 5+ spades",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 7
+              },
+              "sourceIntent": {
+                "type": "SlamTrySecondMajor",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "3H slam try (5-5 majors)",
+                "summary": "Show 5-5 majors with slam interest, distinguishing from a game-only 4H bid"
+              }
+            },
+            {
+              "meaningId": "transfer:game-other-major-spades",
+              "semanticClassId": "transfer:game-other-major",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 4,
+                  "strain": "H"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.gameValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.gameValues:boolean:true",
+                  "description": "Has a game values (game values)",
+                  "rationale": "game values",
+                  "isPublic": true
+                },
+                {
+                  "factId": "hand.suitLength.hearts",
+                  "operator": "gte",
+                  "value": 5,
+                  "clauseId": "hand.suitLength.hearts:gte:5",
+                  "description": "5+ hearts (5+ hearts with 5+ spades)",
+                  "rationale": "5+ hearts with 5+ spades",
+                  "isPublic": true
+                },
+                {
+                  "factId": "system.responder.slamValues",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "system.responder.slamValues:boolean:false",
+                  "description": "No slam values (game values, not slam (use 3H for slam interest))",
+                  "rationale": "game values, not slam (use 3H for slam interest)"
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 8
+              },
+              "sourceIntent": {
+                "type": "GameInOtherMajor",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "4H game (5-5 majors)",
+                "summary": "Bid game in hearts with 5-5 majors and game values but no slam interest"
+              }
+            },
+            {
+              "meaningId": "transfer:quantitative-spades",
+              "semanticClassId": "transfer:quantitative",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 4,
+                  "strain": "NT"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.responder.slamValues",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.responder.slamValues:boolean:true",
+                  "description": "Has a slam values (slam invite values)",
+                  "rationale": "slam invite values",
+                  "isPublic": true
+                },
+                {
+                  "factId": "bridge.hasShortage",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "bridge.hasShortage:boolean:false",
+                  "description": "No short suit (balanced for quantitative)",
+                  "rationale": "balanced for quantitative",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 9
+              },
+              "sourceIntent": {
+                "type": "QuantitativeSlam",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "4NT quantitative",
+                "summary": "Invite slam with balanced slam values after a spade transfer"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "placing-hearts",
+          "turn": "opener",
+          "surfaces": [
+            {
+              "meaningId": "transfer:correct-to-4h",
+              "semanticClassId": "transfer:correct-to-major",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 4,
+                  "strain": "H"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "module.transfer.openerHasHeartFit",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "module.transfer.openerHasHeartFit:boolean:true",
+                  "description": "Has a opener has heart fit (fit with responder's 5)",
+                  "rationale": "fit with responder's 5",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 0
+              },
+              "sourceIntent": {
+                "type": "PlacementCorrection",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "4♥ heart fit",
+                "summary": "Correct to 4H with 3+ hearts, choosing the major fit over 3NT"
+              }
+            },
+            {
+              "meaningId": "transfer:pass-3nt-hearts",
+              "semanticClassId": "transfer:pass-3nt",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "pass"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "module.transfer.openerHasHeartFit",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "module.transfer.openerHasHeartFit:boolean:false",
+                  "description": "No opener has heart fit (no fit)",
+                  "rationale": "no fit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 1
+              },
+              "sourceIntent": {
+                "type": "PlacementPass",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Stay in 3NT",
+                "summary": "Pass 3NT with only a doubleton in hearts, preferring notrump"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "placing-spades",
+          "turn": "opener",
+          "surfaces": [
+            {
+              "meaningId": "transfer:correct-to-4s",
+              "semanticClassId": "transfer:correct-to-major",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 4,
+                  "strain": "S"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "module.transfer.openerHasSpadesFit",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "module.transfer.openerHasSpadesFit:boolean:true",
+                  "description": "Has a opener has spades fit (fit with responder's 5)",
+                  "rationale": "fit with responder's 5",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 0
+              },
+              "sourceIntent": {
+                "type": "PlacementCorrection",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "4♠ spade fit",
+                "summary": "Correct to 4S with 3+ spades, choosing the major fit over 3NT"
+              }
+            },
+            {
+              "meaningId": "transfer:pass-3nt-spades",
+              "semanticClassId": "transfer:pass-3nt",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "pass"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "module.transfer.openerHasSpadesFit",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "module.transfer.openerHasSpadesFit:boolean:false",
+                  "description": "No opener has spades fit (no fit)",
+                  "rationale": "no fit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "must",
+                "modulePrecedence": 0,
+                "declarationOrder": 1
+              },
+              "sourceIntent": {
+                "type": "PlacementPass",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Stay in 3NT",
+                "summary": "Pass 3NT with only a doubleton in spades, preferring notrump"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "invited-hearts",
+          "turn": "opener",
+          "surfaces": [
+            {
+              "meaningId": "transfer:accept-invite-game-hearts",
+              "semanticClassId": "transfer:accept-invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 4,
+                  "strain": "H"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.opener.notMinimum:boolean:true",
+                  "description": "Has a not minimum (not minimum)",
+                  "rationale": "not minimum",
+                  "isPublic": true
+                },
+                {
+                  "factId": "module.transfer.openerHasHeartFit",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "module.transfer.openerHasHeartFit:boolean:true",
+                  "description": "Has a opener has heart fit (fit with responder's 5)",
+                  "rationale": "fit with responder's 5",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 0
+              },
+              "sourceIntent": {
+                "type": "AcceptInvite",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Accept invite",
+                "summary": "Raise to 4H with a non-minimum hand and a heart fit"
+              }
+            },
+            {
+              "meaningId": "transfer:accept-invite-hearts",
+              "semanticClassId": "transfer:accept-invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "NT"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.opener.notMinimum:boolean:true",
+                  "description": "Has a not minimum (not minimum)",
+                  "rationale": "not minimum",
+                  "isPublic": true
+                },
+                {
+                  "factId": "module.transfer.openerHasHeartFit",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "module.transfer.openerHasHeartFit:boolean:false",
+                  "description": "No opener has heart fit (no fit)",
+                  "rationale": "no fit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 1
+              },
+              "sourceIntent": {
+                "type": "AcceptInvite",
+                "params": {}
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Accept invite",
+                "summary": "Accept in 3NT with a non-minimum hand but no heart fit"
+              }
+            },
+            {
+              "meaningId": "transfer:signoff-with-fit-hearts",
+              "semanticClassId": "transfer:signoff-with-fit",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "H"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "system.opener.notMinimum:boolean:false",
+                  "description": "No not minimum (minimum)",
+                  "rationale": "minimum",
+                  "isPublic": true
+                },
+                {
+                  "factId": "module.transfer.openerHasHeartFit",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "module.transfer.openerHasHeartFit:boolean:true",
+                  "description": "Has a opener has heart fit (fit with responder's 5)",
+                  "rationale": "fit with responder's 5",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 1
+              },
+              "sourceIntent": {
+                "type": "SignoffWithFit",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Sign off",
+                "summary": "Decline the invite but correct to 3H with a minimum hand and heart fit"
+              }
+            },
+            {
+              "meaningId": "transfer:decline-invite-hearts",
+              "semanticClassId": "transfer:decline-invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "pass"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "system.opener.notMinimum:boolean:false",
+                  "description": "No not minimum (minimum)",
+                  "rationale": "minimum",
+                  "isPublic": true
+                },
+                {
+                  "factId": "module.transfer.openerHasHeartFit",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "module.transfer.openerHasHeartFit:boolean:false",
+                  "description": "No opener has heart fit (no fit)",
+                  "rationale": "no fit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 3
+              },
+              "sourceIntent": {
+                "type": "DeclineInvite",
+                "params": {}
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Decline invite",
+                "summary": "Pass 2NT with a minimum hand and no heart fit"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "invited-spades",
+          "turn": "opener",
+          "surfaces": [
+            {
+              "meaningId": "transfer:accept-invite-game-spades",
+              "semanticClassId": "transfer:accept-invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 4,
+                  "strain": "S"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.opener.notMinimum:boolean:true",
+                  "description": "Has a not minimum (not minimum)",
+                  "rationale": "not minimum",
+                  "isPublic": true
+                },
+                {
+                  "factId": "module.transfer.openerHasSpadesFit",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "module.transfer.openerHasSpadesFit:boolean:true",
+                  "description": "Has a opener has spades fit (fit with responder's 5)",
+                  "rationale": "fit with responder's 5",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 0
+              },
+              "sourceIntent": {
+                "type": "AcceptInvite",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Accept invite",
+                "summary": "Raise to 4S with a non-minimum hand and a spade fit"
+              }
+            },
+            {
+              "meaningId": "transfer:accept-invite-spades",
+              "semanticClassId": "transfer:accept-invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "NT"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.opener.notMinimum:boolean:true",
+                  "description": "Has a not minimum (not minimum)",
+                  "rationale": "not minimum",
+                  "isPublic": true
+                },
+                {
+                  "factId": "module.transfer.openerHasSpadesFit",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "module.transfer.openerHasSpadesFit:boolean:false",
+                  "description": "No opener has spades fit (no fit)",
+                  "rationale": "no fit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 1
+              },
+              "sourceIntent": {
+                "type": "AcceptInvite",
+                "params": {}
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Accept invite",
+                "summary": "Accept in 3NT with a non-minimum hand but no spade fit"
+              }
+            },
+            {
+              "meaningId": "transfer:signoff-with-fit-spades",
+              "semanticClassId": "transfer:signoff-with-fit",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 3,
+                  "strain": "S"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "system.opener.notMinimum:boolean:false",
+                  "description": "No not minimum (minimum)",
+                  "rationale": "minimum",
+                  "isPublic": true
+                },
+                {
+                  "factId": "module.transfer.openerHasSpadesFit",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "module.transfer.openerHasSpadesFit:boolean:true",
+                  "description": "Has a opener has spades fit (fit with responder's 5)",
+                  "rationale": "fit with responder's 5",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 2
+              },
+              "sourceIntent": {
+                "type": "SignoffWithFit",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Sign off",
+                "summary": "Decline the invite but correct to 3S with a minimum hand and spade fit"
+              }
+            },
+            {
+              "meaningId": "transfer:decline-invite-spades",
+              "semanticClassId": "transfer:decline-invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "pass"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "system.opener.notMinimum:boolean:false",
+                  "description": "No not minimum (minimum)",
+                  "rationale": "minimum",
+                  "isPublic": true
+                },
+                {
+                  "factId": "module.transfer.openerHasSpadesFit",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "module.transfer.openerHasSpadesFit:boolean:false",
+                  "description": "No opener has spades fit (no fit)",
+                  "rationale": "no fit",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 3
+              },
+              "sourceIntent": {
+                "type": "DeclineInvite",
+                "params": {}
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Decline invite",
+                "summary": "Pass 2NT with a minimum hand and no spade fit"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "invite-raised-hearts",
+          "turn": "opener",
+          "surfaces": [
+            {
+              "meaningId": "transfer:accept-invite-raise-hearts",
+              "semanticClassId": "transfer:accept-invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 4,
+                  "strain": "H"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.opener.notMinimum:boolean:true",
+                  "description": "Has a not minimum (not minimum)",
+                  "rationale": "not minimum",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 0
+              },
+              "sourceIntent": {
+                "type": "AcceptInvite",
+                "params": {
+                  "suit": "hearts"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Accept invite",
+                "summary": "Raise to 4H with a non-minimum hand opposite responder's 6+ hearts"
+              }
+            },
+            {
+              "meaningId": "transfer:decline-invite-raise-hearts",
+              "semanticClassId": "transfer:decline-invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "pass"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "system.opener.notMinimum:boolean:false",
+                  "description": "No not minimum (minimum)",
+                  "rationale": "minimum",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 1
+              },
+              "sourceIntent": {
+                "type": "DeclineInvite",
+                "params": {}
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Decline invite",
+                "summary": "Pass 3H with a minimum hand, settling for partscore in the major fit"
+              }
+            }
+          ]
+        },
+        {
+          "phase": "invite-raised-spades",
+          "turn": "opener",
+          "surfaces": [
+            {
+              "meaningId": "transfer:accept-invite-raise-spades",
+              "semanticClassId": "transfer:accept-invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "bid",
+                  "level": 4,
+                  "strain": "S"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": true,
+                  "clauseId": "system.opener.notMinimum:boolean:true",
+                  "description": "Has a not minimum (not minimum)",
+                  "rationale": "not minimum",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 0
+              },
+              "sourceIntent": {
+                "type": "AcceptInvite",
+                "params": {
+                  "suit": "spades"
+                }
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Accept invite",
+                "summary": "Raise to 4S with a non-minimum hand opposite responder's 6+ spades"
+              }
+            },
+            {
+              "meaningId": "transfer:decline-invite-raise-spades",
+              "semanticClassId": "transfer:decline-invite",
+              "moduleId": "jacoby-transfers",
+              "encoding": {
+                "defaultCall": {
+                  "type": "pass"
+                }
+              },
+              "clauses": [
+                {
+                  "factId": "system.opener.notMinimum",
+                  "operator": "boolean",
+                  "value": false,
+                  "clauseId": "system.opener.notMinimum:boolean:false",
+                  "description": "No not minimum (minimum)",
+                  "rationale": "minimum",
+                  "isPublic": true
+                }
+              ],
+              "ranking": {
+                "recommendationBand": "should",
+                "modulePrecedence": 0,
+                "declarationOrder": 1
+              },
+              "sourceIntent": {
+                "type": "DeclineInvite",
+                "params": {}
+              },
+              "disclosure": "alert",
+              "teachingLabel": {
+                "name": "Decline invite",
+                "summary": "Pass 3S with a minimum hand, settling for partscore in the major fit"
+              }
+            }
+          ]
+        }
+      ],
+      "facts": {
+        "definitions": [
+          {
+            "id": "module.transfer.targetSuit",
+            "layer": "module-derived",
+            "world": "acting-hand",
+            "description": "Transfer target suit (hearts, spades, or none)",
+            "valueType": "string",
+            "derivesFrom": [
+              "hand.suitLength.hearts",
+              "hand.suitLength.spades"
+            ],
+            "constrainsDimensions": [
+              "suitIdentity",
+              "suitLength"
+            ]
+          },
+          {
+            "id": "module.transfer.eligible",
+            "layer": "module-derived",
+            "world": "acting-hand",
+            "description": "Eligible for Jacoby transfer (5+ card major)",
+            "valueType": "boolean",
+            "derivesFrom": [
+              "bridge.hasFiveCardMajor"
+            ],
+            "constrainsDimensions": [
+              "suitIdentity",
+              "suitLength"
+            ]
+          },
+          {
+            "id": "module.transfer.preferred",
+            "layer": "module-derived",
+            "world": "acting-hand",
+            "description": "Transfer preferred (eligible with 5+ card suit)",
+            "valueType": "boolean",
+            "derivesFrom": [
+              "module.transfer.eligible"
+            ],
+            "constrainsDimensions": [
+              "suitIdentity",
+              "suitLength"
+            ]
+          },
+          {
+            "id": "module.transfer.openerHasHeartFit",
+            "layer": "module-derived",
+            "world": "acting-hand",
+            "description": "Opener has 3+ hearts (fit with responder's 5-card suit)",
+            "valueType": "boolean",
+            "derivesFrom": [
+              "hand.suitLength.hearts"
+            ],
+            "constrainsDimensions": [
+              "suitIdentity",
+              "suitLength"
+            ]
+          },
+          {
+            "id": "module.transfer.openerHasSpadesFit",
+            "layer": "module-derived",
+            "world": "acting-hand",
+            "description": "Opener has 3+ spades (fit with responder's 5-card suit)",
+            "valueType": "boolean",
+            "derivesFrom": [
+              "hand.suitLength.spades"
+            ],
+            "constrainsDimensions": [
+              "suitIdentity",
+              "suitLength"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "derivedTeaching": {
+    "surfaceGroups": [
+      {
+        "id": "jacoby-transfers/idle:responder",
+        "label": "jacoby-transfers idle (responder)",
+        "members": [
+          "transfer:to-hearts",
+          "transfer:to-spades"
+        ],
+        "relationship": "mutually_exclusive",
+        "description": "Surfaces competing at idle in jacoby-transfers (responder's turn)"
+      },
+      {
+        "id": "jacoby-transfers/accepted-hearts:responder",
+        "label": "jacoby-transfers accepted-hearts (responder)",
+        "members": [
+          "transfer:nt-game-hearts",
+          "transfer:invite-hearts"
+        ],
+        "relationship": "mutually_exclusive",
+        "description": "Surfaces competing at accepted-hearts in jacoby-transfers (responder's turn)"
+      },
+      {
+        "id": "jacoby-transfers/accepted-hearts:responder",
+        "label": "jacoby-transfers accepted-hearts (responder)",
+        "members": [
+          "transfer:signoff-hearts",
+          "transfer:game-hearts",
+          "transfer:invite-raise-hearts",
+          "transfer:invite-majors-hearts",
+          "transfer:new-suit-clubs-hearts",
+          "transfer:new-suit-diamonds-hearts",
+          "transfer:splinter-spades",
+          "transfer:quantitative-hearts"
+        ],
+        "relationship": "mutually_exclusive",
+        "description": "Surfaces competing at accepted-hearts in jacoby-transfers (responder's turn)"
+      },
+      {
+        "id": "jacoby-transfers/accepted-spades:responder",
+        "label": "jacoby-transfers accepted-spades (responder)",
+        "members": [
+          "transfer:nt-game-spades",
+          "transfer:invite-spades"
+        ],
+        "relationship": "mutually_exclusive",
+        "description": "Surfaces competing at accepted-spades in jacoby-transfers (responder's turn)"
+      },
+      {
+        "id": "jacoby-transfers/accepted-spades:responder",
+        "label": "jacoby-transfers accepted-spades (responder)",
+        "members": [
+          "transfer:signoff-spades",
+          "transfer:game-spades",
+          "transfer:invite-raise-spades",
+          "transfer:new-suit-clubs-spades",
+          "transfer:new-suit-diamonds-spades",
+          "transfer:slam-try-hearts",
+          "transfer:game-other-major-spades",
+          "transfer:quantitative-spades"
+        ],
+        "relationship": "mutually_exclusive",
+        "description": "Surfaces competing at accepted-spades in jacoby-transfers (responder's turn)"
+      },
+      {
+        "id": "jacoby-transfers/placing-hearts:opener",
+        "label": "jacoby-transfers placing-hearts (opener)",
+        "members": [
+          "transfer:correct-to-4h",
+          "transfer:pass-3nt-hearts"
+        ],
+        "relationship": "mutually_exclusive",
+        "description": "Surfaces competing at placing-hearts in jacoby-transfers (opener's turn)"
+      },
+      {
+        "id": "jacoby-transfers/placing-spades:opener",
+        "label": "jacoby-transfers placing-spades (opener)",
+        "members": [
+          "transfer:correct-to-4s",
+          "transfer:pass-3nt-spades"
+        ],
+        "relationship": "mutually_exclusive",
+        "description": "Surfaces competing at placing-spades in jacoby-transfers (opener's turn)"
+      },
+      {
+        "id": "jacoby-transfers/invited-hearts:opener",
+        "label": "jacoby-transfers invited-hearts (opener)",
+        "members": [
+          "transfer:accept-invite-game-hearts",
+          "transfer:accept-invite-hearts",
+          "transfer:signoff-with-fit-hearts",
+          "transfer:decline-invite-hearts"
+        ],
+        "relationship": "mutually_exclusive",
+        "description": "Surfaces competing at invited-hearts in jacoby-transfers (opener's turn)"
+      },
+      {
+        "id": "jacoby-transfers/invited-spades:opener",
+        "label": "jacoby-transfers invited-spades (opener)",
+        "members": [
+          "transfer:accept-invite-game-spades",
+          "transfer:accept-invite-spades",
+          "transfer:signoff-with-fit-spades",
+          "transfer:decline-invite-spades"
+        ],
+        "relationship": "mutually_exclusive",
+        "description": "Surfaces competing at invited-spades in jacoby-transfers (opener's turn)"
+      },
+      {
+        "id": "jacoby-transfers/invite-raised-hearts:opener",
+        "label": "jacoby-transfers invite-raised-hearts (opener)",
+        "members": [
+          "transfer:accept-invite-raise-hearts",
+          "transfer:decline-invite-raise-hearts"
+        ],
+        "relationship": "mutually_exclusive",
+        "description": "Surfaces competing at invite-raised-hearts in jacoby-transfers (opener's turn)"
+      },
+      {
+        "id": "jacoby-transfers/invite-raised-spades:opener",
+        "label": "jacoby-transfers invite-raised-spades (opener)",
+        "members": [
+          "transfer:accept-invite-raise-spades",
+          "transfer:decline-invite-raise-spades"
+        ],
+        "relationship": "mutually_exclusive",
+        "description": "Surfaces competing at invite-raised-spades in jacoby-transfers (opener's turn)"
+      }
+    ]
+  },
+  "supportsRoleSelection": true
+}

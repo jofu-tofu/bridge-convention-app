@@ -53,6 +53,13 @@ Convention-specific tests live in `__tests__/<convention-name>/` (e.g., `__tests
 - Shape indices follow `SUIT_ORDER`: [0]=Spades, [1]=Hearts, [2]=Diamonds, [3]=Clubs
 - Conventions with `internal: true` are filtered from the UI by `filterConventions()` in `src/components/screens/filter-conventions.ts`
 
+## Rust Type Mirror
+
+All convention data types have Rust equivalents in `src-tauri/crates/bridge-conventions/`.
+The Rust types are data-only (no evaluator functions). TS `FactCatalogExtension` maps to
+Rust `FactDefinitionSet`. When modifying type shapes in TS, update the Rust mirror and
+re-export fixtures via `npx tsx scripts/export-conventions.ts`.
+
 ---
 
 ## Context Maintenance
