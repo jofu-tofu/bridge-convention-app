@@ -18,11 +18,25 @@ Cargo workspace with four crates implementing the bridge engine and convention d
 ```
 crates/
   bridge-engine/       Pure Rust game logic (types, eval, deal gen, auction, scoring, play)
-  bridge-conventions/  Rust convention data model (types only, no evaluation logic).
-                       Mirrors TS types from src/conventions/. Depends on bridge-engine for Call/Seat/etc.
+  bridge-conventions/  Rust convention data model + fact evaluation + meaning pipeline.
+                       Mirrors TS types from src/conventions/. Depends on bridge-engine for Hand/Suit/etc.
                        Key design choices: newtype wrappers for branded strings, FactDefinitionSet (not
                        FactCatalogExtension — data only, no evaluator functions), typed enums for unknown
                        fields, serde_json::Number to preserve integer/float distinction in round-trips.
+                       Phase 2 adds `fact_dsl/` module: FactComposition tree interpreter, evaluate_facts()
+                       orchestrator, Rust-constructed compositions for TS facts lacking composition fields.
+                       Rust FactComposition is a superset of TS — includes Match, Compute, Extended nodes
+                       and TopHonorCount/SuitCompare/LongestSuitIs/AceCount/KingCount/VulnerabilityIs
+                       clause types not in TS. Facts using these have Rust-constructed trees in
+                       fact_dsl/rust_compositions.rs. Zero built-in evaluator registry.
+                       Phase 3 adds `pipeline/` (observation + evaluation + run_pipeline), `teaching/`
+                       (resolution, projection, parse tree), and `adapter/` (protocol adapter, strategy
+                       evaluation, practical scorer). `normalizeIntent` is hand-ported from TS as a Rust
+                       match block in `pipeline/observation/normalize_intent.rs` — when the TS mapping
+                       in `src/conventions/pipeline/observation/normalize-intent.ts` changes, update the
+                       Rust match block to stay in sync. `ConventionStrategy::suggest()` returns
+                       `(Option<BidResult>, StrategyEvaluation)` — immutable &self, debug payload as
+                       out-param (intentional Rust idiom divergence from TS &mut self pattern).
   bridge-tauri/        Tauri v2 app — #[tauri::command] handlers delegating to bridge-engine
   bridge-wasm/         WASM bindings via wasm-bindgen — wraps bridge-engine for browser deployment
 ```

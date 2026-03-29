@@ -1,0 +1,260 @@
+//! Rule interpreter — collects matching claims from ConventionModules.
+//!
+//! Mirrors TS from `pipeline/observation/rule-interpreter.ts`.
+
+use bridge_engine::types::Seat;
+use std::collections::HashMap;
+
+use crate::pipeline::observation::committed_step::{AuctionContext, CommittedStep, CommittedStepStatus};
+use crate::pipeline::observation::local_fsm::advance_local_fsm;
+use crate::pipeline::observation::negotiation_matcher::match_kernel;
+use crate::pipeline::observation::route_matcher::match_route;
+use crate::types::meaning::BidMeaning;
+use crate::types::module_types::ConventionModule;
+use crate::types::negotiation::NegotiationState;
+use crate::types::rule_types::{PhaseRef, ResolvedSurface, StateEntry, TurnRole};
+
+use super::committed_step::initial_negotiation;
+
+/// Result for one module — resolved surfaces with their negotiation deltas.
+#[derive(Debug, Clone)]
+pub struct ModuleSurfaceResult {
+    pub module_id: String,
+    pub resolved: Vec<ResolvedSurface>,
+}
+
+/// Flatten resolved surfaces to BidMeaning vec (discarding deltas).
+pub fn flatten_surfaces(results: &[ModuleSurfaceResult]) -> Vec<BidMeaning> {
+    results
+        .iter()
+        .flat_map(|r| r.resolved.iter().map(|c| c.surface.clone()))
+        .collect()
+}
+
+/// Derive the turn role for the next bidder.
+pub fn derive_turn_role(next_seat: Seat, log: &[CommittedStep]) -> TurnRole {
+    let opener_seat = find_opener_seat(log);
+
+    match opener_seat {
+        None => TurnRole::Opener,
+        Some(os) => {
+            if next_seat == os {
+                TurnRole::Opener
+            } else if next_seat == partner_seat(os) {
+                TurnRole::Responder
+            } else {
+                TurnRole::Opponent
+            }
+        }
+    }
+}
+
+/// Collect all matching claims from convention modules against the current auction context.
+pub fn collect_matching_claims(
+    modules: &[ConventionModule],
+    context: &AuctionContext,
+    next_seat: Option<Seat>,
+) -> Vec<ModuleSurfaceResult> {
+    let current_kernel = get_current_kernel(context);
+    let turn_role = next_seat.map(|s| derive_turn_role(s, &context.log));
+    let opener_seat = find_opener_seat(&context.log);
+
+    let mut results = Vec::new();
+    for module in modules {
+        let current_phase = replay_local_fsm(module, context);
+        let resolved = collect_module_surfaces(
+            module,
+            &current_phase,
+            &current_kernel,
+            context,
+            turn_role,
+            opener_seat,
+        );
+
+        if !resolved.is_empty() {
+            results.push(ModuleSurfaceResult {
+                module_id: module.module_id.clone(),
+                resolved,
+            });
+        }
+    }
+
+    results
+}
+
+/// Collect matching claims using pre-computed local phases (no replay).
+///
+/// Used by buildObservationLogViaRules to avoid O(N²×M) replay cost.
+pub fn collect_matching_claims_with_phases(
+    modules: &[ConventionModule],
+    context: &AuctionContext,
+    next_seat: Option<Seat>,
+    local_phases: &HashMap<String, String>,
+) -> Vec<ModuleSurfaceResult> {
+    let current_kernel = get_current_kernel(context);
+    let turn_role = next_seat.map(|s| derive_turn_role(s, &context.log));
+    let opener_seat = find_opener_seat(&context.log);
+
+    let mut results = Vec::new();
+    for module in modules {
+        let current_phase = local_phases
+            .get(&module.module_id)
+            .cloned()
+            .unwrap_or_else(|| module.local.initial.clone());
+        let resolved = collect_module_surfaces(
+            module,
+            &current_phase,
+            &current_kernel,
+            context,
+            turn_role,
+            opener_seat,
+        );
+
+        if !resolved.is_empty() {
+            results.push(ModuleSurfaceResult {
+                module_id: module.module_id.clone(),
+                resolved,
+            });
+        }
+    }
+
+    results
+}
+
+// ── Internal helpers ─────────────────────────────────────────────────
+
+fn get_current_kernel(context: &AuctionContext) -> NegotiationState {
+    context
+        .log
+        .last()
+        .map(|step| step.state_after.clone())
+        .unwrap_or_else(initial_negotiation)
+}
+
+fn find_opener_seat(log: &[CommittedStep]) -> Option<Seat> {
+    for step in log {
+        if !step.public_actions.is_empty() && step.status != CommittedStepStatus::RawOnly {
+            return Some(step.actor);
+        }
+    }
+    None
+}
+
+fn replay_local_fsm(module: &ConventionModule, context: &AuctionContext) -> String {
+    let mut phase = module.local.initial.clone();
+    for step in &context.log {
+        phase = advance_local_fsm(&phase, step, &module.local.transitions);
+    }
+    phase
+}
+
+fn collect_module_surfaces(
+    module: &ConventionModule,
+    current_phase: &str,
+    current_kernel: &NegotiationState,
+    context: &AuctionContext,
+    turn_role: Option<TurnRole>,
+    opener_seat: Option<Seat>,
+) -> Vec<ResolvedSurface> {
+    let mut resolved = Vec::new();
+    if let Some(ref states) = module.states {
+        for entry in states {
+            if !state_entry_matches(entry, current_phase, current_kernel, context, turn_role, opener_seat) {
+                continue;
+            }
+            for surface in &entry.surfaces {
+                resolved.push(ResolvedSurface {
+                    surface: surface.clone(),
+                    negotiation_delta: entry.negotiation_delta.clone(),
+                });
+            }
+        }
+    }
+    resolved
+}
+
+fn state_entry_matches(
+    entry: &StateEntry,
+    current_phase: &str,
+    current_kernel: &NegotiationState,
+    context: &AuctionContext,
+    turn_role: Option<TurnRole>,
+    opener_seat: Option<Seat>,
+) -> bool {
+    // Turn check
+    if let (Some(entry_turn), Some(role)) = (entry.turn, turn_role) {
+        if entry_turn != role {
+            return false;
+        }
+    }
+
+    // Phase check
+    match &entry.phase {
+        PhaseRef::Single(phase) => {
+            if phase != current_phase {
+                return false;
+            }
+        }
+        PhaseRef::Multiple(phases) => {
+            if !phases.iter().any(|p| p == current_phase) {
+                return false;
+            }
+        }
+    }
+
+    // Kernel check
+    if let Some(ref kernel_expr) = entry.kernel {
+        if !match_kernel(kernel_expr, current_kernel) {
+            return false;
+        }
+    }
+
+    // Route check
+    if let Some(ref route_expr) = entry.route {
+        if !match_route(route_expr, &context.log, opener_seat) {
+            return false;
+        }
+    }
+
+    true
+}
+
+fn partner_seat(seat: Seat) -> Seat {
+    match seat {
+        Seat::North => Seat::South,
+        Seat::South => Seat::North,
+        Seat::East => Seat::West,
+        Seat::West => Seat::East,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::bid_action::*;
+    use crate::types::rule_types::*;
+
+    #[test]
+    fn derive_turn_role_opener() {
+        let log = vec![CommittedStep {
+            actor: Seat::South,
+            call: bridge_engine::types::Call::Pass,
+            resolved_claim: None,
+            public_actions: vec![BidAction::Open {
+                strain: BidSuitName::Notrump,
+                strength: None,
+            }],
+            negotiation_delta: crate::types::negotiation::NegotiationDelta::default(),
+            state_after: initial_negotiation(),
+            status: CommittedStepStatus::Resolved,
+        }];
+        assert_eq!(derive_turn_role(Seat::South, &log), TurnRole::Opener);
+        assert_eq!(derive_turn_role(Seat::North, &log), TurnRole::Responder);
+        assert_eq!(derive_turn_role(Seat::East, &log), TurnRole::Opponent);
+    }
+
+    #[test]
+    fn derive_turn_role_no_log() {
+        assert_eq!(derive_turn_role(Seat::South, &[]), TurnRole::Opener);
+    }
+}

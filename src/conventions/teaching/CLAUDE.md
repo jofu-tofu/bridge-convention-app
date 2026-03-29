@@ -34,6 +34,12 @@ Sub-builders (`call-view-builder`, `meaning-view-builder`, `explanation-builder`
 
 Pedagogical acceptability is NOT a selection gate in the candidate pipeline. Instead, `isDtoTeachingAcceptable()` (contracts) is a post-selection annotation. `isTeachingEligible()` in `teaching-resolution.ts` checks hand+encoding+pedagogical for teaching candidate filtering.
 
+## Rust Port
+
+The teaching layer has a Rust port in `src-tauri/crates/bridge-conventions/src/teaching/`
+(teaching_resolution.rs, projection_builder.rs, parse_tree_builder.rs). TS remains the
+production path — Rust is shadow-validated only (Phase 3).
+
 ---
 
 ## Context Maintenance

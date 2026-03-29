@@ -17,6 +17,14 @@ Bridges the convention pipeline to the BiddingStrategy interface. This is the co
 
 adapter/ imports from conventions/ internals (pipeline, core, teaching) and engine/. It is exported through the conventions barrel (`conventions/index.ts`).
 
+## Rust Port
+
+The adapter layer has a Rust port in `src-tauri/crates/bridge-conventions/src/adapter/`
+(protocol_adapter.rs, meaning_strategy.rs, practical_scorer.rs, strategy_evaluation.rs,
+tree_evaluation.rs). TS remains the production path — Rust is shadow-validated only (Phase 3).
+
+**Rust `ConventionStrategy` API:** `suggest(&self, context, next_seat, facts, is_legal, inherited_dims) -> (Option<BidResult>, StrategyEvaluation)` — returns debug payload as out-param so strategy stays `&self` (immutable). This is an intentional Rust idiom divergence from the TS mutable pattern. All Phase 4+ strategy implementors must follow this contract.
+
 ---
 
 ## Context Maintenance

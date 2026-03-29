@@ -1,0 +1,1200 @@
+[
+  {
+    "bundleId": "nt-transfers",
+    "label": "stayman-4hearts-invite",
+    "seed": 100,
+    "hand": {
+      "cards": [
+        {
+          "suit": "D",
+          "rank": "3"
+        },
+        {
+          "suit": "S",
+          "rank": "7"
+        },
+        {
+          "suit": "C",
+          "rank": "6"
+        },
+        {
+          "suit": "H",
+          "rank": "2"
+        },
+        {
+          "suit": "S",
+          "rank": "2"
+        },
+        {
+          "suit": "H",
+          "rank": "6"
+        },
+        {
+          "suit": "H",
+          "rank": "7"
+        },
+        {
+          "suit": "S",
+          "rank": "K"
+        },
+        {
+          "suit": "S",
+          "rank": "4"
+        },
+        {
+          "suit": "H",
+          "rank": "T"
+        },
+        {
+          "suit": "C",
+          "rank": "2"
+        },
+        {
+          "suit": "D",
+          "rank": "A"
+        },
+        {
+          "suit": "S",
+          "rank": "Q"
+        }
+      ]
+    },
+    "evaluation": {
+      "hcp": 9,
+      "shape": [
+        5,
+        4,
+        2,
+        2
+      ]
+    },
+    "auctionEntries": [
+      {
+        "call": {
+          "type": "bid",
+          "level": 1,
+          "strain": "NT"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      }
+    ],
+    "selectedMeaningId": "stayman:ask-major",
+    "selectedCall": {
+      "type": "bid",
+      "level": 2,
+      "strain": "C"
+    },
+    "truthSetMeaningIds": [
+      "stayman:ask-major",
+      "transfer:to-spades"
+    ],
+    "truthSetCalls": [
+      {
+        "type": "bid",
+        "level": 2,
+        "strain": "C"
+      },
+      {
+        "type": "bid",
+        "level": 2,
+        "strain": "H"
+      }
+    ],
+    "acceptableSetMeaningIds": [
+      "transfer:to-hearts",
+      "bridge:nt-invite",
+      "bridge:to-3nt",
+      "stayman:ask-major"
+    ],
+    "eliminatedCount": 4,
+    "bidGradeIfCorrect": "correct",
+    "callViewCount": 5,
+    "meaningViewCount": 5,
+    "whyNotCount": 3
+  },
+  {
+    "bundleId": "nt-transfers",
+    "label": "stayman-4spades-game",
+    "seed": 101,
+    "hand": {
+      "cards": [
+        {
+          "suit": "C",
+          "rank": "5"
+        },
+        {
+          "suit": "D",
+          "rank": "T"
+        },
+        {
+          "suit": "S",
+          "rank": "5"
+        },
+        {
+          "suit": "D",
+          "rank": "J"
+        },
+        {
+          "suit": "C",
+          "rank": "6"
+        },
+        {
+          "suit": "H",
+          "rank": "7"
+        },
+        {
+          "suit": "H",
+          "rank": "K"
+        },
+        {
+          "suit": "H",
+          "rank": "8"
+        },
+        {
+          "suit": "D",
+          "rank": "A"
+        },
+        {
+          "suit": "D",
+          "rank": "6"
+        },
+        {
+          "suit": "H",
+          "rank": "T"
+        },
+        {
+          "suit": "C",
+          "rank": "K"
+        },
+        {
+          "suit": "H",
+          "rank": "5"
+        }
+      ]
+    },
+    "evaluation": {
+      "hcp": 11,
+      "shape": [
+        1,
+        5,
+        4,
+        3
+      ]
+    },
+    "auctionEntries": [
+      {
+        "call": {
+          "type": "bid",
+          "level": 1,
+          "strain": "NT"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      }
+    ],
+    "selectedMeaningId": "transfer:to-hearts",
+    "selectedCall": {
+      "type": "bid",
+      "level": 2,
+      "strain": "D"
+    },
+    "truthSetMeaningIds": [
+      "transfer:to-hearts"
+    ],
+    "truthSetCalls": [
+      {
+        "type": "bid",
+        "level": 2,
+        "strain": "D"
+      }
+    ],
+    "acceptableSetMeaningIds": [
+      "transfer:to-spades",
+      "bridge:nt-invite",
+      "bridge:to-3nt",
+      "stayman:ask-major",
+      "stayman:ask-major"
+    ],
+    "eliminatedCount": 5,
+    "bidGradeIfCorrect": "correct",
+    "callViewCount": 5,
+    "meaningViewCount": 5,
+    "whyNotCount": 5
+  },
+  {
+    "bundleId": "nt-transfers",
+    "label": "transfer-hearts-weak",
+    "seed": 110,
+    "hand": {
+      "cards": [
+        {
+          "suit": "S",
+          "rank": "4"
+        },
+        {
+          "suit": "C",
+          "rank": "J"
+        },
+        {
+          "suit": "H",
+          "rank": "3"
+        },
+        {
+          "suit": "S",
+          "rank": "T"
+        },
+        {
+          "suit": "D",
+          "rank": "7"
+        },
+        {
+          "suit": "H",
+          "rank": "2"
+        },
+        {
+          "suit": "S",
+          "rank": "5"
+        },
+        {
+          "suit": "H",
+          "rank": "5"
+        },
+        {
+          "suit": "S",
+          "rank": "Q"
+        },
+        {
+          "suit": "H",
+          "rank": "4"
+        },
+        {
+          "suit": "C",
+          "rank": "K"
+        },
+        {
+          "suit": "H",
+          "rank": "T"
+        },
+        {
+          "suit": "C",
+          "rank": "8"
+        }
+      ]
+    },
+    "evaluation": {
+      "hcp": 6,
+      "shape": [
+        4,
+        5,
+        1,
+        3
+      ]
+    },
+    "auctionEntries": [
+      {
+        "call": {
+          "type": "bid",
+          "level": 1,
+          "strain": "NT"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      }
+    ],
+    "selectedMeaningId": "transfer:to-hearts",
+    "selectedCall": {
+      "type": "bid",
+      "level": 2,
+      "strain": "D"
+    },
+    "truthSetMeaningIds": [
+      "transfer:to-hearts"
+    ],
+    "truthSetCalls": [
+      {
+        "type": "bid",
+        "level": 2,
+        "strain": "D"
+      }
+    ],
+    "acceptableSetMeaningIds": [
+      "transfer:to-spades",
+      "bridge:nt-invite",
+      "bridge:to-3nt",
+      "stayman:ask-major",
+      "stayman:ask-major"
+    ],
+    "eliminatedCount": 5,
+    "bidGradeIfCorrect": "correct",
+    "callViewCount": 5,
+    "meaningViewCount": 5,
+    "whyNotCount": 5
+  },
+  {
+    "bundleId": "nt-transfers",
+    "label": "transfer-spades-invite",
+    "seed": 111,
+    "hand": {
+      "cards": [
+        {
+          "suit": "D",
+          "rank": "8"
+        },
+        {
+          "suit": "S",
+          "rank": "6"
+        },
+        {
+          "suit": "D",
+          "rank": "K"
+        },
+        {
+          "suit": "H",
+          "rank": "J"
+        },
+        {
+          "suit": "S",
+          "rank": "7"
+        },
+        {
+          "suit": "C",
+          "rank": "K"
+        },
+        {
+          "suit": "C",
+          "rank": "3"
+        },
+        {
+          "suit": "S",
+          "rank": "4"
+        },
+        {
+          "suit": "D",
+          "rank": "5"
+        },
+        {
+          "suit": "D",
+          "rank": "Q"
+        },
+        {
+          "suit": "S",
+          "rank": "2"
+        },
+        {
+          "suit": "D",
+          "rank": "6"
+        },
+        {
+          "suit": "S",
+          "rank": "3"
+        }
+      ]
+    },
+    "evaluation": {
+      "hcp": 9,
+      "shape": [
+        5,
+        1,
+        5,
+        2
+      ]
+    },
+    "auctionEntries": [
+      {
+        "call": {
+          "type": "bid",
+          "level": 1,
+          "strain": "NT"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      }
+    ],
+    "selectedMeaningId": "transfer:to-spades",
+    "selectedCall": {
+      "type": "bid",
+      "level": 2,
+      "strain": "H"
+    },
+    "truthSetMeaningIds": [
+      "transfer:to-spades"
+    ],
+    "truthSetCalls": [
+      {
+        "type": "bid",
+        "level": 2,
+        "strain": "H"
+      }
+    ],
+    "acceptableSetMeaningIds": [
+      "transfer:to-hearts",
+      "bridge:nt-invite",
+      "bridge:to-3nt",
+      "stayman:ask-major",
+      "stayman:ask-major"
+    ],
+    "eliminatedCount": 5,
+    "bidGradeIfCorrect": "correct",
+    "callViewCount": 5,
+    "meaningViewCount": 5,
+    "whyNotCount": 5
+  },
+  {
+    "bundleId": "nt-transfers",
+    "label": "nt-invite-balanced",
+    "seed": 120,
+    "hand": {
+      "cards": [
+        {
+          "suit": "S",
+          "rank": "6"
+        },
+        {
+          "suit": "D",
+          "rank": "7"
+        },
+        {
+          "suit": "D",
+          "rank": "T"
+        },
+        {
+          "suit": "H",
+          "rank": "Q"
+        },
+        {
+          "suit": "D",
+          "rank": "2"
+        },
+        {
+          "suit": "D",
+          "rank": "4"
+        },
+        {
+          "suit": "C",
+          "rank": "K"
+        },
+        {
+          "suit": "C",
+          "rank": "T"
+        },
+        {
+          "suit": "C",
+          "rank": "2"
+        },
+        {
+          "suit": "D",
+          "rank": "J"
+        },
+        {
+          "suit": "S",
+          "rank": "Q"
+        },
+        {
+          "suit": "S",
+          "rank": "J"
+        },
+        {
+          "suit": "H",
+          "rank": "7"
+        }
+      ]
+    },
+    "evaluation": {
+      "hcp": 9,
+      "shape": [
+        3,
+        2,
+        5,
+        3
+      ]
+    },
+    "auctionEntries": [
+      {
+        "call": {
+          "type": "bid",
+          "level": 1,
+          "strain": "NT"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      }
+    ],
+    "selectedMeaningId": "bridge:nt-invite",
+    "selectedCall": {
+      "type": "bid",
+      "level": 2,
+      "strain": "NT"
+    },
+    "truthSetMeaningIds": [
+      "bridge:nt-invite"
+    ],
+    "truthSetCalls": [
+      {
+        "type": "bid",
+        "level": 2,
+        "strain": "NT"
+      }
+    ],
+    "acceptableSetMeaningIds": [
+      "transfer:to-hearts",
+      "transfer:to-spades",
+      "bridge:to-3nt",
+      "stayman:ask-major",
+      "stayman:ask-major"
+    ],
+    "eliminatedCount": 5,
+    "bidGradeIfCorrect": "correct",
+    "callViewCount": 5,
+    "meaningViewCount": 5,
+    "whyNotCount": 5
+  },
+  {
+    "bundleId": "nt-transfers",
+    "label": "nt-game-balanced",
+    "seed": 121,
+    "hand": {
+      "cards": [
+        {
+          "suit": "S",
+          "rank": "J"
+        },
+        {
+          "suit": "D",
+          "rank": "7"
+        },
+        {
+          "suit": "D",
+          "rank": "T"
+        },
+        {
+          "suit": "H",
+          "rank": "6"
+        },
+        {
+          "suit": "D",
+          "rank": "9"
+        },
+        {
+          "suit": "C",
+          "rank": "7"
+        },
+        {
+          "suit": "D",
+          "rank": "A"
+        },
+        {
+          "suit": "S",
+          "rank": "3"
+        },
+        {
+          "suit": "H",
+          "rank": "7"
+        },
+        {
+          "suit": "H",
+          "rank": "9"
+        },
+        {
+          "suit": "C",
+          "rank": "2"
+        },
+        {
+          "suit": "D",
+          "rank": "K"
+        },
+        {
+          "suit": "S",
+          "rank": "Q"
+        }
+      ]
+    },
+    "evaluation": {
+      "hcp": 10,
+      "shape": [
+        3,
+        3,
+        5,
+        2
+      ]
+    },
+    "auctionEntries": [
+      {
+        "call": {
+          "type": "bid",
+          "level": 1,
+          "strain": "NT"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      }
+    ],
+    "selectedMeaningId": "bridge:to-3nt",
+    "selectedCall": {
+      "type": "bid",
+      "level": 3,
+      "strain": "NT"
+    },
+    "truthSetMeaningIds": [
+      "bridge:to-3nt"
+    ],
+    "truthSetCalls": [
+      {
+        "type": "bid",
+        "level": 3,
+        "strain": "NT"
+      }
+    ],
+    "acceptableSetMeaningIds": [
+      "transfer:to-hearts",
+      "transfer:to-spades",
+      "bridge:nt-invite",
+      "stayman:ask-major",
+      "stayman:ask-major"
+    ],
+    "eliminatedCount": 5,
+    "bidGradeIfCorrect": "correct",
+    "callViewCount": 5,
+    "meaningViewCount": 5,
+    "whyNotCount": 5
+  },
+  {
+    "bundleId": "nt-transfers",
+    "label": "pass-weak",
+    "seed": 130,
+    "hand": {
+      "cards": [
+        {
+          "suit": "D",
+          "rank": "T"
+        },
+        {
+          "suit": "C",
+          "rank": "Q"
+        },
+        {
+          "suit": "S",
+          "rank": "7"
+        },
+        {
+          "suit": "C",
+          "rank": "3"
+        },
+        {
+          "suit": "D",
+          "rank": "8"
+        },
+        {
+          "suit": "C",
+          "rank": "8"
+        },
+        {
+          "suit": "S",
+          "rank": "6"
+        },
+        {
+          "suit": "D",
+          "rank": "2"
+        },
+        {
+          "suit": "H",
+          "rank": "5"
+        },
+        {
+          "suit": "S",
+          "rank": "J"
+        },
+        {
+          "suit": "H",
+          "rank": "Q"
+        },
+        {
+          "suit": "C",
+          "rank": "4"
+        },
+        {
+          "suit": "C",
+          "rank": "7"
+        }
+      ]
+    },
+    "evaluation": {
+      "hcp": 5,
+      "shape": [
+        3,
+        2,
+        3,
+        5
+      ]
+    },
+    "auctionEntries": [
+      {
+        "call": {
+          "type": "bid",
+          "level": 1,
+          "strain": "NT"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      }
+    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [
+      "transfer:to-hearts",
+      "transfer:to-spades",
+      "bridge:nt-invite",
+      "bridge:to-3nt",
+      "stayman:ask-major",
+      "stayman:ask-major"
+    ],
+    "eliminatedCount": 6,
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 5,
+    "meaningViewCount": 5,
+    "whyNotCount": 6
+  },
+  {
+    "bundleId": "nt-transfers",
+    "label": "stayman-after-deny",
+    "seed": 140,
+    "hand": {
+      "cards": [
+        {
+          "suit": "D",
+          "rank": "A"
+        },
+        {
+          "suit": "C",
+          "rank": "2"
+        },
+        {
+          "suit": "H",
+          "rank": "2"
+        },
+        {
+          "suit": "C",
+          "rank": "T"
+        },
+        {
+          "suit": "S",
+          "rank": "3"
+        },
+        {
+          "suit": "C",
+          "rank": "3"
+        },
+        {
+          "suit": "S",
+          "rank": "4"
+        },
+        {
+          "suit": "H",
+          "rank": "5"
+        },
+        {
+          "suit": "C",
+          "rank": "A"
+        },
+        {
+          "suit": "S",
+          "rank": "J"
+        },
+        {
+          "suit": "H",
+          "rank": "T"
+        },
+        {
+          "suit": "S",
+          "rank": "2"
+        },
+        {
+          "suit": "C",
+          "rank": "4"
+        }
+      ]
+    },
+    "evaluation": {
+      "hcp": 9,
+      "shape": [
+        4,
+        3,
+        1,
+        5
+      ]
+    },
+    "auctionEntries": [
+      {
+        "call": {
+          "type": "bid",
+          "level": 1,
+          "strain": "NT"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      },
+      {
+        "call": {
+          "type": "bid",
+          "level": 2,
+          "strain": "C"
+        },
+        "seat": "S"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "W"
+      },
+      {
+        "call": {
+          "type": "bid",
+          "level": 2,
+          "strain": "D"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      }
+    ],
+    "selectedMeaningId": "stayman:nt-invite-after-denial",
+    "selectedCall": {
+      "type": "bid",
+      "level": 2,
+      "strain": "NT"
+    },
+    "truthSetMeaningIds": [
+      "stayman:nt-invite-after-denial"
+    ],
+    "truthSetCalls": [
+      {
+        "type": "bid",
+        "level": 2,
+        "strain": "NT"
+      }
+    ],
+    "acceptableSetMeaningIds": [
+      "stayman:nt-game-after-denial",
+      "stayman:show-five-hearts-after-denial",
+      "stayman:show-five-spades-after-denial",
+      "stayman:minor-gf-3c-after-2d",
+      "stayman:minor-gf-3d-after-2d",
+      "stayman:major-signoff-4h-after-2d",
+      "stayman:major-signoff-4s-after-2d",
+      "stayman:quantitative-4nt-after-2d"
+    ],
+    "eliminatedCount": 8,
+    "bidGradeIfCorrect": "correct",
+    "callViewCount": 9,
+    "meaningViewCount": 9,
+    "whyNotCount": 8
+  },
+  {
+    "bundleId": "nt-transfers",
+    "label": "transfer-after-accept",
+    "seed": 150,
+    "hand": {
+      "cards": [
+        {
+          "suit": "D",
+          "rank": "8"
+        },
+        {
+          "suit": "C",
+          "rank": "A"
+        },
+        {
+          "suit": "H",
+          "rank": "K"
+        },
+        {
+          "suit": "S",
+          "rank": "T"
+        },
+        {
+          "suit": "D",
+          "rank": "9"
+        },
+        {
+          "suit": "C",
+          "rank": "Q"
+        },
+        {
+          "suit": "S",
+          "rank": "4"
+        },
+        {
+          "suit": "C",
+          "rank": "4"
+        },
+        {
+          "suit": "H",
+          "rank": "8"
+        },
+        {
+          "suit": "C",
+          "rank": "9"
+        },
+        {
+          "suit": "C",
+          "rank": "3"
+        },
+        {
+          "suit": "H",
+          "rank": "4"
+        },
+        {
+          "suit": "C",
+          "rank": "2"
+        }
+      ]
+    },
+    "evaluation": {
+      "hcp": 9,
+      "shape": [
+        2,
+        3,
+        2,
+        6
+      ]
+    },
+    "auctionEntries": [
+      {
+        "call": {
+          "type": "bid",
+          "level": 1,
+          "strain": "NT"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      },
+      {
+        "call": {
+          "type": "bid",
+          "level": 2,
+          "strain": "D"
+        },
+        "seat": "S"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "W"
+      },
+      {
+        "call": {
+          "type": "bid",
+          "level": 2,
+          "strain": "H"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      }
+    ],
+    "selectedMeaningId": "transfer:new-suit-clubs-hearts",
+    "selectedCall": {
+      "type": "bid",
+      "level": 3,
+      "strain": "C"
+    },
+    "truthSetMeaningIds": [
+      "transfer:new-suit-clubs-hearts"
+    ],
+    "truthSetCalls": [
+      {
+        "type": "bid",
+        "level": 3,
+        "strain": "C"
+      }
+    ],
+    "acceptableSetMeaningIds": [
+      "transfer:nt-game-hearts",
+      "transfer:invite-hearts",
+      "transfer:signoff-hearts",
+      "transfer:game-hearts",
+      "transfer:invite-raise-hearts",
+      "transfer:invite-majors-hearts",
+      "transfer:new-suit-diamonds-hearts",
+      "transfer:splinter-spades",
+      "transfer:quantitative-hearts",
+      "blackwood:ask-aces"
+    ],
+    "eliminatedCount": 10,
+    "bidGradeIfCorrect": "correct",
+    "callViewCount": 10,
+    "meaningViewCount": 11,
+    "whyNotCount": 10
+  },
+  {
+    "bundleId": "nt-transfers",
+    "label": "off-system-strong",
+    "seed": 160,
+    "hand": {
+      "cards": [
+        {
+          "suit": "S",
+          "rank": "K"
+        },
+        {
+          "suit": "D",
+          "rank": "8"
+        },
+        {
+          "suit": "D",
+          "rank": "2"
+        },
+        {
+          "suit": "C",
+          "rank": "T"
+        },
+        {
+          "suit": "C",
+          "rank": "A"
+        },
+        {
+          "suit": "S",
+          "rank": "7"
+        },
+        {
+          "suit": "H",
+          "rank": "Q"
+        },
+        {
+          "suit": "D",
+          "rank": "A"
+        },
+        {
+          "suit": "S",
+          "rank": "J"
+        },
+        {
+          "suit": "D",
+          "rank": "7"
+        },
+        {
+          "suit": "S",
+          "rank": "A"
+        },
+        {
+          "suit": "C",
+          "rank": "4"
+        },
+        {
+          "suit": "H",
+          "rank": "T"
+        }
+      ]
+    },
+    "evaluation": {
+      "hcp": 18,
+      "shape": [
+        4,
+        2,
+        4,
+        3
+      ]
+    },
+    "auctionEntries": [
+      {
+        "call": {
+          "type": "bid",
+          "level": 1,
+          "strain": "NT"
+        },
+        "seat": "N"
+      },
+      {
+        "call": {
+          "type": "pass"
+        },
+        "seat": "E"
+      }
+    ],
+    "selectedMeaningId": "stayman:ask-major",
+    "selectedCall": {
+      "type": "bid",
+      "level": 2,
+      "strain": "C"
+    },
+    "truthSetMeaningIds": [
+      "stayman:ask-major"
+    ],
+    "truthSetCalls": [
+      {
+        "type": "bid",
+        "level": 2,
+        "strain": "C"
+      }
+    ],
+    "acceptableSetMeaningIds": [
+      "transfer:to-hearts",
+      "transfer:to-spades",
+      "bridge:nt-invite",
+      "bridge:to-3nt",
+      "stayman:ask-major"
+    ],
+    "eliminatedCount": 5,
+    "bidGradeIfCorrect": "correct",
+    "callViewCount": 5,
+    "meaningViewCount": 5,
+    "whyNotCount": 4
+  }
+]

@@ -134,6 +134,15 @@ Convention-specific integration tests belong in `conventions/__tests__/<bundle-n
 - `evaluation/provenance.ts` — DecisionProvenance, ActivationTrace
 - `evidence-bundle.ts` — EvidenceBundle, evidence types
 
+## Rust Pipeline Port
+
+The full pipeline has a Rust port in `src-tauri/crates/bridge-conventions/src/pipeline/`
+(observation/ + evaluation/ + run_pipeline.rs). TS remains the production path — Rust is
+shadow-validated only (Phase 3). When modifying pipeline logic in TS, the Rust port should
+be updated to match. The `normalizeIntent` mapping table lives in both
+`observation/normalize-intent.ts` (TS) and `pipeline/observation/normalize_intent.rs` (Rust);
+keep them in sync.
+
 ## Boundary Rules
 
 - **Allowed imports:** `engine/`, `conventions/core/` (for `ConventionModule`, `rule-module` types)

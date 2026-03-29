@@ -7,8 +7,8 @@ Backend modules (`conventions/`, `inference/`, `session/`) are being migrated fr
 | Phase | Name | Status | Est. LOC | Dependencies |
 |-------|------|--------|----------|--------------|
 | 1 | [Convention Data Model](phase-1-convention-data-model.md) | Complete | ~1,500 | None |
-| 2 | [Fact Evaluation](phase-2-fact-evaluation.md) | Not Started | ~1,200 | Phase 1 |
-| 3 | [Meaning Pipeline](phase-3-meaning-pipeline.md) | Not Started | ~4,000-5,000 | Phase 2 |
+| 2 | [Fact Evaluation](phase-2-fact-evaluation.md) | Complete | ~1,500 | Phase 1 |
+| 3 | [Meaning Pipeline](phase-3-meaning-pipeline.md) | Complete | ~4,000-5,000 | Phase 2 |
 | 4 | [Inference + Session](phase-4-inference-session.md) | Not Started | ~6,000-7,000 | Phase 3 |
 | 5 | [Service Cleanup](phase-5-service-cleanup.md) | Not Started | ~2,000 | Phase 4 |
 
@@ -48,6 +48,8 @@ ServicePort (23 methods) exposed via `wasm-bindgen`. TS `service/` becomes a thi
 ### 1. Declarative Fact DSL
 
 `FactComposition` trees (`and`/`or`/`not`/`primitive`) interpreted by Rust runtime. No Rust code per convention. Convention definitions are 100% JSON-serializable. Posterior evaluators are a fixed set of built-in Rust functions keyed by ID.
+
+**Rust superset (Phase 2):** Rust `FactComposition` is a superset of TS — includes `Match`, `Compute`, `Extended` node kinds and `TopHonorCount`, `SuitCompare`, `LongestSuitIs`, `AceCount`, `KingCount`, `VulnerabilityIs`, `BooleanFact`, `NumericFact` extended clause types not present in the TS type system. The TS export script (`scripts/export-conventions.ts`) does not emit these node types. Facts using them have Rust-constructed compositions in `fact_dsl/rust_compositions.rs`, not JSON-deserialized ones. Zero built-in evaluator registry — every fact goes through the composition interpreter.
 
 ### 2. Convention Definitions as Data
 

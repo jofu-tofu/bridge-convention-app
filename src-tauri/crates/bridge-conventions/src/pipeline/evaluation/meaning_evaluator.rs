@@ -1,0 +1,218 @@
+//! Meaning evaluator — evaluates surface clauses against facts.
+//!
+//! Mirrors TS from `pipeline/evaluation/meaning-evaluator.ts`.
+
+use std::collections::HashMap;
+
+use crate::fact_dsl::types::{EvaluatedFacts, FactData};
+use crate::pipeline::evaluation::binding_resolver::resolve_clause;
+use crate::pipeline::evaluation::specificity_deriver::derive_specificity;
+use crate::pipeline::evaluation::types::{MeaningClause, MeaningProposal, RankingMetadata};
+use crate::types::meaning::{BidMeaning, BidMeaningClause, ConstraintValue, FactOperator};
+use crate::types::meaning::ConstraintDimension;
+
+/// Evaluate a single clause against evaluated facts.
+pub fn evaluate_clause(
+    clause: &BidMeaningClause,
+    facts: &EvaluatedFacts,
+    bindings: &HashMap<String, String>,
+) -> MeaningClause {
+    let resolved = resolve_clause(clause, bindings);
+    let fact_value = facts.facts.get(&resolved.fact_id);
+
+    let (satisfied, observed_value) = match fact_value {
+        None => (false, None),
+        Some(fv) => {
+            let sat = check_satisfaction(&resolved.operator, &resolved.value, &fv.value);
+            let obs = fact_data_to_json(&fv.value);
+            (sat, Some(obs))
+        }
+    };
+
+    MeaningClause {
+        fact_id: resolved.fact_id,
+        operator: resolved.operator,
+        value: resolved.value,
+        satisfied,
+        clause_id: resolved.clause_id,
+        description: resolved.description,
+        observed_value,
+        is_public: resolved.is_public,
+    }
+}
+
+/// Evaluate all clauses of a BidMeaning, producing a MeaningProposal.
+pub fn evaluate_bid_meaning(
+    surface: &BidMeaning,
+    facts: &EvaluatedFacts,
+    inherited_dimensions: &[ConstraintDimension],
+) -> MeaningProposal {
+    let bindings = surface.surface_bindings.clone().unwrap_or_default();
+
+    let clauses: Vec<MeaningClause> = surface
+        .clauses
+        .iter()
+        .map(|c| evaluate_clause(c, facts, &bindings))
+        .collect();
+
+    let all_satisfied = clauses.iter().all(|c| c.satisfied);
+
+    let specificity = derive_specificity(&surface.clauses, &bindings, inherited_dimensions);
+
+    let ranking = RankingMetadata {
+        recommendation_band: surface.ranking.recommendation_band,
+        module_precedence: surface.ranking.module_precedence,
+        declaration_order: surface.ranking.declaration_order,
+        specificity,
+    };
+
+    MeaningProposal {
+        meaning_id: surface.meaning_id.clone(),
+        semantic_class_id: surface.semantic_class_id.clone(),
+        module_id: surface.module_id.clone().unwrap_or_default(),
+        ranking,
+        clauses,
+        all_satisfied,
+        disclosure: surface.disclosure,
+        source_intent: surface.source_intent.clone(),
+        teaching_label: surface.teaching_label.clone(),
+        surface_bindings: surface.surface_bindings.clone(),
+        encoding: surface.encoding.clone(),
+        evidence: None,
+    }
+}
+
+/// Evaluate all bid meanings in a list.
+pub fn evaluate_all_bid_meanings(
+    surfaces: &[BidMeaning],
+    facts: &EvaluatedFacts,
+    inherited_dimensions: &[ConstraintDimension],
+) -> Vec<MeaningProposal> {
+    surfaces
+        .iter()
+        .map(|s| evaluate_bid_meaning(s, facts, inherited_dimensions))
+        .collect()
+}
+
+/// Check if a fact value satisfies a constraint.
+fn check_satisfaction(operator: &FactOperator, constraint: &ConstraintValue, actual: &FactData) -> bool {
+    match operator {
+        FactOperator::Gte => {
+            if let (ConstraintValue::Number(threshold), FactData::Number(val)) = (constraint, actual) {
+                *val >= threshold.as_f64().unwrap_or(0.0)
+            } else {
+                false
+            }
+        }
+        FactOperator::Lte => {
+            if let (ConstraintValue::Number(threshold), FactData::Number(val)) = (constraint, actual) {
+                *val <= threshold.as_f64().unwrap_or(0.0)
+            } else {
+                false
+            }
+        }
+        FactOperator::Eq => {
+            match (constraint, actual) {
+                (ConstraintValue::Number(n), FactData::Number(val)) => {
+                    (*val - n.as_f64().unwrap_or(0.0)).abs() < f64::EPSILON
+                }
+                (ConstraintValue::String(s), FactData::Text(t)) => s == t,
+                (ConstraintValue::Bool(b), FactData::Boolean(v)) => b == v,
+                _ => false,
+            }
+        }
+        FactOperator::Range => {
+            if let (ConstraintValue::Range { min, max }, FactData::Number(val)) = (constraint, actual) {
+                *val >= min.as_f64().unwrap_or(0.0) && *val <= max.as_f64().unwrap_or(0.0)
+            } else {
+                false
+            }
+        }
+        FactOperator::Boolean => {
+            if let (ConstraintValue::Bool(expected), FactData::Boolean(val)) = (constraint, actual) {
+                expected == val
+            } else {
+                false
+            }
+        }
+        FactOperator::In => {
+            if let (ConstraintValue::List(items), FactData::Text(val)) = (constraint, actual) {
+                items.iter().any(|item| item == val)
+            } else {
+                false
+            }
+        }
+    }
+}
+
+fn fact_data_to_json(data: &FactData) -> serde_json::Value {
+    match data {
+        FactData::Number(n) => serde_json::Value::Number(
+            serde_json::Number::from_f64(*n).unwrap_or(serde_json::Number::from(0)),
+        ),
+        FactData::Boolean(b) => serde_json::Value::Bool(*b),
+        FactData::Text(s) => serde_json::Value::String(s.clone()),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::fact_dsl::types::FactValue;
+
+    fn make_facts(entries: Vec<(&str, FactData)>) -> EvaluatedFacts {
+        let mut facts = HashMap::new();
+        for (id, val) in entries {
+            facts.insert(
+                id.to_string(),
+                FactValue {
+                    fact_id: id.to_string(),
+                    value: val,
+                },
+            );
+        }
+        EvaluatedFacts {
+            world: crate::types::fact_types::EvaluationWorld::ActingHand,
+            facts,
+        }
+    }
+
+    #[test]
+    fn check_gte_satisfied() {
+        assert!(check_satisfaction(
+            &FactOperator::Gte,
+            &ConstraintValue::int(8),
+            &FactData::Number(10.0),
+        ));
+    }
+
+    #[test]
+    fn check_gte_not_satisfied() {
+        assert!(!check_satisfaction(
+            &FactOperator::Gte,
+            &ConstraintValue::int(8),
+            &FactData::Number(7.0),
+        ));
+    }
+
+    #[test]
+    fn check_range_satisfied() {
+        assert!(check_satisfaction(
+            &FactOperator::Range,
+            &ConstraintValue::Range {
+                min: serde_json::Number::from(15),
+                max: serde_json::Number::from(17),
+            },
+            &FactData::Number(16.0),
+        ));
+    }
+
+    #[test]
+    fn check_boolean_satisfied() {
+        assert!(check_satisfaction(
+            &FactOperator::Boolean,
+            &ConstraintValue::Bool(true),
+            &FactData::Boolean(true),
+        ));
+    }
+}

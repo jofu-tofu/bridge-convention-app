@@ -175,6 +175,102 @@ pub enum BidAction {
     Redouble { feature: HandFeature },
 }
 
+impl BidAction {
+    /// Get the act type of this action.
+    pub fn act(&self) -> &BidActionType {
+        match self {
+            BidAction::Open { .. } => &BidActionType::Open,
+            BidAction::Show { .. } => &BidActionType::Show,
+            BidAction::Deny { .. } => &BidActionType::Deny,
+            BidAction::Inquire { .. } => &BidActionType::Inquire,
+            BidAction::Transfer { .. } => &BidActionType::Transfer,
+            BidAction::Accept { .. } => &BidActionType::Accept,
+            BidAction::Decline { .. } => &BidActionType::Decline,
+            BidAction::Raise { .. } => &BidActionType::Raise,
+            BidAction::Place { .. } => &BidActionType::Place,
+            BidAction::Signoff { .. } => &BidActionType::Signoff,
+            BidAction::Force { .. } => &BidActionType::Force,
+            BidAction::Agree { .. } => &BidActionType::Agree,
+            BidAction::Relay { .. } => &BidActionType::Relay,
+            BidAction::Overcall { .. } => &BidActionType::Overcall,
+            BidAction::Double { .. } => &BidActionType::Double,
+            BidAction::Pass => &BidActionType::Pass,
+            BidAction::Redouble { .. } => &BidActionType::Redouble,
+        }
+    }
+
+    /// Get the feature field, if present.
+    pub fn feature(&self) -> Option<&HandFeature> {
+        match self {
+            BidAction::Show { feature, .. }
+            | BidAction::Deny { feature, .. }
+            | BidAction::Inquire { feature, .. }
+            | BidAction::Accept { feature, .. }
+            | BidAction::Decline { feature, .. }
+            | BidAction::Overcall { feature, .. }
+            | BidAction::Double { feature }
+            | BidAction::Redouble { feature } => Some(feature),
+            _ => None,
+        }
+    }
+
+    /// Get the suit field, if present.
+    pub fn suit(&self) -> Option<&ObsSuit> {
+        match self {
+            BidAction::Show { suit, .. }
+            | BidAction::Deny { suit, .. }
+            | BidAction::Inquire { suit, .. }
+            | BidAction::Accept { suit, .. }
+            | BidAction::Decline { suit, .. }
+            | BidAction::Overcall { suit, .. } => suit.as_ref(),
+            _ => None,
+        }
+    }
+
+    /// Get the targetSuit field (transfers only).
+    pub fn target_suit(&self) -> Option<&ObsSuit> {
+        match self {
+            BidAction::Transfer { target_suit } => Some(target_suit),
+            _ => None,
+        }
+    }
+
+    /// Get the strain field, if present.
+    pub fn strain(&self) -> Option<&BidSuitName> {
+        match self {
+            BidAction::Open { strain, .. }
+            | BidAction::Raise { strain, .. }
+            | BidAction::Place { strain }
+            | BidAction::Agree { strain } => Some(strain),
+            BidAction::Signoff { strain } => strain.as_ref(),
+            _ => None,
+        }
+    }
+
+    /// Get the strength field, if present.
+    pub fn strength(&self) -> Option<&HandStrength> {
+        match self {
+            BidAction::Open { strength, .. }
+            | BidAction::Show { strength, .. }
+            | BidAction::Accept { strength, .. } => strength.as_ref(),
+            BidAction::Raise { strength, .. } => Some(strength),
+            BidAction::Force { level } => Some(level),
+            _ => None,
+        }
+    }
+}
+
+impl From<ObsSuit> for BidSuitName {
+    fn from(suit: ObsSuit) -> Self {
+        match suit {
+            ObsSuit::Clubs => BidSuitName::Clubs,
+            ObsSuit::Diamonds => BidSuitName::Diamonds,
+            ObsSuit::Hearts => BidSuitName::Hearts,
+            ObsSuit::Spades => BidSuitName::Spades,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

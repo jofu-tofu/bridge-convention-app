@@ -60,6 +60,12 @@ The Rust types are data-only (no evaluator functions). TS `FactCatalogExtension`
 Rust `FactDefinitionSet`. When modifying type shapes in TS, update the Rust mirror and
 re-export fixtures via `npx tsx scripts/export-conventions.ts`.
 
+**Rust pipeline exists (Phase 3).** The full meaning pipeline (observation → evaluation →
+arbitration), teaching layer (resolution, projection, parse tree), and adapter layer
+(protocol adapter, strategy evaluation, practical scorer) have Rust ports in
+`src-tauri/crates/bridge-conventions/src/{pipeline,teaching,adapter}/`. TS remains the
+production path — Rust is shadow-validated only. No TS deletion in Phase 3.
+
 ---
 
 ## Context Maintenance

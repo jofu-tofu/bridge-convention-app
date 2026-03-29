@@ -1,0 +1,114 @@
+[
+  {
+    "bundleId": "dont-bundle",
+    "label": "dont-single-suited",
+    "seed": 400,
+    "hand": {
+      "cards": [
+        {
+          "suit": "D",
+          "rank": "9"
+        },
+        {
+          "suit": "C",
+          "rank": "Q"
+        },
+        {
+          "suit": "D",
+          "rank": "3"
+        },
+        {
+          "suit": "S",
+          "rank": "2"
+        },
+        {
+          "suit": "S",
+          "rank": "8"
+        },
+        {
+          "suit": "S",
+          "rank": "T"
+        },
+        {
+          "suit": "H",
+          "rank": "2"
+        },
+        {
+          "suit": "S",
+          "rank": "K"
+        },
+        {
+          "suit": "H",
+          "rank": "T"
+        },
+        {
+          "suit": "C",
+          "rank": "A"
+        },
+        {
+          "suit": "D",
+          "rank": "J"
+        },
+        {
+          "suit": "D",
+          "rank": "A"
+        },
+        {
+          "suit": "S",
+          "rank": "3"
+        }
+      ]
+    },
+    "evaluation": {
+      "hcp": 14,
+      "shape": [
+        5,
+        2,
+        4,
+        2
+      ]
+    },
+    "auctionEntries": [
+      {
+        "call": {
+          "type": "bid",
+          "level": 1,
+          "strain": "NT"
+        },
+        "seat": "E"
+      },
+      {
+        "call": {
+          "type": "double"
+        },
+        "seat": "S"
+      }
+    ],
+    "selectedMeaningId": "dont:forced-relay-2c",
+    "selectedCall": {
+      "type": "bid",
+      "level": 2,
+      "strain": "C"
+    },
+    "truthSetMeaningIds": [
+      "dont:forced-relay-2c"
+    ],
+    "truthSetCalls": [
+      {
+        "type": "bid",
+        "level": 2,
+        "strain": "C"
+      }
+    ],
+    "acceptableSetMeaningIds": [
+      "dont:bypass-diamonds-2d",
+      "dont:bypass-hearts-2h",
+      "dont:bypass-spades-2s"
+    ],
+    "eliminatedCount": 3,
+    "bidGradeIfCorrect": "correct",
+    "callViewCount": 4,
+    "meaningViewCount": 4,
+    "whyNotCount": 3
+  }
+]
