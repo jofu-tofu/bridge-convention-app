@@ -79,6 +79,7 @@ export { buildConventionCard, buildConventionCardPanel } from "./display/convent
 // ── 8. Evaluation Facade (CLI grading) ──────────────────────────────
 export { buildAtomViewport, gradeAtomBid, validateAtomId, parseAtomId } from "./evaluation/atom-evaluator";
 export { startPlaythrough, getPlaythroughStepViewport, gradePlaythroughBid, getPlaythroughRevealSteps } from "./evaluation/playthrough-evaluator";
+export type { AtomGradeResult, PlaythroughHandle, PlaythroughGradeResult } from "./evaluation/types";
 
 // ── 9. Cross-cutting ────────────────────────────────────────────────
 export type { PosteriorFactValue } from "../inference/posterior/posterior-types";

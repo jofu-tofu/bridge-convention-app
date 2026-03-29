@@ -276,6 +276,10 @@ export interface DrillStartResult {
   readonly aiBids: readonly AiBidEntry[];
   /** True when the auction completed during initial AI bids (e.g., all four seats passed). */
   readonly auctionComplete: boolean;
+  /** Phase after drill start — typically BIDDING, but may be EXPLANATION/PLAYING/DECLARER_PROMPT if auction completed during initial AI bids. */
+  readonly phase: ServiceGamePhase;
+  /** Play inferences captured at auction end — present when auctionComplete is true. */
+  readonly playInferences?: Record<Seat, ServicePublicBeliefs> | null;
   readonly practiceMode: PracticeMode;
   readonly playPreference: PlayPreference;
 }
@@ -299,6 +303,8 @@ export interface BidSubmitResult {
   readonly phaseTransition: PhaseTransition | null;
   /** History entry for the user's accepted bid (null when rejected). */
   readonly userHistoryEntry: ServiceBidHistoryEntry | null;
+  /** Play inferences captured at auction end — present when phaseTransition is non-null. */
+  readonly playInferences?: Record<Seat, ServicePublicBeliefs> | null;
 }
 
 /** Phase transition notification. */
@@ -335,12 +341,6 @@ export interface AiPlayEntry {
   readonly reason: string;
   /** True when this play completes a trick (4th card). */
   readonly trickComplete?: boolean;
-}
-
-/** Current session viewport. */
-export interface SessionViewport {
-  readonly phase: ServiceGamePhase;
-  readonly biddingViewport: BiddingViewport | null;
 }
 
 /** DDS solution result. */

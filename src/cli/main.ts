@@ -16,6 +16,8 @@
 // ── Side-effect import: registers all bundles + conventions ─────────
 import "../conventions";
 
+import { createLocalService } from "../service";
+import type { EnginePort } from "../engine/port";
 import { parseArgs, parseVulnerability, parseOpponentMode, parseScenarioConfig, parseBaseSystem } from "./shared";
 import { runList, runBundles, runSystems, runDescribe } from "./commands/info";
 import { runEval } from "./commands/eval";
@@ -24,6 +26,12 @@ import { runPlay } from "./commands/play";
 import { runPlan } from "./commands/plan";
 import { printUsage, printSubcommandHelp } from "./help";
 import { runVerify } from "./verify";
+
+// ── Service instance (evaluation methods don't use the engine) ──────
+// Evaluation methods use dynamic imports to the evaluation facade;
+// session-based methods are unused by CLI eval/play commands.
+const stubEngine = {} as EnginePort;
+const service = createLocalService(stubEngine);
 
 // ── Main dispatch ───────────────────────────────────────────────────
 
@@ -49,10 +57,10 @@ switch (subcommand) {
     runList(flags, baseSystem);
     break;
   case "eval":
-    runEval(flags, parseVulnerability(flags), baseSystem);
+    void runEval(service, flags, parseVulnerability(flags), baseSystem);
     break;
   case "play":
-    runPlay(flags, parseVulnerability(flags), parseOpponentMode(flags), baseSystem);
+    void runPlay(service, flags, parseVulnerability(flags), parseOpponentMode(flags), baseSystem);
     break;
   case "selftest":
     runSelftest(flags, parseVulnerability(flags), baseSystem);

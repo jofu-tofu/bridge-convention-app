@@ -166,10 +166,10 @@ describe("PLAY_THIS_HAND", () => {
 });
 
 describe("RESTART_PLAY", () => {
-  it("from PLAYING → no phase change, restartPlay", () => {
+  it("from PLAYING → no phase change, acceptPrompt restart", () => {
     const desc = resolveTransition("PLAYING", { type: "RESTART_PLAY" });
     expect(desc.targetPhase).toBeNull();
-    expect(desc.serviceActions).toEqual([{ type: "restartPlay" }]);
+    expect(desc.serviceActions).toEqual([{ type: "acceptPrompt", mode: "restart" }]);
     expect(desc.resetPlay).toBe(true);
     expect(desc.viewportsNeeded).toEqual(["playing"]);
     expect(desc.chainedEvent).toBeNull();

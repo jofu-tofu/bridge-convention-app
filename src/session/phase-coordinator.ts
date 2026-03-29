@@ -24,9 +24,8 @@ export type PhaseEvent =
 // ── Service action descriptors ─────────────────────────────────────
 
 export type ServiceAction =
-  | { type: "acceptPrompt"; mode: "play" | "skip" | "replay"; seat?: Seat }
-  | { type: "skipToReview" }
-  | { type: "restartPlay" };
+  | { type: "acceptPrompt"; mode: "play" | "skip" | "replay" | "restart"; seat?: Seat }
+  | { type: "skipToReview" };
 
 // ── Viewport identifiers ───────────────────────────────────────────
 
@@ -205,7 +204,7 @@ function resolveRestartPlay(): TransitionDescriptor {
     viewportsNeeded: ["playing"],
     triggerDDS: false,
     captureInferences: false,
-    serviceActions: [{ type: "restartPlay" }],
+    serviceActions: [{ type: "acceptPrompt", mode: "restart" }],
     resetPlay: true,
     chainedEvent: null,
   };

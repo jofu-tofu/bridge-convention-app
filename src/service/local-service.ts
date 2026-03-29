@@ -11,10 +11,10 @@
 
 /* eslint-disable @typescript-eslint/require-await -- ServicePort methods are async for future network compat; local impl is synchronous */
 
-import { type Call, type Card, Seat } from "../engine/types";
+import type { Call, Card, Seat, Vulnerability } from "../engine/types";
 import type { EnginePort } from "../engine/port";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ServicePublicBeliefState, ServicePublicBeliefs } from "./response-types";
-import { ServiceGamePhase } from "./response-types";
+import type { ServiceGamePhase } from "./response-types";
 import { buildBiddingViewportFromState, buildDeclarerPromptViewportFromState, buildPlayingViewportFromState, buildExplanationViewportFromState } from "./viewport-builders";
 import type { ModuleCatalogEntry, ModuleLearningViewport } from "./response-types";
 import { buildModuleCatalog, buildModuleLearningViewport } from "../session/learning-viewport";
@@ -37,8 +37,6 @@ import type {
   BidSubmitResult,
   PromptAcceptResult,
   PlayCardResult,
-  AiPlayEntry,
-  SessionViewport,
   DDSolutionResult,
   ConventionInfo,
   ServiceInferenceSnapshot,
@@ -63,6 +61,7 @@ import {
   runInitialAiPlays,
 } from "../session/play-controller";
 import type { PlayContext } from "../conventions";
+import { type OpponentMode } from "../session/drill-types";
 import type { PlayProfileId } from "../session/heuristics/play-profiles";
 import { PLAY_PROFILES } from "../session/heuristics/play-profiles";
 import { createProfileStrategyProvider } from "../session/heuristics/profile-play-strategy";
@@ -83,6 +82,12 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     // ── Session lifecycle ─────────────────────────────────────────
 
     async createSession(config: SessionConfig): Promise<SessionHandle> {
+      // Auto-cleanup: destroy previous session (single-session invariant)
+      for (const existingHandle of manager.keys()) {
+        manager.delete(existingHandle);
+        ddsControllers.delete(existingHandle);
+      }
+
       const handle = createHandle();
       const conventionId = config.conventionId;
       const baseConvention = getConvention(conventionId);
@@ -128,10 +133,6 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       return handle;
     },
 
-    async destroySession(handle: SessionHandle): Promise<void> {      manager.delete(handle);
-      ddsControllers.delete(handle);
-    },
-
     // ── Drill lifecycle ───────────────────────────────────────────
 
     async startDrill(handle: SessionHandle): Promise<DrillStartResult> {
@@ -163,6 +164,10 @@ export function createLocalService(engine: EnginePort): DevServicePort {
         isOffConvention: state.isOffConvention,
         aiBids,
         auctionComplete,
+        phase: state.phase as ServiceGamePhase,
+        playInferences: auctionComplete
+          ? (state.playInferences as Record<Seat, ServicePublicBeliefs> | null)
+          : undefined,
         practiceMode: state.practiceMode,
         playPreference: state.playPreference,
       };
@@ -204,12 +209,15 @@ export function createLocalService(engine: EnginePort): DevServicePort {
           ? { from: result.phaseTransition.from as ServiceGamePhase, to: result.phaseTransition.to as ServiceGamePhase }
           : null,
         userHistoryEntry: result.userHistoryEntry,
+        playInferences: result.phaseTransition
+          ? (state.playInferences as Record<Seat, ServicePublicBeliefs> | null)
+          : undefined,
       };
     },
 
     // ── Phase transitions ─────────────────────────────────────────
 
-    async acceptPrompt(handle: SessionHandle, mode?: "play" | "skip" | "replay", seatOverride?: Seat): Promise<PromptAcceptResult> {
+    async acceptPrompt(handle: SessionHandle, mode?: "play" | "skip" | "replay" | "restart", seatOverride?: Seat): Promise<PromptAcceptResult> {
       const state = manager.get(handle);
       if (mode === "skip" || !mode) {
         if (isValidTransition(state.phase, "EXPLANATION")) {
@@ -228,10 +236,18 @@ export function createLocalService(engine: EnginePort): DevServicePort {
             advisorProvider.onAuctionComplete!(state.playInferences);
           }
           state.worldClassAdvisor = advisorProvider.getStrategy();
-          // AI plays are NOT run here — caller uses runInitialAiPlays() separately
-          // so the UI can show the play table immediately.
+          // Run initial AI plays (opening lead, etc.) and return them for animation
+          const aiPlays = await runInitialAiPlays(state, engine);
+          return { phase: state.phase as ServiceGamePhase, aiPlays };
+        }
+      } else if (mode === "restart") {
+        if (state.phase !== "PLAYING" || !state.contract) {
           return { phase: state.phase as ServiceGamePhase };
         }
+        state.initializePlay(state.contract);
+        // Run initial AI plays and return them for animation
+        const aiPlays = await runInitialAiPlays(state, engine);
+        return { phase: state.phase as ServiceGamePhase, aiPlays };
       } else if (mode === "replay") {
         // Transition back to DECLARER_PROMPT from EXPLANATION (for "Play this Hand")
         if (isValidTransition(state.phase, "DECLARER_PROMPT")) {
@@ -256,21 +272,6 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       }
     },
 
-    async restartPlay(handle: SessionHandle): Promise<PromptAcceptResult> {
-      const state = manager.get(handle);
-      if (state.phase !== "PLAYING" || !state.contract) {
-        return { phase: state.phase as ServiceGamePhase };
-      }
-      state.initializePlay(state.contract);
-      // AI plays are NOT run here — caller uses runInitialAiPlays() separately
-      return { phase: state.phase as ServiceGamePhase };
-    },
-
-    async runInitialAiPlays(handle: SessionHandle): Promise<AiPlayEntry[]> {
-      const state = manager.get(handle);
-      return runInitialAiPlays(state, engine);
-    },
-
     async updatePlayProfile(handle: SessionHandle, profileId: PlayProfileId): Promise<void> {
       const state = manager.get(handle);
       const newProvider = createProfileStrategyProvider(PLAY_PROFILES[profileId], { engine });
@@ -282,17 +283,6 @@ export function createLocalService(engine: EnginePort): DevServicePort {
     },
 
     // ── Query ─────────────────────────────────────────────────────
-
-    async getViewport(handle: SessionHandle): Promise<SessionViewport> {      const state = manager.get(handle);
-      return {
-        phase: state.phase as ServiceGamePhase,
-        biddingViewport: buildBiddingViewportFromState(state),
-      };
-    },
-
-    async getPhase(handle: SessionHandle): Promise<ServiceGamePhase> {      const state = manager.get(handle);
-      return state.phase as ServiceGamePhase;
-    },
 
     async getBiddingViewport(handle: SessionHandle): Promise<BiddingViewport | null> {
       const state = manager.get(handle);
@@ -325,13 +315,6 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       return state.publicBeliefState as unknown as ServicePublicBeliefState;
     },
 
-    async capturePlayInferences(handle: SessionHandle) {
-      const state = manager.get(handle);
-      state.capturePlayInferences();
-      // PublicBeliefs and ServicePublicBeliefs are structurally compatible
-      return state.playInferences as Record<Seat, ServicePublicBeliefs> | null;
-    },
-
     // ── DDS analysis ──────────────────────────────────────────────
 
     async getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult> {
@@ -346,17 +329,31 @@ export function createLocalService(engine: EnginePort): DevServicePort {
       return dds.solve(state.deal, state.contract, engine);
     },
 
-    // ── Stateless CLI evaluation ──────────────────────────────────
+    // ── Stateless evaluation ────────────────────────────────────────
 
-    async evaluateAtom(bundleId: string, atomId: string, seed: number): Promise<BiddingViewport> {
-      // Delegate to evaluation module
+    async evaluateAtom(bundleId: string, atomId: string, seed: number, vuln?: Vulnerability, baseSystem?: string): Promise<BiddingViewport> {
       const { buildAtomViewport } = await import("./evaluation");
-      return buildAtomViewport(bundleId, atomId, seed);
+      return buildAtomViewport(bundleId, atomId, seed, vuln, baseSystem as BaseSystemId | undefined);
     },
 
-    async gradeAtom(bundleId: string, atomId: string, seed: number, bid: string): Promise<AtomGradeResult> {
+    async gradeAtom(bundleId: string, atomId: string, seed: number, bid: string, vuln?: Vulnerability, baseSystem?: string): Promise<AtomGradeResult> {
       const { gradeAtomBid } = await import("./evaluation");
-      return gradeAtomBid(bundleId, atomId, seed, bid);
+      return gradeAtomBid(bundleId, atomId, seed, bid, vuln, baseSystem as BaseSystemId | undefined);
+    },
+
+    async startPlaythrough(bundleId: string, seed: number, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string) {
+      const { startPlaythrough: startPt } = await import("./evaluation");
+      return startPt(bundleId, seed, vuln, opponents, baseSystem as BaseSystemId | undefined);
+    },
+
+    async getPlaythroughStep(bundleId: string, seed: number, stepIdx: number, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string): Promise<BiddingViewport> {
+      const { getPlaythroughStepViewport } = await import("./evaluation");
+      return getPlaythroughStepViewport(bundleId, seed, stepIdx, vuln, opponents, baseSystem as BaseSystemId | undefined);
+    },
+
+    async gradePlaythroughBid(bundleId: string, seed: number, stepIdx: number, bid: string, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string) {
+      const { gradePlaythroughBid: gradePtBid } = await import("./evaluation");
+      return gradePtBid(bundleId, seed, stepIdx, bid, vuln, opponents, baseSystem as BaseSystemId | undefined);
     },
 
     // ── Convention catalog ────────────────────────────────────────

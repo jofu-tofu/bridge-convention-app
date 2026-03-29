@@ -1,8 +1,20 @@
-<!-- context-layer: service | version: 5 | last-audited: 2026-03-25 -->
+<!-- context-layer: service | version: 6 | last-audited: 2026-03-29 -->
 
 # Service
 
-Thin hexagonal port — the **sole interface** between UI/CLI and backend game logic. The client holds an opaque `SessionHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never `Deal`, `BidResult`, `ArbitrationResult`, or strategy internals. Domain logic (controllers, state, drill lifecycle) lives in `session/`; service is just the port + barrel + display/util/evaluation.
+Thin hexagonal port — the **sole interface** between UI/CLI and backend game logic (23 methods). The client holds an opaque `SessionHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never `Deal`, `BidResult`, `ArbitrationResult`, or strategy internals. Domain logic (controllers, state, drill lifecycle) lives in `session/`; service is just the port + barrel + display/util/evaluation.
+
+**ServicePort methods (23):**
+- **Session:** `createSession`, `startDrill`
+- **Bidding:** `submitBid`
+- **Transitions:** `acceptPrompt` (handles "play", "skip", "replay", "restart")
+- **Play:** `playCard`, `skipToReview`, `updatePlayProfile`
+- **Query:** `getBiddingViewport`, `getDeclarerPromptViewport`, `getPlayingViewport`, `getExplanationViewport`
+- **Inference:** `getPublicBeliefState`
+- **DDS:** `getDDSSolution`
+- **Evaluation:** `evaluateAtom`, `gradeAtom`, `startPlaythrough`, `getPlaythroughStep`, `gradePlaythroughBid`
+- **Catalog:** `listConventions`
+- **Learning:** `listModules`, `getModuleLearningViewport`, `getBundleFlowTree`, `getModuleFlowTree`
 
 ## Architecture
 
@@ -29,6 +41,9 @@ Thin hexagonal port — the **sole interface** between UI/CLI and backend game l
 - **No Svelte `tick()` in controllers.** Extracted controller functions never import or call `tick()`. They operate on plain state and return results. Stores apply results to `$state`.
 - **`retryBid()` is intentionally absent from `ServicePort`.** Wrong bids never modify session state (correct-path-only). Retry is store-local: clear `$state` feedback.
 - **`submitBid` is atomic.** Grade + apply + run AI bids + return next viewport — one call. The service runs AI bids with NO delays. The store owns animation timing: iterates through `aiBids` list with local delays.
+- **Single-session invariant.** `createSession` destroys the previous session — ServicePort supports only one active session per client.
+- **`acceptPrompt` is polymorphic.** Handles all post-auction transitions: `acceptPrompt(handle, "play")`, `acceptPrompt(handle, "skip")`, `acceptPrompt(handle, "replay")`, `acceptPrompt(handle, "restart")`. Removed methods `runInitialAiPlays()`, `restartPlay()`, and `destroySession()` are folded into `acceptPrompt` or auto-cleanup.
+- **Play inferences via results.** `capturePlayInferences()` was removed — inference data is now carried in `BidSubmitResult` and `DrillStartResult` return values.
 - **`DevServicePort` vs `ServicePort`.** Debug methods (`getExpectedBid`, `getDebugSnapshot`, `getDebugLog`, `getInferenceTimeline`) on `DevServicePort` only. Production stores type against `ServicePort`.
 
 ## Evaluation Subfolder
@@ -53,6 +68,14 @@ cli/commands/ → service/
 ```
 
 Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`. `session/` must never import from `service/` (ESLint enforced).
+
+## Future: Two-Port Model (Rust/WASM Migration)
+
+ServicePort becomes the **WASM boundary** (compute, client-side). All 23 methods exposed via `wasm-bindgen`. TS `service/` becomes a thin serialize/call/deserialize proxy (~100 LOC).
+
+**DataPort** (future) handles auth, entitlements, progress sync (server-side). ServicePort and DataPort don't mix — WASM never touches DB, server never runs convention logic.
+
+See `docs/product-direction.md` for the full two-port architecture and `docs/migration/index.md` for the migration spec.
 
 ## Known Gaps
 

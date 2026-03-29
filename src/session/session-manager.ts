@@ -35,4 +35,9 @@ export class SessionManager {
   has(handle: SessionHandle): boolean {
     return this.sessions.has(handle);
   }
+
+  /** Return all active handles. */
+  keys(): IterableIterator<SessionHandle> {
+    return this.sessions.keys();
+  }
 }

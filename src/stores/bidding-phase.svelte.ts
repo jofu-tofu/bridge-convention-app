@@ -9,11 +9,11 @@
 import { tick } from "svelte";
 
 import type { Call, Seat } from "../service";
-import { nextSeat } from "../service";
+import { nextSeat, ViewportBidGrade } from "../service";
 import type { DevServicePort, SessionHandle } from "../service";
 import type { BiddingViewport, AuctionEntryView } from "../service";
 import type { GamePhase } from "../service";
-import type { ServicePublicBeliefState } from "../service";
+import type { ServicePublicBeliefState, ServicePublicBeliefs } from "../service";
 import { formatError } from "../service/util/format-error";
 
 // Type-only import — no runtime circular dependency.
@@ -36,7 +36,7 @@ export interface BiddingDeps {
   getBiddingViewport: () => BiddingViewport | null;
   setBiddingViewport: (vp: BiddingViewport) => void;
   setPublicBeliefState: (state: ServicePublicBeliefState) => void;
-  handlePostAuction: (handle: SessionHandle, phase: GamePhase) => Promise<boolean>;
+  handlePostAuction: (handle: SessionHandle, phase: GamePhase, options?: { playInferences?: Record<Seat, ServicePublicBeliefs> | null }) => Promise<boolean>;
   delayFn: (ms: number) => Promise<void>;
 }
 
@@ -87,7 +87,7 @@ export function createBiddingPhase(deps: BiddingDeps) {
   // Acceptable/correct-not-preferred show non-blocking feedback below bid table.
   const isFeedbackBlocking = $derived(
     bidFeedback !== null &&
-      (bidFeedback.grade === "near-miss" || bidFeedback.grade === "incorrect"),
+      (bidFeedback.grade === ViewportBidGrade.NearMiss || bidFeedback.grade === ViewportBidGrade.Incorrect),
   );
 
   // ── Actions ─────────────────────────────────────────────────────
@@ -176,15 +176,9 @@ export function createBiddingPhase(deps: BiddingDeps) {
       deps.setPublicBeliefState(await activeService.getPublicBeliefState(handle));
       if (deps.getActiveHandle() !== handle) return;
 
-      // Handle phase transition (auction complete)
-      const phaseTransitioned = result.phaseTransition ||
-        (result.aiBids.length > 0 && await activeService.getPhase(handle) !== "BIDDING");
-      if (deps.getActiveHandle() !== handle) return;
-
-      if (phaseTransitioned) {
-        const servicePhase = await activeService.getPhase(handle);
-        if (deps.getActiveHandle() !== handle) return;
-        const ok = await deps.handlePostAuction(handle, servicePhase);
+      // Handle phase transition (auction complete — phaseTransition is always set when auction ends)
+      if (result.phaseTransition) {
+        const ok = await deps.handlePostAuction(handle, result.phaseTransition.to, { playInferences: result.playInferences });
         if (!ok || deps.getActiveHandle() !== handle) return;
         await tick();
         return;

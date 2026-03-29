@@ -157,6 +157,13 @@ tests/
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 
+## In-Progress: Rust/WASM Migration
+
+Backend modules (conventions/, inference/, session/) are being migrated from TypeScript to Rust/WASM.
+See `docs/migration/index.md` for the full spec, phase tracker, and architectural decisions.
+Current phase and status are tracked there. See `docs/product-direction.md` for the product
+decisions driving this migration.
+
 ## Gotchas
 
 - `npm run dev` builds WASM if `pkg/` missing, then starts Vite with HMR — the dev server stays running and reflects file changes instantly. Do NOT restart the server or browser after editing source files; just save and the page updates automatically
@@ -212,6 +219,10 @@ for routine work. **Read from docs/ when:**
   design and known gaps
 - **Modifying typography/layout tokens** → read `docs/typography-and-layout.md` for the
   full token system
+- **Product direction and deployment** → read `docs/product-direction.md` for monetization model,
+  deployment architecture, two-port model, content protection strategy, and decision history
+- **Rust/WASM migration** → read `docs/migration/index.md` for phase tracker, architectural
+  decisions, and per-phase specs. Backend modules are being migrated from TypeScript to Rust/WASM.
 
 **Update docs/ when:**
 

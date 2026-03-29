@@ -1,11 +1,10 @@
 // ── CLI eval command ────────────────────────────────────────────────
 //
-// Per-atom evaluation. Imports ONLY from the evaluation facade —
-// no direct strategy, teaching, or convention internals.
+// Per-atom evaluation. Routes through ServicePort so the same WASM
+// boundary applies to CLI and UI.
 
+import type { DevServicePort } from "../../service";
 import {
-  buildAtomViewport,
-  gradeAtomBid,
   validateAtomId,
   parseAtomId,
 } from "../../service";
@@ -15,7 +14,7 @@ import {
   requireArg, optionalNumericArg,
 } from "../shared";
 
-export function runEval(flags: Flags, vuln: Vulnerability, baseSystem: BaseSystemId): void {
+export async function runEval(service: DevServicePort, flags: Flags, vuln: Vulnerability, baseSystem: BaseSystemId): Promise<void> {
   const bundleId = requireArg(flags, "bundle");
   const atomId = requireArg(flags, "atom");
   const seed = optionalNumericArg(flags, "seed") ?? 42;
@@ -39,7 +38,7 @@ export function runEval(flags: Flags, vuln: Vulnerability, baseSystem: BaseSyste
 
   if (!bidStr || bidStr === "true") {
     // No bid: return viewport only
-    const viewport = buildAtomViewport(bundleId, atomId, seed, vuln, baseSystem);
+    const viewport = await service.evaluateAtom(bundleId, atomId, seed, vuln, baseSystem);
     console.log(JSON.stringify(viewport, null, 2));
     return;
   }
@@ -47,7 +46,7 @@ export function runEval(flags: Flags, vuln: Vulnerability, baseSystem: BaseSyste
   // Bid submitted: grade with full teaching feedback
   let result;
   try {
-    result = gradeAtomBid(bundleId, atomId, seed, bidStr, vuln, baseSystem);
+    result = await service.gradeAtom(bundleId, atomId, seed, bidStr, vuln, baseSystem);
   } catch {
     console.error(`Invalid bid: "${bidStr}"`);
     process.exit(2);

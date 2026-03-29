@@ -14,7 +14,6 @@ import type {
   SessionConfig,
 } from "./request-types";
 import type {
-  ServiceGamePhase,
   BiddingViewport,
   DeclarerPromptViewport,
   PlayingViewport,
@@ -25,28 +24,26 @@ import type {
   BidSubmitResult,
   PromptAcceptResult,
   PlayCardResult,
-  AiPlayEntry,
-  SessionViewport,
   DDSolutionResult,
   ConventionInfo,
   BundleFlowTreeViewport,
   ModuleFlowTreeViewport,
   ServiceInferenceSnapshot,
   ServicePublicBeliefState,
-  ServicePublicBeliefs,
 } from "./response-types";
 import type {
   ServiceDebugSnapshot,
   ServiceDebugLogEntry,
   PlaySuggestions,
 } from "./debug-types";
-import type { AtomGradeResult } from "./evaluation/types";
+import type { AtomGradeResult, PlaythroughHandle, PlaythroughGradeResult } from "./evaluation/types";
+import type { Vulnerability } from "../engine/types";
+import type { OpponentMode } from "../session/drill-types";
 
 /** Production service interface — all methods return Promise<T>. */
 interface ServicePort {
   // ── Session lifecycle ───────────────────────────────────────────
   createSession(config: SessionConfig): Promise<SessionHandle>;
-  destroySession(handle: SessionHandle): Promise<void>;
 
   // ── Drill lifecycle ─────────────────────────────────────────────
   startDrill(handle: SessionHandle): Promise<DrillStartResult>;
@@ -56,19 +53,14 @@ interface ServicePort {
   submitBid(handle: SessionHandle, call: Call): Promise<BidSubmitResult>;
 
   // ── Phase transitions ───────────────────────────────────────────
-  acceptPrompt(handle: SessionHandle, mode?: "play" | "skip" | "replay", seatOverride?: Seat): Promise<PromptAcceptResult>;
+  acceptPrompt(handle: SessionHandle, mode?: "play" | "skip" | "replay" | "restart", seatOverride?: Seat): Promise<PromptAcceptResult>;
 
   // ── Play ────────────────────────────────────────────────────────
   playCard(handle: SessionHandle, card: Card, seat: Seat): Promise<PlayCardResult>;
   skipToReview(handle: SessionHandle): Promise<void>;
-  restartPlay(handle: SessionHandle): Promise<PromptAcceptResult>;
-  /** Run initial AI plays (opening lead, etc.). Separated from acceptPrompt/restartPlay so the UI can show the play table immediately. */
-  runInitialAiPlays(handle: SessionHandle): Promise<AiPlayEntry[]>;
   updatePlayProfile(handle: SessionHandle, profileId: PlayProfileId): Promise<void>;
 
   // ── Query ───────────────────────────────────────────────────────
-  getViewport(handle: SessionHandle): Promise<SessionViewport>;
-  getPhase(handle: SessionHandle): Promise<ServiceGamePhase>;
   getBiddingViewport(handle: SessionHandle): Promise<BiddingViewport | null>;
   getDeclarerPromptViewport(handle: SessionHandle): Promise<DeclarerPromptViewport | null>;
   getPlayingViewport(handle: SessionHandle): Promise<PlayingViewport | null>;
@@ -79,15 +71,15 @@ interface ServicePort {
    *  Eliminates the need for the store to maintain its own inference coordinator. */
   getPublicBeliefState(handle: SessionHandle): Promise<ServicePublicBeliefState>;
 
-  /** Capture play inferences at auction end. Returns per-seat beliefs or null if no engines. */
-  capturePlayInferences(handle: SessionHandle): Promise<Record<Seat, ServicePublicBeliefs> | null>;
-
   // ── DDS analysis ────────────────────────────────────────────────
   getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult>;
 
-  // ── Stateless CLI evaluation ────────────────────────────────────
-  evaluateAtom(bundleId: string, atomId: string, seed: number): Promise<BiddingViewport>;
-  gradeAtom(bundleId: string, atomId: string, seed: number, bid: string): Promise<AtomGradeResult>;
+  // ── Stateless evaluation ────────────────────────────────────────
+  evaluateAtom(bundleId: string, atomId: string, seed: number, vuln?: Vulnerability, baseSystem?: string): Promise<BiddingViewport>;
+  gradeAtom(bundleId: string, atomId: string, seed: number, bid: string, vuln?: Vulnerability, baseSystem?: string): Promise<AtomGradeResult>;
+  startPlaythrough(bundleId: string, seed: number, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string): Promise<{ handle: PlaythroughHandle; firstStep: BiddingViewport | null }>;
+  getPlaythroughStep(bundleId: string, seed: number, stepIdx: number, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string): Promise<BiddingViewport>;
+  gradePlaythroughBid(bundleId: string, seed: number, stepIdx: number, bid: string, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string): Promise<PlaythroughGradeResult>;
 
   // ── Convention catalog ──────────────────────────────────────────
   listConventions(): Promise<ConventionInfo[]>;

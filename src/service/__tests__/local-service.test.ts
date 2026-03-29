@@ -121,53 +121,42 @@ describe("local service", () => {
     const handle = await service.createSession({ conventionId: "nt-bundle" });
     await service.startDrill(handle);
 
-    const viewportBefore = await service.getViewport(handle);
+    const viewportBefore = await service.getBiddingViewport(handle);
 
     const wrongBid: Call = { type: "bid", level: 7, strain: BidSuit.NoTrump };
     const result = await service.submitBid(handle, wrongBid);
 
     // 7NT is never correct for 12 HCP balanced — always rejected
     expect(result.accepted).toBe(false);
-    const viewportAfter = await service.getViewport(handle);
+    const viewportAfter = await service.getBiddingViewport(handle);
     // Viewport should be the same after a wrong bid
-    expect(viewportAfter.phase).toBe(viewportBefore.phase);
+    expect(viewportAfter).toEqual(viewportBefore);
   });
 
-  it("getPhase returns BIDDING after startDrill", async () => {
+  it("startDrill returns BIDDING phase for non-completing auction", async () => {
     const engine = createStubEngine({
       async isAuctionComplete() { return false; },
     });
     const service = createLocalService(engine);
 
     const handle = await service.createSession({ conventionId: "nt-bundle" });
-    await service.startDrill(handle);
+    const result = await service.startDrill(handle);
 
-    const phase = await service.getPhase(handle);
-    expect(phase).toBe("BIDDING");
+    expect(result.phase).toBe("BIDDING");
   });
 
-  it("phase transitions work through the service", async () => {
-    const engine = createStubEngine({
-      async isAuctionComplete() { return false; },
-    });
-    const service = createLocalService(engine);
-
-    const handle = await service.createSession({ conventionId: "nt-bundle" });
-    await service.startDrill(handle);
-
-    // After start drill with non-completing auction, should be BIDDING
-    const phase = await service.getPhase(handle);
-    expect(phase).toBe("BIDDING");
-  });
-
-  it("destroySession removes handle", async () => {
+  it("createSession auto-cleans previous session", async () => {
     const engine = createStubEngine();
     const service = createLocalService(engine);
 
-    const handle = await service.createSession({ conventionId: "nt-bundle" });
-    await service.destroySession(handle);
+    const handle1 = await service.createSession({ conventionId: "nt-bundle" });
+    // Creating a second session should clean up the first
+    const handle2 = await service.createSession({ conventionId: "nt-bundle" });
 
-    await expect(service.getPhase(handle)).rejects.toThrow();
+    // Old handle should be gone
+    await expect(service.getBiddingViewport(handle1)).rejects.toThrow();
+    // New handle should work
+    expect(handle2).toBeTruthy();
   });
 
   it("listConventions returns non-empty array", async () => {

@@ -36,6 +36,10 @@ The deprecated `PosteriorEngine` → `SeatPosterior` path has been removed (Phas
 
 Phase 4B complete — deprecated `PosteriorEngine`, `SeatPosterior`, `LikelihoodModel`, and `createPosteriorFactProvider(SeatPosterior)` have been removed. All consumers use `createTsBackend()` → `createQueryPort()` or `createPosteriorFactProviderFromBackend()`.
 
+## Rust/WASM Migration
+
+Full backend migration spec: `docs/migration/index.md`. Five phases covering conventions, fact evaluation, meaning pipeline, inference/session, and service cleanup. Product decisions driving the migration: `docs/product-direction.md`.
+
 ## Known Gaps (Core Infrastructure)
 
 | Gap | Impact | Blocks |

@@ -262,15 +262,14 @@ export function createGameStore(
   async function handlePostAuction(
     handle: SessionHandle,
     servicePhase: GamePhase,
-    options?: { autoPromptTransition?: boolean },
+    options?: { autoPromptTransition?: boolean; playInferences?: Record<Seat, ServicePublicBeliefs> | null },
   ): Promise<boolean> {
     const desc = resolveTransition("BIDDING", { type: "AUCTION_COMPLETE", servicePhase });
     if (!desc.targetPhase) return true;
 
-    // 1. Capture inferences
-    if (desc.captureInferences) {
-      inference.playInferences = await activeService.capturePlayInferences(handle);
-      if (activeHandle !== handle) return false;
+    // 1. Apply inferences from the result that triggered the phase transition
+    if (desc.captureInferences && options?.playInferences !== undefined) {
+      inference.playInferences = options.playInferences;
     }
 
     // 2. Fetch viewports (contract is auto-derived from them)
@@ -398,22 +397,18 @@ export function createGameStore(
 
     void (async () => {
       try {
-        // Accept prompt on service side (initializes play state, no AI plays yet)
-        await activeService.acceptPrompt(handle, "play", seat);
+        // Accept prompt on service side (initializes play state + runs initial AI plays)
+        const result = await activeService.acceptPrompt(handle, "play", seat);
         if (activeHandle !== handle) return;
 
-        // Show play table immediately (before AI plays)
+        // Show play table
         viewports.playing = await activeService.getPlayingViewport(handle);
         if (activeHandle !== handle) return;
 
-        // Run AI plays in background — UI is already visible
-        const aiPlays = await activeService.runInitialAiPlays(handle);
-        if (activeHandle !== handle) return;
-
+        // Animate AI plays from the result
+        const aiPlays = result.aiPlays ?? [];
         if (aiPlays.length > 0) {
-          viewports.playing = await activeService.getPlayingViewport(handle);
-          if (activeHandle !== handle) return;
-          const { ok } = await playPhase.animateAiPlays(handle, aiPlays, []);
+          const { ok } = await playPhase.animateAiPlays(handle, [...aiPlays], []);
           if (!ok) return;
         }
 
@@ -515,21 +510,17 @@ export function createGameStore(
     void (async () => {
       try {
         playPhase.play.aborted = false;
-        await activeService.restartPlay(handle);
+        const result = await activeService.acceptPrompt(handle, "restart");
         if (activeHandle !== handle) return;
 
-        // Show play table immediately (before AI plays)
+        // Show play table
         viewports.playing = await activeService.getPlayingViewport(handle);
         if (activeHandle !== handle) return;
 
-        // Run AI plays in background — UI is already visible
-        const aiPlays = await activeService.runInitialAiPlays(handle);
-        if (activeHandle !== handle) return;
-
+        // Animate AI plays from the result
+        const aiPlays = result.aiPlays ?? [];
         if (aiPlays.length > 0) {
-          viewports.playing = await activeService.getPlayingViewport(handle);
-          if (activeHandle !== handle) return;
-          const { ok } = await playPhase.animateAiPlays(handle, aiPlays, []);
+          const { ok } = await playPhase.animateAiPlays(handle, [...aiPlays], []);
           if (!ok) return;
         }
 
@@ -573,21 +564,17 @@ export function createGameStore(
         // Transition service: EXPLANATION → DECLARER_PROMPT → PLAYING
         await activeService.acceptPrompt(handle, "replay");
         if (activeHandle !== handle) return;
-        await activeService.acceptPrompt(handle, "play", seat);
+        const result = await activeService.acceptPrompt(handle, "play", seat);
         if (activeHandle !== handle) return;
 
-        // Show play table immediately (before AI plays)
+        // Show play table
         viewports.playing = await activeService.getPlayingViewport(handle);
         if (activeHandle !== handle) return;
 
-        // Run AI plays in background — UI is already visible
-        const aiPlays = await activeService.runInitialAiPlays(handle);
-        if (activeHandle !== handle) return;
-
+        // Animate AI plays from the result
+        const aiPlays = result.aiPlays ?? [];
         if (aiPlays.length > 0) {
-          viewports.playing = await activeService.getPlayingViewport(handle);
-          if (activeHandle !== handle) return;
-          const { ok } = await playPhase.animateAiPlays(handle, aiPlays, []);
+          const { ok } = await playPhase.animateAiPlays(handle, [...aiPlays], []);
           if (!ok) return;
         }
 
@@ -634,9 +621,7 @@ export function createGameStore(
 
     // Handle auction complete during initial bids
     if (startResult.auctionComplete) {
-      const servicePhase = await activeService.getPhase(handle);
-      if (activeHandle !== handle) return;
-      const ok = await handlePostAuction(handle, servicePhase);
+      const ok = await handlePostAuction(handle, startResult.phase as GamePhase, { playInferences: startResult.playInferences });
       if (!ok || activeHandle !== handle) return;
     }
 
@@ -891,12 +876,9 @@ export function createGameStore(
           viewports.bidding = result.nextViewport;
         }
 
-        // Check if auction completed
-        const servicePhase = await activeService.getPhase(handle);
-        if (activeHandle !== handle) return false;
-
-        if (servicePhase !== "BIDDING") {
-          const ok = await handlePostAuction(handle, servicePhase as GamePhase, { autoPromptTransition: false });
+        // Check if auction completed (phaseTransition is always set when auction ends)
+        if (result.phaseTransition) {
+          const ok = await handlePostAuction(handle, result.phaseTransition.to as GamePhase, { autoPromptTransition: false, playInferences: result.playInferences });
           if (!ok) return false;
           break;
         }

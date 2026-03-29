@@ -1,12 +1,12 @@
 // ── CLI play command ────────────────────────────────────────────────
 //
-// Playthrough evaluation. Imports ONLY from the evaluation facade —
-// no direct strategy, teaching, or convention internals.
+// Playthrough evaluation. Routes through ServicePort so the same WASM
+// boundary applies to CLI and UI.
+// Note: getPlaythroughRevealSteps is a diagnostic function that stays
+// on the evaluation facade (not on ServicePort).
 
+import type { DevServicePort } from "../../service";
 import {
-  startPlaythrough,
-  getPlaythroughStepViewport,
-  gradePlaythroughBid,
   getPlaythroughRevealSteps,
 } from "../../service";
 import type { Flags, OpponentMode ,
@@ -15,7 +15,7 @@ import {
   requireArg, optionalNumericArg,
 } from "../shared";
 
-export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: OpponentMode, baseSystem: BaseSystemId): void {
+export async function runPlay(service: DevServicePort, flags: Flags, vuln: Vulnerability, opponentMode: OpponentMode, baseSystem: BaseSystemId): Promise<void> {
   const bundleId = requireArg(flags, "bundle");
   const seed = optionalNumericArg(flags, "seed") ?? 42;
   const stepIdx = optionalNumericArg(flags, "step");
@@ -23,13 +23,14 @@ export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   const reveal = flags["reveal"] === true;
 
   if (reveal) {
+    // Reveal stays on the evaluation facade — it's a diagnostic function
     const { totalSteps, steps, atomsCovered } = getPlaythroughRevealSteps(bundleId, seed, vuln, opponentMode, baseSystem);
     console.log(JSON.stringify({ seed, totalSteps, steps, atomsCovered }, null, 2));
     return;
   }
 
   if (stepIdx === undefined) {
-    const { handle, firstStep } = startPlaythrough(bundleId, seed, vuln, opponentMode, baseSystem);
+    const { handle, firstStep } = await service.startPlaythrough(bundleId, seed, vuln, opponentMode, baseSystem);
     console.log(JSON.stringify({
       seed,
       totalSteps: handle.totalUserSteps,
@@ -39,8 +40,8 @@ export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   }
 
   if (!bidStr || bidStr === "true") {
-    const viewport = getPlaythroughStepViewport(bundleId, seed, stepIdx, vuln, opponentMode, baseSystem);
-    const { handle } = startPlaythrough(bundleId, seed, vuln, opponentMode, baseSystem);
+    const viewport = await service.getPlaythroughStep(bundleId, seed, stepIdx, vuln, opponentMode, baseSystem);
+    const { handle } = await service.startPlaythrough(bundleId, seed, vuln, opponentMode, baseSystem);
     console.log(JSON.stringify({
       seed,
       totalSteps: handle.totalUserSteps,
@@ -52,13 +53,13 @@ export function runPlay(flags: Flags, vuln: Vulnerability, opponentMode: Opponen
   // Bid submitted: grade + next viewport
   let result;
   try {
-    result = gradePlaythroughBid(bundleId, seed, stepIdx, bidStr, vuln, opponentMode, baseSystem);
+    result = await service.gradePlaythroughBid(bundleId, seed, stepIdx, bidStr, vuln, opponentMode, baseSystem);
   } catch {
     console.error(`Invalid bid: "${bidStr}"`);
     process.exit(2);
   }
 
-  const { handle } = startPlaythrough(bundleId, seed, vuln, opponentMode, baseSystem);
+  const { handle } = await service.startPlaythrough(bundleId, seed, vuln, opponentMode, baseSystem);
 
   console.log(JSON.stringify({
     seed,
