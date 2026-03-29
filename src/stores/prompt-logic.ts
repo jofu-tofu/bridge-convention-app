@@ -5,10 +5,8 @@
  * plain values. Extracted from game.svelte.ts to keep the coordinator lean.
  */
 
-import type { Seat } from "../engine/types";
-import type { Contract } from "../engine/types";
-import { partnerSeat } from "../engine/constants";
-import { PromptMode } from "../session/drill-types";
+import type { Seat, Contract } from "../service";
+import { partnerSeat, PromptMode } from "../service";
 
 /** Determine the current prompt mode from game state. */
 export function computePromptMode(

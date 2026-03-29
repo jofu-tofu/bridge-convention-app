@@ -389,6 +389,14 @@ export default tseslint.config(
               name: "../../inference/*",
               message: "stores must use service layer, not inference directly",
             },
+            {
+              name: "../engine/*",
+              message: "stores must use service layer, not engine directly",
+            },
+            {
+              name: "../../engine/*",
+              message: "stores must use service layer, not engine directly",
+            },
           ],
           patterns: [{
             group: ["*/conventions/pipeline/**", "**/conventions/pipeline/**",
