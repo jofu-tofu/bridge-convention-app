@@ -1,7 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { Seat, Suit, Rank, Vulnerability, BidSuit } from "../types";
 import type { Deal, Hand, Card } from "../types";
-import { dealToPBN, packDealsPBN, unpackResults } from "../dds-wasm";
+import {
+  dealToPBN,
+  handsToPBN,
+  packDealsPBN,
+  unpackResults,
+  suitToDdsIndex,
+  trumpToDdsIndex,
+  seatToDdsIndex,
+  rankToDdsValue,
+} from "../dds-wasm";
 
 // -- Helpers --
 
@@ -270,5 +279,102 @@ describe("unpackResults", () => {
     // Strain 4 = NT
     expect(tricks[Seat.North][BidSuit.NoTrump]).toBe(40);
     expect(tricks[Seat.West][BidSuit.NoTrump]).toBe(43);
+  });
+});
+
+// ─── suitToDdsIndex ─────────────────────────────────────────────────
+
+describe("suitToDdsIndex", () => {
+  it("maps all 4 suits to DDS indices (0=S, 1=H, 2=D, 3=C)", () => {
+    expect(suitToDdsIndex(Suit.Spades)).toBe(0);
+    expect(suitToDdsIndex(Suit.Hearts)).toBe(1);
+    expect(suitToDdsIndex(Suit.Diamonds)).toBe(2);
+    expect(suitToDdsIndex(Suit.Clubs)).toBe(3);
+  });
+});
+
+// ─── trumpToDdsIndex ────────────────────────────────────────────────
+
+describe("trumpToDdsIndex", () => {
+  it("maps suits to DDS strain indices", () => {
+    expect(trumpToDdsIndex(Suit.Spades)).toBe(0);
+    expect(trumpToDdsIndex(Suit.Hearts)).toBe(1);
+    expect(trumpToDdsIndex(Suit.Diamonds)).toBe(2);
+    expect(trumpToDdsIndex(Suit.Clubs)).toBe(3);
+  });
+
+  it("maps undefined (NT) to 4", () => {
+    expect(trumpToDdsIndex(undefined)).toBe(4);
+  });
+});
+
+// ─── seatToDdsIndex ─────────────────────────────────────────────────
+
+describe("seatToDdsIndex", () => {
+  it("maps all 4 seats to DDS indices (N=0, E=1, S=2, W=3)", () => {
+    expect(seatToDdsIndex(Seat.North)).toBe(0);
+    expect(seatToDdsIndex(Seat.East)).toBe(1);
+    expect(seatToDdsIndex(Seat.South)).toBe(2);
+    expect(seatToDdsIndex(Seat.West)).toBe(3);
+  });
+});
+
+// ─── rankToDdsValue ─────────────────────────────────────────────────
+
+describe("rankToDdsValue", () => {
+  it("maps Ace → 14, King → 13, Two → 2", () => {
+    expect(rankToDdsValue(Rank.Ace)).toBe(14);
+    expect(rankToDdsValue(Rank.King)).toBe(13);
+    expect(rankToDdsValue(Rank.Two)).toBe(2);
+  });
+
+  it("maps all face cards correctly", () => {
+    expect(rankToDdsValue(Rank.Queen)).toBe(12);
+    expect(rankToDdsValue(Rank.Jack)).toBe(11);
+    expect(rankToDdsValue(Rank.Ten)).toBe(10);
+  });
+});
+
+// ─── handsToPBN ─────────────────────────────────────────────────────
+
+describe("handsToPBN", () => {
+  it("converts full 13-card hands to PBN format", () => {
+    const deal = makeTestDeal();
+    const pbn = handsToPBN(deal.hands);
+    // Should match dealToPBN output since all 13 cards present
+    expect(pbn).toBe(dealToPBN(deal));
+  });
+
+  it("handles partial hands (mid-play)", () => {
+    const hands = {
+      [Seat.North]: makeHand([
+        makeCard(Suit.Spades, Rank.Ace),
+        makeCard(Suit.Hearts, Rank.King),
+      ]),
+      [Seat.East]: makeHand([
+        makeCard(Suit.Diamonds, Rank.Queen),
+      ]),
+      [Seat.South]: makeHand([
+        makeCard(Suit.Clubs, Rank.Jack),
+        makeCard(Suit.Clubs, Rank.Ten),
+      ]),
+      [Seat.West]: makeHand([
+        makeCard(Suit.Spades, Rank.Two),
+        makeCard(Suit.Hearts, Rank.Three),
+        makeCard(Suit.Diamonds, Rank.Four),
+      ]),
+    };
+    const pbn = handsToPBN(hands);
+    expect(pbn).toMatch(/^N:/);
+    const parts = pbn.slice(2).split(" ");
+    expect(parts).toHaveLength(4);
+    // N: SA HK no D no C → "A.K.."
+    expect(parts[0]).toBe("A.K..");
+    // E: no S no H DQ no C → "..Q."
+    expect(parts[1]).toBe("..Q.");
+    // S: no S no H no D CJT → "...JT"
+    expect(parts[2]).toBe("...JT");
+    // W: S2 H3 D4 no C → "2.3.4."
+    expect(parts[3]).toBe("2.3.4.");
   });
 });

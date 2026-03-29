@@ -22,6 +22,7 @@ import type { Seat, Vulnerability, DealConstraints, SeatConstraint, Deal } from 
 import { generateDeal } from "../../engine/deal-generator";
 import { evaluateDealConstraint } from "./deal-constraint-evaluator";
 import { CLOCKWISE, SUIT_FACT_MAP, VULNERABILITY_MAP } from "./witness-constants";
+import { FactOperator } from "./evaluation/meaning";
 
 // ─── Seat-role resolution ──────────────────────────────────────────
 
@@ -88,17 +89,17 @@ function compileHandPredicate(
   for (const clause of predicate.clauses) {
     if (clause.factId === "hcp") {
       switch (clause.operator) {
-        case "gte":
+        case FactOperator.Gte:
           minHcp = clause.value as number;
           break;
-        case "lte":
+        case FactOperator.Lte:
           maxHcp = clause.value as number;
           break;
-        case "eq":
+        case FactOperator.Eq:
           minHcp = clause.value as number;
           maxHcp = clause.value as number;
           break;
-        case "range": {
+        case FactOperator.Range: {
           const range = clause.value as { min: number; max: number };
           minHcp = range.min;
           maxHcp = range.max;
@@ -112,17 +113,17 @@ function compileHandPredicate(
     } else if (clause.factId in SUIT_FACT_MAP) {
       const suit = SUIT_FACT_MAP[clause.factId]!;
       switch (clause.operator) {
-        case "gte":
+        case FactOperator.Gte:
           minLength[suit] = clause.value as number;
           break;
-        case "lte":
+        case FactOperator.Lte:
           maxLength[suit] = clause.value as number;
           break;
-        case "eq":
+        case FactOperator.Eq:
           minLength[suit] = clause.value as number;
           maxLength[suit] = clause.value as number;
           break;
-        case "range": {
+        case FactOperator.Range: {
           const range = clause.value as { min: number; max: number };
           minLength[suit] = range.min;
           maxLength[suit] = range.max;
@@ -134,7 +135,7 @@ function compileHandPredicate(
           );
       }
     } else if (clause.factId === "balanced") {
-      if (clause.operator === "boolean") {
+      if (clause.operator === FactOperator.Boolean) {
         balanced = clause.value as boolean;
       } else {
         diagnostics.push(

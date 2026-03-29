@@ -10,6 +10,7 @@ import { Seat, Suit, Vulnerability } from "../../../engine/types";
 import type { DealSpec, UnsatisfiableResult } from "../../core/deal-spec-types";
 import type { HandPredicate } from "../../core/agreement-module";
 import { CAP_OPENING_1NT } from "../../definitions/capability-vocabulary";
+import { FactOperator } from "../evaluation/meaning";
 
 // ─── Helpers ───────────────────────────────────────────────────────
 
@@ -39,7 +40,7 @@ function suitLengthPredicate(suit: string, op: "gte" | "lte" | "eq", value: numb
 
 function balancedPredicate(balanced: boolean): HandPredicate {
   return {
-    clauses: [{ factId: "balanced", operator: "boolean", value: balanced }],
+    clauses: [{ factId: "balanced", operator: FactOperator.Boolean, value: balanced }],
     conjunction: "all",
   };
 }
@@ -48,34 +49,34 @@ function balancedPredicate(balanced: boolean): HandPredicate {
 
 describe("resolveRole", () => {
   it("maps 'self' to the user seat", () => {
-    expect(resolveRole("self", Seat.South)).toBe(Seat.South);
-    expect(resolveRole("self", Seat.North)).toBe(Seat.North);
+    expect(resolveRole(SeatRole.Self, Seat.South)).toBe(Seat.South);
+    expect(resolveRole(SeatRole.Self, Seat.North)).toBe(Seat.North);
   });
 
   it("maps 'partner' to the opposite seat", () => {
-    expect(resolveRole("partner", Seat.South)).toBe(Seat.North);
-    expect(resolveRole("partner", Seat.North)).toBe(Seat.South);
-    expect(resolveRole("partner", Seat.East)).toBe(Seat.West);
-    expect(resolveRole("partner", Seat.West)).toBe(Seat.East);
+    expect(resolveRole(SeatRole.Partner, Seat.South)).toBe(Seat.North);
+    expect(resolveRole(SeatRole.Partner, Seat.North)).toBe(Seat.South);
+    expect(resolveRole(SeatRole.Partner, Seat.East)).toBe(Seat.West);
+    expect(resolveRole(SeatRole.Partner, Seat.West)).toBe(Seat.East);
   });
 
   it("maps 'lho' to the left-hand opponent (clockwise)", () => {
     // Clockwise: N→E→S→W
-    expect(resolveRole("lho", Seat.South)).toBe(Seat.West);
-    expect(resolveRole("lho", Seat.North)).toBe(Seat.East);
-    expect(resolveRole("lho", Seat.East)).toBe(Seat.South);
-    expect(resolveRole("lho", Seat.West)).toBe(Seat.North);
+    expect(resolveRole(SeatRole.Lho, Seat.South)).toBe(Seat.West);
+    expect(resolveRole(SeatRole.Lho, Seat.North)).toBe(Seat.East);
+    expect(resolveRole(SeatRole.Lho, Seat.East)).toBe(Seat.South);
+    expect(resolveRole(SeatRole.Lho, Seat.West)).toBe(Seat.North);
   });
 
   it("maps 'rho' to the right-hand opponent (counter-clockwise)", () => {
-    expect(resolveRole("rho", Seat.South)).toBe(Seat.East);
-    expect(resolveRole("rho", Seat.North)).toBe(Seat.West);
-    expect(resolveRole("rho", Seat.East)).toBe(Seat.North);
-    expect(resolveRole("rho", Seat.West)).toBe(Seat.South);
+    expect(resolveRole(SeatRole.Rho, Seat.South)).toBe(Seat.East);
+    expect(resolveRole(SeatRole.Rho, Seat.North)).toBe(Seat.West);
+    expect(resolveRole(SeatRole.Rho, Seat.East)).toBe(Seat.North);
+    expect(resolveRole(SeatRole.Rho, Seat.West)).toBe(Seat.South);
   });
 
   it("maps 'openingSide' to user seat", () => {
-    expect(resolveRole("openingSide", Seat.South)).toBe(Seat.South);
+    expect(resolveRole(SeatRole.OpeningSide, Seat.South)).toBe(Seat.South);
   });
 });
 
@@ -88,7 +89,7 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "seat",
-            role: "self",
+            role: SeatRole.Self,
             predicate: hcpPredicate("gte", 12),
           },
         ],
@@ -104,7 +105,7 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "seat",
-            role: "partner",
+            role: SeatRole.Partner,
             predicate: hcpPredicate("gte", 6),
           },
         ],
@@ -119,12 +120,12 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "seat",
-            role: "lho",
+            role: SeatRole.Lho,
             predicate: hcpPredicate("lte", 10),
           },
           {
             kind: "seat",
-            role: "rho",
+            role: SeatRole.Rho,
             predicate: hcpPredicate("lte", 10),
           },
         ],
@@ -142,7 +143,7 @@ describe("compileDealSpec", () => {
     it("translates hcp gte to minHcp", () => {
       const spec = makeMinimalSpec({
         layers: [
-          { kind: "seat", role: "self", predicate: hcpPredicate("gte", 15) },
+          { kind: "seat", role: SeatRole.Self, predicate: hcpPredicate("gte", 15) },
         ],
       });
 
@@ -154,7 +155,7 @@ describe("compileDealSpec", () => {
     it("translates hcp lte to maxHcp", () => {
       const spec = makeMinimalSpec({
         layers: [
-          { kind: "seat", role: "self", predicate: hcpPredicate("lte", 17) },
+          { kind: "seat", role: SeatRole.Self, predicate: hcpPredicate("lte", 17) },
         ],
       });
 
@@ -167,7 +168,7 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "seat",
-            role: "self",
+            role: SeatRole.Self,
             predicate: hcpPredicate("range", { min: 15, max: 17 }),
           },
         ],
@@ -183,9 +184,9 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "seat",
-            role: "self",
+            role: SeatRole.Self,
             predicate: {
-              clauses: [{ factId: "hcp", operator: "eq", value: 16 }],
+              clauses: [{ factId: "hcp", operator: FactOperator.Eq, value: 16 }],
               conjunction: "all" as const,
             },
           },
@@ -204,7 +205,7 @@ describe("compileDealSpec", () => {
     it("translates spades gte to minLength", () => {
       const spec = makeMinimalSpec({
         layers: [
-          { kind: "seat", role: "self", predicate: suitLengthPredicate("spades", "gte", 5) },
+          { kind: "seat", role: SeatRole.Self, predicate: suitLengthPredicate("spades", FactOperator.Gte, 5) },
         ],
       });
 
@@ -215,7 +216,7 @@ describe("compileDealSpec", () => {
     it("translates hearts lte to maxLength", () => {
       const spec = makeMinimalSpec({
         layers: [
-          { kind: "seat", role: "self", predicate: suitLengthPredicate("hearts", "lte", 3) },
+          { kind: "seat", role: SeatRole.Self, predicate: suitLengthPredicate("hearts", FactOperator.Lte, 3) },
         ],
       });
 
@@ -226,7 +227,7 @@ describe("compileDealSpec", () => {
     it("translates suit eq to both min and max length", () => {
       const spec = makeMinimalSpec({
         layers: [
-          { kind: "seat", role: "self", predicate: suitLengthPredicate("diamonds", "eq", 4) },
+          { kind: "seat", role: SeatRole.Self, predicate: suitLengthPredicate("diamonds", FactOperator.Eq, 4) },
         ],
       });
 
@@ -240,9 +241,9 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "seat",
-            role: "self",
+            role: SeatRole.Self,
             predicate: {
-              clauses: [{ factId: "clubs", operator: "range", value: { min: 3, max: 5 } }],
+              clauses: [{ factId: "clubs", operator: FactOperator.Range, value: { min: 3, max: 5 } }],
               conjunction: "all" as const,
             },
           },
@@ -259,12 +260,12 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "seat",
-            role: "self",
+            role: SeatRole.Self,
             predicate: {
               clauses: [
-                { factId: "spades", operator: "gte", value: 5 },
-                { factId: "hearts", operator: "gte", value: 4 },
-                { factId: "hcp", operator: "gte", value: 12 },
+                { factId: "spades", operator: FactOperator.Gte, value: 5 },
+                { factId: "hearts", operator: FactOperator.Gte, value: 4 },
+                { factId: "hcp", operator: FactOperator.Gte, value: 12 },
               ],
               conjunction: "all" as const,
             },
@@ -285,7 +286,7 @@ describe("compileDealSpec", () => {
     it("translates balanced: true", () => {
       const spec = makeMinimalSpec({
         layers: [
-          { kind: "seat", role: "self", predicate: balancedPredicate(true) },
+          { kind: "seat", role: SeatRole.Self, predicate: balancedPredicate(true) },
         ],
       });
 
@@ -296,7 +297,7 @@ describe("compileDealSpec", () => {
     it("translates balanced: false", () => {
       const spec = makeMinimalSpec({
         layers: [
-          { kind: "seat", role: "self", predicate: balancedPredicate(false) },
+          { kind: "seat", role: SeatRole.Self, predicate: balancedPredicate(false) },
         ],
       });
 
@@ -313,7 +314,7 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "joint",
-            roles: ["self", "partner"],
+            roles: [SeatRole.Self, SeatRole.Partner],
             predicate: {
               kind: "fit-check",
               params: { suit: "S", minLength: 8 },
@@ -333,7 +334,7 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "joint",
-            roles: ["self", "partner"],
+            roles: [SeatRole.Self, SeatRole.Partner],
             predicate: {
               kind: "combined-hcp",
               params: { min: 20, max: 30 },
@@ -379,7 +380,7 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "public-guard",
-            guard: { field: CAP_OPENING_1NT, operator: "eq", value: "active" },
+            guard: { field: CAP_OPENING_1NT, operator: FactOperator.Eq, value: "active" },
           },
         ],
       });
@@ -396,7 +397,7 @@ describe("compileDealSpec", () => {
   describe("setup.dealerRole", () => {
     it("resolves dealerRole to a compass seat", () => {
       const spec = makeMinimalSpec({
-        setup: { dealerRole: "self" },
+        setup: { dealerRole: SeatRole.Self },
       });
 
       const { dealConstraints } = compileDealSpec(spec, Seat.North);
@@ -405,7 +406,7 @@ describe("compileDealSpec", () => {
 
     it("resolves partner as dealer", () => {
       const spec = makeMinimalSpec({
-        setup: { dealerRole: "partner" },
+        setup: { dealerRole: SeatRole.Partner },
       });
 
       const { dealConstraints } = compileDealSpec(spec, Seat.South);
@@ -466,9 +467,9 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "seat",
-            role: "self",
+            role: SeatRole.Self,
             predicate: {
-              clauses: [{ factId: "losers", operator: "lte", value: 7 }],
+              clauses: [{ factId: "losers", operator: FactOperator.Lte, value: 7 }],
               conjunction: "all" as const,
             },
           },
@@ -490,28 +491,28 @@ describe("compileDealSpec", () => {
         layers: [
           {
             kind: "seat",
-            role: "self",
+            role: SeatRole.Self,
             predicate: {
               clauses: [
-                { factId: "hcp", operator: "range", value: { min: 15, max: 17 } },
-                { factId: "balanced", operator: "boolean", value: true },
+                { factId: "hcp", operator: FactOperator.Range, value: { min: 15, max: 17 } },
+                { factId: "balanced", operator: FactOperator.Boolean, value: true },
               ],
               conjunction: "all" as const,
             },
           },
           {
             kind: "seat",
-            role: "partner",
+            role: SeatRole.Partner,
             predicate: {
               clauses: [
-                { factId: "hcp", operator: "gte", value: 6 },
-                { factId: "spades", operator: "gte", value: 4 },
+                { factId: "hcp", operator: FactOperator.Gte, value: 6 },
+                { factId: "spades", operator: FactOperator.Gte, value: 4 },
               ],
               conjunction: "all" as const,
             },
           },
         ],
-        setup: { dealerRole: "self" },
+        setup: { dealerRole: SeatRole.Self },
       });
 
       const { dealConstraints, diagnostics } = compileDealSpec(spec, Seat.North);
@@ -547,7 +548,7 @@ describe("generateDealSpec", () => {
       layers: [
         {
           kind: "seat",
-          role: "self",
+          role: SeatRole.Self,
           predicate: hcpPredicate("gte", 10),
         },
       ],
@@ -568,10 +569,10 @@ describe("generateDealSpec", () => {
       const spec = makeMinimalSpec({
         diagnosticMode: true,
         layers: [
-          { kind: "seat", role: "self", predicate: hcpPredicate("gte", 15) },
-          { kind: "seat", role: "partner", predicate: hcpPredicate("gte", 15) },
-          { kind: "seat", role: "lho", predicate: hcpPredicate("gte", 15) },
-          { kind: "seat", role: "rho", predicate: hcpPredicate("gte", 15) },
+          { kind: "seat", role: SeatRole.Self, predicate: hcpPredicate("gte", 15) },
+          { kind: "seat", role: SeatRole.Partner, predicate: hcpPredicate("gte", 15) },
+          { kind: "seat", role: SeatRole.Lho, predicate: hcpPredicate("gte", 15) },
+          { kind: "seat", role: SeatRole.Rho, predicate: hcpPredicate("gte", 15) },
         ],
       });
 
@@ -587,8 +588,8 @@ describe("generateDealSpec", () => {
       const spec = makeMinimalSpec({
         diagnosticMode: true,
         layers: [
-          { kind: "seat", role: "self", predicate: suitLengthPredicate("spades", "gte", 8) },
-          { kind: "seat", role: "partner", predicate: suitLengthPredicate("spades", "gte", 8) },
+          { kind: "seat", role: SeatRole.Self, predicate: suitLengthPredicate("spades", FactOperator.Gte, 8) },
+          { kind: "seat", role: SeatRole.Partner, predicate: suitLengthPredicate("spades", FactOperator.Gte, 8) },
         ],
       });
 
