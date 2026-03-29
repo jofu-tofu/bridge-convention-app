@@ -35,7 +35,9 @@ export type BaseSystemId =
  *  `trump` is used by pipeline system-fact evaluators when fitAgreed is present.
  *  `nt` is display-only (Profiles screen reference) — NOT used in runtime evaluation.
  *  Standard bridge uses HCP for NT evaluation; the NT TP column exists purely as a
- *  teaching reference so students can see the full picture. */
+ *  teaching reference so students can see the full picture.
+ *  `ClauseSystemVariant` intentionally omits `nt` — learning tooltips use `relevantMetric`
+ *  to show either HCP or Trump TP based on fit context. */
 export interface TotalPointEquivalent {
   readonly trump: number;
   readonly nt: number;

@@ -30,6 +30,7 @@ export type {
   ModuleCatalogEntry,
   ModuleLearningViewport,
   ModuleFlowTreeViewport,
+  FlowTreeNode,
   ClauseSystemVariant,
   ServiceBidHistoryEntry as BidHistoryEntry,
   BaseModuleInfo,

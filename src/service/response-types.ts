@@ -1,7 +1,7 @@
 /**
  * Service response types — shapes the service returns to the client.
  *
- * Service-owned types (zero backend imports except engine vocabulary).
+ * Service-owned types (minimal backend imports: engine vocabulary + TeachingProjection).
  * All types that cross the service boundary are defined here as explicit
  * interfaces — never re-exported from backend modules.
  *
@@ -16,6 +16,7 @@
 
 import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Suit, DDSolution, AuctionEntry, NumberRange } from "../engine/types";
 import type { PracticeMode, PlayPreference } from "../session/drill-types";
+import type { TeachingProjection } from "../conventions";
 
 /** Bid context relative to the practice target. */
 export type BidContext = "prerequisite" | "target" | "follow-up" | "background" | "off-convention";
@@ -181,6 +182,9 @@ export interface ServiceBidHistoryEntry {
   readonly annotationType?: "alert" | "announce" | "educational";
   /** Public hand conditions disclosed to opponents (from isPublic clauses). */
   readonly publicConditions?: readonly string[];
+  /** Teaching projection — present for user bids when the meaning pipeline produced one.
+   *  Used in the explanation phase for convention contribution aggregation. */
+  readonly teachingProjection?: TeachingProjection;
 }
 
 // ── Service-owned inference types ───────────────────────────────────
@@ -374,8 +378,6 @@ export interface ClauseSystemVariant {
   readonly description: string;
   /** Trump total-point equivalent (HCP + shortage) — present for facts with TP thresholds. */
   readonly trumpTpDescription?: string;
-  /** NT total-point equivalent (HCP + length) — present for facts with TP thresholds. */
-  readonly ntTpDescription?: string;
 }
 
 /** A single fact requirement on a learning surface. */
@@ -392,6 +394,9 @@ export interface SurfaceClauseView {
    *  For value-parameterized clauses, shows the per-system threshold.
    *  For system-fact clauses, shows the concrete meaning in each system. */
   readonly systemVariants?: readonly ClauseSystemVariant[];
+  /** Which metric the pipeline evaluator uses for this clause's context.
+   *  "hcp" for pre-fit / NT contexts, "trumpTp" for post-fit / suit contexts. */
+  readonly relevantMetric?: "hcp" | "trumpTp";
 }
 
 /** Shared teaching surface fields across SurfaceDetailView and FlowTreeNode. */

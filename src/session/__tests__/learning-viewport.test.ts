@@ -6,6 +6,7 @@ import { describe, it, expect } from "vitest";
 import {
   buildModuleCatalog,
   buildModuleLearningViewport,
+  computePostFitPhases,
   derivePhaseOrder,
   formatModuleName,
 } from "../learning-viewport";
@@ -237,9 +238,54 @@ describe("clause system variance", () => {
         expect(variant.systemLabel).toBeTruthy();
         expect(variant.description).toBeTruthy();
         expect(variant.description).toMatch(/\d/);
-        // TP-aware facts should have trump and NT total-point descriptions
+        // TP-aware facts should have trump total-point descriptions
         expect(variant.trumpTpDescription).toBeTruthy();
-        expect(variant.ntTpDescription).toBeTruthy();
+      }
+    });
+
+    it("all system-fact clauses have relevantMetric 'hcp' (no fitAgreed in Stayman)", () => {
+      const systemClauses = viewport.phases
+        .flatMap((p) => p.surfaces)
+        .flatMap((s) => s.clauses)
+        .filter((c) => c.factId.startsWith("system."));
+
+      expect(systemClauses.length).toBeGreaterThan(0);
+      for (const clause of systemClauses) {
+        expect(clause.relevantMetric).toBe("hcp");
+      }
+    });
+  });
+
+  describe("jacoby-transfers viewport relevantMetric", () => {
+    const viewport = buildModuleLearningViewport("jacoby-transfers")!;
+
+    it("idle phase system-fact clauses have relevantMetric 'hcp'", () => {
+      const idlePhase = viewport.phases.find((p) => p.phase === "idle")!;
+      const systemClauses = idlePhase.surfaces
+        .flatMap((s) => s.clauses)
+        .filter((c) => c.factId.startsWith("system."));
+
+      for (const clause of systemClauses) {
+        expect(clause.relevantMetric).toBe("hcp");
+      }
+    });
+
+    it("post-acceptance phases have relevantMetric 'trumpTp'", () => {
+      const mod = getModule("jacoby-transfers")!;
+      const postFit = computePostFitPhases(mod);
+
+      // Verify some post-fit phases exist
+      expect(postFit.size).toBeGreaterThan(0);
+
+      // Check system-fact clauses in post-fit phases
+      for (const phase of viewport.phases) {
+        if (!postFit.has(phase.phase)) continue;
+        const systemClauses = phase.surfaces
+          .flatMap((s) => s.clauses)
+          .filter((c) => c.factId.startsWith("system."));
+        for (const clause of systemClauses) {
+          expect(clause.relevantMetric).toBe("trumpTp");
+        }
       }
     });
   });

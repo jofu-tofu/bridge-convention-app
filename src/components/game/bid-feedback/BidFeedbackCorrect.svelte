@@ -34,8 +34,8 @@
   {/if}
   {#if passedConditions.length > 0}
     <div class="mt-1.5 flex flex-col gap-0.5">
-      {#each passedConditions as cond (cond.label)}
-        <p class="text-fb-correct-dim/60 text-[--text-annotation]">✓ {cond.label}</p>
+      {#each passedConditions as cond (cond.description)}
+        <p class="text-fb-correct-dim/60 text-[--text-annotation]">✓ {cond.description}</p>
       {/each}
     </div>
   {/if}

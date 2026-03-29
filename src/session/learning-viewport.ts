@@ -71,31 +71,30 @@ const ALL_SYSTEMS: readonly { sys: SystemConfig; label: string }[] =
 function describeSystemFactValue(
   factId: string,
   sys: SystemConfig,
-): { hcp: string; trumpTp?: string; ntTp?: string } | null {
+): { hcp: string; trumpTp?: string } | null {
   switch (factId) {
     case "system.responder.weakHand": {
       const t = sys.responderThresholds;
-      return { hcp: `< ${t.inviteMin}`, trumpTp: `< ${t.inviteMinTp.trump}`, ntTp: `< ${t.inviteMinTp.nt}` };
+      return { hcp: `< ${t.inviteMin}`, trumpTp: `< ${t.inviteMinTp.trump}` };
     }
     case "system.responder.inviteValues": {
       const t = sys.responderThresholds;
       return {
         hcp: `${t.inviteMin}\u2013${t.inviteMax}`,
         trumpTp: `${t.inviteMinTp.trump}\u2013${t.inviteMaxTp.trump}`,
-        ntTp: `${t.inviteMinTp.nt}\u2013${t.inviteMaxTp.nt}`,
       };
     }
     case "system.responder.gameValues": {
       const t = sys.responderThresholds;
-      return { hcp: `${t.gameMin}+`, trumpTp: `${t.gameMinTp.trump}+`, ntTp: `${t.gameMinTp.nt}+` };
+      return { hcp: `${t.gameMin}+`, trumpTp: `${t.gameMinTp.trump}+` };
     }
     case "system.responder.slamValues": {
       const t = sys.responderThresholds;
-      return { hcp: `${t.slamMin}+`, trumpTp: `${t.slamMinTp.trump}+`, ntTp: `${t.slamMinTp.nt}+` };
+      return { hcp: `${t.slamMin}+`, trumpTp: `${t.slamMinTp.trump}+` };
     }
     case "system.opener.notMinimum": {
       const r = sys.openerRebid;
-      return { hcp: `${r.notMinimum}+`, trumpTp: `${r.notMinimumTp.trump}+`, ntTp: `${r.notMinimumTp.nt}+` };
+      return { hcp: `${r.notMinimum}+`, trumpTp: `${r.notMinimumTp.trump}+` };
     }
     case "system.responder.twoLevelNewSuit":
       return { hcp: `${sys.suitResponse.twoLevelMin}+ HCP` };
@@ -121,7 +120,6 @@ function buildSystemVariants(factId: string): readonly ClauseSystemVariant[] {
       systemLabel: label,
       description: result.hcp,
       trumpTpDescription: result.trumpTp,
-      ntTpDescription: result.ntTp,
     };
   });
 }
@@ -240,6 +238,50 @@ export function derivePhaseOrder(fsm: LocalFsm): string[] {
   return phases;
 }
 
+/**
+ * Compute the set of post-fit phases for a module.
+ * A phase is post-fit if any StateEntry at that phase has `negotiationDelta.fitAgreed` truthy,
+ * or if it's reachable downstream from such a phase via FSM transitions.
+ */
+export function computePostFitPhases(mod: ConventionModule): Set<string> {
+  const fitPhases = new Set<string>();
+  for (const entry of mod.states ?? []) {
+    if (entry.negotiationDelta?.fitAgreed) {
+      const phases: readonly string[] = Array.isArray(entry.phase) ? entry.phase : [entry.phase];
+      for (const p of phases) fitPhases.add(p);
+    }
+  }
+
+  // Build adjacency map from transitions
+  const adjacency = new Map<string, string[]>();
+  for (const t of mod.local.transitions) {
+    const froms: readonly string[] = Array.isArray(t.from) ? t.from : [t.from];
+    for (const f of froms) {
+      const existing = adjacency.get(f);
+      if (existing) {
+        if (!existing.includes(t.to)) existing.push(t.to);
+      } else {
+        adjacency.set(f, [t.to]);
+      }
+    }
+  }
+
+  // BFS from fit-establishing phases to find all reachable downstream phases
+  const result = new Set(fitPhases);
+  const queue = [...fitPhases];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    for (const next of adjacency.get(current) ?? []) {
+      if (!result.has(next)) {
+        result.add(next);
+        queue.push(next);
+      }
+    }
+  }
+
+  return result;
+}
+
 /** Format a phase string for display. "asked" → "Asked", "shown-hearts" → "Shown Hearts". */
 function formatPhaseDisplay(phase: string, turn: string | null): string {
   const phaseTitle = formatModuleName(phase);
@@ -261,9 +303,11 @@ function findExplanationText(entries: readonly ExplanationEntry[], meaningId: st
 }
 
 /** Map raw BidMeaningClause[] to SurfaceClauseView[] for the learning viewport.
- *  system.* facts automatically get neutral descriptions + per-system variants. */
+ *  system.* facts automatically get neutral descriptions + per-system variants.
+ *  When `metric` is provided, system-fact clauses get a `relevantMetric` field. */
 function mapClauses(
   clauses: readonly BidMeaningClause[],
+  metric?: "hcp" | "trumpTp",
 ): readonly SurfaceClauseView[] {
   return clauses.map((c) => {
     const isSystemFact = c.factId.startsWith("system.");
@@ -275,7 +319,7 @@ function mapClauses(
         ? deriveNeutralDescription(c.factId, c.rationale)
         : readClauseDescription(c),
       isPublic: c.isPublic ?? false,
-      ...(isSystemFact ? { systemVariants: buildSystemVariants(c.factId) } : {}),
+      ...(isSystemFact ? { systemVariants: buildSystemVariants(c.factId), relevantMetric: metric } : {}),
     };
   });
 }
@@ -330,6 +374,7 @@ function buildPhaseGroups(mod: ConventionModule): readonly PhaseGroupView[] {
   if (states.length === 0) return [];
 
   const phaseOrder = derivePhaseOrder(mod.local);
+  const postFitPhases = computePostFitPhases(mod);
 
   const incomingMap = new Map<string, { obs: ObsPattern; fromPhase: string }[]>();
   for (const t of mod.local.transitions) {
@@ -356,6 +401,7 @@ function buildPhaseGroups(mod: ConventionModule): readonly PhaseGroupView[] {
         phaseMap.set(phase, group);
       }
 
+      const metric = postFitPhases.has(phase) ? "trumpTp" as const : "hcp" as const;
       const seen = new Set(group.surfaces.map((s) => s.meaningId));
       for (const surface of entry.surfaces) {
         if (seen.has(surface.meaningId)) continue;
@@ -373,7 +419,7 @@ function buildPhaseGroups(mod: ConventionModule): readonly PhaseGroupView[] {
           disclosure: surface.disclosure,
           recommendation: surface.ranking.recommendationBand ?? null,
           explanationText: rawExplanation ? formatBidReferences(rawExplanation) : null,
-          clauses: mapClauses(surface.clauses),
+          clauses: mapClauses(surface.clauses, metric),
         });
       }
     }
@@ -626,27 +672,29 @@ function collectModuleData(mod: ConventionModule): {
     transitions.push({ from: froms, to: t.to, on: t.on });
   }
 
+  const postFitPhases = computePostFitPhases(mod);
   const phaseMap = new Map<string, ModulePhaseState[]>();
   for (const entry of mod.states ?? []) {
     const phases: readonly string[] = Array.isArray(entry.phase)
       ? entry.phase as readonly string[]
       : [entry.phase as string];
-    const surfaces: TaggedSurface[] = entry.surfaces.map((s) => {
-      const rawExplanation = findExplanationText(mod.explanationEntries, s.meaningId);
-      return {
-        meaningId: s.meaningId,
-        ck: callKey(s.encoding.defaultCall),
-        call: s.encoding.defaultCall,
-        teachingLabel: s.teachingLabel.name,
-        moduleId: mod.moduleId,
-        sourceIntent: s.sourceIntent,
-        recommendation: s.ranking.recommendationBand ?? null,
-        disclosure: s.disclosure,
-        explanationText: rawExplanation ? formatBidReferences(rawExplanation) : null,
-        clauses: mapClauses(s.clauses),
-      };
-    });
     for (const phase of phases) {
+      const metric = postFitPhases.has(phase) ? "trumpTp" as const : "hcp" as const;
+      const surfaces: TaggedSurface[] = entry.surfaces.map((s) => {
+        const rawExplanation = findExplanationText(mod.explanationEntries, s.meaningId);
+        return {
+          meaningId: s.meaningId,
+          ck: callKey(s.encoding.defaultCall),
+          call: s.encoding.defaultCall,
+          teachingLabel: s.teachingLabel.name,
+          moduleId: mod.moduleId,
+          sourceIntent: s.sourceIntent,
+          recommendation: s.ranking.recommendationBand ?? null,
+          disclosure: s.disclosure,
+          explanationText: rawExplanation ? formatBidReferences(rawExplanation) : null,
+          clauses: mapClauses(s.clauses, metric),
+        };
+      });
       const existing = phaseMap.get(phase);
       const state: ModulePhaseState = {
         moduleId: mod.moduleId,

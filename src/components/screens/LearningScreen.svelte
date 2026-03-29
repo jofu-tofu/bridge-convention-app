@@ -17,6 +17,7 @@
   /** Active variance popover state — fixed-positioned to escape overflow containers. */
   let variancePopover = $state<{
     variants: readonly ClauseSystemVariant[];
+    metric: "hcp" | "trumpTp";
     x: number;
     y: number;
     flipUp: boolean;
@@ -27,13 +28,14 @@
     else expandedClauses.add(meaningId);
   }
 
-  function showVariance(e: MouseEvent, variants: readonly ClauseSystemVariant[]) {
+  function showVariance(e: MouseEvent, variants: readonly ClauseSystemVariant[], metric: "hcp" | "trumpTp") {
     e.stopPropagation();
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     // Flip above if near bottom of viewport (rough estimate: 80px for tooltip)
     const flipUp = rect.bottom + 80 > window.innerHeight;
     variancePopover = {
       variants,
+      metric,
       x: rect.left,
       y: flipUp ? rect.top : rect.bottom + 4,
       flipUp,
@@ -343,6 +345,17 @@
                               </span>
                             {/if}
                             <span class="text-xs text-text-muted">{disclosureLabel(surface.disclosure)}</span>
+                            {#if surface.clauses.some((c) => c.systemVariants)}
+                              {@const firstVariantClause = surface.clauses.find((c) => c.systemVariants)!}
+                              <button
+                                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-400 cursor-pointer hover:bg-amber-500/25 transition-colors"
+                                aria-label="Show per-system details"
+                                onclick={(e) => showVariance(e, firstVariantClause.systemVariants!, firstVariantClause.relevantMetric ?? "hcp")}
+                              >
+                                varies by system
+                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-70" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                              </button>
+                            {/if}
                           </div>
                           {#if surface.explanationText && surface.explanationText !== "internal"}
                             <p class="text-xs text-text-muted leading-relaxed mt-1">{surface.explanationText}</p>
@@ -362,7 +375,7 @@
                                       <button
                                         class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-400 cursor-pointer hover:bg-amber-500/25 transition-colors"
                                         aria-label="Show per-system details"
-                                        onclick={(e) => showVariance(e, clause.systemVariants!)}
+                                        onclick={(e) => showVariance(e, clause.systemVariants!, clause.relevantMetric ?? "hcp")}
                                       >
                                         varies by system
                                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-70" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
@@ -401,40 +414,21 @@
       aria-label="Close popover"
       onclick={hideVariance}
     ></button>
-    {@const hasTp = variancePopover.variants.some((v) => v.trumpTpDescription)}
     <div
       class="fixed z-[--z-modal] rounded-[--radius-md] border border-border-subtle bg-bg-card shadow-lg px-3 py-2 min-w-[140px] w-max max-w-[360px]"
       style="left: {variancePopover.x}px; top: {variancePopover.flipUp ? 'auto' : `${variancePopover.y}px`}; bottom: {variancePopover.flipUp ? `${window.innerHeight - variancePopover.y + 4}px` : 'auto'}"
       role="tooltip"
     >
-      {#if hasTp}
-        <table class="text-[11px] leading-relaxed w-full">
-          <thead>
-            <tr class="text-text-muted">
-              <th class="text-left font-medium pr-3 pb-0.5"></th>
-              <th class="text-right font-medium pr-3 pb-0.5">HCP</th>
-              <th class="text-right font-medium pr-3 pb-0.5">Trump TP</th>
-              <th class="text-right font-medium pb-0.5">NT TP</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each variancePopover.variants as variant (variant.systemLabel)}
-              <tr>
-                <td class="font-semibold text-text-secondary pr-3">{variant.systemLabel}</td>
-                <td class="text-right text-text-muted pr-3">{variant.description}</td>
-                <td class="text-right text-text-muted pr-3">{variant.trumpTpDescription ?? '\u2014'}</td>
-                <td class="text-right text-text-muted">{variant.ntTpDescription ?? '\u2014'}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      {:else}
-        {#each variancePopover.variants as variant (variant.systemLabel)}
-          <span class="block text-[11px] leading-relaxed text-text-muted">
-            <span class="font-semibold text-text-secondary">{variant.systemLabel}:</span> {variant.description}
-          </span>
-        {/each}
-      {/if}
+      {#each variancePopover.variants as variant (variant.systemLabel)}
+        <span class="block text-[11px] leading-relaxed text-text-muted">
+          <span class="font-semibold text-text-secondary">{variant.systemLabel}:</span>
+          {#if variancePopover.metric === "trumpTp" && variant.trumpTpDescription}
+            {variant.trumpTpDescription} TP
+          {:else}
+            {variant.description}
+          {/if}
+        </span>
+      {/each}
     </div>
   {/if}
 </main>

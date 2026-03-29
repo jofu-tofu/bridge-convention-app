@@ -124,6 +124,9 @@
         <span class="ft-bid {bidColorClass(node.call)}">{node.callDisplay}</span>
       {/if}
       <span class="ft-label">{node.label}</span>
+      {#if node.clauses.some((c: { systemVariants?: unknown }) => c.systemVariants)}
+        <span class="ft-varies-badge" aria-label="Varies by system">&#x25C6;</span>
+      {/if}
     </div>
     {#if node.children.length > 0}
       <div class="ft-children">
@@ -170,6 +173,20 @@
       <div class="ft-tooltip-clauses">
         {#each tooltip.node.clauses as clause, i (i)}
           <span class="ft-tooltip-clause" class:ft-tooltip-clause-internal={!clause.isPublic}>{clause.description}</span>
+          {#if clause.systemVariants}
+            <div class="ft-tooltip-variants">
+              {#each clause.systemVariants as variant (variant.systemLabel)}
+                <span class="ft-tooltip-variant">
+                  <span class="ft-tooltip-variant-label">{variant.systemLabel}:</span>
+                  {#if clause.relevantMetric === "trumpTp" && variant.trumpTpDescription}
+                    {variant.trumpTpDescription} TP
+                  {:else}
+                    {variant.description}
+                  {/if}
+                </span>
+              {/each}
+            </div>
+          {/if}
         {/each}
       </div>
     {/if}
@@ -376,5 +393,35 @@
   .ft-tooltip-clause-internal {
     color: var(--color-text-muted);
     font-style: italic;
+  }
+
+  /* ── Varies badge ───────────────────────────────────────────── */
+
+  .ft-varies-badge {
+    color: #f59e0b;
+    font-size: calc(7px * var(--ft-scale, 1));
+    opacity: 0.8;
+    flex-shrink: 0;
+  }
+
+  /* ── Tooltip variants ───────────────────────────────────────── */
+
+  .ft-tooltip-variants {
+    display: flex;
+    flex-direction: column;
+    gap: calc(1px * var(--ft-scale, 1));
+    margin-left: calc(6px * var(--ft-scale, 1));
+    margin-bottom: calc(2px * var(--ft-scale, 1));
+  }
+
+  .ft-tooltip-variant {
+    font-size: calc(9px * var(--ft-scale, 1));
+    color: var(--color-text-muted);
+    line-height: 1.3;
+  }
+
+  .ft-tooltip-variant-label {
+    font-weight: 600;
+    color: color-mix(in srgb, #f59e0b 80%, var(--color-text-secondary));
   }
 </style>
