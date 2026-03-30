@@ -32,10 +32,7 @@ crates/
                        fact_dsl/rust_compositions.rs. Zero built-in evaluator registry.
                        Phase 3 adds `pipeline/` (observation + evaluation + run_pipeline), `teaching/`
                        (resolution, projection, parse tree), and `adapter/` (protocol adapter, strategy
-                       evaluation, practical scorer). `normalizeIntent` is hand-ported from TS as a Rust
-                       match block in `pipeline/observation/normalize_intent.rs` — when the TS mapping
-                       in `src/conventions/pipeline/observation/normalize-intent.ts` changes, update the
-                       Rust match block to stay in sync. `ConventionStrategy::suggest()` returns
+                       evaluation, practical scorer). `ConventionStrategy::suggest()` returns
                        `(Option<BidResult>, StrategyEvaluation)` — immutable &self, debug payload as
                        out-param (intentional Rust idiom divergence from TS &mut self pattern).
   bridge-session/      Rust session logic: inference, heuristics, controllers, viewports.
@@ -50,8 +47,7 @@ crates/
                        bridge-engine, bridge-conventions, bridge-session.
   bridge-tauri/        Tauri v2 app — #[tauri::command] handlers wrapping ServicePortImpl
                        (Mutex-managed state). service_commands.rs has all 23 ServicePort + 6
-                       DevServicePort commands. Old engine commands kept in commands.rs for
-                       backward compat during migration.
+                       DevServicePort commands.
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
                        for browser deployment. All 23 ServicePort methods + 6 DevServicePort
                        methods (debug_assertions gated) + load_bundle_defs for paid content.
@@ -77,7 +73,7 @@ crates/
 1. Add the method to `ServicePort` trait in `bridge-service/src/port.rs`
 2. Implement it in `ServicePortImpl` in `bridge-service/src/service_impl.rs`
 3. Add `#[wasm_bindgen]` wrapper in `bridge-wasm/src/lib.rs` (JsValue in/out via serde_wasm_bindgen)
-4. Add `#[tauri::command]` handler in `bridge-tauri/src/commands.rs`, wire in `lib.rs`
+4. Add `#[tauri::command]` handler in `bridge-tauri/src/service_commands.rs`, wire in `lib.rs`
 5. Add tests in service and transport crates
 
 ## DDS Integration
