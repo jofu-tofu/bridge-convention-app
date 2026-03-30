@@ -4,12 +4,11 @@ Pure TypeScript game logic. Zero platform dependencies.
 
 ## Conventions
 
-- Pure engine logic modules (`auction.ts`, `scoring.ts`, `play.ts`, `deal-generator.ts`, etc.) never import from `svelte`, `@tauri-apps/*`, `window`, `document`, or `localStorage`. Transport adapters (`tauri-ipc-engine.ts`, `wasm-engine.ts`, `dds-client.ts`, `dds-worker.ts`) are the explicit exception.
+- Pure engine logic modules (`auction.ts`, `scoring.ts`, `play.ts`, `deal-generator.ts`, etc.) never import from `svelte`, `@tauri-apps/*`, `window`, `document`, or `localStorage`. DDS modules (`dds-client.ts`, `dds-worker.ts`) are the explicit exception.
 - Engine is a leaf module — it does not import from `strategy/`, `conventions/`, `inference/`, `stores/`, `components/`, or other higher-level modules. Cross-boundary types that engine needs are defined locally in `engine/` or passed in by callers.
-- All `EnginePort` methods are async (`Promise<T>`) — callers use `await` from day one for V2 Tauri IPC compatibility
 - `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only
 - Utility functions (`calculateHcp`, `getSuitLength`, `isBalanced`) exported separately for reuse by deal-generator
-- All bidding/scoring/play methods implemented. `solveDeal` works via Tauri IPC (desktop) and DDS Web Worker (browser WASM). `suggestPlay` throws in all builds — not yet implemented.
+- All bidding/scoring/play methods implemented. DDS works via native Tauri (desktop) or DDS Web Worker (browser). `suggestPlay` throws in all builds — not yet implemented.
 
 ## Architecture
 
@@ -17,8 +16,8 @@ Pure TypeScript game logic. Zero platform dependencies.
 
 ```
 types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
-                        ↘ auction.ts → auction-helpers.ts       ↘
-                        ↘ play.ts            → port.ts
+                        ↘ auction.ts → auction-helpers.ts
+                        ↘ play.ts
          types.ts → scoring.ts
          call-helpers.ts (standalone, no engine imports)
 ```
@@ -31,7 +30,6 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `constants.ts`        | Suit/rank orderings, display mappings                                                     |
 | `hand-evaluator.ts`   | HCP calculation, strategy pattern for evaluation                                          |
 | `deal-generator.ts`   | Rejection sampling with Fisher-Yates shuffle, seat constraints                            |
-| `port.ts`             | `EnginePort` interface — async boundary between UI and engine                             |
 | `auction.ts`          | Auction logic: bid comparison, legality, completion, contract/declarer extraction         |
 | `play.ts`             | Trick play rules: legal plays (follow suit), lead suit, trick winner determination        |
 | `scoring.ts`          | Contract scoring: trick points, bonuses, penalties, unified score calculation             |
@@ -39,8 +37,6 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `notation.ts`         | Card notation parser (`parseCard`, `parseHand`) — shared by CLI and test fixtures         |
 | `call-helpers.ts`     | Canonical `callsMatch()` — call equality check shared by stores and inference             |
 | `constraint-utils.ts` | `cleanConstraints()` / `cleanSeatConstraint()` — strips non-serializable fields          |
-| `tauri-ipc-engine.ts` | `TauriIpcEngine` — EnginePort via Tauri `invoke()` (desktop)                              |
-| `wasm-engine.ts`      | `WasmEngine` + `initWasm()` — EnginePort via WASM bindings (browser)                     |
 | `dds-wasm.ts`         | DDS PBN conversion, struct pack/unpack, `solveWithModule()` (table), `solveBoardWithModule()` (per-card) — pure logic, no DOM/Worker. Exports `handsToPBN()`, `cardsToPBNHand()`, DDS index helpers (`trumpToDdsIndex`, `seatToDdsIndex`, `rankToDdsValue`), and index mapping constants (`DDS_STRAIN_MAP`, `DDS_SEAT_MAP`, `DDS_SUIT_MAP_PLAY`, `DDS_RANK_MAP`). |
 | `dds-worker.ts`       | Classic Web Worker — loads DDS WASM via `importScripts`, handles `CalcAllTablesPBN` and `SolveBoardPBN` requests |
 | `dds-client.ts`       | Main thread API — `initDDS()`, `isDDSAvailable()`, `solveDealWasm()`, `solveBoardWasm()` via Worker messages |
@@ -63,11 +59,9 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 
 ## Rust Backend Integration
 
-- **Engine transports:** `TauriIpcEngine` (desktop) and `WasmEngine` (browser). Both use `cleanConstraints()` from `constraint-utils.ts` to strip non-serializable fields. **There is no pure-TS `EnginePort` implementation.** If `initWasm()` fails in the browser, the app shows an error screen — no fallback. The TS modules (`deal-generator.ts`, `auction.ts`, `scoring.ts`, `play.ts`) contain all the logic but are not wired into an `EnginePort` adapter.
-- **`initWasm()` required:** Must be called once before creating `WasmEngine`. Called by `App.svelte` during async engine init. On Vercel (no wasm-pack), WASM stubs let the build succeed but the app is non-functional at runtime.
-- **RNG incompatibility:** Same seed produces different deals in Rust (ChaCha8Rng) vs TS (mulberry32). Seeds are not cross-engine portable.
-- **DDS browser support:** `WasmEngine.solveDeal()` delegates to a DDS Web Worker (Emscripten-compiled C++ DDS). `initDDS()` fires in background; `isDDSAvailable()` gates calls. Par is always null in browser (mode=-1). `suggestPlay()` still throws in WASM builds. `solveBoardWasm()` exposes per-card optimal play via `SolveBoardPBN` (requires WASM rebuild with `npm run dds:build` to include the export).
-- Both transports strip `customCheck` and `rng` from constraints before serialization. Preserves `seed` field for Rust-side deterministic generation (`seed: Option<u64>`).
+- **Engine called from Rust directly.** The Rust `bridge-engine` crate is the primary engine. TS engine modules (`deal-generator.ts`, `auction.ts`, `scoring.ts`, `play.ts`) exist as reference implementations but are not used at runtime — all game logic flows through `bridge-service` → `bridge-session` → `bridge-engine` in Rust.
+- **RNG:** Rust uses ChaCha8Rng. TS uses mulberry32. Same seed produces different deals — seeds are not cross-engine portable.
+- **DDS browser support:** DDS works via DDS Web Worker (Emscripten-compiled C++ DDS in browser) or native `dds-bridge` FFI (Tauri desktop). `initDDS()` fires in background; `isDDSAvailable()` gates calls. Par is always null in browser (mode=-1). `solveBoardWasm()` exposes per-card optimal play via `SolveBoardPBN`.
 
 ---
 
@@ -90,4 +84,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `types.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-02-25 | version=7 | dir-commits-at-audit=23 | tree-sig=dirs:1,files:29,exts:ts:28,md:1 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-29 | version=8 | dir-commits-at-audit=25 | tree-sig=dirs:1,files:19,exts:ts:18,md:1 -->

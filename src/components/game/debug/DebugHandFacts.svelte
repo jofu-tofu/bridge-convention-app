@@ -10,11 +10,11 @@
   let { facts }: Props = $props();
 </script>
 
-<DebugSection title="Hand Facts" count={facts?.facts.size ?? null}>
+<DebugSection title="Hand Facts" count={facts ? (facts.facts instanceof Map ? facts.facts.size : Object.keys(facts.facts).length) : null}>
   {#if facts}
     <table class="w-full text-[10px]">
       <tbody>
-        {#each [...facts.facts.entries()].sort(([a], [b]) => a.localeCompare(b)) as [id, fv] (id)}
+        {#each (facts.facts instanceof Map ? [...facts.facts.entries()] : Object.entries(facts.facts)).sort(([a], [b]) => a.localeCompare(b)) as [id, fv] (id)}
           <tr class="border-b border-border-subtle/20">
             <td class="py-0 pr-2 text-text-muted max-w-[180px] truncate" title={id}>{id}</td>
             <td class="py-0 text-text-primary font-semibold {typeof fv.value === 'boolean' ? (fv.value ? 'text-green-400' : 'text-red-400') : ''}">{fmtFactValue(fv.value)}</td>

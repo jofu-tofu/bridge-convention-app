@@ -1,16 +1,34 @@
 import { describe, it, expect } from "vitest";
 import { render, fireEvent } from "@testing-library/svelte";
 import ConventionCardPanel from "../../game/ConventionCardPanel.svelte";
-import { buildConventionCardPanel, getSystemConfig } from "../../../service";
+import type { ConventionCardPanelView } from "../../../service";
 
-// Side-effect: register all bundles
-import "../../../conventions/registration";
-
-const saycConfig = getSystemConfig("sayc");
+// Build a minimal panel view for testing (WASM not available in unit tests)
+const panelView: ConventionCardPanelView = {
+  partnership: "N-S",
+  systemName: "SAYC",
+  sections: [
+    {
+      id: "general" as never,
+      title: "General",
+      compactSummary: "SAYC \u00b7 5-card majors",
+      items: [
+        { label: "System", value: "SAYC" },
+        { label: "Majors", value: "5-card majors" },
+      ],
+      modules: [],
+    },
+    {
+      id: "notrump-opening" as never,
+      title: "1NT Opening & Responses",
+      compactSummary: "15\u201317 \u00b7 Stayman",
+      items: [{ label: "1NT Range", value: "15\u201317" }],
+      modules: [],
+    },
+  ],
+};
 
 describe("ConventionCardPanel", () => {
-  const panelView = buildConventionCardPanel(saycConfig, "nt-bundle");
-
   it("renders nothing when closed", () => {
     const { queryByTestId } = render(ConventionCardPanel, {
       props: { panelView, open: false, onclose: () => {} },
@@ -65,7 +83,6 @@ describe("ConventionCardPanel", () => {
       props: { panelView, open: true, onclose: () => {} },
     });
     const text = getByTestId("cc-panel").textContent ?? "";
-    // NT section compact summary should contain the range
     expect(text).toContain("15\u201317");
   });
 });

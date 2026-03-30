@@ -4,8 +4,8 @@ Detailed technical notes, historical context, and non-obvious decisions. Read wh
 
 ## Engine & WASM
 
-### No Pure-TS EnginePort (Details)
-Browser builds require WASM (`WasmEngine`); desktop uses Tauri IPC (`TauriIpcEngine`). If `initWasm()` fails, the app shows an error screen — there is no fallback. The TS engine modules (`deal-generator.ts`, `auction.ts`, etc.) contain all the logic but are not wired into an `EnginePort` adapter. Vercel deploys install Rust + wasm-pack via `scripts/vercel-build.sh` and produce a real WASM build. Stub files (`scripts/ensure-wasm-stubs.sh`) are retained as a fallback if the WASM toolchain is unavailable.
+### WASM Required for Browser
+All game logic runs in Rust via WASM (`WasmService`); desktop uses Tauri IPC. If WASM init fails, the app shows an error screen — there is no fallback. TS engine modules (`deal-generator.ts`, `auction.ts`, etc.) exist as reference implementations but are not used at runtime. Vercel deploys install Rust + wasm-pack via `scripts/vercel-build.sh` and produce a real WASM build. Stub files (`scripts/ensure-wasm-stubs.sh`) are retained as a fallback if the WASM toolchain is unavailable.
 
 ### DDS Browser Implementation
 DDS `solveDeal()` works in browser via Emscripten-compiled C++ DDS in a Web Worker (`dds-client.ts`). Par is always null in browser (mode=-1). `suggestPlay()` remains desktop-only. DDS WASM artifacts (`static/dds/`) are committed; rebuild with `npm run dds:build` (requires Emscripten).
@@ -13,13 +13,20 @@ DDS `solveDeal()` works in browser via Emscripten-compiled C++ DDS in a Web Work
 ### vendor/dds
 `vendor/dds/` is an upstream DDS C++ source checkout and `vendor/dds-patches/` holds local Emscripten/build patches for producing the browser double-dummy WASM bundle (`static/dds/`); app-level bridge logic in `src/` and `src-tauri/` remains clean-room.
 
+## DDS Architecture (Post-Migration)
+
+- `dds-bridge` C++ FFI can't compile to wasm32
+- Two-path design: Tauri = native DDS via bridge-engine, WASM = JS worker fallback
+- `src/service/dds-bridge.ts` handles platform dispatch
+- Full DDS-via-handle integration is follow-up work (requires `getDeal()` service method)
+
 ## Convention System
 
-### Convention Imports Barrel Enforcement
-External consumers import from `conventions/index.ts` barrel — deep imports into `conventions/core/`, `conventions/pipeline/`, `conventions/teaching/`, or `conventions/definitions/` are ESLint-blocked. UI components should import convention types only through `service/index.ts`.
+### Convention System (Now in Rust)
+Convention logic has been migrated to Rust (`bridge-conventions` crate). TS `src/conventions/` directory is deleted. All convention types, fact DSL, pipeline, teaching, and adapter logic live in Rust. UI components access convention data only through `service/index.ts` which proxies to WASM.
 
 ### All Conventions Use Meaning Pipeline
-No tree/protocol/overlay pipeline remains. `ConventionConfig` is minimal (id, name, description, category, dealConstraints, teaching); convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. Deal constraints are DERIVED from capabilities + R1 surface analysis by `deriveBundleDealConstraints()` — not hand-authored on `BundleInput`. All teaching content (surface groups, alternatives) is auto-derived from module structure. No manual tags, scope annotations, or derivation files needed.
+No tree/protocol/overlay pipeline remains. Convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. Deal constraints are DERIVED from capabilities + R1 surface analysis — not hand-authored. All teaching content is auto-derived from module structure.
 
 ### Convention-Specific Details
 - Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
@@ -28,7 +35,7 @@ No tree/protocol/overlay pipeline remains. `ConventionConfig` is minimal (id, na
 ## CLI
 
 ### CLI Rule Enumeration
-All CLI commands (`list`, `plan`, `selftest`, `describe`, `bundles`) use `enumerateRuleAtoms()` / `generateRuleCoverageManifest()` from `conventions/pipeline/rule-enumeration.ts`. Atom ID format: `moduleId/meaningId`. The old FSM-based BFS enumeration has been removed. Selftest uses strategy-driven forward auction construction instead of FSM path targeting.
+All CLI commands (`list`, `plan`, `selftest`, `describe`, `bundles`) use rule enumeration via `ServicePort`. Atom ID format: `moduleId/meaningId`. Selftest uses strategy-driven forward auction construction instead of FSM path targeting.
 
 ## Deal Generation
 

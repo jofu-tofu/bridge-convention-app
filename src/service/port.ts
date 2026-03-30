@@ -6,9 +6,9 @@
  * debug panels cast to DevServicePort.
  */
 
-import type { Call, Card, Seat } from "../engine/types";
-import type { PlayProfileId } from "../session/heuristics/play-profiles";
-import type { DrillBundle } from "../session/drill-types";
+import type { Call, Card, Seat, Vulnerability } from "../engine/types";
+import type { PlayProfileId } from "./session-types";
+import type { OpponentMode } from "./session-types";
 import type {
   SessionHandle,
   SessionConfig,
@@ -36,9 +36,7 @@ import type {
   ServiceDebugLogEntry,
   PlaySuggestions,
 } from "./debug-types";
-import type { AtomGradeResult, PlaythroughHandle, PlaythroughGradeResult } from "./evaluation/types";
-import type { Vulnerability } from "../engine/types";
-import type { OpponentMode } from "../session/drill-types";
+import type { AtomGradeResult, PlaythroughHandle, PlaythroughGradeResult } from "./session-types";
 
 /** Production service interface — all methods return Promise<T>. */
 interface ServicePort {
@@ -112,6 +110,7 @@ export interface DevServicePort extends ServicePort {
   /** Return the resolved convention name for a session. */
   getConventionName(handle: SessionHandle): Promise<string>;
 
-  /** Create a session from a pre-built DrillBundle (for tests using stub engines). */
-  createSessionFromBundle(bundle: DrillBundle): Promise<SessionHandle>;
+  /** Create a session from a pre-built DrillBundle (for tests using stub engines).
+   *  @deprecated Only available in LocalService (TS backend). Not supported in WasmService. */
+  createSessionFromBundle(bundle: unknown): Promise<SessionHandle>;
 }

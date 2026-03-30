@@ -1,9 +1,8 @@
 <script lang="ts">
-  import type { EnginePort } from "./engine/port";
   import type { DevServicePort } from "./service";
   import type { createGameStore } from "./stores/game.svelte";
   import type { createAppStore } from "./stores/app.svelte";
-  import { setEngine, setGameStore, setAppStore, setService } from "./stores/context";
+  import { setGameStore, setAppStore, setService } from "./stores/context";
   import { DESKTOP_MIN } from "./components/shared/breakpoints.svelte";
   import NavRail from "./components/navigation/NavRail.svelte";
   import BottomTabBar from "./components/navigation/BottomTabBar.svelte";
@@ -17,7 +16,6 @@
   import PracticeModePicker from "./components/screens/PracticeModePicker.svelte";
 
   interface Props {
-    engine: EnginePort;
     service: DevServicePort;
     gameStore: ReturnType<typeof createGameStore>;
     appStore: ReturnType<typeof createAppStore>;
@@ -25,7 +23,6 @@
 
   const props: Props = $props();
 
-  setEngine(props.engine);
   setService(props.service);
   setGameStore(props.gameStore);
   setAppStore(props.appStore);

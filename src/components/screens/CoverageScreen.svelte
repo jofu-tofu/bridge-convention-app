@@ -1,24 +1,27 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
-  import { listBundleInputs, resolveBundle, getBundleInput, enumerateRuleAtoms, generateRuleCoverageManifest, SAYC_SYSTEM_CONFIG } from "../../service";
-  import type { RuleCoverageManifest, ConventionBundle } from "../../service";
+  import { listConventions, listModules } from "../../service";
+  import type { ConventionInfo } from "../../service/response-types";
+  import type { ModuleCatalogEntry } from "../../service";
 
   const appStore = getAppStore();
 
-  const bundles: readonly ConventionBundle[] = listBundleInputs().map(i => resolveBundle(i, SAYC_SYSTEM_CONFIG));
+  // any: listConventions returns ConventionConfig but runtime is ConventionInfo with moduleIds
+  const bundles = listConventions() as unknown as ConventionInfo[];
 
   let selectedBundleId = $state<string | null>(appStore.coverageBundle);
 
-  let manifest = $derived.by<RuleCoverageManifest | null>(() => {
-    if (!selectedBundleId) return null;
-    const input = getBundleInput(selectedBundleId);
-    if (!input) return null;
-    const bundle = resolveBundle(input, SAYC_SYSTEM_CONFIG);
-    if (!bundle?.modules) return null;
-    return generateRuleCoverageManifest(bundle.id, bundle.modules);
-  });
+  const allModules: readonly ModuleCatalogEntry[] = listModules();
 
-  let showByModule = $state(true);
+  let selectedBundle = $derived(
+    selectedBundleId ? bundles.find(b => b.id === selectedBundleId) ?? null : null,
+  );
+
+  let bundleModules = $derived.by(() => {
+    if (!selectedBundle?.moduleIds) return [];
+    const ids = new Set(selectedBundle.moduleIds);
+    return allModules.filter(m => ids.has(m.moduleId));
+  });
 
   function selectBundle(bundleId: string) {
     selectedBundleId = bundleId;
@@ -41,11 +44,6 @@
     const base = `${window.location.origin}${window.location.pathname}`;
     return `${base}?coverage=true&convention=${bundleId}`;
   }
-
-  function atomCount(bundle: ConventionBundle): number {
-    if (!bundle.modules) return 0;
-    return enumerateRuleAtoms(bundle.modules).length;
-  }
 </script>
 
 <main class="h-full overflow-y-auto bg-bg-deepest text-text-primary">
@@ -67,13 +65,12 @@
         {#if !selectedBundleId}
           <h1 class="text-2xl font-bold">Coverage</h1>
           <p class="text-text-secondary text-sm mt-1">
-            {bundles.length} conventions. Choose one to see coverage targets.
+            {bundles.length} conventions. Choose one to see modules.
           </p>
-        {:else if manifest}
-          <h1 class="text-2xl font-bold">{manifest.systemId}</h1>
+        {:else if selectedBundle}
+          <h1 class="text-2xl font-bold">{selectedBundle.name}</h1>
           <p class="text-text-secondary text-sm mt-1">
-            {manifest.totalAtoms} atoms &middot;
-            {manifest.totalModules} modules
+            {bundleModules.length} modules
           </p>
         {/if}
       </div>
@@ -93,8 +90,7 @@
                   {bundle.name}
                 </div>
                 <div class="text-sm text-text-secondary mt-1">
-                  {bundle.memberIds.length} modules &middot;
-                  {atomCount(bundle)} atoms
+                  {bundle.moduleIds?.length ?? 0} modules
                 </div>
               </div>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
@@ -111,83 +107,38 @@
         <p class="text-text-muted text-center py-16">No convention bundles found.</p>
       {/if}
 
-    {:else if manifest}
-      <!-- ── Detail: Coverage Atoms ───────────────────────────────── -->
-
-      <!-- View toggle -->
-      <div class="mb-6 flex gap-2">
-        <button
-          class="px-3 py-1.5 rounded-[--radius-md] text-sm transition-colors cursor-pointer {showByModule ? 'bg-blue-600 text-white' : 'bg-bg-card text-text-secondary hover:text-text-primary'}"
-          onclick={() => showByModule = true}
-        >
-          By Module
-        </button>
-        <button
-          class="px-3 py-1.5 rounded-[--radius-md] text-sm transition-colors cursor-pointer {!showByModule ? 'bg-blue-600 text-white' : 'bg-bg-card text-text-secondary hover:text-text-primary'}"
-          onclick={() => showByModule = false}
-        >
-          All Atoms ({manifest.totalAtoms})
-        </button>
-      </div>
-
-      {#if showByModule}
-        {#each [...manifest.atomsByModule.entries()] as [moduleId, atoms] (moduleId)}
-          <h3 class="text-sm font-medium text-green-400 uppercase tracking-wider mb-2">
-            {moduleId} ({atoms.length} atoms)
-          </h3>
-          <div class="grid gap-2 mb-6">
-            {#each atoms as atom (atom.meaningId)}
-              <div
-                class="block rounded-[--radius-lg] bg-bg-card border border-border-subtle p-3 group"
-              >
-                <div class="flex items-start justify-between gap-4">
-                  <div class="min-w-0">
-                    <div class="font-mono text-sm font-medium text-green-400 truncate">
-                      {atom.moduleId}/{atom.meaningId}
-                    </div>
-                    <div class="text-xs text-green-300/70 mt-0.5">
-                      {atom.meaningLabel}
-                    </div>
-                    {#if atom.primaryPhaseGuard}
-                      <div class="text-xs text-text-secondary mt-1 truncate">
-                        phase: {typeof atom.primaryPhaseGuard === 'string' ? atom.primaryPhaseGuard : atom.primaryPhaseGuard.join(', ')}
-                        {#if atom.allActivationPaths.length > 1}
-                          (+{atom.allActivationPaths.length - 1} paths)
-                        {/if}
-                      </div>
-                    {/if}
-                  </div>
-                  {#if atom.turnGuard}
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-green-900/50 text-green-300 shrink-0">
-                      {atom.turnGuard}
-                    </span>
-                  {/if}
+    {:else if selectedBundle}
+      <!-- ── Detail: Bundle Modules ──────────────────────────────── -->
+      <div class="grid gap-3">
+        {#each bundleModules as mod (mod.moduleId)}
+          <div class="rounded-[--radius-lg] bg-bg-card border border-border-subtle p-4">
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <div class="font-mono text-sm font-medium text-green-400">
+                  {mod.displayName}
+                </div>
+                <div class="text-sm text-text-secondary mt-1">
+                  {mod.description}
+                </div>
+                <div class="text-xs text-text-muted mt-1">
+                  {mod.surfaceCount} surfaces
                 </div>
               </div>
-            {/each}
+            </div>
           </div>
         {/each}
+      </div>
 
-        <!-- Shareable link -->
-        <div class="text-xs text-text-muted mt-4">
-          Shareable: <a href={coverageUrl(manifest.systemId)} class="text-blue-400 hover:underline">
-            ?coverage=true&convention={manifest.systemId}
-          </a>
-        </div>
-
-      {:else}
-        <!-- All atoms flat list -->
-        <div class="grid gap-2">
-          {#each manifest.atoms as atom (atom.moduleId + '/' + atom.meaningId)}
-            <div
-              class="block rounded-[--radius-md] bg-bg-card/50 border border-border-subtle/50 px-3 py-2 text-sm"
-            >
-              <span class="font-mono text-text-secondary">{atom.moduleId}/{atom.meaningId}</span>
-              <span class="text-green-400 ml-1">{atom.meaningLabel}</span>
-            </div>
-          {/each}
-        </div>
+      {#if bundleModules.length === 0}
+        <p class="text-text-muted text-center py-16">No modules found for this bundle.</p>
       {/if}
+
+      <!-- Shareable link -->
+      <div class="text-xs text-text-muted mt-4">
+        Shareable: <a href={coverageUrl(selectedBundle.id)} class="text-blue-400 hover:underline">
+          ?coverage=true&convention={selectedBundle.id}
+        </a>
+      </div>
 
     {:else}
       <p class="text-text-muted text-center py-16">Convention not found.</p>

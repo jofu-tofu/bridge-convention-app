@@ -1,8 +1,11 @@
 /**
- * Export convention bundles as JSON fixtures for Rust round-trip testing.
+ * Export convention bundles as JSON fixtures for Rust round-trip testing
+ * and registry data.
  *
- * Imports all 6 bundles via resolveBundle(), strips function fields,
- * and writes to src-tauri/crates/bridge-conventions/fixtures/{bundle-id}.json.
+ * Exports:
+ * 1. Full resolved bundles → fixtures/{bundle-id}.json (existing)
+ * 2. Per-module JSON → fixtures/modules/{module-id}.json (for Rust registry)
+ * 3. Bundle-input manifests → fixtures/bundle-manifests.json (for Rust registry)
  *
  * Usage: npx tsx scripts/export-conventions.ts
  */
@@ -13,9 +16,10 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-import { getBundleInput, resolveBundle } from "../src/conventions/definitions/system-registry";
+import { getBundleInput, resolveBundle, listBundleInputs } from "../src/conventions/definitions/system-registry";
 import { SAYC_SYSTEM_CONFIG } from "../src/conventions/definitions/system-config";
-import type { ConventionBundle } from "../src/conventions/core/bundle/bundle-types";
+import { getModule, getAllModules } from "../src/conventions/definitions/module-registry";
+import type { ConventionBundle, BundleInput } from "../src/conventions/core/bundle/bundle-types";
 import type { ConventionModule } from "../src/conventions/core/convention-module";
 import type { FactCatalogExtension } from "../src/conventions/core/fact-catalog";
 
@@ -32,6 +36,8 @@ const FIXTURES_DIR = join(
   __dirname,
   "../src-tauri/crates/bridge-conventions/fixtures",
 );
+
+const MODULES_DIR = join(FIXTURES_DIR, "modules");
 
 /**
  * Strip function fields from a FactCatalogExtension, keeping only definitions.
@@ -72,9 +78,25 @@ function stripBundle(
   return plain;
 }
 
-function main(): void {
-  mkdirSync(FIXTURES_DIR, { recursive: true });
+/**
+ * Strip BundleInput to plain data (remove any non-serializable fields).
+ */
+function stripBundleInput(input: BundleInput): Record<string, unknown> {
+  // BundleInput is already plain data, but ensure clean serialization
+  return {
+    id: input.id,
+    name: input.name,
+    memberIds: input.memberIds,
+    ...(input.internal != null && { internal: input.internal }),
+    ...(input.systemProfile != null && { systemProfile: input.systemProfile }),
+    ...(input.declaredCapabilities != null && { declaredCapabilities: input.declaredCapabilities }),
+    category: input.category,
+    description: input.description,
+    ...(input.teaching != null && { teaching: input.teaching }),
+  };
+}
 
+function exportBundles(): number {
   let exported = 0;
   for (const id of BUNDLE_IDS) {
     const input = getBundleInput(id);
@@ -90,10 +112,46 @@ function main(): void {
     const outPath = join(FIXTURES_DIR, `${id}.json`);
     writeFileSync(outPath, json + "\n", "utf-8");
     exported++;
-    console.log(`Exported: ${outPath} (${(json.length / 1024).toFixed(1)} KB)`);
+    console.log(`Exported bundle: ${outPath} (${(json.length / 1024).toFixed(1)} KB)`);
   }
+  return exported;
+}
 
-  console.log(`\nDone. Exported ${exported} bundles.`);
+function exportModules(): number {
+  mkdirSync(MODULES_DIR, { recursive: true });
+
+  const modules = getAllModules(SAYC_SYSTEM_CONFIG);
+  let exported = 0;
+  for (const mod of modules) {
+    const stripped = stripModule(mod);
+    const json = JSON.stringify(stripped, null, 2);
+
+    const outPath = join(MODULES_DIR, `${mod.moduleId}.json`);
+    writeFileSync(outPath, json + "\n", "utf-8");
+    exported++;
+    console.log(`Exported module: ${outPath} (${(json.length / 1024).toFixed(1)} KB)`);
+  }
+  return exported;
+}
+
+function exportBundleManifests(): void {
+  const inputs = listBundleInputs();
+  const manifests = inputs.map(stripBundleInput);
+  const json = JSON.stringify(manifests, null, 2);
+
+  const outPath = join(FIXTURES_DIR, "bundle-manifests.json");
+  writeFileSync(outPath, json + "\n", "utf-8");
+  console.log(`Exported bundle manifests: ${outPath} (${(json.length / 1024).toFixed(1)} KB)`);
+}
+
+function main(): void {
+  mkdirSync(FIXTURES_DIR, { recursive: true });
+
+  const bundleCount = exportBundles();
+  const moduleCount = exportModules();
+  exportBundleManifests();
+
+  console.log(`\nDone. Exported ${bundleCount} bundles, ${moduleCount} modules, 1 manifest.`);
 }
 
 main();

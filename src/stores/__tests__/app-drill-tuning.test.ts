@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createAppStore } from "../app.svelte";
-import { DEFAULT_DRILL_TUNING } from "../../session/drill-types";
+import { DEFAULT_DRILL_TUNING } from "../../service/session-types";
 
 describe("app store drill tuning", () => {
   it("starts with default drill tuning", () => {

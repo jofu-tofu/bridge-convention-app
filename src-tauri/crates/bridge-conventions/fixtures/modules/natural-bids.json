@@ -1,0 +1,506 @@
+{
+  "moduleId": "natural-bids",
+  "description": "Standard non-alertable bids: natural openings, notrump responses, and common natural sequences",
+  "purpose": "Provide the universal base layer of natural bids so every convention has standard entry points and fallback bidding",
+  "teaching": {
+    "tradeoff": "Natural bids have no tradeoff — they are the default base layer that other conventions build on",
+    "principle": "When no major fit exists, raise notrump to the level your combined HCP supports — 25 total for game.",
+    "commonMistakes": [
+      "Don't jump to 3NT with a worthless doubleton — consider if a suit contract might be safer",
+      "With a flat 8-9 HCP hand, 2NT (invite) is correct — don't stretch to game with marginal values"
+    ]
+  },
+  "explanationEntries": [
+    {
+      "explanationId": "nt.naturalNt.opening",
+      "meaningId": "bridge:1nt-opening",
+      "templateKey": "nt.naturalNt.opening.semantic",
+      "displayText": "1NT opening: balanced hand with 15-17 HCP",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.naturalNt.invite",
+      "meaningId": "bridge:nt-invite",
+      "templateKey": "nt.naturalNt.invite.semantic",
+      "displayText": "2NT invite: invitational values, no 4-card major",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.naturalNt.to3nt",
+      "meaningId": "bridge:to-3nt",
+      "templateKey": "nt.naturalNt.to3nt.semantic",
+      "displayText": "3NT game: game values, no 4-card major",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "natural.open.1c",
+      "meaningId": "bridge:1c-opening",
+      "templateKey": "natural.open.1c.semantic",
+      "displayText": "1♣ opening: 12+ HCP, 3+ clubs",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "natural.open.1d",
+      "meaningId": "bridge:1d-opening",
+      "templateKey": "natural.open.1d.semantic",
+      "displayText": "1♦ opening: 12+ HCP, 4+ diamonds",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "natural.open.1h",
+      "meaningId": "bridge:1h-opening",
+      "templateKey": "natural.open.1h.semantic",
+      "displayText": "1♥ opening: 12+ HCP, 5+ hearts (SAYC/2-over-1) or 4+ (Acol)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "natural.open.1s",
+      "meaningId": "bridge:1s-opening",
+      "templateKey": "natural.open.1s.semantic",
+      "displayText": "1♠ opening: 12+ HCP, 5+ spades (SAYC/2-over-1) or 4+ (Acol)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    }
+  ],
+  "local": {
+    "initial": "idle",
+    "transitions": [
+      {
+        "from": "idle",
+        "to": "opened-nt",
+        "on": {
+          "act": "open",
+          "strain": "notrump"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "opened-suit",
+        "on": {
+          "act": "open"
+        }
+      },
+      {
+        "from": "opened-nt",
+        "to": "responded",
+        "on": {
+          "act": "inquire"
+        }
+      },
+      {
+        "from": "opened-nt",
+        "to": "responded",
+        "on": {
+          "act": "transfer"
+        }
+      },
+      {
+        "from": "opened-nt",
+        "to": "responded",
+        "on": {
+          "act": "raise"
+        }
+      },
+      {
+        "from": "opened-nt",
+        "to": "responded",
+        "on": {
+          "act": "place"
+        }
+      },
+      {
+        "from": "opened-nt",
+        "to": "responded",
+        "on": {
+          "act": "signoff"
+        }
+      },
+      {
+        "from": "opened-nt",
+        "to": "responded",
+        "on": {
+          "act": "show"
+        }
+      }
+    ]
+  },
+  "states": [
+    {
+      "phase": "idle",
+      "turn": "opener",
+      "surfaces": [
+        {
+          "meaningId": "bridge:1nt-opening",
+          "semanticClassId": "bridge:1nt-opening",
+          "moduleId": "natural-bids",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 15,
+              "clauseId": "hand.hcp:gte:15",
+              "description": "15+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 17,
+              "clauseId": "hand.hcp:lte:17",
+              "description": "At most 17 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.isBalanced",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "hand.isBalanced:boolean:true",
+              "description": "Balanced",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NTOpening",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "15 to 17",
+            "summary": "Open 1NT showing a balanced hand within the system HCP range"
+          }
+        },
+        {
+          "meaningId": "bridge:1c-opening",
+          "semanticClassId": "bridge:1c-opening",
+          "moduleId": "natural-bids",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.clubs",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.clubs:gte:3",
+              "description": "3+ clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SuitOpen",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "1♣ opening",
+            "summary": "Open 1♣ with 12+ HCP and 3+ clubs"
+          }
+        },
+        {
+          "meaningId": "bridge:1d-opening",
+          "semanticClassId": "bridge:1d-opening",
+          "moduleId": "natural-bids",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.diamonds",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.diamonds:gte:4",
+              "description": "4+ diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "SuitOpen",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "1♦ opening",
+            "summary": "Open 1♦ with 12+ HCP and 4+ diamonds"
+          }
+        },
+        {
+          "meaningId": "bridge:1h-opening",
+          "semanticClassId": "bridge:1h-opening",
+          "moduleId": "natural-bids",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.hearts:gte:5",
+              "description": "5+ hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "SuitOpen",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "1♥ opening",
+            "summary": "Open 1♥ with 12+ HCP and a 5-card or longer heart suit"
+          }
+        },
+        {
+          "meaningId": "bridge:1s-opening",
+          "semanticClassId": "bridge:1s-opening",
+          "moduleId": "natural-bids",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.spades:gte:5",
+              "description": "5+ spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "SuitOpen",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "1♠ opening",
+            "summary": "Open 1♠ with 12+ HCP and a 5-card or longer spade suit"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "opened-nt",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "bridge:nt-invite",
+          "semanticClassId": "bridge:nt-invite",
+          "moduleId": "natural-bids",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.inviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.inviteValues:boolean:true",
+              "description": "Has a invite values (invite values opposite 1NT)",
+              "rationale": "invite values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.hasFourCardMajor",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "bridge.hasFourCardMajor:boolean:false",
+              "description": "No 4-card major",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.hasFiveCardMajor",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "bridge.hasFiveCardMajor:boolean:false",
+              "description": "No 5-card major",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NTInvite",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "NT invite",
+            "summary": "Invite game in notrump with no 4-card or 5-card major"
+          }
+        },
+        {
+          "meaningId": "bridge:to-3nt",
+          "semanticClassId": "bridge:to-3nt",
+          "moduleId": "natural-bids",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.hasFourCardMajor",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "bridge.hasFourCardMajor:boolean:false",
+              "description": "No 4-card major",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.hasFiveCardMajor",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "bridge.hasFiveCardMajor:boolean:false",
+              "description": "No 5-card major",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NTGame",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3NT game",
+            "summary": "Bid game in notrump with game-forcing values and no 4-card or 5-card major"
+          }
+        }
+      ]
+    }
+  ],
+  "facts": {
+    "definitions": []
+  }
+}

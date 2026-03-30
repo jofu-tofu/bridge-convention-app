@@ -1,5 +1,5 @@
-import type { ConventionConfig, BaseSystemId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences } from "../service";
-import { OpponentMode, PracticeMode, PracticeRole, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
+import type { ConventionConfig, BaseSystemId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
+import { OpponentMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 
 export type Screen = "conventions" | "practice-picker" | "game" | "learning" | "settings" | "coverage" | "profiles";
 

@@ -1,1 +1,0 @@
-export { weakTwoBundle } from "./config";

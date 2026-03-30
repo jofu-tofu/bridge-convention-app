@@ -22,9 +22,9 @@
       <span class="text-text-muted">forcing</span>
       <span class="{ms.registers.forcingState === 'game-forcing' ? 'text-red-300 font-bold' : ms.registers.forcingState === 'forcing-one-round' ? 'text-yellow-300' : 'text-text-primary'}">{ms.registers.forcingState}</span>
       <span class="text-text-muted">obligation</span>
-      <span class="text-text-primary">{ms.registers.obligation.kind} ({ms.registers.obligation.obligatedSide})</span>
+      <span class="text-text-primary">{ms.registers.obligation?.kind ?? "—"} ({ms.registers.obligation?.obligatedSide ?? "—"})</span>
       <span class="text-text-muted">strain</span>
-      <span class="text-text-primary">{ms.registers.agreedStrain.type}{ms.registers.agreedStrain.suit ? ` (${ms.registers.agreedStrain.suit})` : ""}{ms.registers.agreedStrain.confidence ? ` [${ms.registers.agreedStrain.confidence}]` : ""}</span>
+      <span class="text-text-primary">{ms.registers.agreedStrain?.type ?? "—"}{ms.registers.agreedStrain?.suit ? ` (${ms.registers.agreedStrain.suit})` : ""}{ms.registers.agreedStrain?.confidence ? ` [${ms.registers.agreedStrain.confidence}]` : ""}</span>
       <span class="text-text-muted">competition</span>
       <span class="text-text-primary">{ms.registers.competitionMode}</span>
       <span class="text-text-muted">captain</span>
@@ -40,7 +40,7 @@
     </div>
 
     <!-- Capabilities — inline if present -->
-    {#if Object.keys(ms.registers.systemCapabilities).length > 0}
+    {#if ms.registers.systemCapabilities && Object.keys(ms.registers.systemCapabilities).length > 0}
       <div class="mt-0.5 text-[10px]">
         <span class="text-text-muted">capabilities:</span>
         {#each Object.entries(ms.registers.systemCapabilities) as [k, v] (k)}

@@ -1,6 +1,6 @@
-# Rust/WASM Migration
+# Rust/WASM Migration (Complete)
 
-Backend modules (`conventions/`, `inference/`, `session/`) are being migrated from TypeScript to Rust/WASM. See `docs/product-direction.md` for the product decisions driving this migration.
+Backend modules (`conventions/`, `inference/`, `session/`, `service/`) have been migrated from TypeScript to Rust/WASM. All 5 phases are complete. See `docs/product-direction.md` for the product decisions that drove this migration.
 
 ## Phase Tracker
 
@@ -9,23 +9,23 @@ Backend modules (`conventions/`, `inference/`, `session/`) are being migrated fr
 | 1 | [Convention Data Model](phase-1-convention-data-model.md) | Complete | ~1,500 | None |
 | 2 | [Fact Evaluation](phase-2-fact-evaluation.md) | Complete | ~1,500 | Phase 1 |
 | 3 | [Meaning Pipeline](phase-3-meaning-pipeline.md) | Complete | ~4,000-5,000 | Phase 2 |
-| 4 | [Inference + Session](phase-4-inference-session.md) | Not Started | ~6,000-7,000 | Phase 3 |
-| 5 | [Service Cleanup](phase-5-service-cleanup.md) | Not Started | ~2,000 | Phase 4 |
+| 4 | [Inference + Session](phase-4-inference-session.md) | Complete | ~5,000 | Phase 3 |
+| 5 | [Service Cleanup](phase-5-service-cleanup.md) | Complete | ~2,000 | Phase 4 |
 
 **Total estimated Rust LOC:** ~15,000-17,000
 
 ## Architecture Overview
 
-### Target Crate Structure
+### Crate Structure
 
 ```
 src-tauri/crates/
-  bridge-engine/        # (exists) Pure Rust game logic
-  bridge-conventions/   # (new, Phase 1-3) Convention types, fact DSL, pipeline, teaching, adapter
-  bridge-session/       # (new, Phase 4) Session state, controllers, heuristics, inference
-  bridge-service/       # (new, Phase 5) ServicePort impl, viewport builders
-  bridge-wasm/          # (exists, extended) WASM bindings for full ServicePort
-  bridge-tauri/         # (exists, extended) Tauri commands for full ServicePort
+  bridge-engine/        Pure Rust game logic
+  bridge-conventions/   Convention types, fact DSL, pipeline, teaching, adapter
+  bridge-session/       Session state, controllers, heuristics, inference
+  bridge-service/       ServicePort impl, viewport builders
+  bridge-wasm/          WASM bindings for full ServicePort (23 + 6 debug methods)
+  bridge-tauri/         Tauri commands for full ServicePort
 ```
 
 ### Data Flow
@@ -82,3 +82,12 @@ One WASM binary for everyone. Free definitions baked into static build. Paid def
 - [Phase 4: Inference + Session](phase-4-inference-session.md)
 - [Phase 5: Service Cleanup](phase-5-service-cleanup.md)
 - [Architecture Decisions](architecture.md)
+
+## Known Remaining Stubs
+
+| Stub | Impact | Status |
+|------|--------|--------|
+| Posterior inference stubbed (uniform distributions) | Inference ranges are wider than optimal for complex auctions | Follow-up work; natural inference handles common cases |
+| MC+DDS play deferred | Expert/world-class profiles use heuristic play | Heuristic chain covers 8 play situations; adequate for practice |
+| Deal filtering (`customCheck`) not ported | Rust drills may produce off-convention deals more often | Grading system still works correctly |
+| DDS-via-handle integration | `getDDSSolution` needs `getDeal()` service method for full integration | Follow-up work; JS worker fallback operational in browser |

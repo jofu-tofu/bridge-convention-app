@@ -1,8 +1,8 @@
-<!-- context-layer: service | version: 6 | last-audited: 2026-03-29 -->
+<!-- context-layer: service | version: 7 | last-audited: 2026-03-29 -->
 
 # Service
 
-Thin hexagonal port — the **sole interface** between UI/CLI and backend game logic (23 methods). The client holds an opaque `SessionHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never `Deal`, `BidResult`, `ArbitrationResult`, or strategy internals. Domain logic (controllers, state, drill lifecycle) lives in `session/`; service is just the port + barrel + display/util/evaluation.
+WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend (23 methods). The client holds an opaque `SessionHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never raw domain types. All game logic (conventions, inference, session, evaluation) runs in Rust via `bridge-service`. TS `service/` is a thin serialize/call/deserialize proxy.
 
 **ServicePort methods (23):**
 - **Session:** `createSession`, `startDrill`
@@ -20,69 +20,60 @@ Thin hexagonal port — the **sole interface** between UI/CLI and backend game l
 
 | File | Role |
 |------|------|
-| `index.ts` | Barrel organized by consumer concern: (1) port & impl, (2) viewports/responses, (3) engine primitives, (4) convention catalog, (5) coverage utils, (6) session config, (7) display, (8) evaluation facade, (9) cross-cutting. Debug types (`StrategyEvaluation`, `BidFeedbackDTO`) route through `debug-types.ts`, not this barrel. |
-| `debug-types.ts` | Debug-only types for DevServicePort — allowed to import backend types by design. Re-exports `StrategyEvaluation`, `BidFeedbackDTO`, `EvaluatedFacts`, `PipelineResult`, `MachineDebugSnapshot`. Future agents must not move these to `index.ts`. |
+| `index.ts` | Barrel organized by consumer concern: (1) port & impl, (2) viewports/responses, (3) engine primitives, (4) convention catalog, (5) coverage utils, (6) session config, (7) display, (8) evaluation facade, (9) cross-cutting. Debug types route through `debug-types.ts`. |
+| `debug-types.ts` | Debug-only types for DevServicePort — allowed to import backend types by design. |
 | `request-types.ts` | Request DTOs: SessionHandle, SessionConfig (includes `practiceMode` and `targetModuleId`) |
-| `response-types.ts` | Response DTOs: DrillStartResult, BidSubmitResult, PlayCardResult, viewports, ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView, SurfaceDetailView, FlowTreeNode, BundleFlowTreeViewport, ModuleFlowTreeViewport |
+| `response-types.ts` | Response DTOs: DrillStartResult, BidSubmitResult, PlayCardResult, viewports, ModuleCatalogEntry, ModuleLearningViewport, FlowTreeNode, etc. |
+| `session-types.ts` | Stub type definitions matching Rust JSON schema — TS interfaces for types that cross the WASM boundary |
 | `port.ts` | ServicePort + DevServicePort interfaces |
-| `local-service.ts` | In-process implementation (implements DevServicePort) — delegates to session/ |
-| `display/` | Call/contract/card formatting, hand summary, convention card builder (`convention-card.ts`) |
+| `wasm-service.ts` | `WasmService` — thin proxy implementing ServicePort via `wasm-bindgen` calls to Rust `WasmServicePort` |
+| `service-helpers.ts` | Sync WASM wrappers for UI components: `listConventions()`, `listModules()`, `buildBaseModuleInfos()`, `getModuleLearningViewportSync()` |
+| `dds-bridge.ts` | DDS platform dispatch: Tauri = native DDS via bridge-engine, WASM = JS worker fallback |
+| `display/` | Call/contract/card formatting, hand summary, convention card builder (`convention-card.ts` — wired to WASM via service-helpers) |
 | `util/delay.ts` | Pure delay utility |
-| `evaluation/` | Stateless CLI grading logic — see below |
 
 ## Hexagonal Boundary Rules
 
 - **Callers own types.** Service defines its own viewport/response types.
-- **All UI imports go through service.** Components and stores must import from `service/index.ts` only. When the UI needs something new, add it to `ServicePort` or as a re-export from `index.ts` — never add a direct import from `engine/`, `conventions/`, `inference/`, or `session/` in UI code.
+- **All UI imports go through service.** Components and stores must import from `service/index.ts` only.
 - **Test: "does this work if service runs remotely?"** If a change requires the UI to import a backend type directly, it's wrong.
+- **WASM proxy contract.** `WasmService` methods serialize args to JSON, call the WASM function, and deserialize the result. No domain logic in TS.
 
 ## Conventions
 
-- **No Svelte `tick()` in controllers.** Extracted controller functions never import or call `tick()`. They operate on plain state and return results. Stores apply results to `$state`.
 - **`retryBid()` is intentionally absent from `ServicePort`.** Wrong bids never modify session state (correct-path-only). Retry is store-local: clear `$state` feedback.
-- **`submitBid` is atomic.** Grade + apply + run AI bids + return next viewport — one call. The service runs AI bids with NO delays. The store owns animation timing: iterates through `aiBids` list with local delays.
+- **`submitBid` is atomic.** Grade + apply + run AI bids + return next viewport — one call. The service runs AI bids with NO delays. The store owns animation timing.
 - **Single-session invariant.** `createSession` destroys the previous session — ServicePort supports only one active session per client.
-- **`acceptPrompt` is polymorphic.** Handles all post-auction transitions: `acceptPrompt(handle, "play")`, `acceptPrompt(handle, "skip")`, `acceptPrompt(handle, "replay")`, `acceptPrompt(handle, "restart")`. Removed methods `runInitialAiPlays()`, `restartPlay()`, and `destroySession()` are folded into `acceptPrompt` or auto-cleanup.
-- **Play inferences via results.** `capturePlayInferences()` was removed — inference data is now carried in `BidSubmitResult` and `DrillStartResult` return values.
-- **`DevServicePort` vs `ServicePort`.** Debug methods (`getExpectedBid`, `getDebugSnapshot`, `getDebugLog`, `getInferenceTimeline`) on `DevServicePort` only. Production stores type against `ServicePort`.
-
-## Evaluation Subfolder
-
-The `evaluation/` subfolder contains stateless CLI grading logic (atom evaluation, playthrough evaluation). It is internal to service — all external imports go through `service/index.ts`. The subfolder encapsulates strategy invocation, teaching resolution, and viewport construction behind viewport-typed APIs. Convention authors never modify these files.
+- **`acceptPrompt` is polymorphic.** Handles all post-auction transitions: `acceptPrompt(handle, "play")`, `acceptPrompt(handle, "skip")`, `acceptPrompt(handle, "replay")`, `acceptPrompt(handle, "restart")`.
+- **`DevServicePort` vs `ServicePort`.** Debug methods on `DevServicePort` only. Production stores type against `ServicePort`.
 
 ## Boundary Types
 
 **Allowed to cross:** `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`, `ServiceTeachingLabel`, `Call`, `Card`, `Seat`, `Vulnerability`, `BidGrade`, `BidHistoryEntry`, `GamePhase`, `SessionHandle` (opaque string), session config DTOs.
 
-`ServiceTeachingLabel` is a plain `{ name: string; summary: string }` — no branded types at the service boundary. Branded types (`BidName`, `BidSummary`) widen implicitly to `string` at assignment in the viewport builders. Do NOT add an explicit converter.
-
-`updatePlayProfile()` — swaps `PlayStrategyProvider` on active session. Must transfer `onAuctionComplete` state to new provider.
-
-**Never crosses (main barrel):** `Deal`, `BidResult`, `DrillSession`, `DrillBundle`, `ConventionStrategy`, `StrategyEvaluation`, `ArbitrationResult`, `BidMeaning`, `InferenceEngine`. Exception: `StrategyEvaluation` and `BidFeedbackDTO` are routed through `debug-types.ts` for debug drawer consumption — this is a deliberate boundary exception, not a barrel re-export.
+**Never crosses (main barrel):** `Deal`, `BidResult`, `DrillSession`, `DrillBundle`, `ConventionStrategy`, `ArbitrationResult`, `BidMeaning`, `InferenceEngine`. Debug types route through `debug-types.ts`.
 
 ## Dependency Direction
 
 ```
-components/ → stores/ → service/ (thin port) → session/ → {engine, conventions, inference}
+components/ → stores/ → service/ (WASM proxy) → [Rust: bridge-service → bridge-session → {bridge-engine, bridge-conventions}]
 cli/commands/ → service/
 ```
 
-Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`. `session/` must never import from `service/` (ESLint enforced).
+Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
 
-## Future: Two-Port Model (Rust/WASM Migration)
+## Two-Port Model
 
-ServicePort becomes the **WASM boundary** (compute, client-side). All 23 methods exposed via `wasm-bindgen`. TS `service/` becomes a thin serialize/call/deserialize proxy (~100 LOC).
+- **ServicePort** (compute, WASM, client-side) — all game logic runs locally after initial load
+- **DataPort** (auth/entitlements/progress, server) — future addition
 
-**DataPort** (future) handles auth, entitlements, progress sync (server-side). ServicePort and DataPort don't mix — WASM never touches DB, server never runs convention logic.
-
-See `docs/product-direction.md` for the full two-port architecture and `docs/migration/index.md` for the migration spec.
-
-## Known Gaps
-
-- `submitBid()` always builds `nextViewport` for accepted bids (including auction-completing bids) so the store can animate AI bids before transitioning phases
+They don't mix. See `docs/product-direction.md`.
 
 ---
 
 ## Context Maintenance
 
-**Staleness anchor:** This file assumes `local-service.ts` exists. If it doesn't, this file is stale.
+**After modifying files in this directory:** scan the entries above — if any claim is now
+false or incomplete, update this file before ending the task. Do not defer.
+
+**Staleness anchor:** This file assumes `wasm-service.ts` exists. If it doesn't, this file is stale.

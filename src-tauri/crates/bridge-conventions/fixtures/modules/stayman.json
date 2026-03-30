@@ -1,0 +1,2049 @@
+{
+  "moduleId": "stayman",
+  "description": "Bid 2C over 1NT to find a 4-4 major-suit fit",
+  "purpose": "Discover whether opener holds a 4-card major so the partnership can play in an 8-card major fit instead of notrump",
+  "teaching": {
+    "tradeoff": "Using 2C as Stayman means you can't play in a natural 2C contract.",
+    "principle": "Always check for a 4-4 major fit before settling in notrump — majors score better and play easier with a trump suit.",
+    "commonMistakes": [
+      "Don't use Stayman with 4-3-3-3 shape — prefer a quantitative raise since you have no ruffing value",
+      "With 5-4 in the majors, start with Stayman to find the 4-4 fit — after a 2D denial, bid your 5-card major at the 2-level (invitational, non-forcing)"
+    ]
+  },
+  "explanationEntries": [
+    {
+      "explanationId": "nt.stayman.eligible",
+      "factId": "module.stayman.eligible",
+      "templateKey": "nt.stayman.eligible.supporting",
+      "displayText": "Eligible for Stayman",
+      "contrastiveTemplateKey": "nt.stayman.eligible.whyNot",
+      "contrastiveDisplayText": "Not eligible for Stayman",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking",
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.preferred",
+      "factId": "module.stayman.preferred",
+      "templateKey": "nt.stayman.preferred.supporting",
+      "displayText": "Stayman is the preferred convention",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "inferential"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.nsHaveEightCardFitLikely",
+      "factId": "module.stayman.nsHaveEightCardFitLikely",
+      "templateKey": "nt.stayman.nsHaveEightCardFitLikely.internal",
+      "displayText": "internal",
+      "preferredLevel": "mechanical",
+      "roles": []
+    },
+    {
+      "explanationId": "nt.stayman.openerStillBalancedLikely",
+      "factId": "module.stayman.openerStillBalancedLikely",
+      "templateKey": "nt.stayman.openerStillBalancedLikely.internal",
+      "displayText": "internal",
+      "preferredLevel": "mechanical",
+      "roles": []
+    },
+    {
+      "explanationId": "nt.stayman.openerHasSecondMajorLikely",
+      "factId": "module.stayman.openerHasSecondMajorLikely",
+      "templateKey": "nt.stayman.openerHasSecondMajorLikely.internal",
+      "displayText": "internal",
+      "preferredLevel": "mechanical",
+      "roles": []
+    },
+    {
+      "explanationId": "nt.stayman.askMajor",
+      "meaningId": "stayman:ask-major",
+      "templateKey": "nt.stayman.askMajor.semantic",
+      "displayText": "Stayman 2♣: asks opener for a 4-card major",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.showHearts",
+      "meaningId": "stayman:show-hearts",
+      "templateKey": "nt.stayman.showHearts.semantic",
+      "displayText": "Opener shows 4+ hearts in response to Stayman",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.showSpades",
+      "meaningId": "stayman:show-spades",
+      "templateKey": "nt.stayman.showSpades.semantic",
+      "displayText": "Opener shows 4+ spades in response to Stayman",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.denyMajor",
+      "meaningId": "stayman:deny-major",
+      "templateKey": "nt.stayman.denyMajor.semantic",
+      "displayText": "Opener bids 2♦ to deny holding a 4-card major",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.raiseGameHearts",
+      "meaningId": "stayman:raise-game-hearts",
+      "templateKey": "nt.stayman.raiseGameHearts.semantic",
+      "displayText": "Raise to 4♥ with game values and a heart fit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.raiseInviteHearts",
+      "meaningId": "stayman:raise-invite-hearts",
+      "templateKey": "nt.stayman.raiseInviteHearts.semantic",
+      "displayText": "Invite in hearts (3♥) with invitational values and a heart fit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.ntGameNoFit",
+      "meaningId": "stayman:nt-game-no-fit",
+      "templateKey": "nt.stayman.ntGameNoFit.semantic",
+      "displayText": "Bid 3NT with game values but no heart fit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.ntInviteNoFit",
+      "meaningId": "stayman:nt-invite-no-fit",
+      "templateKey": "nt.stayman.ntInviteNoFit.semantic",
+      "displayText": "Bid 2NT to invite game with no heart fit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.raiseGameSpades",
+      "meaningId": "stayman:raise-game-spades",
+      "templateKey": "nt.stayman.raiseGameSpades.semantic",
+      "displayText": "Raise to 4♠ with game values and a spade fit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.raiseInviteSpades",
+      "meaningId": "stayman:raise-invite-spades",
+      "templateKey": "nt.stayman.raiseInviteSpades.semantic",
+      "displayText": "Invite in spades (3♠) with invitational values and a spade fit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.ntGameNoFit2S",
+      "meaningId": "stayman:nt-game-no-fit-2s",
+      "templateKey": "nt.stayman.ntGameNoFit2S.semantic",
+      "displayText": "Bid 3NT with game values but no spade fit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.ntInviteNoFit2S",
+      "meaningId": "stayman:nt-invite-no-fit-2s",
+      "templateKey": "nt.stayman.ntInviteNoFit2S.semantic",
+      "displayText": "Bid 2NT to invite game with no spade fit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.ntGameAfterDenial",
+      "meaningId": "stayman:nt-game-after-denial",
+      "templateKey": "nt.stayman.ntGameAfterDenial.semantic",
+      "displayText": "Bid 3NT with game values after opener denies a major",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.ntInviteAfterDenial",
+      "meaningId": "stayman:nt-invite-after-denial",
+      "templateKey": "nt.stayman.ntInviteAfterDenial.semantic",
+      "displayText": "Bid 2NT to invite game after opener denies a major",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.showFiveHeartsAfterDenial",
+      "meaningId": "stayman:show-five-hearts-after-denial",
+      "templateKey": "nt.stayman.showFiveHeartsAfterDenial.semantic",
+      "displayText": "Bid 2♥ showing 5 hearts and 4 spades (invitational, non-forcing)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.showFiveSpadesAfterDenial",
+      "meaningId": "stayman:show-five-spades-after-denial",
+      "templateKey": "nt.stayman.showFiveSpadesAfterDenial.semantic",
+      "displayText": "Bid 2♠ showing 5 spades and 4 hearts (invitational, non-forcing)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.crossMajorInvite2SAfter2H",
+      "meaningId": "stayman:cross-major-invite-2s-after-2h",
+      "templateKey": "nt.stayman.crossMajorInvite2SAfter2H.semantic",
+      "displayText": "Bid 2♠ showing 5 spades and 4 hearts (invitational, non-forcing)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.minorGF3CAfter2H",
+      "meaningId": "stayman:minor-gf-3c-after-2h",
+      "templateKey": "nt.stayman.minorGF3CAfter2H.semantic",
+      "displayText": "Bid 3♣ showing 5+ clubs, game-forcing",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.minorGF3DAfter2H",
+      "meaningId": "stayman:minor-gf-3d-after-2h",
+      "templateKey": "nt.stayman.minorGF3DAfter2H.semantic",
+      "displayText": "Bid 3♦ showing 5+ diamonds, game-forcing",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.crossMajorGF3SAfter2H",
+      "meaningId": "stayman:cross-major-gf-3s-after-2h",
+      "templateKey": "nt.stayman.crossMajorGF3SAfter2H.semantic",
+      "displayText": "Bid 3♠ showing 5+ spades and 4 hearts, game-forcing",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.quantitative4NTAfter2H",
+      "meaningId": "stayman:quantitative-4nt-after-2h",
+      "templateKey": "nt.stayman.quantitative4NTAfter2H.semantic",
+      "displayText": "Bid 4NT quantitative, inviting 6NT with no heart fit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.minorGF3CAfter2S",
+      "meaningId": "stayman:minor-gf-3c-after-2s",
+      "templateKey": "nt.stayman.minorGF3CAfter2S.semantic",
+      "displayText": "Bid 3♣ showing 5+ clubs, game-forcing",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.minorGF3DAfter2S",
+      "meaningId": "stayman:minor-gf-3d-after-2s",
+      "templateKey": "nt.stayman.minorGF3DAfter2S.semantic",
+      "displayText": "Bid 3♦ showing 5+ diamonds, game-forcing",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.crossMajorGF3HAfter2S",
+      "meaningId": "stayman:cross-major-gf-3h-after-2s",
+      "templateKey": "nt.stayman.crossMajorGF3HAfter2S.semantic",
+      "displayText": "Bid 3♥ showing 5+ hearts and 4 spades, game-forcing",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.quantitative4NTAfter2S",
+      "meaningId": "stayman:quantitative-4nt-after-2s",
+      "templateKey": "nt.stayman.quantitative4NTAfter2S.semantic",
+      "displayText": "Bid 4NT quantitative, inviting 6NT with no spade fit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.minorGF3CAfter2D",
+      "meaningId": "stayman:minor-gf-3c-after-2d",
+      "templateKey": "nt.stayman.minorGF3CAfter2D.semantic",
+      "displayText": "Bid 3♣ showing 5+ clubs, game-forcing",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.minorGF3DAfter2D",
+      "meaningId": "stayman:minor-gf-3d-after-2d",
+      "templateKey": "nt.stayman.minorGF3DAfter2D.semantic",
+      "displayText": "Bid 3♦ showing 5+ diamonds, game-forcing",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.majorSignoff4HAfter2D",
+      "meaningId": "stayman:major-signoff-4h-after-2d",
+      "templateKey": "nt.stayman.majorSignoff4HAfter2D.semantic",
+      "displayText": "Bid 4♥ to play with 6 hearts and 4 spades",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.majorSignoff4SAfter2D",
+      "meaningId": "stayman:major-signoff-4s-after-2d",
+      "templateKey": "nt.stayman.majorSignoff4SAfter2D.semantic",
+      "displayText": "Bid 4♠ to play with 6 spades and 4 hearts",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.quantitative4NTAfter2D",
+      "meaningId": "stayman:quantitative-4nt-after-2d",
+      "templateKey": "nt.stayman.quantitative4NTAfter2D.semantic",
+      "displayText": "Bid 4NT quantitative, inviting 6NT after denial",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    }
+  ],
+  "local": {
+    "initial": "idle",
+    "transitions": [
+      {
+        "from": "idle",
+        "to": "asked",
+        "on": {
+          "act": "inquire",
+          "feature": "majorSuit"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "inactive",
+        "on": {
+          "act": "transfer"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "inactive",
+        "on": {
+          "act": "raise"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "inactive",
+        "on": {
+          "act": "place"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "inactive",
+        "on": {
+          "act": "signoff"
+        }
+      },
+      {
+        "from": "asked",
+        "to": "shown-hearts",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "hearts"
+        }
+      },
+      {
+        "from": "asked",
+        "to": "shown-spades",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "spades"
+        }
+      },
+      {
+        "from": "asked",
+        "to": "denied",
+        "on": {
+          "act": "deny",
+          "feature": "majorSuit"
+        }
+      }
+    ]
+  },
+  "states": [
+    {
+      "phase": "idle",
+      "turn": "responder",
+      "negotiationDelta": {
+        "forcing": "one-round",
+        "captain": "responder"
+      },
+      "surfaces": [
+        {
+          "meaningId": "stayman:ask-major",
+          "semanticClassId": "stayman:ask-major",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "8+ HCP (for Stayman)",
+              "rationale": "for Stayman",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.hasFourCardMajor",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "bridge.hasFourCardMajor:boolean:true",
+              "description": "Has a 4-card major",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.hasFiveCardMajor",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "bridge.hasFiveCardMajor:boolean:false",
+              "description": "No 5-card major (transfer instead)",
+              "rationale": "transfer instead"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "StaymanAsk",
+            "params": {}
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "Stayman 2♣",
+            "summary": "Ask opener if they hold a 4-card major"
+          }
+        },
+        {
+          "meaningId": "stayman:ask-major",
+          "semanticClassId": "stayman:ask-major",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.inviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.inviteValues:boolean:true",
+              "description": "Has a invite values (invite values)",
+              "rationale": "invite values",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.hasFiveCardMajor",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "bridge.hasFiveCardMajor:boolean:true",
+              "description": "Has a 5-card major (use Stayman to find the 4-4 fit)",
+              "rationale": "use Stayman to find the 4-4 fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "StaymanAsk",
+            "params": {
+              "reason": "five-four-majors"
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "Stayman 2♣",
+            "summary": "Seek a 4-4 major fit with 5-4 in both majors at invite strength"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "asked",
+      "turn": "opener",
+      "negotiationDelta": {
+        "forcing": "none"
+      },
+      "surfaces": [
+        {
+          "meaningId": "stayman:show-hearts",
+          "semanticClassId": "stayman:show-hearts",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "ShowHeldSuit",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "Show hearts",
+            "summary": "Reveal a 4-card heart suit in response to Stayman"
+          }
+        },
+        {
+          "meaningId": "stayman:show-spades",
+          "semanticClassId": "stayman:show-spades",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.hearts:lte:3",
+              "description": "At most 3 hearts (show hearts first with both)",
+              "rationale": "show hearts first with both"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "ShowHeldSuit",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "Show spades",
+            "summary": "Show a 4-card spade suit, denying 4 hearts"
+          }
+        },
+        {
+          "meaningId": "stayman:deny-major",
+          "semanticClassId": "stayman:deny-major",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "bridge.hasFourCardMajor",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "bridge.hasFourCardMajor:boolean:false",
+              "description": "No 4-card major",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DenyMajor",
+            "params": {}
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "Deny major (2♦)",
+            "summary": "Deny holding a 4-card major in response to Stayman"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "shown-hearts",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "stayman:raise-game-hearts",
+          "semanticClassId": "stayman:raise-game",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts (fit with opener)",
+              "rationale": "fit with opener",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "RaiseGame",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Raise to game in hearts",
+            "summary": "Bid game in the confirmed 4-4 heart fit with game-going values"
+          }
+        },
+        {
+          "meaningId": "stayman:raise-invite-hearts",
+          "semanticClassId": "stayman:raise-invite",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.inviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.inviteValues:boolean:true",
+              "description": "Has a invite values (invite values opposite 1NT)",
+              "rationale": "invite values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts (fit with opener)",
+              "rationale": "fit with opener",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "RaiseInvite",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Invite in hearts",
+            "summary": "Invite game in the 4-4 heart fit, letting opener decide with minimum vs maximum"
+          }
+        },
+        {
+          "meaningId": "stayman:nt-game-no-fit",
+          "semanticClassId": "stayman:nt-game-no-fit",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.hearts:lte:3",
+              "description": "At most 3 hearts (no fit)",
+              "rationale": "no fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "StaymanNTGame",
+            "params": {
+              "reason": "no-heart-fit"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3NT (no heart fit)",
+            "summary": "Place the contract in 3NT after opener shows hearts but responder lacks support"
+          }
+        },
+        {
+          "meaningId": "stayman:nt-invite-no-fit",
+          "semanticClassId": "stayman:nt-invite-no-fit",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.inviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.inviteValues:boolean:true",
+              "description": "Has a invite values (invite values opposite 1NT)",
+              "rationale": "invite values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.hearts:lte:3",
+              "description": "At most 3 hearts (no fit)",
+              "rationale": "no fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "StaymanNTInvite",
+            "params": {
+              "reason": "no-heart-fit"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT invite (no heart fit)",
+            "summary": "Invite notrump game after opener shows hearts but responder lacks support"
+          }
+        },
+        {
+          "meaningId": "stayman:cross-major-invite-2s-after-2h",
+          "semanticClassId": "stayman:cross-major-invite",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.inviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.inviteValues:boolean:true",
+              "description": "Has a invite values (invite values opposite 1NT)",
+              "rationale": "invite values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "5+ spades (5-card spade suit)",
+              "rationale": "5-card spade suit",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts (4 hearts (Stayman entry))",
+              "rationale": "4 hearts (Stayman entry)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "CrossMajorInvite",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2♠ invite (5♠ + 4♥)",
+            "summary": "Show 5 spades with invite values after opener's hearts miss the fit"
+          }
+        },
+        {
+          "meaningId": "stayman:minor-gf-3c-after-2h",
+          "semanticClassId": "stayman:minor-gf",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.clubs:gte:5",
+              "description": "5+ clubs (long club suit)",
+              "rationale": "long club suit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "MinorSuitGF",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♣ GF (5+ clubs)",
+            "summary": "Force to game showing a long club suit after the heart response misses"
+          }
+        },
+        {
+          "meaningId": "stayman:minor-gf-3d-after-2h",
+          "semanticClassId": "stayman:minor-gf",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.diamonds:gte:5",
+              "description": "5+ diamonds (long diamond suit)",
+              "rationale": "long diamond suit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "MinorSuitGF",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♦ GF (5+ diamonds)",
+            "summary": "Force to game showing a long diamond suit after the heart response misses"
+          }
+        },
+        {
+          "meaningId": "stayman:cross-major-gf-3s-after-2h",
+          "semanticClassId": "stayman:cross-major-gf",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "5+ spades (5+ spades)",
+              "rationale": "5+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts (4 hearts (Stayman entry))",
+              "rationale": "4 hearts (Stayman entry)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "CrossMajorGF",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♠ GF (5♠ + 4♥)",
+            "summary": "Force to game showing 5 spades and 4 hearts after opener shows hearts"
+          }
+        },
+        {
+          "meaningId": "stayman:quantitative-4nt-after-2h",
+          "semanticClassId": "stayman:quantitative-4nt",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game+ values opposite 1NT)",
+              "rationale": "game+ values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.hearts:lte:3",
+              "description": "At most 3 hearts (no heart fit)",
+              "rationale": "no heart fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 8
+          },
+          "sourceIntent": {
+            "type": "Quantitative4NT",
+            "params": {
+              "reason": "no-heart-fit"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4NT quantitative",
+            "summary": "Invite slam in notrump after no heart fit is found"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "shown-spades",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "stayman:raise-game-spades",
+          "semanticClassId": "stayman:raise-game",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades (fit with opener)",
+              "rationale": "fit with opener",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "RaiseGame",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Raise to game in spades",
+            "summary": "Bid game in the confirmed 4-4 spade fit with game-going values"
+          }
+        },
+        {
+          "meaningId": "stayman:raise-invite-spades",
+          "semanticClassId": "stayman:raise-invite",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.inviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.inviteValues:boolean:true",
+              "description": "Has a invite values (invite values opposite 1NT)",
+              "rationale": "invite values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades (fit with opener)",
+              "rationale": "fit with opener",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "RaiseInvite",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Invite in spades",
+            "summary": "Invite game in the 4-4 spade fit, letting opener decide with minimum vs maximum"
+          }
+        },
+        {
+          "meaningId": "stayman:nt-game-no-fit-2s",
+          "semanticClassId": "stayman:nt-game-no-fit",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.spades:lte:3",
+              "description": "At most 3 spades (no fit)",
+              "rationale": "no fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "StaymanNTGame",
+            "params": {
+              "reason": "no-spade-fit"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3NT (no spade fit)",
+            "summary": "Place the contract in 3NT after opener shows spades but responder lacks support"
+          }
+        },
+        {
+          "meaningId": "stayman:nt-invite-no-fit-2s",
+          "semanticClassId": "stayman:nt-invite-no-fit",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.inviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.inviteValues:boolean:true",
+              "description": "Has a invite values (invite values opposite 1NT)",
+              "rationale": "invite values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.spades:lte:3",
+              "description": "At most 3 spades (no fit)",
+              "rationale": "no fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "StaymanNTInvite",
+            "params": {
+              "reason": "no-spade-fit"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT invite (no spade fit)",
+            "summary": "Invite notrump game after opener shows spades but responder lacks support"
+          }
+        },
+        {
+          "meaningId": "stayman:minor-gf-3c-after-2s",
+          "semanticClassId": "stayman:minor-gf",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.clubs:gte:5",
+              "description": "5+ clubs (long club suit)",
+              "rationale": "long club suit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "MinorSuitGF",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♣ GF (5+ clubs)",
+            "summary": "Force to game showing a long club suit after the spade response misses"
+          }
+        },
+        {
+          "meaningId": "stayman:minor-gf-3d-after-2s",
+          "semanticClassId": "stayman:minor-gf",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.diamonds:gte:5",
+              "description": "5+ diamonds (long diamond suit)",
+              "rationale": "long diamond suit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "MinorSuitGF",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♦ GF (5+ diamonds)",
+            "summary": "Force to game showing a long diamond suit after the spade response misses"
+          }
+        },
+        {
+          "meaningId": "stayman:cross-major-gf-3h-after-2s",
+          "semanticClassId": "stayman:cross-major-gf",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts (5+ hearts)",
+              "rationale": "5+ hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades (4 spades (Stayman entry))",
+              "rationale": "4 spades (Stayman entry)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "CrossMajorGF",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♥ GF (5♥ + 4♠)",
+            "summary": "Force to game showing 5 hearts and 4 spades after opener shows spades"
+          }
+        },
+        {
+          "meaningId": "stayman:quantitative-4nt-after-2s",
+          "semanticClassId": "stayman:quantitative-4nt",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game+ values opposite 1NT)",
+              "rationale": "game+ values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.spades:lte:3",
+              "description": "At most 3 spades (no spade fit)",
+              "rationale": "no spade fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "Quantitative4NT",
+            "params": {
+              "reason": "no-spade-fit"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4NT quantitative",
+            "summary": "Invite slam in notrump after no spade fit is found"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "denied",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "stayman:nt-game-after-denial",
+          "semanticClassId": "stayman:nt-game-denial",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "StaymanNTGame",
+            "params": {
+              "reason": "denial"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3NT after denial",
+            "summary": "Place the contract in 3NT after opener denies a 4-card major"
+          }
+        },
+        {
+          "meaningId": "stayman:show-five-hearts-after-denial",
+          "semanticClassId": "stayman:show-five-card-major",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.inviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.inviteValues:boolean:true",
+              "description": "Has a invite values (invite values)",
+              "rationale": "invite values",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts (show the 5-card major after denial)",
+              "rationale": "show the 5-card major after denial",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades (had 5-4 pattern for Stayman entry)",
+              "rationale": "had 5-4 pattern for Stayman entry",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "ShowFiveCardMajor",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "5-4 majors",
+            "summary": "Show 5 hearts after denial, seeking a 3-card heart fit from opener"
+          }
+        },
+        {
+          "meaningId": "stayman:show-five-spades-after-denial",
+          "semanticClassId": "stayman:show-five-card-major",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.inviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.inviteValues:boolean:true",
+              "description": "Has a invite values (invite values)",
+              "rationale": "invite values",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "5+ spades (show the 5-card major after denial)",
+              "rationale": "show the 5-card major after denial",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts (had 5-4 pattern for Stayman entry)",
+              "rationale": "had 5-4 pattern for Stayman entry",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "ShowFiveCardMajor",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "5-4 majors",
+            "summary": "Show 5 spades after denial, seeking a 3-card spade fit from opener"
+          }
+        },
+        {
+          "meaningId": "stayman:nt-invite-after-denial",
+          "semanticClassId": "stayman:nt-invite-denial",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.inviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.inviteValues:boolean:true",
+              "description": "Has a invite values (invite values opposite 1NT)",
+              "rationale": "invite values opposite 1NT",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "StaymanNTInvite",
+            "params": {
+              "reason": "denial"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT invite after denial",
+            "summary": "Invite notrump game after opener denies a 4-card major"
+          }
+        },
+        {
+          "meaningId": "stayman:minor-gf-3c-after-2d",
+          "semanticClassId": "stayman:minor-gf",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.clubs:gte:5",
+              "description": "5+ clubs (long club suit)",
+              "rationale": "long club suit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "MinorSuitGF",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♣ GF (5+ clubs)",
+            "summary": "Force to game showing a long club suit after opener denies a major"
+          }
+        },
+        {
+          "meaningId": "stayman:minor-gf-3d-after-2d",
+          "semanticClassId": "stayman:minor-gf",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.diamonds:gte:5",
+              "description": "5+ diamonds (long diamond suit)",
+              "rationale": "long diamond suit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "MinorSuitGF",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♦ GF (5+ diamonds)",
+            "summary": "Force to game showing a long diamond suit after opener denies a major"
+          }
+        },
+        {
+          "meaningId": "stayman:major-signoff-4h-after-2d",
+          "semanticClassId": "stayman:major-signoff-64",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.hearts:gte:6",
+              "description": "6+ hearts (6-card heart suit)",
+              "rationale": "6-card heart suit",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades (4 spades (6-4 major pattern))",
+              "rationale": "4 spades (6-4 major pattern)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "MajorSignoff64",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4♥ signoff (6-4 majors)",
+            "summary": "Sign off in 4H with 6 hearts and 4 spades after opener denies a major"
+          }
+        },
+        {
+          "meaningId": "stayman:major-signoff-4s-after-2d",
+          "semanticClassId": "stayman:major-signoff-64",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.spades:gte:6",
+              "description": "6+ spades (6-card spade suit)",
+              "rationale": "6-card spade suit",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts (4 hearts (6-4 major pattern))",
+              "rationale": "4 hearts (6-4 major pattern)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "MajorSignoff64",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4♠ signoff (6-4 majors)",
+            "summary": "Sign off in 4S with 6 spades and 4 hearts after opener denies a major"
+          }
+        },
+        {
+          "meaningId": "stayman:quantitative-4nt-after-2d",
+          "semanticClassId": "stayman:quantitative-4nt",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game+ values opposite 1NT)",
+              "rationale": "game+ values opposite 1NT",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 8
+          },
+          "sourceIntent": {
+            "type": "Quantitative4NT",
+            "params": {
+              "reason": "denial"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4NT quantitative",
+            "summary": "Invite slam in notrump after opener denies a 4-card major"
+          }
+        }
+      ]
+    }
+  ],
+  "facts": {
+    "definitions": [
+      {
+        "id": "module.stayman.eligible",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Eligible for Stayman (4+ card major AND 8+ HCP)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "bridge.hasFourCardMajor",
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity"
+        ]
+      },
+      {
+        "id": "module.stayman.preferred",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Stayman preferred (eligible AND either no 5-card major OR 5-4 in both majors)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "module.stayman.eligible",
+          "bridge.hasFiveCardMajor",
+          "hand.suitLength.hearts",
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity"
+        ]
+      },
+      {
+        "id": "module.stayman.nsHaveEightCardFitLikely",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Posterior probability that N/S have an 8+ card major fit",
+        "valueType": "number",
+        "constrainsDimensions": []
+      },
+      {
+        "id": "module.stayman.openerStillBalancedLikely",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Posterior probability that opener has balanced shape",
+        "valueType": "number",
+        "constrainsDimensions": []
+      },
+      {
+        "id": "module.stayman.openerHasSecondMajorLikely",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Posterior probability that opener has a second 4-card major",
+        "valueType": "number",
+        "constrainsDimensions": []
+      }
+    ]
+  }
+}

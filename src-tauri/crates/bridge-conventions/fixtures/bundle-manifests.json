@@ -1,0 +1,669 @@
+[
+  {
+    "id": "nt-bundle",
+    "name": "1NT Responses",
+    "memberIds": [
+      "stayman",
+      "jacoby-transfers",
+      "smolen"
+    ],
+    "systemProfile": {
+      "profileId": "1nt-sayc",
+      "baseSystem": "sayc",
+      "systemConfig": {
+        "systemId": "sayc",
+        "displayName": "Standard American Yellow Card",
+        "ntOpening": {
+          "minHcp": 15,
+          "maxHcp": 17
+        },
+        "responderThresholds": {
+          "inviteMin": 8,
+          "inviteMax": 9,
+          "gameMin": 10,
+          "slamMin": 15,
+          "inviteMinTp": {
+            "trump": 8,
+            "nt": 8
+          },
+          "inviteMaxTp": {
+            "trump": 10,
+            "nt": 9
+          },
+          "gameMinTp": {
+            "trump": 10,
+            "nt": 10
+          },
+          "slamMinTp": {
+            "trump": 16,
+            "nt": 15
+          }
+        },
+        "openerRebid": {
+          "notMinimum": 16,
+          "notMinimumTp": {
+            "trump": 16,
+            "nt": 16
+          }
+        },
+        "interference": {
+          "redoubleMin": 10
+        },
+        "suitResponse": {
+          "twoLevelMin": 10,
+          "twoLevelForcingDuration": "one-round"
+        },
+        "oneNtResponseAfterMajor": {
+          "forcing": "non-forcing",
+          "maxHcp": 10,
+          "minHcp": 6
+        },
+        "openingRequirements": {
+          "majorSuitMinLength": 5
+        },
+        "dontOvercall": {
+          "minHcp": 8,
+          "maxHcp": 15
+        }
+      },
+      "modules": [
+        {
+          "moduleId": "stayman",
+          "kind": "add-on",
+          "attachments": [
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "1NT"
+                ]
+              },
+              "requiresCapabilities": [
+                "opening.1nt"
+              ]
+            }
+          ]
+        },
+        {
+          "moduleId": "jacoby-transfers",
+          "kind": "add-on",
+          "attachments": [
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "1NT"
+                ]
+              },
+              "requiresCapabilities": [
+                "opening.1nt"
+              ]
+            }
+          ]
+        },
+        {
+          "moduleId": "smolen",
+          "kind": "add-on",
+          "attachments": [
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "1NT"
+                ]
+              },
+              "requiresCapabilities": [
+                "opening.1nt"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "declaredCapabilities": {
+      "opening.1nt": "active"
+    },
+    "category": "Constructive",
+    "description": "Full 1NT response system with Stayman, Jacoby Transfers, Smolen, and natural bids",
+    "teaching": {
+      "purpose": "Find the best contract after partner opens 1NT: major-suit fit via Stayman, transfers, or Smolen, or notrump game/invite",
+      "whenToUse": "Partner opens 1NT (15-17 HCP balanced). You choose between Stayman (4-card major, 8+ HCP), Jacoby Transfer (5+ card major), Smolen (5-4 in majors, game values — bid Stayman then show pattern), or natural NT bids (no major).",
+      "whenNotToUse": [
+        "0-7 HCP with no 5-card major — pass",
+        "5+ card major with no 4-card in the other major — use transfer, not Stayman",
+        "5-4 in majors with invite values (8-9 HCP) — use Stayman, then show the 5-card major after 2D denial",
+        "4333 shape with 8-9 HCP — 2NT invite may be better than Stayman"
+      ],
+      "tradeoff": "Artificial bids (2♣ Stayman, 2♦/2♥ transfers, Smolen 3H/3S) give up natural meanings of those bids",
+      "principle": "Finding an 8-card major fit is worth more than notrump; Stayman, transfers, and Smolen are tools to find that fit while keeping the strong hand as declarer",
+      "roles": "Responder is captain after 1NT — opener describes, responder decides the final contract"
+    }
+  },
+  {
+    "id": "nt-stayman",
+    "name": "Stayman",
+    "memberIds": [
+      "stayman"
+    ],
+    "systemProfile": {
+      "profileId": "1nt-stayman-only",
+      "baseSystem": "sayc",
+      "systemConfig": {
+        "systemId": "sayc",
+        "displayName": "Standard American Yellow Card",
+        "ntOpening": {
+          "minHcp": 15,
+          "maxHcp": 17
+        },
+        "responderThresholds": {
+          "inviteMin": 8,
+          "inviteMax": 9,
+          "gameMin": 10,
+          "slamMin": 15,
+          "inviteMinTp": {
+            "trump": 8,
+            "nt": 8
+          },
+          "inviteMaxTp": {
+            "trump": 10,
+            "nt": 9
+          },
+          "gameMinTp": {
+            "trump": 10,
+            "nt": 10
+          },
+          "slamMinTp": {
+            "trump": 16,
+            "nt": 15
+          }
+        },
+        "openerRebid": {
+          "notMinimum": 16,
+          "notMinimumTp": {
+            "trump": 16,
+            "nt": 16
+          }
+        },
+        "interference": {
+          "redoubleMin": 10
+        },
+        "suitResponse": {
+          "twoLevelMin": 10,
+          "twoLevelForcingDuration": "one-round"
+        },
+        "oneNtResponseAfterMajor": {
+          "forcing": "non-forcing",
+          "maxHcp": 10,
+          "minHcp": 6
+        },
+        "openingRequirements": {
+          "majorSuitMinLength": 5
+        },
+        "dontOvercall": {
+          "minHcp": 8,
+          "maxHcp": 15
+        }
+      },
+      "modules": [
+        {
+          "moduleId": "stayman",
+          "kind": "add-on",
+          "attachments": [
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "1NT"
+                ]
+              },
+              "requiresCapabilities": [
+                "opening.1nt"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "declaredCapabilities": {
+      "opening.1nt": "active"
+    },
+    "category": "Asking",
+    "description": "Find a 4-4 major fit after 1NT opening",
+    "teaching": {
+      "purpose": "Find a 4-4 major-suit fit after partner opens 1NT using the 2♣ Stayman bid",
+      "whenToUse": "Partner opens 1NT (15-17 HCP balanced). You have 8+ HCP and a 4-card major (no 5-card major).",
+      "whenNotToUse": [
+        "5+ card major — use Jacoby Transfer instead",
+        "Under 8 HCP — pass",
+        "No 4-card major — bid 2NT (invite) or 3NT (game) directly"
+      ],
+      "principle": "2C asks opener to show a 4-card major; responder then places the contract based on fit",
+      "roles": "Responder is captain — asks opener to describe, then decides the final contract"
+    }
+  },
+  {
+    "id": "nt-transfers",
+    "name": "Jacoby Transfers",
+    "memberIds": [
+      "jacoby-transfers"
+    ],
+    "systemProfile": {
+      "profileId": "1nt-transfers-only",
+      "baseSystem": "sayc",
+      "systemConfig": {
+        "systemId": "sayc",
+        "displayName": "Standard American Yellow Card",
+        "ntOpening": {
+          "minHcp": 15,
+          "maxHcp": 17
+        },
+        "responderThresholds": {
+          "inviteMin": 8,
+          "inviteMax": 9,
+          "gameMin": 10,
+          "slamMin": 15,
+          "inviteMinTp": {
+            "trump": 8,
+            "nt": 8
+          },
+          "inviteMaxTp": {
+            "trump": 10,
+            "nt": 9
+          },
+          "gameMinTp": {
+            "trump": 10,
+            "nt": 10
+          },
+          "slamMinTp": {
+            "trump": 16,
+            "nt": 15
+          }
+        },
+        "openerRebid": {
+          "notMinimum": 16,
+          "notMinimumTp": {
+            "trump": 16,
+            "nt": 16
+          }
+        },
+        "interference": {
+          "redoubleMin": 10
+        },
+        "suitResponse": {
+          "twoLevelMin": 10,
+          "twoLevelForcingDuration": "one-round"
+        },
+        "oneNtResponseAfterMajor": {
+          "forcing": "non-forcing",
+          "maxHcp": 10,
+          "minHcp": 6
+        },
+        "openingRequirements": {
+          "majorSuitMinLength": 5
+        },
+        "dontOvercall": {
+          "minHcp": 8,
+          "maxHcp": 15
+        }
+      },
+      "modules": [
+        {
+          "moduleId": "jacoby-transfers",
+          "kind": "add-on",
+          "attachments": [
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "1NT"
+                ]
+              },
+              "requiresCapabilities": [
+                "opening.1nt"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "declaredCapabilities": {
+      "opening.1nt": "active"
+    },
+    "category": "Constructive",
+    "description": "Ensure the strong hand declares in a major-suit contract",
+    "teaching": {
+      "purpose": "Transfer the contract to opener's hand when responder has a 5+ card major after 1NT opening",
+      "whenToUse": "Partner opens 1NT (15-17 HCP balanced). You have a 5+ card major suit.",
+      "whenNotToUse": [
+        "Only a 4-card major — use Stayman instead",
+        "No major suits — bid notrump directly"
+      ],
+      "principle": "2D transfers to hearts, 2H transfers to spades — opener always accepts, making the strong hand declarer",
+      "roles": "Responder initiates the transfer; opener mechanically accepts; responder then decides the final contract level"
+    }
+  },
+  {
+    "id": "bergen-bundle",
+    "name": "Bergen Raises (Bundle)",
+    "memberIds": [
+      "bergen"
+    ],
+    "systemProfile": {
+      "profileId": "bergen-sayc",
+      "baseSystem": "sayc",
+      "systemConfig": {
+        "systemId": "sayc",
+        "displayName": "Standard American Yellow Card",
+        "ntOpening": {
+          "minHcp": 15,
+          "maxHcp": 17
+        },
+        "responderThresholds": {
+          "inviteMin": 8,
+          "inviteMax": 9,
+          "gameMin": 10,
+          "slamMin": 15,
+          "inviteMinTp": {
+            "trump": 8,
+            "nt": 8
+          },
+          "inviteMaxTp": {
+            "trump": 10,
+            "nt": 9
+          },
+          "gameMinTp": {
+            "trump": 10,
+            "nt": 10
+          },
+          "slamMinTp": {
+            "trump": 16,
+            "nt": 15
+          }
+        },
+        "openerRebid": {
+          "notMinimum": 16,
+          "notMinimumTp": {
+            "trump": 16,
+            "nt": 16
+          }
+        },
+        "interference": {
+          "redoubleMin": 10
+        },
+        "suitResponse": {
+          "twoLevelMin": 10,
+          "twoLevelForcingDuration": "one-round"
+        },
+        "oneNtResponseAfterMajor": {
+          "forcing": "non-forcing",
+          "maxHcp": 10,
+          "minHcp": 6
+        },
+        "openingRequirements": {
+          "majorSuitMinLength": 5
+        },
+        "dontOvercall": {
+          "minHcp": 8,
+          "maxHcp": 15
+        }
+      },
+      "modules": [
+        {
+          "moduleId": "bergen",
+          "kind": "add-on",
+          "attachments": [
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "1H"
+                ]
+              }
+            },
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "1S"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "declaredCapabilities": {
+      "opening.major": "active"
+    },
+    "category": "Constructive",
+    "description": "Constructive, limit, game, preemptive, and splinter raises after a 1M opening",
+    "teaching": {
+      "purpose": "Show the right level of support when partner opens 1 of a major and you have 4+ card fit",
+      "whenToUse": "Partner opens 1H or 1S and you have 4+ cards in their major. Choose the raise level based on HCP: preemptive (0-6), constructive (7-10), limit (10-12), game (13+), or splinter (12+ with shortage).",
+      "whenNotToUse": [
+        "Fewer than 4 cards in partner's major — look for other bids",
+        "Passed hand — Bergen raises are off after a passed hand",
+        "After opponent interference — standard raises apply instead"
+      ],
+      "tradeoff": "3C and 3D lose their natural minor-suit meanings in favor of showing major support",
+      "principle": "With a known trump fit, bid to the level your combined strength supports — preempt with weakness, invite with middle values, bid game with strength",
+      "roles": "Opener evaluates whether the partnership has game after responder's Bergen bid"
+    }
+  },
+  {
+    "id": "dont-bundle",
+    "name": "DONT (Bundle)",
+    "memberIds": [
+      "dont"
+    ],
+    "systemProfile": {
+      "profileId": "dont-sayc",
+      "baseSystem": "sayc",
+      "systemConfig": {
+        "systemId": "sayc",
+        "displayName": "Standard American Yellow Card",
+        "ntOpening": {
+          "minHcp": 15,
+          "maxHcp": 17
+        },
+        "responderThresholds": {
+          "inviteMin": 8,
+          "inviteMax": 9,
+          "gameMin": 10,
+          "slamMin": 15,
+          "inviteMinTp": {
+            "trump": 8,
+            "nt": 8
+          },
+          "inviteMaxTp": {
+            "trump": 10,
+            "nt": 9
+          },
+          "gameMinTp": {
+            "trump": 10,
+            "nt": 10
+          },
+          "slamMinTp": {
+            "trump": 16,
+            "nt": 15
+          }
+        },
+        "openerRebid": {
+          "notMinimum": 16,
+          "notMinimumTp": {
+            "trump": 16,
+            "nt": 16
+          }
+        },
+        "interference": {
+          "redoubleMin": 10
+        },
+        "suitResponse": {
+          "twoLevelMin": 10,
+          "twoLevelForcingDuration": "one-round"
+        },
+        "oneNtResponseAfterMajor": {
+          "forcing": "non-forcing",
+          "maxHcp": 10,
+          "minHcp": 6
+        },
+        "openingRequirements": {
+          "majorSuitMinLength": 5
+        },
+        "dontOvercall": {
+          "minHcp": 8,
+          "maxHcp": 15
+        }
+      },
+      "modules": [
+        {
+          "moduleId": "dont",
+          "kind": "add-on",
+          "attachments": [
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "1NT"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "declaredCapabilities": {
+      "opponent.1nt": "active"
+    },
+    "category": "Defensive",
+    "description": "Competitive overcalls showing distributional hands against opponent's 1NT",
+    "teaching": {
+      "purpose": "Compete against opponent's 1NT opening with distributional hands, showing two-suited or single-suited holdings via conventional bids and doubles",
+      "whenToUse": "After opponent opens 1NT in direct seat: bid 2H with both majors (5-4+), 2D with diamonds + a major, 2C with clubs + a higher suit, 2S with 6+ natural spades, or double with any single long suit (6+, not spades).",
+      "whenNotToUse": [
+        "In balancing seat (only direct seat overcall implemented)",
+        "With a balanced hand lacking distributional shape",
+        "With 4-4 or 5-3 shape (minimum 5-4 for two-suited, 6+ for single-suited)"
+      ],
+      "tradeoff": "DONT sacrifices natural penalty doubles of 1NT in exchange for showing distributional hands at the 2-level",
+      "principle": "DONT uses conventional overcalls to describe shape (not strength), enabling partner to judge fit and level quickly. The double shows an unknown single suit via a relay mechanism.",
+      "roles": "Overcaller describes shape; advancer evaluates fit. After double, advancer must relay 2C to discover the suit."
+    }
+  },
+  {
+    "id": "weak-twos-bundle",
+    "name": "Weak Two Bids (Bundle)",
+    "memberIds": [
+      "weak-twos"
+    ],
+    "systemProfile": {
+      "profileId": "weak-two-sayc",
+      "baseSystem": "sayc",
+      "systemConfig": {
+        "systemId": "sayc",
+        "displayName": "Standard American Yellow Card",
+        "ntOpening": {
+          "minHcp": 15,
+          "maxHcp": 17
+        },
+        "responderThresholds": {
+          "inviteMin": 8,
+          "inviteMax": 9,
+          "gameMin": 10,
+          "slamMin": 15,
+          "inviteMinTp": {
+            "trump": 8,
+            "nt": 8
+          },
+          "inviteMaxTp": {
+            "trump": 10,
+            "nt": 9
+          },
+          "gameMinTp": {
+            "trump": 10,
+            "nt": 10
+          },
+          "slamMinTp": {
+            "trump": 16,
+            "nt": 15
+          }
+        },
+        "openerRebid": {
+          "notMinimum": 16,
+          "notMinimumTp": {
+            "trump": 16,
+            "nt": 16
+          }
+        },
+        "interference": {
+          "redoubleMin": 10
+        },
+        "suitResponse": {
+          "twoLevelMin": 10,
+          "twoLevelForcingDuration": "one-round"
+        },
+        "oneNtResponseAfterMajor": {
+          "forcing": "non-forcing",
+          "maxHcp": 10,
+          "minHcp": 6
+        },
+        "openingRequirements": {
+          "majorSuitMinLength": 5
+        },
+        "dontOvercall": {
+          "minHcp": 8,
+          "maxHcp": 15
+        }
+      },
+      "modules": [
+        {
+          "moduleId": "weak-twos",
+          "kind": "add-on",
+          "attachments": [
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "2D"
+                ]
+              }
+            },
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "2H"
+                ]
+              }
+            },
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "2S"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "declaredCapabilities": {
+      "opening.weak-two": "active"
+    },
+    "category": "Constructive",
+    "description": "Preemptive openings at the 2-level with Ogust 2NT for structured hand description",
+    "teaching": {
+      "purpose": "Open light hands with a long suit at the 2-level to preempt opponents, and use the Ogust convention to describe hand strength and suit quality",
+      "whenToUse": "Open 2D/2H/2S with 6+ cards in the suit and 5-11 HCP. As responder, use 2NT (Ogust) to ask about opener's hand, raise to game with 16+ HCP and fit, or invite with 14-15 HCP and fit.",
+      "whenNotToUse": [
+        "2C is reserved for strong openings — never open 2C as a weak two",
+        "With a hand too strong for a weak two (12+ HCP) — open at the 1-level instead",
+        "After opponent interference — standard competitive actions apply"
+      ],
+      "tradeoff": "2-level openings lose their natural strong meaning in favor of preemptive action",
+      "principle": "Weak twos simultaneously obstruct opponents and describe a narrow hand type (6-card suit, limited strength) that partner can evaluate precisely",
+      "roles": "Opener describes; responder captains. After Ogust 2NT, opener further classifies along strength and quality dimensions"
+    }
+  }
+]

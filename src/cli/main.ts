@@ -13,25 +13,11 @@
 //   describe  — inspect a bundle in detail
 //   verify    — compositional verification (lint, interfere, explore, motif, fuzz, preflight)
 
-// ── Side-effect import: registers all bundles + conventions ─────────
-import "../conventions";
-
-import { createLocalService } from "../service";
-import type { EnginePort } from "../engine/port";
-import { parseArgs, parseVulnerability, parseOpponentMode, parseScenarioConfig, parseBaseSystem } from "./shared";
-import { runList, runBundles, runSystems, runDescribe } from "./commands/info";
+import { initWasmService, WasmService } from "../service";
+import { parseArgs, parseVulnerability, parseOpponentMode, parseBaseSystem } from "./shared";
 import { runEval } from "./commands/eval";
-import { runSelftest } from "./commands/selftest";
 import { runPlay } from "./commands/play";
-import { runPlan } from "./commands/plan";
 import { printUsage, printSubcommandHelp } from "./help";
-import { runVerify } from "./verify";
-
-// ── Service instance (evaluation methods don't use the engine) ──────
-// Evaluation methods use dynamic imports to the evaluation facade;
-// session-based methods are unused by CLI eval/play commands.
-const stubEngine = {} as EnginePort;
-const service = createLocalService(stubEngine);
 
 // ── Main dispatch ───────────────────────────────────────────────────
 
@@ -52,43 +38,37 @@ if (flags["help"] === true || flags["h"] === true) {
 
 const baseSystem = parseBaseSystem(flags);
 
-switch (subcommand) {
-  case "list":
-    runList(flags, baseSystem);
-    break;
-  case "eval":
-    void runEval(service, flags, parseVulnerability(flags), baseSystem);
-    break;
-  case "play":
-    void runPlay(service, flags, parseVulnerability(flags), parseOpponentMode(flags), baseSystem);
-    break;
-  case "selftest":
-    runSelftest(flags, parseVulnerability(flags), baseSystem);
-    break;
-  case "plan":
-    runPlan(flags, parseScenarioConfig(flags), baseSystem);
-    break;
-  case "bundles":
-    runBundles();
-    break;
-  case "systems":
-    runSystems();
-    break;
-  case "describe":
-    runDescribe(flags, parseVulnerability(flags), baseSystem);
-    break;
-  case "verify": {
-    const verifySubcommand = rawArgs[1];
-    const verifyFlags = parseArgs(rawArgs.slice(2));
-    if (!verifySubcommand || verifyFlags["help"] === true || verifyFlags["h"] === true) {
-      printSubcommandHelp("verify");
-      process.exit(verifySubcommand ? 0 : 2);
-    }
-    runVerify(verifySubcommand, verifyFlags);
-    break;
+// ── Service instance (requires WASM) ──────────────────────────────
+// CLI now requires `npm run wasm:build` before running.
+async function main(): Promise<void> {
+  await initWasmService();
+  const service = new WasmService();
+
+  switch (subcommand) {
+    case "eval":
+      await runEval(service, flags, parseVulnerability(flags), baseSystem);
+      break;
+    case "play":
+      await runPlay(service, flags, parseVulnerability(flags), parseOpponentMode(flags), baseSystem);
+      break;
+    // Commands that depended on the TS backend (list, bundles, systems, describe,
+    // selftest, plan, verify) have been removed. Their functionality is now in
+    // Rust/WASM and will be re-exposed through WasmService methods.
+    case "list":
+    case "bundles":
+    case "systems":
+    case "describe":
+    case "selftest":
+    case "plan":
+    case "verify":
+      console.error(`Subcommand "${subcommand}" has been removed — functionality moved to Rust/WASM.`);
+      process.exit(2);
+      break;
+    default:
+      console.error(`Unknown subcommand: "${subcommand}"`);
+      printUsage();
+      process.exit(2);
   }
-  default:
-    console.error(`Unknown subcommand: "${subcommand}"`);
-    printUsage();
-    process.exit(2);
 }
+
+void main();

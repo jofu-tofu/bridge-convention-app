@@ -33,11 +33,11 @@
       </div>
       {#if tr.acceptableBids.length > 0}
         <DebugSection title="Also acceptable" count={tr.acceptableBids.length} nested>
-          {#each tr.acceptableBids as ab, i (ab.bidName + ':' + i)}
+          {#each tr.acceptableBids as ab, i (ab.call.type + (ab.call.type === 'bid' ? ab.call.level + ab.call.strain : '') + ':' + i)}
             <div class="text-[10px] leading-tight">
               <span class="text-teal-300">{fmtCall(ab.call)}</span>
-              <span class="text-text-primary ml-0.5">{ab.meaning}</span>
-              <span class="text-text-muted ml-0.5">({ab.tier}{ab.fullCredit ? ", full credit" : ""})</span>
+              <span class="text-text-primary ml-0.5">{ab.meaning ?? ""}</span>
+              <span class="text-text-muted ml-0.5">({ab.tier ?? ""}{ab.fullCredit ? ", full credit" : ""})</span>
             </div>
           {/each}
         </DebugSection>

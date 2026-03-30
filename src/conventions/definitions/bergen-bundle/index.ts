@@ -1,1 +1,0 @@
-export { bergenBundle } from "./config";

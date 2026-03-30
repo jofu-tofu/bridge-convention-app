@@ -1,5 +1,6 @@
 import type { createAppStore } from "./app.svelte";
-import { getConvention, getModule, PracticeMode, PracticeRole } from "../service";
+import { ConventionCategory, PracticeMode, PracticeRole } from "../service";
+import type { ConventionConfig } from "../service";
 
 /**
  * Consolidated URL parameter API for deep-linking and dev/test workflows.
@@ -76,25 +77,20 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const learnParam = params.get("learn");
 
   if (learnParam) {
-    // Module-first resolution: try module ID first, then bundle ID
-    const mod = getModule(learnParam);
-    if (mod) {
-      store.navigateToLearningModule(learnParam);
-    } else {
-      try {
-        const config = getConvention(learnParam);
-        store.navigateToLearning(config);
-      } catch {
-        // Invalid param — silently ignore
-      }
-    }
+    // Module-first resolution: navigate by module ID
+    // Convention catalog is now in Rust/WASM — resolve via store methods
+    store.navigateToLearningModule(learnParam);
   } else if (conventionParam) {
-    try {
-      const config = getConvention(conventionParam);
-      store.selectConvention(config);
-    } catch {
-      // Invalid param — silently ignore
-    }
+    // Convention catalog is now in Rust/WASM. Create a minimal config stub
+    // from the ID — the service session uses only the ID to configure the drill.
+    const stubConfig: ConventionConfig = {
+      id: conventionParam,
+      name: conventionParam,
+      description: "",
+      category: ConventionCategory.Asking,
+      dealConstraints: { seats: [] },
+    };
+    store.selectConvention(stubConfig);
   }
 
   // ── Coverage targeting ─────────────────────────────────────

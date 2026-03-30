@@ -4,7 +4,6 @@
 // settings resolution, spec/bundle lookup, deal generation,
 // auction construction, hand formatting, and viewport construction.
 
-import { getBundleInput, listBundleInputs, resolveBundle as resolveBundleFn, specFromBundle, createBiddingContext, BASE_SYSTEM_SAYC, BASE_SYSTEM_ACOL, getSystemConfig } from "../conventions";
 import { generateDeal } from "../engine/deal-generator";
 import { mulberry32 } from "../engine/seeded-rng";
 import { evaluateHand } from "../engine/hand-evaluator";
@@ -18,15 +17,42 @@ import type {
   DealConstraints,
   Card,
 } from "../engine/types";
-import type { ConventionSpec, ConventionBundle, BaseSystemId } from "../conventions";
-import type { BiddingContext } from "../service";
-import { OpponentMode } from "../session/drill-types";
+import {
+  OpponentMode,
+  createBiddingContext,
+} from "../service/session-types";
+import type { BaseSystemId, BiddingContext } from "../service/session-types";
+
+// ── Stub types for convention catalog (now in Rust/WASM) ────────────
+// These were formerly imported from conventions/. The CLI commands that
+// depend on the full TS backend (info, selftest, plan, verify) have been
+// removed. Remaining stubs support shared.ts functions that are still used.
+
+export interface ConventionSpec {
+  readonly id: string;
+  readonly modules?: readonly unknown[];
+  suggest(context: BiddingContext): { call: Call; ruleName: string | null; explanation: string } | null;
+}
+
+export interface ConventionBundle {
+  readonly id: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly category?: string;
+  readonly internal?: boolean;
+  readonly modules?: readonly unknown[];
+  readonly dealConstraints: DealConstraints;
+  readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
+}
+
+const BASE_SYSTEM_SAYC: BaseSystemId = "sayc";
+const BASE_SYSTEM_ACOL: BaseSystemId = "acol";
 
 // ── Re-exports for convenience ──────────────────────────────────────
 
 export { Seat, Vulnerability };
 export { callKey };
-export type { Auction, Call, Deal, ConventionSpec, ConventionBundle, OpponentMode, BaseSystemId };
+export type { Auction, Call, Deal, OpponentMode, BaseSystemId };
 
 // ── Flags type ──────────────────────────────────────────────────────
 
@@ -109,7 +135,7 @@ export function parseBaseSystem(args: Flags): BaseSystemId {
 export function parseOpponentMode(args: Flags): OpponentMode {
   const val = args["opponents"];
   if (val === undefined || val === true) return OpponentMode.Natural;
-  if (val === OpponentMode.Natural || val === OpponentMode.None) return val;
+  if (val === (OpponentMode.Natural as string) || val === (OpponentMode.None as string)) return val as OpponentMode;
   console.error(`Invalid --opponents value: "${val}" (expected: natural, none)`);
   process.exit(2);
 }
@@ -159,8 +185,8 @@ export function parseScenarioConfig(args: Flags): ScenarioConfig {
     opponents = { type: "fixed", value: OpponentMode.Natural };
   } else if (typeof oppVal === "string" && oppVal.toLowerCase() === "mixed") {
     opponents = { type: "mixed", naturalRate: 0.5 };
-  } else if (oppVal === OpponentMode.Natural || oppVal === OpponentMode.None) {
-    opponents = { type: "fixed", value: oppVal };
+  } else if (oppVal === (OpponentMode.Natural as string) || oppVal === (OpponentMode.None as string)) {
+    opponents = { type: "fixed", value: oppVal as OpponentMode };
   } else {
     console.error(`Invalid --opponents value: "${oppVal}" (expected: natural, none, mixed)`);
     process.exit(2);
@@ -195,41 +221,20 @@ function pickVulnUniform(roll: number): Vulnerability {
   return Vulnerability.Both;
 }
 
-// ── Resolve spec + bundle ────────────────────────────────────────────
+// ── Resolve spec + bundle (stubs — catalog is now in Rust/WASM) ─────
+// The CLI commands that used these (info, selftest, plan, verify) have
+// been removed. These stubs remain for compilation but throw at runtime.
 
-/** Print available bundle IDs from the system registry (single source of truth). */
 export function printAvailableBundles(): void {
-  for (const b of listBundleInputs()) {
-    if (b.internal) continue;
-    console.error(`  ${b.id} — ${b.name}`);
-  }
+  console.error("  (bundle catalog is now in Rust/WASM — use WasmService)");
 }
 
-export function resolveSpec(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionSpec {
-  const input = getBundleInput(bundleId);
-  if (!input) {
-    console.error(`Unknown bundle: "${bundleId}"`);
-    console.error("Available bundles:");
-    printAvailableBundles();
-    process.exit(2);
-  }
-  const spec = specFromBundle(input, getSystemConfig(baseSystem));
-  if (!spec) {
-    console.error(`No ConventionSpec derivable for "${bundleId}"`);
-    process.exit(2);
-  }
-  return spec;
+export function resolveSpec(bundleId: string, _baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionSpec {
+  throw new Error(`resolveSpec("${bundleId}"): convention catalog has moved to Rust/WASM`);
 }
 
-function resolveBundle(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionBundle {
-  const input = getBundleInput(bundleId);
-  if (!input) {
-    console.error(`Unknown bundle: "${bundleId}"`);
-    console.error("Available bundles:");
-    printAvailableBundles();
-    process.exit(2);
-  }
-  return resolveBundleFn(input, getSystemConfig(baseSystem));
+function resolveBundle(bundleId: string, _baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionBundle {
+  throw new Error(`resolveBundle("${bundleId}"): convention catalog has moved to Rust/WASM`);
 }
 
 // ── Deal generation ─────────────────────────────────────────────────
@@ -327,7 +332,8 @@ export function partnerOf(seat: Seat): Seat {
   }
 }
 
-/** Resolve a ConventionBundle with modules for rule enumeration. */
+/** Resolve a ConventionBundle with modules for rule enumeration.
+ *  Stub — convention catalog has moved to Rust/WASM. */
 export function resolveBundleWithRules(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionBundle {
   return resolveBundle(bundleId, baseSystem);
 }

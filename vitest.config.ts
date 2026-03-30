@@ -22,10 +22,8 @@ export default defineConfig({
       provider: "v8",
       include: [
         "src/engine/**",
-        "src/conventions/**",
-        "src/strategy/**",
-        "src/drill/**",
-        "src/inference/**",
+        "src/service/**",
+        "src/stores/**",
       ],
       thresholds: {
         branches: 90,

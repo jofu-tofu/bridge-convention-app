@@ -1,6 +1,6 @@
 # Rust Backend (src-tauri/)
 
-Cargo workspace with four crates implementing the bridge engine and convention data model in Rust.
+Cargo workspace with six crates implementing the bridge engine, convention data model, session logic, and service layer in Rust.
 
 ## Commands
 
@@ -10,6 +10,7 @@ Cargo workspace with four crates implementing the bridge engine and convention d
 | `cargo test --workspace`      | Run all Rust tests                                          |
 | `cargo test -p bridge-engine` | Test engine crate only                                      |
 | `cargo test -p bridge-conventions` | Test conventions crate (includes golden-master fixture tests) |
+| `cargo test -p bridge-session` | Test session crate (252 tests) |
 | `wasm-pack build crates/bridge-wasm --target web --out-dir pkg` | Build WASM package        |
 | `wasm-pack test --node crates/bridge-wasm` | Run WASM integration tests                   |
 
@@ -37,8 +38,23 @@ crates/
                        Rust match block to stay in sync. `ConventionStrategy::suggest()` returns
                        `(Option<BidResult>, StrategyEvaluation)` — immutable &self, debug payload as
                        out-param (intentional Rust idiom divergence from TS &mut self pattern).
-  bridge-tauri/        Tauri v2 app — #[tauri::command] handlers delegating to bridge-engine
-  bridge-wasm/         WASM bindings via wasm-bindgen — wraps bridge-engine for browser deployment
+  bridge-session/      Rust session logic: inference, heuristics, controllers, viewports.
+                       Phase 4 of the migration. Depends on bridge-engine + bridge-conventions.
+                       Inference: natural inference + posterior stub (uniform distributions).
+                       Heuristics: bidding strategy chain + 8 play heuristics + play profiles.
+                       Session: state management, bidding/play controllers (synchronous),
+                       drill lifecycle, 4 viewport builders with information boundary.
+                       MC+DDS play and learning viewports deferred.
+  bridge-service/      Service layer — ServicePort trait + ServicePortImpl wrapping SessionManager.
+                       Thin hexagonal port between UI/WASM/CLI and game logic. Depends on
+                       bridge-engine, bridge-conventions, bridge-session.
+  bridge-tauri/        Tauri v2 app — #[tauri::command] handlers wrapping ServicePortImpl
+                       (Mutex-managed state). service_commands.rs has all 23 ServicePort + 6
+                       DevServicePort commands. Old engine commands kept in commands.rs for
+                       backward compat during migration.
+  bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
+                       for browser deployment. All 23 ServicePort methods + 6 DevServicePort
+                       methods (debug_assertions gated) + load_bundle_defs for paid content.
 ```
 
 ## Conventions
@@ -56,13 +72,13 @@ crates/
   - `leadSuit`: explicit `null` in JSON (never omitted), deserialized as `Option<Suit>`
 - **WASM serialization:** bridge-wasm uses `serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true)` so `HashMap<Seat, Hand>` produces a plain JS object, not a `Map`.
 
-## Adding a New EnginePort Method
+## Adding a New ServicePort Method
 
-1. Add function to `bridge-engine/src/{module}.rs`
-2. Add `#[tauri::command]` handler to `bridge-tauri/src/commands.rs`, wire in `lib.rs`
-3. Add `#[wasm_bindgen]` export to `bridge-wasm/src/lib.rs` with request struct
-4. Add request struct if new parameters needed
-5. Add tests in all three locations
+1. Add the method to `ServicePort` trait in `bridge-service/src/port.rs`
+2. Implement it in `ServicePortImpl` in `bridge-service/src/service_impl.rs`
+3. Add `#[wasm_bindgen]` wrapper in `bridge-wasm/src/lib.rs` (JsValue in/out via serde_wasm_bindgen)
+4. Add `#[tauri::command]` handler in `bridge-tauri/src/commands.rs`, wire in `lib.rs`
+5. Add tests in service and transport crates
 
 ## DDS Integration
 
@@ -71,6 +87,14 @@ crates/
 - `solve_deal` command returns `DDSolution { tricks, par }` with 4×5 tricks table and optional par info
 - Requires `libclang-dev` for `dds-bridge-sys` C++ compilation (bindgen)
 - DDS cannot compile to `wasm32-unknown-unknown` (C++ FFI) — desktop only
+
+## Serde Contract
+
+Rules for all Rust types crossing the WASM boundary:
+1. `#[serde(rename_all = "camelCase")]` on all structs
+2. Enums: `#[serde(tag = "type")]` or `#[serde(rename = "...")]` to match TS discriminators
+3. `Option<T>` serializes as explicit `null` (never omitted from JSON)
+4. `HashMap<Seat, T>` uses `serialize_maps_as_objects(true)` at WASM boundary
 
 ## Gotchas
 
@@ -102,4 +126,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-02-27 | version=3 | dir-commits-at-audit=8 | tree-sig=dirs:12,files:35 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-03-29 | version=4 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:40 -->

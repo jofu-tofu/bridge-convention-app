@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   SAYC_SYSTEM_CONFIG,
   ACOL_SYSTEM_CONFIG,
-} from "../../../conventions/definitions/system-config";
+} from "../../../service/session-types";
 import {
   formatFieldValue,
   formatTrumpTpValue,

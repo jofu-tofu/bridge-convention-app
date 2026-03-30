@@ -26,7 +26,7 @@
       <div class="mb-1.5 px-1.5 py-1 bg-green-900/20 rounded border border-green-500/30 flex items-baseline gap-1.5 flex-wrap">
         <span class="text-sm font-bold text-green-300">{fmtCall(pr.selected.call)}</span>
         <span class="text-xs text-green-200">{pr.selected.proposal.teachingLabel?.name ?? pr.selected.proposal.meaningId}</span>
-        <span class="text-[10px] text-text-muted">band:{pr.selected.proposal.ranking.recommendationBand} spec:{pr.selected.proposal.ranking.specificity}</span>
+        <span class="text-[10px] text-text-muted">band:{pr.selected.proposal.ranking?.recommendationBand ?? "—"} spec:{pr.selected.proposal.ranking?.specificity ?? "—"}</span>
       </div>
     {:else}
       <div class="mb-1.5 px-1.5 py-1 bg-yellow-900/20 rounded border border-yellow-500/30 text-xs text-yellow-300">
@@ -59,11 +59,11 @@
             <span class="text-text-muted font-bold">{fmtCall(carrier.call)}</span>
             <span class="text-text-muted ml-1">{carrier.proposal.teachingLabel?.name ?? carrier.proposal.meaningId}</span>
             <div class="text-[10px]">
-              {#each carrier.proposal.clauses.filter(c => !c.satisfied) as clause, ci (clause.factId + clause.operator + ':' + ci)}
+              {#each (carrier.proposal.clauses ?? []).filter(c => !c.satisfied) as clause, ci (clause.factId + clause.operator + ':' + ci)}
                 <div class="text-red-400/70 leading-tight">
                   {clause.description}
                   {#if clause.observedValue !== undefined}
-                    <span class="text-text-muted">(have: {String(clause.observedValue)}, need: {typeof clause.value === 'object' && clause.value !== null && 'min' in clause.value ? `${clause.value.min}-${clause.value.max}` : String(clause.value)})</span>
+                    <span class="text-text-muted">(have: {String(clause.observedValue)}, need: {typeof clause.value === 'object' && clause.value !== null && 'min' in clause.value && 'max' in clause.value ? `${String(clause.value.min)}-${String(clause.value.max)}` : String(clause.value)})</span>
                   {/if}
                 </div>
               {/each}

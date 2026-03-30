@@ -1,8 +1,6 @@
 <script lang="ts">
-  import type { EnginePort } from "./engine/port";
   import type { DevServicePort } from "./service";
-  import { createEngine } from "./engine/create-engine";
-  import { createLocalService } from "./service";
+  import { initWasmService, WasmService } from "./service";
   import { applyDevParams } from "./stores/dev-params";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
@@ -10,7 +8,6 @@
 
   let engineReady = $state(false);
   let initError = $state<string | null>(null);
-  let resolvedEngine = $state<EnginePort | null>(null);
   let resolvedService = $state<DevServicePort | null>(null);
   let resolvedGameStore = $state<ReturnType<typeof createGameStore> | null>(null);
   let appStore = $state<ReturnType<typeof createAppStore> | null>(null);
@@ -18,10 +15,9 @@
   function init(): void {
     engineReady = false;
     initError = null;
-    createEngine()
-      .then((eng) => {
-        resolvedEngine = eng;
-        const svc = createLocalService(eng);
+    initWasmService()
+      .then(() => {
+        const svc = new WasmService();
         resolvedService = svc;
         resolvedGameStore = createGameStore(svc);
         const store = createAppStore();
@@ -45,10 +41,10 @@
       onclick={() => init()}
     >Retry</button>
   </div>
-{:else if !engineReady || !resolvedEngine || !resolvedService || !resolvedGameStore || !appStore}
+{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore}
   <div class="bg-bg-deepest text-text-primary flex h-screen items-center justify-center">
     Loading engine...
   </div>
 {:else}
-  <AppShell engine={resolvedEngine} service={resolvedService} gameStore={resolvedGameStore} {appStore} />
+  <AppShell service={resolvedService} gameStore={resolvedGameStore} {appStore} />
 {/if}

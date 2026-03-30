@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createAppStore } from "../app.svelte";
-import { OpponentMode } from "../../session/drill-types";
+import { OpponentMode } from "../../service/session-types";
 
 const SETTINGS_KEY = "bridge-app:practice-preferences";
 

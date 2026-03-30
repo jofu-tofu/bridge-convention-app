@@ -1,6 +1,7 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
   import { getAppStore, getService } from "../../stores/context";
+  import { listConventions } from "../../service";
   import type { ModuleCatalogEntry, ModuleLearningViewport, ClauseSystemVariant, ModuleFlowTreeViewport } from "../../service";
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
   import ConversationFlowTree from "./ConversationFlowTree.svelte";
@@ -8,6 +9,7 @@
 
   const appStore = getAppStore();
   const service = getService();
+  const allConventions = listConventions();
 
   let searchQuery = $state("");
   let innerW = $state(1024);
@@ -132,15 +134,8 @@
     // Find a bundle that contains this module and navigate to practice
     const bundleId = viewport.bundleIds[0];
     if (bundleId) {
-      // Import getConvention to navigate to the game
-      import("../../conventions").then(({ getConvention }) => {
-        try {
-          const config = getConvention(bundleId);
-          appStore.selectConvention(config);
-        } catch {
-          // Bundle not found — no-op
-        }
-      });
+      const config = allConventions.find(c => c.id === bundleId);
+      if (config) appStore.selectConvention(config);
     }
   }
 

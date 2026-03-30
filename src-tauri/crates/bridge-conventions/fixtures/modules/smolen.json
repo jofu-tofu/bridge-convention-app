@@ -1,0 +1,866 @@
+{
+  "moduleId": "smolen",
+  "description": "Jump to 3H/3S after Stayman denial to show 5-4 in majors, game-forcing",
+  "purpose": "Handle the 5-4 major hand with game values after Stayman gets a 2D denial — let opener choose the fit while keeping the strong hand as declarer",
+  "teaching": {
+    "tradeoff": "Smolen uses jump bids (3H/3S) that could otherwise be used as natural invitational bids.",
+    "principle": "Bid the shorter major at the 3-level — this tells opener about both majors and lets the strong hand declare.",
+    "commonMistakes": [
+      "Smolen bids show the SHORT major — 3H shows 4 hearts and 5 spades, not the other way around",
+      "Only use Smolen with game-forcing values — with invitational hands, use a different approach after Stayman denial"
+    ]
+  },
+  "explanationEntries": [
+    {
+      "explanationId": "nt.smolen.fiveHearts",
+      "factId": "module.smolen.hasFiveHearts",
+      "templateKey": "nt.smolen.fiveHearts.supporting",
+      "displayText": "Has 5+ hearts for Smolen",
+      "contrastiveTemplateKey": "nt.smolen.fiveHearts.whyNot",
+      "contrastiveDisplayText": "Does not have 5+ hearts",
+      "preferredLevel": "mechanical",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.fiveSpades",
+      "factId": "module.smolen.hasFiveSpades",
+      "templateKey": "nt.smolen.fiveSpades.supporting",
+      "displayText": "Has 5+ spades for Smolen",
+      "contrastiveTemplateKey": "nt.smolen.fiveSpades.whyNot",
+      "contrastiveDisplayText": "Does not have 5+ spades",
+      "preferredLevel": "mechanical",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.fourHearts",
+      "factId": "module.smolen.hasFourHearts",
+      "templateKey": "nt.smolen.fourHearts.supporting",
+      "displayText": "Has 4 hearts for Smolen",
+      "contrastiveTemplateKey": "nt.smolen.fourHearts.whyNot",
+      "contrastiveDisplayText": "Does not have 4 hearts",
+      "preferredLevel": "mechanical",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.fourSpades",
+      "factId": "module.smolen.hasFourSpades",
+      "templateKey": "nt.smolen.fourSpades.supporting",
+      "displayText": "Has 4 spades for Smolen",
+      "contrastiveTemplateKey": "nt.smolen.fourSpades.whyNot",
+      "contrastiveDisplayText": "Does not have 4 spades",
+      "preferredLevel": "mechanical",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.openerHeartFit",
+      "factId": "module.smolen.openerHasHeartFit",
+      "templateKey": "nt.smolen.openerHeartFit.supporting",
+      "displayText": "Opener has 3+ hearts (fit for Smolen)",
+      "contrastiveTemplateKey": "nt.smolen.openerHeartFit.whyNot",
+      "contrastiveDisplayText": "Opener has fewer than 3 hearts",
+      "preferredLevel": "mechanical",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.openerSpadesFit",
+      "factId": "module.smolen.openerHasSpadesFit",
+      "templateKey": "nt.smolen.openerSpadesFit.supporting",
+      "displayText": "Opener has 3+ spades (fit for Smolen)",
+      "contrastiveTemplateKey": "nt.smolen.openerSpadesFit.whyNot",
+      "contrastiveDisplayText": "Opener has fewer than 3 spades",
+      "preferredLevel": "mechanical",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.bidShortHearts",
+      "meaningId": "smolen:bid-short-hearts",
+      "templateKey": "nt.smolen.bidShortHearts.semantic",
+      "displayText": "Smolen 3♥: shows 4 hearts and 5+ spades, game-forcing",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.bidShortSpades",
+      "meaningId": "smolen:bid-short-spades",
+      "templateKey": "nt.smolen.bidShortSpades.semantic",
+      "displayText": "Smolen 3♠: shows 4 spades and 5+ hearts, game-forcing",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.placeFourHearts",
+      "meaningId": "smolen:place-four-hearts",
+      "templateKey": "nt.smolen.placeFourHearts.semantic",
+      "displayText": "Place 4♥: opener confirms heart fit after Smolen 3♠",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.acceptSpades3s",
+      "meaningId": "smolen:accept-spades-3s",
+      "templateKey": "nt.smolen.acceptSpades3s.semantic",
+      "displayText": "Accept 3♠: opener confirms spade fit after Smolen 3♥",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.responderPlaceFourSpades",
+      "meaningId": "smolen:responder-place-four-spades",
+      "templateKey": "nt.smolen.responderPlaceFourSpades.semantic",
+      "displayText": "Place 4♠: responder completes to game after opener's 3♠ acceptance",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.placeThreeNtNoHeartFit",
+      "meaningId": "smolen:place-three-nt-no-heart-fit",
+      "templateKey": "nt.smolen.placeThreeNtNoHeartFit.semantic",
+      "displayText": "Place 3NT: opener has no heart fit after Smolen 3♠",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.placeThreeNtNoSpadeFit",
+      "meaningId": "smolen:place-three-nt-no-spade-fit",
+      "templateKey": "nt.smolen.placeThreeNtNoSpadeFit.semantic",
+      "displayText": "Place 3NT: opener has no spade fit after Smolen 3♥",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.staymanEntry5h4s",
+      "meaningId": "smolen:stayman-entry-5h4s",
+      "templateKey": "nt.smolen.staymanEntry5h4s.semantic",
+      "displayText": "Stayman 2♣ with 5 hearts + 4 spades, planning Smolen",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.staymanEntry5s4h",
+      "meaningId": "smolen:stayman-entry-5s4h",
+      "templateKey": "nt.smolen.staymanEntry5s4h.semantic",
+      "displayText": "Stayman 2♣ with 5 spades + 4 hearts, planning Smolen",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    }
+  ],
+  "local": {
+    "initial": "idle",
+    "transitions": [
+      {
+        "from": "idle",
+        "to": "post-r1",
+        "on": {
+          "act": "inquire"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "post-r1",
+        "on": {
+          "act": "transfer"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "post-r1",
+        "on": {
+          "act": "raise"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "post-r1",
+        "on": {
+          "act": "place"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "post-r1",
+        "on": {
+          "act": "signoff"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "post-r1",
+        "on": {
+          "act": "show"
+        }
+      },
+      {
+        "from": "post-r1",
+        "to": "placing-hearts",
+        "on": {
+          "act": "show",
+          "feature": "shortMajor",
+          "suit": "hearts"
+        }
+      },
+      {
+        "from": "post-r1",
+        "to": "placing-spades",
+        "on": {
+          "act": "show",
+          "feature": "shortMajor",
+          "suit": "spades"
+        }
+      },
+      {
+        "from": "placing-hearts",
+        "to": "done",
+        "on": {
+          "act": "place"
+        }
+      },
+      {
+        "from": "placing-spades",
+        "to": "accepted-spades",
+        "on": {
+          "act": "accept",
+          "feature": "heldSuit",
+          "suit": "spades"
+        }
+      },
+      {
+        "from": "placing-spades",
+        "to": "done",
+        "on": {
+          "act": "place"
+        }
+      },
+      {
+        "from": "accepted-spades",
+        "to": "done",
+        "on": {
+          "act": "place"
+        }
+      }
+    ]
+  },
+  "states": [
+    {
+      "phase": "idle",
+      "turn": "responder",
+      "negotiationDelta": {
+        "forcing": "one-round",
+        "captain": "responder"
+      },
+      "surfaces": [
+        {
+          "meaningId": "smolen:stayman-entry-5h4s",
+          "semanticClassId": "smolen:stayman-entry",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "module.smolen.hasFiveHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.hasFiveHearts:boolean:true",
+              "description": "Has a has five hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "module.smolen.hasFourSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.hasFourSpades:boolean:true",
+              "description": "Has a has four spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "StaymanAsk",
+            "params": {
+              "reason": "smolen"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Stayman 2♣",
+            "summary": "Initiate Stayman with 5 hearts and 4 spades, planning a Smolen jump if opener denies"
+          }
+        },
+        {
+          "meaningId": "smolen:stayman-entry-5s4h",
+          "semanticClassId": "smolen:stayman-entry",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "module.smolen.hasFiveSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.hasFiveSpades:boolean:true",
+              "description": "Has a has five spades",
+              "isPublic": true
+            },
+            {
+              "factId": "module.smolen.hasFourHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.hasFourHearts:boolean:true",
+              "description": "Has a has four hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "StaymanAsk",
+            "params": {
+              "reason": "smolen"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Stayman 2♣",
+            "summary": "Initiate Stayman with 5 spades and 4 hearts, planning a Smolen jump if opener denies"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "post-r1",
+      "turn": "responder",
+      "route": {
+        "kind": "subseq",
+        "steps": [
+          {
+            "act": "inquire",
+            "feature": "majorSuit"
+          },
+          {
+            "act": "deny",
+            "feature": "majorSuit"
+          }
+        ]
+      },
+      "negotiationDelta": {
+        "forcing": "game",
+        "captain": "opener",
+        "fitAgreed": {
+          "strain": "spades",
+          "confidence": "tentative"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "smolen:bid-short-hearts",
+          "semanticClassId": "smolen:bid-short-hearts",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "module.smolen.hasFiveSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.hasFiveSpades:boolean:true",
+              "description": "Has a has five spades (long major)",
+              "rationale": "long major",
+              "isPublic": true
+            },
+            {
+              "factId": "module.smolen.hasFourHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.hasFourHearts:boolean:true",
+              "description": "Has a has four hearts (short major, bid this suit)",
+              "rationale": "short major, bid this suit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "Smolen",
+            "params": {
+              "longMajor": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Smolen 3♥",
+            "summary": "Show 5 spades and 4 hearts with game-forcing values after Stayman denial"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "post-r1",
+      "turn": "responder",
+      "route": {
+        "kind": "subseq",
+        "steps": [
+          {
+            "act": "inquire",
+            "feature": "majorSuit"
+          },
+          {
+            "act": "deny",
+            "feature": "majorSuit"
+          }
+        ]
+      },
+      "negotiationDelta": {
+        "forcing": "game",
+        "captain": "opener",
+        "fitAgreed": {
+          "strain": "hearts",
+          "confidence": "tentative"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "smolen:bid-short-spades",
+          "semanticClassId": "smolen:bid-short-spades",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Has a game values (game values opposite 1NT)",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "module.smolen.hasFiveHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.hasFiveHearts:boolean:true",
+              "description": "Has a has five hearts (long major)",
+              "rationale": "long major",
+              "isPublic": true
+            },
+            {
+              "factId": "module.smolen.hasFourSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.hasFourSpades:boolean:true",
+              "description": "Has a has four spades (short major, bid this suit)",
+              "rationale": "short major, bid this suit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "Smolen",
+            "params": {
+              "longMajor": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Smolen 3♠",
+            "summary": "Show 5 hearts and 4 spades with game-forcing values after Stayman denial"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "placing-hearts",
+      "turn": "opener",
+      "surfaces": [
+        {
+          "meaningId": "smolen:place-four-hearts",
+          "semanticClassId": "smolen:place-four-hearts",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.smolen.openerHasHeartFit",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.openerHasHeartFit:boolean:true",
+              "description": "Has a opener has heart fit (fit with responder's 5)",
+              "rationale": "fit with responder's 5",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SmolenPlacement",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4H (heart fit found)",
+            "summary": "Place the contract in 4♥ after confirming a fit with responder's 5-card heart suit"
+          }
+        },
+        {
+          "meaningId": "smolen:place-three-nt-no-heart-fit",
+          "semanticClassId": "smolen:place-three-nt",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.smolen.openerHasHeartFit",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.smolen.openerHasHeartFit:boolean:false",
+              "description": "No opener has heart fit (no fit)",
+              "rationale": "no fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SmolenPlacement",
+            "params": {
+              "suit": "notrump"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3NT (no heart fit)",
+            "summary": "Sign off in 3NT when opener lacks 3-card heart support for responder's 5-card suit"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "placing-spades",
+      "turn": "opener",
+      "negotiationDelta": {
+        "forcing": "game",
+        "fitAgreed": {
+          "strain": "spades",
+          "confidence": "final"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "smolen:accept-spades-3s",
+          "semanticClassId": "smolen:accept-spades-3s",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.smolen.openerHasSpadesFit",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.openerHasSpadesFit:boolean:true",
+              "description": "Has a opener has spades fit (fit with responder's 5)",
+              "rationale": "fit with responder's 5",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SmolenAcceptance",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3S (spade fit found)",
+            "summary": "Confirm a spade fit after responder's Smolen 3♥ showed 5 spades"
+          }
+        },
+        {
+          "meaningId": "smolen:place-three-nt-no-spade-fit",
+          "semanticClassId": "smolen:place-three-nt",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.smolen.openerHasSpadesFit",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.smolen.openerHasSpadesFit:boolean:false",
+              "description": "No opener has spades fit (no fit)",
+              "rationale": "no fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SmolenPlacement",
+            "params": {
+              "suit": "notrump"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3NT (no spade fit)",
+            "summary": "Sign off in 3NT when opener lacks 3-card spade support for responder's 5-card suit"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "accepted-spades",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "smolen:responder-place-four-spades",
+          "semanticClassId": "smolen:responder-place-four-spades",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SmolenPlacement",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4S (complete to game)",
+            "summary": "Raise opener's 3♠ acceptance to the 4♠ game contract"
+          }
+        }
+      ]
+    }
+  ],
+  "facts": {
+    "definitions": [
+      {
+        "id": "module.smolen.hasFiveHearts",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Hand has exactly 5 hearts (for 3♠ Smolen showing long hearts)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.hearts"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.smolen.hasFiveSpades",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Hand has exactly 5 spades (for 3♥ Smolen showing long spades)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.smolen.hasFourSpades",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Hand has exactly 4 spades (short major for 3♠ Smolen: 4♠+5♥)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.smolen.hasFourHearts",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Hand has exactly 4 hearts (short major for 3♥ Smolen: 4♥+5♠)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.hearts"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.smolen.openerHasHeartFit",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Opener has 3+ hearts (heart fit for Smolen placement)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.hearts"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.smolen.openerHasSpadesFit",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Opener has 3+ spades (spade fit for Smolen placement)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ]
+      }
+    ]
+  }
+}

@@ -1,8 +1,58 @@
-import type { SystemConfig } from "../../conventions";
-import { getModule, getBaseModuleIds, getBundleInput } from "../../conventions";
+import type { SystemConfig, BaseSystemId } from "../session-types";
 import {
   ConventionCardSectionId,
 } from "../response-types";
+import { listModules, listConventions, buildBaseModuleInfos, getModuleLearningViewportSync } from "../service-helpers";
+
+// ── Convention catalog functions (delegating to Rust/WASM) ──────────
+
+interface ModuleInfo {
+  readonly moduleId: string;
+  readonly description: string;
+  readonly teaching: { readonly principle?: string; readonly tradeoff?: string; readonly commonMistakes: readonly string[] };
+}
+
+function getModule(moduleId: string, _sys: SystemConfig): ModuleInfo | undefined {
+  try {
+    const catalog = listModules();
+    const entry = catalog.find(m => m.moduleId === moduleId);
+    if (!entry) return undefined;
+    const viewport = getModuleLearningViewportSync(moduleId);
+    return {
+      moduleId: entry.moduleId,
+      description: entry.description,
+      teaching: {
+        principle: viewport?.teaching.principle ?? undefined,
+        tradeoff: viewport?.teaching.tradeoff ?? undefined,
+        commonMistakes: viewport?.teaching.commonMistakes ?? [],
+      },
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function getBaseModuleIds(systemId: BaseSystemId): readonly string[] {
+  try {
+    return buildBaseModuleInfos(systemId).map(m => m.id);
+  } catch {
+    return [];
+  }
+}
+
+function getBundleInput(id: string): { memberIds: readonly string[] } | undefined {
+  try {
+    const all = listConventions();
+    const bundle = all.find(c => c.id === id);
+    if (!bundle) return undefined;
+    // Rust ConventionInfo serializes module_ids as moduleIds
+    // any: listConventions returns ConventionConfig but runtime is ConventionInfo with moduleIds
+    const moduleIds = (bundle as unknown as { moduleIds?: readonly string[] }).moduleIds ?? [];
+    return { memberIds: moduleIds };
+  } catch {
+    return undefined;
+  }
+}
 import type {
   ConventionCardView,
   ConventionCardPanelView,

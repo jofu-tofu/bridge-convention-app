@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { OpponentMode } from "../../session/drill-types";
+import { OpponentMode } from "../../service/session-types";
 import {
   parseArgs,
   requireArg,

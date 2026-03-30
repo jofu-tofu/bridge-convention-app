@@ -8,12 +8,6 @@ import { vi } from "vitest";
 import { tick } from "svelte";
 import { Seat, BidSuit, Suit, Rank, Vulnerability } from "../engine/types";
 import type { Card, Contract, Deal } from "../engine/types";
-import type { DrillSession } from "../session/drill-types";
-import type { PlayStrategy } from "../conventions";
-import type { EnginePort } from "../engine/port";
-import type { DevServicePort, SessionHandle } from "../service";
-import { createLocalService } from "../service";
-import type { DrillBundle } from "../session/drill-types";
 
 export function makeCard(suit: Suit, rank: Rank): Card {
   return { suit, rank };
@@ -43,42 +37,6 @@ export function makeSimpleTestDeal(dealer: Seat = Seat.North): Deal {
   };
 }
 
-/** Create a minimal drill session for testing. All AI seats pass. */
-export function makeDrillSession(
-  userSeat: Seat = Seat.South,
-  playStrategy?: PlayStrategy,
-): DrillSession {
-  const passStrategy = {
-    id: "pass",
-    name: "Pass",
-    suggest: () => ({
-      call: { type: "pass" as const },
-      ruleName: null,
-      explanation: "pass",
-    }),
-  };
-  return {
-    config: {
-      conventionId: "test",
-      userSeat,
-      playStrategy,
-      seatStrategies: {
-        [Seat.North]: passStrategy,
-        [Seat.East]: passStrategy,
-        [Seat.South]: "user",
-        [Seat.West]: passStrategy,
-      },
-    },
-    getNextBid(seat) {
-      if (seat === userSeat) return null;
-      return { call: { type: "pass" }, ruleName: null, explanation: "AI pass" };
-    },
-    isUserSeat(seat) {
-      return seat === userSeat;
-    },
-  };
-}
-
 /** Create a 1NT contract with given declarer. */
 export function makeContract(declarer: Seat): Contract {
   return {
@@ -99,17 +57,4 @@ export async function flushWithFakeTimers() {
     await vi.runAllTimersAsync();
   }
   await tick();
-}
-
-/**
- * Create a service + session handle from a stub engine and pre-built DrillBundle.
- * Used by store tests that don't go through the convention registry.
- */
-export async function createTestServiceSession(
-  engine: EnginePort,
-  bundle: DrillBundle,
-): Promise<{ service: DevServicePort; handle: SessionHandle }> {
-  const service = createLocalService(engine);
-  const handle = await service.createSessionFromBundle(bundle);
-  return { service, handle };
 }

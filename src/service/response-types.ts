@@ -15,8 +15,7 @@
  */
 
 import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Suit, DDSolution, AuctionEntry, NumberRange } from "../engine/types";
-import type { PracticeMode, PlayPreference, PromptMode } from "../session/drill-types";
-import type { TeachingProjection } from "../conventions";
+import type { PracticeMode, PlayPreference, PromptMode, TeachingProjection } from "./session-types";
 
 /** Bid context relative to the practice target. */
 export enum BidContext {
@@ -353,8 +352,9 @@ export interface DDSolutionResult {
 export interface ConventionInfo {
   readonly id: string;
   readonly name: string;
-  readonly description: string;
+  readonly description?: string;
   readonly category?: string;
+  readonly moduleIds?: readonly string[];
 }
 
 // ── Module-Centric Learning Viewport ─────────────────────────────────

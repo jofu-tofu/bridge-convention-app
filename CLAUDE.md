@@ -61,23 +61,19 @@ Backward compat aliases: `?coverage=true` → `?screen=coverage`, `?profiles=tru
 
 - **Fix all lint errors and warnings you encounter** — even if they weren't caused by your changes. If `npm run lint` or a hook reports errors/warnings in files you touched, fix them before finishing.
 - **Lint is scoped to app code, tests, and root JS/TS config files.** `npm run lint` is not a workspace-wide sweep; it excludes generated/tooling directories outside the app surface.
-- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `inference/`, `conventions/`, `strategy/`, `stores/`, `cli/`, `components/`), the UI/backend boundary (components/ cannot import from any backend module -- must use service/), design token usage in game components (`no-hardcoded-style-classes`), and protocol trigger scope (`no-full-scope-trigger`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
+- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `stores/`, `cli/`, `components/`), the UI/backend boundary (components/ cannot import from any backend module -- must use service/), design token usage in game components (`no-hardcoded-style-classes`), and protocol trigger scope (`no-full-scope-trigger`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
 
 ## Conventions
 
-- **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs, or `session/`.
-- **Backend modules import from each other's barrels freely.** `engine/`, `conventions/`, `inference/`, `session/`, `service/` can all import from each other's `index.ts`. Deep imports into subfolders are still blocked for external consumers (conventions barrel enforcement stays). Frontend (`components/`, `stores/`) imports backend types only through `service/`. The service port wire format is the only frontend/backend boundary.
-- **Registry pattern.** Use registries for conventions and strategies, not hardcoded switch statements
-- **EnginePort abstraction.** UI communicates with engine through `EnginePort` interface; engine never imports UI
+- **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs.
+- **Service is the sole interface for UI and CLI.** All UI components (`components/`, `stores/`) and CLI commands (`cli/`) must import exclusively from `service/` — never directly from `engine/`. Backend logic (conventions, inference, session) lives entirely in Rust. When adding new functionality the UI needs, expose it through `ServicePort` in Rust, then add the WASM binding and TS proxy method.
 - **Svelte 5 runes.** Use `$state`, `$derived`, `$effect` — no legacy `$:` reactive statements
 - **Named exports only.** No `export default` — for greppability
 - **No `const enum`** — breaks Vite/isolatedModules; use regular `enum`
 - **No `any` without comment** — annotate with `// any: <reason>`
 - **No mocking own modules** — use dependency injection instead
-- **PlayerViewport boundary.** Game phase components never access raw `Deal`. Everything the player sees flows through viewport types: `BiddingViewport` (bidding), `DeclarerPromptViewport` (declarer prompt), `PlayingViewport` (play), `ExplanationViewport` (review). Viewport builders and `EvaluationOracle` live in `src/session/`. Builders filter hands through faceUpSeats. `EvaluationOracle` is the answer key — only grading code touches it.
-- **Service is the sole interface for UI and CLI.** All UI components (`components/`, `stores/`) and CLI commands (`cli/`) must import exclusively from `service/` — never directly from `engine/`, `conventions/`, `inference/`, or `session/`. `service/evaluation/` is an internal subfolder containing stateless CLI grading logic. ESLint enforces this for CLI commands; UI enforcement is in progress. When adding new functionality the UI needs, expose it through `ServicePort` or as a re-export from `service/index.ts` — do not add direct imports from backend modules.
-- **Strategy contract types live in `conventions/core/strategy-types.ts`.** `BiddingStrategy`, `BidResult`, `BiddingContext`, `PlayStrategy`, `PlayContext`, `PlayResult`, `PosteriorSummary`, `PracticalRecommendation` — NOT in service/ or engine/ — because conventions/ imports them and placing them elsewhere creates circular dependencies.
-- **Callers own their types.** Service defines its own viewport/response types (`BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`, etc.) rather than exposing internal types from backend modules. Engine domain primitives (`Call`, `Card`, `Seat`, `Hand`) are acceptable to re-export since they are universal vocabulary. Convention pipeline internals (`PipelineResult`, `ArbitrationResult`, `MachineDebugSnapshot`, `EvaluatedFacts`) must NOT cross the service boundary — create service-owned viewport types instead.
+- **PlayerViewport boundary.** Game phase components never access raw `Deal`. Everything the player sees flows through viewport types: `BiddingViewport` (bidding), `DeclarerPromptViewport` (declarer prompt), `PlayingViewport` (play), `ExplanationViewport` (review). Viewport builders live in Rust (`bridge-service`).
+- **Callers own their types.** Service defines its own viewport/response types. Engine domain primitives (`Call`, `Card`, `Seat`, `Hand`) are acceptable to re-export since they are universal vocabulary.
 - **Coverage optimization.** Tree LP computes minimal test sessions; two-phase algorithm (leaf sweep + gap fill) covers all (state, surface) pairs efficiently. Module interference detection uses static prefix-overlap analysis.
 
 ## Design Philosophy
@@ -86,7 +82,7 @@ See `docs/design-philosophy.md` for the full set of 10 design principles and sub
 
 ## System Parameterization
 
-Multi-system support (SAYC, 2/1, Acol). Modules are system-agnostic — differences flow through `SystemConfig` → system facts → surface clause evaluation. `SystemConfig` and system fact vocabulary live in `conventions/definitions/`.
+Multi-system support (SAYC, 2/1, Acol). Modules are system-agnostic — differences flow through `SystemConfig` → system facts → surface clause evaluation. `SystemConfig` and system fact vocabulary live in Rust (`bridge-conventions`).
 
 **Base modules:** Each base system has 4 always-active modules: `["natural-bids", "stayman", "jacoby-transfers", "blackwood"]`. These are merged into every `specFromBundle()` call (strategy layer) but NOT into `resolveBundle()` (deal generation/teaching). Base modules affect bidding strategy only — inert modules (e.g., Stayman during Bergen practice) never activate because their FSM triggers never fire.
 
@@ -94,30 +90,17 @@ Multi-system support (SAYC, 2/1, Acol). Modules are system-agnostic — differen
 
 **Dependency direction (hexagonal boundary):**
 ```
-components/ → stores/ → service/ (thin port) → session/ → {engine, conventions, inference}
+components/ → stores/ → service/ (WASM proxy) → [Rust: bridge-service → bridge-session → {bridge-engine, bridge-conventions}]
 cli/commands/ → service/
 ```
-UI layers (`components/`, `stores/`) import ONLY from `service/`. `session/` is the domain layer — it must never import from `service/` (ESLint enforced). `service/` is a thin hexagonal port: `ServicePort`, barrel, `display/`, `util/`, `evaluation/`. Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
+UI layers (`components/`, `stores/`) import ONLY from `service/`. `service/` is a thin WASM proxy: `ServicePort` interface, `WasmService` impl, barrel, `display/`, `util/`, `session-types.ts`, `dds-bridge.ts`. Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
 
 ```
 src/
-  engine/          Pure TS game logic (zero platform deps, includes seeded-rng.ts)
-  conventions/     Convention system
-    core/            Registry, context factory, bundle registry, runtime, strategy contract types — public API via index.ts barrel
-    pipeline/        Meaning pipeline (surfaces → facts → evaluation → arbitration → encoding)
-      facts/           Fact evaluation: hand → facts (primitive, bridge-derived, module-derived)
-      evaluation/      Meaning evaluation + arbitration: surfaces × facts → ranked result
-      observation/     Surface selection (FSM/route/negotiation) + observation log construction
-    teaching/        Teaching resolution, projection builder, parse-tree builder, teaching graph
-    definitions/     Convention bundles + system config + system fact vocabulary
-    adapter/         Convention→strategy bridge (meaning-strategy, protocol-adapter, practical-scorer)
-  inference/       Auction inference system (natural inference, posterior engine, belief accumulator)
-  session/         Domain logic: game state, controllers, drill lifecycle, viewport builders, grading
-    heuristics/    Convention-independent bidding/play heuristics (natural fallback, strategy chain, random/heuristic play)
-  service/         Thin hexagonal port: ServicePort, barrel, display/, util/, evaluation/
-    evaluation/    Stateless CLI grading logic (atom evaluation, playthrough evaluation) — internal to service
-    display/       Call/contract/card formatting, hand summary (moved from core/display/)
-    util/          Pure utilities: delay (moved from core/util/)
+  engine/          Pure TS engine types + DDS browser support (types, auction, scoring, play, dds-client, dds-worker)
+  service/         WASM proxy: ServicePort, WasmService, barrel, session-types, dds-bridge, display/, util/
+    display/       Call/contract/card formatting, hand summary, convention card builder
+    util/          Pure utilities: delay
   cli/             Headless coverage test runner (modular: main.ts + shared.ts + commands/)
   test-support/    Shared test factories (engine stub, deal/session fixtures)
   stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI, dev-params)
@@ -126,11 +109,14 @@ src/
     screens/       Screen-level components (ConventionSelectScreen, LearningScreen, game-screen/GameScreen)
     game/          Game components + co-located .ts companions (DecisionTree.ts, RoundBidList.ts, BidFeedbackPanel.ts)
     shared/        Reusable components (Card, Button, ConventionCallout) + display utilities (tokens, sort-cards, seat-mapping, table-scale, breakpoints, vulnerability-labels, layout-props)
-src-tauri/         Cargo workspace with three crates
+src-tauri/         Cargo workspace with six crates
   crates/
-    bridge-engine/   Pure Rust engine logic (types, hand eval, deal gen, auction, scoring, play)
-    bridge-tauri/    Tauri app with #[tauri::command] handlers delegating to bridge-engine free functions
-    bridge-wasm/     WASM bindings via wasm-bindgen for browser deployment
+    bridge-engine/       Pure Rust game logic (types, hand eval, deal gen, auction, scoring, play)
+    bridge-conventions/  Convention types, fact DSL, pipeline, teaching, adapter
+    bridge-session/      Session state, controllers, heuristics, inference
+    bridge-service/      ServicePort impl, viewport builders
+    bridge-tauri/        Tauri app with #[tauri::command] handlers wrapping ServicePortImpl
+    bridge-wasm/         WASM bindings via wasm-bindgen for browser deployment (full ServicePort)
 tests/
   e2e/             Playwright E2E tests
 ```
@@ -139,36 +125,32 @@ tests/
 
 | Subsystem | Entry | Summary |
 |-----------|-------|---------|
-| Engine | `src/engine/types.ts` | Pure TS game logic |
-| Conventions | `src/conventions/index.ts` | Convention system (core/ + pipeline/ + teaching/ + definitions/ + adapter/) |
-| Pipeline | `src/conventions/pipeline/run-pipeline.ts` | Meaning pipeline (facts/ → evaluation/ → observation/) with cross-cutting types at root |
-| Adapter | `src/conventions/adapter/protocol-adapter.ts` | Convention→strategy bridge (meaning-strategy, protocol-adapter, practical-scorer) |
-| Teaching | `src/conventions/teaching/teaching-resolution.ts` | Teaching resolution and projection (inside conventions/) |
-| Inference | `src/inference/inference-engine.ts` | Auction inference |
-| Session | `src/session/session-state.ts` | Domain: game state, controllers, drill lifecycle, viewport builders, heuristics |
-| Service | `src/service/index.ts` | Thin hexagonal port + barrel + evaluation facade + display/ + util/ |
+| Engine (TS) | `src/engine/types.ts` | TS engine types + DDS browser support |
+| Engine (Rust) | `src-tauri/crates/bridge-engine/` | Pure Rust game logic |
+| Conventions (Rust) | `src-tauri/crates/bridge-conventions/` | Convention types, fact DSL, pipeline, teaching, adapter |
+| Session (Rust) | `src-tauri/crates/bridge-session/` | Session state, controllers, heuristics, inference |
+| Service (Rust) | `src-tauri/crates/bridge-service/` | ServicePort impl, viewport builders |
+| Service (TS) | `src/service/index.ts` | WASM proxy + barrel + session-types + display/ + util/ + dds-bridge |
 | CLI | `src/cli/main.ts` | Headless coverage test runner (modular) |
 | Test Support | `src/test-support/engine-stub.ts` | Shared test factories |
 | Stores | `src/stores/app.svelte.ts` | Svelte stores + game coordinator |
 | Components | — | Svelte UI (screens/game/shared) |
 | Tests | `tests/e2e/` | Vitest + Playwright |
 
-**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION. User always bids as South. `playPreference` (from practice mode) controls BIDDING exit: `skip` → EXPLANATION, `always` → PLAYING, `prompt` → DECLARER_PROMPT. Details in `src/stores/CLAUDE.md`.
+**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION. User always bids as South. `playPreference` (from practice mode) controls BIDDING exit: `skip` → EXPLANATION, `always` → PLAYING, `prompt` → DECLARER_PROMPT.
 
 **V1 storage:** localStorage for user preferences only — no stats/progress tracking until V2 (SQLite)
 
-## In-Progress: Rust/WASM Migration
+## Completed: Rust/WASM Migration
 
-Backend modules (conventions/, inference/, session/) are being migrated from TypeScript to Rust/WASM.
-See `docs/migration/index.md` for the full spec, phase tracker, and architectural decisions.
-Current phase and status are tracked there. See `docs/product-direction.md` for the product
-decisions driving this migration.
+Backend modules (conventions/, inference/, session/, service/) have been migrated from TypeScript to Rust/WASM. All 5 phases are complete. TS `service/` is now a thin WASM proxy (~100 LOC). Convention logic, inference, session management, and viewport building all run in Rust.
+See `docs/migration/index.md` for the phase tracker and architectural decisions. See `docs/product-direction.md` for the product decisions that drove this migration.
 
 ## Gotchas
 
 - `npm run dev` builds WASM if `pkg/` missing, then starts Vite with HMR — the dev server stays running and reflects file changes instantly. Do NOT restart the server or browser after editing source files; just save and the page updates automatically
 - WASM must build before Vite (`npm run dev` handles this automatically via `wasm:ensure`)
-- **No pure-TS EnginePort.** Browser=WASM (`WasmEngine`), desktop=Tauri IPC (`TauriIpcEngine`), no fallback. See `docs/gotchas.md` for details.
+- **WASM required for browser.** All game logic runs in Rust via WASM. If WASM init fails, the app shows an error screen — no fallback. See `docs/gotchas.md` for details.
 - Never build bridge-wasm via `cargo build --workspace`; always use `wasm-pack` to isolate feature resolution and prevent `getrandom/js` from bleeding into native builds
 - Read a subsystem's CLAUDE.md before working in that directory
 - Full testing playbook is in **TESTING.md**, not here
@@ -180,20 +162,10 @@ decisions driving this migration.
 
 **Context tree** (read the relevant one before working in that directory):
 
-- `src/engine/CLAUDE.md` — engine purity, module graph, key patterns
-- `src/conventions/CLAUDE.md` — registry pattern, convention bundles
-- `src/conventions/core/CLAUDE.md` — runtime, bundle systems, absorbed types from former core/contracts/
-- `src/conventions/pipeline/CLAUDE.md` — pipeline module graph, 6-stage pipeline flow, test architecture
-- `src/conventions/definitions/CLAUDE.md` — system config, system fact vocabulary
-- `src/inference/CLAUDE.md` — inference architecture, posterior engine
-- `src/inference/posterior/CLAUDE.md` — posterior subsystem: factor compiler, backend, query port
-- `src/session/CLAUDE.md` — domain logic: game state, controllers, drill lifecycle, viewport builders, heuristics
-- `src/session/heuristics/CLAUDE.md` — convention-independent bidding/play heuristics
-- `src/conventions/adapter/CLAUDE.md` — convention→strategy bridge (meaning-strategy, protocol-adapter, practical-scorer)
-- `src/service/CLAUDE.md` — thin hexagonal port, display/, util/, evaluation/
-- `src/service/evaluation/CLAUDE.md` — stateless CLI grading logic
+- `src/engine/CLAUDE.md` — engine types, DDS browser support, module graph
+- `src/service/CLAUDE.md` — WASM proxy, display/, util/, session-types
+- `src-tauri/CLAUDE.md` — Rust workspace: 6 crates, serde contract, commands
 - `src/cli/CLAUDE.md` — headless coverage test runner
-- `src/conventions/teaching/CLAUDE.md` — convention evaluation for teaching
 - `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns
 - `src/stores/CLAUDE.md` — factory DI pattern, game store methods, race condition handling
 - `src/test-support/CLAUDE.md` — shared test factories, dependency rules
@@ -211,7 +183,7 @@ for routine work. **Read from docs/ when:**
   or the relevant subsystem doc
 - **Adding a new convention bundle** → read `docs/convention-authoring.md` for the full
   checklist, templates, and common pitfalls
-- **Working on inference/posterior** → read `docs/architecture-specs.md` for open questions
+- **Working on inference/posterior (Rust)** → read `docs/architecture-specs.md` for open questions
   and spec status before implementing
 - **Planning a large refactor** → read `docs/design-philosophy.md` + `docs/architecture-specs.md`
   to avoid violating architectural constraints
@@ -222,7 +194,7 @@ for routine work. **Read from docs/ when:**
 - **Product direction and deployment** → read `docs/product-direction.md` for monetization model,
   deployment architecture, two-port model, content protection strategy, and decision history
 - **Rust/WASM migration** → read `docs/migration/index.md` for phase tracker, architectural
-  decisions, and per-phase specs. Backend modules are being migrated from TypeScript to Rust/WASM.
+  decisions, and per-phase specs. Migration is complete; docs retained as architectural reference.
 
 **Update docs/ when:**
 
@@ -272,4 +244,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-25 | version=19 | dir-commits-at-audit=62 | tree-sig=dirs:20,files:150+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-29 | version=20 | dir-commits-at-audit=67 | tree-sig=dirs:15,files:100+ -->

@@ -6,9 +6,6 @@
 // on the evaluation facade (not on ServicePort).
 
 import type { DevServicePort } from "../../service";
-import {
-  getPlaythroughRevealSteps,
-} from "../../service";
 import type { Flags, OpponentMode ,
   Vulnerability, BaseSystemId} from "../shared";
 import {
@@ -23,10 +20,9 @@ export async function runPlay(service: DevServicePort, flags: Flags, vuln: Vulne
   const reveal = flags["reveal"] === true;
 
   if (reveal) {
-    // Reveal stays on the evaluation facade — it's a diagnostic function
-    const { totalSteps, steps, atomsCovered } = getPlaythroughRevealSteps(bundleId, seed, vuln, opponentMode, baseSystem);
-    console.log(JSON.stringify({ seed, totalSteps, steps, atomsCovered }, null, 2));
-    return;
+    // Reveal diagnostic has been removed — functionality moved to Rust/WASM
+    console.error("The --reveal flag has been removed. Reveal functionality has moved to Rust/WASM.");
+    process.exit(2);
   }
 
   if (stepIdx === undefined) {

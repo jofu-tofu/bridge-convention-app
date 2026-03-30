@@ -4,8 +4,8 @@
  * Tests the pure isValidTransition() function directly.
  */
 import { describe, it, expect } from "vitest";
-import { isValidTransition, VALID_TRANSITIONS } from "../../session/phase-machine";
-import type { GamePhase } from "../../session/phase-machine";
+import { isValidTransition } from "../../service/session-types";
+import type { GamePhase } from "../../service/session-types";
 
 describe("phase machine — pure logic", () => {
   describe("valid transitions", () => {
@@ -55,15 +55,6 @@ describe("phase machine — pure logic", () => {
       const phases: GamePhase[] = ["BIDDING", "DECLARER_PROMPT", "PLAYING", "EXPLANATION"];
       for (const phase of phases) {
         expect(isValidTransition(phase, phase)).toBe(false);
-      }
-    });
-  });
-
-  describe("VALID_TRANSITIONS completeness", () => {
-    it("every phase has at least one valid target", () => {
-      const phases: GamePhase[] = ["BIDDING", "DECLARER_PROMPT", "PLAYING", "EXPLANATION"];
-      for (const phase of phases) {
-        expect(VALID_TRANSITIONS[phase].length).toBeGreaterThan(0);
       }
     });
   });

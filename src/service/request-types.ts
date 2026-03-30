@@ -7,7 +7,7 @@
  */
 
 import type { Seat } from "../engine/types";
-import type { DrillSettings, PracticeMode, PracticeRole } from "../session/drill-types";
+import type { DrillSettings, PracticeMode, PracticeRole } from "./session-types";
 
 // ── Session Handle ──────────────────────────────────────────────────
 

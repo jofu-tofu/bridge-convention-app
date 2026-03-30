@@ -9,6 +9,9 @@ dds = ["bridge-engine/dds"]
 
 [dependencies]
 bridge-engine = { path = "../bridge-engine" }
+bridge-conventions = { path = "../bridge-conventions" }
+bridge-session = { path = "../bridge-session" }
+bridge-service = { path = "../bridge-service" }
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }

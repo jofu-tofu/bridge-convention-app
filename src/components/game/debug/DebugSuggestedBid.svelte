@@ -28,16 +28,6 @@
         <span class="text-text-muted">hand</span>
         <span class="text-text-primary">{bid.handSummary}</span>
       {/if}
-      {#if bid.evaluationTrace}
-        <span class="text-text-muted">convention</span>
-        <span class="text-text-primary">{bid.evaluationTrace.conventionId}</span>
-        <span class="text-text-muted">candidates</span>
-        <span class="text-text-primary">{bid.evaluationTrace.candidateCount}</span>
-        {#if bid.evaluationTrace.posteriorSampleCount}
-          <span class="text-text-muted">posterior</span>
-          <span class="text-text-primary">{bid.evaluationTrace.posteriorSampleCount} samples, {((bid.evaluationTrace.posteriorConfidence ?? 0) * 100).toFixed(0)}% conf</span>
-        {/if}
-      {/if}
     </div>
   {:else}
     <span class="text-yellow-300/50 italic text-[10px]">No convention bid (pass)</span>

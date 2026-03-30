@@ -2,10 +2,10 @@ import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/svelte";
 import BridgeTableTestWrapper from "../BridgeTableTestWrapper.svelte";
 import { Seat } from "../../../service";
-import { makeDeal } from "../../../test-support/engine-stub";
+import { makeSimpleTestDeal } from "../../../test-support/fixtures";
 
 describe("BridgeTable", () => {
-  const deal = makeDeal();
+  const deal = makeSimpleTestDeal();
   const defaultProps = {
     hands: deal.hands,
     faceUpSeats: new Set([Seat.South]),

@@ -2,7 +2,7 @@
 
 // ── 1. Service Port & Implementation ─────────────────────────────────
 export type { DevServicePort } from "./port";
-export { createLocalService } from "./local-service";
+export { WasmService, initWasmService } from "./wasm-service";
 export type { SessionHandle, SessionConfig } from "./request-types";
 
 // ── 2. Viewports & Response Types (service-owned) ────────────────────
@@ -41,48 +41,67 @@ export type {
 // ── 3. Game Vocabulary (engine primitives) ───────────────────────────
 export { Seat, Suit, Rank, BidSuit, Vulnerability } from "../engine/types";
 export type { Call, Card, Hand, ContractBid, Contract, Auction, AuctionEntry, Trick, PlayedCard, DDSolution, Deal } from "../engine/types";
-export type { EnginePort } from "../engine/port";
 export { SEAT_INDEX, SUIT_ORDER, RANK_INDEX, SEATS, nextSeat, partnerSeat } from "../engine/constants";
 export { callKey, callsMatch } from "../engine/call-helpers";
 export { isVulnerable } from "../engine/scoring";
 export { evaluateHand, calculateHcp } from "../engine/hand-evaluator";
 
-// ── 4. Convention Catalog & Strategy ─────────────────────────────────
-export { ConventionCategory, getConvention, getModule, listConventions } from "../conventions";
-export { SAYC_SYSTEM_CONFIG, AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../conventions";
-export type { ConventionConfig, ConventionContribution, ParseTreeView, TeachingProjection, EncoderKind, BaseSystemId, SystemConfig, TotalPointEquivalent } from "../conventions";
-export { createBiddingContext } from "../conventions";
-export type { BidResult, BiddingContext } from "../conventions";
-export type { PlayStrategy, PlayContext, PlayResult, PosteriorSummary } from "../conventions";
+// ── 4. Convention & Session Types (service-owned stubs) ──────────────
+// These were formerly in conventions/ and session/. Now defined locally
+// in session-types.ts as the TS type declarations matching Rust/WASM.
+export {
+  ConventionCategory,
+  SAYC_SYSTEM_CONFIG,
+  AVAILABLE_BASE_SYSTEMS,
+  getSystemConfig,
+  createBiddingContext,
+  OpponentMode,
+  PracticeMode,
+  PracticeRole,
+  PlayPreference,
+  PromptMode,
+  DEFAULT_DRILL_TUNING,
+  DEFAULT_DRILL_SETTINGS,
+  PLAY_PROFILES,
+  isValidTransition,
+  resolveTransition,
+  DEFAULT_PRACTICE_PREFERENCES,
+  DEFAULT_DISPLAY_PREFERENCES,
+} from "./session-types";
+export type {
+  ConventionConfig,
+  ConventionTeaching,
+  BaseSystemId,
+  SystemConfig,
+  TotalPointEquivalent,
+  VulnerabilityDistribution,
+  DrillSettings,
+  PlayProfileId,
+  GamePhase,
+  ViewportNeeded,
+  PracticePreferences,
+  DisplayPreferences,
+  BiddingContext,
+  EncoderKind,
+  ConventionContribution,
+  ParseTreeView,
+  BidResult,
+  PosteriorSummary,
+  PosteriorFactValue,
+  TeachingProjection,
+  AtomGradeResult,
+  PlaythroughHandle,
+  PlaythroughGradeResult,
+} from "./session-types";
 
-// ── 5. Coverage Utilities ────────────────────────────────────────────
-export { listBundleInputs, resolveBundle, getBundleInput, enumerateRuleAtoms, generateRuleCoverageManifest } from "../conventions";
-export type { RuleCoverageManifest, ConventionBundle } from "../conventions";
+// ── 5. Sync Service Helpers (for UI components) ─────────────────────
+export { listConventions, listModules, buildBaseModuleInfos } from "./service-helpers";
 
-// ── 5b. Session viewport builders (re-exported for UI consumption) ───
-export { buildBaseModuleInfos } from "../session/learning-viewport";
-
-// ── 6. Session Configuration ─────────────────────────────────────────
-export { OpponentMode, PracticeMode, PracticeRole, PlayPreference, PromptMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS } from "../session";
-export type { VulnerabilityDistribution, DrillSettings } from "../session";
-export type { PlayProfileId } from "../session";
-export { PLAY_PROFILES } from "../session";
-export { isValidTransition, resolveTransition } from "../session";
-export type { GamePhase, ViewportNeeded } from "../session";
-export type { PracticePreferences, DisplayPreferences } from "../session";
-export { DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../session";
-
-// ── 7. Display & Formatting ─────────────────────────────────────────
+// ── 6. Display & Formatting ─────────────────────────────────────────
 export { displayConventionName, formatCall, formatContractWithDeclarer, formatRuleName, displayRank, formatCardLabel, SUIT_SYMBOLS, STRAIN_SYMBOLS } from "./display/format";
 export { buildConventionCard, buildConventionCardPanel } from "./display/convention-card";
 
-// ── 8. Evaluation Facade (CLI grading) ──────────────────────────────
-export { buildAtomViewport, gradeAtomBid, validateAtomId, parseAtomId } from "./evaluation/atom-evaluator";
-export { startPlaythrough, getPlaythroughStepViewport, gradePlaythroughBid, getPlaythroughRevealSteps } from "./evaluation/playthrough-evaluator";
-export type { AtomGradeResult, PlaythroughHandle, PlaythroughGradeResult } from "./evaluation/types";
-
-// ── 9. Cross-cutting ────────────────────────────────────────────────
-export type { PosteriorFactValue } from "../inference/posterior/posterior-types";
+// ── 7. Cross-cutting ────────────────────────────────────────────────
 export { delay } from "./util/delay";
 
 // ── Debug-only types — import from service/debug-types instead ──

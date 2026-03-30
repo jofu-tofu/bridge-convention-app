@@ -1,0 +1,899 @@
+{
+  "moduleId": "blackwood",
+  "description": "Use 4NT to ask for aces when considering slam",
+  "purpose": "Determine whether the partnership has enough aces to bid slam safely",
+  "teaching": {
+    "tradeoff": "Using 4NT as Blackwood means you can't use it as a natural quantitative raise to slam.",
+    "principle": "Before bidding slam, check for aces — missing two aces means the opponents can cash two tricks immediately.",
+    "commonMistakes": [
+      "Don't bid Blackwood without an agreed trump fit — you need a fit before asking for aces",
+      "5NT king ask guarantees all four aces are accounted for — never bid 5NT missing an ace"
+    ]
+  },
+  "explanationEntries": [
+    {
+      "explanationId": "blackwood.slamInterest",
+      "factId": "module.blackwood.slamInterest",
+      "templateKey": "blackwood.slamInterest.supporting",
+      "displayText": "Hand has slam interest (enough combined strength for slam)",
+      "contrastiveTemplateKey": "blackwood.slamInterest.whyNot",
+      "contrastiveDisplayText": "Not enough strength for slam exploration",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking",
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.aceCount",
+      "factId": "module.blackwood.aceCount",
+      "templateKey": "blackwood.aceCount.mechanical",
+      "displayText": "Number of aces held",
+      "preferredLevel": "mechanical",
+      "roles": [
+        "supporting"
+      ]
+    },
+    {
+      "explanationId": "blackwood.kingCount",
+      "factId": "module.blackwood.kingCount",
+      "templateKey": "blackwood.kingCount.mechanical",
+      "displayText": "Number of kings held",
+      "preferredLevel": "mechanical",
+      "roles": [
+        "supporting"
+      ]
+    },
+    {
+      "explanationId": "blackwood.askAces",
+      "meaningId": "blackwood:ask-aces",
+      "templateKey": "blackwood.askAces.semantic",
+      "displayText": "Blackwood 4NT: asks partner how many aces they hold",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.response0Aces",
+      "meaningId": "blackwood:response-0-aces",
+      "templateKey": "blackwood.response0Aces.semantic",
+      "displayText": "5♣ shows 0 (or 4) aces",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.response4Aces",
+      "meaningId": "blackwood:response-4-aces",
+      "templateKey": "blackwood.response4Aces.semantic",
+      "displayText": "5♣ shows 0 (or 4) aces",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.response1Ace",
+      "meaningId": "blackwood:response-1-ace",
+      "templateKey": "blackwood.response1Ace.semantic",
+      "displayText": "5♦ shows 1 ace",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.response2Aces",
+      "meaningId": "blackwood:response-2-aces",
+      "templateKey": "blackwood.response2Aces.semantic",
+      "displayText": "5♥ shows 2 aces",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.response3Aces",
+      "meaningId": "blackwood:response-3-aces",
+      "templateKey": "blackwood.response3Aces.semantic",
+      "displayText": "5♠ shows 3 aces",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.askKings",
+      "meaningId": "blackwood:ask-kings",
+      "templateKey": "blackwood.askKings.semantic",
+      "displayText": "5NT asks for kings (guarantees all aces are held)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.signoffSmallSlam",
+      "meaningId": "blackwood:signoff-small-slam",
+      "templateKey": "blackwood.signoffSmallSlam.semantic",
+      "displayText": "Sign off at 6NT — small slam",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.signoffGrandSlam",
+      "meaningId": "blackwood:signoff-grand-slam",
+      "templateKey": "blackwood.signoffGrandSlam.semantic",
+      "displayText": "Bid 7NT — grand slam with all aces and kings",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.signoff5Level",
+      "meaningId": "blackwood:signoff-5-level",
+      "templateKey": "blackwood.signoff5Level.semantic",
+      "displayText": "Stop at 5-level — partnership is missing too many aces for slam",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.kingResponse0",
+      "meaningId": "blackwood:king-response-0",
+      "templateKey": "blackwood.kingResponse0.semantic",
+      "displayText": "6♣ shows 0 (or 4) kings",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.kingResponse4",
+      "meaningId": "blackwood:king-response-4",
+      "templateKey": "blackwood.kingResponse4.semantic",
+      "displayText": "6♣ shows 0 (or 4) kings",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.kingResponse1",
+      "meaningId": "blackwood:king-response-1",
+      "templateKey": "blackwood.kingResponse1.semantic",
+      "displayText": "6♦ shows 1 king",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.kingResponse2",
+      "meaningId": "blackwood:king-response-2",
+      "templateKey": "blackwood.kingResponse2.semantic",
+      "displayText": "6♥ shows 2 kings",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.kingResponse3",
+      "meaningId": "blackwood:king-response-3",
+      "templateKey": "blackwood.kingResponse3.semantic",
+      "displayText": "6♠ shows 3 kings",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    }
+  ],
+  "local": {
+    "initial": "idle",
+    "transitions": [
+      {
+        "from": "idle",
+        "to": "asked",
+        "on": {
+          "act": "inquire",
+          "feature": "keyCards"
+        }
+      },
+      {
+        "from": "asked",
+        "to": "responded",
+        "on": {
+          "act": "show",
+          "feature": "keyCards"
+        }
+      },
+      {
+        "from": "responded",
+        "to": "king-ask",
+        "on": {
+          "act": "inquire",
+          "feature": "control"
+        }
+      },
+      {
+        "from": "responded",
+        "to": "done",
+        "on": {
+          "act": "signoff"
+        }
+      },
+      {
+        "from": "king-ask",
+        "to": "king-responded",
+        "on": {
+          "act": "show",
+          "feature": "control"
+        }
+      },
+      {
+        "from": "king-responded",
+        "to": "done",
+        "on": {
+          "act": "signoff"
+        }
+      }
+    ]
+  },
+  "states": [
+    {
+      "phase": "idle",
+      "turn": "responder",
+      "kernel": {
+        "kind": "fit"
+      },
+      "negotiationDelta": {
+        "forcing": "one-round"
+      },
+      "surfaces": [
+        {
+          "meaningId": "blackwood:ask-aces",
+          "semanticClassId": "blackwood:ask-aces",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.slamValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.slamValues:boolean:true",
+              "description": "Has a slam values (slam interest)",
+              "rationale": "slam interest",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "BlackwoodAsk",
+            "params": {
+              "feature": "aces"
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "Blackwood 4NT",
+            "summary": "Ask partner how many aces they hold to evaluate slam potential"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "asked",
+      "turn": "opener",
+      "negotiationDelta": {
+        "forcing": "none"
+      },
+      "surfaces": [
+        {
+          "meaningId": "blackwood:response-0-aces",
+          "semanticClassId": "blackwood:ace-response",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.aceCount",
+              "operator": "eq",
+              "value": 0,
+              "clauseId": "module.blackwood.aceCount:eq:0",
+              "description": "Exactly 0 ace count",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "ShowAceCount",
+            "params": {
+              "count": 0
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "5♣ — 0 (or 4) aces",
+            "summary": "Show zero aces in response to partner's Blackwood ask"
+          }
+        },
+        {
+          "meaningId": "blackwood:response-4-aces",
+          "semanticClassId": "blackwood:ace-response",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.aceCount",
+              "operator": "eq",
+              "value": 4,
+              "clauseId": "module.blackwood.aceCount:eq:4",
+              "description": "Exactly 4 ace count",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "ShowAceCount",
+            "params": {
+              "count": 4
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "5♣ — 0 (or 4) aces",
+            "summary": "Show all four aces in response to partner's Blackwood ask"
+          }
+        },
+        {
+          "meaningId": "blackwood:response-1-ace",
+          "semanticClassId": "blackwood:ace-response",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.aceCount",
+              "operator": "eq",
+              "value": 1,
+              "clauseId": "module.blackwood.aceCount:eq:1",
+              "description": "Exactly 1 ace count",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "ShowAceCount",
+            "params": {
+              "count": 1
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "5♦ — 1 ace",
+            "summary": "Show exactly one ace in response to partner's Blackwood ask"
+          }
+        },
+        {
+          "meaningId": "blackwood:response-2-aces",
+          "semanticClassId": "blackwood:ace-response",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.aceCount",
+              "operator": "eq",
+              "value": 2,
+              "clauseId": "module.blackwood.aceCount:eq:2",
+              "description": "Exactly 2 ace count",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "ShowAceCount",
+            "params": {
+              "count": 2
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "5♥ — 2 aces",
+            "summary": "Show exactly two aces in response to partner's Blackwood ask"
+          }
+        },
+        {
+          "meaningId": "blackwood:response-3-aces",
+          "semanticClassId": "blackwood:ace-response",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.aceCount",
+              "operator": "eq",
+              "value": 3,
+              "clauseId": "module.blackwood.aceCount:eq:3",
+              "description": "Exactly 3 ace count",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "ShowAceCount",
+            "params": {
+              "count": 3
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "5♠ — 3 aces",
+            "summary": "Show exactly three aces in response to partner's Blackwood ask"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "responded",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "blackwood:ask-kings",
+          "semanticClassId": "blackwood:ask-kings",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "NT"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "BlackwoodAsk",
+            "params": {
+              "feature": "kings"
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "Ask for kings",
+            "summary": "Confirm all aces are held and ask partner how many kings they have"
+          }
+        },
+        {
+          "meaningId": "blackwood:signoff-small-slam",
+          "semanticClassId": "blackwood:signoff",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "NT"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "BlackwoodSignoff",
+            "params": {
+              "level": "small-slam"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "6NT — small slam signoff",
+            "summary": "Bid small slam after confirming sufficient aces for twelve tricks"
+          }
+        },
+        {
+          "meaningId": "blackwood:signoff-5-level",
+          "semanticClassId": "blackwood:signoff",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "NT"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "BlackwoodSignoff",
+            "params": {
+              "level": "five"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Sign off",
+            "summary": "Stop below slam after learning the partnership is missing too many aces"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "king-ask",
+      "turn": "opener",
+      "negotiationDelta": {
+        "forcing": "none"
+      },
+      "surfaces": [
+        {
+          "meaningId": "blackwood:king-response-0",
+          "semanticClassId": "blackwood:king-response",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.kingCount",
+              "operator": "eq",
+              "value": 0,
+              "clauseId": "module.blackwood.kingCount:eq:0",
+              "description": "Exactly 0 king count",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "ShowKingCount",
+            "params": {
+              "count": 0
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "6♣ — 0 (or 4) kings",
+            "summary": "Show zero kings in response to partner's king ask"
+          }
+        },
+        {
+          "meaningId": "blackwood:king-response-4",
+          "semanticClassId": "blackwood:king-response",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.kingCount",
+              "operator": "eq",
+              "value": 4,
+              "clauseId": "module.blackwood.kingCount:eq:4",
+              "description": "Exactly 4 king count",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "ShowKingCount",
+            "params": {
+              "count": 4
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "6♣ — 0 (or 4) kings",
+            "summary": "Show all four kings in response to partner's king ask"
+          }
+        },
+        {
+          "meaningId": "blackwood:king-response-1",
+          "semanticClassId": "blackwood:king-response",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.kingCount",
+              "operator": "eq",
+              "value": 1,
+              "clauseId": "module.blackwood.kingCount:eq:1",
+              "description": "Exactly 1 king count",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "ShowKingCount",
+            "params": {
+              "count": 1
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "6♦ — 1 king",
+            "summary": "Show exactly one king in response to partner's king ask"
+          }
+        },
+        {
+          "meaningId": "blackwood:king-response-2",
+          "semanticClassId": "blackwood:king-response",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.kingCount",
+              "operator": "eq",
+              "value": 2,
+              "clauseId": "module.blackwood.kingCount:eq:2",
+              "description": "Exactly 2 king count",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "ShowKingCount",
+            "params": {
+              "count": 2
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "6♥ — 2 kings",
+            "summary": "Show exactly two kings in response to partner's king ask"
+          }
+        },
+        {
+          "meaningId": "blackwood:king-response-3",
+          "semanticClassId": "blackwood:king-response",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.kingCount",
+              "operator": "eq",
+              "value": 3,
+              "clauseId": "module.blackwood.kingCount:eq:3",
+              "description": "Exactly 3 king count",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "ShowKingCount",
+            "params": {
+              "count": 3
+            }
+          },
+          "disclosure": "standard",
+          "teachingLabel": {
+            "name": "6♠ — 3 kings",
+            "summary": "Show exactly three kings in response to partner's king ask"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "king-responded",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "blackwood:signoff-grand-slam",
+          "semanticClassId": "blackwood:signoff",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 7,
+              "strain": "NT"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "BlackwoodSignoff",
+            "params": {
+              "level": "grand-slam"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "7NT — grand slam",
+            "summary": "Bid grand slam after confirming all aces and sufficient kings"
+          }
+        },
+        {
+          "meaningId": "blackwood:signoff-small-slam",
+          "semanticClassId": "blackwood:signoff",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "NT"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "BlackwoodSignoff",
+            "params": {
+              "level": "small-slam"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "6NT — small slam signoff",
+            "summary": "Settle for small slam after learning the partnership is missing a king"
+          }
+        }
+      ]
+    }
+  ],
+  "facts": {
+    "definitions": [
+      {
+        "id": "module.blackwood.slamInterest",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Hand has slam-level values (HCP meets system slam threshold)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.hcp",
+            "operator": "gte",
+            "value": 15
+          }
+        }
+      },
+      {
+        "id": "module.blackwood.aceCount",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Number of aces held in hand (0-4)",
+        "valueType": "number",
+        "constrainsDimensions": []
+      },
+      {
+        "id": "module.blackwood.kingCount",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Number of kings held in hand (0-4)",
+        "valueType": "number",
+        "constrainsDimensions": []
+      }
+    ]
+  }
+}

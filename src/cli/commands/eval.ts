@@ -4,15 +4,18 @@
 // boundary applies to CLI and UI.
 
 import type { DevServicePort } from "../../service";
-import {
-  validateAtomId,
-  parseAtomId,
-} from "../../service";
 import type { Flags ,
   Vulnerability, BaseSystemId} from "../shared";
 import {
   requireArg, optionalNumericArg,
 } from "../shared";
+
+/** Parse an atom ID into components (moduleId/meaningId). */
+function parseAtomId(atomId: string): { moduleId: string; meaningId: string } {
+  const slashIdx = atomId.indexOf("/");
+  if (slashIdx < 0) throw new Error(`Invalid atom ID: "${atomId}"`);
+  return { moduleId: atomId.slice(0, slashIdx), meaningId: atomId.slice(slashIdx + 1) };
+}
 
 export async function runEval(service: DevServicePort, flags: Flags, vuln: Vulnerability, baseSystem: BaseSystemId): Promise<void> {
   const bundleId = requireArg(flags, "bundle");
@@ -28,13 +31,7 @@ export async function runEval(service: DevServicePort, flags: Flags, vuln: Vulne
     process.exit(2);
   }
 
-  try {
-    validateAtomId(bundleId, atomId);
-  } catch {
-    console.error(`Unknown atom: "${atomId}"`);
-    console.error("Use 'list --bundle=<id>' to see valid atom IDs.");
-    process.exit(2);
-  }
+  // Atom validation is now done server-side by WasmService.evaluateAtom/gradeAtom
 
   if (!bidStr || bidStr === "true") {
     // No bid: return viewport only
