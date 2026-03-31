@@ -192,39 +192,39 @@ pub fn format_module_name(module_id: &str) -> String {
 /// Replace bid letter references (e.g., "2C", "3H") in text with Unicode suit symbols.
 /// Pattern: digit(1-7) followed by C/D/H/S/NT, not surrounded by letters.
 pub fn format_bid_references(text: &str) -> String {
-    let bytes = text.as_bytes();
-    let len = bytes.len();
-    let mut result = String::with_capacity(len);
+    let chars: Vec<char> = text.chars().collect();
+    let len = chars.len();
+    let mut result = String::with_capacity(text.len());
     let mut i = 0;
 
     while i < len {
         // Check if previous char is a letter (ASCII)
-        let prev_is_letter = i > 0 && bytes[i - 1].is_ascii_alphabetic();
+        let prev_is_letter = i > 0 && chars[i - 1].is_ascii_alphabetic();
 
-        if !prev_is_letter && bytes[i].is_ascii_digit() {
-            let digit = bytes[i];
-            if digit >= b'1' && digit <= b'7' && i + 1 < len {
+        if !prev_is_letter && chars[i].is_ascii_digit() {
+            let digit = chars[i];
+            if digit >= '1' && digit <= '7' && i + 1 < len {
                 // Try NT first (2 chars)
-                if i + 2 < len && bytes[i + 1] == b'N' && bytes[i + 2] == b'T' {
-                    let next_after = if i + 3 < len { bytes[i + 3] } else { b' ' };
+                if i + 2 < len && chars[i + 1] == 'N' && chars[i + 2] == 'T' {
+                    let next_after = if i + 3 < len { chars[i + 3] } else { ' ' };
                     if !next_after.is_ascii_alphabetic() {
-                        result.push(digit as char);
+                        result.push(digit);
                         result.push_str("NT");
                         i += 3;
                         continue;
                     }
                 }
                 // Try single suit letter
-                let suit_char = bytes[i + 1];
-                if matches!(suit_char, b'C' | b'D' | b'H' | b'S') {
-                    let next_after = if i + 2 < len { bytes[i + 2] } else { b' ' };
+                let suit_char = chars[i + 1];
+                if matches!(suit_char, 'C' | 'D' | 'H' | 'S') {
+                    let next_after = if i + 2 < len { chars[i + 2] } else { ' ' };
                     if !next_after.is_ascii_alphabetic() {
-                        result.push(digit as char);
+                        result.push(digit);
                         match suit_char {
-                            b'C' => result.push('\u{2663}'), // ♣
-                            b'D' => result.push('\u{2666}'), // ♦
-                            b'H' => result.push('\u{2665}'), // ♥
-                            b'S' => result.push('\u{2660}'), // ♠
+                            'C' => result.push('\u{2663}'), // ♣
+                            'D' => result.push('\u{2666}'), // ♦
+                            'H' => result.push('\u{2665}'), // ♥
+                            'S' => result.push('\u{2660}'), // ♠
                             _ => unreachable!(),
                         }
                         i += 2;
@@ -234,7 +234,7 @@ pub fn format_bid_references(text: &str) -> String {
             }
         }
 
-        result.push(bytes[i] as char);
+        result.push(chars[i]);
         i += 1;
     }
     result

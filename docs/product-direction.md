@@ -7,7 +7,7 @@ Stable product decisions and rationale. Reference this for "why" questions about
 - **Hosting:** Self-hosted VPS (DigitalOcean, US East). Moving off Vercel.
 - **Reverse proxy:** Caddy with auto-HTTPS
 - **CDN/DNS:** Cloudflare (domain TBD)
-- **CI/CD:** GitHub Actions + rsync deploy
+- **CI/CD:** GitHub Actions + Docker (GHCR)
 
 **Why VPS over Vercel:** Full control over serving, no vendor lock-in for static + WASM assets, simpler CORS/auth for future DataPort API.
 

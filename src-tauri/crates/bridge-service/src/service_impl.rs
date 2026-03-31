@@ -5,7 +5,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use bridge_conventions::registry::bundle_registry::list_bundle_inputs;
+use bridge_conventions::registry::bundle_registry::{list_bundle_inputs, resolve_bundle};
 use bridge_conventions::BaseSystemId;
 use bridge_engine::types::{Call, Card, Seat, Vulnerability};
 use bridge_engine::constants::partner_seat;
@@ -596,11 +596,22 @@ impl ServicePort for ServicePortImpl {
         bundles
             .iter()
             .filter(|b| b.internal != Some(true))
-            .map(|b| ConventionInfo {
-                id: b.id.clone(),
-                name: b.name.clone(),
-                category: format!("{:?}", b.category).to_lowercase(),
-                module_ids: b.member_ids.clone(),
+            .map(|b| {
+                let module_descriptions = resolve_bundle(&b.id, BaseSystemId::Sayc)
+                    .map(|bundle| {
+                        bundle.modules.iter()
+                            .map(|m| (m.module_id.clone(), m.description.to_string()))
+                            .collect::<HashMap<String, String>>()
+                    });
+                ConventionInfo {
+                    id: b.id.clone(),
+                    name: b.name.clone(),
+                    description: b.description.clone(),
+                    category: format!("{:?}", b.category).to_lowercase(),
+                    module_ids: b.member_ids.clone(),
+                    module_descriptions,
+                    teaching: b.teaching.clone(),
+                }
             })
             .collect()
     }

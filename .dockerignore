@@ -1,0 +1,12 @@
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/crates/bridge-wasm/pkg/
+.git/
+.github/
+docs/
+coverage/
+test-results/
+.claude/
+_output/
+screenshots-*

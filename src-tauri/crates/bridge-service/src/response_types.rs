@@ -70,8 +70,13 @@ pub struct DDSolutionResult {
 pub struct ConventionInfo {
     pub id: String,
     pub name: String,
+    pub description: String,
     pub category: String,
     pub module_ids: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module_descriptions: Option<std::collections::HashMap<String, String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub teaching: Option<bridge_conventions::types::bundle_types::ConventionTeaching>,
 }
 
 // ── Inference ─────────────────────────────────────────────────────
@@ -145,8 +150,11 @@ mod tests {
         let ci = ConventionInfo {
             id: "nt-bundle".to_string(),
             name: "1NT Responses".to_string(),
+            description: "Practice responding to 1NT openings".to_string(),
             category: "constructive".to_string(),
             module_ids: vec!["stayman".to_string(), "jacoby-transfers".to_string()],
+            module_descriptions: None,
+            teaching: None,
         };
         let json = serde_json::to_string(&ci).unwrap();
         let rt: ConventionInfo = serde_json::from_str(&json).unwrap();

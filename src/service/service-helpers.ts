@@ -47,7 +47,14 @@ function getSyncPort() {
  * Sync — safe to call in $derived blocks.
  */
 export function listConventions(): ConventionConfig[] {
-  return getSyncPort().list_conventions() as ConventionConfig[];
+  const raw = getSyncPort().list_conventions() as Record<string, unknown>[];
+  return raw.map(c => {
+    const md = c.moduleDescriptions as Record<string, string> | undefined;
+    return {
+      ...c,
+      moduleDescriptions: md ? new Map(Object.entries(md)) : undefined,
+    } as ConventionConfig;
+  });
 }
 
 /**
