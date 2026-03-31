@@ -463,7 +463,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "bridge.hasFourCardMajor:boolean:true",
-              "description": "Has a 4-card major",
+              "description": "4-card major",
               "isPublic": true
             },
             {
@@ -507,7 +507,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values)",
+              "description": "Invite values",
               "rationale": "invite values",
               "isPublic": true
             },
@@ -532,7 +532,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "bridge.hasFiveCardMajor:boolean:true",
-              "description": "Has a 5-card major (use Stayman to find the 4-4 fit)",
+              "description": "5-card major (use Stayman for 4-4 fit)",
               "rationale": "use Stayman to find the 4-4 fit",
               "isPublic": true
             }
@@ -706,7 +706,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -754,7 +754,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values opposite 1NT)",
+              "description": "Invite values opposite 1NT",
               "rationale": "invite values opposite 1NT",
               "isPublic": true
             },
@@ -802,7 +802,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -850,7 +850,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values opposite 1NT)",
+              "description": "Invite values opposite 1NT",
               "rationale": "invite values opposite 1NT",
               "isPublic": true
             },
@@ -898,7 +898,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values opposite 1NT)",
+              "description": "Invite values opposite 1NT",
               "rationale": "invite values opposite 1NT",
               "isPublic": true
             },
@@ -955,7 +955,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1003,7 +1003,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1051,7 +1051,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1108,7 +1108,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game+ values opposite 1NT)",
+              "description": "Game+ values opposite 1NT",
               "rationale": "game+ values opposite 1NT",
               "isPublic": true
             },
@@ -1162,7 +1162,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1210,7 +1210,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values opposite 1NT)",
+              "description": "Invite values opposite 1NT",
               "rationale": "invite values opposite 1NT",
               "isPublic": true
             },
@@ -1258,7 +1258,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1306,7 +1306,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values opposite 1NT)",
+              "description": "Invite values opposite 1NT",
               "rationale": "invite values opposite 1NT",
               "isPublic": true
             },
@@ -1354,7 +1354,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1402,7 +1402,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1450,7 +1450,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1507,7 +1507,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game+ values opposite 1NT)",
+              "description": "Game+ values opposite 1NT",
               "rationale": "game+ values opposite 1NT",
               "isPublic": true
             },
@@ -1561,7 +1561,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             }
@@ -1600,7 +1600,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values)",
+              "description": "Invite values",
               "rationale": "invite values",
               "isPublic": true
             },
@@ -1657,7 +1657,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values)",
+              "description": "Invite values",
               "rationale": "invite values",
               "isPublic": true
             },
@@ -1714,7 +1714,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values opposite 1NT)",
+              "description": "Invite values opposite 1NT",
               "rationale": "invite values opposite 1NT",
               "isPublic": true
             }
@@ -1753,7 +1753,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1801,7 +1801,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1849,7 +1849,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1906,7 +1906,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1963,7 +1963,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game+ values opposite 1NT)",
+              "description": "Game+ values opposite 1NT",
               "rationale": "game+ values opposite 1NT",
               "isPublic": true
             }

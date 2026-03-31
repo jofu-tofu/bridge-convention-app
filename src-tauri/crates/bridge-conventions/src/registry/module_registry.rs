@@ -181,6 +181,30 @@ mod tests {
     }
 
     #[test]
+    fn no_module_has_broken_description_prefixes() {
+        let bad_prefixes = ["Has a ", "No has "];
+        for module in get_all_modules(BaseSystemId::Sayc) {
+            if let Some(states) = &module.states {
+                for state in states {
+                    for surface in &state.surfaces {
+                        for clause in &surface.clauses {
+                            if let Some(desc) = &clause.description {
+                                for prefix in &bad_prefixes {
+                                    assert!(
+                                        !desc.starts_with(prefix),
+                                        "Module '{}' has bad description prefix '{}': '{}'",
+                                        module.module_id, prefix, desc
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn all_modules_have_states() {
         let modules = get_all_modules(BaseSystemId::Sayc);
         for m in &modules {

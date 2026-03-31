@@ -83,7 +83,8 @@ pub struct ConventionBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub teaching: Option<ConventionTeaching>,
 
-    // Derived fields
+    // Derived fields — populated at runtime from module registry, not in fixture JSON
+    #[serde(default)]
     pub modules: Vec<ConventionModule>,
     pub derived_teaching: DerivedTeachingContent,
     pub deal_constraints: DealConstraints,

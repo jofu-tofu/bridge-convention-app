@@ -9,6 +9,8 @@ use std::sync::OnceLock;
 use crate::types::bundle_types::{BundleInput, ConventionBundle};
 use crate::types::system_config::BaseSystemId;
 
+use super::module_registry::get_module;
+
 // Embedded bundle-input manifest (all 6 bundles)
 const BUNDLE_MANIFESTS_JSON: &str =
     include_str!("../../fixtures/bundle-manifests.json");
@@ -87,7 +89,20 @@ fn bundle_cache() -> &'static HashMap<String, ConventionBundle> {
         for &id in BUNDLE_IDS {
             if let Some(json) = json_for_bundle(id) {
                 match serde_json::from_str::<ConventionBundle>(json) {
-                    Ok(bundle) => {
+                    Ok(mut bundle) => {
+                        // Populate modules from module registry (single source of truth).
+                        // Uses Sayc — multi-system support is deferred (get_module ignores system).
+                        if bundle.modules.is_empty() {
+                            bundle.modules = bundle.member_ids.iter()
+                                .map(|mid| {
+                                    get_module(mid, BaseSystemId::Sayc)
+                                        .cloned()
+                                        .unwrap_or_else(|| panic!(
+                                            "Bundle '{}' references unknown module '{}'", id, mid
+                                        ))
+                                })
+                                .collect();
+                        }
                         map.insert(id.to_string(), bundle);
                     }
                     Err(e) => {
@@ -187,6 +202,27 @@ mod tests {
             !bundle.deal_constraints.seats.is_empty(),
             "NT bundle should have seat constraints"
         );
+    }
+
+    #[test]
+    fn resolve_bundle_modules_match_member_ids() {
+        for &id in BUNDLE_IDS {
+            let bundle = resolve_bundle(id, BaseSystemId::Sayc)
+                .unwrap_or_else(|| panic!("Bundle '{}' not found", id));
+            assert_eq!(
+                bundle.modules.len(),
+                bundle.member_ids.len(),
+                "Bundle '{}': module count doesn't match member_ids",
+                id
+            );
+            for (module, expected_id) in bundle.modules.iter().zip(&bundle.member_ids) {
+                assert_eq!(
+                    &module.module_id, expected_id,
+                    "Bundle '{}': module ordering mismatch",
+                    id
+                );
+            }
+        }
     }
 
     #[test]

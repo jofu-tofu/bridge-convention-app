@@ -781,7 +781,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -846,7 +846,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values opposite 1NT)",
+              "description": "Invite values opposite 1NT",
               "rationale": "invite values opposite 1NT",
               "isPublic": true
             },
@@ -898,7 +898,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Has a weak hand (weak hand, signoff)",
+              "description": "Weak hand, signoff",
               "rationale": "weak hand, signoff",
               "isPublic": true
             }
@@ -937,7 +937,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -985,7 +985,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values opposite 1NT)",
+              "description": "Invite values opposite 1NT",
               "rationale": "invite values opposite 1NT",
               "isPublic": true
             },
@@ -1033,7 +1033,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invitational values)",
+              "description": "Invitational values",
               "rationale": "invitational values",
               "isPublic": true
             },
@@ -1081,7 +1081,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game forcing)",
+              "description": "Game forcing",
               "rationale": "game forcing",
               "isPublic": true
             },
@@ -1129,7 +1129,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game forcing)",
+              "description": "Game forcing",
               "rationale": "game forcing",
               "isPublic": true
             },
@@ -1177,7 +1177,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.slamValues:boolean:true",
-              "description": "Has a slam values (slam interest)",
+              "description": "Slam interest",
               "rationale": "slam interest",
               "isPublic": true
             },
@@ -1225,7 +1225,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.slamValues:boolean:true",
-              "description": "Has a slam values (slam invite values)",
+              "description": "Slam invite values",
               "rationale": "slam invite values",
               "isPublic": true
             },
@@ -1282,7 +1282,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1347,7 +1347,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values opposite 1NT)",
+              "description": "Invite values opposite 1NT",
               "rationale": "invite values opposite 1NT",
               "isPublic": true
             },
@@ -1399,7 +1399,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Has a weak hand (weak hand, signoff)",
+              "description": "Weak hand, signoff",
               "rationale": "weak hand, signoff",
               "isPublic": true
             }
@@ -1438,7 +1438,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values opposite 1NT)",
+              "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
             },
@@ -1486,7 +1486,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.inviteValues:boolean:true",
-              "description": "Has a invite values (invite values opposite 1NT)",
+              "description": "Invite values opposite 1NT",
               "rationale": "invite values opposite 1NT",
               "isPublic": true
             },
@@ -1534,7 +1534,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game forcing)",
+              "description": "Game forcing",
               "rationale": "game forcing",
               "isPublic": true
             },
@@ -1582,7 +1582,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game forcing)",
+              "description": "Game forcing",
               "rationale": "game forcing",
               "isPublic": true
             },
@@ -1630,7 +1630,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.slamValues:boolean:true",
-              "description": "Has a slam values (slam interest (stronger than 4H))",
+              "description": "Slam interest (stronger than 4H)",
               "rationale": "slam interest (stronger than 4H)",
               "isPublic": true
             },
@@ -1678,7 +1678,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.gameValues:boolean:true",
-              "description": "Has a game values (game values)",
+              "description": "Game values",
               "rationale": "game values",
               "isPublic": true
             },
@@ -1734,7 +1734,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.slamValues:boolean:true",
-              "description": "Has a slam values (slam invite values)",
+              "description": "Slam invite values",
               "rationale": "slam invite values",
               "isPublic": true
             },
@@ -1788,7 +1788,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.transfer.openerHasHeartFit:boolean:true",
-              "description": "Has a opener has heart fit (fit with responder's 5)",
+              "description": "Opener has heart fit",
               "rationale": "fit with responder's 5",
               "isPublic": true
             }
@@ -1870,7 +1870,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.transfer.openerHasSpadesFit:boolean:true",
-              "description": "Has a opener has spades fit (fit with responder's 5)",
+              "description": "Opener has spade fit",
               "rationale": "fit with responder's 5",
               "isPublic": true
             }
@@ -1952,7 +1952,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.opener.notMinimum:boolean:true",
-              "description": "Has a not minimum (not minimum)",
+              "description": "Above-minimum opening",
               "rationale": "not minimum",
               "isPublic": true
             },
@@ -1961,7 +1961,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.transfer.openerHasHeartFit:boolean:true",
-              "description": "Has a opener has heart fit (fit with responder's 5)",
+              "description": "Opener has heart fit",
               "rationale": "fit with responder's 5",
               "isPublic": true
             }
@@ -2000,7 +2000,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.opener.notMinimum:boolean:true",
-              "description": "Has a not minimum (not minimum)",
+              "description": "Above-minimum opening",
               "rationale": "not minimum",
               "isPublic": true
             },
@@ -2046,7 +2046,7 @@
               "operator": "boolean",
               "value": false,
               "clauseId": "system.opener.notMinimum:boolean:false",
-              "description": "No not minimum (minimum)",
+              "description": "Minimum opening",
               "rationale": "minimum",
               "isPublic": true
             },
@@ -2055,7 +2055,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.transfer.openerHasHeartFit:boolean:true",
-              "description": "Has a opener has heart fit (fit with responder's 5)",
+              "description": "Opener has heart fit",
               "rationale": "fit with responder's 5",
               "isPublic": true
             }
@@ -2092,7 +2092,7 @@
               "operator": "boolean",
               "value": false,
               "clauseId": "system.opener.notMinimum:boolean:false",
-              "description": "No not minimum (minimum)",
+              "description": "Minimum opening",
               "rationale": "minimum",
               "isPublic": true
             },
@@ -2144,7 +2144,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.opener.notMinimum:boolean:true",
-              "description": "Has a not minimum (not minimum)",
+              "description": "Above-minimum opening",
               "rationale": "not minimum",
               "isPublic": true
             },
@@ -2153,7 +2153,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.transfer.openerHasSpadesFit:boolean:true",
-              "description": "Has a opener has spades fit (fit with responder's 5)",
+              "description": "Opener has spade fit",
               "rationale": "fit with responder's 5",
               "isPublic": true
             }
@@ -2192,7 +2192,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.opener.notMinimum:boolean:true",
-              "description": "Has a not minimum (not minimum)",
+              "description": "Above-minimum opening",
               "rationale": "not minimum",
               "isPublic": true
             },
@@ -2238,7 +2238,7 @@
               "operator": "boolean",
               "value": false,
               "clauseId": "system.opener.notMinimum:boolean:false",
-              "description": "No not minimum (minimum)",
+              "description": "Minimum opening",
               "rationale": "minimum",
               "isPublic": true
             },
@@ -2247,7 +2247,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.transfer.openerHasSpadesFit:boolean:true",
-              "description": "Has a opener has spades fit (fit with responder's 5)",
+              "description": "Opener has spade fit",
               "rationale": "fit with responder's 5",
               "isPublic": true
             }
@@ -2284,7 +2284,7 @@
               "operator": "boolean",
               "value": false,
               "clauseId": "system.opener.notMinimum:boolean:false",
-              "description": "No not minimum (minimum)",
+              "description": "Minimum opening",
               "rationale": "minimum",
               "isPublic": true
             },
@@ -2336,7 +2336,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.opener.notMinimum:boolean:true",
-              "description": "Has a not minimum (not minimum)",
+              "description": "Above-minimum opening",
               "rationale": "not minimum",
               "isPublic": true
             }
@@ -2373,7 +2373,7 @@
               "operator": "boolean",
               "value": false,
               "clauseId": "system.opener.notMinimum:boolean:false",
-              "description": "No not minimum (minimum)",
+              "description": "Minimum opening",
               "rationale": "minimum",
               "isPublic": true
             }
@@ -2416,7 +2416,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.opener.notMinimum:boolean:true",
-              "description": "Has a not minimum (not minimum)",
+              "description": "Above-minimum opening",
               "rationale": "not minimum",
               "isPublic": true
             }
@@ -2453,7 +2453,7 @@
               "operator": "boolean",
               "value": false,
               "clauseId": "system.opener.notMinimum:boolean:false",
-              "description": "No not minimum (minimum)",
+              "description": "Minimum opening",
               "rationale": "minimum",
               "isPublic": true
             }

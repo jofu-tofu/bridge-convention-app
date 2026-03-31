@@ -1011,7 +1011,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.inOpeningHcpRange:boolean:true",
-              "description": "Has a in opening hcp range (6-11 vul, 5-11 NV)",
+              "description": "In opening HCP range (6-11 vul, 5-11 NV)",
               "rationale": "6-11 vul, 5-11 NV",
               "isPublic": true
             }
@@ -1061,7 +1061,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.inOpeningHcpRange:boolean:true",
-              "description": "Has a in opening hcp range (6-11 vul, 5-11 NV)",
+              "description": "In opening HCP range (6-11 vul, 5-11 NV)",
               "rationale": "6-11 vul, 5-11 NV",
               "isPublic": true
             }
@@ -1111,7 +1111,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.inOpeningHcpRange:boolean:true",
-              "description": "Has a in opening hcp range (6-11 vul, 5-11 NV)",
+              "description": "In opening HCP range (6-11 vul, 5-11 NV)",
               "rationale": "6-11 vul, 5-11 NV",
               "isPublic": true
             }
@@ -1228,7 +1228,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.hasNewSuit.$suit:boolean:true",
-              "description": "Has a has new suit hearts (5+ in a non-opener suit)",
+              "description": "New suit: 5+ hearts",
               "rationale": "5+ in a non-opener suit",
               "isPublic": true
             }
@@ -1537,7 +1537,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.hasNewSuit.$suit:boolean:true",
-              "description": "Has a has new suit spades (5+ in a non-opener suit)",
+              "description": "New suit: 5+ spades",
               "rationale": "5+ in a non-opener suit",
               "isPublic": true
             }
@@ -1846,7 +1846,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.hasNewSuit.$suit:boolean:true",
-              "description": "Has a has new suit diamonds (5+ in a non-opener suit)",
+              "description": "New suit: 5+ diamonds",
               "rationale": "5+ in a non-opener suit",
               "isPublic": true
             }
@@ -2089,7 +2089,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isSolid.$suit:boolean:true",
-              "description": "Has a is solid hearts (solid)",
+              "description": "Solid heart suit",
               "rationale": "solid",
               "isPublic": true
             }
@@ -2131,7 +2131,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMinimum:boolean:true",
-              "description": "Has a is minimum (5-7 NV, 6-7 vul)",
+              "description": "Minimum range (5-7 NV, 6-7 vul)",
               "rationale": "5-7 NV, 6-7 vul",
               "isPublic": true
             },
@@ -2182,7 +2182,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMinimum:boolean:true",
-              "description": "Has a is minimum (5-7 NV, 6-7 vul)",
+              "description": "Minimum range (5-7 NV, 6-7 vul)",
               "rationale": "5-7 NV, 6-7 vul",
               "isPublic": true
             },
@@ -2233,7 +2233,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMaximum:boolean:true",
-              "description": "Has a is maximum (8-11 HCP)",
+              "description": "Maximum range (8-11 HCP)",
               "rationale": "8-11 HCP",
               "isPublic": true
             },
@@ -2284,7 +2284,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMaximum:boolean:true",
-              "description": "Has a is maximum (8-11 HCP)",
+              "description": "Maximum range (8-11 HCP)",
               "rationale": "8-11 HCP",
               "isPublic": true
             },
@@ -2344,7 +2344,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isSolid.$suit:boolean:true",
-              "description": "Has a is solid spades (solid)",
+              "description": "Solid spade suit",
               "rationale": "solid",
               "isPublic": true
             }
@@ -2386,7 +2386,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMinimum:boolean:true",
-              "description": "Has a is minimum (5-7 NV, 6-7 vul)",
+              "description": "Minimum range (5-7 NV, 6-7 vul)",
               "rationale": "5-7 NV, 6-7 vul",
               "isPublic": true
             },
@@ -2437,7 +2437,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMinimum:boolean:true",
-              "description": "Has a is minimum (5-7 NV, 6-7 vul)",
+              "description": "Minimum range (5-7 NV, 6-7 vul)",
               "rationale": "5-7 NV, 6-7 vul",
               "isPublic": true
             },
@@ -2488,7 +2488,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMaximum:boolean:true",
-              "description": "Has a is maximum (8-11 HCP)",
+              "description": "Maximum range (8-11 HCP)",
               "rationale": "8-11 HCP",
               "isPublic": true
             },
@@ -2539,7 +2539,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMaximum:boolean:true",
-              "description": "Has a is maximum (8-11 HCP)",
+              "description": "Maximum range (8-11 HCP)",
               "rationale": "8-11 HCP",
               "isPublic": true
             },
@@ -2599,7 +2599,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isSolid.$suit:boolean:true",
-              "description": "Has a is solid diamonds (solid)",
+              "description": "Solid diamond suit",
               "rationale": "solid",
               "isPublic": true
             }
@@ -2641,7 +2641,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMinimum:boolean:true",
-              "description": "Has a is minimum (5-7 NV, 6-7 vul)",
+              "description": "Minimum range (5-7 NV, 6-7 vul)",
               "rationale": "5-7 NV, 6-7 vul",
               "isPublic": true
             },
@@ -2692,7 +2692,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMinimum:boolean:true",
-              "description": "Has a is minimum (5-7 NV, 6-7 vul)",
+              "description": "Minimum range (5-7 NV, 6-7 vul)",
               "rationale": "5-7 NV, 6-7 vul",
               "isPublic": true
             },
@@ -2743,7 +2743,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMaximum:boolean:true",
-              "description": "Has a is maximum (8-11 HCP)",
+              "description": "Maximum range (8-11 HCP)",
               "rationale": "8-11 HCP",
               "isPublic": true
             },
@@ -2794,7 +2794,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.isMaximum:boolean:true",
-              "description": "Has a is maximum (8-11 HCP)",
+              "description": "Maximum range (8-11 HCP)",
               "rationale": "8-11 HCP",
               "isPublic": true
             },
@@ -2854,7 +2854,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.hasNsfSupport.$suit:boolean:true",
-              "description": "Has a has nsf support hearts (3+ cards in responder's suit)",
+              "description": "Support for responder's suit (3+ hearts)",
               "rationale": "3+ cards in responder's suit",
               "isPublic": true
             }
@@ -2937,7 +2937,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.hasNsfSupport.$suit:boolean:true",
-              "description": "Has a has nsf support spades (3+ cards in responder's suit)",
+              "description": "Support for responder's suit (3+ spades)",
               "rationale": "3+ cards in responder's suit",
               "isPublic": true
             }
@@ -3020,7 +3020,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.weakTwo.hasNsfSupport.$suit:boolean:true",
-              "description": "Has a has nsf support diamonds (3+ cards in responder's suit)",
+              "description": "Support for responder's suit (3+ diamonds)",
               "rationale": "3+ cards in responder's suit",
               "isPublic": true
             }

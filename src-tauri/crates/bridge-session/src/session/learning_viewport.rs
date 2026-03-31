@@ -431,6 +431,8 @@ fn display_name(fact_id: &str) -> String {
         "bridge.hasShortage" => return "short suit".to_string(),
         "bridge.fitWithBoundSuit" => return "fit with partner's suit".to_string(),
         "bridge.totalPointsForRaise" => return "total points".to_string(),
+        "system.dontOvercall.inRange" => return "HCP in overcall range".to_string(),
+        "system.responder.oneNtRange" => return "1NT response range".to_string(),
         _ => {}
     }
 
@@ -1192,6 +1194,18 @@ mod tests {
             Some("invite values opposite 1NT"),
         );
         assert_eq!(desc, "Invite values opposite 1NT");
+    }
+
+    #[test]
+    fn derive_neutral_description_dont_overcall_no_rationale() {
+        let desc = derive_neutral_description("system.dontOvercall.inRange", None);
+        assert_eq!(desc, "HCP in overcall range");
+    }
+
+    #[test]
+    fn derive_neutral_description_one_nt_range_no_rationale() {
+        let desc = derive_neutral_description("system.responder.oneNtRange", None);
+        assert_eq!(desc, "1NT response range");
     }
 
     #[test]

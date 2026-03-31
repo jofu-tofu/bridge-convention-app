@@ -958,7 +958,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "bridge.hasShortage:boolean:true",
-              "description": "Has a short suit",
+              "description": "Short suit",
               "isPublic": true
             }
           ],
@@ -1207,7 +1207,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.oneNtRange:boolean:true",
-              "description": "Has a one nt range",
+              "description": "1NT response range",
               "isPublic": true
             },
             {
@@ -1292,7 +1292,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "bridge.hasShortage:boolean:true",
-              "description": "Has a short suit",
+              "description": "Short suit",
               "isPublic": true
             }
           ],
@@ -1541,7 +1541,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.oneNtRange:boolean:true",
-              "description": "Has a one nt range",
+              "description": "1NT response range",
               "isPublic": true
             },
             {

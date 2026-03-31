@@ -68,7 +68,7 @@ This produces the golden-master fixture for round-trip testing.
 ## Completion Checklist
 
 - [x] All convention types defined in Rust with serde derives
-- [x] Build script exports all 6 bundles to JSON fixtures
+- [x] Build script exports all 6 bundles to JSON fixtures (bundle JSON no longer embeds modules — modules are runtime-derived from module registry)
 - [x] Round-trip tests pass for all bundles
 - [x] `Cargo.toml` workspace member added
 - [x] Update `src-tauri/CLAUDE.md` (if it exists) with new crate

@@ -35,6 +35,18 @@ crates/
                        evaluation, practical scorer). `ConventionStrategy::suggest()` returns
                        `(Option<BidResult>, StrategyEvaluation)` — immutable &self, debug payload as
                        out-param (intentional Rust idiom divergence from TS &mut self pattern).
+                       **Bundle modules are runtime-derived:** Bundle JSON fixtures (`fixtures/*.json`)
+                       do not contain a `modules` array. The `bundle_registry` populates
+                       `ConventionBundle.modules` at cache-init time by looking up each `member_id`
+                       in the module registry. Module fixture files (`fixtures/modules/*.json`) are
+                       the single source of truth for module content.
+                       **System fact clause descriptions:** The `description` field on clauses with
+                       `system.*` fact IDs is ignored at runtime. The learning viewport
+                       (`bridge-session/src/session/learning_viewport.rs:map_clauses()`) derives
+                       system fact descriptions dynamically using `derive_neutral_description()`,
+                       which prefers the clause's `rationale` field and falls back to `display_name()`.
+                       Editing system fact descriptions in fixture JSON has no UI effect — edit
+                       `rationale` or `display_name()` instead.
   bridge-session/      Rust session logic: inference, heuristics, controllers, viewports.
                        Phase 4 of the migration. Depends on bridge-engine + bridge-conventions.
                        Inference: natural inference + posterior stub (uniform distributions).

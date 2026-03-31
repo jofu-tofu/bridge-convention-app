@@ -275,7 +275,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.slamValues:boolean:true",
-              "description": "Has a slam values (slam interest)",
+              "description": "Slam interest",
               "rationale": "slam interest",
               "isPublic": true
             }
@@ -323,7 +323,7 @@
               "operator": "eq",
               "value": 0,
               "clauseId": "module.blackwood.aceCount:eq:0",
-              "description": "Exactly 0 ace count",
+              "description": "0 aces",
               "isPublic": true
             }
           ],
@@ -361,7 +361,7 @@
               "operator": "eq",
               "value": 4,
               "clauseId": "module.blackwood.aceCount:eq:4",
-              "description": "Exactly 4 ace count",
+              "description": "4 aces",
               "isPublic": true
             }
           ],
@@ -399,7 +399,7 @@
               "operator": "eq",
               "value": 1,
               "clauseId": "module.blackwood.aceCount:eq:1",
-              "description": "Exactly 1 ace count",
+              "description": "1 ace",
               "isPublic": true
             }
           ],
@@ -437,7 +437,7 @@
               "operator": "eq",
               "value": 2,
               "clauseId": "module.blackwood.aceCount:eq:2",
-              "description": "Exactly 2 ace count",
+              "description": "2 aces",
               "isPublic": true
             }
           ],
@@ -475,7 +475,7 @@
               "operator": "eq",
               "value": 3,
               "clauseId": "module.blackwood.aceCount:eq:3",
-              "description": "Exactly 3 ace count",
+              "description": "3 aces",
               "isPublic": true
             }
           ],
@@ -615,7 +615,7 @@
               "operator": "eq",
               "value": 0,
               "clauseId": "module.blackwood.kingCount:eq:0",
-              "description": "Exactly 0 king count",
+              "description": "0 kings",
               "isPublic": true
             }
           ],
@@ -653,7 +653,7 @@
               "operator": "eq",
               "value": 4,
               "clauseId": "module.blackwood.kingCount:eq:4",
-              "description": "Exactly 4 king count",
+              "description": "4 kings",
               "isPublic": true
             }
           ],
@@ -691,7 +691,7 @@
               "operator": "eq",
               "value": 1,
               "clauseId": "module.blackwood.kingCount:eq:1",
-              "description": "Exactly 1 king count",
+              "description": "1 king",
               "isPublic": true
             }
           ],
@@ -729,7 +729,7 @@
               "operator": "eq",
               "value": 2,
               "clauseId": "module.blackwood.kingCount:eq:2",
-              "description": "Exactly 2 king count",
+              "description": "2 kings",
               "isPublic": true
             }
           ],
@@ -767,7 +767,7 @@
               "operator": "eq",
               "value": 3,
               "clauseId": "module.blackwood.kingCount:eq:3",
-              "description": "Exactly 3 king count",
+              "description": "3 kings",
               "isPublic": true
             }
           ],

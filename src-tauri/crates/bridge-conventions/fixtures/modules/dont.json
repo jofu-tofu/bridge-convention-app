@@ -903,14 +903,14 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.dontOvercall.inRange:boolean:true",
-              "description": "Has a in range"
+              "description": "HCP in overcall range"
             },
             {
               "factId": "module.dont.bothMajors",
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.bothMajors:boolean:true",
-              "description": "Has a both majors",
+              "description": "Both majors",
               "isPublic": true
             }
           ],
@@ -946,14 +946,14 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.dontOvercall.inRange:boolean:true",
-              "description": "Has a in range"
+              "description": "HCP in overcall range"
             },
             {
               "factId": "module.dont.diamondsAndMajor",
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.diamondsAndMajor:boolean:true",
-              "description": "Has a diamonds and major",
+              "description": "Diamonds + a major",
               "isPublic": true
             }
           ],
@@ -989,14 +989,14 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.dontOvercall.inRange:boolean:true",
-              "description": "Has a in range"
+              "description": "HCP in overcall range"
             },
             {
               "factId": "module.dont.clubsAndHigher",
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.clubsAndHigher:boolean:true",
-              "description": "Has a clubs and higher",
+              "description": "Clubs + higher suit",
               "isPublic": true
             }
           ],
@@ -1032,14 +1032,14 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.dontOvercall.inRange:boolean:true",
-              "description": "Has a in range"
+              "description": "HCP in overcall range"
             },
             {
               "factId": "module.dont.naturalSpades",
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.naturalSpades:boolean:true",
-              "description": "Has a natural spades",
+              "description": "Natural spades",
               "isPublic": true
             }
           ],
@@ -1073,14 +1073,14 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.dontOvercall.inRange:boolean:true",
-              "description": "Has a in range"
+              "description": "HCP in overcall range"
             },
             {
               "factId": "module.dont.singleSuited",
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.singleSuited:boolean:true",
-              "description": "Has a single suited",
+              "description": "Single-suited hand",
               "isPublic": true
             }
           ],
@@ -1144,7 +1144,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.hasHeartSupport:boolean:true",
-              "description": "Has a has heart support",
+              "description": "Heart support",
               "isPublic": true
             }
           ],
@@ -1207,7 +1207,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.longMinorIsClubs:boolean:true",
-              "description": "Has a long minor is clubs (longer minor)",
+              "description": "Longer minor is clubs",
               "rationale": "longer minor",
               "isPublic": true
             },
@@ -1216,7 +1216,7 @@
               "operator": "boolean",
               "value": false,
               "clauseId": "module.dont.hasSpadeSupport:boolean:false",
-              "description": "No has spade support (prefer major fit when 3+ spades)",
+              "description": "No spade support (prefer major fit when 3+ spades)",
               "rationale": "prefer major fit when 3+ spades"
             }
           ],
@@ -1252,7 +1252,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.longMinorIsDiamonds:boolean:true",
-              "description": "Has a long minor is diamonds (longer minor)",
+              "description": "Longer minor is diamonds",
               "rationale": "longer minor",
               "isPublic": true
             },
@@ -1261,7 +1261,7 @@
               "operator": "boolean",
               "value": false,
               "clauseId": "module.dont.hasSpadeSupport:boolean:false",
-              "description": "No has spade support (prefer major fit when 3+ spades)",
+              "description": "No spade support (prefer major fit when 3+ spades)",
               "rationale": "prefer major fit when 3+ spades"
             }
           ],
@@ -1300,7 +1300,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.hasDiamondSupport:boolean:true",
-              "description": "Has a has diamond support",
+              "description": "Diamond support",
               "isPublic": true
             }
           ],
@@ -1336,7 +1336,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.longSpades:boolean:true",
-              "description": "Has a long spades",
+              "description": "Long spades",
               "isPublic": true
             }
           ],
@@ -1402,7 +1402,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.hasClubSupport:boolean:true",
-              "description": "Has a has club support",
+              "description": "Club support",
               "isPublic": true
             }
           ],
@@ -1438,7 +1438,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.longHearts:boolean:true",
-              "description": "Has a long hearts",
+              "description": "Long hearts",
               "isPublic": true
             }
           ],
@@ -1474,7 +1474,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.longSpades:boolean:true",
-              "description": "Has a long spades",
+              "description": "Long spades",
               "isPublic": true
             }
           ],
@@ -1540,7 +1540,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.hasSpadeSupport:boolean:true",
-              "description": "Has a has spade support",
+              "description": "Spade support",
               "isPublic": true
             }
           ],
@@ -1576,7 +1576,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.longClubs:boolean:true",
-              "description": "Has a long clubs",
+              "description": "Long clubs",
               "isPublic": true
             }
           ],
@@ -1612,7 +1612,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.longDiamonds:boolean:true",
-              "description": "Has a long diamonds",
+              "description": "Long diamonds",
               "isPublic": true
             }
           ],
@@ -1648,7 +1648,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.longHearts:boolean:true",
-              "description": "Has a long hearts",
+              "description": "Long hearts",
               "isPublic": true
             }
           ],
@@ -1714,7 +1714,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.longDiamonds:boolean:true",
-              "description": "Has a long diamonds",
+              "description": "Long diamonds",
               "isPublic": true
             }
           ],
@@ -1750,7 +1750,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.longHearts:boolean:true",
-              "description": "Has a long hearts",
+              "description": "Long hearts",
               "isPublic": true
             }
           ],
@@ -1786,7 +1786,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.longSpades:boolean:true",
-              "description": "Has a long spades",
+              "description": "Long spades",
               "isPublic": true
             }
           ],
@@ -1852,7 +1852,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.singleSuitClubs:boolean:true",
-              "description": "Has a single suit clubs",
+              "description": "Single-suited: clubs",
               "isPublic": true
             }
           ],
@@ -1888,7 +1888,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.singleSuitDiamonds:boolean:true",
-              "description": "Has a single suit diamonds",
+              "description": "Single-suited: diamonds",
               "isPublic": true
             }
           ],
@@ -1924,7 +1924,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.singleSuitHearts:boolean:true",
-              "description": "Has a single suit hearts",
+              "description": "Single-suited: hearts",
               "isPublic": true
             }
           ],
@@ -1963,7 +1963,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.clubsHigherDiamonds:boolean:true",
-              "description": "Has a clubs higher diamonds",
+              "description": "Clubs + diamonds",
               "isPublic": true
             }
           ],
@@ -1999,7 +1999,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.clubsHigherHearts:boolean:true",
-              "description": "Has a clubs higher hearts",
+              "description": "Clubs + hearts",
               "isPublic": true
             }
           ],
@@ -2035,7 +2035,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.clubsHigherSpades:boolean:true",
-              "description": "Has a clubs higher spades",
+              "description": "Clubs + spades",
               "isPublic": true
             }
           ],
@@ -2074,7 +2074,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.diamondsMajorHearts:boolean:true",
-              "description": "Has a diamonds major hearts",
+              "description": "Diamonds + hearts",
               "isPublic": true
             }
           ],
@@ -2110,7 +2110,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.dont.diamondsMajorSpades:boolean:true",
-              "description": "Has a diamonds major spades",
+              "description": "Diamonds + spades",
               "isPublic": true
             }
           ],
