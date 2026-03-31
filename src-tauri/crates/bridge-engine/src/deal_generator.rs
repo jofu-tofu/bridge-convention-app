@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 
-use crate::constants::{create_deck, SUIT_ORDER};
+use crate::constants::{create_deck, SEATS, SUIT_ORDER};
 use crate::error::EngineError;
 use crate::hand_evaluator::{calculate_hcp, calculate_hcp_and_shape, get_suit_length, is_balanced};
 use crate::types::{
@@ -170,7 +170,7 @@ mod tests {
         assert_eq!(result.iterations, 1);
 
         // All 4 hands have 13 cards
-        for seat in &[Seat::North, Seat::East, Seat::South, Seat::West] {
+        for seat in &SEATS {
             assert_eq!(result.deal.hands[seat].cards.len(), 13);
         }
     }
@@ -322,7 +322,7 @@ mod tests {
             seed: Some(42),
         };
         let result = generate_deal(&constraints).unwrap();
-        let total: u32 = [Seat::North, Seat::East, Seat::South, Seat::West]
+        let total: u32 = SEATS
             .iter()
             .map(|s| calculate_hcp(&result.deal.hands[s]))
             .sum();

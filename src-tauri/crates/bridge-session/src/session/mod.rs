@@ -16,7 +16,7 @@ pub mod flow_tree_builder;
 pub mod format_obs_label;
 pub mod learning_viewport;
 
-pub use session_state::{SessionState, PlayState, SeatStrategy, get_current_turn, bid_suit_to_suit};
+pub use session_state::{SessionState, PlayState, SeatStrategy, get_current_turn};
 pub use drill_session::get_next_bid;
 pub use config_factory::{DrillConfig, create_drill_config};
 pub use start_drill::{

@@ -196,7 +196,7 @@ mod tests {
         let state = coord.get_public_belief_state();
 
         assert!(state.annotations.is_empty());
-        for seat in &[Seat::North, Seat::East, Seat::South, Seat::West] {
+        for seat in &bridge_engine::SEATS {
             assert_eq!(state.beliefs[seat].ranges.hcp.min, 0);
             assert_eq!(state.beliefs[seat].ranges.hcp.max, 40);
         }

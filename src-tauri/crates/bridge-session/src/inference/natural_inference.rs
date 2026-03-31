@@ -6,7 +6,7 @@
 
 use std::collections::HashMap;
 use bridge_engine::types::{Auction, AuctionEntry, BidSuit, Call, Seat, Suit};
-use bridge_engine::partner_seat;
+use bridge_engine::{bid_suit_to_suit, partner_seat};
 use bridge_conventions::types::system_config::SystemConfig;
 
 use super::types::{HandInference, InferenceProvider, SuitInference};
@@ -276,17 +276,6 @@ impl InferenceProvider for NaturalInferenceProvider {
             }
             Call::Double | Call::Redouble => None,
         }
-    }
-}
-
-/// Convert BidSuit to Suit (excludes NoTrump).
-fn bid_suit_to_suit(strain: BidSuit) -> Option<Suit> {
-    match strain {
-        BidSuit::Clubs => Some(Suit::Clubs),
-        BidSuit::Diamonds => Some(Suit::Diamonds),
-        BidSuit::Hearts => Some(Suit::Hearts),
-        BidSuit::Spades => Some(Suit::Spades),
-        BidSuit::NoTrump => None,
     }
 }
 

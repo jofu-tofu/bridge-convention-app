@@ -6,6 +6,7 @@
 use std::collections::HashMap;
 
 use bridge_engine::types::Seat;
+use bridge_engine::SEATS;
 
 use crate::heuristics::BiddingStrategy;
 
@@ -61,10 +62,9 @@ pub fn create_drill_config(
     ns_strategy: Box<dyn BiddingStrategy>,
     ew_strategy: Box<dyn BiddingStrategy>,
 ) -> DrillConfig {
-    let all_seats = [Seat::North, Seat::East, Seat::South, Seat::West];
     let mut strategies = HashMap::new();
 
-    for &seat in &all_seats {
+    for &seat in &SEATS {
         if seat == user_seat {
             strategies.insert(seat, SeatAssignment::User);
         } else if NS_SEATS.contains(&seat) {
@@ -81,7 +81,7 @@ pub fn create_drill_config(
     }
 
     // Fill remaining seats
-    for &seat in &all_seats {
+    for &seat in &SEATS {
         if strategies.contains_key(&seat) {
             continue;
         }

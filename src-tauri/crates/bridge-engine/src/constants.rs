@@ -1,4 +1,4 @@
-use crate::types::{Card, Hand, Rank, Seat, Suit};
+use crate::types::{BidSuit, Card, Hand, Rank, Seat, Suit};
 
 pub const SUITS: [Suit; 4] = [Suit::Clubs, Suit::Diamonds, Suit::Hearts, Suit::Spades];
 
@@ -64,6 +64,17 @@ pub fn create_hand(cards: Vec<Card>) -> Result<Hand, crate::error::EngineError> 
         return Err(crate::error::EngineError::InvalidHandSize(cards.len()));
     }
     Ok(Hand { cards })
+}
+
+/// Map BidSuit to Suit for trump. NoTrump returns None.
+pub fn bid_suit_to_suit(strain: BidSuit) -> Option<Suit> {
+    match strain {
+        BidSuit::Clubs => Some(Suit::Clubs),
+        BidSuit::Diamonds => Some(Suit::Diamonds),
+        BidSuit::Hearts => Some(Suit::Hearts),
+        BidSuit::Spades => Some(Suit::Spades),
+        BidSuit::NoTrump => None,
+    }
 }
 
 pub fn next_seat(seat: Seat) -> Seat {

@@ -312,26 +312,6 @@ export function formatHandBySuit(hand: Hand): Record<string, string[]> {
   };
 }
 
-// ── Targeted auction from BFS paths ─────────────────────────────────
-
-export function nextSeatClockwise(seat: Seat): Seat {
-  switch (seat) {
-    case Seat.North: return Seat.East;
-    case Seat.East: return Seat.South;
-    case Seat.South: return Seat.West;
-    case Seat.West: return Seat.North;
-  }
-}
-
-export function partnerOf(seat: Seat): Seat {
-  switch (seat) {
-    case Seat.North: return Seat.South;
-    case Seat.South: return Seat.North;
-    case Seat.East: return Seat.West;
-    case Seat.West: return Seat.East;
-  }
-}
-
 /** Resolve a ConventionBundle with modules for rule enumeration.
  *  Stub — convention catalog has moved to Rust/WASM. */
 export function resolveBundleWithRules(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionBundle {

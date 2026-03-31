@@ -97,7 +97,7 @@ mod tests {
     fn initial_state_all_seats_maximally_loose() {
         let state = create_initial_belief_state();
 
-        for seat in &[Seat::North, Seat::East, Seat::South, Seat::West] {
+        for seat in &bridge_engine::SEATS {
             let beliefs = &state.beliefs[seat];
             assert_eq!(beliefs.seat, *seat);
             assert_eq!(beliefs.ranges.hcp.min, 0);

@@ -111,7 +111,7 @@ mod tests {
 
     fn make_deal() -> Deal {
         let mut hands = HashMap::new();
-        for &seat in &[Seat::North, Seat::East, Seat::South, Seat::West] {
+        for &seat in &bridge_engine::SEATS {
             hands.insert(seat, Hand { cards: vec![] });
         }
         Deal {
@@ -146,24 +146,24 @@ mod tests {
     #[test]
     fn create_returns_sequential_handles() {
         let mut mgr = SessionManager::new();
-        let h1 = mgr.create(make_state(), make_config(), HashMap::new());
+        let h1 = mgr.create(make_state(), make_config(), HashMap::new(), None);
         assert_eq!(h1, "session-1");
-        let h2 = mgr.create(make_state(), make_config(), HashMap::new());
+        let h2 = mgr.create(make_state(), make_config(), HashMap::new(), None);
         assert_eq!(h2, "session-2");
     }
 
     #[test]
     fn get_active_session() {
         let mut mgr = SessionManager::new();
-        let h = mgr.create(make_state(), make_config(), HashMap::new());
+        let h = mgr.create(make_state(), make_config(), HashMap::new(), None);
         assert!(mgr.get(&h).is_ok());
     }
 
     #[test]
     fn get_stale_handle_fails() {
         let mut mgr = SessionManager::new();
-        let h1 = mgr.create(make_state(), make_config(), HashMap::new());
-        let _h2 = mgr.create(make_state(), make_config(), HashMap::new());
+        let h1 = mgr.create(make_state(), make_config(), HashMap::new(), None);
+        let _h2 = mgr.create(make_state(), make_config(), HashMap::new(), None);
         // h1 is stale
         assert!(mgr.get(&h1).is_err());
     }
@@ -177,7 +177,7 @@ mod tests {
     #[test]
     fn destroy_clears_session() {
         let mut mgr = SessionManager::new();
-        let h = mgr.create(make_state(), make_config(), HashMap::new());
+        let h = mgr.create(make_state(), make_config(), HashMap::new(), None);
         assert!(mgr.has_session());
         mgr.destroy();
         assert!(!mgr.has_session());
@@ -187,7 +187,7 @@ mod tests {
     #[test]
     fn get_mut_works() {
         let mut mgr = SessionManager::new();
-        let h = mgr.create(make_state(), make_config(), HashMap::new());
+        let h = mgr.create(make_state(), make_config(), HashMap::new(), None);
         let session = mgr.get_mut(&h).unwrap();
         session.state.convention_id = "modified".to_string();
         assert_eq!(mgr.get(&h).unwrap().state.convention_id, "modified");

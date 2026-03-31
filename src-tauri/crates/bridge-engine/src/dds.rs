@@ -19,6 +19,7 @@ use dds_bridge::contract::{Penalty, Strain};
 use dds_bridge::deal::{self as dds_deal, SmallSet};
 use dds_bridge::solver;
 
+use crate::constants::SEATS;
 use crate::error::EngineError;
 use crate::types::{
     BidSuit, DDSolution, Deal, ParContract, ParInfo, Rank, Seat, Suit, Vulnerability,
@@ -98,7 +99,7 @@ fn to_dds_vulnerability(vul: Vulnerability) -> solver::Vulnerability {
 pub(crate) fn to_dds_deal(deal: &Deal) -> Result<dds_bridge::deal::Deal, EngineError> {
     let mut dds_deal = dds_bridge::deal::Deal::default();
 
-    for seat in [Seat::North, Seat::East, Seat::South, Seat::West] {
+    for seat in SEATS {
         let hand = deal
             .hands
             .get(&seat)
@@ -123,9 +124,6 @@ const STRAINS: [Strain; 5] = [
     Strain::Spades,
     Strain::Notrump,
 ];
-
-/// All seats.
-const SEATS: [Seat; 4] = [Seat::North, Seat::East, Seat::South, Seat::West];
 
 /// Extract 4x5 tricks table from dds-bridge TricksTable.
 pub(crate) fn from_tricks_table(

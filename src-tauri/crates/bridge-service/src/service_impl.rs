@@ -8,7 +8,7 @@ use std::collections::{HashMap, HashSet};
 use bridge_conventions::registry::bundle_registry::{list_bundle_inputs, resolve_bundle};
 use bridge_conventions::BaseSystemId;
 use bridge_engine::types::{Call, Card, Seat, Vulnerability};
-use bridge_engine::constants::partner_seat;
+use bridge_engine::constants::{partner_seat, SEATS};
 use bridge_session::session::{
     build_bidding_viewport, build_declarer_prompt_viewport, build_explanation_viewport,
     build_playing_viewport, build_module_catalog, build_module_learning_viewport,
@@ -378,7 +378,14 @@ impl ServicePort for ServicePortImpl {
         let session = self.manager.get_mut(handle)?;
 
         match mode {
-            Some("play") | None => {
+            Some("skip") | None => {
+                session.state.phase = GamePhase::Explanation;
+                Ok(PromptAcceptResult {
+                    phase: session.state.phase,
+                    ai_plays: None,
+                })
+            }
+            Some("play") => {
                 // Transition to playing
                 if let Some(ref contract) = session.state.contract {
                     let contract = contract.clone();
@@ -409,33 +416,12 @@ impl ServicePort for ServicePortImpl {
                     })
                 }
             }
-            Some("skip") => {
-                session.state.phase = GamePhase::Explanation;
+            Some("replay") => {
+                // Transition back to DECLARER_PROMPT from EXPLANATION
+                session.state.phase = GamePhase::DeclarerPrompt;
                 Ok(PromptAcceptResult {
                     phase: session.state.phase,
                     ai_plays: None,
-                })
-            }
-            Some("replay") => {
-                // Reset play state and re-initialize
-                session.state.play = bridge_session::session::PlayState::default();
-                if let Some(ref contract) = session.state.contract {
-                    let contract = contract.clone();
-                    session.state.initialize_play(&contract);
-                    session.state.phase = GamePhase::Playing;
-                }
-
-                let ai_plays = run_initial_ai_plays(&mut session.state);
-                let ai_play_dtos: Vec<AiPlayEntryDTO> =
-                    ai_plays.into_iter().map(AiPlayEntryDTO::from).collect();
-
-                Ok(PromptAcceptResult {
-                    phase: session.state.phase,
-                    ai_plays: if ai_play_dtos.is_empty() {
-                        None
-                    } else {
-                        Some(ai_play_dtos)
-                    },
                 })
             }
             Some("restart") => {
@@ -554,20 +540,44 @@ impl ServicePort for ServicePortImpl {
             None => return Ok(None),
         };
 
+        // Compute prompt mode dynamically based on declarer/user seat relationship
+        let user_seat = session.state.user_seat;
+        let prompt_mode = if contract.declarer != user_seat
+            && partner_seat(contract.declarer) != user_seat
+        {
+            PromptMode::Defender
+        } else if contract.declarer == user_seat {
+            PromptMode::SouthDeclarer
+        } else {
+            PromptMode::DeclarerSwap
+        };
+
+        // Face-up seats: user + partner preview based on prompt mode
         let face_up_seats = {
             let mut s = HashSet::new();
-            s.insert(session.state.user_seat);
+            s.insert(user_seat);
+            match prompt_mode {
+                PromptMode::SouthDeclarer => {
+                    // User is declarer — show dummy (partner of declarer)
+                    s.insert(partner_seat(contract.declarer));
+                }
+                PromptMode::DeclarerSwap => {
+                    // User's partner is declarer — show declarer's hand
+                    s.insert(contract.declarer);
+                }
+                PromptMode::Defender => {}
+            }
             s
         };
 
         let viewport = build_declarer_prompt_viewport(BuildDeclarerPromptViewportInput {
             deal: &session.state.deal,
-            user_seat: session.state.user_seat,
+            user_seat,
             face_up_seats: &face_up_seats,
             auction: &session.state.auction,
             bid_history: &[],
             contract,
-            prompt_mode: PromptMode::SouthDeclarer,
+            prompt_mode,
         });
 
         Ok(Some(viewport))
@@ -605,7 +615,7 @@ impl ServicePort for ServicePortImpl {
 
         // Build remaining cards map
         let mut remaining_cards = HashMap::new();
-        for &seat in &[Seat::North, Seat::East, Seat::South, Seat::West] {
+        for &seat in &SEATS {
             remaining_cards.insert(seat, session.state.get_remaining_cards(seat));
         }
 
@@ -627,7 +637,7 @@ impl ServicePort for ServicePortImpl {
             face_up_seats: &face_up_seats,
             auction: Some(&session.state.auction),
             bid_history: None,
-            rotated: false,
+            rotated: session.state.effective_user_seat == Some(Seat::North),
             contract: session.state.contract.clone(),
             current_player: session.state.play.current_player,
             current_trick: session.state.play.current_trick.clone(),

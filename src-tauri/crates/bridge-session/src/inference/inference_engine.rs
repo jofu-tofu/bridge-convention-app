@@ -5,13 +5,11 @@
 
 use std::collections::HashMap;
 use bridge_engine::types::{Auction, AuctionEntry, Seat};
-use bridge_engine::partner_seat;
+use bridge_engine::{partner_seat, SEATS};
 use bridge_conventions::types::meaning::FactConstraint;
 
 use super::derive_beliefs::{derive_public_beliefs, hand_inference_to_constraints};
 use super::types::{InferenceConfig, InferenceProvider, InferenceSnapshot, PublicBeliefs};
-
-const ALL_SEATS: [Seat; 4] = [Seat::North, Seat::East, Seat::South, Seat::West];
 
 fn is_own_partnership(observer_seat: Seat, bidder_seat: Seat) -> bool {
     bidder_seat == observer_seat || bidder_seat == partner_seat(observer_seat)
@@ -31,7 +29,7 @@ impl InferenceEngine {
     /// Uses asymmetric providers: own partnership uses convention-aware inference,
     /// opponent partnership uses natural bidding theory.
     pub fn new(config: InferenceConfig, observer_seat: Seat) -> Self {
-        let raw_constraints: HashMap<Seat, Vec<FactConstraint>> = ALL_SEATS
+        let raw_constraints: HashMap<Seat, Vec<FactConstraint>> = SEATS
             .iter()
             .map(|&s| (s, Vec::new()))
             .collect();
@@ -92,14 +90,14 @@ impl InferenceEngine {
 
     /// Clear all accumulated constraints and timeline.
     pub fn reset(&mut self) {
-        for seat in &ALL_SEATS {
+        for seat in &SEATS {
             self.raw_constraints.get_mut(seat).unwrap().clear();
         }
         self.timeline.clear();
     }
 
     fn compute_beliefs(&self) -> HashMap<Seat, PublicBeliefs> {
-        ALL_SEATS
+        SEATS
             .iter()
             .map(|&seat| {
                 let beliefs = derive_public_beliefs(seat, &self.raw_constraints[&seat]);

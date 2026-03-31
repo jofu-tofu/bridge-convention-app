@@ -8,9 +8,9 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use bridge_engine::types::{
-    Auction, AuctionEntry, BidSuit, Call, Card, Contract, Deal, PlayedCard, Seat, Suit, Trick,
+    Auction, AuctionEntry, Call, Card, Contract, Deal, PlayedCard, Seat, Suit, Trick,
 };
-use bridge_engine::constants::{next_seat, partner_seat};
+use bridge_engine::constants::{bid_suit_to_suit, next_seat, partner_seat};
 
 use crate::inference::InferenceCoordinator;
 use crate::inference::types::{InferenceSnapshot, PublicBeliefState, PublicBeliefs};
@@ -247,17 +247,6 @@ pub fn get_current_turn(auction: &Auction, dealer: Seat) -> Option<Seat> {
         .map(|entry| next_seat(entry.seat))
 }
 
-/// Map BidSuit to Suit for trump. NoTrump returns None.
-pub fn bid_suit_to_suit(strain: BidSuit) -> Option<Suit> {
-    match strain {
-        BidSuit::Clubs => Some(Suit::Clubs),
-        BidSuit::Diamonds => Some(Suit::Diamonds),
-        BidSuit::Hearts => Some(Suit::Hearts),
-        BidSuit::Spades => Some(Suit::Spades),
-        BidSuit::NoTrump => None,
-    }
-}
-
 /// Create a string key for a card (for HashSet lookup).
 fn card_key(card: &Card) -> (Suit, bridge_engine::types::Rank) {
     (card.suit, card.rank)
@@ -266,11 +255,12 @@ fn card_key(card: &Card) -> (Suit, bridge_engine::types::Rank) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_engine::types::{Hand, Rank, Vulnerability};
+    use bridge_engine::constants::SEATS;
+    use bridge_engine::types::{BidSuit, Hand, Rank, Vulnerability};
 
     fn make_deal() -> Deal {
         let mut hands = HashMap::new();
-        for &seat in &[Seat::North, Seat::East, Seat::South, Seat::West] {
+        for &seat in &SEATS {
             hands.insert(seat, Hand { cards: vec![] });
         }
         Deal {

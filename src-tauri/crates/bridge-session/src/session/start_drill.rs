@@ -322,7 +322,7 @@ mod tests {
 
     #[test]
     fn rotate_seat_180_involution() {
-        for &seat in &[Seat::North, Seat::East, Seat::South, Seat::West] {
+        for &seat in &bridge_engine::SEATS {
             assert_eq!(rotate_seat_180(rotate_seat_180(seat)), seat);
         }
     }

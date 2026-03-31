@@ -370,6 +370,7 @@ fn empty_result() -> BidProcessResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bridge_engine::constants::SEATS;
     use bridge_engine::types::{BidSuit, Deal, Hand, Vulnerability};
     use crate::heuristics::{BiddingContext, BiddingStrategy, BidResult};
     use crate::inference::InferenceCoordinator;
@@ -394,7 +395,7 @@ mod tests {
 
     fn make_deal() -> Deal {
         let mut hands = HashMap::new();
-        for &seat in &[Seat::North, Seat::East, Seat::South, Seat::West] {
+        for &seat in &SEATS {
             hands.insert(seat, Hand { cards: vec![] });
         }
         Deal {

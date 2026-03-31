@@ -8,10 +8,7 @@ import {
   parseOpponentMode,
   parseScenarioConfig,
   assignSeedScenario,
-  nextSeatClockwise,
-  partnerOf,
   formatHandBySuit,
-  Seat,
   Vulnerability,
   type ScenarioConfig,
 } from "../shared";
@@ -215,32 +212,6 @@ describe("assignSeedScenario", () => {
     for (let i = 0; i < 5; i++) {
       expect(assignSeedScenario(seed, mixedConfig)).toEqual(first);
     }
-  });
-});
-
-// ── nextSeatClockwise ───────────────────────────────────────────────
-
-describe("nextSeatClockwise", () => {
-  it.each([
-    [Seat.North, Seat.East],
-    [Seat.East, Seat.South],
-    [Seat.South, Seat.West],
-    [Seat.West, Seat.North],
-  ] as const)("%s -> %s", (input, expected) => {
-    expect(nextSeatClockwise(input)).toBe(expected);
-  });
-});
-
-// ── partnerOf ───────────────────────────────────────────────────────
-
-describe("partnerOf", () => {
-  it.each([
-    [Seat.North, Seat.South],
-    [Seat.South, Seat.North],
-    [Seat.East, Seat.West],
-    [Seat.West, Seat.East],
-  ] as const)("%s -> %s", (input, expected) => {
-    expect(partnerOf(input)).toBe(expected);
   });
 });
 

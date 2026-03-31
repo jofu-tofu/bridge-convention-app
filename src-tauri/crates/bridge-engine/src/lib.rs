@@ -10,7 +10,7 @@ pub mod play;
 // Re-export commonly used items
 pub use types::*;
 pub use error::EngineError;
-pub use constants::{create_deck, create_hand, next_seat, partner_seat};
+pub use constants::{bid_suit_to_suit, create_deck, create_hand, next_seat, partner_seat, SEATS};
 pub use hand_evaluator::{
     calculate_hcp, evaluate_hand, evaluate_hand_hcp, get_suit_length, is_balanced,
     calculate_distribution_points, HcpStrategy,
