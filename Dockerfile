@@ -7,7 +7,8 @@ RUN cd src-tauri && cargo chef prepare --recipe-path /build/recipe.json
 
 # Stage 2 — cache Rust dependencies (rebuilds only when Cargo.lock changes)
 FROM rust:1-bookworm AS rust-deps
-RUN curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh \
+RUN cargo install cargo-chef \
+    && curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh \
     && rustup target add wasm32-unknown-unknown
 COPY --from=chef /build/recipe.json /build/recipe.json
 WORKDIR /build/src-tauri
