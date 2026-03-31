@@ -108,6 +108,8 @@ impl BiddingStrategy for StrategyChain {
     fn suggest_bid(&self, context: &BiddingContext) -> Option<BidResult> {
         self.suggest_with_trace(context).0
     }
+
+    fn as_any(&self) -> &dyn std::any::Any { self }
 }
 
 #[cfg(test)]
@@ -131,6 +133,7 @@ mod tests {
         fn suggest_bid(&self, _context: &BiddingContext) -> Option<BidResult> {
             None
         }
+        fn as_any(&self) -> &dyn std::any::Any { self }
     }
 
     /// A strategy that always suggests 1C.
@@ -151,8 +154,10 @@ mod tests {
                 },
                 rule_name: None,
                 explanation: "Always bids 1C".to_string(),
+                ..Default::default()
             })
         }
+        fn as_any(&self) -> &dyn std::any::Any { self }
     }
 
     /// A strategy that always suggests 1H.
@@ -173,8 +178,10 @@ mod tests {
                 },
                 rule_name: None,
                 explanation: "Always bids 1H".to_string(),
+                ..Default::default()
             })
         }
+        fn as_any(&self) -> &dyn std::any::Any { self }
     }
 
     fn dummy_context() -> BiddingContext {

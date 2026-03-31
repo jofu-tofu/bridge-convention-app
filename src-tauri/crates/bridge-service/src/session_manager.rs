@@ -8,7 +8,6 @@ use std::collections::HashMap;
 use bridge_engine::types::Seat;
 use bridge_session::session::{DrillConfig, SessionState, SeatStrategy};
 
-use crate::convention_adapter::ConventionStrategyAdapter;
 use crate::error::ServiceError;
 use crate::request_types::SessionHandle;
 
@@ -21,9 +20,6 @@ pub struct ActiveSession {
     pub config: DrillConfig,
     /// Seat strategies extracted from DrillConfig for bidding controller.
     pub seat_strategies: HashMap<Seat, SeatStrategy>,
-    /// Convention strategy adapter for debug methods (pipeline evaluation).
-    /// None when no convention strategy is configured (e.g., opponents with heuristic strategies).
-    pub debug_adapter: Option<ConventionStrategyAdapter>,
 }
 
 // ── SessionManager ────────────────────────────────────────────────
@@ -52,7 +48,6 @@ impl SessionManager {
         state: SessionState,
         config: DrillConfig,
         seat_strategies: HashMap<Seat, SeatStrategy>,
-        debug_adapter: Option<ConventionStrategyAdapter>,
     ) -> SessionHandle {
         self.handle_counter += 1;
         let handle = format!("session-{}", self.handle_counter);
@@ -61,7 +56,6 @@ impl SessionManager {
             state,
             config,
             seat_strategies,
-            debug_adapter,
         });
         handle
     }
@@ -146,24 +140,24 @@ mod tests {
     #[test]
     fn create_returns_sequential_handles() {
         let mut mgr = SessionManager::new();
-        let h1 = mgr.create(make_state(), make_config(), HashMap::new(), None);
+        let h1 = mgr.create(make_state(), make_config(), HashMap::new());
         assert_eq!(h1, "session-1");
-        let h2 = mgr.create(make_state(), make_config(), HashMap::new(), None);
+        let h2 = mgr.create(make_state(), make_config(), HashMap::new());
         assert_eq!(h2, "session-2");
     }
 
     #[test]
     fn get_active_session() {
         let mut mgr = SessionManager::new();
-        let h = mgr.create(make_state(), make_config(), HashMap::new(), None);
+        let h = mgr.create(make_state(), make_config(), HashMap::new());
         assert!(mgr.get(&h).is_ok());
     }
 
     #[test]
     fn get_stale_handle_fails() {
         let mut mgr = SessionManager::new();
-        let h1 = mgr.create(make_state(), make_config(), HashMap::new(), None);
-        let _h2 = mgr.create(make_state(), make_config(), HashMap::new(), None);
+        let h1 = mgr.create(make_state(), make_config(), HashMap::new());
+        let _h2 = mgr.create(make_state(), make_config(), HashMap::new());
         // h1 is stale
         assert!(mgr.get(&h1).is_err());
     }
@@ -177,7 +171,7 @@ mod tests {
     #[test]
     fn destroy_clears_session() {
         let mut mgr = SessionManager::new();
-        let h = mgr.create(make_state(), make_config(), HashMap::new(), None);
+        let h = mgr.create(make_state(), make_config(), HashMap::new());
         assert!(mgr.has_session());
         mgr.destroy();
         assert!(!mgr.has_session());
@@ -187,7 +181,7 @@ mod tests {
     #[test]
     fn get_mut_works() {
         let mut mgr = SessionManager::new();
-        let h = mgr.create(make_state(), make_config(), HashMap::new(), None);
+        let h = mgr.create(make_state(), make_config(), HashMap::new());
         let session = mgr.get_mut(&h).unwrap();
         session.state.convention_id = "modified".to_string();
         assert_eq!(mgr.get(&h).unwrap().state.convention_id, "modified");

@@ -241,11 +241,6 @@ impl ServicePort for ServicePortImpl {
             m
         };
 
-        // Build debug adapter for pipeline introspection
-        let debug_adapter = spec.map(|s| {
-            crate::convention_adapter::ConventionStrategyAdapter::new(s, surface_groups)
-        });
-
         let handle = self.manager.create(
             state,
             DrillConfig {
@@ -254,7 +249,6 @@ impl ServicePort for ServicePortImpl {
                 seat_strategies: HashMap::new(),
             },
             seat_strategies,
-            debug_adapter,
         );
 
         Ok(handle)
@@ -810,6 +804,20 @@ impl ServicePort for ServicePortImpl {
 
 impl ServicePortImpl {
     /// Build a BiddingContext for the user seat from current session state.
+    /// Extract the ConventionStrategyAdapter from the user seat's strategy.
+    /// Returns None if the seat uses a heuristic strategy (no convention pipeline).
+    fn get_convention_adapter(
+        session: &crate::session_manager::ActiveSession,
+    ) -> Option<&crate::convention_adapter::ConventionStrategyAdapter> {
+        let strategy = session.seat_strategies.get(&session.state.user_seat)?;
+        match strategy {
+            SeatStrategy::Ai(boxed) => boxed
+                .as_any()
+                .downcast_ref::<crate::convention_adapter::ConventionStrategyAdapter>(),
+            _ => None,
+        }
+    }
+
     fn build_user_bidding_context(
         session: &crate::session_manager::ActiveSession,
     ) -> Option<bridge_session::heuristics::BiddingContext> {
@@ -830,7 +838,7 @@ impl ServicePortImpl {
 impl DevServicePort for ServicePortImpl {
     fn get_expected_bid(&self, handle: &str) -> Result<Option<Call>, ServiceError> {
         let session = self.manager.get(handle)?;
-        let adapter = match &session.debug_adapter {
+        let adapter = match Self::get_convention_adapter(session) {
             Some(a) => a,
             None => return Ok(None),
         };
@@ -844,7 +852,7 @@ impl DevServicePort for ServicePortImpl {
 
     fn get_debug_snapshot(&self, handle: &str) -> Result<serde_json::Value, ServiceError> {
         let session = self.manager.get(handle)?;
-        let adapter = match &session.debug_adapter {
+        let adapter = match Self::get_convention_adapter(session) {
             Some(a) => a,
             None => return Ok(serde_json::Value::Null),
         };
@@ -878,7 +886,7 @@ impl DevServicePort for ServicePortImpl {
         let session = self.manager.get(handle)?;
 
         // Build a single "pre-bid" entry with the current pipeline snapshot
-        let adapter = match &session.debug_adapter {
+        let adapter = match Self::get_convention_adapter(session) {
             Some(a) => a,
             None => return Ok(Vec::new()),
         };

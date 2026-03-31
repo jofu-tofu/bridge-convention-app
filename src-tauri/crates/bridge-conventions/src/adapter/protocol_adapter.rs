@@ -4,7 +4,9 @@
 
 use std::collections::HashMap;
 
-use bridge_engine::types::{Call, Seat};
+use bridge_engine::types::{Call, Hand, Seat};
+
+use crate::types::system_config::SystemConfig;
 
 use crate::adapter::strategy_evaluation::{
     MachineDebugSnapshot, DiagnosticEntry, StrategyEvaluation,
@@ -23,7 +25,7 @@ use crate::pipeline::run_pipeline::{run_pipeline, PipelineInput};
 use crate::pipeline::types::PipelineResult;
 use crate::teaching::projection_builder::project_teaching;
 use crate::teaching::teaching_types::SurfaceGroup;
-use crate::types::meaning::ConstraintDimension;
+use crate::types::meaning::{BidMeaning, ConstraintDimension};
 use crate::types::module_types::ConventionModule;
 use crate::types::spec_types::ConventionSpec;
 
@@ -63,6 +65,46 @@ impl ConventionStrategy {
         is_legal: &dyn Fn(&Call) -> bool,
         inherited_dimensions: &[ConstraintDimension],
     ) -> (Option<BidResult>, StrategyEvaluation) {
+        self.suggest_with_hand(context, next_seat, facts, is_legal, inherited_dimensions, None, None)
+    }
+
+    /// Suggest using pre-collected surfaces. Skips the FSM replay that
+    /// `suggest`/`suggest_with_hand` perform — the caller provides surfaces
+    /// and the module-level surface results (for the machine snapshot).
+    pub fn suggest_from_surfaces(
+        &self,
+        surfaces: &[BidMeaning],
+        surface_results: &[ModuleSurfaceResult],
+        context: &AuctionContext,
+        facts: &EvaluatedFacts,
+        is_legal: &dyn Fn(&Call) -> bool,
+        inherited_dimensions: &[ConstraintDimension],
+        hand: Option<&Hand>,
+        system_config: Option<&SystemConfig>,
+    ) -> (Option<BidResult>, StrategyEvaluation) {
+        let pipeline_result = run_pipeline(PipelineInput {
+            surfaces,
+            facts,
+            inherited_dimensions,
+            is_legal,
+            hand,
+            system_config,
+        });
+
+        self.build_evaluation(context, facts, pipeline_result, surface_results)
+    }
+
+    /// Suggest with an optional hand for per-surface relational fact evaluation.
+    pub fn suggest_with_hand(
+        &self,
+        context: &AuctionContext,
+        next_seat: Option<Seat>,
+        facts: &EvaluatedFacts,
+        is_legal: &dyn Fn(&Call) -> bool,
+        inherited_dimensions: &[ConstraintDimension],
+        hand: Option<&Hand>,
+        system_config: Option<&SystemConfig>,
+    ) -> (Option<BidResult>, StrategyEvaluation) {
         // Step 1: Collect matching surfaces via observation layer
         let surface_results = collect_matching_claims(
             &self.spec.modules,
@@ -77,12 +119,23 @@ impl ConventionStrategy {
             facts,
             inherited_dimensions,
             is_legal,
+            hand,
+            system_config,
         });
 
-        // Step 3: Build teaching projection
+        self.build_evaluation(context, facts, pipeline_result, &surface_results)
+    }
+
+    /// Assemble bid result and evaluation from a pipeline result.
+    fn build_evaluation(
+        &self,
+        context: &AuctionContext,
+        facts: &EvaluatedFacts,
+        pipeline_result: PipelineResult,
+        surface_results: &[ModuleSurfaceResult],
+    ) -> (Option<BidResult>, StrategyEvaluation) {
         let teaching_projection = project_teaching(&pipeline_result);
 
-        // Step 4: Build practical recommendation
         let hcp = facts
             .facts
             .get("hand.hcp")
@@ -91,23 +144,20 @@ impl ConventionStrategy {
         let practical_recommendation =
             build_practical_recommendation(&pipeline_result.truth_set, hcp);
 
-        // Step 5: Build machine debug snapshot
-        let machine_snapshot = build_machine_snapshot(&surface_results);
+        let machine_snapshot = build_machine_snapshot(surface_results);
 
-        // Step 6: Build bid result
         let bid_result = pipeline_result.selected.as_ref().map(|carrier| {
             BidResult {
                 call: carrier.call().clone(),
-                resolved_candidates: Vec::new(), // TODO: build from pipeline carriers
+                resolved_candidates: Vec::new(),
             }
         });
 
-        // Step 7: Assemble StrategyEvaluation
         let evaluation = StrategyEvaluation {
             practical_recommendation,
             surface_groups: Some(self.surface_groups.clone()),
             pipeline_result: Some(pipeline_result),
-            posterior_summary: None, // Phase 4
+            posterior_summary: None,
             explanation_catalog: None,
             teaching_projection: Some(teaching_projection),
             facts: Some(facts.clone()),

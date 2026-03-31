@@ -24,8 +24,11 @@ impl BiddingStrategy for PassStrategy {
             call: Call::Pass,
             rule_name: None,
             explanation: "Always passes (placeholder strategy)".to_string(),
+            ..Default::default()
         })
     }
+
+    fn as_any(&self) -> &dyn std::any::Any { self }
 }
 
 #[cfg(test)]

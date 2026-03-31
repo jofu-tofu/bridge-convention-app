@@ -3,7 +3,7 @@
 //! Ported from TS `src/session/drill-session.ts`. Simplified from the TS
 //! `DrillSession` object to a single `get_next_bid()` function.
 
-use bridge_engine::types::{Auction, Call, Hand, Seat};
+use bridge_engine::types::{Auction, Call, Hand, Seat, Vulnerability};
 use bridge_engine::hand_evaluator::evaluate_hand_hcp;
 use bridge_engine::auction::is_legal_call;
 
@@ -21,6 +21,8 @@ pub fn get_next_bid(
     seat: Seat,
     hand: &Hand,
     auction: &Auction,
+    vulnerability: Option<Vulnerability>,
+    dealer: Option<Seat>,
 ) -> Option<BidResult> {
     let strategy = config.get_strategy(seat)?;
 
@@ -30,8 +32,8 @@ pub fn get_next_bid(
         auction: auction.clone(),
         seat,
         evaluation,
-        vulnerability: None,
-        dealer: None,
+        vulnerability,
+        dealer,
     };
 
     let result = strategy.suggest_bid(&context);
@@ -43,6 +45,7 @@ pub fn get_next_bid(
                 call: Call::Pass,
                 rule_name: None,
                 explanation: "No matching rule -- defaulting to pass".to_string(),
+                ..Default::default()
             })
         }
         Some(bid_result) => {
@@ -52,6 +55,7 @@ pub fn get_next_bid(
                     call: Call::Pass,
                     rule_name: None,
                     explanation: "Convention suggested illegal bid -- defaulting to pass".to_string(),
+                    ..Default::default()
                 })
             } else {
                 Some(bid_result)
@@ -77,8 +81,10 @@ mod tests {
                 call: Call::Bid { level: 1, strain: BidSuit::NoTrump },
                 rule_name: Some("test-1nt".to_string()),
                 explanation: "Always 1NT".to_string(),
+                ..Default::default()
             })
         }
+        fn as_any(&self) -> &dyn std::any::Any { self }
     }
 
     /// A strategy that always returns None.
@@ -89,6 +95,7 @@ mod tests {
         fn suggest_bid(&self, _ctx: &BiddingContext) -> Option<BidResult> {
             None
         }
+        fn as_any(&self) -> &dyn std::any::Any { self }
     }
 
     /// A strategy that suggests an illegal bid (1C when 1H is already bid).
@@ -101,8 +108,10 @@ mod tests {
                 call: Call::Bid { level: 1, strain: BidSuit::Clubs },
                 rule_name: Some("illegal".to_string()),
                 explanation: "Bad bid".to_string(),
+                ..Default::default()
             })
         }
+        fn as_any(&self) -> &dyn std::any::Any { self }
     }
 
     fn empty_hand() -> Hand {
@@ -134,14 +143,14 @@ mod tests {
                 m
             },
         };
-        let result = get_next_bid(&config, Seat::South, &empty_hand(), &empty_auction());
+        let result = get_next_bid(&config, Seat::South, &empty_hand(), &empty_auction(), None, None);
         assert!(result.is_none());
     }
 
     #[test]
     fn ai_seat_delegates_to_strategy() {
         let config = make_config_with_strategy(Seat::North, Box::new(Always1NT));
-        let result = get_next_bid(&config, Seat::North, &empty_hand(), &empty_auction());
+        let result = get_next_bid(&config, Seat::North, &empty_hand(), &empty_auction(), None, None);
         let bid = result.unwrap();
         assert_eq!(bid.call, Call::Bid { level: 1, strain: BidSuit::NoTrump });
     }
@@ -149,7 +158,7 @@ mod tests {
     #[test]
     fn null_strategy_defaults_to_pass() {
         let config = make_config_with_strategy(Seat::North, Box::new(NullStrategy));
-        let result = get_next_bid(&config, Seat::North, &empty_hand(), &empty_auction());
+        let result = get_next_bid(&config, Seat::North, &empty_hand(), &empty_auction(), None, None);
         let bid = result.unwrap();
         assert_eq!(bid.call, Call::Pass);
     }
@@ -167,7 +176,7 @@ mod tests {
             is_complete: false,
         };
         let config = make_config_with_strategy(Seat::East, Box::new(IllegalBidStrategy));
-        let result = get_next_bid(&config, Seat::East, &empty_hand(), &auction);
+        let result = get_next_bid(&config, Seat::East, &empty_hand(), &auction, None, None);
         let bid = result.unwrap();
         assert_eq!(bid.call, Call::Pass);
     }
@@ -179,7 +188,7 @@ mod tests {
             user_seat: Seat::South,
             seat_strategies: HashMap::new(),
         };
-        let result = get_next_bid(&config, Seat::West, &empty_hand(), &empty_auction());
+        let result = get_next_bid(&config, Seat::West, &empty_hand(), &empty_auction(), None, None);
         assert!(result.is_none());
     }
 }

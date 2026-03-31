@@ -234,6 +234,7 @@ fn run_ai_bid_loop(
                     call: Call::Pass,
                     rule_name: None,
                     explanation: "No strategy — defaulting to pass".to_string(),
+                    ..Default::default()
                 }
             }
         };
@@ -303,6 +304,7 @@ fn get_ai_bid(
             call: Call::Pass,
             rule_name: None,
             explanation: "No matching rule — defaulting to pass".to_string(),
+            ..Default::default()
         }),
         Some(bid_result) => {
             // Validate the suggested call is legal
@@ -311,6 +313,7 @@ fn get_ai_bid(
                     call: Call::Pass,
                     rule_name: None,
                     explanation: "Convention suggested illegal bid — defaulting to pass".to_string(),
+                    ..Default::default()
                 })
             } else {
                 Some(bid_result)
@@ -387,8 +390,10 @@ mod tests {
                 call: Call::Pass,
                 rule_name: None,
                 explanation: "Always pass".to_string(),
+                ..Default::default()
             })
         }
+        fn as_any(&self) -> &dyn std::any::Any { self }
     }
 
     // ── Helpers ────────────────────────────────────────────────────

@@ -24,5 +24,7 @@ pub fn meaning_to_strategy(
         facts,
         inherited_dimensions,
         is_legal,
+        hand: None,
+        system_config: None,
     })
 }

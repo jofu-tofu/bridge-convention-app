@@ -167,6 +167,7 @@ mod tests {
     fn service_public_belief_state_serde_roundtrip() {
         let state = ServicePublicBeliefState {
             beliefs: serde_json::json!({"north": {"hcp": [10, 15]}}),
+            annotations: Vec::new(),
         };
         let json = serde_json::to_string(&state).unwrap();
         let rt: ServicePublicBeliefState = serde_json::from_str(&json).unwrap();

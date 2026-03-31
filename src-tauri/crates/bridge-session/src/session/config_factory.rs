@@ -141,8 +141,10 @@ mod tests {
                 call: Call::Pass,
                 rule_name: Some(self.label.clone()),
                 explanation: "test".to_string(),
+                ..Default::default()
             })
         }
+        fn as_any(&self) -> &dyn std::any::Any { self }
     }
 
     #[test]

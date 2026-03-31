@@ -4,7 +4,12 @@
 
 use std::collections::HashMap;
 
-use crate::fact_dsl::types::{EvaluatedFacts, FactData};
+use bridge_engine::types::Hand;
+
+use crate::fact_dsl::bridge_derived::evaluate_bridge_relational;
+use crate::fact_dsl::system_facts::evaluate_system_relational;
+use crate::fact_dsl::types::{EvaluatedFacts, FactData, RelationalFactContext};
+use crate::types::system_config::SystemConfig;
 use crate::pipeline::evaluation::binding_resolver::resolve_clause;
 use crate::pipeline::evaluation::specificity_deriver::derive_specificity;
 use crate::pipeline::evaluation::types::{MeaningClause, MeaningProposal, RankingMetadata};
@@ -41,8 +46,12 @@ pub fn evaluate_clause(
     }
 }
 
-/// Evaluate all clauses of a BidMeaning, producing a MeaningProposal.
-pub fn evaluate_bid_meaning(
+/// Evaluate all clauses of a BidMeaning against pre-computed facts.
+///
+/// Relational facts (layers 5-6) should already be computed for this
+/// surface's binding set via `precompute_binding_facts`. This avoids
+/// per-surface cloning.
+fn evaluate_bid_meaning_with_facts(
     surface: &BidMeaning,
     facts: &EvaluatedFacts,
     inherited_dimensions: &[ConstraintDimension],
@@ -83,15 +92,82 @@ pub fn evaluate_bid_meaning(
 }
 
 /// Evaluate all bid meanings in a list.
+///
+/// Precomputes relational facts per unique binding set so we clone + re-evaluate
+/// once per binding key (typically 0-3 keys) instead of once per surface.
 pub fn evaluate_all_bid_meanings(
     surfaces: &[BidMeaning],
     facts: &EvaluatedFacts,
     inherited_dimensions: &[ConstraintDimension],
+    hand: Option<&Hand>,
+    system_config: Option<&SystemConfig>,
 ) -> Vec<MeaningProposal> {
+    // Precompute relational facts per unique binding set
+    let binding_cache = precompute_binding_facts(surfaces, facts, hand, system_config);
+
     surfaces
         .iter()
-        .map(|s| evaluate_bid_meaning(s, facts, inherited_dimensions))
+        .map(|s| {
+            let binding_key = binding_cache_key(&s.surface_bindings);
+            let effective_facts = binding_cache
+                .get(&binding_key)
+                .unwrap_or(facts);
+            evaluate_bid_meaning_with_facts(s, effective_facts, inherited_dimensions)
+        })
         .collect()
+}
+
+/// Cache key for a surface's bindings — None for no bindings, Some(sorted pairs) otherwise.
+fn binding_cache_key(bindings: &Option<HashMap<String, String>>) -> Option<Vec<(String, String)>> {
+    bindings.as_ref().map(|b| {
+        let mut pairs: Vec<(String, String)> = b.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+        pairs.sort();
+        pairs
+    })
+}
+
+/// Precompute relational facts for each unique binding set found in surfaces.
+fn precompute_binding_facts(
+    surfaces: &[BidMeaning],
+    facts: &EvaluatedFacts,
+    hand: Option<&Hand>,
+    system_config: Option<&SystemConfig>,
+) -> HashMap<Option<Vec<(String, String)>>, EvaluatedFacts> {
+    let mut cache: HashMap<Option<Vec<(String, String)>>, EvaluatedFacts> = HashMap::new();
+
+    let h = match hand {
+        Some(h) => h,
+        None => return cache, // No hand → no relational facts to compute
+    };
+
+    for surface in surfaces {
+        let key = binding_cache_key(&surface.surface_bindings);
+        if key.is_none() || cache.contains_key(&key) {
+            continue;
+        }
+
+        let bindings = surface.surface_bindings.as_ref().unwrap();
+        let mut cloned = facts.clone();
+        let fit_agreed = bindings.get("suit").map(|suit| {
+            crate::fact_dsl::types::FitAgreedContext {
+                strain: suit.clone(),
+                confidence: crate::types::ConfidenceLevel::Tentative,
+            }
+        });
+        let ctx = RelationalFactContext {
+            bindings: Some(bindings.clone()),
+            public_commitments: None,
+            fit_agreed,
+        };
+        evaluate_bridge_relational(h, &mut cloned.facts, &ctx);
+        if let Some(sys) = system_config {
+            evaluate_system_relational(sys, &mut cloned.facts, &ctx);
+        }
+
+        cache.insert(key, cloned);
+    }
+
+    cache
 }
 
 /// Check if a fact value satisfies a constraint.

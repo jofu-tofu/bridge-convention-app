@@ -82,12 +82,15 @@ impl BiddingStrategy for NaturalFallbackStrategy {
                         "Natural bid with {}-card {} suit",
                         best_length, SUIT_NAMES[best_index]
                     ),
+                    ..Default::default()
                 });
             }
         }
 
         None
     }
+
+    fn as_any(&self) -> &dyn std::any::Any { self }
 }
 
 #[cfg(test)]

@@ -66,25 +66,43 @@ pub fn assemble_bid_feedback(
             }
         }
         Some(result) => {
-            if call_equals(user_call, &result.call) {
-                BidFeedbackDTO {
-                    grade: BidGrade::Correct,
-                    user_call: user_call.clone(),
-                    expected_call: Some(result.call.clone()),
-                    explanation: result.explanation.clone(),
-                }
+            let grade = if call_equals(user_call, &result.call) {
+                BidGrade::Correct
+            } else if result.truth_set_calls.iter().any(|c| call_equals(user_call, c)) {
+                BidGrade::CorrectNotPreferred
+            } else if result.acceptable_set_calls.iter().any(|c| call_equals(user_call, c)) {
+                BidGrade::Acceptable
+            } else if is_near_miss(user_call, &result.call) {
+                BidGrade::NearMiss
             } else {
-                BidFeedbackDTO {
-                    grade: BidGrade::Incorrect,
-                    user_call: user_call.clone(),
-                    expected_call: Some(result.call.clone()),
-                    explanation: format!(
-                        "Expected different bid. {}",
-                        result.explanation,
-                    ),
-                }
+                BidGrade::Incorrect
+            };
+
+            let explanation = if grade == BidGrade::Correct {
+                result.explanation.clone()
+            } else {
+                format!("Expected different bid. {}", result.explanation)
+            };
+
+            BidFeedbackDTO {
+                grade,
+                user_call: user_call.clone(),
+                expected_call: Some(result.call.clone()),
+                explanation,
             }
         }
+    }
+}
+
+/// Check if a bid is structurally close to the expected bid (same suit wrong level,
+/// or same level wrong suit). Only applies to contract bids, not special calls.
+fn is_near_miss(user: &Call, expected: &Call) -> bool {
+    match (user, expected) {
+        (
+            Call::Bid { level: ul, strain: us },
+            Call::Bid { level: el, strain: es },
+        ) => (ul == el && us != es) || (ul != el && us == es),
+        _ => false,
     }
 }
 
@@ -114,6 +132,7 @@ mod tests {
             call: Call::Bid { level: 1, strain: BidSuit::NoTrump },
             rule_name: Some("stayman-response".to_string()),
             explanation: "Respond 1NT".to_string(),
+            ..Default::default()
         };
         let feedback = assemble_bid_feedback(&user_call, Some(&expected));
         assert_eq!(feedback.grade, BidGrade::Correct);
@@ -127,6 +146,7 @@ mod tests {
             call: Call::Bid { level: 1, strain: BidSuit::NoTrump },
             rule_name: None,
             explanation: "Respond 1NT".to_string(),
+            ..Default::default()
         };
         let feedback = assemble_bid_feedback(&user_call, Some(&expected));
         assert_eq!(feedback.grade, BidGrade::Incorrect);
@@ -188,6 +208,114 @@ mod tests {
         assert_eq!(
             serde_json::to_string(&BidGrade::NearMiss).unwrap(),
             r#""near-miss""#
+        );
+    }
+
+    // ── RED tests: 5-grade grading contract ──────────────────────────
+    //
+    // These tests define the target grading behavior. The current
+    // `assemble_bid_feedback` is binary (Correct/Incorrect), so tests
+    // asserting intermediate grades (1–3) will fail until the grading
+    // logic is expanded with truth_set/acceptable_set context.
+
+    #[test]
+    #[ignore]
+    fn correct_not_preferred_for_truth_set_alternative() {
+        // User bids 2H (transfer to spades) when preferred is 2C (Stayman).
+        // Both are valid for this hand — user's choice is in truth set but
+        // not the preferred (selected) call.
+        let user_call = Call::Bid { level: 2, strain: BidSuit::Hearts };
+        let expected = BidResult {
+            call: Call::Bid { level: 2, strain: BidSuit::Clubs },
+            rule_name: Some("stayman:ask-major".to_string()),
+            explanation: "Stayman is preferred with 4-card major".to_string(),
+            truth_set_calls: vec![Call::Bid { level: 2, strain: BidSuit::Hearts }],
+            ..Default::default()
+        };
+        let feedback = assemble_bid_feedback(&user_call, Some(&expected));
+        assert_eq!(
+            feedback.grade, BidGrade::CorrectNotPreferred,
+            "Truth-set alternative should be CorrectNotPreferred, got {:?}",
+            feedback.grade,
+        );
+    }
+
+    #[test]
+    #[ignore]
+    fn acceptable_for_acceptable_set_bid() {
+        // User bids 3H (game raise) when preferred is 3D (limit raise).
+        // 3H is acceptable per pipeline's acceptable set.
+        let user_call = Call::Bid { level: 3, strain: BidSuit::Hearts };
+        let expected = BidResult {
+            call: Call::Bid { level: 3, strain: BidSuit::Diamonds },
+            rule_name: Some("bergen:limit-raise".to_string()),
+            explanation: "Limit raise with 3-card support".to_string(),
+            acceptable_set_calls: vec![Call::Bid { level: 3, strain: BidSuit::Hearts }],
+            ..Default::default()
+        };
+        let feedback = assemble_bid_feedback(&user_call, Some(&expected));
+        assert_eq!(
+            feedback.grade, BidGrade::Acceptable,
+            "Acceptable-set bid should be Acceptable, got {:?}",
+            feedback.grade,
+        );
+    }
+
+    #[test]
+    #[ignore]
+    fn near_miss_for_wrong_level_same_suit() {
+        // User bids 2D when expected is 3D — same suit, wrong level.
+        let user_call = Call::Bid { level: 2, strain: BidSuit::Diamonds };
+        let expected = BidResult {
+            call: Call::Bid { level: 3, strain: BidSuit::Diamonds },
+            rule_name: Some("bergen:limit-raise".to_string()),
+            explanation: "Limit raise".to_string(),
+            ..Default::default()
+        };
+        let feedback = assemble_bid_feedback(&user_call, Some(&expected));
+        assert_eq!(
+            feedback.grade, BidGrade::NearMiss,
+            "Wrong level same suit should be NearMiss, got {:?}",
+            feedback.grade,
+        );
+    }
+
+    #[test]
+    #[ignore]
+    fn correct_with_expanded_grading_context() {
+        // Exact match stays Correct — regression guard.
+        let user_call = Call::Bid { level: 2, strain: BidSuit::Clubs };
+        let expected = BidResult {
+            call: Call::Bid { level: 2, strain: BidSuit::Clubs },
+            rule_name: Some("stayman:ask-major".to_string()),
+            explanation: "Stayman".to_string(),
+            truth_set_calls: vec![Call::Bid { level: 2, strain: BidSuit::Hearts }],
+            ..Default::default()
+        };
+        let feedback = assemble_bid_feedback(&user_call, Some(&expected));
+        assert_eq!(
+            feedback.grade, BidGrade::Correct,
+            "Exact match should remain Correct, got {:?}",
+            feedback.grade,
+        );
+    }
+
+    #[test]
+    #[ignore]
+    fn incorrect_for_unrelated_bid() {
+        // 4C when expected is 3D — completely unrelated bid.
+        let user_call = Call::Bid { level: 4, strain: BidSuit::Clubs };
+        let expected = BidResult {
+            call: Call::Bid { level: 3, strain: BidSuit::Diamonds },
+            rule_name: Some("bergen:limit-raise".to_string()),
+            explanation: "Limit raise".to_string(),
+            ..Default::default()
+        };
+        let feedback = assemble_bid_feedback(&user_call, Some(&expected));
+        assert_eq!(
+            feedback.grade, BidGrade::Incorrect,
+            "Unrelated bid should remain Incorrect, got {:?}",
+            feedback.grade,
         );
     }
 }

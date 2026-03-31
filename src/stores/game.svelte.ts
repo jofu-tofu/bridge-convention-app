@@ -159,6 +159,10 @@ export function createGameStore(
 
   // ── Lifecycle guard ─────────────────────────────────────────
   let transitioning = $state(false);
+  // startNewDrill uses cancel-based concurrency (not guarded) — a new drill
+  // supersedes any in-progress drill via activeHandle comparison. This flag
+  // provides UI-disabling behavior that guarded() would have provided.
+  let isStarting = $state(false);
 
   function guarded<Args extends unknown[]>(
     fn: (...args: Args) => void | Promise<void>,
@@ -635,9 +639,19 @@ export function createGameStore(
     await tick();
   }
 
+  // startNewDrill uses cancel-based concurrency instead of guarded(): starting a
+  // new drill always succeeds, superseding any in-progress drill. Cancellation
+  // works via activeHandle comparison in startDrillFromHandleImpl — when a new
+  // drill starts, the old handle no longer matches and all async operations bail.
+  // Do NOT reintroduce guarded() here.
   async function startNewDrillImpl(config: SessionConfig) {
-    const handle = await service.createSession(config);
-    await startDrillFromHandleImpl(handle);
+    isStarting = true;
+    try {
+      const handle = await service.createSession(config);
+      await startDrillFromHandleImpl(handle);
+    } finally {
+      isStarting = false;
+    }
   }
 
   // ── Return ────────────────────────────────────────────────────
@@ -684,7 +698,7 @@ export function createGameStore(
       }
       return [];
     },
-    get isProcessing() { return transitioning || biddingPhase.bidding.processing || playPhase.play.processing; },
+    get isProcessing() { return transitioning || isStarting || biddingPhase.bidding.processing || playPhase.play.processing; },
     get isTransitioning() { return transitioning; },
     get isUserTurn() {
       return biddingPhase.displayedIsUserTurn;
@@ -839,7 +853,7 @@ export function createGameStore(
     restartPlay: guarded(restartPlayImpl),
     playThisHand: guarded(playThisHandImpl),
     startDrillFromHandle: startDrillFromHandleImpl,
-    startNewDrill: guarded(startNewDrillImpl),
+    startNewDrill: startNewDrillImpl,
 
     acceptPlay: guarded(acceptPlay),
     declinePlay: guarded(declinePlay),

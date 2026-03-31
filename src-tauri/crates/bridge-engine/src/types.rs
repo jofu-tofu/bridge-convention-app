@@ -98,11 +98,12 @@ pub struct Hand {
 
 /// Internally tagged union matching TS `Call = ContractBid | SpecialCall`.
 /// Produces JSON like `{"type":"bid","level":1,"strain":"C"}` or `{"type":"pass"}`.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum Call {
     #[serde(rename = "bid")]
     Bid { level: u8, strain: BidSuit },
+    #[default]
     #[serde(rename = "pass")]
     Pass,
     #[serde(rename = "double")]

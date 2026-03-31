@@ -33,13 +33,19 @@ pub struct BiddingContext {
 }
 
 /// Result of a strategy suggestion.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct BidResult {
     pub call: Call,
     /// Convention rule that produced this bid (None for heuristic bids).
     pub rule_name: Option<String>,
     /// Human-readable explanation of why this bid was chosen.
     pub explanation: String,
+    /// Other valid calls from the convention's "truth set" (correct but not preferred).
+    #[serde(default)]
+    pub truth_set_calls: Vec<Call>,
+    /// Acceptable alternative calls (convention allows but not standard).
+    #[serde(default)]
+    pub acceptable_set_calls: Vec<Call>,
 }
 
 /// Trait for bidding strategies. Each strategy inspects the context and either
@@ -53,6 +59,10 @@ pub trait BiddingStrategy: Send + Sync {
 
     /// Suggest a bid given the current context, or return None to decline.
     fn suggest_bid(&self, context: &BiddingContext) -> Option<BidResult>;
+
+    /// Downcast support — enables extracting concrete adapter types from
+    /// `SeatStrategy::Ai(Box<dyn BiddingStrategy>)` without a separate field.
+    fn as_any(&self) -> &dyn std::any::Any;
 }
 
 // ── Re-exports ─────────────────────────────────────────────────────────

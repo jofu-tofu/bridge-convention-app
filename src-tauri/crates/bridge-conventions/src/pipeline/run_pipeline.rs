@@ -2,13 +2,14 @@
 //!
 //! Mirrors TS from `pipeline/run-pipeline.ts`.
 
-use bridge_engine::types::Call;
+use bridge_engine::types::{Call, Hand};
 
 use crate::fact_dsl::types::EvaluatedFacts;
 use crate::pipeline::evaluation::meaning_arbitrator::arbitrate_meanings;
 use crate::pipeline::evaluation::meaning_evaluator::evaluate_all_bid_meanings;
 use crate::pipeline::types::PipelineResult;
 use crate::types::meaning::{BidMeaning, ConstraintDimension};
+use crate::types::system_config::SystemConfig;
 
 /// Input to the pipeline.
 pub struct PipelineInput<'a> {
@@ -20,6 +21,11 @@ pub struct PipelineInput<'a> {
     pub inherited_dimensions: &'a [ConstraintDimension],
     /// Legality checker for the current auction.
     pub is_legal: &'a dyn Fn(&Call) -> bool,
+    /// Hand for per-surface relational fact re-evaluation (optional).
+    /// When provided, surfaces with bindings get relational facts recomputed.
+    pub hand: Option<&'a Hand>,
+    /// System config for per-surface system relational overrides (optional).
+    pub system_config: Option<&'a SystemConfig>,
 }
 
 /// Output from the pipeline.
@@ -43,6 +49,8 @@ pub fn run_pipeline(input: PipelineInput) -> PipelineResult {
         input.surfaces,
         input.facts,
         input.inherited_dimensions,
+        input.hand,
+        input.system_config,
     );
 
     // Step 2: Arbitrate — encode, gate-check, rank, select
@@ -121,6 +129,8 @@ mod tests {
             facts: &facts,
             inherited_dimensions: &[],
             is_legal: &|_| true,
+            hand: None,
+            system_config: None,
         });
         assert!(result.selected.is_none());
         assert!(result.truth_set.is_empty());
@@ -135,6 +145,8 @@ mod tests {
             facts: &facts,
             inherited_dimensions: &[],
             is_legal: &|_| true,
+            hand: None,
+            system_config: None,
         });
         assert!(result.selected.is_some());
         assert_eq!(result.selected.unwrap().encoded.proposal.meaning_id, "test:bid");
@@ -149,6 +161,8 @@ mod tests {
             facts: &facts,
             inherited_dimensions: &[],
             is_legal: &|_| true,
+            hand: None,
+            system_config: None,
         });
         assert!(result.selected.is_none());
         assert!(result.truth_set.is_empty());

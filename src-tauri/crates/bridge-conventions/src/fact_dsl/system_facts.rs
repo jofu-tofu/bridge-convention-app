@@ -16,16 +16,16 @@ use super::types::{
 
 // --- Fact IDs ---
 
-pub const SYSTEM_RESPONDER_WEAK_HAND: &str = "system.responderWeakHand";
-pub const SYSTEM_RESPONDER_INVITE_VALUES: &str = "system.responderInviteValues";
-pub const SYSTEM_RESPONDER_GAME_VALUES: &str = "system.responderGameValues";
-pub const SYSTEM_RESPONDER_SLAM_VALUES: &str = "system.responderSlamValues";
-pub const SYSTEM_OPENER_NOT_MINIMUM: &str = "system.openerNotMinimum";
+pub const SYSTEM_RESPONDER_WEAK_HAND: &str = "system.responder.weakHand";
+pub const SYSTEM_RESPONDER_INVITE_VALUES: &str = "system.responder.inviteValues";
+pub const SYSTEM_RESPONDER_GAME_VALUES: &str = "system.responder.gameValues";
+pub const SYSTEM_RESPONDER_SLAM_VALUES: &str = "system.responder.slamValues";
+pub const SYSTEM_OPENER_NOT_MINIMUM: &str = "system.opener.notMinimum";
 pub const SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT: &str = "system.responderTwoLevelNewSuit";
 pub const SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING: &str = "system.suitResponseIsGameForcing";
 pub const SYSTEM_ONE_NT_FORCING_AFTER_MAJOR: &str = "system.oneNtForcingAfterMajor";
-pub const SYSTEM_RESPONDER_ONE_NT_RANGE: &str = "system.responderOneNtRange";
-pub const SYSTEM_DONT_OVERCALL_IN_RANGE: &str = "system.dontOvercallInRange";
+pub const SYSTEM_RESPONDER_ONE_NT_RANGE: &str = "system.responder.oneNtRange";
+pub const SYSTEM_DONT_OVERCALL_IN_RANGE: &str = "system.dontOvercall.inRange";
 
 /// Evaluate standard system facts (layer 3) from HCP and SystemConfig.
 pub fn evaluate_system_facts(
