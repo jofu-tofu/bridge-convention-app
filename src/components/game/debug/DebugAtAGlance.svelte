@@ -22,7 +22,7 @@
     {#if snapshot?.machineSnapshot}
       <span class="text-text-muted">state:</span>
       <span class="text-cyan-300 font-mono font-bold">{snapshot.machineSnapshot.currentStateId}</span>
-      {#if snapshot.machineSnapshot.registers.forcingState !== "nonforcing"}
+      {#if snapshot.machineSnapshot.registers?.forcingState && snapshot.machineSnapshot.registers.forcingState !== "nonforcing"}
         <span class="text-[10px] px-1 rounded {snapshot.machineSnapshot.registers.forcingState === 'game-forcing' ? 'bg-red-900/40 text-red-300' : 'bg-yellow-900/40 text-yellow-300'}">{snapshot.machineSnapshot.registers.forcingState}</span>
       {/if}
     {/if}

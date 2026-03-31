@@ -87,6 +87,7 @@ pub struct ConventionInfo {
 #[serde(rename_all = "camelCase")]
 pub struct ServicePublicBeliefState {
     pub beliefs: serde_json::Value,
+    pub annotations: Vec<serde_json::Value>,
 }
 
 // ── DTO wrappers for session types lacking Serialize ──────────────

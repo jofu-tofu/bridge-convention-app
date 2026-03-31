@@ -14,12 +14,12 @@
 
 <DebugSection
   title="Public Beliefs"
-  count={publicBeliefState.annotations.length || null}
-  preview={publicBeliefState.annotations.length > 0 ? `${publicBeliefState.annotations.length} annotations` : null}
+  count={publicBeliefState.annotations?.length || null}
+  preview={publicBeliefState.annotations?.length > 0 ? `${publicBeliefState.annotations.length} annotations` : null}
 >
   <!-- Per-seat beliefs — compact single-line per seat -->
   {#each allSeats as seat (seat)}
-    {@const beliefs = publicBeliefState.beliefs[seat]}
+    {@const beliefs = publicBeliefState.beliefs?.[seat]}
     {#if beliefs?.ranges}
     <div class="text-[10px] leading-tight mb-0.5">
       <span class="font-semibold text-text-primary inline-block w-5">{seat}</span>
@@ -41,7 +41,7 @@
   {/each}
 
   <!-- Annotations — collapsed if present -->
-  {#if publicBeliefState.annotations.length > 0}
+  {#if publicBeliefState.annotations?.length > 0}
     <DebugSection title="Annotations" count={publicBeliefState.annotations.length} nested>
       {#each publicBeliefState.annotations as ann, i (i)}
         <div class="text-[10px] leading-tight">

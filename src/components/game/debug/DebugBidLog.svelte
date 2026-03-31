@@ -36,7 +36,7 @@
           {#if entry.snapshot.machineSnapshot}
             <div class="text-text-muted">
               state: <span class="text-cyan-300">{entry.snapshot.machineSnapshot.currentStateId}</span>
-              | forcing: <span class="text-text-primary">{entry.snapshot.machineSnapshot.registers.forcingState}</span>
+              {#if entry.snapshot.machineSnapshot.registers}| forcing: <span class="text-text-primary">{entry.snapshot.machineSnapshot.registers.forcingState}</span>{/if}
             </div>
           {/if}
           {#if entry.feedback?.teachingResolution}

@@ -17,7 +17,7 @@ use bridge_session::session::{
     BuildBiddingViewportInput, BuildDeclarerPromptViewportInput,
     BuildExplanationViewportInput, BuildPlayingViewportInput, DeclarerPromptViewport,
     DrillConfig, ExplanationViewport, ModuleCatalogEntry, ModuleLearningViewport,
-    PlayCardResult, PlayingViewport, SessionState,
+    PlayCardResult, PlayingViewport, SeatStrategy, SessionState,
     BundleFlowTreeViewport, ModuleFlowTreeViewport,
 };
 use bridge_session::session::start_drill::{ConventionConfig, StartDrillOptions};
@@ -73,7 +73,7 @@ impl ServicePort for ServicePortImpl {
     // ── Session lifecycle ──────────────────────────────────────────
 
     fn create_session(&mut self, config: SessionConfig) -> Result<SessionHandle, ServiceError> {
-        let _system = Self::resolve_system(config.base_system_id.as_deref());
+        let system = Self::resolve_system(config.base_system_id.as_deref());
         let user_seat = config.user_seat.unwrap_or(Seat::South);
         let practice_mode = config.practice_mode.unwrap_or(PracticeMode::DecisionDrill);
         let practice_role = config.practice_role.unwrap_or(PracticeRole::Responder);
@@ -84,18 +84,64 @@ impl ServicePort for ServicePortImpl {
         let bundle_input = bridge_conventions::registry::get_bundle_input(&config.convention_id)
             .ok_or_else(|| ServiceError::BundleNotFound(config.convention_id.clone()))?;
 
-        // Build deal constraints from the bundle (simplified — use empty constraints)
+        // Build convention spec and surface groups for strategy wiring
+        let spec = bridge_conventions::registry::spec_builder::spec_from_bundle(
+            &config.convention_id,
+            system,
+        );
+
+        // Resolve the full bundle for deal constraints + surface groups
+        let resolved = resolve_bundle(&config.convention_id, system);
+
+        // Convert bundle SurfaceGroups (types::teaching) to teaching::teaching_types SurfaceGroups
+        let surface_groups: Vec<bridge_conventions::teaching::teaching_types::SurfaceGroup> =
+            resolved
+                .map(|b| {
+                    b.derived_teaching
+                        .surface_groups
+                        .iter()
+                        .map(|sg| bridge_conventions::teaching::teaching_types::SurfaceGroup {
+                            id: sg.id.clone(),
+                            label: sg.label.clone(),
+                            members: sg.members.clone(),
+                            relationship: match sg.relationship {
+                                bridge_conventions::types::teaching::SurfaceGroupRelationship::MutuallyExclusive => {
+                                    bridge_conventions::teaching::teaching_types::SurfaceGroupRelationship::MutuallyExclusive
+                                }
+                                bridge_conventions::types::teaching::SurfaceGroupRelationship::EquivalentEncoding => {
+                                    bridge_conventions::teaching::teaching_types::SurfaceGroupRelationship::EquivalentEncoding
+                                }
+                                bridge_conventions::types::teaching::SurfaceGroupRelationship::PolicyAlternative => {
+                                    bridge_conventions::teaching::teaching_types::SurfaceGroupRelationship::PolicyAlternative
+                                }
+                            },
+                            description: sg.description.clone(),
+                        })
+                        .collect()
+                })
+                .unwrap_or_default();
+
+        // Build deal constraints from the resolved bundle
+        let bundle_constraints = resolved
+            .map(|b| b.deal_constraints.clone())
+            .unwrap_or_else(|| bridge_engine::types::DealConstraints {
+                seats: vec![],
+                dealer: Some(Seat::North),
+                vulnerability: None,
+                max_attempts: None,
+                seed: None,
+            });
+
         let convention_config = ConventionConfig {
             id: config.convention_id.clone(),
             deal_constraints: bridge_engine::types::DealConstraints {
-                seats: vec![],
-                dealer: Some(Seat::North),
                 vulnerability: config.vulnerability,
                 max_attempts: Some(50_000),
                 seed: config.seed,
+                ..bundle_constraints
             },
-            allowed_dealers: None,
-            off_convention_constraints: None,
+            allowed_dealers: resolved.and_then(|b| b.allowed_dealers.clone()),
+            off_convention_constraints: resolved.and_then(|b| b.off_convention_constraints.clone()),
         };
 
         let drill_config = DrillConfig {
@@ -146,7 +192,59 @@ impl ServicePort for ServicePortImpl {
         );
 
         // Build seat strategies for the session manager
-        let seat_strategies = HashMap::new();
+        let seat_strategies: HashMap<Seat, SeatStrategy> = {
+            let mut m = HashMap::new();
+            if let Some(ref spec) = spec {
+                // User seat + partner get convention strategy for grading/bidding
+                m.insert(
+                    user_seat,
+                    SeatStrategy::Ai(Box::new(
+                        crate::convention_adapter::ConventionStrategyAdapter::new(
+                            spec.clone(),
+                            surface_groups.clone(),
+                        ),
+                    )),
+                );
+                m.insert(
+                    partner_seat(user_seat),
+                    SeatStrategy::Ai(Box::new(
+                        crate::convention_adapter::ConventionStrategyAdapter::new(
+                            spec.clone(),
+                            surface_groups.clone(),
+                        ),
+                    )),
+                );
+            }
+            // Opponents get strategy based on opponent_mode
+            let opp_seats = [
+                bridge_engine::constants::next_seat(user_seat),
+                bridge_engine::constants::next_seat(partner_seat(user_seat)),
+            ];
+            for &opp in &opp_seats {
+                match opponent_mode {
+                    OpponentMode::Natural => {
+                        m.insert(
+                            opp,
+                            SeatStrategy::Ai(Box::new(
+                                bridge_session::heuristics::NaturalFallbackStrategy,
+                            )),
+                        );
+                    }
+                    OpponentMode::None => {
+                        m.insert(
+                            opp,
+                            SeatStrategy::Ai(Box::new(bridge_session::heuristics::PassStrategy)),
+                        );
+                    }
+                };
+            }
+            m
+        };
+
+        // Build debug adapter for pipeline introspection
+        let debug_adapter = spec.map(|s| {
+            crate::convention_adapter::ConventionStrategyAdapter::new(s, surface_groups)
+        });
 
         let handle = self.manager.create(
             state,
@@ -156,6 +254,7 @@ impl ServicePort for ServicePortImpl {
                 seat_strategies: HashMap::new(),
             },
             seat_strategies,
+            debug_adapter,
         );
 
         Ok(handle)
@@ -580,6 +679,7 @@ impl ServicePort for ServicePortImpl {
         // Posterior engine is stub in Phase 4
         Ok(ServicePublicBeliefState {
             beliefs: serde_json::Value::Null,
+            annotations: Vec::new(),
         })
     }
 
@@ -698,21 +798,110 @@ impl ServicePort for ServicePortImpl {
 
 // ── DevServicePort implementation ─────────────────────────────────
 
+impl ServicePortImpl {
+    /// Build a BiddingContext for the user seat from current session state.
+    fn build_user_bidding_context(
+        session: &crate::session_manager::ActiveSession,
+    ) -> Option<bridge_session::heuristics::BiddingContext> {
+        let seat = session.state.user_seat;
+        let hand = session.state.deal.hands.get(&seat)?.clone();
+        let evaluation = bridge_engine::hand_evaluator::evaluate_hand_hcp(&hand);
+        Some(bridge_session::heuristics::BiddingContext {
+            hand,
+            auction: session.state.auction.clone(),
+            seat,
+            evaluation,
+            vulnerability: Some(session.state.deal.vulnerability),
+            dealer: Some(session.state.deal.dealer),
+        })
+    }
+}
+
 impl DevServicePort for ServicePortImpl {
     fn get_expected_bid(&self, handle: &str) -> Result<Option<Call>, ServiceError> {
-        let _session = self.manager.get(handle)?;
-        // Convention strategy integration deferred
-        Ok(None)
+        let session = self.manager.get(handle)?;
+        let adapter = match &session.debug_adapter {
+            Some(a) => a,
+            None => return Ok(None),
+        };
+        let ctx = match Self::build_user_bidding_context(session) {
+            Some(c) => c,
+            None => return Ok(None),
+        };
+        let (bid, _eval) = adapter.suggest_with_evaluation(&ctx, Some(&session.state.deal.hands));
+        Ok(bid.map(|b| b.call))
     }
 
     fn get_debug_snapshot(&self, handle: &str) -> Result<serde_json::Value, ServiceError> {
-        let _session = self.manager.get(handle)?;
-        Ok(serde_json::Value::Null)
+        let session = self.manager.get(handle)?;
+        let adapter = match &session.debug_adapter {
+            Some(a) => a,
+            None => return Ok(serde_json::Value::Null),
+        };
+        let ctx = match Self::build_user_bidding_context(session) {
+            Some(c) => c,
+            None => return Ok(serde_json::Value::Null),
+        };
+        let (bid, evaluation) = adapter.suggest_with_evaluation(&ctx, Some(&session.state.deal.hands));
+
+        // Build ServiceDebugSnapshot shape: { sessionPhase, expectedBid, ...evaluation }
+        let mut snapshot = serde_json::to_value(&evaluation)
+            .unwrap_or(serde_json::Value::Null);
+        if let serde_json::Value::Object(ref mut map) = snapshot {
+            map.insert(
+                "sessionPhase".to_string(),
+                serde_json::to_value(&session.state.phase).unwrap_or(serde_json::Value::Null),
+            );
+            map.insert(
+                "expectedBid".to_string(),
+                bid.map(|b| serde_json::json!({
+                    "call": serde_json::to_value(&b.call).unwrap_or(serde_json::Value::Null),
+                    "explanation": b.explanation,
+                }))
+                    .unwrap_or(serde_json::Value::Null),
+            );
+        }
+        Ok(snapshot)
     }
 
     fn get_debug_log(&self, handle: &str) -> Result<Vec<serde_json::Value>, ServiceError> {
-        let _session = self.manager.get(handle)?;
-        Ok(Vec::new())
+        let session = self.manager.get(handle)?;
+
+        // Build a single "pre-bid" entry with the current pipeline snapshot
+        let adapter = match &session.debug_adapter {
+            Some(a) => a,
+            None => return Ok(Vec::new()),
+        };
+        let ctx = match Self::build_user_bidding_context(session) {
+            Some(c) => c,
+            None => return Ok(Vec::new()),
+        };
+        let (bid, evaluation) = adapter.suggest_with_evaluation(&ctx, Some(&session.state.deal.hands));
+
+        // Build snapshot shape
+        let mut snapshot = serde_json::to_value(&evaluation)
+            .unwrap_or(serde_json::Value::Null);
+        if let serde_json::Value::Object(ref mut map) = snapshot {
+            map.insert(
+                "expectedBid".to_string(),
+                bid.as_ref()
+                    .map(|b| serde_json::json!({
+                        "call": serde_json::to_value(&b.call).unwrap_or(serde_json::Value::Null),
+                        "explanation": b.explanation,
+                    }))
+                    .unwrap_or(serde_json::Value::Null),
+            );
+        }
+
+        let entry = serde_json::json!({
+            "kind": "pre-bid",
+            "turnIndex": session.state.auction.entries.len(),
+            "seat": session.state.user_seat,
+            "snapshot": snapshot,
+            "feedback": null
+        });
+
+        Ok(vec![entry])
     }
 
     fn get_inference_timeline(&self, handle: &str) -> Result<Vec<serde_json::Value>, ServiceError> {

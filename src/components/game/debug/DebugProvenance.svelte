@@ -12,13 +12,13 @@
 
 <DebugSection
   title="Provenance"
-  preview={pipelineResult ? `${pipelineResult.applicability.evaluatedConditions.length} conditions` : null}
+  preview={pipelineResult?.applicability?.evaluatedConditions ? `${pipelineResult.applicability.evaluatedConditions.length} conditions` : null}
 >
   {#if pipelineResult}
     {@const pr = pipelineResult}
 
     <!-- Applicability -->
-    {#if pr.applicability.evaluatedConditions.length > 0}
+    {#if pr.applicability?.evaluatedConditions?.length > 0}
       <DebugSection
         title="Applicability"
         count={pr.applicability.evaluatedConditions.length}

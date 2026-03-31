@@ -932,7 +932,7 @@ export function createGameStore(
         return { expectedBid: null, ...EMPTY_EVALUATION };
       }
       const snap = await activeService.getDebugSnapshot(activeHandle);
-      return { ...snap, expectedBid: null };
+      return { ...snap, expectedBid: snap.expectedBid ?? null };
     },
 
     reset(): void {

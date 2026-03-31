@@ -3,6 +3,7 @@
 //! Delegates to bridge-session controllers. All methods are synchronous.
 //! Depends on bridge-engine, bridge-conventions, and bridge-session.
 
+pub mod convention_adapter;
 pub mod error;
 pub mod evaluation;
 pub mod port;

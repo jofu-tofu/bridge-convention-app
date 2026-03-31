@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use bridge_engine::types::Seat;
 use bridge_session::session::{DrillConfig, SessionState, SeatStrategy};
 
+use crate::convention_adapter::ConventionStrategyAdapter;
 use crate::error::ServiceError;
 use crate::request_types::SessionHandle;
 
@@ -20,6 +21,9 @@ pub struct ActiveSession {
     pub config: DrillConfig,
     /// Seat strategies extracted from DrillConfig for bidding controller.
     pub seat_strategies: HashMap<Seat, SeatStrategy>,
+    /// Convention strategy adapter for debug methods (pipeline evaluation).
+    /// None when no convention strategy is configured (e.g., opponents with heuristic strategies).
+    pub debug_adapter: Option<ConventionStrategyAdapter>,
 }
 
 // ── SessionManager ────────────────────────────────────────────────
@@ -48,6 +52,7 @@ impl SessionManager {
         state: SessionState,
         config: DrillConfig,
         seat_strategies: HashMap<Seat, SeatStrategy>,
+        debug_adapter: Option<ConventionStrategyAdapter>,
     ) -> SessionHandle {
         self.handle_counter += 1;
         let handle = format!("session-{}", self.handle_counter);
@@ -56,6 +61,7 @@ impl SessionManager {
             state,
             config,
             seat_strategies,
+            debug_adapter,
         });
         handle
     }

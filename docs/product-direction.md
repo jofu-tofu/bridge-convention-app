@@ -4,12 +4,16 @@ Stable product decisions and rationale. Reference this for "why" questions about
 
 ## Deployment
 
-- **Hosting:** Self-hosted VPS (DigitalOcean, US East). Moving off Vercel.
-- **Reverse proxy:** Caddy with auto-HTTPS
-- **CDN/DNS:** Cloudflare (domain TBD)
-- **CI/CD:** GitHub Actions + Docker (GHCR)
+- **Hosting:** Self-hosted VPS (Netcup). Migrated off Vercel (March 2026).
+- **Reverse proxy:** Caddy (port 80 inside container — Cloudflare terminates TLS)
+- **CDN/DNS:** Cloudflare (proxied A record, Full SSL mode)
+- **CI/CD:** GitHub Actions — tag-triggered release builds Docker image, pushes to GHCR, deploys to VPS via SSH
+- **Container registry:** `ghcr.io/jofu-tofu/bridge-convention-app` (public)
+- **VPS deploy dir:** `/opt/bridge-app/docker-compose.yml`
 
 **Why VPS over Vercel:** Full control over serving, no vendor lock-in for static + WASM assets, simpler CORS/auth for future DataPort API.
+
+**Pipeline:** `v*` tag → `release.yml` → multi-stage Docker build (Rust/WASM → Vite → Caddy) → GHCR push → SSH deploy. CI (`deploy.yml`) runs tests/lint/build on every push/PR.
 
 ## Monetization Model
 

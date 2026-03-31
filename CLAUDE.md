@@ -27,6 +27,20 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 | `cargo test --workspace`  | Run all Rust tests (from src-tauri/)                       |
 | `cargo build --workspace` | Build all Rust crates (from src-tauri/)                    |
 
+## Deployment
+
+**Deploy = tag and push.** `git tag v<version> && git push origin v<version>` triggers the full pipeline:
+1. GitHub Actions builds a Docker image (Rust/WASM → Vite → Caddy)
+2. Pushes to GHCR (`ghcr.io/jofu-tofu/bridge-convention-app`)
+3. SSHs into VPS, pins the version in `docker-compose.yml`, pulls, and restarts
+
+**CI (`deploy.yml`)** runs on every push/PR: type-check, unit tests, lint, production build.
+**Release (`release.yml`)** runs on `v*` tags: Docker build → GHCR push → VPS deploy.
+
+**Rollback:** SSH to VPS, edit `/opt/bridge-app/docker-compose.yml` to a previous version tag, `docker compose pull && docker compose up -d`.
+
+**Required GitHub Secrets:** `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`.
+
 ## Dev Tools (dev server only)
 
 **URL params (9 consolidated params):**

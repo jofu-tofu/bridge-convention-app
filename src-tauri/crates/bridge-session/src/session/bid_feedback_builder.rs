@@ -14,17 +14,21 @@ use crate::heuristics::BidResult;
 
 /// Grade for a user's bid against the expected bid.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum BidGrade {
     /// Exact match with expected bid.
+    #[serde(rename = "correct")]
     Correct,
     /// Correct but not the preferred choice.
+    #[serde(rename = "correct-not-preferred")]
     CorrectNotPreferred,
     /// Acceptable alternative (convention allows it).
+    #[serde(rename = "acceptable")]
     Acceptable,
     /// Close but not quite right.
+    #[serde(rename = "near-miss")]
     NearMiss,
     /// Wrong bid.
+    #[serde(rename = "incorrect")]
     Incorrect,
 }
 
@@ -175,15 +179,15 @@ mod tests {
     fn bid_grade_serialization() {
         assert_eq!(
             serde_json::to_string(&BidGrade::Correct).unwrap(),
-            r#""CORRECT""#
+            r#""correct""#
         );
         assert_eq!(
             serde_json::to_string(&BidGrade::Incorrect).unwrap(),
-            r#""INCORRECT""#
+            r#""incorrect""#
         );
         assert_eq!(
             serde_json::to_string(&BidGrade::NearMiss).unwrap(),
-            r#""NEAR_MISS""#
+            r#""near-miss""#
         );
     }
 }
