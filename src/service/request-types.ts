@@ -6,8 +6,8 @@
  * (auth, pagination, etc.) it can be promoted to a requests/ folder.
  */
 
-import type { Seat } from "../engine/types";
-import type { DrillSettings, PracticeMode, PracticeRole } from "./session-types";
+import type { Seat, Vulnerability } from "../engine/types";
+import type { OpponentMode, PlayPreference, PracticeMode, PracticeRole } from "./session-types";
 
 // ── Session Handle ──────────────────────────────────────────────────
 
@@ -23,12 +23,16 @@ export interface SessionConfig {
   readonly seed?: number;
   /** Base system for convention resolution (e.g. "sayc", "two-over-one"). */
   readonly baseSystemId?: string;
-  /** Drill execution parameters (opponent behavior + deal generation). */
-  readonly drill?: DrillSettings;
   /** Practice mode — controls auction entry point and play coupling. */
   readonly practiceMode?: PracticeMode;
   /** Target module for practice focus derivation (which module is being drilled). */
   readonly targetModuleId?: string;
   /** Practice role — opener, responder, or both (random per deal). */
   readonly practiceRole?: PracticeRole;
+  /** Play preference — whether to skip, prompt, or always play after bidding. */
+  readonly playPreference?: PlayPreference;
+  /** Opponent behavior mode. */
+  readonly opponentMode?: OpponentMode;
+  /** Vulnerability override. */
+  readonly vulnerability?: Vulnerability;
 }

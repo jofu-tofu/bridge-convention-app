@@ -100,12 +100,14 @@
     // RNG creation, deal generation, and strategy assembly internally.
     const practiceMode = appStore.devPracticeMode ?? appStore.userPracticeMode;
     const practiceRole = appStore.devPracticeRole ?? appStore.userPracticeRole;
+    const drill = appStore.drillSettings;
     const config: SessionConfig = {
       conventionId: baseConvention.id,
       userSeat,
       seed: devSeed,
       baseSystemId: appStore.baseSystemId,
-      drill: appStore.drillSettings,
+      opponentMode: drill.opponentMode,
+      ...(drill.playPreference ? { playPreference: drill.playPreference } : {}),
       ...(practiceMode ? { practiceMode } : {}),
       ...(practiceRole ? { practiceRole } : {}),
     };
