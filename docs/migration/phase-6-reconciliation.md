@@ -42,25 +42,13 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 ## 2. Bid History & Annotations
 
-### 2.1 Empty bid history in viewports (P0)
+### 2.1 ~~Empty bid history in viewports~~ (P0) ✅ COMPLETE
 
-**TS:** Viewport builders received `state.bidHistory` — a `ServiceBidHistoryEntry[]` with meaning, alertLabel, annotationType, publicConditions, teachingProjection per bid.
+**Fixed:** `SessionState` now accumulates `bid_history: Vec<BidHistoryEntryView>` from inference annotations. `process_bid()` takes `is_user` and `is_correct` params and builds a `BidHistoryEntryView` from the latest `BidAnnotation` after each inference call. All 6 viewport builder calls in `service_impl.rs` now receive populated bid history from `session.state.bid_history`. Meaning passthrough fixed: `explanation` is now passed as `meaning` to the inference coordinator so annotations get convention descriptions instead of generic "Natural bid" / "Pass".
 
-**Rust:** Viewport builders always receive `bid_history: &[]` (empty). `SessionState` has no `bidHistory` field. AI bids in `run_ai_bid_loop()` only record `seat` and `call` — no meaning or annotations.
+### 2.2 ~~Missing historyEntry in AI bid entries~~ (P1) ✅ COMPLETE
 
-**Files:** `bridge-service/src/service_impl.rs` (passes `&[]`), `bridge-session/src/session/bidding_controller.rs` (no history tracking)
-
-**Impact:** The auction table shows raw calls without meanings or alert labels. The explanation viewport's bid history is empty.
-
-**Fix:** Add `bid_history: Vec<BidHistoryEntry>` to `SessionState`. Populate it in `apply_bid_and_run_ai()` using the `StrategyEvaluation` result (meaning, alert, public conditions). Pass it to viewport builders.
-
-### 2.2 Missing historyEntry in AI bid entries (P1)
-
-**TS:** `AiBidEntry` had `{ seat, call, historyEntry: ServiceBidHistoryEntry }` — each AI bid carried its full meaning/annotation data.
-
-**Rust:** `AiBidEntryDTO` has only `{ seat, call }`.
-
-**Fix:** Populate from the strategy evaluation that already runs for each AI bid.
+**Fixed:** `AiBidEntry` and `AiBidEntryDTO` now carry `history_entry: BidHistoryEntryView` with full meaning/annotation data per AI bid. `BidProcessResult` and `BidSubmitResult` carry `user_history_entry: Option<BidHistoryEntryView>` for the user's bid. History entries are captured from `SessionState.bid_history` immediately after each `process_bid()` call.
 
 ---
 

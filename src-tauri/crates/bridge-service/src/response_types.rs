@@ -1,7 +1,7 @@
 //! Service-layer response DTOs that wrap bridge-session viewport types
 //! with additional metadata for the UI/WASM boundary.
 
-use bridge_session::session::{AiBidEntry, AiPlayEntry, BidFeedbackDTO, BidGrade, BiddingViewport};
+use bridge_session::session::{AiBidEntry, AiPlayEntry, BidFeedbackDTO, BidGrade, BidHistoryEntryView, BiddingViewport};
 use bridge_session::types::{GamePhase, PlayPreference, PracticeMode};
 use serde::{Deserialize, Serialize};
 
@@ -32,6 +32,8 @@ pub struct BidSubmitResult {
     pub ai_bids: Vec<AiBidEntryDTO>,
     pub next_viewport: Option<BiddingViewport>,
     pub phase_transition: Option<PhaseTransition>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_history_entry: Option<BidHistoryEntryView>,
 }
 
 /// Phase transition notification.
@@ -98,6 +100,7 @@ pub struct ServicePublicBeliefState {
 pub struct AiBidEntryDTO {
     pub seat: bridge_engine::types::Seat,
     pub call: bridge_engine::types::Call,
+    pub history_entry: BidHistoryEntryView,
 }
 
 impl From<AiBidEntry> for AiBidEntryDTO {
@@ -105,6 +108,7 @@ impl From<AiBidEntry> for AiBidEntryDTO {
         Self {
             seat: e.seat,
             call: e.call,
+            history_entry: e.history_entry,
         }
     }
 }

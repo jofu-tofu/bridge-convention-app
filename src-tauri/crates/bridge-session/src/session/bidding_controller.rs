@@ -17,6 +17,7 @@ use crate::phase_machine::is_valid_transition;
 use crate::types::{GamePhase, PlayPreference};
 
 use super::bid_feedback_builder::{assemble_bid_feedback, BidFeedbackDTO, BidGrade};
+use super::build_viewport::BidHistoryEntryView;
 use super::session_state::{get_current_turn, SeatStrategy, SessionState};
 
 // ── Result types ───────────────────────────────────────────────────
@@ -34,6 +35,8 @@ pub struct BidProcessResult {
     pub auction_complete: bool,
     /// Phase transition if the auction completed.
     pub phase_transition: Option<(GamePhase, GamePhase)>,
+    /// The user's bid history entry (for UI display).
+    pub user_history_entry: Option<BidHistoryEntryView>,
 }
 
 /// A single AI bid for animation/replay.
@@ -41,6 +44,7 @@ pub struct BidProcessResult {
 pub struct AiBidEntry {
     pub seat: Seat,
     pub call: Call,
+    pub history_entry: BidHistoryEntryView,
 }
 
 // ── Public API ─────────────────────────────────────────────────────
@@ -81,6 +85,7 @@ pub fn process_bid(
             ai_bids: Vec::new(),
             auction_complete: false,
             phase_transition: None,
+            user_history_entry: None,
         };
     }
 
@@ -127,7 +132,7 @@ pub fn initialize_auction(
             is_complete: false,
         };
         let convention_id = state.convention_id.clone();
-        state.process_bid(entry, &auction_before, None, &convention_id);
+        state.process_bid(entry, &auction_before, None, &convention_id, false, None);
     }
 }
 
@@ -179,7 +184,16 @@ fn apply_bid_and_run_ai(
 
     // Process through inference
     let convention_id = state.convention_id.clone();
-    state.process_bid(&user_entry, &auction_before, expected_result, &convention_id);
+    let is_correct = pre_feedback.as_ref().map(|f| matches!(
+        f.grade,
+        BidGrade::Correct | BidGrade::CorrectNotPreferred | BidGrade::Acceptable
+    ));
+    state.process_bid(&user_entry, &auction_before, expected_result, &convention_id, true, is_correct);
+
+    // Capture now — run_ai_bid_loop() will append more entries to bid_history.
+    // ORDERING CONTRACT: user's process_bid() runs before AI bids, so .last()
+    // is guaranteed to be the user's entry at this point.
+    let user_history_entry = state.bid_history.last().cloned();
 
     // Check if auction is complete
     if is_auction_complete(&state.auction) {
@@ -191,6 +205,7 @@ fn apply_bid_and_run_ai(
             ai_bids: Vec::new(),
             auction_complete: true,
             phase_transition: Some((from_phase, state.phase)),
+            user_history_entry,
         };
     }
 
@@ -210,6 +225,7 @@ fn apply_bid_and_run_ai(
         ai_bids,
         auction_complete,
         phase_transition,
+        user_history_entry,
     }
 }
 
@@ -252,11 +268,16 @@ fn run_ai_bid_loop(
 
         // Process through inference
         let convention_id = state.convention_id.clone();
-        state.process_bid(&entry, &auction_before, Some(&result), &convention_id);
+        state.process_bid(&entry, &auction_before, Some(&result), &convention_id, false, None);
+
+        // INVARIANT: process_bid always pushes exactly one entry to bid_history.
+        let history_entry = state.bid_history.last().cloned()
+            .expect("process_bid must push a history entry");
 
         ai_bids.push(AiBidEntry {
             seat: current_seat,
             call: result.call,
+            history_entry,
         });
 
         // Check if auction is complete
@@ -367,6 +388,7 @@ fn empty_result() -> BidProcessResult {
         ai_bids: Vec::new(),
         auction_complete: false,
         phase_transition: None,
+        user_history_entry: None,
     }
 }
 

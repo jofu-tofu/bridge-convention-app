@@ -17,6 +17,8 @@ use crate::inference::types::{InferenceSnapshot, PublicBeliefState, PublicBelief
 use crate::heuristics::{BiddingStrategy, BidResult};
 use crate::types::{GamePhase, PlayPreference, PracticeFocus, PracticeMode};
 
+use super::build_viewport::{AnnotationType, BidHistoryEntryView};
+
 // ── SeatStrategy ────────────────────────────────────────────────────
 
 /// Strategy assignment for a single seat.
@@ -72,6 +74,9 @@ pub struct SessionState {
     pub play_inferences: Option<HashMap<Seat, PublicBeliefs>>,
     pub public_belief_state: PublicBeliefState,
 
+    // Bid history (accumulated from inference annotations)
+    pub bid_history: Vec<BidHistoryEntryView>,
+
     // Play state (separated for partial borrows)
     pub play: PlayState,
 }
@@ -113,6 +118,8 @@ impl SessionState {
             play_inferences: None,
             public_belief_state,
 
+            bid_history: Vec::new(),
+
             play: PlayState::default(),
         }
     }
@@ -122,13 +129,15 @@ impl SessionState {
         seat == self.user_seat
     }
 
-    /// Process a bid through inference and update the public belief state.
+    /// Process a bid through inference and update the public belief state and bid history.
     pub fn process_bid(
         &mut self,
         entry: &AuctionEntry,
         auction_before: &Auction,
         bid_result: Option<&BidResult>,
         convention_id: &str,
+        is_user: bool,
+        is_correct: Option<bool>,
     ) {
         let (rule_name, explanation) = match bid_result {
             Some(result) => (
@@ -138,16 +147,46 @@ impl SessionState {
             None => (None, None),
         };
 
+        // Pass explanation as meaning so annotations get the convention's description
+        // rather than generic "Natural bid" / "Pass".
+        let meaning = explanation;
+
         let belief_state = self.inference_coordinator.process_bid(
             entry,
             auction_before,
             rule_name,
             explanation,
-            None, // meaning
+            meaning,
             &[],  // constraints (convention-level constraints not yet in Rust BidResult)
             Some(convention_id),
         );
         self.public_belief_state = belief_state.clone();
+
+        // INVARIANT: inference_coordinator.process_bid() appends exactly one
+        // BidAnnotation per call (including for Pass/Double/Redouble).
+        // See annotation_producer.rs — all code paths produce one annotation.
+        let annotation = self.public_belief_state.annotations.last()
+            .expect("inference must produce exactly one annotation per process_bid call");
+
+        let annotation_type = if annotation.convention_id.is_some() {
+            Some(AnnotationType::Alert)
+        } else {
+            None
+        };
+
+        self.bid_history.push(BidHistoryEntryView {
+            seat: entry.seat,
+            call: entry.call.clone(),
+            meaning: Some(annotation.meaning.clone()),
+            is_user,
+            is_correct,
+            alert_label: if annotation_type.is_some() {
+                Some(annotation.meaning.clone())
+            } else {
+                None
+            },
+            annotation_type,
+        });
     }
 
     /// Capture inferences at auction end.
