@@ -401,24 +401,24 @@ export function createGameStore(
     effectiveUserSeat = seat;
     const handle = activeHandle;
 
-    // Transition to PLAYING immediately for responsive UI
-    if (!transitionTo("PLAYING")) return;
-    playPhase.play.aborted = false;
-    playPhase.animatedTrickOverride = null;
-    playPhase.play.score = null;
-    playPhase.play.showingTrickResult = false;
-    playPhase.play.processing = false;
-    playPhase.play.log = [];
-
     void (async () => {
       try {
         // Accept prompt on service side (initializes play state + runs initial AI plays)
         const result = await activeService.acceptPrompt(handle, "play", seat);
         if (activeHandle !== handle) return;
 
-        // Show play table
-        viewports.playing = await activeService.getPlayingViewport(handle);
+        // Load viewport before transitioning phase so GameScreen has data to render
+        const playingVp = await activeService.getPlayingViewport(handle);
         if (activeHandle !== handle) return;
+
+        if (!transitionTo("PLAYING")) return;
+        playPhase.play.aborted = false;
+        playPhase.animatedTrickOverride = null;
+        playPhase.play.score = null;
+        playPhase.play.showingTrickResult = false;
+        playPhase.play.processing = false;
+        playPhase.play.log = [];
+        viewports.playing = playingVp;
 
         // Animate AI plays from the result
         const aiPlays = result.aiPlays ?? [];
