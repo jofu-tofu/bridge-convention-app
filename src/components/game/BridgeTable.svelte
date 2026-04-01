@@ -111,7 +111,7 @@
   function seatLabelClass(seat: Seat): string {
     const vul = vulnerability ? isVulnerable(seat, vulnerability) : false;
     const bg = vul ? "bg-vulnerable/80 ring-1 ring-vulnerable-ring/40" : "bg-bg-elevated/80";
-    const base = `text-[--text-body] font-bold ${bg} px-2.5 py-0.5 rounded-full`;
+    const base = `seat-badge text-[--text-body] font-bold ${bg} px-2.5 py-0.5 rounded-full`;
     if (currentPlayer === seat) {
       return `${base} text-accent-primary`;
     }
@@ -263,6 +263,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    z-index: 1;
   }
   .area-east {
     grid-area: east;
@@ -270,6 +271,11 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    z-index: 1;
+  }
+  .seat-badge {
+    position: relative;
+    z-index: 1;
   }
   .area-center {
     grid-area: center;
