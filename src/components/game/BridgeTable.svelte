@@ -273,6 +273,7 @@
   }
   .area-center {
     grid-area: center;
-    place-self: center;
+    justify-self: center;
+    align-self: start;
   }
 </style>

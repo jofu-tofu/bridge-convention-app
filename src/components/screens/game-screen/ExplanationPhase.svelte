@@ -213,7 +213,7 @@
   <div class="flex min-w-0 flex-1 flex-col gap-3 overflow-auto p-4">
     <div class="flex items-center justify-between">
       <div
-        class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-2 shadow-md"
+        class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-2 shadow-md"
       >
         <AuctionTable
           entries={viewport.auctionEntries}
@@ -444,7 +444,7 @@
             {:else}
               <div class="flex flex-col items-center gap-2">
                 <div
-                  class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
+                  class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
                 >
                   <AuctionTable
                     entries={steppedAuctionEntries}
@@ -506,7 +506,7 @@
         <BridgeTable visibleHands={steppedVisibleHands} vulnerability={viewport.vulnerability} {trumpSuit}>
           <div class="flex flex-col items-center gap-2">
             <div
-              class="bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
+              class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
             >
               <AuctionTable
                 entries={steppedAuctionEntries}

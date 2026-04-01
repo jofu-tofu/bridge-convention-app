@@ -46,7 +46,7 @@
 
   <aside class="{SIDE_PANEL_CLASS}" style="font-size: var(--panel-font, 1rem);" aria-label="Auction summary">
     <div
-      class="bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
+      class="relative bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
     >
       <AuctionTable
         entries={viewport.auctionEntries}
