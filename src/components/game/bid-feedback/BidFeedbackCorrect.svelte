@@ -5,9 +5,13 @@
   import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
   import BidFeedbackShell from "../../shared/BidFeedbackShell.svelte";
 
-  interface Props extends BidFeedbackBaseProps {}
+  interface Props extends BidFeedbackBaseProps {
+    onContinue?: () => void;
+  }
 
-  let { feedback, teaching, practicalRec, showPracticalNote }: Props = $props();
+  let { feedback, teaching, practicalRec, showPracticalNote, onContinue }: Props = $props();
+
+  const isAcceptable = $derived(feedback.grade === ViewportBidGrade.Acceptable);
 
   const ambiguityNote = $derived(
     teaching?.ambiguityScore != null ? formatAmbiguity(teaching.ambiguityScore) : null, // eslint-disable-line eqeqeq -- intentional nullish check
@@ -18,16 +22,18 @@
   );
 </script>
 
-<!-- Correct bid — green flash -->
-<BidFeedbackShell variant="correct" centered>
-  <p class="text-fb-correct-text font-semibold text-[--text-detail]">Correct!</p>
+<!-- Correct/Acceptable bid — green (correct) or teal (acceptable) -->
+<BidFeedbackShell variant={isAcceptable ? "acceptable" : "correct"} centered>
+  <p class="{isAcceptable ? 'text-fb-acceptable-text' : 'text-fb-correct-text'} font-semibold text-[--text-detail]">
+    {isAcceptable ? "Acceptable!" : "Correct!"}
+  </p>
   <p class="text-fb-correct-emphasis font-mono text-[--text-value] mt-1">
     {formatCall(feedback.userCall)}
   </p>
   {#if feedback.correctBidExplanation}
     <p class="text-fb-correct-dim/70 text-[--text-label] mt-1">{feedback.correctBidExplanation}</p>
   {/if}
-  {#if feedback.grade === ViewportBidGrade.CorrectNotPreferred && teaching?.primaryBid}
+  {#if feedback.grade === ViewportBidGrade.Acceptable && teaching?.primaryBid}
     <p class="text-fb-correct-dim/70 text-[--text-label] mt-1" data-testid="not-preferred-note">
       Though <span class="font-mono font-semibold">{formatCall(teaching.primaryBid)}</span> is preferred
     </p>
@@ -44,5 +50,14 @@
   {/if}
   {#if showPracticalNote && practicalRec}
     <PracticalRecommendationNote {practicalRec} />
+  {/if}
+  {#if isAcceptable && onContinue}
+    <button
+      class="mt-3 w-full px-3 py-2 rounded-[--radius-md] font-medium text-[--text-body] bg-accent-primary hover:bg-accent-primary-hover text-text-on-accent cursor-pointer"
+      onclick={onContinue}
+      data-testid="acceptable-continue"
+    >
+      Continue
+    </button>
   {/if}
 </BidFeedbackShell>

@@ -1,6 +1,7 @@
-//! Teaching types — grading, projection, parse tree.
+//! Teaching types — projection, parse tree.
 //!
 //! Mirrors TS types from `conventions/teaching/teaching-types.ts`.
+//! Grading lives in `bridge-session::session::bid_feedback_builder`.
 
 use bridge_engine::types::Call;
 use serde::{Deserialize, Serialize};
@@ -25,71 +26,6 @@ pub struct SurfaceGroup {
     pub members: Vec<String>,
     pub relationship: SurfaceGroupRelationship,
     pub description: String,
-}
-
-/// Bid grade — 5 grades for teaching feedback.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum BidGrade {
-    Correct,
-    CorrectNotPreferred,
-    Acceptable,
-    NearMiss,
-    Incorrect,
-}
-
-/// An acceptable alternative bid.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AcceptableBid {
-    pub call: Call,
-    pub bid_name: String,
-    pub meaning: String,
-    pub reason: String,
-    pub full_credit: bool,
-    pub tier: AcceptableTier,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub relationship: Option<SurfaceGroupRelationship>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub module_id: Option<String>,
-}
-
-/// Acceptable bid tier.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum AcceptableTier {
-    Preferred,
-    Alternative,
-}
-
-/// Teaching resolution — how the user's bid is graded.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TeachingResolution {
-    pub primary_bid: Call,
-    pub acceptable_bids: Vec<AcceptableBid>,
-    pub grading_type: GradingType,
-    pub ambiguity_score: f64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub truth_set_calls: Option<Vec<Call>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub near_miss_calls: Option<Vec<NearMissCall>>,
-}
-
-/// Near-miss call info.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct NearMissCall {
-    pub call: Call,
-    pub reason: String,
-}
-
-/// Grading type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum GradingType {
-    Exact,
-    PrimaryPlusAcceptable,
-    IntentBased,
 }
 
 // ── Teaching Projection Types ───────────────────────────────────────────

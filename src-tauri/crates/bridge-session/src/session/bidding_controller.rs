@@ -71,7 +71,7 @@ pub fn process_bid(
 
     let feedback = assemble_bid_feedback(&call, expected_result.as_ref());
 
-    // Grade-acceptance policy: Correct/CorrectNotPreferred/Acceptable advance;
+    // Grade-acceptance policy: Correct/Acceptable advance;
     // NearMiss/Incorrect block and require retry.
     let should_reject = matches!(
         feedback.grade,
@@ -186,7 +186,7 @@ fn apply_bid_and_run_ai(
     let convention_id = state.convention_id.clone();
     let is_correct = pre_feedback.as_ref().map(|f| matches!(
         f.grade,
-        BidGrade::Correct | BidGrade::CorrectNotPreferred | BidGrade::Acceptable
+        BidGrade::Correct | BidGrade::Acceptable
     ));
     state.process_bid(&user_entry, &auction_before, expected_result, &convention_id, true, is_correct);
 

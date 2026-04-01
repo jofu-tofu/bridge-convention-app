@@ -946,6 +946,9 @@ export function createGameStore(
     retryBid(): void {
       biddingPhase.retryBid();
     },
+    dismissFeedback(): void {
+      biddingPhase.dismissFeedback();
+    },
 
     // Debug
     async getExpectedBid(): Promise<{ call: Call } | null> {

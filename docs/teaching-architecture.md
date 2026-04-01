@@ -10,16 +10,13 @@ Fact evaluation → surface routing → meaning proposal → arbitration → enc
 
 `resolveAlert()` derives alertability from `sourceIntent.type` — natural intents (small, well-defined set in `alert.ts`) produce no alert; everything else defaults to conventional (alertable). Public constraints are auto-derived from primitive/bridge-observable clauses via `derivePublicConstraints()`. `annotation-producer.ts` converts `publicConstraints` to `HandInference` for Layer 1 belief updates. Inference model: only hard constraints from chosen bid's clauses. No cross-surface denials.
 
-## TeachingResolution
+## Bid Grading
 
-`src/conventions/teaching/teaching-resolution.ts` wraps `BidResult` with multi-grade feedback:
-- **Correct** — exact match
-- **CorrectNotPreferred** — truth set but not recommended
-- **Acceptable** — preferred/alternative tier candidates
-- **NearMiss** — same family, fails constraint
-- **Incorrect**
-
-`resolveTeachingAnswer(bidResult, surfaceGroups?)` extracts acceptable alternatives and near-miss candidates. `gradeBid()` grades user input with 5-grade cascade.
+4-grade system (single grading path in `bridge-session::bid_feedback_builder`):
+- **Correct** — exact match with selected bid
+- **Acceptable** — truth set or acceptable set alternative
+- **NearMiss** — same surface group, at most one failed condition (pipeline-derived)
+- **Incorrect** — none of the above
 
 ## TeachingProjection
 

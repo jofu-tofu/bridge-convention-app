@@ -83,11 +83,11 @@ export function createBiddingPhase(deps: BiddingDeps) {
     deps.getBiddingViewport()!.isUserTurn,
   );
 
-  // Grade-acceptance policy: only near-miss/incorrect block.
-  // Acceptable shows non-blocking feedback below bid table.
+  // Grade-acceptance policy: near-miss/incorrect block (require retry);
+  // acceptable blocks (requires acknowledge via Continue) but bid is already accepted.
   const isFeedbackBlocking = $derived(
     bidFeedback !== null &&
-      (bidFeedback.grade === ViewportBidGrade.NearMiss || bidFeedback.grade === ViewportBidGrade.Incorrect),
+      (bidFeedback.grade === ViewportBidGrade.NearMiss || bidFeedback.grade === ViewportBidGrade.Incorrect || bidFeedback.grade === ViewportBidGrade.Acceptable),
   );
 
   // ── Actions ─────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ export function createBiddingPhase(deps: BiddingDeps) {
     const skipTracking = isRetryAttempt;
     isRetryAttempt = false;
 
-    // Clear non-blocking feedback from previous bid (acceptable)
+    // Clear non-blocking feedback from previous bid (correct)
     if (bidFeedback && !isFeedbackBlocking) {
       bidFeedback = null;
     }
@@ -199,6 +199,10 @@ export function createBiddingPhase(deps: BiddingDeps) {
     bidFeedback = null;
   }
 
+  function dismissFeedback() {
+    bidFeedback = null;
+  }
+
   // ── Public surface ──────────────────────────────────────────────
 
   return {
@@ -222,6 +226,7 @@ export function createBiddingPhase(deps: BiddingDeps) {
     // Actions
     userBidViaService,
     retryBid,
+    dismissFeedback,
 
     // Lifecycle
     reset() {

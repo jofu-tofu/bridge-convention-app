@@ -2,8 +2,8 @@
 //!
 //! Mirrors TS types from `conventions/teaching/teaching-types.ts`.
 //! Only the data types reachable from ConventionBundle (SurfaceGroup,
-//! SurfaceGroupRelationship). Teaching output types (TeachingResolution,
-//! TeachingProjection, etc.) are deferred to Phase 2-3.
+//! SurfaceGroupRelationship). Teaching output types (TeachingProjection,
+//! etc.) live in `teaching/teaching_types.rs`.
 
 use serde::{Deserialize, Serialize};
 

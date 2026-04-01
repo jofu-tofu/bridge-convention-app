@@ -8,11 +8,11 @@ use crate::pipeline::types::{PipelineCarrier, PipelineResult};
 use crate::teaching::teaching_types::*;
 
 /// Build a TeachingProjection from a PipelineResult.
-pub fn project_teaching(result: &PipelineResult) -> TeachingProjection {
+pub fn project_teaching(result: &PipelineResult, surface_groups: Option<&[SurfaceGroup]>) -> TeachingProjection {
     let call_views = build_call_views(result);
     let meaning_views = build_meaning_views(result);
     let primary_explanation = build_primary_explanation(result);
-    let why_not = build_why_not(result);
+    let why_not = build_why_not(result, surface_groups);
     let conventions_applied = build_conventions_applied(result);
     let hand_space = build_hand_space(result);
 
@@ -158,15 +158,27 @@ fn build_primary_explanation(result: &PipelineResult) -> Vec<ExplanationNode> {
     nodes
 }
 
-fn build_why_not(result: &PipelineResult) -> Vec<WhyNotEntry> {
+fn build_why_not(result: &PipelineResult, surface_groups: Option<&[SurfaceGroup]>) -> Vec<WhyNotEntry> {
     let mut entries = Vec::new();
 
+    // Find the surface group containing the selected meaning (if any)
+    let selected_group = result.selected.as_ref().and_then(|selected| {
+        let selected_id = &selected.proposal().meaning_id;
+        surface_groups.and_then(|groups| {
+            groups.iter().find(|g| g.members.iter().any(|m| m == selected_id.as_str()))
+        })
+    });
+
     for carrier in &result.eliminated {
-        let explanation: Vec<ExplanationNode> = carrier
+        let failed_clauses: Vec<&_> = carrier
             .proposal()
             .clauses
             .iter()
             .filter(|c| !c.satisfied)
+            .collect();
+
+        let explanation: Vec<ExplanationNode> = failed_clauses
+            .iter()
             .map(|c| ExplanationNode {
                 kind: ExplanationKind::Condition,
                 content: c.description.clone().unwrap_or_else(|| c.fact_id.clone()),
@@ -177,9 +189,24 @@ fn build_why_not(result: &PipelineResult) -> Vec<WhyNotEntry> {
             .collect();
 
         if !explanation.is_empty() {
+            // Near miss: in the same surface group as selected, with at most 1 failed clause
+            let grade = if failed_clauses.len() <= 1 {
+                if let Some(group) = selected_group {
+                    if group.members.iter().any(|m| m == &carrier.proposal().meaning_id) {
+                        WhyNotGrade::NearMiss
+                    } else {
+                        WhyNotGrade::Wrong
+                    }
+                } else {
+                    WhyNotGrade::Wrong
+                }
+            } else {
+                WhyNotGrade::Wrong
+            };
+
             entries.push(WhyNotEntry {
                 call: carrier.call().clone(),
-                grade: WhyNotGrade::Wrong,
+                grade,
                 explanation,
                 elimination_stage: carrier
                     .traces

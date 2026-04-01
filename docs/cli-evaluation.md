@@ -29,7 +29,7 @@ Tests each coverage atom independently with a dedicated seed. The orchestrator r
 - `eval` output is always sanitized — no internal state IDs, expected bids, or dependency tree
 - `--atom` takes an atomId from the plan output (format: `moduleId/meaningId`)
 - With `--bid`: returns `ViewportBidFeedback` + `TeachingDetail`
-- 5-level grading: correct, correct-not-preferred, acceptable, near-miss, incorrect
+- 4-level grading: correct, acceptable, near-miss, incorrect
 - Both opener (N) and responder (S) atoms are testable
 - Stop-on-error: orchestrator uses the plan's `dependencyGraph` to skip child atoms
 

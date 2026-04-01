@@ -49,6 +49,9 @@ pub struct BidResult {
     /// Acceptable alternative calls (convention allows but not standard).
     #[serde(default)]
     pub acceptable_set_calls: Vec<Call>,
+    /// Near-miss calls — bids on a considered surface with at most one unsatisfied condition.
+    #[serde(default)]
+    pub near_miss_calls: Vec<Call>,
 }
 
 /// Trait for bidding strategies. Each strategy inspects the context and either

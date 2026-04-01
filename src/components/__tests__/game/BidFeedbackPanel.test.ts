@@ -83,7 +83,7 @@ describe("BidFeedbackPanel", () => {
     expect(screen.getByText("Correct!")).toBeTruthy();
   });
 
-  test("shows Acceptable feedback with teal styling and auto-dismiss", () => {
+  test("shows Acceptable feedback routed to correct panel with preferred note", () => {
     const feedback: ViewportBidFeedback = {
       grade: ViewportBidGrade.Acceptable,
       userCall: { type: "bid", level: 2, strain: "D" as never },
@@ -105,8 +105,9 @@ describe("BidFeedbackPanel", () => {
       props: { feedback, teaching, onRetry: noop },
     });
 
+    // Acceptable bids render via BidFeedbackCorrect with teal styling, preferred note, and Continue button
     expect(screen.getByText("Acceptable!")).toBeTruthy();
-    expect(screen.getByText("Textbook bid is")).toBeTruthy();
+    expect(screen.getByTestId("not-preferred-note")).toBeTruthy();
   });
 
   test("shows practical note when practical call differs from teaching call", () => {

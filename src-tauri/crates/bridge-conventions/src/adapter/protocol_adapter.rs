@@ -138,7 +138,7 @@ impl ConventionStrategy {
         surface_results: &[ModuleSurfaceResult],
         partner_context: Option<&PartnerContext>,
     ) -> (Option<BidResult>, StrategyEvaluation) {
-        let mut teaching_projection = project_teaching(&pipeline_result);
+        let mut teaching_projection = project_teaching(&pipeline_result, Some(&self.surface_groups));
         teaching_projection.parse_tree =
             Some(crate::teaching::parse_tree_builder::build_parse_tree(&pipeline_result));
 

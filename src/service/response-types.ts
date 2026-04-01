@@ -44,7 +44,6 @@ export enum ServiceGamePhase {
 /** Bid grade — service-owned string union (mirror of BidGrade enum values). */
 export enum ViewportBidGrade {
   Correct = "correct",
-  CorrectNotPreferred = "correct-not-preferred",
   Acceptable = "acceptable",
   NearMiss = "near-miss",
   Incorrect = "incorrect",

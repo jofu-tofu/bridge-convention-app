@@ -1,9 +1,8 @@
 //! Bid feedback builder — grades user bids and assembles feedback DTOs.
 //!
-//! Ported from TS `src/session/bid-feedback-builder.ts`. Simplified for Phase 4:
-//! convention strategy integration is deferred, so grading is basic (exact match
-//! or incorrect). Full grading with teaching resolution will come when the
-//! convention pipeline is integrated.
+//! 4-grade system: Correct (exact match), Acceptable (truth set or acceptable
+//! set alternative), NearMiss (pipeline-derived, ≤1 failed condition in same
+//! surface group), Incorrect.
 
 use bridge_engine::types::Call;
 use serde::{Deserialize, Serialize};
@@ -18,13 +17,10 @@ pub enum BidGrade {
     /// Exact match with expected bid.
     #[serde(rename = "correct")]
     Correct,
-    /// Correct but not the preferred choice.
-    #[serde(rename = "correct-not-preferred")]
-    CorrectNotPreferred,
-    /// Acceptable alternative (convention allows it).
+    /// Acceptable alternative — in the truth set but not the primary choice.
     #[serde(rename = "acceptable")]
     Acceptable,
-    /// Close but not quite right.
+    /// Close but not quite right — on a considered surface with at most one failed condition.
     #[serde(rename = "near-miss")]
     NearMiss,
     /// Wrong bid.
@@ -68,11 +64,11 @@ pub fn assemble_bid_feedback(
         Some(result) => {
             let grade = if call_equals(user_call, &result.call) {
                 BidGrade::Correct
-            } else if result.truth_set_calls.iter().any(|c| call_equals(user_call, c)) {
-                BidGrade::CorrectNotPreferred
-            } else if result.acceptable_set_calls.iter().any(|c| call_equals(user_call, c)) {
+            } else if result.truth_set_calls.iter().any(|c| call_equals(user_call, c))
+                || result.acceptable_set_calls.iter().any(|c| call_equals(user_call, c))
+            {
                 BidGrade::Acceptable
-            } else if is_near_miss(user_call, &result.call) {
+            } else if result.near_miss_calls.iter().any(|c| call_equals(user_call, c)) {
                 BidGrade::NearMiss
             } else {
                 BidGrade::Incorrect
@@ -91,18 +87,6 @@ pub fn assemble_bid_feedback(
                 explanation,
             }
         }
-    }
-}
-
-/// Check if a bid is structurally close to the expected bid (same suit wrong level,
-/// or same level wrong suit). Only applies to contract bids, not special calls.
-fn is_near_miss(user: &Call, expected: &Call) -> bool {
-    match (user, expected) {
-        (
-            Call::Bid { level: ul, strain: us },
-            Call::Bid { level: el, strain: es },
-        ) => (ul == el && us != es) || (ul != el && us == es),
-        _ => false,
     }
 }
 
@@ -211,15 +195,13 @@ mod tests {
         );
     }
 
-    // ── RED tests: 5-grade grading contract ──────────────────────────
+    // ── 4-grade grading contract ──────────────────────────────────────
     //
-    // These tests define the target grading behavior. The current
-    // `assemble_bid_feedback` is binary (Correct/Incorrect), so tests
-    // asserting intermediate grades (1–3) will fail until the grading
-    // logic is expanded with truth_set/acceptable_set context.
+    // Correct (exact match), Acceptable (truth set / acceptable set),
+    // NearMiss (pipeline-derived, ≤1 failed condition), Incorrect.
 
     #[test]
-    fn correct_not_preferred_for_truth_set_alternative() {
+    fn acceptable_for_truth_set_alternative() {
         // User bids 2H (transfer to spades) when preferred is 2C (Stayman).
         // Both are valid for this hand — user's choice is in truth set but
         // not the preferred (selected) call.
@@ -233,35 +215,35 @@ mod tests {
         };
         let feedback = assemble_bid_feedback(&user_call, Some(&expected));
         assert_eq!(
-            feedback.grade, BidGrade::CorrectNotPreferred,
-            "Truth-set alternative should be CorrectNotPreferred, got {:?}",
+            feedback.grade, BidGrade::Acceptable,
+            "Truth-set alternative should be Acceptable, got {:?}",
             feedback.grade,
         );
     }
 
     #[test]
-    fn acceptable_for_acceptable_set_bid() {
-        // User bids 3H (game raise) when preferred is 3D (limit raise).
-        // 3H is acceptable per pipeline's acceptable set.
-        let user_call = Call::Bid { level: 3, strain: BidSuit::Hearts };
+    fn near_miss_when_in_near_miss_calls() {
+        // User bids 2D when expected is 3D — 2D is in near_miss_calls (pipeline-derived).
+        let user_call = Call::Bid { level: 2, strain: BidSuit::Diamonds };
         let expected = BidResult {
             call: Call::Bid { level: 3, strain: BidSuit::Diamonds },
             rule_name: Some("bergen:limit-raise".to_string()),
-            explanation: "Limit raise with 3-card support".to_string(),
-            acceptable_set_calls: vec![Call::Bid { level: 3, strain: BidSuit::Hearts }],
+            explanation: "Limit raise".to_string(),
+            near_miss_calls: vec![Call::Bid { level: 2, strain: BidSuit::Diamonds }],
             ..Default::default()
         };
         let feedback = assemble_bid_feedback(&user_call, Some(&expected));
         assert_eq!(
-            feedback.grade, BidGrade::Acceptable,
-            "Acceptable-set bid should be Acceptable, got {:?}",
+            feedback.grade, BidGrade::NearMiss,
+            "Bid in near_miss_calls should be NearMiss, got {:?}",
             feedback.grade,
         );
     }
 
     #[test]
-    fn near_miss_for_wrong_level_same_suit() {
-        // User bids 2D when expected is 3D — same suit, wrong level.
+    fn structural_near_miss_without_near_miss_calls_is_incorrect() {
+        // User bids 2D when expected is 3D — same suit, wrong level,
+        // but NOT in near_miss_calls. Should be Incorrect (no structural fallback).
         let user_call = Call::Bid { level: 2, strain: BidSuit::Diamonds };
         let expected = BidResult {
             call: Call::Bid { level: 3, strain: BidSuit::Diamonds },
@@ -271,8 +253,8 @@ mod tests {
         };
         let feedback = assemble_bid_feedback(&user_call, Some(&expected));
         assert_eq!(
-            feedback.grade, BidGrade::NearMiss,
-            "Wrong level same suit should be NearMiss, got {:?}",
+            feedback.grade, BidGrade::Incorrect,
+            "Structural near-miss without near_miss_calls should be Incorrect, got {:?}",
             feedback.grade,
         );
     }

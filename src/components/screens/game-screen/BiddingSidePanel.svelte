@@ -19,8 +19,8 @@
 
   const gameStore = getGameStore();
 
-  // Grade-acceptance policy: isFeedbackBlocking covers near-miss/incorrect;
-  // acceptable/correct-not-preferred show non-blocking feedback with bids enabled.
+  // Grade-acceptance policy: isFeedbackBlocking covers near-miss/incorrect/acceptable;
+  // acceptable blocks with Continue (bid already accepted), near-miss/incorrect block with Retry.
   const disabled = $derived(!gameStore.isUserTurn || gameStore.isFeedbackBlocking);
   const hasFeedback = $derived(gameStore.viewportFeedback !== null);
   const feedbackReplacesBidTable = $derived(
@@ -42,6 +42,7 @@
       feedback={gameStore.viewportFeedback!}
       teaching={gameStore.teachingDetail}
       onRetry={() => gameStore.retryBid()}
+      onContinue={() => gameStore.dismissFeedback()}
       handEval={gameStore.biddingViewport?.handEvaluation ?? null}
       handSummary={gameStore.biddingViewport?.handSummary ?? null}
     />
