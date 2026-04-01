@@ -319,14 +319,14 @@ fn describe_system_fact_value(fact_id: &str, sys: &SystemConfig) -> Option<Syste
         "system.responder.weakHand" => {
             let t = &sys.responder_thresholds;
             Some(SystemFactDescription {
-                hcp: format!("< {}", t.invite_min),
+                hcp: format!("< {} HCP", t.invite_min),
                 trump_tp: Some(format!("< {}", t.invite_min_tp.trump)),
             })
         }
         "system.responder.inviteValues" => {
             let t = &sys.responder_thresholds;
             Some(SystemFactDescription {
-                hcp: format!("{}\u{2013}{}", t.invite_min, t.invite_max),
+                hcp: format!("{}\u{2013}{} HCP", t.invite_min, t.invite_max),
                 trump_tp: Some(format!(
                     "{}\u{2013}{}",
                     t.invite_min_tp.trump, t.invite_max_tp.trump
@@ -336,21 +336,21 @@ fn describe_system_fact_value(fact_id: &str, sys: &SystemConfig) -> Option<Syste
         "system.responder.gameValues" => {
             let t = &sys.responder_thresholds;
             Some(SystemFactDescription {
-                hcp: format!("{}+", t.game_min),
+                hcp: format!("{}+ HCP", t.game_min),
                 trump_tp: Some(format!("{}+", t.game_min_tp.trump)),
             })
         }
         "system.responder.slamValues" => {
             let t = &sys.responder_thresholds;
             Some(SystemFactDescription {
-                hcp: format!("{}+", t.slam_min),
+                hcp: format!("{}+ HCP", t.slam_min),
                 trump_tp: Some(format!("{}+", t.slam_min_tp.trump)),
             })
         }
         "system.opener.notMinimum" => {
             let r = &sys.opener_rebid;
             Some(SystemFactDescription {
-                hcp: format!("{}+", r.not_minimum),
+                hcp: format!("{}+ HCP", r.not_minimum),
                 trump_tp: Some(format!("{}+", r.not_minimum_tp.trump)),
             })
         }
@@ -1226,7 +1226,7 @@ mod tests {
         let desc = describe_system_fact_value("system.responder.inviteValues", &sys);
         assert!(desc.is_some());
         let d = desc.unwrap();
-        assert_eq!(d.hcp, "8\u{2013}9");
+        assert_eq!(d.hcp, "8\u{2013}9 HCP");
         assert!(d.trump_tp.is_some());
     }
 
