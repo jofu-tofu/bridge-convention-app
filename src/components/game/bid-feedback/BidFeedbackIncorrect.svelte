@@ -1,22 +1,20 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
-  import type { Call } from "../../../service";
+  import type { Call, ServiceExplanationNode } from "../../../service";
   import type { BidFeedbackInteractiveProps } from "./types";
   import type { ViewportBidFeedback } from "../../../service";
   import { formatCall } from "../../../service";
   import { callsMatch } from "../../../service";
   import {
-    formatEliminationStage,
-    formatModuleRole,
-    roleColorClasses,
     whyNotGradeClasses,
     isArtificialEncoder,
     formatEncoderKind,
     formatAmbiguity,
+    enrichConditionText,
+    synthesizeWhyNot,
   } from "./BidFeedbackPanel";
   import type { FeedbackVariant } from "./BidFeedbackPanel";
   import { variantClass } from "./BidFeedbackPanel";
-  import { formatRuleName } from "../../../service";
   import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
   import BidFeedbackShell from "../../shared/BidFeedbackShell.svelte";
 
@@ -24,11 +22,10 @@
     variant?: FeedbackVariant;
   }
 
-  let { feedback, teaching, onRetry, showPracticalNote, practicalRec, variant = "incorrect" }: Props = $props();
+  let { feedback, teaching, onRetry, showPracticalNote, practicalRec, handEval, handSummary, variant = "incorrect" }: Props = $props();
 
   let showAnswer = $state(false);
   let showMoreDetails = $state(false);
-  let showDecisionSpace = $state(false);
   let expandedWhyNot = new SvelteSet<number>();
   const acceptableBids = $derived(teaching?.acceptableBids ?? []);
 
@@ -55,16 +52,12 @@
     whyNotEntries.find(e => callsMatch(e.call, feedback.userCall)),
   );
 
-  // Remaining whyNot entries (excluding the user's bid)
-  const otherWhyNotEntries = $derived(
-    whyNotEntries.filter(e => !callsMatch(e.call, feedback.userCall)),
+  // Remaining whyNot entries: only near-misses and acceptable alternatives
+  const filteredOtherWhyNot = $derived(
+    whyNotEntries
+      .filter(e => !callsMatch(e.call, feedback.userCall))
+      .filter(e => e.grade === "near-miss" || isAcceptableWhyNot(e.call)),
   );
-
-  // Convention contributions — only show when multiple modules contributed
-  const contributions = $derived(
-    (teaching?.conventionsApplied ?? []).filter(c => c.meaningsProposed.length > 0),
-  );
-  const showContributions = $derived(contributions.length > 1);
 
   // Multi-rationale detection: a call correct for more than one distinct reason
   const multiRationaleCall = $derived(
@@ -72,12 +65,6 @@
       cv => cv.status === "truth" && cv.projectionKind === "multi-rationale-same-call",
     ) ?? null,
   );
-
-  // Decision space: all evaluated meanings (live + eliminated)
-  const eliminatedMeanings = $derived(
-    (teaching?.meaningViews ?? []).filter(v => v.status === "eliminated"),
-  );
-  const showDecisionSpaceToggle = $derived(eliminatedMeanings.length > 0);
 
   // Partner hand space summary
   const hasPartnerInfo = $derived(teaching?.partnerSummary != null); // eslint-disable-line eqeqeq -- intentional nullish check
@@ -101,12 +88,17 @@
   // Fallback reached — no convention surface matched
   const fallbackNote = $derived(teaching?.fallbackReached === true);
 
+  // Synthesize a "why not" explanation when no whyNot entry exists for the user's bid
+  const synthesizedWhyNot = $derived(
+    !userBidWhyNot && feedback.correctCall
+      ? synthesizeWhyNot(feedback.userCall, feedback.correctCall, feedback.correctBidLabel)
+      : null,
+  );
+
   // Has any "more details" content worth showing
   const hasMoreDetails = $derived(
-    showContributions ||
-    otherWhyNotEntries.length > 0 ||
-    showDecisionSpaceToggle ||
-    !!teaching?.handSummary ||
+    filteredOtherWhyNot.length > 0 ||
+    !!handSummary ||
     hasPartnerInfo,
   );
 
@@ -116,7 +108,6 @@
     if (feedback !== prevFeedback) {
       showAnswer = false;
       showMoreDetails = false;
-      showDecisionSpace = false;
       showScoreBreakdown = false;
       expandedWhyNot.clear();
     }
@@ -133,6 +124,12 @@
 
   function isAcceptableWhyNot(call: Call): boolean {
     return acceptableBids.some((acceptable) => callsMatch(acceptable.call, call));
+  }
+
+  /** Enrich a condition node's text with actual hand values when available. */
+  function enrichCondition(node: ServiceExplanationNode): string {
+    if (!handEval) return node.content;
+    return enrichConditionText(node, handEval);
   }
 
   // Shorthand for variant class lookups
@@ -184,7 +181,7 @@
       <!-- ═══ SECTION 1: The correct answer (hero) ═══ -->
       <div class="{vc('surface/50')} rounded px-3 py-2.5 border {vc('border/30')}">
         <div class="flex items-center justify-between mb-1">
-          <p class="text-[--text-annotation] {vc('text/60')} uppercase tracking-wide">You should bid</p>
+          <p class="text-[--text-annotation] {vc('text/60')} uppercase tracking-wide">Correct bid</p>
           <button
             type="button"
             class="text-[--text-annotation] {vc('text/40')} {vc('hover:dim')} transition-colors cursor-pointer flex items-center gap-1"
@@ -196,10 +193,10 @@
           </button>
         </div>
         <p class="font-mono font-bold text-[--text-heading] {vc('bright')} leading-tight">
-          {formatCall(feedback.correctCall)}
+          {formatCall(feedback.correctCall)}{#if meaningLabel} <span class="font-sans font-normal text-[--text-detail] {vc('dim/80')}">— {meaningLabel}</span>{/if}
         </p>
-        {#if meaningLabel}
-          <p class="text-[--text-detail] {vc('dim/80')} mt-0.5">{meaningLabel}</p>
+        {#if feedback.correctBidLabel?.summary}
+          <p class="text-[--text-label] {vc('dim/70')} mt-1 leading-snug">{feedback.correctBidLabel.summary}</p>
         {/if}
         {#if multiRationaleCall}
           <p class="text-[--text-label] text-note-multi-rationale/70 mt-1">
@@ -226,7 +223,7 @@
               <li class="flex items-start gap-1.5">
                 <span class="text-accent-success/60 shrink-0 mt-0.5" aria-hidden="true">✓</span>
                 <span class="sr-only">Passed:</span>
-                <span class="{vc('dim/50')} break-words text-[--text-label]">{node.content}</span>
+                <span class="{vc('dim/50')} break-words text-[--text-label]">{enrichCondition(node)}</span>
               </li>
             {/each}
           </ul>
@@ -234,23 +231,32 @@
       </div>
 
       <!-- ═══ SECTION 2: Why not YOUR bid? (merged with failing conditions) ═══ -->
-      {#if (userBidWhyNot && userBidWhyNot.explanation.length > 0) || failingConditions.length > 0 || (teaching?.fallbackExplanation && teaching.fallbackExplanation !== meaningLabel)}
+      {#if synthesizedWhyNot || (userBidWhyNot && userBidWhyNot.explanation.length > 0) || failingConditions.length > 0 || (teaching?.fallbackExplanation && teaching.fallbackExplanation !== meaningLabel)}
         {@const userExplanationNodes = (userBidWhyNot?.explanation ?? []).filter(n => n.kind !== "text" || !n.content.startsWith("Your hand doesn't meet"))}
         <div class="{vc('surface/30')} rounded px-3 py-2 border {vc('border/20')}">
           <p class="text-[--text-annotation] {vc('text/60')} uppercase tracking-wide mb-1.5">
             Why not <span class="font-mono font-semibold normal-case">{formatCall(feedback.userCall)}</span>?
           </p>
-          {#if teaching?.fallbackExplanation && teaching.fallbackExplanation !== meaningLabel && failingConditions.length === 0 && userExplanationNodes.length === 0}
+          {#if synthesizedWhyNot && failingConditions.length === 0 && userExplanationNodes.length === 0}
+            <p class="{vc('dim/70')} text-[--text-label] leading-snug">
+              {synthesizedWhyNot}
+            </p>
+          {:else if teaching?.fallbackExplanation && teaching.fallbackExplanation !== meaningLabel && failingConditions.length === 0 && userExplanationNodes.length === 0}
             <p class="{vc('dim/60')} text-[--text-label] leading-tight">
               {teaching.fallbackExplanation}
             </p>
           {:else}
+            {#if synthesizedWhyNot}
+              <p class="{vc('dim/70')} text-[--text-label] leading-snug mb-1.5">
+                {synthesizedWhyNot}
+              </p>
+            {/if}
             <ul class="space-y-1" role="list" aria-label="Why your bid doesn't work">
               {#each failingConditions as node, ci (node.content + '-fail-' + ci)}
                 <li class="flex items-start gap-1.5">
                   <span class="text-accent-danger shrink-0 mt-0.5" aria-hidden="true">✗</span>
                   <span class="sr-only">Failed:</span>
-                  <span class="{vc('dim')} break-words text-[--text-label]">{node.content}</span>
+                  <span class="{vc('dim')} break-words text-[--text-label]">{enrichCondition(node)}</span>
                 </li>
               {/each}
               {#each userExplanationNodes as expNode, ei (expNode.content + '-user-' + ei)}
@@ -263,20 +269,15 @@
                   {:else}
                     <span class="{vc('text/30')} shrink-0 mt-0.5" aria-hidden="true">·</span>
                   {/if}
-                  <span class="{vc('dim/80')} text-[--text-label]">{expNode.content}</span>
+                  <span class="{vc('dim/80')} text-[--text-label]">{enrichCondition(expNode)}</span>
                 </li>
               {/each}
             </ul>
           {/if}
-          {#if userBidWhyNot?.eliminationStage}
-            <p class="text-[--text-annotation] {vc('text/40')} mt-1.5 italic">
-              {formatEliminationStage(userBidWhyNot.eliminationStage)}
-            </p>
-          {/if}
         </div>
       {/if}
 
-      <!-- ═══ SECTION 3: More details (collapsed — hand context + technical deep dive) ═══ -->
+      <!-- ═══ SECTION 3: More details (collapsed — hand context + near-miss bids) ═══ -->
       {#if hasMoreDetails}
         <div class="border-t {vc('border/15')} pt-1">
           <button
@@ -293,12 +294,13 @@
             <div class="mt-2 space-y-2 ml-1">
 
               <!-- Hand + partner context -->
-              {#if teaching?.handSummary || hasPartnerInfo}
+              {#if handSummary || hasPartnerInfo}
                 <div class="rounded px-3 py-2 border {vc('border/15')} space-y-2">
-                  {#if teaching?.handSummary}
+                  {#if handSummary}
                     <div>
                       <p class="text-[--text-annotation] {vc('text/50')} uppercase tracking-wide mb-0.5">Your hand</p>
-                      <p class="font-mono text-[--text-detail] {vc('dim')}">{teaching.handSummary}</p>
+                      <!-- teaching.handSummary shows hand-space bounds (e.g. "0-40 HCP, any"), not actual hand — use viewport's handSummary instead -->
+                      <p class="font-mono text-[--text-detail] {vc('dim')}">{handSummary}</p>
                     </div>
                   {/if}
                   {#if hasPartnerInfo && teaching}
@@ -319,29 +321,12 @@
                 </div>
               {/if}
 
-              <!-- Convention contributions -->
-              {#if showContributions}
-                <div>
-                  <p class="text-[--text-annotation] {vc('text/50')} mb-1">Conventions involved:</p>
-                  <div class="flex flex-wrap gap-1">
-                    {#each contributions as contrib (contrib.moduleId)}
-                      <span
-                        class="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[--text-annotation] {roleColorClasses(contrib.role)}"
-                      >
-                        <span class="font-medium">{formatRuleName(contrib.moduleId)}</span>
-                        <span class="opacity-70">{formatModuleRole(contrib.role)}</span>
-                      </span>
-                    {/each}
-                  </div>
-                </div>
-              {/if}
-
-              <!-- Other bids considered -->
-              {#if otherWhyNotEntries.length > 0}
+              <!-- Other bids (near-misses and acceptable only) -->
+              {#if filteredOtherWhyNot.length > 0}
                 <div>
                   <p class="text-[--text-annotation] {vc('text/50')} mb-1">Other bids:</p>
                   <div class="space-y-1">
-                    {#each otherWhyNotEntries as entry, wi (wi)}
+                    {#each filteredOtherWhyNot as entry, wi (wi)}
                       <div class="text-[--text-label]">
                         <button
                           type="button"
@@ -373,7 +358,7 @@
                                 {:else}
                                   <span class="{vc('text/30')}" aria-hidden="true">·</span>
                                 {/if}
-                                <span>{expNode.content}</span>
+                                <span>{enrichCondition(expNode)}</span>
                               </li>
                             {/each}
                           </ul>
@@ -381,36 +366,6 @@
                       </div>
                     {/each}
                   </div>
-                </div>
-              {/if}
-
-              <!-- Decision space: meanings evaluated (expandable) -->
-              {#if showDecisionSpaceToggle}
-                <div>
-                  <button
-                    type="button"
-                    class="text-[--text-label] {vc('text/50')} {vc('hover:dim')} transition-colors cursor-pointer flex items-center gap-1"
-                    onclick={() => { showDecisionSpace = !showDecisionSpace; }}
-                    aria-expanded={showDecisionSpace}
-                  >
-                    <span class="shrink-0">{showDecisionSpace ? "▾" : "▸"}</span>
-                    <span>Other interpretations ({eliminatedMeanings.length} ruled out)</span>
-                  </button>
-                  {#if showDecisionSpace}
-                    <div class="mt-1 space-y-0.5 ml-3">
-                      {#each eliminatedMeanings as mv (mv.meaningId)}
-                        <div class="text-[--text-annotation] flex items-start gap-1.5">
-                          <span class="{vc('emphasis/50')} shrink-0" aria-hidden="true">✗</span>
-                          <div>
-                            <span class="{vc('dim/60')}">{mv.displayLabel}</span>
-                            {#if mv.eliminationReason}
-                              <span class="{vc('text/40')}"> — {mv.eliminationReason}</span>
-                            {/if}
-                          </div>
-                        </div>
-                      {/each}
-                    </div>
-                  {/if}
                 </div>
               {/if}
 

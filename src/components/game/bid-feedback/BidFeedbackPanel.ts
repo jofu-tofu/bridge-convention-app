@@ -6,7 +6,8 @@
  * not by convention-specific checks.
  */
 
-import type { EncoderKind } from "../../../service";
+import type { EncoderKind, ServiceExplanationNode, ServiceTeachingLabel, HandEvaluationView, Call } from "../../../service";
+import { formatCall } from "../../../service";
 
 // ── Feedback variant coloring (incorrect red / near-miss amber) ──
 
@@ -174,4 +175,74 @@ export function formatEncoderKind(kind: EncoderKind): string | null {
       return _exhaustive;
     }
   }
+}
+
+// ── Hand-value enrichment for condition text ────────────────────────
+
+/**
+ * Enrich a condition node's text with the player's actual hand value.
+ *
+ * `explanationId` format: `"factId:operator:value"` (e.g. `"hand.hcp:gte:8"`).
+ * Only `hand.*` and `bridge.*` namespaces are enriched (where we have data).
+ * `system.*`, `module.*`, or unrecognized patterns return the original text unchanged.
+ */
+export function enrichConditionText(node: ServiceExplanationNode, eval_: HandEvaluationView): string {
+  const id = node.explanationId;
+  if (!id) return node.content;
+
+  const parts = id.split(":");
+  if (parts.length < 3) return node.content;
+
+  const factId = parts[0]!;
+  const actualValue = lookupHandValue(factId, eval_);
+  if (actualValue === undefined) return node.content;
+
+  // For boolean checks that passed, just add a checkmark
+  if (typeof actualValue === "boolean") {
+    return node.passed ? `${node.content} ✓` : node.content;
+  }
+
+  return `${node.content} (you have ${actualValue})`;
+}
+
+/** Look up an actual hand value from HandEvaluationView by fact ID. */
+function lookupHandValue(factId: string, eval_: HandEvaluationView): number | boolean | undefined {
+  switch (factId) {
+    case "hand.hcp": return eval_.hcp;
+    case "hand.totalPoints": return eval_.totalPoints;
+    case "hand.suitLength.spades": return eval_.shape[0];
+    case "hand.suitLength.hearts": return eval_.shape[1];
+    case "hand.suitLength.diamonds": return eval_.shape[2];
+    case "hand.suitLength.clubs": return eval_.shape[3];
+    case "hand.isBalanced": return eval_.isBalanced;
+    case "bridge.hasFiveCardMajor": return eval_.shape[0] >= 5 || eval_.shape[1] >= 5;
+    case "bridge.hasFourCardMajor": return eval_.shape[0] >= 4 || eval_.shape[1] >= 4;
+    default: return undefined;
+  }
+}
+
+// ── Synthesized "why not" explanation ───────────────────────────────
+
+/**
+ * Synthesize a direct explanation when no whyNot entry exists for the user's bid.
+ * This is a presentation convenience — it redirects to the correct answer rather
+ * than claiming why the user's bid fails in convention terms.
+ */
+export function synthesizeWhyNot(
+  userCall: Call,
+  correctCall: Call,
+  label: ServiceTeachingLabel | undefined,
+): string {
+  const correctDisplay = formatCall(correctCall);
+  const userDisplay = formatCall(userCall);
+  const isPass = userCall.type === "pass";
+
+  if (label) {
+    if (isPass) {
+      return `Your hand fits ${label.name} — bid ${correctDisplay} instead of passing`;
+    }
+    return `Your hand fits ${label.name} (${correctDisplay}), not ${userDisplay}`;
+  }
+
+  return `The correct bid here is ${correctDisplay}`;
 }

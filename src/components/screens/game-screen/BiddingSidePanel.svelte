@@ -42,6 +42,8 @@
       feedback={gameStore.viewportFeedback!}
       teaching={gameStore.teachingDetail}
       onRetry={() => gameStore.retryBid()}
+      handEval={gameStore.biddingViewport?.handEvaluation ?? null}
+      handSummary={gameStore.biddingViewport?.handSummary ?? null}
     />
   {:else}
     <BidPanel legalCalls={gameStore.legalCalls} onBid={(call) => gameStore.userBid(call)} {disabled} compact />
@@ -51,6 +53,8 @@
           feedback={gameStore.viewportFeedback}
           teaching={gameStore.teachingDetail}
           onRetry={() => gameStore.retryBid()}
+          handEval={gameStore.biddingViewport?.handEvaluation ?? null}
+          handSummary={gameStore.biddingViewport?.handSummary ?? null}
         />
       {/if}
     </div>

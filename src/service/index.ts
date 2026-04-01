@@ -36,6 +36,8 @@ export type {
   ClauseSystemVariant,
   ServiceBidHistoryEntry as BidHistoryEntry,
   BaseModuleInfo,
+  ServiceExplanationNode,
+  ServiceTeachingLabel,
 } from "./response-types";
 
 // ── 3. Game Vocabulary (engine primitives) ───────────────────────────
@@ -89,9 +91,6 @@ export type {
   PosteriorSummary,
   PosteriorFactValue,
   TeachingProjection,
-  AtomGradeResult,
-  PlaythroughHandle,
-  PlaythroughGradeResult,
 } from "./session-types";
 
 // ── 5. Sync Service Helpers (for UI components) ─────────────────────
