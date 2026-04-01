@@ -13,7 +13,9 @@ use bridge_conventions::pipeline::observation::committed_step::{
     AuctionContext, ClaimRef, CommittedStep, CommittedStepStatus,
 };
 use bridge_conventions::pipeline::observation::local_fsm::advance_local_fsm;
-use bridge_conventions::pipeline::observation::negotiation_extractor::compute_kernel_delta;
+use bridge_conventions::pipeline::observation::negotiation_extractor::{
+    apply_negotiation_actions, compute_kernel_delta,
+};
 use bridge_conventions::pipeline::observation::normalize_intent::normalize_intent;
 use bridge_conventions::pipeline::observation::committed_step::initial_negotiation;
 use bridge_conventions::pipeline::observation::rule_interpreter::{
@@ -70,11 +72,16 @@ impl ConventionStrategyAdapter {
         all_hands: Option<&HashMap<Seat, Hand>>,
     ) -> (Option<BidResult>, StrategyEvaluation) {
         let (bid, evaluation) = self.run_pipeline(ctx, all_hands);
-        let result = bid.map(|br| BidResult {
-            call: br.call,
-            rule_name: None,
-            explanation: "Convention bid".to_string(),
-            ..Default::default()
+        let result = bid.map(|br| {
+            let (truth_set_calls, acceptable_set_calls) =
+                Self::extract_alternative_calls(&evaluation, &br.call);
+            BidResult {
+                call: br.call,
+                rule_name: None,
+                explanation: "Convention bid".to_string(),
+                truth_set_calls,
+                acceptable_set_calls,
+            }
         });
         (result, evaluation)
     }
@@ -146,12 +153,31 @@ impl ConventionStrategyAdapter {
                 if let Some(hand) = step_hand {
                     let evaluation = evaluate_hand_hcp(hand);
                     let vuln_facts = self.vulnerability_facts(ctx.vulnerability, entry.seat);
+
+                    // Derive relational context from previous kernel state
+                    let prev_kernel = log
+                        .last()
+                        .map(|s| s.state_after.clone())
+                        .unwrap_or_else(initial_negotiation);
+                    let relational_ctx = prev_kernel.fit_agreed.as_ref().map(|fa| {
+                        bridge_conventions::fact_dsl::types::RelationalFactContext {
+                            bindings: None,
+                            public_commitments: None,
+                            fit_agreed: Some(
+                                bridge_conventions::fact_dsl::types::FitAgreedContext {
+                                    strain: format!("{:?}", fa.strain).to_lowercase(),
+                                    confidence: fa.confidence,
+                                },
+                            ),
+                        }
+                    });
+
                     let facts = evaluate_facts(
                         hand,
                         &evaluation,
                         &self.fact_definitions,
                         self.system_config.as_ref(),
-                        None,
+                        relational_ctx.as_ref(),
                         vuln_facts.as_ref(),
                     );
                     Some(run_pipeline(PipelineInput {
@@ -320,7 +346,7 @@ impl ConventionStrategyAdapter {
             .last()
             .map(|s| s.state_after.clone())
             .unwrap_or_else(initial_negotiation);
-        let state_after = prev_kernel.clone();
+        let state_after = apply_negotiation_actions(&prev_kernel, &public_actions, actor);
         let negotiation_delta = compute_kernel_delta(&prev_kernel, &state_after);
 
         CommittedStep {
@@ -388,7 +414,7 @@ impl ConventionStrategyAdapter {
             .last()
             .map(|s| s.state_after.clone())
             .unwrap_or_else(initial_negotiation);
-        let state_after = prev_kernel.clone();
+        let state_after = apply_negotiation_actions(&prev_kernel, &public_actions, actor);
         let negotiation_delta = compute_kernel_delta(&prev_kernel, &state_after);
 
         CommittedStep {
@@ -444,6 +470,32 @@ impl ConventionStrategyAdapter {
         None
     }
 
+    /// Extract alternative calls from the pipeline evaluation.
+    /// truth_set_calls = other calls in truth_set (excluding selected).
+    /// acceptable_set_calls = calls in acceptable_set not already in truth_set.
+    fn extract_alternative_calls(
+        evaluation: &StrategyEvaluation,
+        selected_call: &Call,
+    ) -> (Vec<Call>, Vec<Call>) {
+        let pr = match &evaluation.pipeline_result {
+            Some(pr) => pr,
+            None => return (Vec::new(), Vec::new()),
+        };
+        let truth_set_calls: Vec<Call> = pr
+            .truth_set
+            .iter()
+            .map(|c| c.call().clone())
+            .filter(|c| c != selected_call)
+            .collect();
+        let acceptable_set_calls: Vec<Call> = pr
+            .acceptable_set
+            .iter()
+            .map(|c| c.call().clone())
+            .filter(|c| c != selected_call && !truth_set_calls.contains(c))
+            .collect();
+        (truth_set_calls, acceptable_set_calls)
+    }
+
     fn vulnerability_facts(
         &self,
         vulnerability: Option<Vulnerability>,
@@ -477,12 +529,17 @@ impl BiddingStrategy for ConventionStrategyAdapter {
 
     fn suggest_bid(&self, ctx: &BiddingContext) -> Option<BidResult> {
         // BiddingStrategy doesn't have access to all hands — use simple path
-        let (convention_bid, _evaluation) = self.run_pipeline(ctx, None);
-        convention_bid.map(|br| BidResult {
-            call: br.call,
-            rule_name: None,
-            explanation: "Convention bid".to_string(),
-            ..Default::default()
+        let (convention_bid, evaluation) = self.run_pipeline(ctx, None);
+        convention_bid.map(|br| {
+            let (truth_set_calls, acceptable_set_calls) =
+                Self::extract_alternative_calls(&evaluation, &br.call);
+            BidResult {
+                call: br.call,
+                rule_name: None,
+                explanation: "Convention bid".to_string(),
+                truth_set_calls,
+                acceptable_set_calls,
+            }
         })
     }
 

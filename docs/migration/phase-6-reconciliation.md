@@ -16,17 +16,9 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 ## 1. Bid Grading & Feedback
 
-### 1.1 Binary grading instead of 5-tier (P0)
+### 1.1 ~~Binary grading instead of 5-tier~~ (P0) ✅ COMPLETE
 
-**TS:** `gradeBid()` used `TeachingResolution` to produce 5 grades: `Correct`, `CorrectNotPreferred`, `Acceptable`, `NearMiss`, `Incorrect`. A user bidding a valid alternative (e.g., 2NT when 3NT is preferred but 2NT is acceptable) would get `Acceptable` or `CorrectNotPreferred`.
-
-**Rust:** `bid_feedback_builder.rs` does exact call matching only — `Correct` if `user_call == expected.call`, otherwise `Incorrect`. The `BidGrade` enum has all 5 variants but only two are ever produced.
-
-**Files:** `bridge-session/src/session/bid_feedback_builder.rs` (Rust), was `src/session/bid-feedback-builder.ts` (TS)
-
-**Impact:** Users are told they're wrong for bids the TS version accepted. This is the single most user-visible regression.
-
-**Fix:** Port `resolveTeachingAnswer()` and `gradeBid()` from the TS `bid-feedback-builder.ts`. Requires the convention pipeline to provide `truthSet` and `acceptableSet` from `PipelineResult`, which the Rust pipeline already computes.
+**Fixed:** `convention_adapter.rs` now wires `truth_set_calls` and `acceptable_set_calls` from `PipelineResult` into `BidResult`. The grading logic in `bid_feedback_builder.rs` already handled all 5 grades — it just needed the data. 5 previously-ignored RED tests now pass. Note: `Acceptable` grade won't fire in practice until item 3.7 (acceptable_set == truth_set in pipeline).
 
 ### 1.2 No teaching detail in bid feedback (P1)
 
@@ -74,29 +66,13 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 ## 3. Convention Adapter & Pipeline
 
-### 3.1 Kernel delta never advances in observation log (P0)
+### 3.1 ~~Kernel delta never advances in observation log~~ (P0) ✅ COMPLETE
 
-**TS:** `buildObservationLogViaRules()` applied `negotiationDelta` from matched claims and threaded `NegotiationState` through steps via `applyKernelDelta()`. This tracked fitAgreed, forcing, captain, competition state.
+**Fixed:** Added `apply_negotiation_actions()` to `negotiation_extractor.rs` — interprets BidActions (Open, Transfer, Accept, Raise, Agree, Force, Signoff, Place, Overcall, Double, Redouble) and advances NegotiationState. Wired into all 3 call sites: `protocol_adapter.rs`, `convention_adapter.rs` (build_step_from_carrier + build_call_inferred_step). 10 unit tests + 1 integration test verify kernel advancement through transfer-acceptance sequences.
 
-**Rust:** `build_observation_log_via_rules()` in `protocol_adapter.rs` has `let state_after = prev_kernel.clone(); // Simplified`. Negotiation state never advances.
+### 3.2 ~~Relational context missing from pipeline~~ (P0) ✅ COMPLETE
 
-**Files:** `bridge-conventions/src/adapter/protocol_adapter.rs`
-
-**Impact:** Conventions depending on prior negotiation context (fitAgreed, forcing state) will not work correctly. This breaks multi-round convention sequences.
-
-**Fix:** Port `applyKernelDelta()` logic. The kernel delta data is available on matched claims.
-
-### 3.2 Relational context missing from pipeline (P0)
-
-**TS:** `runPipeline()` accepted `relationalContext?: RelationalFactContext` threading surface bindings and `fitAgreed` from kernel state into fact evaluation.
-
-**Rust:** `PipelineInput` has no relational context field.
-
-**Files:** `bridge-conventions/src/pipeline/mod.rs`
-
-**Impact:** Facts depending on committed fit suit or forcing state evaluate incorrectly.
-
-**Fix:** Add `relational_context: Option<RelationalFactContext>` to `PipelineInput` and thread it through fact evaluation.
+**Fixed:** During observation log replay in `convention_adapter.rs`, `evaluate_facts()` now receives `RelationalFactContext` derived from the previous step's `state_after.fit_agreed` (which is populated by 3.1's kernel advancement). The final user-turn evaluation already had relational context from `derive_fit_from_log`; this fix ensures replay steps also get it, so fact evaluation during pipeline replay is correct for fit-dependent facts.
 
 ### 3.3 Practical scoring algorithm completely different (P1)
 
@@ -363,10 +339,10 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 ## Recommended Fix Order
 
 ### Wave 1 — P0 fixes (user-facing correctness)
-1. **1.1** Port 5-tier bid grading (unblocks correct user feedback)
+1. ~~**1.1** Port 5-tier bid grading~~ ✅
 2. **2.1** Add bid history to session state and viewports (unblocks auction display)
-3. **3.1** Port kernel delta advancement (unblocks multi-round conventions)
-4. **3.2** Add relational context to pipeline (unblocks fit-dependent facts)
+3. ~~**3.1** Port kernel delta advancement~~ ✅
+4. ~~**3.2** Add relational context to pipeline~~ ✅
 
 ### Wave 2 — P1 fixes (feature fidelity)
 5. **1.2, 1.3** Teaching detail and viewport feedback
@@ -390,7 +366,7 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 | TS File (at commit 4890ba2) | Rust Equivalent | Status |
 |---|---|---|
-| `session/bid-feedback-builder.ts` | `bridge-session/session/bid_feedback_builder.rs` | Simplified (binary grading) |
+| `session/bid-feedback-builder.ts` | `bridge-session/session/bid_feedback_builder.rs` | 5-tier grading ✅ |
 | `session/bidding-controller.ts` | `bridge-session/session/bidding_controller.rs` | Missing history, debug, teaching |
 | `session/play-controller.ts` | `bridge-session/session/play_controller.rs` | Missing advisor, profiles |
 | `session/session-state.ts` | `bridge-session/session/session_state.rs` | Missing many fields |
@@ -423,9 +399,9 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 | `session/heuristics/strategy-chain.ts` | `bridge-session/heuristics/strategy_chain.rs` | Missing resultFilter, trace |
 | `inference/posterior/` (10 files) | `bridge-session/inference/posterior.rs` | **Stub** |
 | `inference/private-belief.ts` | — | **Missing** |
-| `conventions/adapter/protocol-adapter.ts` | `bridge-conventions/adapter/protocol_adapter.rs` | Missing kernel delta, relational ctx |
+| `conventions/adapter/protocol-adapter.ts` | `bridge-conventions/adapter/protocol_adapter.rs` | Kernel delta ✅, relational ctx ✅ |
 | `conventions/adapter/meaning-strategy.ts` | `bridge-conventions/adapter/meaning_strategy.rs` | Ported (thinner) |
-| `conventions/adapter/bid-result-builder.ts` | `bridge-service/convention_adapter.rs` | Drastically simplified |
+| `conventions/adapter/bid-result-builder.ts` | `bridge-service/convention_adapter.rs` | truth_set/acceptable_set wired ✅, kernel advancement ✅, relational ctx ✅ |
 | `conventions/adapter/practical-scorer.ts` | `bridge-session/heuristics/practical_scorer.rs` | Different algorithm |
 | `conventions/adapter/trace-collector.ts` | — | **Missing** |
 | `service/local-service.ts` | `bridge-service/service_impl.rs` | Ported (many gaps above) |

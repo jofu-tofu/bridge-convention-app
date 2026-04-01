@@ -204,7 +204,9 @@ pub fn build_observation_log_via_rules(
             .map(|carrier| normalize_intent(&carrier.proposal().source_intent))
             .unwrap_or_default();
 
-        let state_after = prev_kernel.clone(); // Simplified — real impl uses negotiation delta
+        let state_after = crate::pipeline::observation::negotiation_extractor::apply_negotiation_actions(
+            &prev_kernel, &public_actions, *actor,
+        );
 
         let status = match pipeline_result {
             None => crate::pipeline::observation::committed_step::CommittedStepStatus::OffSystem,

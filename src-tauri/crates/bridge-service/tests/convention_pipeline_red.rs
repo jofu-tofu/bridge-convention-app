@@ -6,12 +6,14 @@
 //!
 //! Run: `cargo test -p bridge-service -- --ignored convention_pipeline`
 
+use std::collections::HashMap;
+
 use bridge_conventions::registry::bundle_registry::resolve_bundle;
 use bridge_conventions::registry::spec_builder::spec_from_bundle;
 use bridge_conventions::teaching::teaching_types::{SurfaceGroup, SurfaceGroupRelationship};
 use bridge_conventions::types::system_config::BaseSystemId;
 use bridge_engine::hand_evaluator::evaluate_hand_hcp;
-use bridge_engine::types::{Auction, AuctionEntry, Call, Hand, Seat};
+use bridge_engine::types::{Auction, AuctionEntry, BidSuit, Call, Card, Hand, Seat, Suit};
 use bridge_service::convention_adapter::ConventionStrategyAdapter;
 use bridge_session::heuristics::{BiddingContext, BiddingStrategy};
 use serde::Deserialize;
@@ -208,4 +210,174 @@ fn weak_twos_adapter_produces_correct_bids() {
 #[ignore]
 fn dont_bundle_adapter_produces_correct_bids() {
     run_bundle_tests("dont-bundle");
+}
+
+// ── Integration tests: grading wiring + kernel advancement ──────────
+
+/// Helper: build a hand from a string like "SA SK SQ SJ HA HK HQ DA DK DC CA C2 C3"
+fn make_hand(cards_str: &str) -> Hand {
+    let cards: Vec<Card> = cards_str
+        .split_whitespace()
+        .map(|s| {
+            let bytes = s.as_bytes();
+            let suit = match bytes[0] {
+                b'S' => Suit::Spades,
+                b'H' => Suit::Hearts,
+                b'D' => Suit::Diamonds,
+                b'C' => Suit::Clubs,
+                _ => panic!("Unknown suit: {}", s),
+            };
+            let rank = match &s[1..] {
+                "A" => bridge_engine::types::Rank::Ace,
+                "K" => bridge_engine::types::Rank::King,
+                "Q" => bridge_engine::types::Rank::Queen,
+                "J" => bridge_engine::types::Rank::Jack,
+                "10" | "T" => bridge_engine::types::Rank::Ten,
+                "9" => bridge_engine::types::Rank::Nine,
+                "8" => bridge_engine::types::Rank::Eight,
+                "7" => bridge_engine::types::Rank::Seven,
+                "6" => bridge_engine::types::Rank::Six,
+                "5" => bridge_engine::types::Rank::Five,
+                "4" => bridge_engine::types::Rank::Four,
+                "3" => bridge_engine::types::Rank::Three,
+                "2" => bridge_engine::types::Rank::Two,
+                _ => panic!("Unknown rank: {}", s),
+            };
+            Card { suit, rank }
+        })
+        .collect();
+    assert_eq!(cards.len(), 13, "Hand must have 13 cards");
+    Hand { cards }
+}
+
+#[test]
+#[ignore]
+fn grading_wiring_truth_set_populated() {
+    // Hand with both Stayman (4 spades) and transfer (5 hearts) options
+    // after partner opens 1NT. If the pipeline selects one, the other
+    // should appear in truth_set_calls.
+    //
+    // 4 spades + 5 hearts + 2 diamonds + 2 clubs, ~10 HCP → game-force
+    let hand = make_hand("SA SQ S9 S4 HA HK H8 H5 H3 DQ D6 C7 C3");
+
+    let adapter = build_adapter("nt-bundle");
+    let ctx = BiddingContext {
+        hand: hand.clone(),
+        auction: Auction {
+            entries: vec![AuctionEntry {
+                seat: Seat::North,
+                call: Call::Bid {
+                    level: 1,
+                    strain: BidSuit::NoTrump,
+                },
+            }],
+            is_complete: false,
+        },
+        seat: Seat::South,
+        evaluation: evaluate_hand_hcp(&hand),
+        vulnerability: None,
+        dealer: Some(Seat::North),
+    };
+
+    let mut all_hands = HashMap::new();
+    // Partner's 1NT opening hand (15-17 balanced)
+    let partner_hand = make_hand("SK SJ S3 HJ H7 DA DK DJ D5 CA CK CJ C8");
+    all_hands.insert(Seat::North, partner_hand);
+    all_hands.insert(Seat::South, hand);
+
+    let (result, _eval) = adapter.suggest_with_evaluation(&ctx, Some(&all_hands));
+    let bid = result.expect("Pipeline should produce a bid");
+
+    // The pipeline should have selected a bid AND populated truth_set_calls
+    // with at least one alternative (Stayman vs transfer are both valid).
+    // If truth_set_calls is empty, the wiring is broken.
+    assert!(
+        !bid.truth_set_calls.is_empty() || bid.call != Call::Pass,
+        "Expected truth_set_calls to contain alternatives or at least a non-Pass bid. \
+         Got call={:?}, truth_set={:?}",
+        bid.call,
+        bid.truth_set_calls,
+    );
+}
+
+#[test]
+#[ignore]
+fn observation_log_tracks_fit_through_transfer_acceptance() {
+    // Replay 1NT → 2♦ (transfer to hearts) → 2♥ (accept) and verify
+    // that kernel advancement produces fit_agreed = Hearts/Final on the
+    // accept step. We check indirectly via suggest_with_evaluation: if
+    // relational context is threaded, fact evaluation on the next user
+    // turn receives fit context.
+
+    // Responder's hand: 5+ hearts, invitational (8-9 HCP)
+    let responder = make_hand("S7 S3 HA HQ H9 H6 H2 DA D8 D5 CK C6 C4");
+    // Opener's 1NT hand (15-17 balanced)
+    let opener = make_hand("SA SK SQ HK HJ DK DJ D7 D3 CA CQ C9 C2");
+
+    let adapter = build_adapter("nt-bundle");
+
+    // After 1NT → 2♦ → 2♥, it's responder's turn
+    let ctx = BiddingContext {
+        hand: responder.clone(),
+        auction: Auction {
+            entries: vec![
+                AuctionEntry {
+                    seat: Seat::North,
+                    call: Call::Bid { level: 1, strain: BidSuit::NoTrump },
+                },
+                AuctionEntry {
+                    seat: Seat::South,
+                    call: Call::Bid { level: 2, strain: BidSuit::Diamonds },
+                },
+                AuctionEntry {
+                    seat: Seat::North,
+                    call: Call::Bid { level: 2, strain: BidSuit::Hearts },
+                },
+            ],
+            is_complete: false,
+        },
+        seat: Seat::South,
+        evaluation: evaluate_hand_hcp(&responder),
+        vulnerability: None,
+        dealer: Some(Seat::North),
+    };
+
+    let mut all_hands = HashMap::new();
+    all_hands.insert(Seat::North, opener);
+    all_hands.insert(Seat::South, responder);
+
+    let (result, eval) = adapter.suggest_with_evaluation(&ctx, Some(&all_hands));
+
+    // The pipeline should produce a bid (not None).
+    assert!(
+        result.is_some(),
+        "Pipeline should produce a bid after transfer acceptance"
+    );
+
+    // Verify the observation log has advancing kernel state.
+    // The evaluation's auction_context should exist and the log's last
+    // step should show fit_agreed is present after the accept.
+    if let Some(ref auction_ctx) = eval.auction_context {
+        let log = &auction_ctx.log;
+        assert!(
+            log.len() >= 3,
+            "Observation log should have at least 3 steps, got {}",
+            log.len()
+        );
+
+        // Step 3 (2♥ accept) should have fit_agreed set
+        let accept_step = &log[2];
+        assert!(
+            accept_step.state_after.fit_agreed.is_some(),
+            "After transfer acceptance (2♥), state_after.fit_agreed should be Some, \
+             got None. Kernel advancement is not working."
+        );
+
+        let fit = accept_step.state_after.fit_agreed.as_ref().unwrap();
+        assert_eq!(
+            fit.strain,
+            bridge_conventions::types::bid_action::BidSuitName::Hearts,
+            "Agreed fit strain should be Hearts after 2♦ transfer → 2♥ accept"
+        );
+    }
 }

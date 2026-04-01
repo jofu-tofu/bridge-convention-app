@@ -219,7 +219,6 @@ mod tests {
     // logic is expanded with truth_set/acceptable_set context.
 
     #[test]
-    #[ignore]
     fn correct_not_preferred_for_truth_set_alternative() {
         // User bids 2H (transfer to spades) when preferred is 2C (Stayman).
         // Both are valid for this hand — user's choice is in truth set but
@@ -241,7 +240,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn acceptable_for_acceptable_set_bid() {
         // User bids 3H (game raise) when preferred is 3D (limit raise).
         // 3H is acceptable per pipeline's acceptable set.
@@ -262,7 +260,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn near_miss_for_wrong_level_same_suit() {
         // User bids 2D when expected is 3D — same suit, wrong level.
         let user_call = Call::Bid { level: 2, strain: BidSuit::Diamonds };
@@ -281,7 +278,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn correct_with_expanded_grading_context() {
         // Exact match stays Correct — regression guard.
         let user_call = Call::Bid { level: 2, strain: BidSuit::Clubs };
@@ -301,7 +297,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn incorrect_for_unrelated_bid() {
         // 4C when expected is 3D — completely unrelated bid.
         let user_call = Call::Bid { level: 4, strain: BidSuit::Clubs };
