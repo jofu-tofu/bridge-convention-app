@@ -1,6 +1,7 @@
 import type { createAppStore } from "./app.svelte";
 import { ConventionCategory, PracticeMode, PracticeRole } from "../service";
 import type { ConventionConfig } from "../service";
+import { listConventions } from "../service/service-helpers";
 
 /**
  * Consolidated URL parameter API for deep-linking and dev/test workflows.
@@ -81,9 +82,10 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     // Convention catalog is now in Rust/WASM — resolve via store methods
     store.navigateToLearningModule(learnParam);
   } else if (conventionParam) {
-    // Convention catalog is now in Rust/WASM. Create a minimal config stub
-    // from the ID — the service session uses only the ID to configure the drill.
-    const stubConfig: ConventionConfig = {
+    // Resolve from catalog for proper display name; fall back to stub for unknown IDs
+    const conventions = listConventions();
+    const catalogMatch = conventions.find(c => c.id === conventionParam);
+    const stubConfig: ConventionConfig = catalogMatch ?? {
       id: conventionParam,
       name: conventionParam,
       description: "",

@@ -23,7 +23,7 @@ impl BiddingStrategy for PassStrategy {
         Some(BidResult {
             call: Call::Pass,
             rule_name: None,
-            explanation: "Always passes (placeholder strategy)".to_string(),
+            explanation: "Pass".to_string(),
             ..Default::default()
         })
     }

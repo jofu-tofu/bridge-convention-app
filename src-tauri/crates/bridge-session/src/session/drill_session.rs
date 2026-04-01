@@ -44,7 +44,7 @@ pub fn get_next_bid(
             Some(BidResult {
                 call: Call::Pass,
                 rule_name: None,
-                explanation: "No matching rule -- defaulting to pass".to_string(),
+                explanation: "Pass".to_string(),
                 ..Default::default()
             })
         }
@@ -54,7 +54,7 @@ pub fn get_next_bid(
                 Some(BidResult {
                     call: Call::Pass,
                     rule_name: None,
-                    explanation: "Convention suggested illegal bid -- defaulting to pass".to_string(),
+                    explanation: "Pass".to_string(),
                     ..Default::default()
                 })
             } else {

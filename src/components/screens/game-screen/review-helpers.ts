@@ -17,7 +17,7 @@ export function formatResult(
   score: number | null,
   declarerTricksWon: number,
 ): string | null {
-  if (!contract || score === null) return null;
+  if (!contract || score === null || score === undefined || declarerTricksWon === null || declarerTricksWon === undefined) return null;
   const required = contract.level + 6;
   const contractWithDeclarer = formatContractWithDeclarer(contract);
 

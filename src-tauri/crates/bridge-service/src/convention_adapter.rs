@@ -36,6 +36,16 @@ use bridge_engine::types::{Call, Hand, Seat, Vulnerability};
 
 use bridge_session::heuristics::{BidResult, BiddingContext, BiddingStrategy};
 
+/// Extract the teaching label from the evaluation's selected carrier.
+fn extract_explanation(evaluation: &StrategyEvaluation) -> String {
+    evaluation
+        .pipeline_result
+        .as_ref()
+        .and_then(|pr| pr.selected.as_ref())
+        .map(|c| c.proposal().teaching_label.name.to_string())
+        .unwrap_or_else(|| "Convention bid".to_string())
+}
+
 /// Adapter that implements BiddingStrategy by delegating to ConventionStrategy.
 pub struct ConventionStrategyAdapter {
     strategy: ConventionStrategy,
@@ -86,7 +96,7 @@ impl ConventionStrategyAdapter {
             BidResult {
                 call: br.call,
                 rule_name: None,
-                explanation: "Convention bid".to_string(),
+                explanation: extract_explanation(&evaluation),
                 truth_set_calls,
                 acceptable_set_calls,
             }
@@ -559,7 +569,7 @@ impl BiddingStrategy for ConventionStrategyAdapter {
             BidResult {
                 call: br.call,
                 rule_name: None,
-                explanation: "Convention bid".to_string(),
+                explanation: extract_explanation(&evaluation),
                 truth_set_calls,
                 acceptable_set_calls,
             }

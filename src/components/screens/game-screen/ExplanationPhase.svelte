@@ -270,7 +270,7 @@
         >{formatVulnerability(viewport.vulnerability)}</span>
       </div>
       <ContractDisplay contract={viewport.contract} />
-      {#if viewport.score !== null}
+      {#if viewport.score !== null && viewport.score !== undefined}
         {@const result = formatResult(viewport.contract, viewport.score, viewport.declarerTricksWon)}
         {#if result}
           <p

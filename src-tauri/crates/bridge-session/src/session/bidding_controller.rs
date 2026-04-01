@@ -249,7 +249,7 @@ fn run_ai_bid_loop(
                 BidResult {
                     call: Call::Pass,
                     rule_name: None,
-                    explanation: "No strategy — defaulting to pass".to_string(),
+                    explanation: "Pass".to_string(),
                     ..Default::default()
                 }
             }
@@ -324,7 +324,7 @@ fn get_ai_bid(
         None => Some(BidResult {
             call: Call::Pass,
             rule_name: None,
-            explanation: "No matching rule — defaulting to pass".to_string(),
+            explanation: "Pass".to_string(),
             ..Default::default()
         }),
         Some(bid_result) => {
@@ -333,7 +333,7 @@ fn get_ai_bid(
                 Some(BidResult {
                     call: Call::Pass,
                     rule_name: None,
-                    explanation: "Convention suggested illegal bid — defaulting to pass".to_string(),
+                    explanation: "Pass".to_string(),
                     ..Default::default()
                 })
             } else {
