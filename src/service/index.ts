@@ -37,7 +37,7 @@ export type {
   ServiceBidHistoryEntry as BidHistoryEntry,
   BaseModuleInfo,
   ServiceExplanationNode,
-  ServiceTeachingLabel,
+  BiddingOptionView,
 } from "./response-types";
 
 // ── 3. Game Vocabulary (engine primitives) ───────────────────────────

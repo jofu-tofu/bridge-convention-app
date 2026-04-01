@@ -6,8 +6,7 @@
  * not by convention-specific checks.
  */
 
-import type { EncoderKind, ServiceExplanationNode, ServiceTeachingLabel, HandEvaluationView, Call } from "../../../service";
-import { formatCall } from "../../../service";
+import type { EncoderKind, ServiceExplanationNode, HandEvaluationView } from "../../../service";
 
 // ── Feedback variant coloring (incorrect red / near-miss amber) ──
 
@@ -219,30 +218,4 @@ function lookupHandValue(factId: string, eval_: HandEvaluationView): number | bo
     case "bridge.hasFourCardMajor": return eval_.shape[0] >= 4 || eval_.shape[1] >= 4;
     default: return undefined;
   }
-}
-
-// ── Synthesized "why not" explanation ───────────────────────────────
-
-/**
- * Synthesize a direct explanation when no whyNot entry exists for the user's bid.
- * This is a presentation convenience — it redirects to the correct answer rather
- * than claiming why the user's bid fails in convention terms.
- */
-export function synthesizeWhyNot(
-  userCall: Call,
-  correctCall: Call,
-  label: ServiceTeachingLabel | undefined,
-): string {
-  const correctDisplay = formatCall(correctCall);
-  const userDisplay = formatCall(userCall);
-  const isPass = userCall.type === "pass";
-
-  if (label) {
-    if (isPass) {
-      return `Your hand fits ${label.name} — bid ${correctDisplay} instead of passing`;
-    }
-    return `Your hand fits ${label.name} (${correctDisplay}), not ${userDisplay}`;
-  }
-
-  return `The correct bid here is ${correctDisplay}`;
 }

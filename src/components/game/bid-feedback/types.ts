@@ -1,4 +1,4 @@
-import type { ViewportBidFeedback, TeachingDetail, HandEvaluationView } from "../../../service";
+import type { ViewportBidFeedback, TeachingDetail, HandEvaluationView, BiddingOptionView } from "../../../service";
 
 /**
  * Base props shared by all bid feedback variants (Correct, Acceptable, NearMiss, Incorrect).
@@ -12,6 +12,7 @@ export interface BidFeedbackBaseProps {
   showPracticalNote: boolean;
   handEval: HandEvaluationView | null;
   handSummary: string | null;
+  biddingOptions: readonly BiddingOptionView[];
 }
 
 /**

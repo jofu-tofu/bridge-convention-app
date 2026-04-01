@@ -11,7 +11,6 @@
     formatEncoderKind,
     formatAmbiguity,
     enrichConditionText,
-    synthesizeWhyNot,
   } from "./BidFeedbackPanel";
   import type { FeedbackVariant } from "./BidFeedbackPanel";
   import { variantClass } from "./BidFeedbackPanel";
@@ -22,7 +21,7 @@
     variant?: FeedbackVariant;
   }
 
-  let { feedback, teaching, onRetry, showPracticalNote, practicalRec, handEval, handSummary, variant = "incorrect" }: Props = $props();
+  let { feedback, teaching, onRetry, showPracticalNote, practicalRec, handEval, handSummary, biddingOptions, variant = "incorrect" }: Props = $props();
 
   let showAnswer = $state(false);
   let showMoreDetails = $state(false);
@@ -88,10 +87,21 @@
   // Fallback reached — no convention surface matched
   const fallbackNote = $derived(teaching?.fallbackReached === true);
 
-  // Synthesize a "why not" explanation when no whyNot entry exists for the user's bid
-  const synthesizedWhyNot = $derived(
-    !userBidWhyNot && feedback.correctCall
-      ? synthesizeWhyNot(feedback.userCall, feedback.correctCall, feedback.correctBidLabel)
+  // Look up what the user's bid means in the convention system
+  const userBidOption = $derived(
+    biddingOptions.find(o => callsMatch(o.call, feedback.userCall)),
+  );
+  const userBidIsPass = $derived(feedback.userCall.type === "pass");
+
+  // Filtered explanation nodes from the user's whyNot entry
+  const userWhyNotNodes = $derived(
+    (userBidWhyNot?.explanation ?? []).filter(n => n.kind !== "text" || !n.content.startsWith("Your hand doesn't meet")),
+  );
+
+  // Whether to show the user's bid meaning (has a teaching label in biddingOptions)
+  const userBidMeaningText = $derived(
+    userBidOption?.teachingLabel
+      ? `${formatCall(feedback.userCall)} means: ${userBidOption.teachingLabel.name}${userBidOption.teachingLabel.summary ? ` — ${userBidOption.teachingLabel.summary}` : ""}`
       : null,
   );
 
@@ -230,25 +240,18 @@
         {/if}
       </div>
 
-      <!-- ═══ SECTION 2: Why not YOUR bid? (merged with failing conditions) ═══ -->
-      {#if synthesizedWhyNot || (userBidWhyNot && userBidWhyNot.explanation.length > 0) || failingConditions.length > 0 || (teaching?.fallbackExplanation && teaching.fallbackExplanation !== meaningLabel)}
-        {@const userExplanationNodes = (userBidWhyNot?.explanation ?? []).filter(n => n.kind !== "text" || !n.content.startsWith("Your hand doesn't meet"))}
+      <!-- ═══ SECTION 2: Why not YOUR bid? ═══ -->
+      {#if userWhyNotNodes.length > 0 || failingConditions.length > 0 || userBidOption?.teachingLabel || !userBidWhyNot}
         <div class="{vc('surface/30')} rounded px-3 py-2 border {vc('border/20')}">
           <p class="text-[--text-annotation] {vc('text/60')} uppercase tracking-wide mb-1.5">
             Why not <span class="font-mono font-semibold normal-case">{formatCall(feedback.userCall)}</span>?
           </p>
-          {#if synthesizedWhyNot && failingConditions.length === 0 && userExplanationNodes.length === 0}
-            <p class="{vc('dim/70')} text-[--text-label] leading-snug">
-              {synthesizedWhyNot}
-            </p>
-          {:else if teaching?.fallbackExplanation && teaching.fallbackExplanation !== meaningLabel && failingConditions.length === 0 && userExplanationNodes.length === 0}
-            <p class="{vc('dim/60')} text-[--text-label] leading-tight">
-              {teaching.fallbackExplanation}
-            </p>
-          {:else}
-            {#if synthesizedWhyNot}
+
+          <!-- Case 1: whyNot entry or failing conditions — show meaning + conditions -->
+          {#if userWhyNotNodes.length > 0 || failingConditions.length > 0}
+            {#if userBidMeaningText}
               <p class="{vc('dim/70')} text-[--text-label] leading-snug mb-1.5">
-                {synthesizedWhyNot}
+                {userBidMeaningText}
               </p>
             {/if}
             <ul class="space-y-1" role="list" aria-label="Why your bid doesn't work">
@@ -259,7 +262,7 @@
                   <span class="{vc('dim')} break-words text-[--text-label]">{enrichCondition(node)}</span>
                 </li>
               {/each}
-              {#each userExplanationNodes as expNode, ei (expNode.content + '-user-' + ei)}
+              {#each userWhyNotNodes as expNode, ei (expNode.content + '-user-' + ei)}
                 <li class="flex items-start gap-1.5">
                   {#if expNode.kind === "condition"}
                     <span
@@ -273,6 +276,24 @@
                 </li>
               {/each}
             </ul>
+
+          <!-- Case 2: No whyNot, but biddingOptions has a meaning for the user's bid -->
+          {:else if userBidMeaningText}
+            <p class="{vc('dim/70')} text-[--text-label] leading-snug">
+              {userBidMeaningText}
+            </p>
+
+          <!-- Case 3: Pass with no convention meaning -->
+          {:else if userBidIsPass}
+            <p class="{vc('dim/70')} text-[--text-label] leading-snug">
+              Pass signals no convention response
+            </p>
+
+          <!-- Case 4: Non-pass bid with no convention meaning and no whyNot -->
+          {:else}
+            <p class="{vc('dim/70')} text-[--text-label] leading-snug">
+              {formatCall(feedback.userCall)} has no convention meaning in this auction
+            </p>
           {/if}
         </div>
       {/if}

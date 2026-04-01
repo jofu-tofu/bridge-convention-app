@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ViewportBidFeedback, TeachingDetail, HandEvaluationView } from "../../../service";
+  import type { ViewportBidFeedback, TeachingDetail, HandEvaluationView, BiddingOptionView } from "../../../service";
   import { callsMatch, ViewportBidGrade } from "../../../service";
   import BidFeedbackCorrect from "./BidFeedbackCorrect.svelte";
   import BidFeedbackIncorrect from "./BidFeedbackIncorrect.svelte";
@@ -11,9 +11,10 @@
     onContinue?: () => void;
     handEval?: HandEvaluationView | null;
     handSummary?: string | null;
+    biddingOptions?: readonly BiddingOptionView[];
   }
 
-  let { feedback, teaching, onRetry, onContinue, handEval = null, handSummary = null }: Props = $props();
+  let { feedback, teaching, onRetry, onContinue, handEval = null, handSummary = null, biddingOptions = [] }: Props = $props();
 
   const practicalRec = $derived(teaching?.practicalRecommendation);
   const showPracticalNote = $derived(
@@ -24,9 +25,9 @@
 </script>
 
 {#if feedback.grade === ViewportBidGrade.Correct || feedback.grade === ViewportBidGrade.Acceptable}
-  <BidFeedbackCorrect {feedback} {teaching} {practicalRec} {showPracticalNote} {handEval} {handSummary} {onContinue} />
+  <BidFeedbackCorrect {feedback} {teaching} {practicalRec} {showPracticalNote} {handEval} {handSummary} {biddingOptions} {onContinue} />
 {:else if feedback.grade === ViewportBidGrade.NearMiss}
-  <BidFeedbackIncorrect {feedback} {teaching} {onRetry} {showPracticalNote} {practicalRec} {handEval} {handSummary} variant="near-miss" />
+  <BidFeedbackIncorrect {feedback} {teaching} {onRetry} {showPracticalNote} {practicalRec} {handEval} {handSummary} {biddingOptions} variant="near-miss" />
 {:else}
-  <BidFeedbackIncorrect {feedback} {teaching} {onRetry} {showPracticalNote} {practicalRec} {handEval} {handSummary} />
+  <BidFeedbackIncorrect {feedback} {teaching} {onRetry} {showPracticalNote} {practicalRec} {handEval} {handSummary} {biddingOptions} />
 {/if}
