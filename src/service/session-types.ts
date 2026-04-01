@@ -1,13 +1,10 @@
 /**
- * Session & convention types — stub definitions for the service boundary.
+ * Session & convention types — canonical TS definitions for the service boundary.
  *
- * These types were formerly defined in session/ and conventions/ (TS backend).
- * Now that the backend is Rust/WASM, these are kept here as the TS type
- * declarations that match the Rust JSON schema. Frontend code imports these
- * through the service barrel.
- *
- * NOTE: When the TS backend directories (conventions/, session/) are deleted,
- * these become the canonical TS definitions. Until then, they coexist.
+ * These types match the Rust JSON schema (serde ↔ TS). The TS backend
+ * (conventions/, session/) has been deleted — these are the sole TS type
+ * declarations for data that crosses the WASM boundary. Frontend code
+ * imports these through the service barrel.
  */
 
 import { Seat, Vulnerability } from "../engine/types";
@@ -581,57 +578,13 @@ export interface BidResult {
   readonly handSummary?: string;
 }
 
-// ── Stub functions for convention catalog access ───────────────────
-// These delegate to WASM in the new architecture. For now they are
-// placeholders — the real implementations are in conventions/ which
-// still exists. When conventions/ is deleted, these should route to
-// WasmService catalog methods.
-
+// ── Convention catalog type aliases ───────────────────────────────
 // Re-exported so dev-params.ts can resolve convention/module IDs for URL params.
-// The actual implementations still come from conventions/ until 5E-3 deletes them.
-// After deletion, these will need to be wired to WasmService catalog queries.
+// All implementations delegate to WasmService catalog methods.
 
-/** Placeholder type for getConvention — delegates to WasmService catalog. */
+/** Type alias for getConvention — delegates to WasmService catalog. */
 export type GetConventionFn = (id: string) => ConventionConfig;
 
-/** Placeholder type for getModule — delegates to WasmService catalog. */
+/** Type alias for getModule — delegates to WasmService catalog. */
 export type GetModuleFn = (id: string) => unknown;
 
-// ── Evaluation result types (moved from evaluation/types.ts) ────────
-// These are needed by port.ts and wasm-service.ts.
-// NOTE: These reference response-types.ts but use string type names to
-// avoid circular imports. The actual types are structurally compatible.
-
-/** Bid grade — string union matching the Rust BidGrade enum. */
-export type BidGrade = "correct" | "correct-not-preferred" | "acceptable" | "near-miss" | "incorrect";
-
-export interface AtomGradeResult {
-  readonly viewport: Record<string, unknown>;
-  readonly grade: BidGrade;
-  readonly correct: boolean;
-  readonly acceptable: boolean;
-  readonly skip: boolean;
-  readonly yourBid?: string;
-  readonly correctBid?: string;
-  readonly feedback: Record<string, unknown> | null;
-  readonly teaching: Record<string, unknown> | null;
-}
-
-/** Opaque handle for a playthrough. Consumers get steps as BiddingViewports. */
-export interface PlaythroughHandle {
-  readonly seed: number;
-  readonly totalUserSteps: number;
-  readonly atomsCovered: readonly string[];
-}
-
-export interface PlaythroughGradeResult {
-  readonly step: Record<string, unknown>;
-  readonly grade: string;
-  readonly correct: boolean;
-  readonly acceptable: boolean;
-  readonly feedback: Record<string, unknown>;
-  readonly teaching: Record<string, unknown>;
-  readonly nextStep: Record<string, unknown> | null;
-  readonly complete: boolean;
-  readonly yourBid: string;
-}

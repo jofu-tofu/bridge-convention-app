@@ -27,7 +27,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Grouped phase state.** Internal `$state` variables are grouped into typed objects: `bidding: BiddingPhaseState`, `play: PlayPhaseState`, `dds: DDSState`, `inference: InferenceState`, `viewports: ViewportCache`. Factory functions (`freshBiddingState()`, etc.) handle resets. Individual field updates use direct property mutation (`bidding.processing = true`) which Svelte 5's proxy tracks fine-grained. Full object replacement (`bidding = freshBiddingState()`) is correct for resets only.
 
-**`bidFeedback` stays flat with `$state.raw`.** Deep proxy would break reference equality checks. Do NOT fold into `BiddingPhaseState`.
+**`bidFeedback` stays flat.** Always replaced wholesale (never mutated in-place), so `$state` works correctly. Do NOT fold into `BiddingPhaseState`.
 
 **Animation fields stay flat.** `biddingAnim` and `animatedTrickOverride` have independent lifecycles and never reset together. Grouping would add no benefit.
 
@@ -37,7 +37,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Viewport getters:** `gameStore.biddingViewport` — cached `BiddingViewport` from `ServicePort.getBiddingViewport()`. `gameStore.viewportFeedback` — `ViewportBidFeedback` from bid grading. `gameStore.declarerPromptViewport` — cached `DeclarerPromptViewport` from `ServicePort.getDeclarerPromptViewport()`. `gameStore.playingViewport` — cached `PlayingViewport` from `ServicePort.getPlayingViewport()`. `gameStore.explanationViewport` — cached `ExplanationViewport` from `ServicePort.getExplanationViewport()`. All viewports are `$state` variables refreshed via service calls after state changes. Components consume these instead of raw deal/engine state.
 
-**Exported types:** `BidFeedback` (viewport-safe: `grade: ViewportBidGrade` (string), `viewportFeedback: ViewportBidFeedback`, `teaching: TeachingDetail | null`). `BidHistoryEntry` (re-exported from `service/`), `TeachingResolution` (re-exported from `service/`), `GamePhase`, `PlayLogEntry`, `seatController()`.
+**Exported types:** `BidFeedback` (viewport-safe: `grade: ViewportBidGrade` (string), `viewportFeedback: ViewportBidFeedback`, `teaching: TeachingDetail | null`). `BidHistoryEntry` (re-exported from `service/`), `GamePhase`, `PlayLogEntry`, `seatController()`.
 
 **Viewport as single source of truth.** The store is a thin reactive cache of viewports from the service. Bidding state (`auction`, `bidHistory`, `legalCalls`, `currentTurn`, `isUserTurn`) and play state (`tricks`, `currentTrick`, `currentPlayer`, etc.) are derived from `cachedBiddingViewport` / `cachedPlayingViewport` via `$derived`. No local state mutation during the game — the service owns the truth. There is no legacy local path — all game operations go through the service.
 

@@ -11,7 +11,7 @@ Backend modules (`conventions/`, `inference/`, `session/`, `service/`) have been
 | 3 | [Meaning Pipeline](phase-3-meaning-pipeline.md) | Complete | ~4,000-5,000 | Phase 2 |
 | 4 | [Inference + Session](phase-4-inference-session.md) | Complete | ~5,000 | Phase 3 |
 | 5 | [Service Cleanup](phase-5-service-cleanup.md) | Complete | ~2,000 | Phase 4 |
-| 6 | [TS/Rust Reconciliation](phase-6-reconciliation.md) | In Progress | TBD | Phase 5 |
+| 6 | [TS/Rust Reconciliation](phase-6-reconciliation.md) | Complete | TBD | Phase 5 |
 
 **Total estimated Rust LOC:** ~15,000-17,000
 

@@ -9,7 +9,8 @@ export function callsMatch(a: Call, b: Call): boolean {
   return true; // pass === pass, double === double, etc.
 }
 
-/** Serialize a Call to a deterministic string key (e.g., "1NT", "P", "X", "XX"). */
+/** Serialize a Call to a compact deterministic key (e.g., "1NT", "P", "X", "XX").
+ *  Used for map keys, test IDs, and machine-readable output. */
 export function callKey(call: Call): string {
   if (call.type === "bid") return `${call.level}${call.strain}`;
   if (call.type === "pass") return "P";
@@ -17,7 +18,8 @@ export function callKey(call: Call): string {
   return "XX";
 }
 
-/** Format a Call as a human-readable string for evidence output (e.g., "1NT", "Pass", "Double"). */
+/** Format a Call as a human-readable string for evidence/log output (e.g., "1NT", "Pass", "Double").
+ *  Differs from callKey: spells out "Pass"/"Double"/"Redouble" instead of "P"/"X"/"XX". */
 export function formatCallForEvidence(call: Call): string {
   if (call.type !== "bid") {
     return call.type.charAt(0).toUpperCase() + call.type.slice(1);

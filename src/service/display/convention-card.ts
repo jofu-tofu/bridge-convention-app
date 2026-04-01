@@ -45,10 +45,7 @@ function getBundleInput(id: string): { memberIds: readonly string[] } | undefine
     const all = listConventions();
     const bundle = all.find(c => c.id === id);
     if (!bundle) return undefined;
-    // Rust ConventionInfo serializes module_ids as moduleIds
-    // any: listConventions returns ConventionConfig but runtime is ConventionInfo with moduleIds
-    const moduleIds = (bundle as unknown as { moduleIds?: readonly string[] }).moduleIds ?? [];
-    return { memberIds: moduleIds };
+    return { memberIds: bundle.moduleIds ?? [] };
   } catch {
     return undefined;
   }

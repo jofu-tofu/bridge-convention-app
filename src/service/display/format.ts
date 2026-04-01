@@ -97,15 +97,3 @@ export function displayConventionName(name: string): string {
   return name.replace(/\s*\(Bundle\)\s*$/i, "");
 }
 
-/** Map single-letter suit abbreviations to Unicode suit symbols. */
-const BID_LETTER_TO_SYMBOL: Record<string, string> = {
-  C: "\u2663", D: "\u2666", H: "\u2665", S: "\u2660", NT: "NT",
-};
-const BID_REFERENCE_RE = /(?<![A-Za-z])([1-7])(C|D|H|S|NT)(?![A-Za-z])/g;
-
-/** Replace bid letter references (e.g. "2C", "3H") with suit symbols ("2♣", "3♥"). */
-export function formatBidReferences(text: string): string {
-  return text.replace(BID_REFERENCE_RE, (_match, level: string, suit: string) =>
-    `${level}${BID_LETTER_TO_SYMBOL[suit] ?? suit}`
-  );
-}

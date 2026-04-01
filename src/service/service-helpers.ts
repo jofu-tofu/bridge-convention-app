@@ -8,8 +8,7 @@
  * These are thin wrappers — the real logic is in Rust.
  */
 
-import type { ConventionConfig } from "./session-types";
-import type { BaseModuleInfo, ModuleCatalogEntry } from "./response-types";
+import type { BaseModuleInfo, ConventionInfo, ModuleCatalogEntry } from "./response-types";
 import type { BaseSystemId } from "./session-types";
 
 // Access the WASM port directly for sync calls.
@@ -43,18 +42,11 @@ function getSyncPort() {
 }
 
 /**
- * List all convention bundles as ConventionConfig-compatible objects.
+ * List all convention bundles from the WASM catalog.
  * Sync — safe to call in $derived blocks.
  */
-export function listConventions(): ConventionConfig[] {
-  const raw = getSyncPort().list_conventions() as Record<string, unknown>[];
-  return raw.map(c => {
-    const md = c.moduleDescriptions as Record<string, string> | undefined;
-    return {
-      ...c,
-      moduleDescriptions: md ? new Map(Object.entries(md)) : undefined,
-    } as ConventionConfig;
-  });
+export function listConventions(): ConventionInfo[] {
+  return getSyncPort().list_conventions() as ConventionInfo[];
 }
 
 /**

@@ -132,7 +132,10 @@ export function createGameStore(
 
   // ── Session state (flat — span all phases) ───────────────────
   let activeHandle = $state<SessionHandle | null>(null);
-  // Not $state — swapped per-drill, not reactive (components access via closures)
+  // Not $state — activeService is swapped atomically per-drill, not per-render.
+  // Making it reactive would cause components to re-render mid-transition when
+  // the old drill's service is still being cleaned up. Closures capture it at
+  // call time, ensuring each async chain uses the service it started with.
   let activeService: DevServicePort = service;
   let deal = $state<Deal | null>(null);
   let phase = $state<GamePhase>("BIDDING");
@@ -142,6 +145,9 @@ export function createGameStore(
   let playPreference = $state<PlayPreference>(PlayPreference.Prompt);
 
   // ── Grouped phase state ─────────────────────────────────────
+  // Grouped into typed objects so phase resets are a single assignment
+  // (e.g., `dds = freshDDSState()`) rather than resetting N individual fields.
+  // Svelte 5's proxy tracks fine-grained property mutations within each object.
 
   let dds = $state<DDSState>(freshDDSState());
   let inference = $state<InferenceState>(freshInferenceState());
@@ -158,6 +164,11 @@ export function createGameStore(
   });
 
   // ── Lifecycle guard ─────────────────────────────────────────
+  // guarded() drops concurrent calls rather than queuing them because lifecycle
+  // actions (skip-to-review, accept-prompt, etc.) are user-initiated and
+  // idempotent — a dropped click is harmless, but a queued action executing
+  // after the phase has changed would be wrong. Queuing would also require
+  // tracking/flushing the queue on drill reset, adding complexity for no benefit.
   let transitioning = $state(false);
   // startNewDrill uses cancel-based concurrency (not guarded) — a new drill
   // supersedes any in-progress drill via activeHandle comparison. This flag

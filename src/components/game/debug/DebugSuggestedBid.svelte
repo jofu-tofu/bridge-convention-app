@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { BidResult } from "../../../service";
-  import { fmtCall } from "./debug-helpers";
+  import { formatCall } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {
@@ -12,7 +12,7 @@
 
 <DebugSection
   title="Suggested Bid"
-  badge={expectedBid ? fmtCall(expectedBid.call) : "Pass"}
+  badge={expectedBid ? formatCall(expectedBid.call) : "Pass"}
   badgeColor={expectedBid ? "bg-green-900/50 text-green-300" : "bg-yellow-900/50 text-yellow-300"}
   preview={expectedBid?.meaning ?? null}
   open

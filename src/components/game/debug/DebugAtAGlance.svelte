@@ -4,7 +4,7 @@
 <script lang="ts">
   import type { DebugSnapshotBase } from "../../../service/debug-types";
   import type { DebugBidFeedback } from "../../../stores/game.svelte";
-  import { fmtCall, GRADE_COLORS, GRADE_COLOR_FALLBACK } from "./debug-helpers";
+  import { formatCall, GRADE_COLORS, GRADE_COLOR_FALLBACK } from "./debug-helpers";
 
   interface Props {
     snapshot: DebugSnapshotBase | null;
@@ -33,7 +33,7 @@
     {@const bid = snapshot.expectedBid}
     <div class="flex items-baseline gap-2">
       <span class="text-text-muted">expected:</span>
-      <span class="text-sm font-bold text-green-300">{fmtCall(bid.call)}</span>
+      <span class="text-sm font-bold text-green-300">{formatCall(bid.call)}</span>
       <span class="text-text-muted truncate">{bid.meaning ?? bid.ruleName ?? ""}</span>
     </div>
   {:else if snapshot}
@@ -62,10 +62,10 @@
     <div class="flex items-center gap-2 pt-0.5 border-t border-border-subtle/30">
       <span class="px-1.5 py-0.5 rounded text-[10px] font-bold border {GRADE_COLORS[feedback.grade] ?? GRADE_COLOR_FALLBACK}">{feedback.grade}</span>
       <span class="text-text-muted">bid:</span>
-      <span class="font-bold text-text-primary">{fmtCall(feedback.userCall)}</span>
+      <span class="font-bold text-text-primary">{formatCall(feedback.userCall)}</span>
       {#if feedback.expectedResult}
         <span class="text-text-muted">expected:</span>
-        <span class="font-bold text-green-300">{fmtCall(feedback.expectedResult.call)}</span>
+        <span class="font-bold text-green-300">{formatCall(feedback.expectedResult.call)}</span>
       {/if}
     </div>
   {/if}

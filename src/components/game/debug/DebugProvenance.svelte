@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PipelineResult } from "../../../service/debug-types";
-  import { fmtCall, truncate } from "./debug-helpers";
+  import { formatCall, truncate } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {
@@ -46,12 +46,12 @@
             <span class="text-purple-300">{enc?.encoderKind ?? "—"}</span>
             <span class="text-text-muted ml-0.5">({enc?.encoderId ?? "—"})</span>
             {#if enc?.chosenCall}
-              <span class="text-green-300 ml-0.5">→ {fmtCall(enc.chosenCall)}</span>
+              <span class="text-green-300 ml-0.5">→ {formatCall(enc.chosenCall)}</span>
             {/if}
             {#if enc?.blockedCalls && enc.blockedCalls.length > 0}
               <div class="pl-2">
                 {#each enc.blockedCalls as bc, i (bc.call.type + (bc.call.type === 'bid' ? bc.call.level + bc.call.strain : '') + ':' + i)}
-                  <span class="text-red-400">{fmtCall(bc.call)} blocked: {bc.reason}</span>
+                  <span class="text-red-400">{formatCall(bc.call)} blocked: {bc.reason}</span>
                 {/each}
               </div>
             {/if}

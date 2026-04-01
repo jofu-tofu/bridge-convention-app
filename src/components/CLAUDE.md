@@ -60,7 +60,7 @@ components/
     ConventionCardPanel.svelte       Convention card side drawer — full system projection with progressive disclosure (system thresholds + active convention modules + teaching detail)
     AuctionTable.svelte              4-column N/E/S/W grid, suit-colored. `minimal` prop for compact play-history rendering (no legend/annotations).
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
-    BidFeedbackPanel.svelte          Three-branch bid feedback (Correct green/Acceptable teal/Incorrect red/NearMiss amber) with show-answer toggle, acceptable badges on siblings, optional practical note, convention contribution badges, WhyNot grade distinction, multi-rationale indicator, encoding explanation, partner hand space summary, elimination stage annotations
+    BidFeedbackPanel.svelte          Two-branch bid feedback (Correct/Acceptable green → BidFeedbackCorrect, NearMiss amber/Incorrect red → BidFeedbackIncorrect) with show-answer toggle, acceptable badges on siblings, optional practical note, convention contribution badges, WhyNot grade distinction, multi-rationale indicator, encoding explanation, partner hand space summary, elimination stage annotations
     BidFeedbackPanel.ts              Companion .ts file with convention-agnostic display helpers for TeachingProjection rendering: formatAmbiguity, formatEliminationStage, formatModuleRole, roleColorClasses, whyNotGradeClasses, isArtificialEncoder, formatEncoderKind, FeedbackVariant type, variantClass color lookup
     bid-feedback/
       BidFeedbackCorrect.svelte      Correct bid feedback — green flash with explanation + passed conditions (shown as non-blocking feedback for all correct/acceptable bids)
@@ -89,7 +89,7 @@ components/
       DebugPublicBeliefs.svelte      Per-seat belief ranges with collapsible annotations
       DebugBidLog.svelte             Collapsible per-entry bid history
       DebugPlayLog.svelte            Card play history by trick
-      debug-helpers.ts               Formatting utilities (fmtCall, formatSuitCards, fmtFactValue, truncate)
+      debug-helpers.ts               Formatting utilities (formatCall re-export, formatSuitCards, fmtFactValue, truncate)
   navigation/
     NavRail.svelte                   Thin left rail (~80px) — Home/Learn (hover flyout)/Settings icons. Desktop only. Uses shared learn-sub-items.
     NavFlyout.svelte                 Hover flyout menu for NavRail — positioned right of rail icon, keyboard accessible.

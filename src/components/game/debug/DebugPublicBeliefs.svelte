@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Seat, Suit } from "../../../service";
   import type { ServicePublicBeliefState } from "../../../service";
-  import { fmtCall } from "./debug-helpers";
+  import { formatCall } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {
@@ -46,7 +46,7 @@
       {#each publicBeliefState.annotations as ann, i (i)}
         <div class="text-[10px] leading-tight">
           <span class="text-text-primary">{ann.seat}:</span>
-          <span class="text-cyan-300 ml-0.5">{fmtCall(ann.call)}</span>
+          <span class="text-cyan-300 ml-0.5">{formatCall(ann.call)}</span>
           <span class="text-text-muted ml-0.5">{ann.meaning}</span>
           {#if ann.conventionId}
             <span class="text-purple-300 ml-0.5">[{ann.conventionId}]</span>

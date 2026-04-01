@@ -1,4 +1,6 @@
 {
   "entry": ["src/cli/main.ts"],
-  "ignore": ["static/dds/dds.js"]
+  "ignore": [
+    "static/dds/dds.js"
+  ]
 }

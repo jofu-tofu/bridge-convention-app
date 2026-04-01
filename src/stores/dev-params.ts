@@ -1,6 +1,7 @@
 import type { createAppStore } from "./app.svelte";
 import { ConventionCategory, PracticeMode, PracticeRole } from "../service";
 import type { ConventionConfig } from "../service";
+import type { ConventionInfo } from "../service/response-types";
 import { listConventions } from "../service/service-helpers";
 
 /**
@@ -84,15 +85,16 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   } else if (conventionParam) {
     // Resolve from catalog for proper display name; fall back to stub for unknown IDs
     const conventions = listConventions();
-    const catalogMatch = conventions.find(c => c.id === conventionParam);
-    const stubConfig: ConventionConfig = catalogMatch ?? {
+    const catalogMatch: ConventionInfo | undefined = conventions.find(c => c.id === conventionParam);
+    const config = catalogMatch ?? {
       id: conventionParam,
       name: conventionParam,
       description: "",
       category: ConventionCategory.Asking,
-      dealConstraints: { seats: [] },
     };
-    store.selectConvention(stubConfig);
+    // ConventionInfo from WASM catalog is structurally compatible with ConventionConfig
+    // for the fields selectConvention actually uses (id, name, category, supportsRoleSelection).
+    store.selectConvention(config as ConventionConfig);
   }
 
   // ── Coverage targeting ─────────────────────────────────────

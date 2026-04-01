@@ -21,7 +21,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 | `npm run lint:fix`        | ESLint auto-fix                                            |
 | `npm run lint:dead`       | Report unused files/dead references via Knip                  |
 | `npm run lint:full`       | `npm run lint` plus dead-reference check                     |
-| `npx tsx src/cli/main.ts verify preflight --bundle=<id>` | Bundle compositional verification |
+| `npx tsx src/cli/main.ts selftest --bundle=<id>` | Strategy self-consistency check |
 | `npm run format`          | Prettier format all files                                  |
 | `npm run format:check`    | Prettier check (CI)                                        |
 | `cargo test --workspace`  | Run all Rust tests (from src-tauri/)                       |
@@ -67,8 +67,7 @@ Backward compat aliases: `?coverage=true` → `?screen=coverage`, `?profiles=tru
 ?screen=coverage&convention=nt-bundle                  # Coverage screen
 ?screen=settings                                       # Settings screen
 ```
-- **CLI coverage:** `npx tsx src/cli/main.ts list --bundle=nt-bundle` runs headless coverage tests. Subcommands: `list` (enumerate atoms), `eval` (per-atom evaluation), `play` (playthrough evaluation), `selftest` (CI mode), `plan` (evaluation plan). Same seed = same deal across `eval`/`eval --bid`.
-- **Compositional verification:** `npx tsx src/cli/main.ts verify preflight --bundle=nt-bundle --budget=fast` runs full structural health check (lint + interference + exploration + fuzz). Individual runtime stages: `verify explore`, `verify motif`, `verify fuzz`. Static checks (lint, interference) run as vitest tests and internally as part of preflight.
+- **CLI evaluation:** `npx tsx src/cli/main.ts play --bundle=nt-bundle --seed=42` runs session-based playthrough. Subcommands: `bundles` (list bundles), `modules` (list modules), `describe` (inspect bundle), `play` (session-based playthrough), `selftest` (strategy self-consistency). Same seed = same deal. Uses the same session API as the UI.
 - **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-P` (pass), `bid-X` (double), `bid-XX` (redouble). Container test IDs: `level-bids` (contract grid), `special-bids` (pass/dbl/rdbl row).
 
 ## Code Hygiene
@@ -115,7 +114,7 @@ src/
   service/         WASM proxy: ServicePort, WasmService, barrel, session-types, dds-bridge, display/, util/
     display/       Call/contract/card formatting, hand summary, convention card builder
     util/          Pure utilities: delay
-  cli/             Headless coverage test runner (modular: main.ts + shared.ts + commands/)
+  cli/             Session-based convention evaluation CLI (main.ts + shared.ts + commands/)
   test-support/    Shared test factories (engine stub, deal/session fixtures)
   stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI, dev-params)
   components/      Svelte UI components
@@ -145,7 +144,7 @@ tests/
 | Session (Rust) | `src-tauri/crates/bridge-session/` | Session state, controllers, heuristics, inference |
 | Service (Rust) | `src-tauri/crates/bridge-service/` | ServicePort impl, viewport builders |
 | Service (TS) | `src/service/index.ts` | WASM proxy + barrel + session-types + display/ + util/ + dds-bridge |
-| CLI | `src/cli/main.ts` | Headless coverage test runner (modular) |
+| CLI | `src/cli/main.ts` | Session-based convention evaluation CLI |
 | Test Support | `src/test-support/engine-stub.ts` | Shared test factories |
 | Stores | `src/stores/app.svelte.ts` | Svelte stores + game coordinator |
 | Components | — | Svelte UI (screens/game/shared) |
@@ -173,6 +172,7 @@ See `docs/migration/index.md` for the phase tracker and architectural decisions.
 - Component tests use `@testing-library/svelte` — components needing context (stores/engine) need wrapper setup in test-helpers.ts
 - Svelte `{#each}` blocks require keyed iteration (`{#each items as item (item.id)}`) per ESLint rule `svelte/require-each-key`
 - See `docs/gotchas.md` for detailed technical notes (DDS browser, vendor/dds, convention system details, CLI enumeration, deal generation)
+- **Posterior inference is stubbed** (uniform distributions). Natural inference handles common cases; posterior is a follow-up item. See `docs/migration/index.md` Known Remaining Stubs for details.
 
 **Context tree** (read the relevant one before working in that directory):
 

@@ -84,7 +84,7 @@ export function createBiddingPhase(deps: BiddingDeps) {
   );
 
   // Grade-acceptance policy: only near-miss/incorrect block.
-  // Acceptable/correct-not-preferred show non-blocking feedback below bid table.
+  // Acceptable shows non-blocking feedback below bid table.
   const isFeedbackBlocking = $derived(
     bidFeedback !== null &&
       (bidFeedback.grade === ViewportBidGrade.NearMiss || bidFeedback.grade === ViewportBidGrade.Incorrect),
@@ -102,7 +102,7 @@ export function createBiddingPhase(deps: BiddingDeps) {
     const skipTracking = isRetryAttempt;
     isRetryAttempt = false;
 
-    // Clear non-blocking feedback from previous bid (acceptable/correct-not-preferred)
+    // Clear non-blocking feedback from previous bid (acceptable)
     if (bidFeedback && !isFeedbackBlocking) {
       bidFeedback = null;
     }
@@ -134,7 +134,7 @@ export function createBiddingPhase(deps: BiddingDeps) {
         return;
       }
 
-      // Show non-blocking feedback for all accepted bids (correct, acceptable, correct-not-preferred)
+      // Show non-blocking feedback for all accepted bids (correct, acceptable)
       if (result.grade && result.feedback) {
         bidFeedback = {
           grade: result.grade,
@@ -160,7 +160,10 @@ export function createBiddingPhase(deps: BiddingDeps) {
         bidding.debugLog = [...log] as DebugLogEntry[];
       }
 
-      // Animate AI bids via incremental reveal
+      // Animate AI bids via incremental reveal: the service returns the *final*
+      // viewport (all AI bids already applied) in one round-trip. We then reveal
+      // them one-by-one with delays. This is simpler and faster than fetching a
+      // new viewport per AI bid, and keeps the WASM call count to O(1).
       if (result.aiBids.length > 0) {
         biddingAnim = { totalAiBids: result.aiBids.length, revealed: 0 };
 

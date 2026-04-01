@@ -1,13 +1,11 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
   import { listConventions, listModules } from "../../service";
-  import type { ConventionInfo } from "../../service/response-types";
   import type { ModuleCatalogEntry } from "../../service";
 
   const appStore = getAppStore();
 
-  // any: listConventions returns ConventionConfig but runtime is ConventionInfo with moduleIds
-  const bundles = listConventions() as unknown as ConventionInfo[];
+  const bundles = listConventions();
 
   let selectedBundleId = $state<string | null>(appStore.coverageBundle);
 
