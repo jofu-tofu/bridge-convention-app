@@ -192,10 +192,12 @@ impl SessionState {
         self.bid_history.push(BidHistoryEntryView {
             seat: entry.seat,
             call: entry.call.clone(),
-            meaning: Some(annotation.meaning.clone()),
+            meaning: if annotation.meaning.is_empty() { None } else { Some(annotation.meaning.clone()) },
             is_user,
             is_correct,
-            alert_label: if bid_alert.alertable {
+            alert_label: if annotation.meaning.is_empty() {
+                None
+            } else if bid_alert.alertable || annotation_type == Some(AnnotationType::Educational) {
                 Some(annotation.meaning.clone())
             } else {
                 None

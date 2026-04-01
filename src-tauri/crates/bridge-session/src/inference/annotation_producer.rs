@@ -79,24 +79,17 @@ pub fn produce_annotation(
             call: entry.call.clone(),
             seat: entry.seat,
             convention_id: None,
-            meaning: "Natural bid".to_string(),
+            meaning: String::new(),
             constraints: natural_constraints,
         };
     }
 
-    // Pass / double / redouble
-    let meaning = match &entry.call {
-        Call::Pass => "Pass",
-        Call::Double => "Double",
-        Call::Redouble => "Redouble",
-        _ => "Unknown",
-    };
-
+    // Pass / double / redouble — no meaningful label to show
     BidAnnotation {
         call: entry.call.clone(),
         seat: entry.seat,
         convention_id: None,
-        meaning: meaning.to_string(),
+        meaning: String::new(),
         constraints: Vec::new(),
     }
 }
@@ -206,7 +199,7 @@ mod tests {
         );
 
         assert_eq!(ann.convention_id, None);
-        assert_eq!(ann.meaning, "Natural bid");
+        assert!(ann.meaning.is_empty());
         assert_eq!(ann.constraints.len(), 1);
         assert_eq!(ann.constraints[0].fact_id, "hand.hcp");
     }
@@ -226,7 +219,7 @@ mod tests {
             &empty_auction(),
         );
 
-        assert_eq!(ann.meaning, "Pass");
+        assert!(ann.meaning.is_empty());
         assert!(ann.constraints.is_empty());
     }
 
@@ -245,7 +238,7 @@ mod tests {
             &empty_auction(),
         );
 
-        assert_eq!(ann.meaning, "Double");
+        assert!(ann.meaning.is_empty());
         assert!(ann.constraints.is_empty());
     }
 
@@ -264,7 +257,7 @@ mod tests {
             &empty_auction(),
         );
 
-        assert_eq!(ann.meaning, "Redouble");
+        assert!(ann.meaning.is_empty());
         assert!(ann.constraints.is_empty());
     }
 }

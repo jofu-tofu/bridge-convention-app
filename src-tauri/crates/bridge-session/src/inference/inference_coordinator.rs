@@ -222,7 +222,7 @@ mod tests {
         );
 
         assert_eq!(state.annotations.len(), 1);
-        assert_eq!(state.annotations[0].meaning, "Natural bid");
+        assert!(state.annotations[0].meaning.is_empty());
         // Natural inference should narrow North's HCP
         assert!(state.beliefs[&Seat::North].ranges.hcp.min > 0);
     }
@@ -244,7 +244,7 @@ mod tests {
         );
 
         assert_eq!(state.annotations.len(), 1);
-        assert_eq!(state.annotations[0].meaning, "Pass");
+        assert!(state.annotations[0].meaning.is_empty());
     }
 
     #[test]
