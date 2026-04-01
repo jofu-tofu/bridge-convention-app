@@ -93,10 +93,16 @@ impl ConventionStrategyAdapter {
         let result = bid.map(|br| {
             let (truth_set_calls, acceptable_set_calls) =
                 Self::extract_alternative_calls(&evaluation, &br.call);
+            let disclosure = evaluation
+                .pipeline_result
+                .as_ref()
+                .and_then(|pr| pr.selected.as_ref())
+                .map(|c| c.proposal().disclosure);
             BidResult {
                 call: br.call,
                 rule_name: None,
                 explanation: extract_explanation(&evaluation),
+                disclosure,
                 truth_set_calls,
                 acceptable_set_calls,
             }
@@ -566,10 +572,16 @@ impl BiddingStrategy for ConventionStrategyAdapter {
         convention_bid.map(|br| {
             let (truth_set_calls, acceptable_set_calls) =
                 Self::extract_alternative_calls(&evaluation, &br.call);
+            let disclosure = evaluation
+                .pipeline_result
+                .as_ref()
+                .and_then(|pr| pr.selected.as_ref())
+                .map(|c| c.proposal().disclosure);
             BidResult {
                 call: br.call,
                 rule_name: None,
                 explanation: extract_explanation(&evaluation),
+                disclosure,
                 truth_set_calls,
                 acceptable_set_calls,
             }

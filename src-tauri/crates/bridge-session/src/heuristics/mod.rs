@@ -40,6 +40,9 @@ pub struct BidResult {
     pub rule_name: Option<String>,
     /// Human-readable explanation of why this bid was chosen.
     pub explanation: String,
+    /// Disclosure level from the convention surface (None for heuristic/fallback bids).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub disclosure: Option<bridge_conventions::types::meaning::Disclosure>,
     /// Other valid calls from the convention's "truth set" (correct but not preferred).
     #[serde(default)]
     pub truth_set_calls: Vec<Call>,

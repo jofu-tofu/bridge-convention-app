@@ -17,7 +17,8 @@ use crate::inference::types::{InferenceSnapshot, PublicBeliefState, PublicBelief
 use crate::heuristics::{BiddingStrategy, BidResult};
 use crate::types::{GamePhase, PlayPreference, PracticeFocus, PracticeMode};
 
-use super::build_viewport::{AnnotationType, BidHistoryEntryView};
+use super::build_viewport::BidHistoryEntryView;
+use super::build_viewport::AnnotationType;
 
 // ── SeatStrategy ────────────────────────────────────────────────────
 
@@ -139,6 +140,9 @@ impl SessionState {
         is_user: bool,
         is_correct: Option<bool>,
     ) {
+        use bridge_conventions::pipeline::evaluation::alert::resolve_alert;
+        use bridge_conventions::types::meaning::Disclosure;
+
         let (rule_name, explanation) = match bid_result {
             Some(result) => (
                 Some(result.rule_name.as_deref().unwrap_or("unknown")),
@@ -168,11 +172,22 @@ impl SessionState {
         let annotation = self.public_belief_state.annotations.last()
             .expect("inference must produce exactly one annotation per process_bid call");
 
-        let annotation_type = if annotation.convention_id.is_some() {
-            Some(AnnotationType::Alert)
-        } else {
-            None
-        };
+        // Resolve annotation type from the convention's disclosure level.
+        // Heuristic/fallback bids have no disclosure → Educational.
+        // Natural/Standard bids → Educational (not alertable).
+        // Alert/Announcement → Alert/Announce.
+        let disclosure = bid_result
+            .and_then(|r| r.disclosure)
+            .unwrap_or(Disclosure::Natural);
+        let bid_alert = resolve_alert(disclosure);
+        let annotation_type = bid_alert.annotation_type.map(|at| {
+            use bridge_conventions::pipeline::evaluation::alert::AnnotationType as ConvAnnotationType;
+            match at {
+                ConvAnnotationType::Alert => AnnotationType::Alert,
+                ConvAnnotationType::Announce => AnnotationType::Announce,
+                ConvAnnotationType::Educational => AnnotationType::Educational,
+            }
+        });
 
         self.bid_history.push(BidHistoryEntryView {
             seat: entry.seat,
@@ -180,7 +195,7 @@ impl SessionState {
             meaning: Some(annotation.meaning.clone()),
             is_user,
             is_correct,
-            alert_label: if annotation_type.is_some() {
+            alert_label: if bid_alert.alertable {
                 Some(annotation.meaning.clone())
             } else {
                 None
