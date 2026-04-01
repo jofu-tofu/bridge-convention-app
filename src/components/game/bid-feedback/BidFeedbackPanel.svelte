@@ -3,7 +3,6 @@
   import { callsMatch, ViewportBidGrade } from "../../../service";
   import BidFeedbackCorrect from "./BidFeedbackCorrect.svelte";
   import BidFeedbackAcceptable from "./BidFeedbackAcceptable.svelte";
-  import BidFeedbackNearMiss from "./BidFeedbackNearMiss.svelte";
   import BidFeedbackIncorrect from "./BidFeedbackIncorrect.svelte";
 
   interface Props {
@@ -27,7 +26,7 @@
 {:else if feedback.grade === ViewportBidGrade.Acceptable}
   <BidFeedbackAcceptable {feedback} {teaching} {practicalRec} {showPracticalNote} />
 {:else if feedback.grade === ViewportBidGrade.NearMiss}
-  <BidFeedbackNearMiss {feedback} {teaching} {onRetry} {showPracticalNote} {practicalRec} />
+  <BidFeedbackIncorrect {feedback} {teaching} {onRetry} {showPracticalNote} {practicalRec} variant="near-miss" />
 {:else}
   <BidFeedbackIncorrect {feedback} {teaching} {onRetry} {showPracticalNote} {practicalRec} />
 {/if}

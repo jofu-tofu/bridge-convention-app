@@ -64,6 +64,7 @@
   --color-fb-near-miss-text: #fcd34d;
   --color-fb-near-miss-dim: #fde68a;
   --color-fb-near-miss-bright: #fef3c7;
+  --color-fb-near-miss-hover: #92400e;
 
   /* Incorrect (red) */
   --color-fb-incorrect: #ef4444;

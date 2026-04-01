@@ -27,7 +27,7 @@ Fact evaluation → surface routing → meaning proposal → arbitration → enc
 
 ## Parse-Tree Feedback
 
-After a bid, `buildParseTree()` (`src/conventions/teaching/parse-tree-builder.ts`) shows the full decision chain — which convention modules were considered, why each was accepted or rejected, and the path to the correct bid. Data flows: `PipelineResult` → `ParseTreeView` → `ParseTreePanel.svelte` (integrated into Incorrect and NearMiss feedback panels). Verdict per module: `selected` / `applicable` / `eliminated`.
+The backend builds parse tree data (`ParseTreeView`) showing which convention modules were considered and their verdicts (`selected` / `applicable` / `eliminated`). This data is available in `TeachingDetail.parseTree` but is **not surfaced in practice feedback UI** — removed because users found "Decision path" (convention-module evaluation) unintuitive. The conditions and why-not sections already present the same information in user-friendly form.
 
 ## Off-Convention Drills
 

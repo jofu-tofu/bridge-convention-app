@@ -8,6 +8,75 @@
 
 import type { EncoderKind } from "../../../service";
 
+// ── Feedback variant coloring (incorrect red / near-miss amber) ──
+
+export type FeedbackVariant = "incorrect" | "near-miss";
+
+/**
+ * Complete literal Tailwind class strings for each variant.
+ * Keys are token-stem descriptions; values are full class strings.
+ * Tailwind JIT purges dynamic constructions — every string must appear as a literal.
+ */
+const VARIANT_TOKENS: Record<FeedbackVariant, Record<string, string>> = {
+  incorrect: {
+    emphasis: "text-fb-incorrect-emphasis",
+    "emphasis/50": "text-fb-incorrect-emphasis/50",
+    text: "text-fb-incorrect-text",
+    "text/30": "text-fb-incorrect-text/30",
+    "text/40": "text-fb-incorrect-text/40",
+    "text/50": "text-fb-incorrect-text/50",
+    "text/60": "text-fb-incorrect-text/60",
+    dim: "text-fb-incorrect-dim",
+    "dim/50": "text-fb-incorrect-dim/50",
+    "dim/60": "text-fb-incorrect-dim/60",
+    "dim/70": "text-fb-incorrect-dim/70",
+    "dim/80": "text-fb-incorrect-dim/80",
+    bright: "text-fb-incorrect-bright",
+    "hover:bright": "hover:text-fb-incorrect-bright",
+    "hover:dim": "hover:text-fb-incorrect-dim",
+    "hover:bg/50": "hover:bg-fb-incorrect-hover/50",
+    "hover:bg/40": "hover:bg-fb-incorrect-hover/40",
+    "border/15": "border-fb-incorrect/15",
+    "border/20": "border-fb-incorrect/20",
+    "border/30": "border-fb-incorrect/30",
+    "border/40": "border-fb-incorrect/40",
+    "surface/30": "bg-fb-incorrect-surface/30",
+    "surface/40": "bg-fb-incorrect-surface/40",
+    "surface/50": "bg-fb-incorrect-surface/50",
+  },
+  "near-miss": {
+    emphasis: "text-fb-near-miss-emphasis",
+    "emphasis/50": "text-fb-near-miss-emphasis/50",
+    text: "text-fb-near-miss-text",
+    "text/30": "text-fb-near-miss-text/30",
+    "text/40": "text-fb-near-miss-text/40",
+    "text/50": "text-fb-near-miss-text/50",
+    "text/60": "text-fb-near-miss-text/60",
+    dim: "text-fb-near-miss-dim",
+    "dim/50": "text-fb-near-miss-dim/50",
+    "dim/60": "text-fb-near-miss-dim/60",
+    "dim/70": "text-fb-near-miss-dim/70",
+    "dim/80": "text-fb-near-miss-dim/80",
+    bright: "text-fb-near-miss-bright",
+    "hover:bright": "hover:text-fb-near-miss-bright",
+    "hover:dim": "hover:text-fb-near-miss-dim",
+    "hover:bg/50": "hover:bg-fb-near-miss-hover/50",
+    "hover:bg/40": "hover:bg-fb-near-miss-hover/40",
+    "border/15": "border-fb-near-miss/15",
+    "border/20": "border-fb-near-miss/20",
+    "border/30": "border-fb-near-miss/30",
+    "border/40": "border-fb-near-miss/40",
+    "surface/30": "bg-fb-near-miss-surface/30",
+    "surface/40": "bg-fb-near-miss-surface/40",
+    "surface/50": "bg-fb-near-miss-surface/50",
+  },
+};
+
+/** Return the complete Tailwind class string for a variant + token key. */
+export function variantClass(variant: FeedbackVariant, key: string): string {
+  return VARIANT_TOKENS[variant][key] ?? "";
+}
+
 /** Human-readable ambiguity description. Returns null when score is 0 (clear-cut). */
 export function formatAmbiguity(score: number): string | null {
   if (score === 0) return null;
