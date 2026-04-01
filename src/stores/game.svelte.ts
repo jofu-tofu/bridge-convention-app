@@ -255,7 +255,7 @@ export function createGameStore(
     if (!desc.chainedEvent) return true; // "prompt" mode — stay at DECLARER_PROMPT
 
     if (desc.chainedEvent.type === "ACCEPT_PLAY") {
-      acceptPrompt();
+      await acceptPrompt();
       return activeHandle === handle;
     }
     if (desc.chainedEvent.type === "DECLINE_PLAY") {
@@ -394,45 +394,43 @@ export function createGameStore(
 
   // ── Play phase transitions ────────────────────────────────────
 
-  function acceptPlay(seatOverride?: Seat) {
+  async function acceptPlay(seatOverride?: Seat) {
     if (!contract || phase !== "DECLARER_PROMPT") return;
     if (!activeHandle) return;
     const seat = seatOverride ?? effectiveUserSeat ?? userSeat ?? Seat.South;
     effectiveUserSeat = seat;
     const handle = activeHandle;
 
-    void (async () => {
-      try {
-        // Accept prompt on service side (initializes play state + runs initial AI plays)
-        const result = await activeService.acceptPrompt(handle, "play", seat);
-        if (activeHandle !== handle) return;
+    try {
+      // Accept prompt on service side (initializes play state + runs initial AI plays)
+      const result = await activeService.acceptPrompt(handle, "play", seat);
+      if (activeHandle !== handle) return;
 
-        // Load viewport before transitioning phase so GameScreen has data to render
-        const playingVp = await activeService.getPlayingViewport(handle);
-        if (activeHandle !== handle) return;
+      // Load viewport before transitioning phase so GameScreen has data to render
+      const playingVp = await activeService.getPlayingViewport(handle);
+      if (activeHandle !== handle) return;
 
-        if (!transitionTo("PLAYING")) return;
-        playPhase.play.aborted = false;
-        playPhase.animatedTrickOverride = null;
-        playPhase.play.score = null;
-        playPhase.play.showingTrickResult = false;
-        playPhase.play.processing = false;
-        playPhase.play.log = [];
-        viewports.playing = playingVp;
+      if (!transitionTo("PLAYING")) return;
+      playPhase.play.aborted = false;
+      playPhase.animatedTrickOverride = null;
+      playPhase.play.score = null;
+      playPhase.play.showingTrickResult = false;
+      playPhase.play.processing = false;
+      playPhase.play.log = [];
+      viewports.playing = playingVp;
 
-        // Animate AI plays from the result
-        const aiPlays = result.aiPlays ?? [];
-        if (aiPlays.length > 0) {
-          const { ok } = await playPhase.animateAiPlays(handle, [...aiPlays], []);
-          if (!ok) return;
-        }
-
-        // Fetch play suggestions for the user's first turn
-        void playPhase.fetchPlaySuggestions(handle);
-      } catch (err) {
-        console.error('acceptPlay failed:', err);
+      // Animate AI plays from the result
+      const aiPlays = result.aiPlays ?? [];
+      if (aiPlays.length > 0) {
+        const { ok } = await playPhase.animateAiPlays(handle, [...aiPlays], []);
+        if (!ok) return;
       }
-    })();
+
+      // Fetch play suggestions for the user's first turn
+      void playPhase.fetchPlaySuggestions(handle);
+    } catch (err) {
+      console.error('acceptPlay failed:', err);
+    }
   }
 
   function declinePlay() {
@@ -461,9 +459,9 @@ export function createGameStore(
     if (!contract || phase !== "DECLARER_PROMPT") return;
     const mode = getPromptMode();
     if (mode === PromptMode.DeclarerSwap) {
-      acceptPlay(contract.declarer);
+      return acceptPlay(contract.declarer);
     } else {
-      acceptPlay();
+      return acceptPlay();
     }
   }
 
@@ -916,8 +914,8 @@ export function createGameStore(
       }
 
       if (targetPhase === "playing" && phase === "DECLARER_PROMPT") {
-        acceptPrompt();
-        return true;
+        await acceptPrompt();
+        return (phase as GamePhase) === "PLAYING";
       }
 
       if (targetPhase === "review") {
