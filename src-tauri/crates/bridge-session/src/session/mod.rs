@@ -8,6 +8,7 @@ pub mod session_state;
 pub mod drill_session;
 pub mod config_factory;
 pub mod start_drill;
+pub mod practice_focus;
 pub mod bidding_controller;
 pub mod play_controller;
 pub mod bid_feedback_builder;

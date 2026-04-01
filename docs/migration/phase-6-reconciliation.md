@@ -20,23 +20,13 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 **Fixed:** `convention_adapter.rs` now wires `truth_set_calls` and `acceptable_set_calls` from `PipelineResult` into `BidResult`. The grading logic in `bid_feedback_builder.rs` already handled all 5 grades — it just needed the data. 5 previously-ignored RED tests now pass. Note: `Acceptable` grade won't fire in practice until item 3.7 (acceptable_set == truth_set in pipeline).
 
-### 1.2 No teaching detail in bid feedback (P1)
+### 1.2 ~~No teaching detail in bid feedback~~ (P1) ✅ COMPLETE
 
-**TS:** `BidSubmitResult` included `teaching: TeachingDetail` with explanation nodes, why-not entries, convention contributions, parse tree, and observation history. `BidFeedbackDTO` included `teachingResolution`, `practicalRecommendation`, `teachingProjection`, `practicalScoreBreakdown`.
+**Fixed:** `BidSubmitResult` now includes `teaching: Option<TeachingDetailDTO>` with full pipeline data: primary explanation nodes, why-not entries, convention contributions, meaning views, call views, parse tree, observation history, practical recommendation, acceptable bids, near-miss calls, ambiguity score, grading type, and evaluation completeness. `feedback_assembler.rs` transforms `StrategyEvaluation` (stashed in `ConventionStrategyAdapter` via `RwLock`) into the DTO. Parse tree is now attached to `TeachingProjection` in `protocol_adapter.rs::build_evaluation()`.
 
-**Rust:** `BidSubmitResult` has no `teaching` field. `BidFeedbackDTO` has only `grade`, `user_call`, `expected_call`, `explanation`.
+### 1.3 ~~No viewport feedback builder~~ (P1) ✅ COMPLETE
 
-**Files:** `bridge-service/src/response_types.rs`, `bridge-session/src/session/bid_feedback_builder.rs`
-
-**Fix:** Add `TeachingDetail` to `BidSubmitResult`. Build it from `StrategyEvaluation` data already available in the pipeline result.
-
-### 1.3 No viewport feedback builder (P1)
-
-**TS:** `buildViewportFeedback()` converted engine feedback into viewport-safe `ViewportBidFeedback` with conditions, acceptable alternatives, near misses, partner hand space, convention contributions.
-
-**Rust:** No equivalent function or type.
-
-**Fix:** Port `buildViewportFeedback()` to bridge-service.
+**Fixed:** `BidSubmitResult.feedback` is now `Option<ViewportBidFeedbackDTO>` (was `Option<BidFeedbackDTO>`). `feedback_assembler::assemble_viewport_feedback()` projects conditions, acceptable alternatives, near misses, partner hand space, convention contributions, correct bid label/explanation from the stashed `StrategyEvaluation`. Falls back to basic explanation when no evaluation is available.
 
 ---
 
@@ -62,15 +52,9 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 **Fixed:** During observation log replay in `convention_adapter.rs`, `evaluate_facts()` now receives `RelationalFactContext` derived from the previous step's `state_after.fit_agreed` (which is populated by 3.1's kernel advancement). The final user-turn evaluation already had relational context from `derive_fit_from_log`; this fix ensures replay steps also get it, so fact evaluation during pipeline replay is correct for fit-dependent facts.
 
-### 3.3 Practical scoring algorithm completely different (P1)
+### 3.3 ~~Practical scoring algorithm completely different~~ (P1) ✅ COMPLETE
 
-**TS:** Weighted multi-factor model: `fit * 2.0 + hcp * 1.5 + conventionDistance * -4.0 + misunderstandingRisk * -3.0`. Used partner's inferred HCP and suit length. Level thresholds: combined partnership points.
-
-**Rust:** Band-based base score + specificity bonus + single-hand HCP range check. No fit scoring, no partner beliefs, no convention distance, no risk.
-
-**Files:** `bridge-session/src/heuristics/practical_scorer.rs` (Rust), was `src/conventions/adapter/practical-scorer.ts` (TS)
-
-**Fix:** Port the TS weighted scoring model or at minimum add partner-belief integration and convention distance penalty.
+**Fixed:** `score_candidate_practically()` now accepts `Option<&PartnerContext>` with partner's min HCP and suit lengths. Partnership HCP scoring uses `(hcp + partner_min_hcp) - PARTNERSHIP_LEVEL_TABLE[level]` weighted at 1.5. Fit scoring for suit bids uses `(own_suit_len + partner_min_suit_len)` weighted at 2.0. The `PartnerContext` parameter is threaded through `ConventionStrategy::suggest()` → `build_evaluation()` → `build_practical_recommendation()`. Session-level partner belief integration (passing actual `PublicBeliefs` from inference coordinator) is deferred to trait boundary refactor — currently passes `None` through `suggest_bid()` (BiddingStrategy trait).
 
 ### 3.5 Semantic class alias deduplication missing (P1)
 
@@ -256,25 +240,13 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 ## 7. Session Lifecycle & Drill Setup
 
-### 7.1 Practice focus always defaults (P1)
+### 7.1 ~~Practice focus always defaults~~ (P1) ✅ COMPLETE
 
-**TS:** `derivePracticeFocus()` computed `targetModuleIds`, `prerequisiteModuleIds`, `followUpModuleIds`, `backgroundModuleIds` from member IDs and target module.
+**Fixed:** `derive_practice_focus()` in `practice_focus.rs` computes `target_module_ids`, `prerequisite_module_ids`, `follow_up_module_ids`, `background_module_ids` from bundle member ordering and target module. `StartDrillOptions` now accepts `target_module_id`, `bundle_member_ids`, and `bundle_deal_constraints`. When `target_module_id` is set, `start_drill()` calls `derive_practice_focus()` and populates `DrillBundle.practice_focus`.
 
-**Rust:** `start_drill.rs` always uses `PracticeFocus::default()` (empty lists).
+### 7.2 ~~Initial auction always empty~~ (P1) ✅ COMPLETE
 
-**Impact:** Module-targeted practice doesn't narrow focus. Bid context resolution can't distinguish target from prerequisite bids.
-
-**Fix:** Port `derivePracticeFocus()` from TS.
-
-### 7.2 Initial auction always empty (P1)
-
-**TS:** `start_drill()` derived initial auction from `convention.defaultAuction()`.
-
-**Rust:** `initial_auction` is always `None`.
-
-**Impact:** Continuation drills don't start at the right auction position.
-
-**Fix:** Compute initial auction from the convention config's default auction.
+**Fixed:** `derive_initial_auction()` in `practice_focus.rs` uses hardcoded bundle-family recognition rules: balanced 15–17 HCP → 1NT, 5+ hearts → 1H, 5+ spades → 1S. Returns `None` for opener role or unrecognized constraints. Integrated into `start_drill()` when `target_module_id` is set.
 
 ### 7.3 No bid context resolution (P2)
 

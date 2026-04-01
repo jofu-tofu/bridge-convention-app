@@ -16,6 +16,8 @@ use crate::types::{
     PracticeRole, VulnerabilityDistribution,
 };
 
+use super::practice_focus::{derive_initial_auction, derive_practice_focus};
+
 use super::config_factory::DrillConfig;
 
 // ── DrillBundle ─────────────────────────────────────────────────────
@@ -137,6 +139,9 @@ pub struct StartDrillOptions {
     pub opponent_mode: OpponentMode,
     pub tuning: DrillTuning,
     pub seed: Option<u64>,
+    pub target_module_id: Option<String>,
+    pub bundle_member_ids: Option<Vec<String>>,
+    pub bundle_deal_constraints: Option<DealConstraints>,
 }
 
 impl Default for StartDrillOptions {
@@ -148,6 +153,9 @@ impl Default for StartDrillOptions {
             opponent_mode: OpponentMode::Natural,
             tuning: DrillTuning::default(),
             seed: None,
+            target_module_id: None,
+            bundle_member_ids: None,
+            bundle_deal_constraints: None,
         }
     }
 }
@@ -291,15 +299,34 @@ pub fn start_drill(
     };
     let play_preference = options.play_preference.unwrap_or(default_play_preference);
 
+    // ── Practice focus + initial auction ────────────────────────
+    let base_module_ids: &[&str] = &["natural-bids", "stayman", "jacoby-transfers", "blackwood"];
+
+    let (practice_focus, initial_auction) = if let Some(ref target_id) = options.target_module_id {
+        let member_ids = options.bundle_member_ids.as_deref().unwrap_or(&[]);
+        let focus = derive_practice_focus(member_ids, target_id, base_module_ids);
+
+        let dealer = deal_result.deal.dealer;
+        let auction = derive_initial_auction(
+            resolved_role,
+            dealer,
+            options.bundle_deal_constraints.as_ref(),
+        );
+
+        (focus, auction)
+    } else {
+        (PracticeFocus::default(), None)
+    };
+
     Ok(DrillBundle {
         deal: deal_result.deal,
         config,
-        initial_auction: None,
+        initial_auction,
         ns_inference_engine,
         ew_inference_engine,
         is_off_convention,
         practice_mode,
-        practice_focus: PracticeFocus::default(),
+        practice_focus,
         play_preference,
         resolved_role,
     })

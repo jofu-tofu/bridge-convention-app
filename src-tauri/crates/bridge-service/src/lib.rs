@@ -6,6 +6,7 @@
 pub mod convention_adapter;
 pub mod error;
 pub mod evaluation;
+pub mod feedback_assembler;
 pub mod port;
 pub mod request_types;
 pub mod response_types;

@@ -11,7 +11,7 @@ use crate::types::system_config::SystemConfig;
 use crate::adapter::strategy_evaluation::{
     MachineDebugSnapshot, DiagnosticEntry, StrategyEvaluation,
 };
-use crate::adapter::practical_scorer::build_practical_recommendation;
+use crate::adapter::practical_scorer::{build_practical_recommendation, PartnerContext};
 use crate::adapter::tree_evaluation::ResolvedCandidateDTO;
 use crate::fact_dsl::types::EvaluatedFacts;
 use crate::pipeline::observation::committed_step::{AuctionContext, CommittedStep, initial_negotiation};
@@ -64,8 +64,9 @@ impl ConventionStrategy {
         facts: &EvaluatedFacts,
         is_legal: &dyn Fn(&Call) -> bool,
         inherited_dimensions: &[ConstraintDimension],
+        partner_context: Option<&PartnerContext>,
     ) -> (Option<BidResult>, StrategyEvaluation) {
-        self.suggest_with_hand(context, next_seat, facts, is_legal, inherited_dimensions, None, None)
+        self.suggest_with_hand(context, next_seat, facts, is_legal, inherited_dimensions, None, None, partner_context)
     }
 
     /// Suggest using pre-collected surfaces. Skips the FSM replay that
@@ -81,6 +82,7 @@ impl ConventionStrategy {
         inherited_dimensions: &[ConstraintDimension],
         hand: Option<&Hand>,
         system_config: Option<&SystemConfig>,
+        partner_context: Option<&PartnerContext>,
     ) -> (Option<BidResult>, StrategyEvaluation) {
         let pipeline_result = run_pipeline(PipelineInput {
             surfaces,
@@ -91,7 +93,7 @@ impl ConventionStrategy {
             system_config,
         });
 
-        self.build_evaluation(context, facts, pipeline_result, surface_results)
+        self.build_evaluation(context, facts, pipeline_result, surface_results, partner_context)
     }
 
     /// Suggest with an optional hand for per-surface relational fact evaluation.
@@ -104,6 +106,7 @@ impl ConventionStrategy {
         inherited_dimensions: &[ConstraintDimension],
         hand: Option<&Hand>,
         system_config: Option<&SystemConfig>,
+        partner_context: Option<&PartnerContext>,
     ) -> (Option<BidResult>, StrategyEvaluation) {
         // Step 1: Collect matching surfaces via observation layer
         let surface_results = collect_matching_claims(
@@ -123,7 +126,7 @@ impl ConventionStrategy {
             system_config,
         });
 
-        self.build_evaluation(context, facts, pipeline_result, &surface_results)
+        self.build_evaluation(context, facts, pipeline_result, &surface_results, partner_context)
     }
 
     /// Assemble bid result and evaluation from a pipeline result.
@@ -133,8 +136,11 @@ impl ConventionStrategy {
         facts: &EvaluatedFacts,
         pipeline_result: PipelineResult,
         surface_results: &[ModuleSurfaceResult],
+        partner_context: Option<&PartnerContext>,
     ) -> (Option<BidResult>, StrategyEvaluation) {
-        let teaching_projection = project_teaching(&pipeline_result);
+        let mut teaching_projection = project_teaching(&pipeline_result);
+        teaching_projection.parse_tree =
+            Some(crate::teaching::parse_tree_builder::build_parse_tree(&pipeline_result));
 
         let hcp = facts
             .facts
@@ -142,7 +148,7 @@ impl ConventionStrategy {
             .map(|fv| fv.value.as_number())
             .unwrap_or(0.0);
         let practical_recommendation =
-            build_practical_recommendation(&pipeline_result.truth_set, hcp);
+            build_practical_recommendation(&pipeline_result.truth_set, hcp, partner_context);
 
         let machine_snapshot = build_machine_snapshot(surface_results);
 

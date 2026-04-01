@@ -351,10 +351,30 @@ impl ServicePort for ServicePortImpl {
 
         let grade = result.feedback.as_ref().map(|f| f.grade);
 
+        // Retrieve stashed evaluation for rich feedback assembly
+        let evaluation = Self::get_convention_adapter(session)
+            .and_then(|adapter| adapter.last_evaluation());
+
+        let (viewport_feedback, teaching) = match &result.feedback {
+            Some(fb) => {
+                let vf = crate::feedback_assembler::assemble_viewport_feedback(
+                    fb,
+                    evaluation.as_ref(),
+                );
+                let td = crate::feedback_assembler::assemble_teaching_detail(
+                    fb,
+                    evaluation.as_ref(),
+                );
+                (Some(vf), td)
+            }
+            None => (None, None),
+        };
+
         Ok(BidSubmitResult {
             accepted: result.accepted,
             grade,
-            feedback: result.feedback,
+            feedback: viewport_feedback,
+            teaching,
             ai_bids: result.ai_bids.into_iter().map(AiBidEntryDTO::from).collect(),
             next_viewport,
             phase_transition,

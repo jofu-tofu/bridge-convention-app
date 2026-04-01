@@ -1,7 +1,8 @@
 //! Service-layer response DTOs that wrap bridge-session viewport types
 //! with additional metadata for the UI/WASM boundary.
 
-use bridge_session::session::{AiBidEntry, AiPlayEntry, BidFeedbackDTO, BidGrade, BidHistoryEntryView, BiddingViewport};
+use bridge_engine::types::{Call, Seat};
+use bridge_session::session::{AiBidEntry, AiPlayEntry, BidGrade, BidHistoryEntryView, BiddingViewport};
 use bridge_session::types::{GamePhase, PlayPreference, PracticeMode};
 use serde::{Deserialize, Serialize};
 
@@ -28,7 +29,10 @@ pub struct DrillStartResult {
 pub struct BidSubmitResult {
     pub accepted: bool,
     pub grade: Option<BidGrade>,
-    pub feedback: Option<BidFeedbackDTO>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub feedback: Option<ViewportBidFeedbackDTO>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub teaching: Option<TeachingDetailDTO>,
     pub ai_bids: Vec<AiBidEntryDTO>,
     pub next_viewport: Option<BiddingViewport>,
     pub phase_transition: Option<PhaseTransition>,
@@ -121,6 +125,279 @@ pub struct AiPlayEntryDTO {
     pub card: bridge_engine::types::Card,
     pub reason: String,
     pub trick_complete: bool,
+}
+
+// ── Viewport bid feedback DTO ─────────────────────────────────────
+
+/// Viewport-safe bid feedback shown to the player after bidding.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ViewportBidFeedbackDTO {
+    pub grade: BidGrade,
+    pub user_call: Call,
+    pub user_call_display: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub correct_call: Option<Call>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub correct_call_display: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub correct_bid_label: Option<TeachingLabelDTO>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub correct_bid_explanation: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conditions: Option<Vec<ConditionViewDTO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub acceptable_alternatives: Option<Vec<AlternativeViewDTO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub near_misses: Option<Vec<NearMissViewDTO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub partner_hand_space: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conventions_applied: Option<Vec<ConventionViewDTO>>,
+    pub requires_retry: bool,
+}
+
+/// Teaching label DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeachingLabelDTO {
+    pub name: String,
+    pub summary: String,
+}
+
+/// Condition view DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConditionViewDTO {
+    pub description: String,
+    pub passed: bool,
+}
+
+/// Alternative view DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AlternativeViewDTO {
+    pub call: Call,
+    pub call_display: String,
+    pub label: String,
+    pub reason: String,
+    pub full_credit: bool,
+}
+
+/// Near-miss view DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NearMissViewDTO {
+    pub call: Call,
+    pub call_display: String,
+    pub reason: String,
+}
+
+/// Convention view DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConventionViewDTO {
+    pub module_id: String,
+    pub role: String,
+}
+
+// ── Teaching detail DTO ──────────────────────────────────────────
+
+/// Post-bid teaching data derived from the evaluation oracle.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeachingDetailDTO {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hand_summary: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fallback_explanation: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary_explanation: Option<Vec<ServiceExplanationNodeDTO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub why_not: Option<Vec<ServiceWhyNotEntryDTO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conventions_applied: Option<Vec<ServiceConventionContributionDTO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub meaning_views: Option<Vec<ServiceMeaningViewDTO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub call_views: Option<Vec<ServiceCallProjectionDTO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub partner_summary: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub archetypes: Option<Vec<ArchetypeDTO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub encoder_kind: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub practical_recommendation: Option<PracticalRecDTO>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary_bid: Option<Call>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub acceptable_bids: Option<Vec<AcceptableBidDTO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub near_miss_calls: Option<Vec<NearMissCallDTO>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ambiguity_score: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub grading_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub practical_score_breakdown: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evaluation_exhaustive: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fallback_reached: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parse_tree: Option<ServiceParseTreeViewDTO>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub observation_history: Option<Vec<ObservationStepViewDTO>>,
+}
+
+// ── Supporting DTO types ─────────────────────────────────────────
+
+/// Explanation node DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceExplanationNodeDTO {
+    pub kind: String,
+    pub content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub passed: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub explanation_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub template_key: Option<String>,
+}
+
+/// Why-not entry DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceWhyNotEntryDTO {
+    pub call: Call,
+    pub grade: String,
+    pub explanation: Vec<ServiceExplanationNodeDTO>,
+    pub elimination_stage: String,
+}
+
+/// Convention contribution DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceConventionContributionDTO {
+    pub module_id: String,
+    pub role: String,
+    pub meanings_proposed: Vec<String>,
+}
+
+/// Meaning view DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceMeaningViewDTO {
+    pub meaning_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub semantic_class_id: Option<String>,
+    pub display_label: String,
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub elimination_reason: Option<String>,
+    pub supporting_evidence: Vec<serde_json::Value>,
+}
+
+/// Call projection DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceCallProjectionDTO {
+    pub call: Call,
+    pub status: String,
+    pub supporting_meanings: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary_meaning: Option<String>,
+    pub projection_kind: String,
+}
+
+/// Parse tree view DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceParseTreeViewDTO {
+    pub modules: Vec<ServiceParseTreeModuleNodeDTO>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub selected_path: Option<serde_json::Value>,
+}
+
+/// Parse tree module node DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceParseTreeModuleNodeDTO {
+    pub module_id: String,
+    pub display_label: String,
+    pub verdict: String,
+    pub conditions: Vec<serde_json::Value>,
+    pub meanings: Vec<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub elimination_reason: Option<String>,
+}
+
+/// Observation step view DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObservationStepViewDTO {
+    pub actor: Seat,
+    pub call: Call,
+    pub observations: Vec<ObservationViewDTO>,
+    pub kernel: KernelViewDTO,
+    pub status: String,
+}
+
+/// Observation view DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObservationViewDTO {
+    pub act: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+}
+
+/// Kernel view DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KernelViewDTO {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fit_agreed: Option<serde_json::Value>,
+    pub forcing: String,
+    pub captain: String,
+    pub competition: serde_json::Value,
+}
+
+/// Archetype DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchetypeDTO {
+    pub label: String,
+    pub hcp_range: serde_json::Value,
+    pub shape_pattern: String,
+}
+
+/// Practical recommendation DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PracticalRecDTO {
+    pub top_candidate_call: Call,
+    pub rationale: String,
+}
+
+/// Acceptable bid DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AcceptableBidDTO {
+    pub call: Call,
+    pub meaning: String,
+    pub reason: String,
+    pub full_credit: bool,
+}
+
+/// Near-miss call DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NearMissCallDTO {
+    pub call: Call,
+    pub reason: String,
 }
 
 impl From<AiPlayEntry> for AiPlayEntryDTO {

@@ -4,6 +4,7 @@
 //! session bidding controller (bridge-session) for bid grading and AI bidding.
 
 use std::collections::HashMap;
+use std::sync::RwLock;
 
 use bridge_conventions::adapter::protocol_adapter::ConventionStrategy;
 use bridge_conventions::adapter::strategy_evaluation::StrategyEvaluation;
@@ -41,6 +42,12 @@ pub struct ConventionStrategyAdapter {
     modules: Vec<ConventionModule>,
     fact_definitions: Vec<FactDefinition>,
     system_config: Option<SystemConfig>,
+    // INVARIANT: last_evaluation is read via as_any() downcast in
+    // service_impl.rs::get_convention_adapter(). Safety depends on each seat
+    // having its own adapter instance — sharing adapters across seats would
+    // break this. The stash is cloned (not taken) so debug snapshot reads
+    // remain valid.
+    last_evaluation: RwLock<Option<StrategyEvaluation>>,
 }
 
 impl ConventionStrategyAdapter {
@@ -60,6 +67,7 @@ impl ConventionStrategyAdapter {
             modules,
             fact_definitions,
             system_config,
+            last_evaluation: RwLock::new(None),
         }
     }
 
@@ -288,6 +296,7 @@ impl ConventionStrategyAdapter {
             &[],
             Some(&ctx.hand),
             self.system_config.as_ref(),
+            None, // partner_context — populated by session layer when available
         )
     }
 
@@ -518,6 +527,14 @@ impl ConventionStrategyAdapter {
     }
 }
 
+impl ConventionStrategyAdapter {
+    /// Retrieve the last stashed evaluation (cloned, not taken).
+    /// Returns None if no evaluation has been stashed yet.
+    pub fn last_evaluation(&self) -> Option<StrategyEvaluation> {
+        self.last_evaluation.read().ok().and_then(|guard| guard.clone())
+    }
+}
+
 impl BiddingStrategy for ConventionStrategyAdapter {
     fn id(&self) -> &str {
         "convention-adapter"
@@ -530,6 +547,12 @@ impl BiddingStrategy for ConventionStrategyAdapter {
     fn suggest_bid(&self, ctx: &BiddingContext) -> Option<BidResult> {
         // BiddingStrategy doesn't have access to all hands — use simple path
         let (convention_bid, evaluation) = self.run_pipeline(ctx, None);
+
+        // Stash evaluation for retrieval via as_any() downcast
+        if let Ok(mut guard) = self.last_evaluation.write() {
+            *guard = Some(evaluation.clone());
+        }
+
         convention_bid.map(|br| {
             let (truth_set_calls, acceptable_set_calls) =
                 Self::extract_alternative_calls(&evaluation, &br.call);
