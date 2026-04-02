@@ -82,15 +82,6 @@ function matchPattern(
   return true;
 }
 
-/** Prefix-match: auction entries must start with exactly these calls (auction may be longer). */
-export function auctionMatchesPrefix(
-  auction: Auction,
-  pattern: readonly string[],
-): boolean {
-  if (auction.entries.length < pattern.length) return false;
-  return matchPattern(auction, pattern);
-}
-
 /** Exact-match: auction entries must have exactly the same calls as pattern (same length). @internal */
 export function auctionMatchesExact(
   auction: Auction,

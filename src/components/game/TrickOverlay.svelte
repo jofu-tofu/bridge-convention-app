@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Trick, Contract, PlayRecommendation } from "../../service";
+  import type { Trick, PlayRecommendation } from "../../service";
   import { Seat } from "../../service";
   import { viewSeat } from "../shared/seat-mapping";
   import Card from "../shared/Card.svelte";
@@ -7,7 +7,6 @@
   interface Props {
     trick: Trick;
     recommendation: PlayRecommendation | undefined;
-    contract: Contract;
     rotated?: boolean;
     /** When set, only render this many plays instead of all 4. */
     visiblePlays?: number;
@@ -16,7 +15,6 @@
   let {
     trick,
     recommendation,
-    contract: _contract,
     rotated = false,
     visiblePlays,
   }: Props = $props();

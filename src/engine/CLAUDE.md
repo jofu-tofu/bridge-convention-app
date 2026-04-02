@@ -39,7 +39,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `constraint-utils.ts` | `cleanConstraints()` / `cleanSeatConstraint()` — strips non-serializable fields          |
 | `dds-wasm.ts`         | DDS PBN conversion, struct pack/unpack, `solveFromPBN()` (PBN-based table solve), `solveWithModule()` (Deal-based wrapper), `solveBoardWithModule()` (per-card) — pure logic, no DOM/Worker. Exports `handsToPBN()`, `cardsToPBNHand()`, DDS index helpers (`trumpToDdsIndex`, `seatToDdsIndex`, `rankToDdsValue`), and index mapping constants (`DDS_STRAIN_MAP`, `DDS_SEAT_MAP`, `DDS_SUIT_MAP_PLAY`, `DDS_RANK_MAP`). |
 | `dds-worker.ts`       | Classic Web Worker — loads DDS WASM via `importScripts`, handles `CalcAllTablesPBN` (Deal or PBN) and `SolveBoardPBN` requests |
-| `dds-client.ts`       | Main thread API — `initDDS()`, `isDDSAvailable()`, `solveDealWasm()`, `solveDealFromPBN()`, `solveBoardWasm()` via Worker messages |
+| `dds-client.ts`       | Main thread API — `initDDS()`, `isDDSAvailable()`, `solveDealFromPBN()`, `solveBoardWasm()` via Worker messages |
 | `mc-dds-play.ts`      | MC+DDS play: deal sampling + batched DDS evaluation for Expert/WorldClass profiles. Pure functions, no service/store deps. |
 
 ## Gotchas

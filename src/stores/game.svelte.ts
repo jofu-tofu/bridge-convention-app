@@ -17,7 +17,7 @@ import type {
 import type { BidResult, BidHistoryEntry } from "../service";
 import type { ServicePublicBeliefs } from "../service";
 import type { StrategyEvaluation } from "../service/debug-types";
-import type { ServicePublicBeliefState, ServiceInferenceSnapshot } from "../service";
+import type { ServicePublicBeliefState } from "../service";
 import { partnerSeat } from "../service";
 
 import type {
@@ -88,16 +88,6 @@ export interface PlayLogEntry {
   readonly trickIndex: number;
 }
 
-/** Determine who controls a seat: 'user' or 'ai'. */
-export function seatController(
-  seat: Seat,
-  declarer: Seat,
-  userSeat: Seat,
-): "user" | "ai" {
-  if (seat === userSeat) return "user";
-  if (seat === partnerSeat(declarer) && declarer === userSeat) return "user";
-  return "ai";
-}
 
 
 // ── Internal constants ──────────────────────────────────────────────
@@ -648,14 +638,9 @@ export function createGameStore(
     get deal() { return deal; },
     get phase() { return phase; },
     get contract(): Contract | null { return contract; },
-    get effectiveUserSeat() { return effectiveUserSeat; },
     get practiceMode() { return practiceMode; },
-    get playPreference() { return playPreference; },
     get playUserSeat(): Seat {
       return effectiveUserSeat ?? userSeat ?? Seat.South;
-    },
-    get rotated(): boolean {
-      return effectiveUserSeat === Seat.North;
     },
 
     // Bidding state — always viewport-derived
@@ -818,15 +803,6 @@ export function createGameStore(
     get playLog() { return playPhase.play.log; },
     get playSuggestions() { return playPhase.play.suggestions; },
     get playInferences() { return inference.playInferences; },
-    get inferenceTimeline(): readonly ServiceInferenceSnapshot[] {
-      if (!activeHandle) return [];
-      // Inference timeline is fetched from service when needed — return empty for now
-      return [];
-    },
-    get ewInferenceTimeline(): readonly ServiceInferenceSnapshot[] {
-      if (!activeHandle) return [];
-      return [];
-    },
 
     setConventionName(name: string) { conventionName = name; },
 

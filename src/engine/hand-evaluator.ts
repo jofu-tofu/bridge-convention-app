@@ -48,11 +48,6 @@ export function getSuitLength(hand: Hand): SuitLength {
   return countSuits(hand.cards);
 }
 
-/** Count cards of a specific suit in a hand. */
-export function suitLengthOf(hand: Hand, suit: Suit): number {
-  return hand.cards.filter((c) => c.suit === suit).length;
-}
-
 export function isBalanced(shape: SuitLength): boolean {
   // Sorting network for 4 elements — zero allocation, 5 conditional swaps
   let a = shape[0],

@@ -18,11 +18,3 @@ export function callKey(call: Call): string {
   return "XX";
 }
 
-/** Format a Call as a human-readable string for evidence/log output (e.g., "1NT", "Pass", "Double").
- *  Differs from callKey: spells out "Pass"/"Double"/"Redouble" instead of "P"/"X"/"XX". */
-export function formatCallForEvidence(call: Call): string {
-  if (call.type !== "bid") {
-    return call.type.charAt(0).toUpperCase() + call.type.slice(1);
-  }
-  return `${call.level}${call.strain}`;
-}

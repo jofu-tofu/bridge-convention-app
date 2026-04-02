@@ -1,9 +1,9 @@
 /**
  * DDS client — main thread API for the DDS Web Worker.
- * Provides initDDS(), isDDSAvailable(), and solveDealWasm().
+ * Provides initDDS(), isDDSAvailable(), solveDealFromPBN(), and solveBoardWasm().
  */
 
-import type { Deal, DDSolution } from "./types";
+import type { DDSolution } from "./types";
 import type { SolveBoardResult } from "./dds-wasm";
 
 /** Messages received from the DDS Web Worker. */
@@ -86,26 +86,6 @@ export function solveDealFromPBN(pbn: string): Promise<DDSolution> {
   return new Promise<DDSolution>((resolve, reject) => {
     pending.set(id, { resolve: resolve as (v: never) => void, reject });
     worker!.postMessage({ id, pbn });
-  });
-}
-
-/** Solve a deal via the DDS Web Worker. Rejects if not initialized. */
-export function solveDealWasm(deal: Deal): Promise<DDSolution> {
-  if (!worker || !ready) {
-    return Promise.reject(new Error("DDS not ready"));
-  }
-  const id = nextId++;
-  return new Promise<DDSolution>((resolve, reject) => {
-    pending.set(id, { resolve: resolve as (v: never) => void, reject });
-    // Defensive: ensure plain serializable data for postMessage.
-    // Svelte 5 $state proxies (or other non-cloneable wrappers) will
-    // cause "could not be cloned" errors if passed directly.
-    try {
-      worker!.postMessage({ id, deal });
-    } catch {
-      // Fallback: JSON round-trip strips any non-serializable wrappers
-      worker!.postMessage({ id, deal: JSON.parse(JSON.stringify(deal)) as Deal });
-    }
   });
 }
 

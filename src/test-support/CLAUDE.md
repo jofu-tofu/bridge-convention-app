@@ -6,15 +6,13 @@ Shared test factories used across module boundaries (stores, components).
 
 | File             | Exports                                                                                          |
 | ---------------- | ------------------------------------------------------------------------------------------------ |
-| `fixtures.ts`    | `makeCard`, `makeSimpleTestDeal`, `makeContract`, `flushWithFakeTimers` — pure engine-type factories |
-| `wasm-test-helpers.ts` | `initTestService()`, `createTestSession(conventionId, opts?)` — WASM service test setup |
+| `fixtures.ts`    | `makeSimpleTestDeal` — pure engine-type factory |
 | `tiers.ts`       | `refDescribe`, `policyDescribe`, `PolicyRationale`, `TestTier`, `TierEntry`, `getTierRegistry`, `clearTierRegistry` |
 | `vitest-setup.ts` | Vitest global setup (referenced by vitest.config.ts) |
 
 ## Conventions
 
 - **Fixtures:** Create minimal valid domain objects. No test-specific logic.
-- **WASM test helpers:** Replace the deleted `createStubEngine` + `createLocalService` pattern. Tests that need a real service use `createTestSession`.
 - **Dependency rule:** Imports from `engine/`, `service/` only — never from `components/`, `stores/`.
 
 ## Gotchas

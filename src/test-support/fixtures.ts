@@ -4,12 +4,10 @@
  * Provides common factory functions to reduce duplication across test files.
  * Each factory creates minimal valid objects for testing.
  */
-import { vi } from "vitest";
-import { tick } from "svelte";
-import { Seat, BidSuit, Suit, Rank, Vulnerability } from "../engine/types";
-import type { Card, Contract, Deal } from "../engine/types";
+import { Seat, Suit, Rank, Vulnerability } from "../engine/types";
+import type { Card, Deal } from "../engine/types";
 
-export function makeCard(suit: Suit, rank: Rank): Card {
+function makeCard(suit: Suit, rank: Rank): Card {
   return { suit, rank };
 }
 
@@ -35,26 +33,4 @@ export function makeSimpleTestDeal(dealer: Seat = Seat.North): Deal {
     dealer,
     vulnerability: Vulnerability.None,
   };
-}
-
-/** Create a 1NT contract with given declarer. */
-export function makeContract(declarer: Seat): Contract {
-  return {
-    level: 1,
-    strain: BidSuit.NoTrump,
-    doubled: false,
-    redoubled: false,
-    declarer,
-  };
-}
-
-/**
- * Flush all pending async work when using fake timers.
- * Runs all timers repeatedly to drain nested setTimeout chains.
- */
-export async function flushWithFakeTimers() {
-  for (let i = 0; i < 20; i++) {
-    await vi.runAllTimersAsync();
-  }
-  await tick();
 }

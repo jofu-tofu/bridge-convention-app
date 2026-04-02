@@ -79,7 +79,6 @@ export function createAppStore() {
   let devDealCount = $state(0);
   let debugPanelOpen = $state(false);
   let engineStatus = $state<string | null>(null);
-  let engineError = $state<string | null>(null);
   let learningConvention = $state<ConventionInfo | null>(null);
   let learningModuleId = $state<string | null>(null);
   let learningBundleFilter = $state<string | null>(null);
@@ -254,14 +253,6 @@ export function createAppStore() {
 
     setEngineStatus(status: string) {
       engineStatus = status;
-    },
-
-    get engineError() {
-      return engineError;
-    },
-
-    setEngineError(msg: string | null) {
-      engineError = msg;
     },
 
     get autoplay() {

@@ -438,7 +438,6 @@
               <TrickOverlay
                 trick={selectedTrick}
                 recommendation={selectedTrickRec}
-                contract={viewport.contract}
                 visiblePlays={overlayVisiblePlays}
               />
             {:else}
