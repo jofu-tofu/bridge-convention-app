@@ -347,6 +347,8 @@ fn get_ai_bid(
 fn handle_auction_complete(state: &mut SessionState) {
     state.capture_play_inferences();
 
+    state.contract = get_contract(&state.auction).ok().flatten();
+
     let contract = get_contract(&state.auction).ok().flatten();
     state.contract = contract.clone();
 

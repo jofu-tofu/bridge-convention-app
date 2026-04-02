@@ -209,10 +209,10 @@ pub fn build_bundle_flow_tree(
 
         let mut r1_entries: Vec<(usize, SourceIntent)> = Vec::new();
         let mut seen_ck: HashSet<String> = HashSet::new();
+        let empty_transitions = Vec::new();
         let transitions = module_transitions
             .get(&module.module_id)
-            .cloned()
-            .unwrap_or_default();
+            .unwrap_or(&empty_transitions);
         let first_active_trans = transitions
             .iter()
             .find(|t| t.from.contains(&module.local.initial) && t.to != "inactive");
@@ -297,11 +297,12 @@ pub fn build_bundle_flow_tree(
         &mut counter,
     );
 
+    let max_depth = max_depth_of(&root_node);
     Some(BundleFlowTreeViewport {
         bundle_id: input.id.clone(),
         bundle_name: input.name.clone(),
-        root: to_flow_tree_node(&root_node),
+        root: to_flow_tree_node(root_node),
         node_count: counter.value,
-        max_depth: max_depth_of(&root_node),
+        max_depth,
     })
 }

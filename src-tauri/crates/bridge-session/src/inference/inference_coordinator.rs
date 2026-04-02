@@ -131,7 +131,7 @@ impl InferenceCoordinator {
             auction_before,
         );
 
-        self.belief_state = apply_annotation(&self.belief_state, &annotation);
+        apply_annotation(&mut self.belief_state, annotation);
         &self.belief_state
     }
 

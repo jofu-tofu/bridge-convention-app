@@ -118,7 +118,7 @@ mod tests {
     #[test]
     fn opening_lead_ak_in_suit_contract() {
         let h = OpeningLeadHeuristic;
-        let hand = make_hand(vec![
+        let cards = vec![
             card(Suit::Hearts, Rank::Ace),
             card(Suit::Hearts, Rank::King),
             card(Suit::Hearts, Rank::Five),
@@ -132,15 +132,16 @@ mod tests {
             card(Suit::Clubs, Rank::Five),
             card(Suit::Clubs, Rank::Four),
             card(Suit::Clubs, Rank::Three),
-        ]);
+        ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: hand.clone(),
+            hand: make_hand(cards),
             current_trick: vec![],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
             seat: Seat::West,
             trump_suit: Some(Suit::Spades),
-            legal_plays: hand.cards.clone(),
+            legal_plays: legal,
             dummy_hand: None,
         };
         let result = h.apply(&ctx);
@@ -153,15 +154,16 @@ mod tests {
     #[test]
     fn opening_lead_not_for_declarer() {
         let h = OpeningLeadHeuristic;
-        let hand = make_hand(vec![card(Suit::Spades, Rank::Ace)]);
+        let cards = vec![card(Suit::Spades, Rank::Ace)];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: hand.clone(),
+            hand: make_hand(cards),
             current_trick: vec![],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
             seat: Seat::South, // declarer
             trump_suit: Some(Suit::Spades),
-            legal_plays: hand.cards.clone(),
+            legal_plays: legal,
             dummy_hand: None,
         };
         assert!(h.apply(&ctx).is_none());
@@ -170,9 +172,10 @@ mod tests {
     #[test]
     fn opening_lead_not_after_first_trick() {
         let h = OpeningLeadHeuristic;
-        let hand = make_hand(vec![card(Suit::Spades, Rank::Ace)]);
+        let cards = vec![card(Suit::Spades, Rank::Ace)];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: hand.clone(),
+            hand: make_hand(cards),
             current_trick: vec![],
             previous_tricks: vec![Trick {
                 plays: vec![],
@@ -182,7 +185,7 @@ mod tests {
             contract: make_contract(Seat::South),
             seat: Seat::West,
             trump_suit: Some(Suit::Spades),
-            legal_plays: hand.cards.clone(),
+            legal_plays: legal,
             dummy_hand: None,
         };
         assert!(h.apply(&ctx).is_none());
@@ -269,13 +272,14 @@ mod tests {
     #[test]
     fn second_hand_low_plays_lowest() {
         let h = SecondHandLowHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::King),
             card(Suit::Spades, Rank::Five),
             card(Suit::Spades, Rank::Three),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Ten)],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
@@ -291,12 +295,13 @@ mod tests {
     #[test]
     fn second_hand_low_defers_on_honor_led_with_cover() {
         let h = SecondHandLowHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::Ace),
             card(Suit::Spades, Rank::Three),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Queen)],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
@@ -331,9 +336,10 @@ mod tests {
     #[test]
     fn second_hand_low_void_defers() {
         let h = SecondHandLowHeuristic;
-        let legal = vec![card(Suit::Hearts, Rank::Five)];
+        let cards = vec![card(Suit::Hearts, Rank::Five)];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Ten)],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
@@ -350,13 +356,14 @@ mod tests {
     #[test]
     fn third_hand_high_beats_opponent() {
         let h = ThirdHandHighHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::Queen),
             card(Suit::Spades, Rank::Five),
             card(Suit::Spades, Rank::Three),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![
                 played(Seat::North, Suit::Spades, Rank::Four),
                 played(Seat::East, Suit::Spades, Rank::Jack),
@@ -375,15 +382,16 @@ mod tests {
     #[test]
     fn third_hand_high_partner_winning_play_low() {
         let h = ThirdHandHighHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::King),
             card(Suit::Spades, Rank::Five),
         ];
         // South is playing third. Partner is North.
         // North led, East played.
         // If partner (North) is winning, play low.
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![
                 played(Seat::North, Suit::Spades, Rank::Ace),
                 played(Seat::East, Suit::Spades, Rank::Jack),
@@ -404,7 +412,7 @@ mod tests {
     #[test]
     fn fourth_hand_wins_cheaply() {
         let h = FourthHandHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::Ace),
             card(Suit::Spades, Rank::Queen),
             card(Suit::Spades, Rank::Three),
@@ -413,8 +421,9 @@ mod tests {
         // South (dummy) led, East played Jack (opponent of West? No -- East is West's partner).
         // Need: the winning card belongs to an opponent of West.
         // West's partner is East. So South winning means opponent winning.
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![
                 played(Seat::North, Suit::Spades, Rank::Four),
                 played(Seat::East, Suit::Spades, Rank::Five),
@@ -435,13 +444,14 @@ mod tests {
     #[test]
     fn fourth_hand_partner_winning_play_low() {
         let h = FourthHandHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::Ace),
             card(Suit::Spades, Rank::Three),
         ];
         // West plays fourth. Partner is East.
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![
                 played(Seat::North, Suit::Spades, Rank::Four),
                 played(Seat::East, Suit::Spades, Rank::King),
@@ -463,12 +473,13 @@ mod tests {
     #[test]
     fn cover_honor_covers_queen_with_king() {
         let h = CoverHonorHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::King),
             card(Suit::Spades, Rank::Five),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Queen)],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
@@ -484,12 +495,13 @@ mod tests {
     #[test]
     fn cover_honor_ignores_non_honor_led() {
         let h = CoverHonorHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::King),
             card(Suit::Spades, Rank::Five),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Ten)],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
@@ -504,12 +516,13 @@ mod tests {
     #[test]
     fn cover_honor_no_covering_honor() {
         let h = CoverHonorHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::Jack),
             card(Suit::Spades, Rank::Five),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::King)],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
@@ -527,13 +540,14 @@ mod tests {
     #[test]
     fn trump_management_ruffs_with_lowest() {
         let h = TrumpManagementHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Hearts, Rank::King),
             card(Suit::Hearts, Rank::Five),
             card(Suit::Clubs, Rank::Three),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Ten)],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
@@ -550,13 +564,14 @@ mod tests {
     #[test]
     fn trump_management_doesnt_ruff_partner() {
         let h = TrumpManagementHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Hearts, Rank::Five),
             card(Suit::Clubs, Rank::Three),
         ];
         // South plays third. Partner is North. North led and is winning.
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![
                 played(Seat::North, Suit::Spades, Rank::Ace),
                 played(Seat::East, Suit::Spades, Rank::King),
@@ -575,13 +590,14 @@ mod tests {
     #[test]
     fn trump_management_overruffs_opponent() {
         let h = TrumpManagementHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Hearts, Rank::King),
             card(Suit::Hearts, Rank::Three),
             card(Suit::Clubs, Rank::Five),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![
                 played(Seat::North, Suit::Spades, Rank::Ten),
                 played(Seat::East, Suit::Hearts, Rank::Five), // opponent trumped
@@ -601,12 +617,13 @@ mod tests {
     #[test]
     fn trump_management_not_when_following_suit() {
         let h = TrumpManagementHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::Five),
             card(Suit::Hearts, Rank::King),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Ten)],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
@@ -624,14 +641,15 @@ mod tests {
     #[test]
     fn discard_prefers_no_honor_suit() {
         let h = DiscardHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Hearts, Rank::King),
             card(Suit::Hearts, Rank::Five),
             card(Suit::Clubs, Rank::Three),
             card(Suit::Clubs, Rank::Two),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Ten)],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
@@ -649,12 +667,13 @@ mod tests {
     #[test]
     fn discard_not_when_following_suit() {
         let h = DiscardHeuristic;
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::Five),
             card(Suit::Hearts, Rank::Three),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Ten)],
             previous_tricks: vec![],
             contract: make_contract(Seat::South),
@@ -670,12 +689,13 @@ mod tests {
 
     #[test]
     fn suggest_play_always_returns_legal_card() {
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::Five),
             card(Suit::Hearts, Rank::Three),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(legal.clone()),
+            hand: make_hand(cards),
             current_trick: vec![played(Seat::North, Suit::Diamonds, Rank::Ten)],
             previous_tricks: vec![],
             contract: nt_contract(Seat::South),
@@ -705,14 +725,15 @@ mod tests {
             card(Suit::Clubs, Rank::Nine),
             card(Suit::Clubs, Rank::Two),
         ];
+        let legal = hand_cards.clone();
         let ctx = PlayContext {
-            hand: make_hand(hand_cards.clone()),
+            hand: make_hand(hand_cards),
             current_trick: vec![],
             previous_tricks: vec![],
             contract: nt_contract(Seat::South),
             seat: Seat::West,
             trump_suit: None,
-            legal_plays: hand_cards,
+            legal_plays: legal,
             dummy_hand: None,
         };
         let result = suggest_play(&ctx);

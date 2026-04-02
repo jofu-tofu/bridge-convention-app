@@ -141,7 +141,7 @@ impl SessionState {
         is_correct: Option<bool>,
     ) {
         use bridge_conventions::pipeline::evaluation::alert::resolve_alert;
-        use bridge_conventions::types::meaning::Disclosure;
+        use bridge_engine::strategy::Disclosure;
 
         let (rule_name, explanation) = match bid_result {
             Some(result) => (
@@ -155,7 +155,7 @@ impl SessionState {
         // rather than generic "Natural bid" / "Pass".
         let meaning = explanation;
 
-        let belief_state = self.inference_coordinator.process_bid(
+        self.inference_coordinator.process_bid(
             entry,
             auction_before,
             rule_name,
@@ -164,13 +164,23 @@ impl SessionState {
             &[],  // constraints (convention-level constraints not yet in Rust BidResult)
             Some(convention_id),
         );
-        self.public_belief_state = belief_state.clone();
+        // Update public belief state from the coordinator (avoids clone by using
+        // the coordinator's state directly for the annotation lookup below).
+        // The coordinator's process_bid returns &PublicBeliefState, so we access
+        // the annotation before cloning the full state.
 
         // INVARIANT: inference_coordinator.process_bid() appends exactly one
         // BidAnnotation per call (including for Pass/Double/Redouble).
         // See annotation_producer.rs — all code paths produce one annotation.
-        let annotation = self.public_belief_state.annotations.last()
-            .expect("inference must produce exactly one annotation per process_bid call");
+        // Extract annotation meaning before cloning the full belief state, to
+        // avoid cloning the entire PublicBeliefState (only need the meaning string).
+        let annotation_meaning = {
+            let annotation = self.inference_coordinator.get_public_belief_state()
+                .annotations.last()
+                .expect("inference must produce exactly one annotation per process_bid call");
+            annotation.meaning.clone()
+        };
+        self.public_belief_state = self.inference_coordinator.get_public_belief_state().clone();
 
         // Resolve annotation type from the convention's disclosure level.
         // Heuristic/fallback bids have no disclosure → Educational.
@@ -179,7 +189,14 @@ impl SessionState {
         let disclosure = bid_result
             .and_then(|r| r.disclosure)
             .unwrap_or(Disclosure::Natural);
-        let bid_alert = resolve_alert(disclosure);
+        // Convert bridge-engine Disclosure to bridge-conventions Disclosure for resolve_alert
+        let conv_disclosure = match disclosure {
+            Disclosure::Alert => bridge_conventions::types::meaning::Disclosure::Alert,
+            Disclosure::Announcement => bridge_conventions::types::meaning::Disclosure::Announcement,
+            Disclosure::Natural => bridge_conventions::types::meaning::Disclosure::Natural,
+            Disclosure::Standard => bridge_conventions::types::meaning::Disclosure::Standard,
+        };
+        let bid_alert = resolve_alert(conv_disclosure);
         let annotation_type = bid_alert.annotation_type.map(|at| {
             use bridge_conventions::pipeline::evaluation::alert::AnnotationType as ConvAnnotationType;
             match at {
@@ -189,19 +206,23 @@ impl SessionState {
             }
         });
 
+        let (meaning_opt, alert_label) = if annotation_meaning.is_empty() {
+            (None, None)
+        } else if bid_alert.alertable || annotation_type == Some(AnnotationType::Educational) {
+            // Both meaning and alert_label share the same string.
+            let meaning_copy = annotation_meaning.clone();
+            (Some(meaning_copy), Some(annotation_meaning))
+        } else {
+            (Some(annotation_meaning), None)
+        };
+
         self.bid_history.push(BidHistoryEntryView {
             seat: entry.seat,
             call: entry.call.clone(),
-            meaning: if annotation.meaning.is_empty() { None } else { Some(annotation.meaning.clone()) },
+            meaning: meaning_opt,
             is_user,
             is_correct,
-            alert_label: if annotation.meaning.is_empty() {
-                None
-            } else if bid_alert.alertable || annotation_type == Some(AnnotationType::Educational) {
-                Some(annotation.meaning.clone())
-            } else {
-                None
-            },
+            alert_label,
             annotation_type,
         });
     }

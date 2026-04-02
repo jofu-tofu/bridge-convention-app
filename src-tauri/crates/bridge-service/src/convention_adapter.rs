@@ -34,7 +34,18 @@ use bridge_engine::hand_evaluator::evaluate_hand_hcp;
 use bridge_engine::scoring::is_vulnerable;
 use bridge_engine::types::{Call, Hand, Seat, Vulnerability};
 
+use bridge_engine::strategy::Disclosure as EngineDisclosure;
 use bridge_session::heuristics::{BidResult, BiddingContext, BiddingStrategy};
+
+/// Convert convention-crate Disclosure to engine-crate Disclosure.
+fn to_engine_disclosure(d: bridge_conventions::types::meaning::Disclosure) -> EngineDisclosure {
+    match d {
+        bridge_conventions::types::meaning::Disclosure::Alert => EngineDisclosure::Alert,
+        bridge_conventions::types::meaning::Disclosure::Announcement => EngineDisclosure::Announcement,
+        bridge_conventions::types::meaning::Disclosure::Natural => EngineDisclosure::Natural,
+        bridge_conventions::types::meaning::Disclosure::Standard => EngineDisclosure::Standard,
+    }
+}
 
 /// Extract the teaching label from the evaluation's selected carrier.
 fn extract_explanation(evaluation: &StrategyEvaluation) -> String {
@@ -99,7 +110,7 @@ impl ConventionStrategyAdapter {
                 .pipeline_result
                 .as_ref()
                 .and_then(|pr| pr.selected.as_ref())
-                .map(|c| c.proposal().disclosure);
+                .map(|c| to_engine_disclosure(c.proposal().disclosure));
             BidResult {
                 call: br.call,
                 rule_name: None,
@@ -622,7 +633,7 @@ impl BiddingStrategy for ConventionStrategyAdapter {
                 .pipeline_result
                 .as_ref()
                 .and_then(|pr| pr.selected.as_ref())
-                .map(|c| c.proposal().disclosure);
+                .map(|c| to_engine_disclosure(c.proposal().disclosure));
             BidResult {
                 call: br.call,
                 rule_name: None,

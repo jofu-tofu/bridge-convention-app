@@ -25,73 +25,43 @@ pub fn produce_annotation(
     natural_provider: &dyn InferenceProvider,
     auction_before: &Auction,
 ) -> BidAnnotation {
+    let call = entry.call.clone();
+    let seat = entry.seat;
+    let conv_id = convention_id.map(|s| s.to_string());
+
     // Convention bid
     if let Some(result) = rule_result {
-        let extracted = extractor.extract_constraints(result, entry.seat);
+        let meaning = result.meaning.clone().unwrap_or_else(|| result.explanation.clone());
+
+        let extracted = extractor.extract_constraints(result, seat);
 
         // When the convention extractor produces constraints, use them.
         if !extracted.is_empty() {
-            return BidAnnotation {
-                call: entry.call.clone(),
-                seat: entry.seat,
-                convention_id: convention_id.map(|s| s.to_string()),
-                meaning: result.meaning.clone().unwrap_or_else(|| result.explanation.clone()),
-                constraints: extracted,
-            };
+            return BidAnnotation { call, seat, convention_id: conv_id, meaning, constraints: extracted };
         }
 
         // Use constraints directly -- no lossy conversion
         if !result.constraints.is_empty() {
-            return BidAnnotation {
-                call: entry.call.clone(),
-                seat: entry.seat,
-                convention_id: convention_id.map(|s| s.to_string()),
-                meaning: result.meaning.clone().unwrap_or_else(|| result.explanation.clone()),
-                constraints: result.constraints.clone(),
-            };
+            return BidAnnotation { call, seat, convention_id: conv_id, meaning, constraints: result.constraints.clone() };
         }
 
         // Fall through with convention metadata but natural constraints
-        if matches!(entry.call, Call::Bid { .. }) {
+        if matches!(call, Call::Bid { .. }) {
             let natural_constraints = infer_natural_constraints(natural_provider, entry, auction_before);
-            return BidAnnotation {
-                call: entry.call.clone(),
-                seat: entry.seat,
-                convention_id: convention_id.map(|s| s.to_string()),
-                meaning: result.meaning.clone().unwrap_or_else(|| result.explanation.clone()),
-                constraints: natural_constraints,
-            };
+            return BidAnnotation { call, seat, convention_id: conv_id, meaning, constraints: natural_constraints };
         }
 
-        return BidAnnotation {
-            call: entry.call.clone(),
-            seat: entry.seat,
-            convention_id: convention_id.map(|s| s.to_string()),
-            meaning: result.meaning.clone().unwrap_or_else(|| result.explanation.clone()),
-            constraints: Vec::new(),
-        };
+        return BidAnnotation { call, seat, convention_id: conv_id, meaning, constraints: Vec::new() };
     }
 
     // Natural contract bid (not pass/double/redouble)
-    if matches!(entry.call, Call::Bid { .. }) {
+    if matches!(call, Call::Bid { .. }) {
         let natural_constraints = infer_natural_constraints(natural_provider, entry, auction_before);
-        return BidAnnotation {
-            call: entry.call.clone(),
-            seat: entry.seat,
-            convention_id: None,
-            meaning: String::new(),
-            constraints: natural_constraints,
-        };
+        return BidAnnotation { call, seat, convention_id: None, meaning: String::new(), constraints: natural_constraints };
     }
 
     // Pass / double / redouble — no meaningful label to show
-    BidAnnotation {
-        call: entry.call.clone(),
-        seat: entry.seat,
-        convention_id: None,
-        meaning: String::new(),
-        constraints: Vec::new(),
-    }
+    BidAnnotation { call, seat, convention_id: None, meaning: String::new(), constraints: Vec::new() }
 }
 
 /// Get constraints from natural provider, converting HandInference at the boundary.

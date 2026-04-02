@@ -237,13 +237,14 @@ mod tests {
 
     #[test]
     fn suggest_with_profile_returns_legal_card() {
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::Five),
             card(Suit::Hearts, Rank::Three),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
             hand: Hand {
-                cards: legal.clone(),
+                cards,
             },
             current_trick: vec![played(Seat::North, Suit::Diamonds, Rank::Ten)],
             previous_tricks: vec![],
@@ -264,13 +265,14 @@ mod tests {
     #[test]
     fn beginner_sometimes_skips_cover_honor() {
         // Set up a scenario where cover-honor would normally fire
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::King),
             card(Suit::Spades, Rank::Five),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
             hand: Hand {
-                cards: legal.clone(),
+                cards,
             },
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Queen)],
             previous_tricks: vec![],
@@ -300,13 +302,14 @@ mod tests {
 
     #[test]
     fn expert_never_skips() {
-        let legal = vec![
+        let cards = vec![
             card(Suit::Spades, Rank::King),
             card(Suit::Spades, Rank::Five),
         ];
+        let legal = cards.clone();
         let ctx = PlayContext {
             hand: Hand {
-                cards: legal.clone(),
+                cards,
             },
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Queen)],
             previous_tricks: vec![],

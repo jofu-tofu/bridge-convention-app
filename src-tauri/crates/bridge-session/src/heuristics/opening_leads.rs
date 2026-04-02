@@ -153,9 +153,8 @@ mod tests {
             card(Suit::Hearts, Rank::Five),
             card(Suit::Spades, Rank::Queen),
         ];
-        let legal = cards.clone();
         let result =
-            lead_from_ak_combination(&cards, Suit::Spades, &legal);
+            lead_from_ak_combination(&cards, Suit::Spades, &cards);
         assert!(result.is_some());
         let c = result.unwrap();
         assert_eq!(c.suit, Suit::Hearts);
@@ -168,10 +167,9 @@ mod tests {
             card(Suit::Hearts, Rank::Ace),
             card(Suit::Hearts, Rank::King),
         ];
-        let legal = cards.clone();
         // Hearts is trump — should not lead AK
         let result =
-            lead_from_ak_combination(&cards, Suit::Hearts, &legal);
+            lead_from_ak_combination(&cards, Suit::Hearts, &cards);
         assert!(result.is_none());
     }
 
@@ -184,9 +182,8 @@ mod tests {
             card(Suit::Diamonds, Rank::Five),
             card(Suit::Diamonds, Rank::Three),
         ];
-        let legal = cards.clone();
         let groups = group_by_suit(&cards);
-        let result = lead_fourth_best(&groups, &legal);
+        let result = lead_fourth_best(&groups, &cards);
         assert!(result.is_some());
         let c = result.unwrap();
         assert_eq!(c.rank, Rank::Five); // 4th from top: K, J, 8, 5
@@ -199,8 +196,7 @@ mod tests {
             card(Suit::Spades, Rank::King),
             card(Suit::Spades, Rank::Queen),
         ];
-        let legal = cards.clone();
-        let result = lead_short_suit(&cards, Suit::Clubs, &legal);
+        let result = lead_short_suit(&cards, Suit::Clubs, &cards);
         assert!(result.is_some());
         let c = result.unwrap();
         assert_eq!(c.suit, Suit::Hearts);
@@ -216,8 +212,7 @@ mod tests {
             card(Suit::Hearts, Rank::Three),
             card(Suit::Spades, Rank::Ace),
         ];
-        let legal = cards.clone();
-        let result = lead_low_from_longest(&cards, None, &legal);
+        let result = lead_low_from_longest(&cards, None, &cards);
         assert!(result.is_some());
         let c = result.unwrap();
         assert_eq!(c.suit, Suit::Hearts);

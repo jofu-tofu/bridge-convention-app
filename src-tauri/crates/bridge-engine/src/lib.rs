@@ -6,6 +6,7 @@ pub mod deal_generator;
 pub mod auction;
 pub mod scoring;
 pub mod play;
+pub mod strategy;
 
 // Re-export commonly used items
 pub use types::*;

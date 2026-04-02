@@ -304,29 +304,29 @@ pub fn build_base_module_infos(base_system_id: BaseSystemId) -> Vec<BaseModuleIn
 pub fn derive_phase_order(fsm: &LocalFsm) -> Vec<String> {
     let mut phases = vec![fsm.initial.clone()];
     let mut seen = HashSet::new();
-    seen.insert(fsm.initial.as_str().to_string());
+    seen.insert(fsm.initial.as_str());
 
-    // Build adjacency map
-    let mut adjacency: HashMap<String, Vec<String>> = HashMap::new();
+    // Build adjacency map (references into fsm.transitions)
+    let mut adjacency: HashMap<&str, Vec<&str>> = HashMap::new();
     for t in &fsm.transitions {
         let froms = phase_ref_to_vec(&t.from);
         for f in froms {
-            let entry = adjacency.entry(f.to_string()).or_default();
-            if !entry.contains(&t.to) {
-                entry.push(t.to.clone());
+            let entry = adjacency.entry(f).or_default();
+            if !entry.contains(&t.to.as_str()) {
+                entry.push(&t.to);
             }
         }
     }
 
     let mut queue = VecDeque::new();
-    queue.push_back(fsm.initial.clone());
+    queue.push_back(fsm.initial.as_str());
 
     while let Some(current) = queue.pop_front() {
-        if let Some(neighbors) = adjacency.get(&current) {
-            for next in neighbors {
-                if seen.insert(next.clone()) {
-                    phases.push(next.clone());
-                    queue.push_back(next.clone());
+        if let Some(neighbors) = adjacency.get(current) {
+            for &next in neighbors {
+                if seen.insert(next) {
+                    phases.push(next.to_string());
+                    queue.push_back(next);
                 }
             }
         }
@@ -339,7 +339,7 @@ pub fn derive_phase_order(fsm: &LocalFsm) -> Vec<String> {
 /// A phase is post-fit if any StateEntry at that phase has `negotiationDelta.fitAgreed`
 /// truthy, or if it's reachable downstream from such a phase via FSM transitions.
 pub fn compute_post_fit_phases(module: &ConventionModule) -> HashSet<String> {
-    let mut fit_phases = HashSet::new();
+    let mut fit_phases: HashSet<&str> = HashSet::new();
 
     for entry in module.states.as_deref().unwrap_or(&[]) {
         let has_fit = entry
@@ -350,36 +350,36 @@ pub fn compute_post_fit_phases(module: &ConventionModule) -> HashSet<String> {
 
         if has_fit {
             for p in phase_ref_to_vec(&entry.phase) {
-                fit_phases.insert(p.to_string());
+                fit_phases.insert(p);
             }
         }
     }
 
-    // Build adjacency from transitions
-    let mut adjacency: HashMap<String, Vec<String>> = HashMap::new();
+    // Build adjacency from transitions (references into module.local.transitions)
+    let mut adjacency: HashMap<&str, Vec<&str>> = HashMap::new();
     for t in &module.local.transitions {
         for f in phase_ref_to_vec(&t.from) {
-            let entry = adjacency.entry(f.to_string()).or_default();
-            if !entry.contains(&t.to) {
-                entry.push(t.to.clone());
+            let entry = adjacency.entry(f).or_default();
+            if !entry.contains(&t.to.as_str()) {
+                entry.push(&t.to);
             }
         }
     }
 
     // BFS from fit-establishing phases
-    let mut result = fit_phases.clone();
-    let mut queue: VecDeque<String> = fit_phases.into_iter().collect();
+    let mut result: HashSet<&str> = fit_phases.clone();
+    let mut queue: VecDeque<&str> = fit_phases.into_iter().collect();
     while let Some(current) = queue.pop_front() {
-        if let Some(neighbors) = adjacency.get(&current) {
-            for next in neighbors {
-                if result.insert(next.clone()) {
-                    queue.push_back(next.clone());
+        if let Some(neighbors) = adjacency.get(current) {
+            for &next in neighbors {
+                if result.insert(next) {
+                    queue.push_back(next);
                 }
             }
         }
     }
 
-    result
+    result.into_iter().map(|s| s.to_string()).collect()
 }
 
 /// Format a phase string for display. "asked" -> "Asked", "shown-hearts" -> "Shown Hearts".
@@ -501,14 +501,14 @@ fn build_phase_groups(
     let phase_order = derive_phase_order(&module.local);
     let post_fit_phases = compute_post_fit_phases(module);
 
-    // Build incoming transition map
-    let mut incoming_map: HashMap<String, Vec<(ObsPattern, String)>> = HashMap::new();
+    // Build incoming transition map (references into module.local.transitions)
+    let mut incoming_map: HashMap<&str, Vec<(&ObsPattern, &str)>> = HashMap::new();
     for t in &module.local.transitions {
         for f in phase_ref_to_vec(&t.from) {
             incoming_map
-                .entry(t.to.clone())
+                .entry(t.to.as_str())
                 .or_default()
-                .push((t.on.clone(), f.to_string()));
+                .push((&t.on, f));
         }
     }
 
@@ -537,14 +537,12 @@ fn build_phase_groups(
                     surfaces: Vec::new(),
                 });
 
-            let seen: HashSet<String> = group
-                .surfaces
-                .iter()
-                .map(|s| s.meaning_id.clone())
-                .collect();
-
             for surface in &entry.surfaces {
-                if seen.contains(&surface.meaning_id) {
+                let already_exists = group
+                    .surfaces
+                    .iter()
+                    .any(|s| s.meaning_id == surface.meaning_id);
+                if already_exists {
                     continue;
                 }
 
@@ -582,10 +580,13 @@ fn build_phase_groups(
 
     let mut result = Vec::new();
     for phase in &phase_order {
-        let group = match phase_map.get(phase.as_str()) {
-            Some(g) if !g.surfaces.is_empty() => g,
-            _ => continue,
-        };
+        // Check if phase has non-empty surfaces (peek without removing)
+        let has_surfaces = phase_map
+            .get(phase.as_str())
+            .map_or(false, |g| !g.surfaces.is_empty());
+        if !has_surfaces {
+            continue;
+        }
 
         let transition_label = if suppress_labels {
             None
@@ -593,9 +594,9 @@ fn build_phase_groups(
             derive_root_phase_label(&module.module_id)
         } else {
             incoming_map.get(phase.as_str()).and_then(|incoming| {
-                let (obs, from_phase) = incoming.first()?;
+                let &(obs, from_phase) = incoming.first()?;
                 let trigger_call = find_trigger_call(module, from_phase, obs);
-                let from_group = phase_map.get(from_phase.as_str());
+                let from_group = phase_map.get(from_phase);
                 let source_turn = from_group.and_then(|g| g.turn);
                 let turn_str = source_turn.map(turn_role_display);
                 Some(format_transition_label(
@@ -606,13 +607,15 @@ fn build_phase_groups(
             })
         };
 
+        // Remove group from map to take ownership of surfaces (avoids clone)
+        let group = phase_map.remove(phase.as_str()).unwrap();
         let turn_str = group.turn.map(turn_role_display);
         result.push(PhaseGroupView {
             phase: phase.clone(),
             phase_display: format_phase_display(phase, turn_str),
             turn: turn_str.map(|s| s.to_string()),
             transition_label,
-            surfaces: group.surfaces.clone(),
+            surfaces: group.surfaces,
         });
     }
 

@@ -186,7 +186,7 @@ fn score_trick(state: &mut SessionState) {
     };
 
     let trick = Trick {
-        plays: state.play.current_trick.clone(),
+        plays: std::mem::take(&mut state.play.current_trick),
         trump_suit: state.play.trump_suit,
         winner: None,
     };
@@ -211,19 +211,19 @@ fn score_trick(state: &mut SessionState) {
     }
 
     state.play.tricks.push(completed_trick);
-    state.play.current_trick.clear();
+    // current_trick is already empty from std::mem::take above
     state.play.current_player = Some(winner);
 }
 
 /// Complete the play: calculate score, transition to EXPLANATION.
 fn complete_play(state: &mut SessionState) {
     let contract = match &state.contract {
-        Some(c) => c.clone(),
+        Some(ref c) => c,
         None => return,
     };
 
     let score = calculate_score(
-        &contract,
+        contract,
         state.play.declarer_tricks_won as u8,
         state.deal.vulnerability,
     );

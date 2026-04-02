@@ -200,26 +200,25 @@ fn walk_subseq_route(
 
 /// Find the ID of the node where subseq route steps end up.
 fn find_subseq_attach_point(node: &MutableNode, steps: &[ObsPattern]) -> Option<String> {
-    let mut current_ids: Vec<String> = vec![node.id.clone()];
+    let mut current_ids: Vec<&str> = vec![&node.id];
 
     for step in steps {
-        let mut next_ids: Vec<String> = Vec::new();
-        let mut search_queue: Vec<String> = current_ids.clone();
-        let mut searched: HashSet<String> = HashSet::new();
+        let mut next_ids: Vec<&str> = Vec::new();
+        let mut search_queue: Vec<&str> = current_ids.clone();
+        let mut searched: HashSet<&str> = HashSet::new();
 
-        while let Some(node_id) = search_queue.first().cloned() {
+        while let Some(&node_id) = search_queue.first() {
             search_queue.remove(0);
-            if searched.contains(&node_id) {
+            if !searched.insert(node_id) {
                 continue;
             }
-            searched.insert(node_id.clone());
 
-            if let Some(n) = find_node(node, &node_id) {
+            if let Some(n) = find_node(node, node_id) {
                 for child in &n.children {
                     if obs_matches_step(child.transition_obs.as_ref(), step) {
-                        next_ids.push(child.id.clone());
+                        next_ids.push(&child.id);
                     } else {
-                        search_queue.push(child.id.clone());
+                        search_queue.push(&child.id);
                     }
                 }
             }
@@ -231,5 +230,5 @@ fn find_subseq_attach_point(node: &MutableNode, steps: &[ObsPattern]) -> Option<
         current_ids = next_ids;
     }
 
-    current_ids.into_iter().next()
+    current_ids.first().map(|s| s.to_string())
 }

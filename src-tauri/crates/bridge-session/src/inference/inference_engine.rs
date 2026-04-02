@@ -61,7 +61,7 @@ impl InferenceEngine {
                 self.raw_constraints
                     .get_mut(&bidder_seat)
                     .unwrap()
-                    .extend(constraints.iter().cloned());
+                    .extend(constraints.clone());
                 constraints
             }
             Ok(None) => Vec::new(),

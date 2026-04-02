@@ -105,21 +105,22 @@ pub(crate) fn mk_entry_condition_root(
 
 // ── Tree traversal / conversion ─────────────────────────────────────
 
-pub(crate) fn to_flow_tree_node(node: &MutableNode) -> FlowTreeNode {
+pub(crate) fn to_flow_tree_node(node: MutableNode) -> FlowTreeNode {
+    let call_display = node.call.as_ref().map(format_call);
     FlowTreeNode {
-        id: node.id.clone(),
-        call: node.call.clone(),
-        call_display: node.call.as_ref().map(format_call),
-        turn: node.turn.clone(),
-        label: node.label.clone(),
-        module_id: node.module_id.clone(),
-        module_display_name: node.module_display_name.clone(),
-        children: node.children.iter().map(to_flow_tree_node).collect(),
+        id: node.id,
+        call: node.call,
+        call_display,
+        turn: node.turn,
+        label: node.label,
+        module_id: node.module_id,
+        module_display_name: node.module_display_name,
+        children: node.children.into_iter().map(to_flow_tree_node).collect(),
         depth: node.depth,
         recommendation: node.recommendation,
         disclosure: node.disclosure,
-        explanation_text: node.explanation_text.clone(),
-        clauses: node.clauses.clone(),
+        explanation_text: node.explanation_text,
+        clauses: node.clauses,
     }
 }
 

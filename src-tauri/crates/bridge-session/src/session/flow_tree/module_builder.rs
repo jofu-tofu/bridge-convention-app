@@ -37,7 +37,6 @@ pub fn build_module_flow_tree(
         HashMap::new();
     module_phase_map.insert(module_id.to_string(), phase_map);
     let mut module_transitions: HashMap<String, Vec<TransitionEntry>> = HashMap::new();
-    let transitions_for_lookup = transitions.clone();
     module_transitions.insert(module_id.to_string(), transitions);
 
     // Find root: opener surface at initial phase
@@ -143,7 +142,10 @@ pub fn build_module_flow_tree(
     // Build subtrees from initial phase transitions
     let mut visited = HashSet::new();
     visited.insert(module.local.initial.clone());
-    let out_trans: Vec<&TransitionEntry> = transitions_for_lookup
+    let empty_trans = Vec::new();
+    let out_trans: Vec<&TransitionEntry> = module_transitions
+        .get(module_id)
+        .unwrap_or(&empty_trans)
         .iter()
         .filter(|t| t.from.contains(&module.local.initial))
         .collect();
@@ -184,11 +186,12 @@ pub fn build_module_flow_tree(
         &mut counter,
     );
 
+    let max_depth = max_depth_of(&root_node);
     Some(ModuleFlowTreeViewport {
         module_id: module_id.to_string(),
         module_name: format_module_name(module_id),
-        root: to_flow_tree_node(&root_node),
+        root: to_flow_tree_node(root_node),
         node_count: counter.value,
-        max_depth: max_depth_of(&root_node),
+        max_depth,
     })
 }
