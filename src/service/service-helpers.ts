@@ -44,9 +44,19 @@ function getSyncPort() {
 /**
  * List all convention bundles from the WASM catalog.
  * Sync — safe to call in $derived blocks.
+ *
+ * Converts `moduleDescriptions` from WASM plain object to Map
+ * (serde_wasm_bindgen serializes HashMap as a JS object, not a Map).
  */
 export function listConventions(): ConventionInfo[] {
-  return getSyncPort().list_conventions() as ConventionInfo[];
+  const raw = getSyncPort().list_conventions() as ConventionInfo[];
+  return raw.map((c) => {
+    const md = c.moduleDescriptions;
+    if (md && !(md instanceof Map)) {
+      return { ...c, moduleDescriptions: new Map(Object.entries(md as unknown as Record<string, string>)) };
+    }
+    return c;
+  });
 }
 
 /**

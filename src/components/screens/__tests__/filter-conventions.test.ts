@@ -1,22 +1,21 @@
 import { describe, it, expect } from "vitest";
 import { filterConventions } from "../filter-conventions";
 import { ConventionCategory } from "../../../service";
-import type { ConventionConfig } from "../../../service";
+import type { ConventionInfo } from "../../../service";
 
 function makeConvention(
-  overrides: Partial<ConventionConfig>,
-): ConventionConfig {
+  overrides: Partial<ConventionInfo>,
+): ConventionInfo {
   return {
     id: "test",
     name: "Test Convention",
     description: "A test convention for testing",
     category: ConventionCategory.Asking,
-    dealConstraints: { seats: [] },
     ...overrides,
   };
 }
 
-const conventions: ConventionConfig[] = [
+const conventions: ConventionInfo[] = [
   makeConvention({
     id: "stayman",
     name: "Stayman",

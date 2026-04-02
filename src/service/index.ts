@@ -36,6 +36,7 @@ export type {
   ClauseSystemVariant,
   ServiceBidHistoryEntry as BidHistoryEntry,
   BaseModuleInfo,
+  ConventionInfo,
   ServiceExplanationNode,
   BiddingOptionView,
 } from "./response-types";

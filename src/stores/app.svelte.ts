@@ -1,4 +1,4 @@
-import type { ConventionConfig, BaseSystemId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
+import type { ConventionInfo, BaseSystemId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
 import { OpponentMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 
 export type Screen = "conventions" | "practice-picker" | "game" | "learning" | "settings" | "coverage" | "profiles";
@@ -74,13 +74,13 @@ function savePreferences(prefs: PracticePreferences) {
 
 export function createAppStore() {
   let currentScreen = $state<Screen>("conventions");
-  let selectedConvention = $state<ConventionConfig | null>(null);
+  let selectedConvention = $state<ConventionInfo | null>(null);
   let devSeed = $state<number | null>(null);
   let devDealCount = $state(0);
   let debugPanelOpen = $state(false);
   let engineStatus = $state<string | null>(null);
   let engineError = $state<string | null>(null);
-  let learningConvention = $state<ConventionConfig | null>(null);
+  let learningConvention = $state<ConventionInfo | null>(null);
   let learningModuleId = $state<string | null>(null);
   let learningBundleFilter = $state<string | null>(null);
   let learningBundleFilterName = $state<string | null>(null);
@@ -142,7 +142,7 @@ export function createAppStore() {
       return devDealCount;
     },
 
-    selectConvention(config: ConventionConfig) {
+    selectConvention(config: ConventionInfo) {
       selectedConvention = config;
       learningConvention = null;
       userPracticeMode = null;
@@ -167,7 +167,7 @@ export function createAppStore() {
       currentScreen = "conventions";
     },
 
-    navigateToLearning(config: ConventionConfig) {
+    navigateToLearning(config: ConventionInfo) {
       learningConvention = config;
       selectedConvention = null;
       learningBundleFilter = config.id;

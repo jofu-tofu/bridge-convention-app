@@ -1,7 +1,6 @@
 import type { createAppStore } from "./app.svelte";
 import { ConventionCategory, PracticeMode, PracticeRole } from "../service";
-import type { ConventionConfig } from "../service";
-import type { ConventionInfo } from "../service/response-types";
+import type { ConventionInfo } from "../service";
 import { listConventions } from "../service/service-helpers";
 
 /**
@@ -92,9 +91,7 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
       description: "",
       category: ConventionCategory.Asking,
     };
-    // ConventionInfo from WASM catalog is structurally compatible with ConventionConfig
-    // for the fields selectConvention actually uses (id, name, category, supportsRoleSelection).
-    store.selectConvention(config as ConventionConfig);
+    store.selectConvention(config as ConventionInfo);
   }
 
   // ── Coverage targeting ─────────────────────────────────────

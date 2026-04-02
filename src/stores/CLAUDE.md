@@ -8,7 +8,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 - **Object-with-getters pattern.** `$state` inside factory, exported as object properties via getters. Preserves Svelte 5 reactivity.
 - **Named exports only.** `export function createGameStore`, `export function createAppStore`.
 - **No engine imports.** The game store does not import `EnginePort` — all engine access goes through the service.
-- **Minimal conventions/core imports.** `app.svelte.ts` imports type `ConventionConfig`. Viewport building delegated entirely to `ServicePort` methods — no direct `buildXxxViewport` calls.
+- **Minimal conventions/core imports.** `app.svelte.ts` imports type `ConventionInfo`. Viewport building delegated entirely to `ServicePort` methods — no direct `buildXxxViewport` calls.
 
 ## Architecture
 

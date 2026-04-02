@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
   import { listConventions, ConventionCategory, displayConventionName } from "../../service";
-  import type { ConventionConfig } from "../../service";
+  import type { ConventionInfo } from "../../service";
   import { getAppStore } from "../../stores/context";
   import { filterConventions } from "./filter-conventions";
 
@@ -23,11 +23,11 @@
     ),
   );
 
-  function handleSelect(config: ConventionConfig) {
+  function handleSelect(config: ConventionInfo) {
     appStore.selectConvention(config);
   }
 
-  function handleLearn(config: ConventionConfig) {
+  function handleLearn(config: ConventionInfo) {
     appStore.navigateToLearning(config);
   }
 

@@ -2,7 +2,7 @@
   import { SvelteMap } from "svelte/reactivity";
   import { Seat, Suit, BidSuit, Vulnerability as Vul, partnerSeat, PracticeMode } from "../../../service";
   import type { ExplanationViewport } from "../../../service";
-  import type { ConventionConfig, ConventionContribution } from "../../../service";
+  import type { ConventionInfo, ConventionContribution } from "../../../service";
   import { formatRuleName } from "../../../service";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore, getGameStore } from "../../../stores/context";
@@ -43,7 +43,7 @@
     onNextDeal: () => void;
     onBackToMenu: () => void;
     onPlayHand?: (() => void) | undefined;
-    convention?: ConventionConfig | undefined;
+    convention?: ConventionInfo | undefined;
   }
 
   const {
