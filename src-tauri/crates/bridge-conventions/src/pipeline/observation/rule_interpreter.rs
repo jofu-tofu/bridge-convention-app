@@ -61,6 +61,11 @@ pub fn collect_matching_claims(
 
     let mut results = Vec::new();
     for module in modules {
+        // Skip modules whose attachment conditions aren't met
+        if !module.attachments.is_empty() && !check_attachments(&module.attachments, context) {
+            continue;
+        }
+
         let current_phase = replay_local_fsm(module, context);
         let resolved = collect_module_surfaces(
             module,
@@ -80,6 +85,110 @@ pub fn collect_matching_claims(
     }
 
     results
+}
+
+/// Check if a module's attachment conditions are satisfied by the current context.
+/// Returns true if ANY attachment is satisfied (OR semantics — any trigger fires the module).
+fn check_attachments(
+    attachments: &[crate::types::agreement::Attachment],
+    context: &AuctionContext,
+) -> bool {
+    attachments.iter().any(|att| check_single_attachment(att, context))
+}
+
+/// Check a single attachment predicate against the auction context.
+fn check_single_attachment(
+    att: &crate::types::agreement::Attachment,
+    context: &AuctionContext,
+) -> bool {
+    // Check auction pattern if specified
+    if let Some(ref pattern) = att.when_auction {
+        if !check_auction_pattern(pattern, context) {
+            return false;
+        }
+    }
+
+    // Check public guard if specified
+    if let Some(ref guard) = att.when_public {
+        if !check_public_guard(guard, context) {
+            return false;
+        }
+    }
+
+    // All specified conditions passed (conditions are AND-ed within a single attachment)
+    true
+}
+
+/// Check an auction pattern against the log.
+fn check_auction_pattern(
+    pattern: &crate::types::agreement::AuctionPattern,
+    context: &AuctionContext,
+) -> bool {
+    use crate::types::agreement::AuctionPattern;
+
+    match pattern {
+        AuctionPattern::Sequence { calls } => {
+            // Check if the auction log ends with this call sequence
+            let log_calls: Vec<String> = context.log.iter()
+                .map(|step| format!("{:?}", step.call))
+                .collect();
+            if log_calls.len() < calls.len() {
+                return false;
+            }
+            let start = log_calls.len() - calls.len();
+            log_calls[start..].iter().zip(calls.iter()).all(|(a, b)| a == b)
+        }
+        AuctionPattern::Contains { call, by_role: _ } => {
+            // Check if any call in the log matches
+            context.log.iter().any(|step| format!("{:?}", step.call) == *call)
+        }
+        AuctionPattern::ByRole { role: _, last_call } => {
+            // Check if the last call in the log matches
+            context.log.last()
+                .map(|step| format!("{:?}", step.call) == *last_call)
+                .unwrap_or(false)
+        }
+    }
+}
+
+/// Check a public guard against the context's negotiation state.
+fn check_public_guard(
+    guard: &crate::types::agreement::PublicGuard,
+    context: &AuctionContext,
+) -> bool {
+    use crate::types::agreement::GuardOperator;
+
+    // Extract field value from the current kernel/negotiation state
+    let field_value = match guard.field.as_str() {
+        "forcingState" => context.log.last()
+            .map(|step| format!("{:?}", step.state_after.forcing)),
+        "fitAgreed" => context.log.last()
+            .and_then(|step| step.state_after.fit_agreed.as_ref())
+            .map(|f| format!("{:?}", f)),
+        _ => None,
+    };
+
+    match guard.operator {
+        GuardOperator::Exists => field_value.is_some(),
+        GuardOperator::Eq => {
+            match (&field_value, &guard.value) {
+                (Some(actual), Some(crate::types::agreement::GuardValue::Scalar(expected))) => actual == expected,
+                _ => false,
+            }
+        }
+        GuardOperator::Neq => {
+            match (&field_value, &guard.value) {
+                (Some(actual), Some(crate::types::agreement::GuardValue::Scalar(expected))) => actual != expected,
+                _ => true,
+            }
+        }
+        GuardOperator::In => {
+            match (&field_value, &guard.value) {
+                (Some(actual), Some(crate::types::agreement::GuardValue::List(list))) => list.contains(actual),
+                _ => false,
+            }
+        }
+    }
 }
 
 /// Collect matching claims using pre-computed local phases (no replay).

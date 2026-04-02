@@ -67,8 +67,8 @@ pub struct StrategyEvaluation {
     pub pipeline_result: Option<PipelineResult>,
     /// Posterior summary. Null when posterior engine not wired.
     pub posterior_summary: Option<serde_json::Value>,
-    /// Explanation catalog. Null when not available.
-    pub explanation_catalog: Option<serde_json::Value>,
+    /// Explanation catalog — module-level explanation entries.
+    pub explanation_catalog: Option<ExplanationCatalog>,
     /// Teaching projection. Null when not produced.
     pub teaching_projection: Option<TeachingProjection>,
     /// Evaluated facts. Null before first evaluation.
@@ -77,6 +77,22 @@ pub struct StrategyEvaluation {
     pub machine_snapshot: Option<MachineDebugSnapshot>,
     /// Auction context. Null when not produced.
     pub auction_context: Option<AuctionContext>,
+}
+
+/// Explanation catalog — typed collection of module-level explanation entries.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExplanationCatalog {
+    pub entries: Vec<ExplanationCatalogEntry>,
+}
+
+/// A single explanation catalog entry.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExplanationCatalogEntry {
+    pub module_id: String,
+    pub surface_count: usize,
+    pub explanation: String,
 }
 
 /// Practical recommendation — what an experienced player might prefer.

@@ -2,6 +2,8 @@
 //!
 //! Mirrors TS from `pipeline/run-pipeline.ts`.
 
+use std::collections::HashMap;
+
 use bridge_engine::types::{Call, Hand};
 
 use crate::fact_dsl::types::EvaluatedFacts;
@@ -17,8 +19,9 @@ pub struct PipelineInput<'a> {
     pub surfaces: &'a [BidMeaning],
     /// Pre-evaluated facts (from fact_dsl).
     pub facts: &'a EvaluatedFacts,
-    /// Inherited constraint dimensions from prior-round context.
-    pub inherited_dimensions: &'a [ConstraintDimension],
+    /// Per-meaning inherited constraint dimensions from prior-round context.
+    /// Key: meaning_id → inherited dimensions for that surface.
+    pub inherited_dimensions: &'a HashMap<String, Vec<ConstraintDimension>>,
     /// Legality checker for the current auction.
     pub is_legal: &'a dyn Fn(&Call) -> bool,
     /// Hand for per-surface relational fact re-evaluation (optional).
@@ -127,7 +130,7 @@ mod tests {
         let result = run_pipeline(PipelineInput {
             surfaces: &[],
             facts: &facts,
-            inherited_dimensions: &[],
+            inherited_dimensions: &HashMap::new(),
             is_legal: &|_| true,
             hand: None,
             system_config: None,
@@ -143,7 +146,7 @@ mod tests {
         let result = run_pipeline(PipelineInput {
             surfaces: &surfaces,
             facts: &facts,
-            inherited_dimensions: &[],
+            inherited_dimensions: &HashMap::new(),
             is_legal: &|_| true,
             hand: None,
             system_config: None,
@@ -159,7 +162,7 @@ mod tests {
         let result = run_pipeline(PipelineInput {
             surfaces: &surfaces,
             facts: &facts,
-            inherited_dimensions: &[],
+            inherited_dimensions: &HashMap::new(),
             is_legal: &|_| true,
             hand: None,
             system_config: None,

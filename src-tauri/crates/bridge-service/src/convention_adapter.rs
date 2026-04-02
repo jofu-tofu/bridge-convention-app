@@ -119,6 +119,7 @@ impl ConventionStrategyAdapter {
                 truth_set_calls,
                 acceptable_set_calls,
                 near_miss_calls,
+                trace: None,
             }
         });
         (result, evaluation)
@@ -222,7 +223,7 @@ impl ConventionStrategyAdapter {
                         surfaces: &surfaces,
                         facts: &facts,
                         is_legal: &is_legal,
-                        inherited_dimensions: &[],
+                        inherited_dimensions: &std::collections::HashMap::new(),
                         hand: step_hand,
                         system_config: self.system_config.as_ref(),
                     }))
@@ -323,7 +324,7 @@ impl ConventionStrategyAdapter {
             &auction_context,
             &facts,
             &is_legal,
-            &[],
+            &std::collections::HashMap::new(),
             Some(&ctx.hand),
             self.system_config.as_ref(),
             None, // partner_context — populated by session layer when available
@@ -673,6 +674,7 @@ impl BiddingStrategy for ConventionStrategyAdapter {
                 truth_set_calls,
                 acceptable_set_calls,
                 near_miss_calls,
+                trace: None,
             }
         })
     }

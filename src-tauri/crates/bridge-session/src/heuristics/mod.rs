@@ -8,6 +8,7 @@
 
 pub mod natural_fallback;
 pub mod pass_strategy;
+pub mod pragmatic_strategy;
 pub mod strategy_chain;
 
 pub mod play_types;
@@ -16,12 +17,13 @@ pub mod play;
 pub mod random_play;
 pub mod play_profiles;
 
-pub use bridge_engine::strategy::{BiddingStrategy, BiddingContext, BidResult, Disclosure};
+pub use bridge_engine::strategy::{BiddingStrategy, BiddingContext, BidResult, Disclosure, ChainTrace, AttemptOutcome, StrategyAttempt};
 
 // ── Re-exports ─────────────────────────────────────────────────────────
 
 pub use natural_fallback::NaturalFallbackStrategy;
 pub use pass_strategy::PassStrategy;
+pub use pragmatic_strategy::PragmaticStrategy;
 pub use strategy_chain::StrategyChain;
 
 pub use play_types::{PlayContext, PlayHeuristic, PlayResult};

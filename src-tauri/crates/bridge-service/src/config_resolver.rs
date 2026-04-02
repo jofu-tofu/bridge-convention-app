@@ -109,12 +109,13 @@ pub(crate) fn build_seat_strategies(
     for &opp in &opp_seats {
         match opponent_mode {
             OpponentMode::Natural => {
-                m.insert(
-                    opp,
-                    SeatStrategy::Ai(Box::new(
-                        bridge_session::heuristics::NaturalFallbackStrategy,
-                    )),
-                );
+                // Chain: pragmatic → natural fallback → pass
+                let chain = bridge_session::heuristics::StrategyChain::new(vec![
+                    Box::new(bridge_session::heuristics::PragmaticStrategy),
+                    Box::new(bridge_session::heuristics::NaturalFallbackStrategy),
+                    Box::new(bridge_session::heuristics::PassStrategy),
+                ]);
+                m.insert(opp, SeatStrategy::Ai(Box::new(chain)));
             }
             OpponentMode::None => {
                 m.insert(

@@ -54,7 +54,7 @@ pub fn evaluate_clause(
 fn evaluate_bid_meaning_with_facts(
     surface: &BidMeaning,
     facts: &EvaluatedFacts,
-    inherited_dimensions: &[ConstraintDimension],
+    inherited_dimensions: &HashMap<String, Vec<ConstraintDimension>>,
 ) -> MeaningProposal {
     let bindings = surface.surface_bindings.clone().unwrap_or_default();
 
@@ -66,7 +66,11 @@ fn evaluate_bid_meaning_with_facts(
 
     let all_satisfied = clauses.iter().all(|c| c.satisfied);
 
-    let specificity = derive_specificity(&surface.clauses, &bindings, inherited_dimensions);
+    let empty_dims: Vec<ConstraintDimension> = Vec::new();
+    let per_meaning_dims = inherited_dimensions
+        .get(&surface.meaning_id)
+        .unwrap_or(&empty_dims);
+    let specificity = derive_specificity(&surface.clauses, &bindings, per_meaning_dims);
 
     let ranking = RankingMetadata {
         recommendation_band: surface.ranking.recommendation_band,
@@ -98,7 +102,7 @@ fn evaluate_bid_meaning_with_facts(
 pub fn evaluate_all_bid_meanings(
     surfaces: &[BidMeaning],
     facts: &EvaluatedFacts,
-    inherited_dimensions: &[ConstraintDimension],
+    inherited_dimensions: &HashMap<String, Vec<ConstraintDimension>>,
     hand: Option<&Hand>,
     system_config: Option<&SystemConfig>,
 ) -> Vec<MeaningProposal> {

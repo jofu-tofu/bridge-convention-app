@@ -2,6 +2,8 @@
 //!
 //! Mirrors TS from `conventions/adapter/meaning-strategy.ts`.
 
+use std::collections::HashMap;
+
 use bridge_engine::types::Call;
 
 use crate::fact_dsl::types::EvaluatedFacts;
@@ -17,7 +19,7 @@ pub fn meaning_to_strategy(
     surfaces: &[BidMeaning],
     facts: &EvaluatedFacts,
     is_legal: &dyn Fn(&Call) -> bool,
-    inherited_dimensions: &[ConstraintDimension],
+    inherited_dimensions: &HashMap<String, Vec<ConstraintDimension>>,
 ) -> PipelineResult {
     run_pipeline(PipelineInput {
         surfaces,

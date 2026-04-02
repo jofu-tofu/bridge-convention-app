@@ -20,7 +20,7 @@ use crate::types::{GamePhase, PlayPreference};
 
 use super::bid_feedback_builder::{assemble_bid_feedback, BidFeedbackDTO, BidGrade};
 use super::build_viewport::BidHistoryEntryView;
-use super::session_state::{get_current_turn, SeatStrategy, SessionState};
+use super::session_state::{get_current_turn, DebugLogEntry, SeatStrategy, SessionState};
 
 // ── Result types ───────────────────────────────────────────────────
 
@@ -72,6 +72,18 @@ pub fn process_bid(
     let expected_result = get_expected_bid(state, current_turn, seat_strategies);
 
     let feedback = assemble_bid_feedback(&call, expected_result.as_ref());
+
+    // Capture debug log entry for this user bid
+    state.debug_log.push(DebugLogEntry {
+        kind: "user-bid".to_string(),
+        turn_index: state.auction.entries.len(),
+        seat: current_turn,
+        call: Some(call.clone()),
+        expected_call: expected_result.as_ref().map(|r| r.call.clone()),
+        expected_explanation: expected_result.as_ref().map(|r| r.explanation.clone()),
+        grade: Some(feedback.grade),
+        trace: expected_result.as_ref().and_then(|r| r.trace.clone()),
+    });
 
     // Grade-acceptance policy: Correct/Acceptable advance;
     // NearMiss/Incorrect block and require retry.
@@ -321,6 +333,18 @@ fn run_ai_bid_loop(
             Ok(new_auction) => state.auction = new_auction,
             Err(_) => break,
         }
+
+        // Capture debug log entry for AI bid
+        state.debug_log.push(DebugLogEntry {
+            kind: "ai-bid".to_string(),
+            turn_index: state.auction.entries.len().saturating_sub(1),
+            seat: current_seat,
+            call: Some(result.call.clone()),
+            expected_call: None,
+            expected_explanation: Some(result.explanation.clone()),
+            grade: None,
+            trace: result.trace.clone(),
+        });
 
         // Process through inference — extract constraints from the AI seat's strategy
         // evaluation (suggest_bid stashed the evaluation synchronously before returning).

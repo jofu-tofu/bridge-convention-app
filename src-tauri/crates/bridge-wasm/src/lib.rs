@@ -111,6 +111,18 @@ impl WasmServicePort {
         to_js(&result)
     }
 
+    pub fn record_play_recommendation(
+        &mut self,
+        handle: &str,
+        recommendation: JsValue,
+    ) -> Result<JsValue, JsError> {
+        let rec: bridge_session::session::PlayRecommendation = from_js(recommendation)?;
+        self.inner
+            .record_play_recommendation(handle, rec)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        to_js(&())
+    }
+
     pub fn skip_to_review(&mut self, handle: &str) -> Result<JsValue, JsError> {
         self.inner
             .skip_to_review(handle)

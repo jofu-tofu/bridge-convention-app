@@ -11,6 +11,10 @@ use crate::pipeline::evaluation::provenance::{
     ApplicabilityEvidence, ArbitrationTrace, HandoffTrace,
 };
 use crate::pipeline::evaluation::types::{compare_ranking, MeaningProposal};
+use crate::pipeline::evidence_bundle::{
+    AlternativeEvidence, AlternativeRanking, ConditionEvidence, EvidenceBundle,
+    MatchedEvidence, RejectionEvidence,
+};
 use crate::pipeline::types::{PipelineCarrier, PipelineResult};
 
 /// Arbitrate meanings — main entry point.
@@ -76,6 +80,9 @@ pub fn arbitrate_meanings(
     let matched_count = truth_set.len();
     let eliminated_count = eliminated.len();
 
+    // Build evidence bundle from carriers
+    let evidence_bundle = build_evidence_bundle(&selected, &truth_set, &eliminated);
+
     PipelineResult {
         selected,
         truth_set,
@@ -90,7 +97,87 @@ pub fn arbitrate_meanings(
         activation: Vec::new(), // Populated by observation layer
         arbitration,
         handoffs,
-        evidence_bundle: None,
+        evidence_bundle: Some(evidence_bundle),
+    }
+}
+
+/// Build an EvidenceBundle from the arbitration results.
+fn build_evidence_bundle(
+    selected: &Option<PipelineCarrier>,
+    truth_set: &[PipelineCarrier],
+    eliminated: &[PipelineCarrier],
+) -> EvidenceBundle {
+    // Matched: selected carrier's satisfied conditions
+    let matched = selected.as_ref().map(|carrier| {
+        let conditions = carrier.proposal().clauses.iter()
+            .filter(|c| c.satisfied)
+            .map(|c| ConditionEvidence {
+                condition_id: c.clause_id.clone().unwrap_or_else(|| c.fact_id.clone()),
+                fact_id: Some(c.fact_id.clone()),
+                satisfied: true,
+                description: c.description.clone(),
+                observed_value: c.observed_value.clone(),
+                threshold: None,
+                condition_role: None,
+                params: None,
+            })
+            .collect();
+        MatchedEvidence {
+            meaning_id: carrier.proposal().meaning_id.clone(),
+            satisfied_conditions: conditions,
+        }
+    });
+
+    // Rejected: eliminated carriers' failed conditions
+    let rejected: Vec<RejectionEvidence> = eliminated.iter()
+        .map(|carrier| {
+            let failed = carrier.proposal().clauses.iter()
+                .filter(|c| !c.satisfied)
+                .map(|c| ConditionEvidence {
+                    condition_id: c.clause_id.clone().unwrap_or_else(|| c.fact_id.clone()),
+                    fact_id: Some(c.fact_id.clone()),
+                    satisfied: false,
+                    description: c.description.clone(),
+                    observed_value: c.observed_value.clone(),
+                    threshold: None,
+                    condition_role: None,
+                    params: None,
+                })
+                .collect();
+            RejectionEvidence {
+                meaning_id: carrier.proposal().meaning_id.clone(),
+                failed_conditions: failed,
+                module_id: carrier.proposal().module_id.clone(),
+                negatable_failures: None,
+            }
+        })
+        .collect();
+
+    // Alternatives: truth set entries that weren't selected
+    let selected_id = selected.as_ref().map(|c| c.proposal().meaning_id.as_str());
+    let alternatives: Vec<AlternativeEvidence> = truth_set.iter()
+        .filter(|c| Some(c.proposal().meaning_id.as_str()) != selected_id)
+        .map(|carrier| {
+            let p = carrier.proposal();
+            AlternativeEvidence {
+                meaning_id: p.meaning_id.clone(),
+                call: format!("{:?}", carrier.call()),
+                ranking: AlternativeRanking {
+                    band: format!("{:?}", p.ranking.recommendation_band),
+                    specificity: p.ranking.specificity,
+                },
+                reason: "Alternative in truth set".to_string(),
+                condition_delta: None,
+            }
+        })
+        .collect();
+
+    EvidenceBundle {
+        matched,
+        rejected,
+        alternatives,
+        exhaustive: true,
+        fallback_reached: selected.is_none(),
     }
 }
 

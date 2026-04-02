@@ -33,9 +33,9 @@ use crate::port::{DevServicePort, ServicePort};
 use crate::request_types::{SessionConfig, SessionHandle};
 use crate::response_types::{
     AiBidEntryDTO, AiPlayEntryDTO, BidSubmitResult, ConventionInfo, DDSolutionResult,
-    DrillStartResult, InferenceTimelineEntryDTO, PhaseTransition, PlaySuggestionsDTO,
-    PromptAcceptResult, ServiceDebugLogEntryDTO, ServiceDebugSnapshotDTO,
-    ServicePublicBeliefState, ServicePublicBeliefsDTO,
+    DrillStartResult, ExpectedBidDTO, InferenceTimelineEntryDTO, PhaseTransition,
+    PlaySuggestionsDTO, PromptAcceptResult, ServiceDebugLogEntryDTO, ServiceDebugSnapshotDTO,
+    ServiceFactConstraintDTO, ServicePublicBeliefState, ServicePublicBeliefsDTO,
 };
 use crate::session_manager::SessionManager;
 
@@ -174,6 +174,8 @@ impl ServicePort for ServicePortImpl {
             is_user_turn,
             current_bidder,
             practice_mode: Some(session.state.practice_mode),
+            bid_context: None,
+            bidding_options: None,
         });
 
         let auction_complete = session.state.auction.is_complete;
@@ -233,6 +235,8 @@ impl ServicePort for ServicePortImpl {
                 is_user_turn,
                 current_bidder,
                 practice_mode: Some(session.state.practice_mode),
+                bid_context: None,
+                bidding_options: None,
             }))
         } else {
             None
@@ -400,6 +404,16 @@ impl ServicePort for ServicePortImpl {
         Ok(result)
     }
 
+    fn record_play_recommendation(
+        &mut self,
+        handle: &str,
+        recommendation: bridge_session::session::PlayRecommendation,
+    ) -> Result<(), ServiceError> {
+        let session = self.manager.get_mut(handle)?;
+        session.state.play_recommendations.push(recommendation);
+        Ok(())
+    }
+
     fn skip_to_review(&mut self, handle: &str) -> Result<(), ServiceError> {
         let session = self.manager.get_mut(handle)?;
 
@@ -452,6 +466,8 @@ impl ServicePort for ServicePortImpl {
             is_user_turn,
             current_bidder,
             practice_mode: Some(session.state.practice_mode),
+            bid_context: None,
+            bidding_options: None,
         });
 
         Ok(Some(viewport))
@@ -797,11 +813,11 @@ impl DevServicePort for ServicePortImpl {
         let (bid, evaluation) =
             adapter.suggest_with_evaluation(&ctx, Some(&session.state.deal.hands));
 
-        let expected_bid = bid.map(|b| {
-            serde_json::json!({
-                "call": serde_json::to_value(&b.call).unwrap_or(serde_json::Value::Null),
-                "explanation": b.explanation,
-            })
+        let expected_bid = bid.map(|b| ExpectedBidDTO {
+            call: b.call.clone(),
+            explanation: b.explanation.clone(),
+            rule_name: b.rule_name.clone(),
+            trace: b.trace.clone(),
         });
 
         let strategy_eval =
@@ -819,54 +835,57 @@ impl DevServicePort for ServicePortImpl {
         handle: &str,
     ) -> Result<Vec<ServiceDebugLogEntryDTO>, ServiceError> {
         let session = self.manager.get(handle)?;
-
-        // Build a single "pre-bid" entry with the current pipeline snapshot
-        let adapter = match Self::get_convention_adapter(session) {
-            Some(a) => a,
-            None => return Ok(Vec::new()),
-        };
-        let ctx = match Self::build_user_bidding_context(session) {
-            Some(c) => c,
-            None => return Ok(Vec::new()),
-        };
-        let (bid, evaluation) =
-            adapter.suggest_with_evaluation(&ctx, Some(&session.state.deal.hands));
-
-        // Build snapshot: evaluation + expectedBid
-        let mut snapshot =
-            serde_json::to_value(&evaluation).unwrap_or(serde_json::Value::Null);
-        if let serde_json::Value::Object(ref mut map) = snapshot {
-            map.insert(
-                "expectedBid".to_string(),
-                bid.as_ref()
-                    .map(|b| {
-                        serde_json::json!({
-                            "call": serde_json::to_value(&b.call).unwrap_or(serde_json::Value::Null),
-                            "explanation": b.explanation,
-                        })
-                    })
-                    .unwrap_or(serde_json::Value::Null),
-            );
-        }
-
-        let entry = ServiceDebugLogEntryDTO {
-            kind: "pre-bid".to_string(),
-            turn_index: session.state.auction.entries.len(),
-            seat: session.state.user_seat,
-            call: None,
-            snapshot,
-            feedback: None,
-        };
-
-        Ok(vec![entry])
+        Ok(session.state.debug_log.iter().map(ServiceDebugLogEntryDTO::from).collect())
     }
 
     fn get_inference_timeline(
         &self,
         handle: &str,
     ) -> Result<Vec<InferenceTimelineEntryDTO>, ServiceError> {
-        let _session = self.manager.get(handle)?;
-        Ok(Vec::new())
+        let session = self.manager.get(handle)?;
+
+        // Combine NS and EW timelines into a single ordered list
+        let ns_timeline = session.state.get_ns_timeline();
+        let ew_timeline = session.state.get_ew_timeline();
+
+        let mut entries: Vec<InferenceTimelineEntryDTO> = Vec::new();
+        let mut turn_index = 0;
+
+        // Interleave based on turn order (NS and EW snapshots correspond to
+        // alternating bids in the auction)
+        let ns_iter = ns_timeline.iter();
+        let ew_iter = ew_timeline.iter();
+
+        for snapshot in ns_iter.chain(ew_iter) {
+            entries.push(InferenceTimelineEntryDTO {
+                turn_index,
+                seat: snapshot.entry.seat,
+                call: snapshot.entry.call.clone(),
+                new_constraints: snapshot.new_constraints.iter()
+                    .map(ServiceFactConstraintDTO::from)
+                    .collect(),
+                cumulative_beliefs: snapshot.cumulative_beliefs.iter()
+                    .map(|(seat, beliefs)| (*seat, ServicePublicBeliefsDTO::from(beliefs)))
+                    .collect(),
+            });
+            turn_index += 1;
+        }
+
+        // Sort by actual auction order using turn_index from entry positions
+        // The NS/EW timelines are already in order within their pair, so we
+        // re-sort based on seat ordering from the actual auction entries
+        entries.sort_by_key(|e| {
+            session.state.auction.entries.iter()
+                .position(|ae| ae.seat == e.seat && ae.call == e.call)
+                .unwrap_or(e.turn_index)
+        });
+
+        // Fix turn indices after sort
+        for (i, entry) in entries.iter_mut().enumerate() {
+            entry.turn_index = i;
+        }
+
+        Ok(entries)
     }
 
     fn get_play_suggestions(

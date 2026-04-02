@@ -2,11 +2,12 @@
 //! with additional metadata for the UI/WASM boundary.
 
 use bridge_engine::types::{Call, Card, Seat, Suit};
+use bridge_engine::strategy::ChainTrace;
 use bridge_session::inference::types::{
     BidAnnotation, DerivedRanges, NumberRange, PublicBeliefState, PublicBeliefs,
     QualitativeConstraint,
 };
-use bridge_session::session::{AiBidEntry, AiPlayEntry, BidGrade, BidHistoryEntryView, BiddingViewport};
+use bridge_session::session::{AiBidEntry, AiPlayEntry, BidGrade, BidHistoryEntryView, BiddingViewport, DebugLogEntry};
 use bridge_session::types::{GamePhase, PlayPreference, PracticeMode};
 use bridge_conventions::types::meaning::FactConstraint;
 use serde::{Deserialize, Serialize};
@@ -533,6 +534,18 @@ pub struct NearMissCallDTO {
 
 // ── Debug DTOs (DevServicePort) ──────────────────────────────────
 
+/// Typed expected bid for debug snapshot.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExpectedBidDTO {
+    pub call: Call,
+    pub explanation: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rule_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trace: Option<ChainTrace>,
+}
+
 /// Debug snapshot — typed wrapper with session metadata + flattened strategy evaluation.
 /// The `strategy_eval` field is kept as `serde_json::Value` because
 /// `StrategyEvaluation` is deeply nested (PipelineResult, MachineDebugSnapshot, etc.)
@@ -541,13 +554,13 @@ pub struct NearMissCallDTO {
 #[serde(rename_all = "camelCase")]
 pub struct ServiceDebugSnapshotDTO {
     pub session_phase: GamePhase,
-    pub expected_bid: Option<serde_json::Value>,
+    pub expected_bid: Option<ExpectedBidDTO>,
     /// StrategyEvaluation fields — kept dynamic since they are debug-only.
     #[serde(flatten)]
     pub strategy_eval: serde_json::Value,
 }
 
-/// Debug log entry — typed wrapper with kind/turnIndex/seat + dynamic snapshot.
+/// Debug log entry — typed wrapper with kind/turnIndex/seat + typed fields.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServiceDebugLogEntryDTO {
@@ -556,18 +569,40 @@ pub struct ServiceDebugLogEntryDTO {
     pub seat: Seat,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub call: Option<Call>,
-    pub snapshot: serde_json::Value,
-    pub feedback: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_call: Option<Call>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_explanation: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub grade: Option<BidGrade>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trace: Option<ChainTrace>,
 }
 
-/// Inference timeline entry — typed wrapper (currently stubbed as empty).
+impl From<&DebugLogEntry> for ServiceDebugLogEntryDTO {
+    fn from(entry: &DebugLogEntry) -> Self {
+        Self {
+            kind: entry.kind.clone(),
+            turn_index: entry.turn_index,
+            seat: entry.seat,
+            call: entry.call.clone(),
+            expected_call: entry.expected_call.clone(),
+            expected_explanation: entry.expected_explanation.clone(),
+            grade: entry.grade,
+            trace: entry.trace.clone(),
+        }
+    }
+}
+
+/// Inference timeline entry — typed wrapper populated from InferenceSnapshot.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InferenceTimelineEntryDTO {
     pub turn_index: usize,
     pub seat: Seat,
     pub call: Call,
-    pub inferences: serde_json::Value,
+    pub new_constraints: Vec<ServiceFactConstraintDTO>,
+    pub cumulative_beliefs: HashMap<Seat, ServicePublicBeliefsDTO>,
 }
 
 /// Play suggestion from a single heuristic profile.
@@ -674,10 +709,12 @@ mod tests {
     fn debug_snapshot_dto_serde_roundtrip() {
         let dto = ServiceDebugSnapshotDTO {
             session_phase: GamePhase::Bidding,
-            expected_bid: Some(serde_json::json!({
-                "call": {"type": "bid", "level": 1, "strain": "NT"},
-                "explanation": "15-17 HCP balanced"
-            })),
+            expected_bid: Some(ExpectedBidDTO {
+                call: Call::Bid { level: 1, strain: bridge_engine::types::BidSuit::NoTrump },
+                explanation: "15-17 HCP balanced".to_string(),
+                rule_name: None,
+                trace: None,
+            }),
             strategy_eval: serde_json::json!({
                 "pipelineResult": null,
                 "facts": {"hcp": 16}
@@ -701,20 +738,23 @@ mod tests {
     #[test]
     fn debug_log_entry_dto_serde_roundtrip() {
         let dto = ServiceDebugLogEntryDTO {
-            kind: "pre-bid".to_string(),
+            kind: "user-bid".to_string(),
             turn_index: 3,
             seat: Seat::South,
-            call: None,
-            snapshot: serde_json::json!({"expectedBid": null}),
-            feedback: None,
+            call: Some(Call::Pass),
+            expected_call: Some(Call::Pass),
+            expected_explanation: Some("No convention applies".to_string()),
+            grade: Some(BidGrade::Correct),
+            trace: None,
         };
         let json = serde_json::to_string(&dto).unwrap();
         assert!(json.contains("\"turnIndex\""), "Expected camelCase turnIndex: {}", json);
-        assert!(json.contains("\"pre-bid\""));
+        assert!(json.contains("\"user-bid\""));
         let rt: ServiceDebugLogEntryDTO = serde_json::from_str(&json).unwrap();
-        assert_eq!(rt.kind, "pre-bid");
+        assert_eq!(rt.kind, "user-bid");
         assert_eq!(rt.turn_index, 3);
         assert_eq!(rt.seat, Seat::South);
+        assert_eq!(rt.grade, Some(BidGrade::Correct));
     }
 
     #[test]

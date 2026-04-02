@@ -93,6 +93,14 @@ pub struct ConventionModule {
     pub local: LocalFsm,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub states: Option<Vec<StateEntry>>,
+
+    // Host-attachment activation (optional)
+    /// When non-empty, this module only activates when attachment conditions are met.
+    /// Empty vec means always active (default behavior for existing modules).
+    /// Used for Negative Doubles, Fourth Suit Forcing, Drury — conventions
+    /// that activate in response to specific auction patterns or states.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub attachments: Vec<super::agreement::Attachment>,
 }
 
 #[cfg(test)]

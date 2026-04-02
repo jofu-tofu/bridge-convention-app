@@ -15,12 +15,46 @@ use bridge_engine::constants::{bid_suit_to_suit, next_seat, partner_seat};
 use crate::inference::InferenceCoordinator;
 use crate::inference::types::{InferenceSnapshot, PublicBeliefState, PublicBeliefs};
 use crate::inference::{Posterior, PosteriorEngine, UniformPosterior};
+use bridge_engine::strategy::ChainTrace;
+use serde::{Serialize, Deserialize};
+
 use crate::heuristics::{BiddingStrategy, BidResult};
 use crate::heuristics::play_profiles::{PlayProfileId, get_profile};
 use crate::types::{GamePhase, PlayPreference, PracticeFocus, PracticeMode};
 
+use super::bid_feedback_builder::BidGrade;
 use super::build_viewport::BidHistoryEntryView;
 use super::build_viewport::AnnotationType;
+
+// ── Debug log ─────────────────────────────────────────────────────
+
+/// A single entry in the per-deal debug log, capturing bidding decisions
+/// for the debug panel.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DebugLogEntry {
+    /// Entry kind: "pre-bid", "user-bid", "ai-bid"
+    pub kind: String,
+    /// Zero-based turn index in the auction
+    pub turn_index: usize,
+    /// Which seat this entry is about
+    pub seat: Seat,
+    /// The call that was made (None for pre-bid snapshots)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub call: Option<Call>,
+    /// What the strategy expected for this seat
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_call: Option<Call>,
+    /// Explanation for the expected call
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expected_explanation: Option<String>,
+    /// Grade assigned to the user's bid (user-bid only)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub grade: Option<BidGrade>,
+    /// Strategy chain trace showing which strategies were attempted
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trace: Option<ChainTrace>,
+}
 
 // ── SeatStrategy ────────────────────────────────────────────────────
 
@@ -80,6 +114,12 @@ pub struct SessionState {
     // Bid history (accumulated from inference annotations)
     pub bid_history: Vec<BidHistoryEntryView>,
 
+    // Debug log (accumulated per-deal, cleared on new deal)
+    pub debug_log: Vec<DebugLogEntry>,
+
+    // Play recommendations (accumulated during play, cleared per deal)
+    pub play_recommendations: Vec<super::build_viewport::PlayRecommendation>,
+
     // Play state (separated for partial borrows)
     pub play: PlayState,
 
@@ -129,6 +169,8 @@ impl SessionState {
             public_belief_state,
 
             bid_history: Vec::new(),
+            debug_log: Vec::new(),
+            play_recommendations: Vec::new(),
 
             play: PlayState::default(),
 

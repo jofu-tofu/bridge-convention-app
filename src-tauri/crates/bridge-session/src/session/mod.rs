@@ -19,7 +19,7 @@ pub mod clause_mapper;
 pub mod condition_caps;
 pub mod learning_viewport;
 
-pub use session_state::{SessionState, PlayState, SeatStrategy, get_current_turn};
+pub use session_state::{SessionState, PlayState, SeatStrategy, DebugLogEntry, get_current_turn};
 pub use drill_session::get_next_bid;
 pub use config_factory::{DrillConfig, create_drill_config};
 pub use start_drill::{
@@ -34,7 +34,8 @@ pub use build_viewport::{
     build_bidding_viewport, build_declarer_prompt_viewport,
     build_playing_viewport, build_explanation_viewport,
     HandEvaluationView, AuctionEntryView, AnnotationType, BidHistoryEntryView,
-    PlayRecommendation, BiddingViewport, DeclarerPromptViewport,
+    PlayRecommendation, BiddingViewport, BidContextView, BidRole, CallRoleEntry,
+    BiddingOptionView, DeclarerPromptViewport,
     PlayingViewport, ExplanationViewport,
     BuildBiddingViewportInput, BuildDeclarerPromptViewportInput,
     BuildPlayingViewportInput, BuildExplanationViewportInput,

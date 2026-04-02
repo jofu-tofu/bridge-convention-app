@@ -28,6 +28,7 @@ import type {
   ModuleFlowTreeViewport,
   ServicePublicBeliefState,
   ServiceInferenceSnapshot,
+  PlayRecommendation,
 } from "./response-types";
 import type { ServiceDebugSnapshot, ServiceDebugLogEntry, PlaySuggestions } from "./debug-types";
 import type { PlayProfileId } from "./session-types";
@@ -45,6 +46,7 @@ interface WasmServicePortBindings {
   accept_prompt(handle: string, mode: string | undefined, seatOverride: Seat | undefined): PromptAcceptResult;
   play_card(handle: string, card: Card, seat: Seat): PlayCardResult;
   play_single_card(handle: string, card: Card, seat: Seat): SingleCardResult;
+  record_play_recommendation(handle: string, recommendation: PlayRecommendation): void;
   skip_to_review(handle: string): void;
   update_play_profile(handle: string, profileId: string): void;
   get_bidding_viewport(handle: string): BiddingViewport | null;
@@ -136,6 +138,10 @@ export class WasmService implements DevServicePort {
 
   async playSingleCard(handle: SessionHandle, card: Card, seat: Seat): Promise<SingleCardResult> {
     return getPort().play_single_card(handle, card, seat);
+  }
+
+  async recordPlayRecommendation(handle: SessionHandle, recommendation: PlayRecommendation): Promise<void> {
+    getPort().record_play_recommendation(handle, recommendation);
   }
 
   async skipToReview(handle: SessionHandle): Promise<void> {

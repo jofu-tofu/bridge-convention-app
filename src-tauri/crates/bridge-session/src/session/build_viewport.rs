@@ -83,6 +83,42 @@ pub struct PlayRecommendation {
     pub is_optimal: bool,
 }
 
+// ── Bid context ──────────────────────────────────────────────────
+
+/// Classification of a legal call relative to the practice focus.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum BidRole {
+    Target,
+    Prerequisite,
+    FollowUp,
+    OffConvention,
+}
+
+/// Bid context view — classifies legal calls by their relation to the focus.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BidContextView {
+    pub call_roles: Vec<CallRoleEntry>,
+}
+
+/// Role classification for a single call.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CallRoleEntry {
+    pub call: Call,
+    pub role: BidRole,
+}
+
+/// A bidding option — an active meaning surface shown during bidding.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BiddingOptionView {
+    pub call: Call,
+    pub surface_name: String,
+    pub summary: String,
+}
+
 // ── Bidding Viewport ──────────────────────────────────────────────
 
 /// Bidding viewport — what the player sees during bidding.
@@ -103,6 +139,12 @@ pub struct BiddingViewport {
     pub current_bidder: Seat,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub practice_mode: Option<PracticeMode>,
+    /// Bid context — classifies legal calls by their relation to practice focus.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bid_context: Option<BidContextView>,
+    /// Active bidding options from convention surfaces at this turn.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bidding_options: Option<Vec<BiddingOptionView>>,
 }
 
 /// Declarer prompt viewport.
@@ -244,6 +286,8 @@ pub struct BuildBiddingViewportInput<'a> {
     pub is_user_turn: bool,
     pub current_bidder: Seat,
     pub practice_mode: Option<PracticeMode>,
+    pub bid_context: Option<BidContextView>,
+    pub bidding_options: Option<Vec<BiddingOptionView>>,
 }
 
 /// Input for building a DeclarerPromptViewport.
@@ -336,6 +380,8 @@ pub fn build_bidding_viewport(input: BuildBiddingViewportInput) -> BiddingViewpo
         is_user_turn: input.is_user_turn,
         current_bidder: input.current_bidder,
         practice_mode: input.practice_mode,
+        bid_context: input.bid_context,
+        bidding_options: input.bidding_options,
     }
 }
 
@@ -523,6 +569,8 @@ mod tests {
             is_user_turn: true,
             current_bidder: Seat::South,
             practice_mode: None,
+            bid_context: None,
+            bidding_options: None,
         });
 
         // Only South's hand is visible
@@ -550,6 +598,8 @@ mod tests {
             is_user_turn: false,
             current_bidder: Seat::North,
             practice_mode: None,
+            bid_context: None,
+            bidding_options: None,
         });
 
         // 4-3-3-3 shape with all face cards

@@ -95,8 +95,10 @@ pub fn evaluate_proposal(
 
 /// Classify carriers into truth set and acceptable set.
 ///
-/// Truth set: hand satisfied AND legal encoding.
-/// Acceptable set: a subset of truth set (same for now, pedagogical filtering later).
+/// Truth set: hand satisfied AND legal encoding (fully correct bids).
+/// Acceptable set: truth set + carriers that failed hand conditions but have
+/// a legal encoding. These represent bids the player "could make if they had
+/// different hand values" — used for teaching ("Acceptable" grade feedback).
 pub fn classify_into_sets(
     carriers: &[PipelineCarrier],
 ) -> (Vec<PipelineCarrier>, Vec<PipelineCarrier>) {
@@ -108,12 +110,23 @@ pub fn classify_into_sets(
         .cloned()
         .collect();
 
-    // Acceptable = truth set filtered by pedagogical acceptability
-    let acceptable_set: Vec<PipelineCarrier> = truth_set
-        .iter()
-        .filter(|c| c.encoded.eligibility.pedagogical.acceptable)
-        .cloned()
-        .collect();
+    // Acceptable set: truth set (all fully correct) PLUS carriers that failed
+    // hand conditions but have legal encoding (hand-gate-failed-but-legal path).
+    // This enables the "Acceptable" grade in 5-tier grading — "you could bid X
+    // if you had Y".
+    let mut acceptable_set: Vec<PipelineCarrier> = truth_set.clone();
+
+    for carrier in carriers {
+        let hand_failed = !carrier.encoded.eligibility.hand.satisfied;
+        let encoding_legal = carrier.encoded.eligibility.encoding.legal;
+        let already_in_truth = truth_set.iter().any(|t| {
+            t.encoded.proposal.meaning_id == carrier.encoded.proposal.meaning_id
+        });
+
+        if hand_failed && encoding_legal && !already_in_truth {
+            acceptable_set.push(carrier.clone());
+        }
+    }
 
     (truth_set, acceptable_set)
 }

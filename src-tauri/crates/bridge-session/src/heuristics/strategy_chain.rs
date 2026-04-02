@@ -2,33 +2,16 @@
 //!
 //! Mirrors TS `createStrategyChain()` from `session/heuristics/strategy-chain.ts`.
 
+use bridge_engine::strategy::{AttemptOutcome, ChainTrace, StrategyAttempt};
+
 use super::{BidResult, BiddingContext, BiddingStrategy};
 
-/// Outcome of a single strategy attempt within the chain.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum AttemptOutcome {
-    Suggested,
-    Declined,
-    Error,
-}
-
-/// Record of a strategy attempt for debugging/tracing.
-#[derive(Debug, Clone)]
-pub struct StrategyAttempt {
-    pub strategy_id: String,
-    pub outcome: AttemptOutcome,
-}
-
-/// Trace of the strategy chain evaluation.
-#[derive(Debug, Clone, Default)]
-pub struct ChainTrace {
-    pub attempts: Vec<StrategyAttempt>,
-}
-
 /// A chain of bidding strategies evaluated in order. The first strategy
-/// to return `Some(BidResult)` wins.
+/// to return `Some(BidResult)` wins. An optional result_filter can reject
+/// results (e.g., forcing-bid enforcement), causing the chain to continue.
 pub struct StrategyChain {
     strategies: Vec<Box<dyn BiddingStrategy>>,
+    result_filter: Option<Box<dyn Fn(&BidResult, &BiddingContext) -> bool + Send + Sync>>,
     chain_id: String,
     chain_name: String,
 }
@@ -54,9 +37,21 @@ impl StrategyChain {
         );
         Self {
             strategies,
+            result_filter: None,
             chain_id,
             chain_name,
         }
+    }
+
+    /// Set a result filter that can reject strategy results.
+    /// The filter returns `true` to accept the result, `false` to reject it
+    /// (causing the chain to continue to the next strategy).
+    pub fn with_result_filter(
+        mut self,
+        filter: Box<dyn Fn(&BidResult, &BiddingContext) -> bool + Send + Sync>,
+    ) -> Self {
+        self.result_filter = Some(filter);
+        self
     }
 
     /// Suggest a bid, returning both the result and a trace of which strategies
@@ -70,12 +65,25 @@ impl StrategyChain {
             }));
 
             match result {
-                Ok(Some(bid_result)) => {
+                Ok(Some(mut bid_result)) => {
+                    // Apply result filter if set (e.g., forcing-bid enforcement)
+                    let accepted = match &self.result_filter {
+                        Some(filter) => filter(&bid_result, context),
+                        None => true,
+                    };
+                    if accepted {
+                        trace.attempts.push(StrategyAttempt {
+                            strategy_id: strategy.id().to_string(),
+                            outcome: AttemptOutcome::Suggested,
+                        });
+                        bid_result.trace = Some(trace.clone());
+                        return (Some(bid_result), trace);
+                    }
+                    // Filter rejected — record as declined and continue
                     trace.attempts.push(StrategyAttempt {
                         strategy_id: strategy.id().to_string(),
-                        outcome: AttemptOutcome::Suggested,
+                        outcome: AttemptOutcome::Declined,
                     });
-                    return (Some(bid_result), trace);
                 }
                 Ok(None) => {
                     trace.attempts.push(StrategyAttempt {

@@ -248,7 +248,7 @@ pub(crate) fn build_observation_log(
                     surfaces: &surfaces,
                     facts: &facts,
                     is_legal: &is_legal,
-                    inherited_dimensions: &[],
+                    inherited_dimensions: &std::collections::HashMap::new(),
                     hand: step_hand,
                     system_config,
                 }))

@@ -6,6 +6,29 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Auction, Call, Hand, HandEvaluation, Seat, Vulnerability};
 
+// ── Chain trace types ─────────────────────────────────────────────
+
+/// Outcome of a single strategy attempt within the chain.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AttemptOutcome {
+    Suggested,
+    Declined,
+    Error,
+}
+
+/// Record of a strategy attempt for debugging/tracing.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StrategyAttempt {
+    pub strategy_id: String,
+    pub outcome: AttemptOutcome,
+}
+
+/// Trace of the strategy chain evaluation.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ChainTrace {
+    pub attempts: Vec<StrategyAttempt>,
+}
+
 /// How a bid's meaning is disclosed to opponents at the table.
 ///
 /// Duplicated from `bridge_conventions::types::meaning::Disclosure` to keep
@@ -54,6 +77,9 @@ pub struct BidResult {
     /// Near-miss calls — bids on a considered surface with at most one unsatisfied condition.
     #[serde(default)]
     pub near_miss_calls: Vec<Call>,
+    /// Strategy chain trace showing which strategies were attempted.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trace: Option<ChainTrace>,
 }
 
 /// Trait for bidding strategies. Each strategy inspects the context and either
