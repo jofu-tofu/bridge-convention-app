@@ -57,7 +57,7 @@ components/
     ReplayControls.svelte            Forward/back/jump navigation bar for review-phase card-by-card replay
     replay-state.ts                  Pure replay cursor logic: step↔position conversion, progressive reveal, decision point detection
     TrickReviewPanel.svelte          Trick-by-trick review panel with recommendation badges and trick stepper
-    ConventionCardPanel.svelte       Convention card side drawer — full system projection with progressive disclosure (system thresholds + active convention modules + teaching detail)
+    ConventionCardPanel.svelte       Convention card side drawer — format toggle (App accordion / ACBL bordered cards) via ToggleGroup. App mode: progressive disclosure. ACBL mode: 11 ACBL-standard sections, always visible, unavailable sections greyed out.
     AuctionTable.svelte              4-column N/E/S/W grid, suit-colored. `minimal` prop for compact play-history rendering (no legend/annotations).
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
     BidFeedbackPanel.svelte          Two-branch bid feedback (Correct/Acceptable green → BidFeedbackCorrect, NearMiss amber/Incorrect red → BidFeedbackIncorrect) with show-answer toggle, acceptable badges on siblings, optional practical note, convention contribution badges, WhyNot grade distinction, multi-rationale indicator, encoding explanation, partner hand space summary, elimination stage annotations

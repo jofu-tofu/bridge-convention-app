@@ -897,6 +897,29 @@ export interface ConventionCardPanelView {
   readonly sections: readonly ConventionCardSection[];
 }
 
+// ── ACBL Convention Card ─────────────────────────────────────────
+
+export enum ConventionCardFormat {
+  App = "app",
+  Acbl = "acbl",
+}
+
+/** ACBL convention card section — always visible, may be unavailable (placeholder). */
+export interface AcblCardSection {
+  readonly id: string;
+  readonly title: string;
+  readonly available: boolean;
+  readonly items: readonly ConventionCardLineItem[];
+  readonly modules: readonly ConventionCardModuleDetail[];
+}
+
+/** ACBL convention card panel view — all 11 sections, always present. */
+export interface AcblCardPanelView {
+  readonly partnership: string;
+  readonly systemName: string;
+  readonly sections: readonly AcblCardSection[];
+}
+
 // ── Base Module Info ────────────────────────────────────────────
 
 /** Read-only metadata about a base system module for settings display. */

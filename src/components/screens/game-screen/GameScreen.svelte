@@ -2,7 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { Seat, PracticeMode, PromptMode } from "../../../service";
   import type { Call } from "../../../service";
-  import { getSystemConfig, buildConventionCardPanel } from "../../../service";
+  import { getSystemConfig, buildConventionCardPanel, buildAcblCardPanel } from "../../../service";
   import { getGameStore, getAppStore, setLayoutConfig, getService } from "../../../stores/context";
   import type { SessionConfig } from "../../../service";
 
@@ -272,6 +272,7 @@
   // Convention card panel — structured sections from system config + active modules
   const systemConfig = $derived(getSystemConfig(appStore.baseSystemId));
   const ccPanelView = $derived(buildConventionCardPanel(systemConfig, appStore.selectedConvention?.id));
+  const acblPanelView = $derived(buildAcblCardPanel(systemConfig, appStore.selectedConvention?.id));
   let ccPanelOpen = $state(false);
 
   function handleBackToMenu() {
@@ -394,7 +395,7 @@
       <DebugDrawer open={appStore.debugPanelOpen} />
     {/if}
 
-    <ConventionCardPanel panelView={ccPanelView} open={ccPanelOpen} onclose={() => { ccPanelOpen = false; }} />
+    <ConventionCardPanel panelView={ccPanelView} acblPanelView={acblPanelView} open={ccPanelOpen} onclose={() => { ccPanelOpen = false; }} />
   </main>
 {:else}
   <div class="flex items-center justify-center h-full">

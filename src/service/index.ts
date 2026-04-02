@@ -10,6 +10,7 @@ export {
   ServiceGamePhase,
   ViewportBidGrade,
   ConventionCardSectionId,
+  ConventionCardFormat,
 } from "./response-types";
 export type {
   ServicePublicBeliefs,
@@ -41,6 +42,8 @@ export type {
   ConventionInfo,
   ServiceExplanationNode,
   BiddingOptionView,
+  AcblCardSection,
+  AcblCardPanelView,
 } from "./response-types";
 
 // ── 3. Game Vocabulary (engine primitives) ───────────────────────────
@@ -106,7 +109,7 @@ export { listConventions, listModules, buildBaseModuleInfos } from "./service-he
 
 // ── 6. Display & Formatting ─────────────────────────────────────────
 export { displayConventionName, formatCall, formatContractWithDeclarer, formatRuleName, displayRank, formatCardLabel, SUIT_SYMBOLS, STRAIN_SYMBOLS } from "./display/format";
-export { buildConventionCard, buildConventionCardPanel } from "./display/convention-card";
+export { buildConventionCard, buildConventionCardPanel, buildAcblCardPanel } from "./display/convention-card";
 
 // ── 7. Cross-cutting ────────────────────────────────────────────────
 export { delay } from "./util/delay";

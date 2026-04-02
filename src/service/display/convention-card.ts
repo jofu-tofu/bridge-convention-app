@@ -57,6 +57,8 @@ import type {
   ConventionCardSection,
   ConventionCardLineItem,
   ConventionCardModuleDetail,
+  AcblCardPanelView,
+  AcblCardSection,
 } from "../response-types";
 
 // ── Shared helpers ─────────────────────────────────────────────
@@ -230,6 +232,155 @@ export function buildConventionCardPanel(
       modules,
     });
   }
+
+  return {
+    partnership: "N-S",
+    systemName: systemShortLabel(systemConfig),
+    sections,
+  };
+}
+
+// ── ACBL convention card (11 standard sections) ──────────────
+
+interface AcblSectionDef {
+  readonly id: string;
+  readonly title: string;
+  readonly moduleIds: readonly string[];
+  readonly alwaysAvailable: boolean;
+  readonly buildItems: (sys: SystemConfig, activeModuleIds: ReadonlySet<string>) => readonly ConventionCardLineItem[];
+}
+
+const ACBL_SECTION_DEFS: readonly AcblSectionDef[] = [
+  {
+    id: "acbl-special-doubles",
+    title: "Special Doubles",
+    moduleIds: [],
+    alwaysAvailable: true,
+    buildItems: (sys) => [
+      { label: "Negative", value: "Through 2\u2660" },
+      { label: "Redouble", value: `${sys.interference.redoubleMin}+ HCP` },
+    ],
+  },
+  {
+    id: "acbl-notrump-opening",
+    title: "Notrump Opening Bids",
+    moduleIds: ["stayman", "jacoby-transfers", "smolen"],
+    alwaysAvailable: true,
+    buildItems: (sys) => [
+      { label: "1NT Range", value: `${sys.ntOpening.minHcp}\u2013${sys.ntOpening.maxHcp}` },
+      { label: "Invite Range", value: `${sys.responderThresholds.inviteMin}\u2013${sys.responderThresholds.inviteMax} HCP` },
+      { label: "Game Forcing", value: `${sys.responderThresholds.gameMin}+ HCP` },
+      { label: "Slam Zone", value: `${sys.responderThresholds.slamMin}+ HCP` },
+    ],
+  },
+  {
+    id: "acbl-major-opening",
+    title: "Major Opening",
+    moduleIds: ["bergen"],
+    alwaysAvailable: true,
+    buildItems: (sys) => [
+      { label: "Min Length", value: `${sys.openingRequirements.majorSuitMinLength}+ cards` },
+      { label: "1NT Response", value: formatOneNtResponse(sys) },
+      { label: "New Suit at 2-Level", value: `${sys.suitResponse.twoLevelMin}+ HCP, ${formatForcingDuration(sys.suitResponse.twoLevelForcingDuration)}` },
+    ],
+  },
+  {
+    id: "acbl-minor-opening",
+    title: "Minor Opening",
+    moduleIds: [],
+    alwaysAvailable: true,
+    buildItems: () => [
+      { label: "Style", value: "Standard" },
+    ],
+  },
+  {
+    id: "acbl-two-level-openings",
+    title: "2-Level Openings",
+    moduleIds: ["weak-twos"],
+    alwaysAvailable: false,
+    buildItems: () => [],
+  },
+  {
+    id: "acbl-other-conventional",
+    title: "Other Conventional Calls",
+    moduleIds: [],
+    alwaysAvailable: false,
+    buildItems: () => [],
+  },
+  {
+    id: "acbl-defensive-competitive",
+    title: "Defensive & Competitive",
+    moduleIds: ["dont"],
+    alwaysAvailable: true,
+    buildItems: (sys, activeModuleIds) => [
+      {
+        label: "vs 1NT",
+        value: activeModuleIds.has("dont")
+          ? `DONT ${sys.dontOvercall.minHcp}\u2013${sys.dontOvercall.maxHcp} HCP`
+          : "Natural",
+      },
+      { label: "Redouble", value: `${sys.interference.redoubleMin}+ HCP` },
+    ],
+  },
+  {
+    id: "acbl-leads",
+    title: "Leads",
+    moduleIds: [],
+    alwaysAvailable: false,
+    buildItems: () => [],
+  },
+  {
+    id: "acbl-signals",
+    title: "Signals",
+    moduleIds: [],
+    alwaysAvailable: false,
+    buildItems: () => [],
+  },
+  {
+    id: "acbl-slam-conventions",
+    title: "Slam Conventions",
+    moduleIds: ["blackwood"],
+    alwaysAvailable: true,
+    buildItems: (sys) => [
+      { label: "Slam Zone", value: `${sys.responderThresholds.slamMin}+ HCP` },
+    ],
+  },
+  {
+    id: "acbl-important-notes",
+    title: "Important Notes",
+    moduleIds: [],
+    alwaysAvailable: false,
+    buildItems: () => [],
+  },
+];
+
+/** Build an ACBL-format convention card panel view with all 11 standard sections. */
+export function buildAcblCardPanel(
+  systemConfig: SystemConfig,
+  conventionId?: string,
+): AcblCardPanelView {
+  const activeModuleIds = new Set<string>([
+    ...getBaseModuleIds(systemConfig.systemId),
+    ...(conventionId ? (getBundleInput(conventionId)?.memberIds ?? []) : []),
+  ]);
+
+  const sections: AcblCardSection[] = ACBL_SECTION_DEFS.map((def) => {
+    const hasActiveModule = def.moduleIds.some((mid) => activeModuleIds.has(mid));
+    const available = def.alwaysAvailable || hasActiveModule;
+
+    const items = available ? def.buildItems(systemConfig, activeModuleIds) : [];
+    const modules: ConventionCardModuleDetail[] = [];
+
+    if (available) {
+      for (const mid of def.moduleIds) {
+        if (!activeModuleIds.has(mid)) continue;
+        const detail = buildModuleDetail(mid, systemConfig);
+        if (detail) modules.push(detail);
+      }
+    }
+
+    return { id: def.id, title: def.title, available, items, modules };
+  });
 
   return {
     partnership: "N-S",
