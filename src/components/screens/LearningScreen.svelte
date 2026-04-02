@@ -329,7 +329,7 @@
                     </div>
                     <!-- Surface list -->
                     <div class="divide-y divide-border-subtle">
-                      {#each phase.surfaces as surface (surface.meaningId)}
+                      {#each phase.surfaces as surface, surfIdx (`${phase.phase}:${surfIdx}:${surface.meaningId}`)}
                         <div class="px-4 py-3">
                           <div class="flex items-center gap-3 mb-1">
                             <span class="font-mono text-sm font-bold text-text-primary">{surface.callDisplay}</span>
