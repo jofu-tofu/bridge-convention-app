@@ -2,7 +2,7 @@
 
 Post-migration audit reconciling behavioral differences between the deleted TS backend and the current Rust implementation. These are not bugs introduced during migration — they are features, logic paths, and capabilities that were simplified or deferred during the port.
 
-**Status:** In Progress
+**Status:** In Progress (P0 complete, most P1 complete, P2/P3 remaining)
 **Dependencies:** Phase 5 (complete)
 
 ## Severity Legend
@@ -112,13 +112,11 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 **Fix:** Depends on MC+DDS play (section 5). Stub with heuristic recommendations until then.
 
-### 4.2 DDS always returns unavailable (P2)
+### 4.2 ~~DDS always returns unavailable~~ (P2) ✅ COMPLETE
 
-**TS:** `getDDSSolution` delegated to `DDSController` using the engine port with timeout and stale-result guards.
+**Fixed:** Rust `get_dds_solution()` returns `DdsNotAvailable` stub, but `WasmService.getDDSSolution()` in `wasm-service.ts` transparently falls back to `getDDSSolutionFromWorker()` — the JS DDS Web Worker bridge. Callers get a real `DDSolutionResult` from the browser DDS solver. `getDealPBN()` service method provides the PBN string needed by the worker.
 
-**Rust:** Always returns `Err(ServiceError::DdsNotAvailable)`.
-
-**Fix:** Integrate bridge-engine DDS or JS worker bridge.
+**Files:** `src/service/wasm-service.ts`, `src/service/dds-bridge.ts`
 
 ### 4.3 Evaluation methods all stubbed (P2)
 
@@ -144,15 +142,11 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 ## 5. Heuristic Play & AI Behavior
 
-### 5.1 Monte Carlo + DDS play missing (P1)
+### 5.1 ~~Monte Carlo + DDS play missing~~ (P1) ✅ COMPLETE
 
-**TS:** Expert and World Class profiles used MC+DDS — sampled N deals (12 or 30), solved each with DDS, picked card with highest average expected tricks. Included batched evaluation, early termination, close-call extension, and belief constraint filtering.
+**Fixed:** `src/engine/mc-dds-play.ts` implements deal sampling (Fisher-Yates with constraint filtering), batched DDS evaluation (15 deals/batch, up to 2 batches), early termination when top-2 cards diverge ≥0.5 avg tricks, and close-call extension. `mcDdsSuggest()` is wired into `play-phase.svelte.ts`: profile dispatch checks `deps.useMcDds()` (Expert/WorldClass + DDS available), calls `mcDdsSuggest()` with belief-constrained remaining-card sampling, then executes the suggestion via `playSingleCard()` → `process_single_card()` in Rust. Expert samples randomly (no beliefs); WorldClass adds belief-constraint filtering via `PlayProfile.use_posterior`. Beginner/ClubPlayer profiles continue using the synchronous Rust heuristic chain via `playCard()`.
 
-**Rust:** All profiles use the 8-heuristic chain with MC posterior inference (opening lead, mid-game lead, discard are inference-aware). DDS browser solver is operational (`dds-client.ts` → `dds-worker.ts` → `dds.wasm`) but not called from the play controller for per-card evaluation.
-
-**Files:** Was `src/session/heuristics/montecarlo-play.ts`
-
-**Impact:** Expert/World Class profiles now differ from Beginner (profile dispatch, inference in heuristics) but don't reach optimal play without DDS card evaluation. The 4-tier system is partially differentiated: Beginner (skip heuristics), Club Player (heuristics + L1 inference), Expert (same as Club Player currently), World Class (heuristics + MC posterior). Full differentiation requires wiring the DDS browser solver into MC+DDS play evaluation.
+**Files:** `src/engine/mc-dds-play.ts`, `src/stores/play-phase.svelte.ts`, `src-tauri/crates/bridge-session/src/session/play_controller.rs` (`process_single_card`)
 
 ### 5.2 ~~Inference-aware play missing~~ (P1) ✅ COMPLETE
 
@@ -227,11 +221,9 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 **Fix:** Pass `StrategyEvaluation` constraints through to the coordinator.
 
-### 6.4 Public belief state always null (P3)
+### 6.4 ~~Public belief state always null~~ (P3) ✅ COMPLETE
 
-**Rust:** `get_public_belief_state()` returns `{ beliefs: null, annotations: [] }`.
-
-**Fix:** Wire up `InferenceCoordinator.getBeliefState()` which already tracks beliefs.
+**Fixed:** `get_public_belief_state()` in `service_impl.rs` returns populated `ServicePublicBeliefState` by converting `session.state.public_belief_state` — holds `beliefs: HashMap<Seat, PublicBeliefs>` with HCP/suit ranges and `annotations: Vec<BidAnnotation>` with convention meanings and constraints. The inference coordinator populates these during bid processing.
 
 ---
 
@@ -311,10 +303,10 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 9. ~~**5.2** Inference-aware play heuristics~~ ✅
 10. **5.3** Card counting and restricted choice
 11. ~~**6.1** Posterior engine (partial — start with rejection sampler)~~ ✅
-12. **5.1** MC+DDS play (DDS browser solver is ready; needs play controller integration)
+12. ~~**5.1** MC+DDS play~~ ✅
 
 ### Wave 4 — P2/P3 (completeness)
-13. Remaining P2 items (3.5–3.8, 4.1–4.5, 5.4–5.5, 6.2–6.4, 7.3–7.4, 8.1)
+13. Remaining P2 items (3.5–3.8, 4.1, 4.3–4.5, 5.4–5.5, 6.2–6.3, 7.3–7.4, 8.1)
 14. P3 items as encountered
 
 ---
@@ -325,7 +317,7 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 |---|---|---|
 | `session/bid-feedback-builder.ts` | `bridge-session/session/bid_feedback_builder.rs` | 5-tier grading ✅ |
 | `session/bidding-controller.ts` | `bridge-session/session/bidding_controller.rs` | Missing history, debug, teaching |
-| `session/play-controller.ts` | `bridge-session/session/play_controller.rs` | Profile dispatch + beliefs wired ✅; MC+DDS advisor missing |
+| `session/play-controller.ts` | `bridge-session/session/play_controller.rs` | Profile dispatch + beliefs wired ✅; MC+DDS via `process_single_card` ✅ |
 | `session/session-state.ts` | `bridge-session/session/session_state.rs` | Missing many fields |
 | `session/drill-session.ts` | `bridge-session/session/drill_session.rs` | Ported |
 | `session/phase-machine.ts` | `bridge-session/phase_machine.rs` | Full parity |
@@ -343,7 +335,7 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 | `session/dds-controller.ts` | — | **Missing** |
 | `session/practice-preferences.ts` | — | N/A (localStorage concern) |
 | `session/session-manager.ts` | `bridge-service/session_manager.rs` | Ported (moved to service) |
-| `session/heuristics/montecarlo-play.ts` | — | **Missing** |
+| `session/heuristics/montecarlo-play.ts` | `src/engine/mc-dds-play.ts` | ✅ Complete (TS-side MC+DDS with Rust `playSingleCard`) |
 | `session/heuristics/inference-play.ts` | — | **Missing** |
 | `session/heuristics/profile-play-strategy.ts` | — | **Missing** (partially absorbed) |
 | `session/heuristics/pragmatic-generator.ts` | — | **Missing** |

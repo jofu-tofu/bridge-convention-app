@@ -90,6 +90,6 @@ One WASM binary for everyone. Free definitions baked into static build. Paid def
 | Stub | Impact | Status |
 |------|--------|--------|
 | Posterior inference implemented (MC rejection sampling) | Monte Carlo posterior with 200-sample budget, wired into 3 heuristics | **Completed** |
-| MC+DDS play deferred | Expert/world-class profiles use heuristic play + MC posterior | Heuristic chain covers 8 play situations; DDS integration is follow-up |
+| MC+DDS play implemented | Expert/WorldClass use TS-driven MC+DDS via `playSingleCard` + `mcDdsSuggest`; Beginner/ClubPlayer use Rust heuristic chain | **Completed** |
+| DDS browser solving wired | `getDDSSolution` falls back to JS DDS Web Worker via `getDealPBN` | **Completed** |
 | Deal filtering (`customCheck`) not ported | Rust drills may produce off-convention deals more often | Grading system still works correctly |
-| DDS-via-handle integration | `getDDSSolution` needs `getDeal()` service method for full integration | Follow-up work; JS worker fallback operational in browser |
