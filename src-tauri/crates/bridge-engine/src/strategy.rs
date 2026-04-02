@@ -71,4 +71,12 @@ pub trait BiddingStrategy: Send + Sync {
     /// Downcast support — enables extracting concrete adapter types from
     /// `SeatStrategy::Ai(Box<dyn BiddingStrategy>)` without a separate field.
     fn as_any(&self) -> &dyn std::any::Any;
+
+    /// Return the last evaluation data (if any) for constraint extraction.
+    /// Default returns None. Convention-aware strategies override this to return
+    /// a `StrategyEvaluation` boxed as Any, enabling the bidding controller to
+    /// extract FactConstraints without importing the concrete adapter type.
+    fn stashed_evaluation(&self) -> Option<Box<dyn std::any::Any + Send>> {
+        None
+    }
 }

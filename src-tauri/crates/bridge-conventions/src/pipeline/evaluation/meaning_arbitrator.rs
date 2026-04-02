@@ -95,6 +95,11 @@ pub fn arbitrate_meanings(
 }
 
 /// Deduplicate carriers by semantic class — keep highest-ranked per class.
+///
+/// NOTE: Only checks raw `semantic_class_id`. Alias resolution (cross-module
+/// equivalence via aliased class IDs) is not implemented — spike (2026-04-02)
+/// found no alias data in module fixtures and no cross-module duplicate class
+/// IDs in any of the 4 bundles. Revisit if alias fields are added to fixtures.
 fn deduplicate_by_semantic_class(sorted_carriers: &[PipelineCarrier]) -> Vec<PipelineCarrier> {
     let mut seen_classes: HashSet<String> = HashSet::new();
     let mut result = Vec::new();

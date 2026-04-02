@@ -604,6 +604,37 @@ impl ConventionStrategyAdapter {
     pub fn last_evaluation(&self) -> Option<StrategyEvaluation> {
         self.last_evaluation.read().ok().and_then(|guard| guard.clone())
     }
+
+    /// Extract FactConstraints from a StrategyEvaluation's selected carrier.
+    /// Maps satisfied MeaningClause entries 1:1 to FactConstraint (same fields).
+    /// Returns empty Vec if no pipeline result, no selected carrier, or no satisfied clauses.
+    pub fn extract_constraints_from_evaluation(
+        eval: &StrategyEvaluation,
+    ) -> Vec<bridge_conventions::types::meaning::FactConstraint> {
+        use bridge_conventions::types::meaning::FactConstraint;
+
+        let selected = match eval
+            .pipeline_result
+            .as_ref()
+            .and_then(|pr| pr.selected.as_ref())
+        {
+            Some(s) => s,
+            None => return Vec::new(),
+        };
+
+        selected
+            .proposal()
+            .clauses
+            .iter()
+            .filter(|clause| clause.satisfied)
+            .map(|clause| FactConstraint {
+                fact_id: clause.fact_id.clone(),
+                operator: clause.operator.clone(),
+                value: clause.value.clone(),
+                is_public: clause.is_public,
+            })
+            .collect()
+    }
 }
 
 impl BiddingStrategy for ConventionStrategyAdapter {
@@ -647,4 +678,9 @@ impl BiddingStrategy for ConventionStrategyAdapter {
     }
 
     fn as_any(&self) -> &dyn std::any::Any { self }
+
+    fn stashed_evaluation(&self) -> Option<Box<dyn std::any::Any + Send>> {
+        self.last_evaluation()
+            .map(|e| Box::new(e) as Box<dyn std::any::Any + Send>)
+    }
 }

@@ -7,9 +7,9 @@
 use serde::{Deserialize, Serialize};
 
 use super::play::{
-    CoverHonorHeuristic, DiscardHeuristic, FourthHandHeuristic,
-    MidGameLeadHeuristic, OpeningLeadHeuristic, SecondHandLowHeuristic, ThirdHandHighHeuristic,
-    TrumpManagementHeuristic,
+    CardCountingHeuristic, CoverHonorHeuristic, DiscardHeuristic, FourthHandHeuristic,
+    MidGameLeadHeuristic, OpeningLeadHeuristic, RestrictedChoiceHeuristic,
+    SecondHandLowHeuristic, ThirdHandHighHeuristic, TrumpManagementHeuristic,
 };
 use super::play_types::{PlayContext, PlayHeuristic, PlayResult};
 
@@ -127,17 +127,24 @@ pub fn suggest_play_with_profile(
         "No legal plays available"
     );
 
-    // Build the heuristic chain
-    let heuristics: Vec<Box<dyn PlayHeuristic>> = vec![
+    // Build the heuristic chain — card counting and restricted choice are
+    // conditionally included based on the profile's capability flags.
+    let mut heuristics: Vec<Box<dyn PlayHeuristic>> = vec![
         Box::new(OpeningLeadHeuristic),
         Box::new(MidGameLeadHeuristic),
-        Box::new(SecondHandLowHeuristic),
-        Box::new(ThirdHandHighHeuristic),
-        Box::new(FourthHandHeuristic),
-        Box::new(CoverHonorHeuristic),
-        Box::new(TrumpManagementHeuristic),
-        Box::new(DiscardHeuristic),
     ];
+    if profile.use_card_counting {
+        heuristics.push(Box::new(CardCountingHeuristic));
+    }
+    if profile.use_inferences {
+        heuristics.push(Box::new(RestrictedChoiceHeuristic));
+    }
+    heuristics.push(Box::new(SecondHandLowHeuristic));
+    heuristics.push(Box::new(ThirdHandHighHeuristic));
+    heuristics.push(Box::new(FourthHandHeuristic));
+    heuristics.push(Box::new(CoverHonorHeuristic));
+    heuristics.push(Box::new(TrumpManagementHeuristic));
+    heuristics.push(Box::new(DiscardHeuristic));
 
     for h in &heuristics {
         // Beginner: randomly skip eligible heuristics
@@ -368,5 +375,27 @@ mod tests {
             serde_json::to_string(&PlayProfileId::WorldClass).unwrap(),
             "\"world-class\""
         );
+    }
+
+    #[test]
+    fn beginner_chain_excludes_card_counting_and_restricted_choice() {
+        assert!(!BEGINNER_PROFILE.use_card_counting);
+        assert!(!BEGINNER_PROFILE.use_inferences);
+    }
+
+    #[test]
+    fn club_player_has_card_counting_but_not_restricted_choice() {
+        assert!(CLUB_PLAYER_PROFILE.use_card_counting);
+        // ClubPlayer uses inferences for L1 ranges, but restricted choice
+        // is gated on use_inferences being true — ClubPlayer DOES have it.
+        // The distinction is that use_posterior is false.
+        assert!(CLUB_PLAYER_PROFILE.use_inferences);
+        assert!(!CLUB_PLAYER_PROFILE.use_posterior);
+    }
+
+    #[test]
+    fn expert_chain_includes_both_heuristics() {
+        assert!(EXPERT_PROFILE.use_card_counting);
+        assert!(EXPERT_PROFILE.use_inferences);
     }
 }

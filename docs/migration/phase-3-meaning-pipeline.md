@@ -2,7 +2,7 @@
 
 Port the full meaning pipeline to Rust: surface selection, surface evaluation, arbitration, encoding, teaching, and the convention adapter.
 
-**Status:** Not Started
+**Status:** Complete
 **Estimated LOC:** ~4,000-5,000 Rust
 **Dependencies:** Phase 2 (fact evaluation)
 **Rust concepts to learn:** complex enum matching, trait-based polymorphism, builder patterns

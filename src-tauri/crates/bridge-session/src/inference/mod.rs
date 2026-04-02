@@ -16,6 +16,7 @@ pub mod inference_engine;
 pub mod annotation_producer;
 pub mod inference_coordinator;
 pub mod posterior;
+pub mod private_belief;
 
 // Re-export key types at module level
 pub use types::{

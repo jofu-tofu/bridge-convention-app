@@ -152,6 +152,7 @@ impl SessionState {
         convention_id: &str,
         is_user: bool,
         is_correct: Option<bool>,
+        constraints: &[bridge_conventions::types::meaning::FactConstraint],
     ) {
         use bridge_conventions::pipeline::evaluation::alert::resolve_alert;
         use bridge_engine::strategy::Disclosure;
@@ -174,7 +175,7 @@ impl SessionState {
             rule_name,
             explanation,
             meaning,
-            &[],  // constraints (convention-level constraints not yet in Rust BidResult)
+            constraints,
             Some(convention_id),
         );
         // Update public belief state from the coordinator (avoids clone by using
@@ -274,18 +275,27 @@ impl SessionState {
 
     /// Initialize posterior based on the play profile configuration.
     fn initialize_posterior(&mut self) {
+        use crate::inference::private_belief::condition_on_own_hand;
+
         let profile = get_profile(self.play_profile_id);
         if !profile.use_inferences {
             self.posterior = None;
             return;
         }
 
-        let ranges: HashMap<Seat, crate::inference::types::DerivedRanges> = self
+        let raw_ranges: HashMap<Seat, crate::inference::types::DerivedRanges> = self
             .public_belief_state
             .beliefs
             .iter()
             .map(|(seat, beliefs)| (*seat, beliefs.ranges.clone()))
             .collect();
+
+        // Condition ranges on observer's own hand: cap each non-observer seat's
+        // HCP and suit lengths based on what the observer can see.
+        let ranges = match self.deal.hands.get(&self.user_seat) {
+            Some(hand) => condition_on_own_hand(&raw_ranges, self.user_seat, hand),
+            None => raw_ranges,
+        };
 
         if profile.use_posterior {
             let observer_hand = self

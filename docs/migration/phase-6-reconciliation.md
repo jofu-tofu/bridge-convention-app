@@ -56,15 +56,15 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 **Fixed:** `score_candidate_practically()` now accepts `Option<&PartnerContext>` with partner's min HCP and suit lengths. Partnership HCP scoring uses `(hcp + partner_min_hcp) - PARTNERSHIP_LEVEL_TABLE[level]` weighted at 1.5. Fit scoring for suit bids uses `(own_suit_len + partner_min_suit_len)` weighted at 2.0. The `PartnerContext` parameter is threaded through `ConventionStrategy::suggest()` → `build_evaluation()` → `build_practical_recommendation()`. Session-level partner belief integration (passing actual `PublicBeliefs` from inference coordinator) is deferred to trait boundary refactor — currently passes `None` through `suggest_bid()` (BiddingStrategy trait).
 
-### 3.5 Semantic class alias deduplication missing (P1)
+### 3.5 Semantic class alias deduplication missing (P1) — Deferred
 
 **TS:** `deduplicateBySemanticClassAlias()` resolved alias pairs before deduplication, allowing cross-module semantic equivalence.
 
 **Rust:** `deduplicate_by_semantic_class()` checks raw `semantic_class_id` only — no alias resolution.
 
-**Files:** `bridge-conventions/src/pipeline/meaning_arbitrator.rs`
+**Spike result (2026-04-02):** No alias data found in any module fixture JSON. No cross-module duplicate semantic class IDs found across all 4 bundles. `BRIDGE_SEMANTIC_CLASSES` contains 6 well-known classes with no alias pairs. Deferred — revisit when alias fields are added to fixtures.
 
-**Fix:** Add alias map parameter and resolution step.
+**Files:** `bridge-conventions/src/pipeline/evaluation/meaning_arbitrator.rs`
 
 ### 3.6 inheritedDimsLookup is flat instead of per-meaning (P2)
 
@@ -157,13 +157,13 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 `play_controller.rs` uses profile-based dispatch via `suggest_play_with_profile()` with deterministic per-seat RNG. `use_inferences` and `use_posterior` on `PlayProfile` are now active config.
 
-### 5.3 Card counting and restricted choice missing (P1)
+### 5.3 ~~Card counting and restricted choice missing~~ (P1) ✅ COMPLETE
 
-**TS:** Two expert-only heuristics defined inline in `profile-play-strategy.ts`: card counting (void detection from prior tricks) and restricted choice (Bayesian honor-play reasoning).
+**Fixed:** Two new heuristics added to the play chain:
+- **CardCountingHeuristic** (`card_counting.rs`): Scans previous tricks for failure-to-follow-suit, builds void map. Defenders lead through LHO's void, avoid RHO's void. Declarer leads toward defender-after-dummy's void. Gated on `PlayProfile.use_card_counting` (ClubPlayer+).
+- **RestrictedChoiceHeuristic** (`restricted_choice.rs`): Detects when an opponent played a single touching honor (e.g., J from possible KJ). Bayesian reasoning says singleton is more likely — suggests finesse in that suit on subsequent lead. Gated on `PlayProfile.use_inferences` (Expert+).
 
-**Rust:** Neither exists.
-
-**Impact:** Club Player+ profiles lose finesse-level play reasoning.
+Both inserted into the heuristic chain after `MidGameLeadHeuristic` in `play_profiles.rs`.
 
 ### 5.4 Pragmatic bidding generator missing (P2)
 
@@ -201,25 +201,15 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 **Not ported (lower priority):** Factor graph compilation, latent branch resolution, joint HCP queries, posterior fact handlers. The rejection sampler covers the core use case (expected suit lengths and HCP for heuristic play decisions). Factor graph compilation would be needed for soft evidence / complex conditional queries.
 
-### 6.2 Private belief conditioning missing (P2)
+### 6.2 ~~Private belief conditioning missing~~ (P2) ✅ COMPLETE
 
-**TS:** `conditionOnOwnHand()` narrowed partner's public beliefs using own hand knowledge (cap partner HCP at `40 - own HCP`, cap suit length at `13 - own suit length`).
+**Fixed:** `condition_on_own_hand()` in `bridge-session/src/inference/private_belief.rs` caps each non-observer seat's `hcp.max` at `min(existing, 40 - observer_hcp)` and per-suit `length.max` at `min(existing, 13 - observer_suit_count)`. Per-seat caps are intentionally over-tight (same as TS) — posterior rejection sampling enforces the real constraint. Wired into `initialize_posterior()` in `session_state.rs` between range collection and `PosteriorEngine::new()`.
 
-**Rust:** No equivalent. Partner range estimates don't account for observer's hand.
+### 6.3 ~~Inference coordinator receives less data~~ (P2) ✅ COMPLETE
 
-**Files:** Was `src/inference/private-belief.ts`
+**Fixed:** `SessionState::process_bid()` now accepts `constraints: &[FactConstraint]` and forwards them to the inference coordinator (was hardcoded `&[]`). The bidding controller extracts constraints from `ConventionStrategyAdapter`'s stashed `StrategyEvaluation` via `BiddingStrategy::stashed_evaluation()` (new trait method returning `Option<Box<dyn Any + Send>>`), downcast to `StrategyEvaluation` in `bridge-session`. Satisfied `MeaningClause` entries are mapped 1:1 to `FactConstraint`. Falls back to `&[]` for non-convention strategies, no evaluation, or no matched surface.
 
-**Fix:** Port `conditionOnOwnHand()` — straightforward arithmetic on belief ranges.
-
-### 6.3 Inference coordinator receives less data (P2)
-
-**TS:** `processBid()` received full `BidResult` with meaning, public conditions, constraints.
-
-**Rust:** `process_bid()` receives decomposed fields with `None` for meaning and `&[]` for constraints. Comment: "convention-level constraints not yet in Rust BidResult."
-
-**Files:** `bridge-session/src/inference/inference_coordinator.rs`, called from `bridge-session/src/session/session_state.rs`
-
-**Fix:** Pass `StrategyEvaluation` constraints through to the coordinator.
+**Files:** `bridge-engine/src/strategy.rs` (trait method), `bridge-service/src/convention_adapter.rs` (override + extraction), `bridge-session/src/session/bidding_controller.rs` (helper + 3 call sites), `bridge-session/src/session/session_state.rs` (param added)
 
 ### 6.4 ~~Public belief state always null~~ (P3) ✅ COMPLETE
 
@@ -301,13 +291,16 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 ### Wave 3 — P1 play quality (AI behavior)
 9. ~~**5.2** Inference-aware play heuristics~~ ✅
-10. **5.3** Card counting and restricted choice
+10. ~~**5.3** Card counting and restricted choice~~ ✅
 11. ~~**6.1** Posterior engine (partial — start with rejection sampler)~~ ✅
 12. ~~**5.1** MC+DDS play~~ ✅
 
 ### Wave 4 — P2/P3 (completeness)
-13. Remaining P2 items (3.5–3.8, 4.1, 4.3–4.5, 5.4–5.5, 6.2–6.3, 7.3–7.4, 8.1)
+13. Remaining P2 items (3.6–3.8, 4.1, 4.3–4.5, 5.4–5.5, 7.3–7.4, 8.1)
 14. P3 items as encountered
+15. ~~**6.2** Private belief conditioning~~ ✅
+16. ~~**6.3** Constraint threading~~ ✅
+17. **3.5** Semantic alias dedup — Deferred (no alias data in fixtures)
 
 ---
 
@@ -347,7 +340,7 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 | `session/heuristics/random-play.ts` | `bridge-session/heuristics/random_play.rs` | Full parity |
 | `session/heuristics/strategy-chain.ts` | `bridge-session/heuristics/strategy_chain.rs` | Missing resultFilter, trace |
 | `inference/posterior/` (10 files) | `bridge-session/inference/posterior.rs` | MC rejection sampler ✅ (factor graph/latent branch deferred) |
-| `inference/private-belief.ts` | — | **Missing** |
+| `inference/private-belief.ts` | `bridge-session/inference/private_belief.rs` | ✅ Complete |
 | `conventions/adapter/protocol-adapter.ts` | `bridge-conventions/adapter/protocol_adapter.rs` | Kernel delta ✅, relational ctx ✅ |
 | `conventions/adapter/meaning-strategy.ts` | `bridge-conventions/adapter/meaning_strategy.rs` | Ported (thinner) |
 | `conventions/adapter/bid-result-builder.ts` | `bridge-service/convention_adapter.rs` | truth_set/acceptable_set wired ✅, kernel advancement ✅, relational ctx ✅ |

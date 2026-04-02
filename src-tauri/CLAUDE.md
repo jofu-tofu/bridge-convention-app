@@ -49,8 +49,10 @@ crates/
                        `rationale` or `display_name()` instead.
   bridge-session/      Rust session logic: inference, heuristics, controllers, viewports.
                        Phase 4 of the migration. Depends on bridge-engine + bridge-conventions.
-                       Inference: natural inference + Monte Carlo posterior (rejection sampling).
-                       Heuristics: bidding strategy chain + 8 play heuristics + play profiles.
+                       Inference: natural inference + Monte Carlo posterior (rejection sampling)
+                       + private belief conditioning (observer hand caps partner ranges).
+                       Heuristics: bidding strategy chain + 10 play heuristics (8 core +
+                       card counting + restricted choice) + play profiles.
                        Session: state management, bidding/play controllers (synchronous),
                        drill lifecycle, 4 viewport builders with information boundary.
                        MC posterior wired into play heuristics. DDS play and learning viewports deferred.
@@ -67,7 +69,7 @@ crates/
 
 ## Conventions
 
-- **bridge-engine purity:** Zero platform deps (no tauri, axum, tokio). Only serde, rand, thiserror.
+- **bridge-engine purity:** Zero platform deps (no tauri, axum, tokio). Only serde, rand, thiserror. No convention awareness — `BidResult` carries no `FactConstraint`. Convention constraints flow through `SessionState::process_bid()` as a separate parameter. `BiddingStrategy::stashed_evaluation()` returns `Box<dyn Any>` so `bridge-session` can downcast to `StrategyEvaluation` without `bridge-engine` importing convention types.
 - **Free functions, not a trait:** Engine functions called directly. Transport crates are the abstraction.
 - **Error boundary:** `EngineError` for domain logic. Tauri returns `Result<T, String>`. WASM returns `Result<JsValue, JsError>`.
 - **RNG:** ChaCha8Rng with `seed: Option<u64>`. Same seed = deterministic Rust output. NOT cross-engine portable with TS (different PRNG algorithms).

@@ -7,6 +7,8 @@
 
 use std::collections::HashMap;
 
+use bridge_conventions::adapter::strategy_evaluation::StrategyEvaluation;
+use bridge_conventions::types::meaning::FactConstraint;
 use bridge_engine::auction::{add_call, get_contract, get_legal_calls, is_auction_complete};
 use bridge_engine::constants::next_seat;
 use bridge_engine::hand_evaluator::evaluate_hand_hcp;
@@ -132,11 +134,58 @@ pub fn initialize_auction(
             is_complete: false,
         };
         let convention_id = state.convention_id.clone();
-        state.process_bid(entry, &auction_before, None, &convention_id, false, None);
+        state.process_bid(entry, &auction_before, None, &convention_id, false, None, &[]);
     }
 }
 
 // ── Internal helpers ───────────────────────────────────────────────
+
+/// Extract FactConstraints from a seat's strategy evaluation.
+/// Uses `stashed_evaluation()` on BiddingStrategy, then downcasts to
+/// `StrategyEvaluation` (from bridge-conventions) to extract satisfied clauses.
+/// Returns empty Vec if the strategy has no evaluation (non-convention strategies,
+/// no match, or heuristic/natural bids).
+fn extract_constraints(
+    seat: Seat,
+    seat_strategies: &HashMap<Seat, SeatStrategy>,
+) -> Vec<FactConstraint> {
+    let strategy = match seat_strategies.get(&seat) {
+        Some(SeatStrategy::Ai(s)) => s,
+        _ => return Vec::new(),
+    };
+
+    let boxed = match strategy.stashed_evaluation() {
+        Some(b) => b,
+        None => return Vec::new(),
+    };
+
+    let eval = match boxed.downcast_ref::<StrategyEvaluation>() {
+        Some(e) => e,
+        None => return Vec::new(),
+    };
+
+    let selected = match eval
+        .pipeline_result
+        .as_ref()
+        .and_then(|pr| pr.selected.as_ref())
+    {
+        Some(s) => s,
+        None => return Vec::new(),
+    };
+
+    selected
+        .proposal()
+        .clauses
+        .iter()
+        .filter(|clause| clause.satisfied)
+        .map(|clause| FactConstraint {
+            fact_id: clause.fact_id.clone(),
+            operator: clause.operator.clone(),
+            value: clause.value.clone(),
+            is_public: clause.is_public,
+        })
+        .collect()
+}
 
 /// Get expected bid from strategy for grading.
 fn get_expected_bid(
@@ -187,13 +236,15 @@ fn apply_bid_and_run_ai(
         Err(_) => return empty_result(),
     }
 
-    // Process through inference
+    // Process through inference — extract constraints from the user seat's strategy
+    // evaluation (computed by get_expected_bid just before this call).
+    let constraints = extract_constraints(seat, seat_strategies);
     let convention_id = state.convention_id.clone();
     let is_correct = pre_feedback.as_ref().map(|f| matches!(
         f.grade,
         BidGrade::Correct | BidGrade::Acceptable
     ));
-    state.process_bid(&user_entry, &auction_before, expected_result, &convention_id, true, is_correct);
+    state.process_bid(&user_entry, &auction_before, expected_result, &convention_id, true, is_correct, &constraints);
 
     // Capture now — run_ai_bid_loop() will append more entries to bid_history.
     // ORDERING CONTRACT: user's process_bid() runs before AI bids, so .last()
@@ -271,9 +322,11 @@ fn run_ai_bid_loop(
             Err(_) => break,
         }
 
-        // Process through inference
+        // Process through inference — extract constraints from the AI seat's strategy
+        // evaluation (suggest_bid stashed the evaluation synchronously before returning).
+        let constraints = extract_constraints(current_seat, seat_strategies);
         let convention_id = state.convention_id.clone();
-        state.process_bid(&entry, &auction_before, Some(&result), &convention_id, false, None);
+        state.process_bid(&entry, &auction_before, Some(&result), &convention_id, false, None, &constraints);
 
         // INVARIANT: process_bid always pushes exactly one entry to bid_history.
         let history_entry = state.bid_history.last().cloned()

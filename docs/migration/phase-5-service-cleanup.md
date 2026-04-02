@@ -2,7 +2,7 @@
 
 Full ServicePort in Rust. TS service/ becomes a thin WASM proxy. Delete TS backend modules.
 
-**Status:** Not Started
+**Status:** Complete
 **Estimated LOC:** ~2,000 Rust
 **Dependencies:** Phase 4 (inference + session)
 **Rust concepts to learn:** wasm-bindgen advanced patterns, serde_wasm_bindgen, error handling across WASM boundary
