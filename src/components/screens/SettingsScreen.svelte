@@ -85,7 +85,7 @@
         Base System
       </h2>
       <p class="text-sm text-text-secondary mb-3">
-        The bidding system framework that sets HCP ranges and conventions.
+        Your overall bidding system. This determines point ranges, opening requirements, and which conventions are available.
       </p>
       <ToggleGroup
         items={AVAILABLE_BASE_SYSTEMS.map(sys => ({ id: sys.id, label: sys.shortLabel, title: sys.label, testId: `settings-system-${sys.id}` }))}
@@ -168,7 +168,7 @@
         Opponent Interference
       </label>
       <p class="text-sm text-text-secondary mb-3">
-        Controls how East/West opponents behave during practice deals.
+        Controls whether East/West opponents bid during practice deals.
       </p>
       <select
         id="opponent-mode"
@@ -182,7 +182,7 @@
       </select>
       <p class="text-xs text-text-muted mt-2">
         {appStore.opponentMode === OpponentMode.Natural
-          ? "Opponents bid naturally with 6+ HCP and a 5+ card suit."
+          ? "Opponents compete when they have a hand worth bidding."
           : "Opponents always pass."}
       </p>
     </section>
@@ -193,7 +193,7 @@
         Opponent Play Skill
       </label>
       <p class="text-sm text-text-secondary mb-3">
-        Controls how skillfully opponents play their cards during the play phase.
+        How skillfully opponents play their cards.
       </p>
       <select
         id="play-profile"
@@ -249,8 +249,7 @@
             data-testid="off-convention-rate"
           />
           <p class="text-xs text-text-muted mt-1">
-            About {Math.round((appStore.drillTuning.offConventionRate ?? DEFAULT_OFF_CONVENTION_RATE) * 100)}% of practice
-            deals will be hands where the convention doesn't apply.
+            Higher values mean more hands where you should just pass.
           </p>
         </div>
       {/if}

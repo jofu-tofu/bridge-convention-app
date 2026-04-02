@@ -258,25 +258,25 @@ export interface PlayProfile {
 export const PLAY_PROFILES: Record<PlayProfileId, PlayProfile> = {
   beginner: {
     id: "beginner", name: "Beginner",
-    description: "Follows maxims mechanically. Occasionally misses correct technique.",
+    description: "Plays by the book but sometimes slips up. Good for learning the basics.",
     heuristicSkipRate: 0.15, skippableHeuristics: ["cover-honor-with-honor", "trump-management"],
     useInferences: false, inferenceNoise: 0, usePosterior: false, useCardCounting: false,
   },
   "club-player": {
     id: "club-player", name: "Club Player",
-    description: "Remembers the auction, counts cards, tracks voids, exploits restricted choice.",
+    description: "Pays attention to the auction, counts cards, and notices when suits are breaking unevenly.",
     heuristicSkipRate: 0, skippableHeuristics: [],
     useInferences: true, inferenceNoise: 0.25, usePosterior: false, useCardCounting: true,
   },
   expert: {
     id: "expert", name: "Expert",
-    description: "Monte Carlo + DDS solving with void tracking. No auction belief filtering.",
+    description: "Thinks several tricks ahead and finds the best line of play in most situations.",
     heuristicSkipRate: 0, skippableHeuristics: [],
     useInferences: true, inferenceNoise: 0, usePosterior: false, useCardCounting: true,
   },
   "world-class": {
     id: "world-class", name: "World Class",
-    description: "Monte Carlo sampling + DDS solving. Plays optimally given available information.",
+    description: "Plays near-perfectly, using everything learned from the bidding to find the optimal card.",
     heuristicSkipRate: 0, skippableHeuristics: [],
     useInferences: true, inferenceNoise: 0, usePosterior: true, useCardCounting: true,
   },
