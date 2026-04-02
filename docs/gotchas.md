@@ -8,7 +8,7 @@ Detailed technical notes, historical context, and non-obvious decisions. Read wh
 All game logic runs in Rust via WASM (`WasmService`); desktop uses Tauri IPC. If WASM init fails, the app shows an error screen — there is no fallback. TS engine modules (`deal-generator.ts`, `auction.ts`, etc.) exist as reference implementations but are not used at runtime. Vercel deploys install Rust + wasm-pack via `scripts/vercel-build.sh` and produce a real WASM build. Stub files (`scripts/ensure-wasm-stubs.sh`) are retained as a fallback if the WASM toolchain is unavailable.
 
 ### DDS Browser Implementation
-DDS `solveDeal()` works in browser via Emscripten-compiled C++ DDS in a Web Worker (`dds-client.ts`). Par is always null in browser (mode=-1). `suggestPlay()` remains desktop-only. DDS WASM artifacts (`static/dds/`) are committed; rebuild with `npm run dds:build` (requires Emscripten).
+DDS table analysis works in browser via Emscripten-compiled C++ DDS in a Web Worker (`dds-client.ts`). The deal is extracted from the Rust service as a PBN string (`getDealPBN`), then sent to the worker for solving. `initDDS()` fires at app startup (fire-and-forget); `isDDSAvailable()` gates calls. Par is always null in browser (mode=-1). `suggestPlay()` remains desktop-only. DDS WASM artifacts (`static/dds/`) are committed; rebuild with `npm run dds:build` (requires Emscripten).
 
 ### vendor/dds
 `vendor/dds/` is an upstream DDS C++ source checkout and `vendor/dds-patches/` holds local Emscripten/build patches for producing the browser double-dummy WASM bundle (`static/dds/`); app-level bridge logic in `src/` and `src-tauri/` remains clean-room.
@@ -16,9 +16,9 @@ DDS `solveDeal()` works in browser via Emscripten-compiled C++ DDS in a Web Work
 ## DDS Architecture (Post-Migration)
 
 - `dds-bridge` C++ FFI can't compile to wasm32
-- Two-path design: Tauri = native DDS via bridge-engine, WASM = JS worker fallback
-- `src/service/dds-bridge.ts` handles platform dispatch
-- Full DDS-via-handle integration is follow-up work (requires `getDeal()` service method)
+- Two-path design: Tauri = native DDS via bridge-engine, WASM = JS worker fallback via PBN extraction
+- `src/service/dds-bridge.ts` handles platform dispatch with callback injection (must not import wasm-service.ts directly — circular import)
+- `getDealPBN(handle)` extracts deal as PBN string from Rust service for browser DDS worker
 
 ## Convention System
 

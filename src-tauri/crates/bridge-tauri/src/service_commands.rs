@@ -176,6 +176,17 @@ pub fn get_dds_solution(
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+pub fn get_deal_pbn(
+    state: tauri::State<ServiceState>,
+    handle: String,
+) -> Result<String, String> {
+    let service = state.lock().map_err(|e| e.to_string())?;
+    service
+        .get_deal_pbn(&handle)
+        .map_err(|e| e.to_string())
+}
+
 // ── Catalog ───────────────────────────────────────────────────────
 
 #[tauri::command]

@@ -2,16 +2,16 @@
 
 # Service
 
-WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend (18 methods). The client holds an opaque `SessionHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never raw domain types. All game logic (conventions, inference, session) runs in Rust via `bridge-service`. TS `service/` is a thin serialize/call/deserialize proxy.
+WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend (19 methods). The client holds an opaque `SessionHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never raw domain types. All game logic (conventions, inference, session) runs in Rust via `bridge-service`. TS `service/` is a thin serialize/call/deserialize proxy.
 
-**ServicePort methods (18):**
+**ServicePort methods (19):**
 - **Session:** `createSession`, `startDrill`
 - **Bidding:** `submitBid`
 - **Transitions:** `acceptPrompt` (handles "play", "skip", "replay", "restart")
 - **Play:** `playCard`, `skipToReview`, `updatePlayProfile`
 - **Query:** `getBiddingViewport`, `getDeclarerPromptViewport`, `getPlayingViewport`, `getExplanationViewport`
 - **Inference:** `getPublicBeliefState`
-- **DDS:** `getDDSSolution`
+- **DDS:** `getDDSSolution`, `getDealPBN`
 - **Catalog:** `listConventions`
 - **Learning:** `listModules`, `getModuleLearningViewport`, `getBundleFlowTree`, `getModuleFlowTree`
 
@@ -27,7 +27,7 @@ WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend 
 | `port.ts` | ServicePort + DevServicePort interfaces |
 | `wasm-service.ts` | `WasmService` — thin proxy implementing ServicePort via `wasm-bindgen` calls to Rust `WasmServicePort` |
 | `service-helpers.ts` | Sync WASM wrappers for UI components: `listConventions()`, `listModules()`, `buildBaseModuleInfos()`, `getModuleLearningViewportSync()` |
-| `dds-bridge.ts` | DDS platform dispatch: Tauri = native DDS via bridge-engine, WASM = JS worker fallback |
+| `dds-bridge.ts` | DDS platform dispatch: Tauri = native DDS via bridge-engine, WASM = JS worker fallback via PBN extraction. **Anti-pattern:** must not import wasm-service.ts directly — circular import. Uses callback injection for `getDealPBN`. |
 | `display/` | Call/contract/card formatting, hand summary, convention card builder (`convention-card.ts` — wired to WASM via service-helpers) |
 | `util/delay.ts` | Pure delay utility |
 

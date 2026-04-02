@@ -21,6 +21,7 @@ pub fn run() {
             service_commands::get_explanation_viewport,
             service_commands::get_public_belief_state,
             service_commands::get_dds_solution,
+            service_commands::get_deal_pbn,
             service_commands::list_conventions,
             service_commands::list_modules,
             service_commands::get_module_learning_viewport,

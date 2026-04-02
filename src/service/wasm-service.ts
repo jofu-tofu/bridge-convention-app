@@ -51,6 +51,7 @@ interface WasmServicePortBindings {
   get_explanation_viewport(handle: string): ExplanationViewport | null;
   get_public_belief_state(handle: string): ServicePublicBeliefState;
   get_dds_solution(handle: string): DDSolutionResult;
+  get_deal_pbn(handle: string): string;
   list_conventions(): ConventionInfo[];
   list_modules(): ModuleCatalogEntry[];
   get_module_learning_viewport(moduleId: string): ModuleLearningViewport | null;
@@ -164,7 +165,11 @@ export class WasmService implements DevServicePort {
   // ── DDS ─────────────────────────────────────────────────────────
   async getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult> {
     // Rust WASM returns error stub → fall back to JS DDS Web Worker
-    return getDDSSolutionFromWorker(handle);
+    return getDDSSolutionFromWorker(handle, (h) => this.getDealPBN(h));
+  }
+
+  async getDealPBN(handle: SessionHandle): Promise<string> {
+    return getPort().get_deal_pbn(handle);
   }
 
   // ── Catalog ─────────────────────────────────────────────────────

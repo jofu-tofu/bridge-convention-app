@@ -85,6 +85,9 @@ pub trait ServicePort {
 
     fn get_dds_solution(&self, handle: &str) -> Result<DDSolutionResult, ServiceError>;
 
+    /// Get the deal in PBN format for browser DDS solving.
+    fn get_deal_pbn(&self, handle: &str) -> Result<String, ServiceError>;
+
     // ── Catalog ────────────────────────────────────────────────────
 
     fn list_conventions(&self) -> Vec<ConventionInfo>;

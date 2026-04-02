@@ -12,7 +12,7 @@
 
 import type { Deal } from "./types";
 import type { DDSModule } from "./dds-wasm";
-import { solveWithModule, solveBoardWithModule } from "./dds-wasm";
+import { solveWithModule, solveFromPBN, solveBoardWithModule } from "./dds-wasm";
 
 let ddsModule: DDSModule | null = null;
 
@@ -55,13 +55,19 @@ interface SolveBoardMessage {
   remainCardsPBN: string;
 }
 
-/** CalcAllTablesPBN request message from main thread. */
+/** CalcAllTablesPBN request with Deal object (legacy). */
 interface SolveTableMessage {
   id: number;
   deal: Deal;
 }
 
-self.onmessage = (e: MessageEvent<SolveBoardMessage | SolveTableMessage>) => {
+/** CalcAllTablesPBN request with PBN string (preferred — skips Deal→PBN conversion). */
+interface SolveTablePBNMessage {
+  id: number;
+  pbn: string;
+}
+
+self.onmessage = (e: MessageEvent<SolveBoardMessage | SolveTableMessage | SolveTablePBNMessage>) => {
   const msg = e.data;
 
   if ("type" in msg && msg.type === "solveBoard") {
@@ -83,7 +89,24 @@ self.onmessage = (e: MessageEvent<SolveBoardMessage | SolveTableMessage>) => {
     return;
   }
 
-  // Default: CalcAllTablesPBN request (existing flow)
+  // PBN-based request (from service handle path)
+  if ("pbn" in msg && !("deal" in msg)) {
+    const { id, pbn } = msg as SolveTablePBNMessage;
+    try {
+      if (!ddsModule) throw new Error("DDS not initialized");
+      const solution = solveFromPBN(ddsModule, pbn);
+      self.postMessage({ type: "result", id, solution });
+    } catch (err) {
+      self.postMessage({
+        type: "error",
+        id,
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+    return;
+  }
+
+  // Default: CalcAllTablesPBN request with Deal object (legacy flow)
   const { id, deal } = msg as SolveTableMessage;
   try {
     if (!ddsModule) throw new Error("DDS not initialized");

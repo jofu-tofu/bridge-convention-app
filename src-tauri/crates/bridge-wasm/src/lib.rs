@@ -168,6 +168,14 @@ impl WasmServicePort {
         to_js(&result)
     }
 
+    pub fn get_deal_pbn(&self, handle: &str) -> Result<JsValue, JsError> {
+        let result = self
+            .inner
+            .get_deal_pbn(handle)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        to_js(&result)
+    }
+
     // ── Catalog ───────────────────────────────────────────────────
 
     pub fn list_conventions(&self) -> Result<JsValue, JsError> {

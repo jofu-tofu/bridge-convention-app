@@ -141,6 +141,66 @@ pub struct Deal {
     pub vulnerability: Vulnerability,
 }
 
+impl Deal {
+    /// Convert the deal to PBN format string.
+    /// Uses the actual dealer as the PBN prefix seat, hands ordered starting from dealer.
+    /// Format: "N:AK.QJT98.765.432 QJ.K654.AK43.765 ..."
+    pub fn to_pbn(&self) -> String {
+        use crate::constants::{rank_index, seat_index, SEATS, SUIT_ORDER};
+
+        let dealer_idx = seat_index(self.dealer);
+        let prefix = match self.dealer {
+            Seat::North => "N:",
+            Seat::East => "E:",
+            Seat::South => "S:",
+            Seat::West => "W:",
+        };
+
+        let rank_char = |r: Rank| -> char {
+            match r {
+                Rank::Ace => 'A',
+                Rank::King => 'K',
+                Rank::Queen => 'Q',
+                Rank::Jack => 'J',
+                Rank::Ten => 'T',
+                Rank::Nine => '9',
+                Rank::Eight => '8',
+                Rank::Seven => '7',
+                Rank::Six => '6',
+                Rank::Five => '5',
+                Rank::Four => '4',
+                Rank::Three => '3',
+                Rank::Two => '2',
+            }
+        };
+
+        let hand_strs: Vec<String> = (0..4)
+            .map(|i| {
+                let seat = SEATS[(dealer_idx + i) % 4];
+                let hand = &self.hands[&seat];
+
+                // Group cards by suit, sort descending by rank
+                SUIT_ORDER
+                    .iter()
+                    .map(|&suit| {
+                        let mut ranks: Vec<Rank> = hand
+                            .cards
+                            .iter()
+                            .filter(|c| c.suit == suit)
+                            .map(|c| c.rank)
+                            .collect();
+                        ranks.sort_by(|a, b| rank_index(*b).cmp(&rank_index(*a)));
+                        ranks.iter().map(|&r| rank_char(r)).collect::<String>()
+                    })
+                    .collect::<Vec<_>>()
+                    .join(".")
+            })
+            .collect();
+
+        format!("{}{}", prefix, hand_strs.join(" "))
+    }
+}
+
 /// Suit lengths: [Spades, Hearts, Diamonds, Clubs]
 pub type SuitLength = [u8; 4];
 
@@ -525,6 +585,115 @@ mod tests {
         assert!(json.contains("\"par\""));
         let back: DDSolution = serde_json::from_str(&json).unwrap();
         assert_eq!(back, dds);
+    }
+
+    #[test]
+    fn deal_to_pbn_format() {
+        // Build a known deal with specific cards
+        let mut hands = HashMap::new();
+        hands.insert(
+            Seat::North,
+            Hand {
+                cards: vec![
+                    Card { suit: Suit::Spades, rank: Rank::Ace },
+                    Card { suit: Suit::Spades, rank: Rank::King },
+                    Card { suit: Suit::Spades, rank: Rank::Queen },
+                    Card { suit: Suit::Hearts, rank: Rank::Jack },
+                    Card { suit: Suit::Hearts, rank: Rank::Ten },
+                    Card { suit: Suit::Hearts, rank: Rank::Nine },
+                    Card { suit: Suit::Hearts, rank: Rank::Eight },
+                    Card { suit: Suit::Diamonds, rank: Rank::Seven },
+                    Card { suit: Suit::Diamonds, rank: Rank::Six },
+                    Card { suit: Suit::Diamonds, rank: Rank::Five },
+                    Card { suit: Suit::Clubs, rank: Rank::Four },
+                    Card { suit: Suit::Clubs, rank: Rank::Three },
+                    Card { suit: Suit::Clubs, rank: Rank::Two },
+                ],
+            },
+        );
+        hands.insert(
+            Seat::East,
+            Hand {
+                cards: vec![
+                    Card { suit: Suit::Spades, rank: Rank::Jack },
+                    Card { suit: Suit::Spades, rank: Rank::Ten },
+                    Card { suit: Suit::Hearts, rank: Rank::Ace },
+                    Card { suit: Suit::Hearts, rank: Rank::King },
+                    Card { suit: Suit::Hearts, rank: Rank::Queen },
+                    Card { suit: Suit::Diamonds, rank: Rank::Ace },
+                    Card { suit: Suit::Diamonds, rank: Rank::King },
+                    Card { suit: Suit::Diamonds, rank: Rank::Queen },
+                    Card { suit: Suit::Diamonds, rank: Rank::Jack },
+                    Card { suit: Suit::Clubs, rank: Rank::Ace },
+                    Card { suit: Suit::Clubs, rank: Rank::King },
+                    Card { suit: Suit::Clubs, rank: Rank::Queen },
+                    Card { suit: Suit::Clubs, rank: Rank::Jack },
+                ],
+            },
+        );
+        hands.insert(
+            Seat::South,
+            Hand {
+                cards: vec![
+                    Card { suit: Suit::Spades, rank: Rank::Nine },
+                    Card { suit: Suit::Spades, rank: Rank::Eight },
+                    Card { suit: Suit::Spades, rank: Rank::Seven },
+                    Card { suit: Suit::Spades, rank: Rank::Six },
+                    Card { suit: Suit::Hearts, rank: Rank::Seven },
+                    Card { suit: Suit::Hearts, rank: Rank::Six },
+                    Card { suit: Suit::Diamonds, rank: Rank::Ten },
+                    Card { suit: Suit::Diamonds, rank: Rank::Nine },
+                    Card { suit: Suit::Diamonds, rank: Rank::Eight },
+                    Card { suit: Suit::Clubs, rank: Rank::Ten },
+                    Card { suit: Suit::Clubs, rank: Rank::Nine },
+                    Card { suit: Suit::Clubs, rank: Rank::Eight },
+                    Card { suit: Suit::Clubs, rank: Rank::Seven },
+                ],
+            },
+        );
+        hands.insert(
+            Seat::West,
+            Hand {
+                cards: vec![
+                    Card { suit: Suit::Spades, rank: Rank::Five },
+                    Card { suit: Suit::Spades, rank: Rank::Four },
+                    Card { suit: Suit::Spades, rank: Rank::Three },
+                    Card { suit: Suit::Spades, rank: Rank::Two },
+                    Card { suit: Suit::Hearts, rank: Rank::Five },
+                    Card { suit: Suit::Hearts, rank: Rank::Four },
+                    Card { suit: Suit::Hearts, rank: Rank::Three },
+                    Card { suit: Suit::Hearts, rank: Rank::Two },
+                    Card { suit: Suit::Diamonds, rank: Rank::Four },
+                    Card { suit: Suit::Diamonds, rank: Rank::Three },
+                    Card { suit: Suit::Diamonds, rank: Rank::Two },
+                    Card { suit: Suit::Clubs, rank: Rank::Six },
+                    Card { suit: Suit::Clubs, rank: Rank::Five },
+                ],
+            },
+        );
+
+        let deal = Deal {
+            hands,
+            dealer: Seat::North,
+            vulnerability: Vulnerability::None,
+        };
+
+        let pbn = deal.to_pbn();
+        assert_eq!(
+            pbn,
+            "N:AKQ.JT98.765.432 JT.AKQ.AKQJ.AKQJ 9876.76.T98.T987 5432.5432.432.65"
+        );
+
+        // Verify dealer prefix changes with different dealer
+        let deal_east = Deal {
+            hands: deal.hands.clone(),
+            dealer: Seat::East,
+            vulnerability: Vulnerability::None,
+        };
+        let pbn_east = deal_east.to_pbn();
+        assert!(pbn_east.starts_with("E:"));
+        // East's hand should be first
+        assert!(pbn_east.starts_with("E:JT.AKQ.AKQJ.AKQJ"));
     }
 
     #[test]

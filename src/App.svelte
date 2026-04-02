@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { DevServicePort } from "./service";
   import { initWasmService, WasmService } from "./service";
+  import { initDDS } from "./engine/dds-client";
   import { applyDevParams } from "./stores/dev-params";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
@@ -24,6 +25,8 @@
         appStore = store;
         applyDevParams(store);
         engineReady = true;
+        // Fire-and-forget: DDS is non-essential. If worker fails, isDDSAvailable() stays false.
+        void initDDS().catch(() => {});
       })
       .catch((err: unknown) => {
         initError = `Failed to load engine: ${err instanceof Error ? err.message : String(err)}`;

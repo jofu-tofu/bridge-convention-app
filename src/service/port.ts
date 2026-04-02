@@ -70,6 +70,9 @@ interface ServicePort {
   // ── DDS analysis ────────────────────────────────────────────────
   getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult>;
 
+  /** Get the deal in PBN format for browser DDS solving. */
+  getDealPBN(handle: SessionHandle): Promise<string>;
+
   // ── Convention catalog ──────────────────────────────────────────
   listConventions(): Promise<ConventionInfo[]>;
 

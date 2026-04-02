@@ -607,6 +607,11 @@ impl ServicePort for ServicePortImpl {
         Err(ServiceError::DdsNotAvailable)
     }
 
+    fn get_deal_pbn(&self, handle: &str) -> Result<String, ServiceError> {
+        let session = self.manager.get(handle)?;
+        Ok(session.state.deal.to_pbn())
+    }
+
     // ── Catalog ────────────────────────────────────────────────────
 
     fn list_conventions(&self) -> Vec<ConventionInfo> {

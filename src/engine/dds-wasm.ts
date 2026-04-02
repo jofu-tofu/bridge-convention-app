@@ -301,7 +301,7 @@ export interface DDSModule {
 }
 
 /**
- * Solve a deal using the DDS WASM module.
+ * Solve a deal from a PBN string using the DDS WASM module.
  * Allocates struct memory, calls CalcAllTablesPBN, unpacks results.
  * Par is always null (mode=-1 skips par calculation).
  *
@@ -309,12 +309,10 @@ export interface DDSModule {
  * direct HEAPU8.buffer access — newer Emscripten builds do NOT expose the
  * HEAP typed-array views on the Module object.
  */
-export function solveWithModule(
+export function solveFromPBN(
   module: DDSModule,
-  deal: Deal,
+  pbn: string,
 ): DDSolution {
-  const pbn = dealToPBN(deal);
-
   // Allocate structs on WASM heap
   const dealsPtr = module._malloc(DEALS_PBN_SIZE);
   const filterPtr = module._malloc(5 * 4); // int[5] trump filter
@@ -371,6 +369,17 @@ export function solveWithModule(
     module._free(resPtr);
     module._free(parPtr);
   }
+}
+
+/**
+ * Solve a deal using the DDS WASM module.
+ * Converts the Deal to PBN format and delegates to solveFromPBN.
+ */
+export function solveWithModule(
+  module: DDSModule,
+  deal: Deal,
+): DDSolution {
+  return solveFromPBN(module, dealToPBN(deal));
 }
 
 // ── SolveBoard ──────────────────────────────────────────────────────

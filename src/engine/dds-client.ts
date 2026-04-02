@@ -77,6 +77,18 @@ export function isDDSAvailable(): boolean {
   return ready;
 }
 
+/** Solve a deal from PBN string via the DDS Web Worker. Rejects if not initialized. */
+export function solveDealFromPBN(pbn: string): Promise<DDSolution> {
+  if (!worker || !ready) {
+    return Promise.reject(new Error("DDS not ready"));
+  }
+  const id = nextId++;
+  return new Promise<DDSolution>((resolve, reject) => {
+    pending.set(id, { resolve: resolve as (v: never) => void, reject });
+    worker!.postMessage({ id, pbn });
+  });
+}
+
 /** Solve a deal via the DDS Web Worker. Rejects if not initialized. */
 export function solveDealWasm(deal: Deal): Promise<DDSolution> {
   if (!worker || !ready) {
