@@ -19,7 +19,6 @@ import type {
 import type { DevServicePort, SessionHandle, SessionConfig } from "../service";
 import type { ServicePublicBeliefs, ServiceGamePhase, ServicePublicBeliefState, PracticeMode, PromptMode } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
-import type { PlaySuggestions } from "../service/debug-types";
 import type {
   BidFeedback,
   BidHistoryEntry,
@@ -105,7 +104,6 @@ export interface GameStore {
   // Debug observability
   readonly debugLog: DebugLogEntry[];
   readonly playLog: PlayLogEntry[];
-  readonly playSuggestions: PlaySuggestions;
   readonly playInferences: Record<Seat, ServicePublicBeliefs> | null;
   // Namespaced sub-store accessors (backward compat)
   readonly bidding: {

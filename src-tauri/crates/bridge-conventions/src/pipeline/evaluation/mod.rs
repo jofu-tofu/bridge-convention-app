@@ -10,7 +10,6 @@ pub mod meaning_evaluator;
 pub mod specificity_deriver;
 pub mod alert;
 pub mod encoder_resolver;
-pub mod gate_order;
 pub mod arbitration_helpers;
 pub mod meaning_arbitrator;
 pub mod provenance;

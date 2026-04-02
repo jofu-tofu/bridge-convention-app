@@ -14,7 +14,6 @@ use rand_chacha::ChaCha8Rng;
 
 use crate::heuristics::play_profiles::{get_profile, suggest_play_with_profile};
 use crate::heuristics::play_types::{PlayBeliefs, PlayContext};
-use crate::heuristics::suggest_play;
 use crate::inference::Posterior;
 use crate::phase_machine::is_valid_transition;
 use crate::types::GamePhase;

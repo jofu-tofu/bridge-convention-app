@@ -427,8 +427,6 @@ fn get_ai_bid(
 
 /// Handle auction completion: extract contract, transition phase.
 fn handle_auction_complete(state: &mut SessionState) {
-    state.capture_play_inferences();
-
     state.contract = get_contract(&state.auction).ok().flatten();
 
     let contract = get_contract(&state.auction).ok().flatten();

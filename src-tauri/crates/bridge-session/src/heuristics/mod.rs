@@ -27,6 +27,5 @@ pub use pragmatic_strategy::PragmaticStrategy;
 pub use strategy_chain::StrategyChain;
 
 pub use play_types::{PlayContext, PlayHeuristic, PlayResult};
-pub use play::suggest_play;
 pub use random_play::RandomPlayStrategy;
 pub use play_profiles::{PlayProfileId, PlayProfile, get_profile, suggest_play_with_profile};

@@ -2,6 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::heuristics::play_profiles::PlayProfileId;
+
 // ── Game phase ────────────────────────────────────────────────────
 
 /// Game phase state machine states.
@@ -121,11 +123,6 @@ pub struct DrillTuning {
 }
 
 
-// ── Play profile ID ───────────────────────────────────────────────
-
-/// Play profile identifier (matches TS PlayProfileId type).
-pub type PlayProfileId = String;
-
 // ── Drill settings ────────────────────────────────────────────────
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -150,7 +147,7 @@ impl Default for DrillSettings {
         Self {
             opponent_mode: OpponentMode::None,
             tuning: DrillTuning::default(),
-            play_profile_id: Some("world-class".to_string()),
+            play_profile_id: Some(PlayProfileId::WorldClass),
             practice_mode: None,
             continuation_target: None,
             play_preference: None,
@@ -217,7 +214,7 @@ mod tests {
         assert_eq!(settings.opponent_mode, OpponentMode::None);
         assert_eq!(
             settings.play_profile_id,
-            Some("world-class".to_string())
+            Some(PlayProfileId::WorldClass)
         );
     }
 
@@ -226,7 +223,7 @@ mod tests {
         let settings = DrillSettings {
             opponent_mode: OpponentMode::Natural,
             tuning: DrillTuning::default(),
-            play_profile_id: Some("beginner".to_string()),
+            play_profile_id: Some(PlayProfileId::Beginner),
             practice_mode: Some(PracticeMode::FullAuction),
             continuation_target: None,
             play_preference: Some(PlayPreference::Always),

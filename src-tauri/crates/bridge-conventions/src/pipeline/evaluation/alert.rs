@@ -23,10 +23,6 @@ pub struct BidAlert {
     pub annotation_type: Option<AnnotationType>,
 }
 
-/// Check if a disclosure level requires opponent notification.
-pub fn is_alertable(disclosure: Disclosure) -> bool {
-    matches!(disclosure, Disclosure::Alert | Disclosure::Announcement)
-}
 
 /// Resolve a BidAlert from a disclosure level.
 pub fn resolve_alert(disclosure: Disclosure) -> BidAlert {
@@ -46,15 +42,3 @@ pub fn resolve_alert(disclosure: Disclosure) -> BidAlert {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn alert_is_alertable() {
-        assert!(is_alertable(Disclosure::Alert));
-        assert!(is_alertable(Disclosure::Announcement));
-        assert!(!is_alertable(Disclosure::Natural));
-        assert!(!is_alertable(Disclosure::Standard));
-    }
-}

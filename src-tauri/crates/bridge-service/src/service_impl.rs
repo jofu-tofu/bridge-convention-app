@@ -7,35 +7,31 @@
 use std::collections::{HashMap, HashSet};
 
 use bridge_conventions::BaseSystemId;
-use bridge_engine::types::{Call, Card, Seat, Vulnerability};
 use bridge_engine::constants::{partner_seat, SEATS};
-use bridge_session::session::{
-    build_bidding_viewport, build_declarer_prompt_viewport, build_explanation_viewport,
-    build_playing_viewport, build_module_catalog, build_module_learning_viewport,
-    build_bundle_flow_tree, build_module_flow_tree, process_bid, run_initial_ai_bids,
-    process_play_card, process_single_card, run_initial_ai_plays, start_drill, BiddingViewport,
-    BuildBiddingViewportInput, BuildDeclarerPromptViewportInput,
-    BuildExplanationViewportInput, BuildPlayingViewportInput, DeclarerPromptViewport,
-    DrillConfig, ExplanationViewport, ModuleCatalogEntry, ModuleLearningViewport,
-    PlayCardResult, SingleCardResult, PlayingViewport, SeatStrategy, SessionState,
-    BundleFlowTreeViewport, ModuleFlowTreeViewport,
-};
+use bridge_engine::types::{Call, Card, Seat};
 use bridge_session::inference::InferenceCoordinator;
-use bridge_session::types::{
-    GamePhase, OpponentMode, PromptMode,
+use bridge_session::session::{
+    build_bidding_viewport, build_bundle_flow_tree, build_declarer_prompt_viewport,
+    build_explanation_viewport, build_module_catalog, build_module_flow_tree,
+    build_module_learning_viewport, build_playing_viewport, process_bid, process_play_card,
+    process_single_card, run_initial_ai_bids, run_initial_ai_plays, start_drill, BiddingViewport,
+    BuildBiddingViewportInput, BuildDeclarerPromptViewportInput, BuildExplanationViewportInput,
+    BuildPlayingViewportInput, BundleFlowTreeViewport, DeclarerPromptViewport, DrillConfig,
+    ExplanationViewport, ModuleCatalogEntry, ModuleFlowTreeViewport, ModuleLearningViewport,
+    PlayCardResult, PlayingViewport, SeatStrategy, SessionState, SingleCardResult,
 };
+use bridge_session::types::{GamePhase, PromptMode};
 
 use crate::bundle_resolver;
 use crate::config_resolver;
 use crate::error::ServiceError;
-use crate::evaluation::types::{AtomGradeResult, PlaythroughGradeResult, PlaythroughStartResult};
 use crate::port::{DevServicePort, ServicePort};
 use crate::request_types::{SessionConfig, SessionHandle};
 use crate::response_types::{
     AiBidEntryDTO, AiPlayEntryDTO, BidSubmitResult, ConventionInfo, DDSolutionResult,
     DrillStartResult, ExpectedBidDTO, InferenceTimelineEntryDTO, PhaseTransition,
-    PlaySuggestionsDTO, PromptAcceptResult, ServiceDebugLogEntryDTO, ServiceDebugSnapshotDTO,
-    ServiceFactConstraintDTO, ServicePublicBeliefState, ServicePublicBeliefsDTO,
+    PromptAcceptResult, ServiceDebugLogEntryDTO, ServiceDebugSnapshotDTO, ServiceFactConstraintDTO,
+    ServicePublicBeliefState, ServicePublicBeliefsDTO,
 };
 use crate::session_manager::SessionManager;
 
@@ -91,8 +87,8 @@ impl ServicePort for ServicePortImpl {
 
         // RNG closure from seed
         let seed = config.seed.unwrap_or(0);
-        use rand::SeedableRng;
         use rand::Rng;
+        use rand::SeedableRng;
         let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(seed);
         let mut rng_fn = move || -> f64 { rng.gen() };
 
@@ -183,9 +179,6 @@ impl ServicePort for ServicePortImpl {
         let practice_mode = session.state.practice_mode;
         let play_preference = session.state.play_preference;
         let is_off_convention = session.state.is_off_convention;
-        let play_inferences = session.state.play_inferences.as_ref().map(|pi| {
-            pi.iter().map(|(seat, beliefs)| (*seat, ServicePublicBeliefsDTO::from(beliefs))).collect()
-        });
 
         Ok(DrillStartResult {
             viewport,
@@ -195,7 +188,6 @@ impl ServicePort for ServicePortImpl {
             phase,
             practice_mode,
             play_preference,
-            play_inferences,
         })
     }
 
@@ -242,46 +234,40 @@ impl ServicePort for ServicePortImpl {
             None
         };
 
-        let phase_transition = result.phase_transition.map(|(from, to)| PhaseTransition {
-            from,
-            to,
-        });
+        let phase_transition = result
+            .phase_transition
+            .map(|(from, to)| PhaseTransition { from, to });
 
         let grade = result.feedback.as_ref().map(|f| f.grade);
 
         // Retrieve stashed evaluation for rich feedback assembly
-        let evaluation = Self::get_convention_adapter(session)
-            .and_then(|adapter| adapter.last_evaluation());
+        let evaluation =
+            Self::get_convention_adapter(session).and_then(|adapter| adapter.last_evaluation());
 
         let (viewport_feedback, teaching) = match &result.feedback {
             Some(fb) => {
-                let vf = crate::feedback_assembler::assemble_viewport_feedback(
-                    fb,
-                    evaluation.as_ref(),
-                );
-                let td = crate::feedback_assembler::assemble_teaching_detail(
-                    fb,
-                    evaluation.as_ref(),
-                );
+                let vf =
+                    crate::feedback_assembler::assemble_viewport_feedback(fb, evaluation.as_ref());
+                let td =
+                    crate::feedback_assembler::assemble_teaching_detail(fb, evaluation.as_ref());
                 (Some(vf), td)
             }
             None => (None, None),
         };
-
-        let play_inferences = session.state.play_inferences.as_ref().map(|pi| {
-            pi.iter().map(|(seat, beliefs)| (*seat, ServicePublicBeliefsDTO::from(beliefs))).collect()
-        });
 
         Ok(BidSubmitResult {
             accepted: result.accepted,
             grade,
             feedback: viewport_feedback,
             teaching,
-            ai_bids: result.ai_bids.into_iter().map(AiBidEntryDTO::from).collect(),
+            ai_bids: result
+                .ai_bids
+                .into_iter()
+                .map(AiBidEntryDTO::from)
+                .collect(),
             next_viewport,
             phase_transition,
             user_history_entry: result.user_history_entry,
-            play_inferences,
         })
     }
 
@@ -490,15 +476,14 @@ impl ServicePort for ServicePortImpl {
 
         // Compute prompt mode dynamically based on declarer/user seat relationship
         let user_seat = session.state.user_seat;
-        let prompt_mode = if contract.declarer != user_seat
-            && partner_seat(contract.declarer) != user_seat
-        {
-            PromptMode::Defender
-        } else if contract.declarer == user_seat {
-            PromptMode::SouthDeclarer
-        } else {
-            PromptMode::DeclarerSwap
-        };
+        let prompt_mode =
+            if contract.declarer != user_seat && partner_seat(contract.declarer) != user_seat {
+                PromptMode::Defender
+            } else if contract.declarer == user_seat {
+                PromptMode::SouthDeclarer
+            } else {
+                PromptMode::DeclarerSwap
+            };
 
         // Face-up seats: user + partner preview based on prompt mode
         let face_up_seats = {
@@ -634,7 +619,9 @@ impl ServicePort for ServicePortImpl {
         handle: &str,
     ) -> Result<ServicePublicBeliefState, ServiceError> {
         let session = self.manager.get(handle)?;
-        Ok(ServicePublicBeliefState::from(&session.state.public_belief_state))
+        Ok(ServicePublicBeliefState::from(
+            &session.state.public_belief_state,
+        ))
     }
 
     // ── DDS ────────────────────────────────────────────────────────
@@ -671,67 +658,6 @@ impl ServicePort for ServicePortImpl {
     fn get_module_flow_tree(&self, module_id: &str) -> Option<ModuleFlowTreeViewport> {
         build_module_flow_tree(module_id, BaseSystemId::Sayc)
     }
-
-    // ── Evaluation (stubs) ─────────────────────────────────────────
-
-    fn evaluate_atom(
-        &mut self,
-        _bundle_id: &str,
-        _atom_id: &str,
-        _seed: u64,
-        _vuln: Option<Vulnerability>,
-        _base_system: Option<&str>,
-    ) -> Result<BiddingViewport, ServiceError> {
-        Err(ServiceError::Internal("not yet implemented".to_string()))
-    }
-
-    fn grade_atom(
-        &mut self,
-        _bundle_id: &str,
-        _atom_id: &str,
-        _seed: u64,
-        _bid: &str,
-        _vuln: Option<Vulnerability>,
-        _base_system: Option<&str>,
-    ) -> Result<AtomGradeResult, ServiceError> {
-        Err(ServiceError::Internal("not yet implemented".to_string()))
-    }
-
-    fn start_playthrough(
-        &mut self,
-        _bundle_id: &str,
-        _seed: u64,
-        _vuln: Option<Vulnerability>,
-        _opponents: Option<OpponentMode>,
-        _base_system: Option<&str>,
-    ) -> Result<PlaythroughStartResult, ServiceError> {
-        Err(ServiceError::Internal("not yet implemented".to_string()))
-    }
-
-    fn get_playthrough_step(
-        &self,
-        _bundle_id: &str,
-        _seed: u64,
-        _step_idx: usize,
-        _vuln: Option<Vulnerability>,
-        _opponents: Option<OpponentMode>,
-        _base_system: Option<&str>,
-    ) -> Result<BiddingViewport, ServiceError> {
-        Err(ServiceError::Internal("not yet implemented".to_string()))
-    }
-
-    fn grade_playthrough_bid(
-        &mut self,
-        _bundle_id: &str,
-        _seed: u64,
-        _step_idx: usize,
-        _bid: &str,
-        _vuln: Option<Vulnerability>,
-        _opponents: Option<OpponentMode>,
-        _base_system: Option<&str>,
-    ) -> Result<PlaythroughGradeResult, ServiceError> {
-        Err(ServiceError::Internal("not yet implemented".to_string()))
-    }
 }
 
 // ── DevServicePort implementation ─────────────────────────────────
@@ -746,7 +672,8 @@ impl ServicePortImpl {
         match strategy {
             SeatStrategy::Ai(boxed) => boxed
                 .as_any()
-                .downcast_ref::<crate::convention_adapter::ConventionStrategyAdapter>(),
+                .downcast_ref::<crate::convention_adapter::ConventionStrategyAdapter>(
+            ),
             _ => None,
         }
     }
@@ -783,10 +710,7 @@ impl DevServicePort for ServicePortImpl {
         Ok(bid.map(|b| b.call))
     }
 
-    fn get_debug_snapshot(
-        &self,
-        handle: &str,
-    ) -> Result<ServiceDebugSnapshotDTO, ServiceError> {
+    fn get_debug_snapshot(&self, handle: &str) -> Result<ServiceDebugSnapshotDTO, ServiceError> {
         let session = self.manager.get(handle)?;
         let empty_eval = || serde_json::Value::Object(serde_json::Map::new());
 
@@ -820,8 +744,7 @@ impl DevServicePort for ServicePortImpl {
             trace: b.trace.clone(),
         });
 
-        let strategy_eval =
-            serde_json::to_value(&evaluation).unwrap_or_else(|_| empty_eval());
+        let strategy_eval = serde_json::to_value(&evaluation).unwrap_or_else(|_| empty_eval());
 
         Ok(ServiceDebugSnapshotDTO {
             session_phase: session.state.phase,
@@ -830,12 +753,14 @@ impl DevServicePort for ServicePortImpl {
         })
     }
 
-    fn get_debug_log(
-        &self,
-        handle: &str,
-    ) -> Result<Vec<ServiceDebugLogEntryDTO>, ServiceError> {
+    fn get_debug_log(&self, handle: &str) -> Result<Vec<ServiceDebugLogEntryDTO>, ServiceError> {
         let session = self.manager.get(handle)?;
-        Ok(session.state.debug_log.iter().map(ServiceDebugLogEntryDTO::from).collect())
+        Ok(session
+            .state
+            .debug_log
+            .iter()
+            .map(ServiceDebugLogEntryDTO::from)
+            .collect())
     }
 
     fn get_inference_timeline(
@@ -861,10 +786,14 @@ impl DevServicePort for ServicePortImpl {
                 turn_index,
                 seat: snapshot.entry.seat,
                 call: snapshot.entry.call.clone(),
-                new_constraints: snapshot.new_constraints.iter()
+                new_constraints: snapshot
+                    .new_constraints
+                    .iter()
                     .map(ServiceFactConstraintDTO::from)
                     .collect(),
-                cumulative_beliefs: snapshot.cumulative_beliefs.iter()
+                cumulative_beliefs: snapshot
+                    .cumulative_beliefs
+                    .iter()
                     .map(|(seat, beliefs)| (*seat, ServicePublicBeliefsDTO::from(beliefs)))
                     .collect(),
             });
@@ -875,7 +804,11 @@ impl DevServicePort for ServicePortImpl {
         // The NS/EW timelines are already in order within their pair, so we
         // re-sort based on seat ordering from the actual auction entries
         entries.sort_by_key(|e| {
-            session.state.auction.entries.iter()
+            session
+                .state
+                .auction
+                .entries
+                .iter()
                 .position(|ae| ae.seat == e.seat && ae.call == e.call)
                 .unwrap_or(e.turn_index)
         });
@@ -886,16 +819,6 @@ impl DevServicePort for ServicePortImpl {
         }
 
         Ok(entries)
-    }
-
-    fn get_play_suggestions(
-        &self,
-        handle: &str,
-    ) -> Result<PlaySuggestionsDTO, ServiceError> {
-        let _session = self.manager.get(handle)?;
-        Ok(PlaySuggestionsDTO {
-            suggestions: Vec::new(),
-        })
     }
 
     fn get_convention_name(&self, handle: &str) -> Result<String, ServiceError> {
@@ -967,12 +890,5 @@ mod tests {
         let service = ServicePortImpl::new();
         let result = service.get_dds_solution("session-1");
         assert!(matches!(result, Err(ServiceError::DdsNotAvailable)));
-    }
-
-    #[test]
-    fn evaluate_atom_returns_not_implemented() {
-        let mut service = ServicePortImpl::new();
-        let result = service.evaluate_atom("nt-bundle", "atom-1", 42, None, None);
-        assert!(result.is_err());
     }
 }

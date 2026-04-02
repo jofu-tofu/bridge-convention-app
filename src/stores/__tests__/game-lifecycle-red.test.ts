@@ -105,7 +105,6 @@ function createMockService(): DevServicePort {
     getDebugSnapshot: vi.fn().mockResolvedValue({}),
     getDebugLog: vi.fn().mockResolvedValue([]),
     getInferenceTimeline: vi.fn().mockResolvedValue([]),
-    getPlaySuggestions: vi.fn().mockResolvedValue(null),
     getConventionName: vi.fn().mockResolvedValue("Test Convention"),
     createSessionFromBundle: vi.fn().mockRejectedValue(new Error("stub")),
   } as unknown as DevServicePort;

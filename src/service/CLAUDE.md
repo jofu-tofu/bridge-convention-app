@@ -28,7 +28,7 @@ WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend 
 | `wasm-service.ts` | `WasmService` — thin proxy implementing ServicePort via `wasm-bindgen` calls to Rust `WasmServicePort` |
 | `service-helpers.ts` | Sync WASM wrappers for UI components: `listConventions()`, `listModules()`, `buildBaseModuleInfos()`, `getModuleLearningViewportSync()` |
 | `dds-bridge.ts` | DDS platform dispatch: Tauri = native DDS via bridge-engine, WASM = JS worker fallback via PBN extraction. **Anti-pattern:** must not import wasm-service.ts directly — circular import. Uses callback injection for `getDealPBN`. |
-| `display/` | Call/contract/card formatting, hand summary, convention card builders (`convention-card.ts` — `buildConventionCardPanel` for App format, `buildAcblCardPanel` for ACBL format, wired to WASM via service-helpers) |
+| `display/` | Call/contract/card formatting, convention card builders (`convention-card.ts` — `buildConventionCardPanel` for App format, `buildAcblCardPanel` for ACBL format, wired to WASM via service-helpers) |
 | `util/delay.ts` | Pure delay utility |
 
 ## Hexagonal Boundary Rules

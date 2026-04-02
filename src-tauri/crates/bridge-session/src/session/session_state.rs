@@ -13,7 +13,7 @@ use bridge_engine::types::{
 use bridge_engine::constants::{bid_suit_to_suit, next_seat, partner_seat};
 
 use crate::inference::InferenceCoordinator;
-use crate::inference::types::{InferenceSnapshot, PublicBeliefState, PublicBeliefs};
+use crate::inference::types::{InferenceSnapshot, PublicBeliefState};
 use crate::inference::{Posterior, PosteriorEngine, UniformPosterior};
 use bridge_engine::strategy::ChainTrace;
 use serde::{Serialize, Deserialize};
@@ -108,7 +108,6 @@ pub struct SessionState {
 
     // Inference
     pub inference_coordinator: InferenceCoordinator,
-    pub play_inferences: Option<HashMap<Seat, PublicBeliefs>>,
     pub public_belief_state: PublicBeliefState,
 
     // Bid history (accumulated from inference annotations)
@@ -165,7 +164,6 @@ impl SessionState {
             user_seat,
 
             inference_coordinator: coordinator,
-            play_inferences: None,
             public_belief_state,
 
             bid_history: Vec::new(),
@@ -281,11 +279,6 @@ impl SessionState {
             alert_label,
             annotation_type,
         });
-    }
-
-    /// Capture inferences at auction end.
-    pub fn capture_play_inferences(&mut self) {
-        self.play_inferences = self.inference_coordinator.capture_play_inferences();
     }
 
     /// NS inference timeline.

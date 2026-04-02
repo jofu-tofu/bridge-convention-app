@@ -291,7 +291,6 @@ export function createGameStore(
 
     // 4. Post-transition actions
     if (desc.resetPlay) playPhase.play.aborted = false;
-    if (desc.targetPhase === "PLAYING") void playPhase.fetchPlaySuggestions(handle);
     if (desc.triggerDDS) void triggerDDSSolve();
 
     // 5. Auto-transition from prompt (unless caller handles it)
@@ -311,7 +310,6 @@ export function createGameStore(
     playPhase.play.showingTrickResult = false;
     playPhase.play.processing = false;
     playPhase.play.log = [];
-    playPhase.play.suggestions = [];
   }
 
   async function executeServiceAction(
@@ -391,7 +389,6 @@ export function createGameStore(
       const { ok } = await playPhase.animateAiPlays(handle, [...aiPlays], []);
       if (!ok) return;
     }
-    void playPhase.fetchPlaySuggestions(handle);
   }
 
   // ── Bidding sub-module ────────────────────────────────────────
@@ -801,7 +798,6 @@ export function createGameStore(
     // Debug observability
     get debugLog() { return biddingPhase.bidding.debugLog; },
     get playLog() { return playPhase.play.log; },
-    get playSuggestions() { return playPhase.play.suggestions; },
     get playInferences() { return inference.playInferences; },
 
     setConventionName(name: string) { conventionName = name; },

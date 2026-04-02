@@ -25,8 +25,6 @@
   import DebugPublicBeliefs from "./debug/DebugPublicBeliefs.svelte";
   import DebugBidLog from "./debug/DebugBidLog.svelte";
   import DebugPlayLog from "./debug/DebugPlayLog.svelte";
-  import DebugPlaySuggestions from "./debug/DebugPlaySuggestions.svelte";
-
   interface Props {
     open: boolean;
   }
@@ -162,11 +160,6 @@
           <DebugPosterior posteriorSummary={debugSnap?.posteriorSummary ?? null} />
         </div>
       </details>
-    {/if}
-
-    <!-- Play suggestions — always visible during play phase -->
-    {#if gameStore.playSuggestions.length > 0}
-      <DebugPlaySuggestions suggestions={gameStore.playSuggestions} />
     {/if}
 
     <!-- Group 3: Feedback & History -->

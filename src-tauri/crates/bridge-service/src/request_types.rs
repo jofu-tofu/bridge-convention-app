@@ -3,7 +3,7 @@
 use bridge_engine::types::{Seat, Vulnerability};
 use serde::{Deserialize, Serialize};
 
-use bridge_session::types::{PracticeMode, PracticeRole, PlayPreference, OpponentMode};
+use bridge_session::types::{OpponentMode, PlayPreference, PracticeMode, PracticeRole};
 
 /// Opaque session identifier.
 pub type SessionHandle = String;

@@ -7,7 +7,6 @@ pub(crate) mod bundle_resolver;
 pub(crate) mod config_resolver;
 pub mod convention_adapter;
 pub mod error;
-pub mod evaluation;
 pub mod feedback_assembler;
 pub mod port;
 pub mod request_types;
@@ -24,9 +23,4 @@ pub use service_impl::ServicePortImpl;
 pub use response_types::{
     AiBidEntryDTO, AiPlayEntryDTO, BidSubmitResult, ConventionInfo, DDSolutionResult,
     DrillStartResult, PhaseTransition, PromptAcceptResult, ServicePublicBeliefState,
-};
-
-// Re-export evaluation types
-pub use evaluation::types::{
-    AtomGradeResult, PlaythroughGradeResult, PlaythroughHandle, PlaythroughStartResult,
 };

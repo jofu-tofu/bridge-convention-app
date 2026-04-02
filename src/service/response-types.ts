@@ -18,7 +18,7 @@ import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoi
 import type { PracticeMode, PlayPreference, PromptMode, TeachingProjection, ConventionTeaching } from "./session-types";
 
 /** Bid context relative to the practice target. */
-export enum BidContext {
+enum BidContext {
   Prerequisite = "prerequisite",
   Target = "target",
   FollowUp = "follow-up",
@@ -50,7 +50,7 @@ export enum ViewportBidGrade {
 }
 
 /** Encoder kind — service-owned mirror of pipeline/provenance EncoderKind. */
-export enum ServiceEncoderKind {
+enum ServiceEncoderKind {
   DefaultCall = "default-call",
   Resolver = "resolver",
   AlternateEncoding = "alternate-encoding",
@@ -59,7 +59,7 @@ export enum ServiceEncoderKind {
 }
 
 /** Fact operator — service-owned mirror of pipeline/meaning FactOperator. */
-export enum ServiceFactOperator {
+enum ServiceFactOperator {
   Gte = "gte",
   Lte = "lte",
   Eq = "eq",
@@ -72,7 +72,7 @@ export enum ServiceFactOperator {
 
 /** Structured teaching label — service-owned mirror of conventions/core TeachingLabel.
  *  Plain strings (no branded types) at the service boundary. */
-export interface ServiceTeachingLabel {
+interface ServiceTeachingLabel {
   readonly name: string;
   readonly summary: string;
 }
@@ -80,7 +80,7 @@ export interface ServiceTeachingLabel {
 // ── Service-owned teaching types ────────────────────────────────────
 
 /** Condition role — service-owned mirror of pipeline/evidence-bundle ConditionRole. */
-export enum ServiceConditionRole {
+enum ServiceConditionRole {
   Semantic = "semantic",
   Inferential = "inferential",
   Pedagogical = "pedagogical",
@@ -135,7 +135,7 @@ export interface ServiceMeaningView {
 }
 
 /** Call projection — service-owned mirror of teaching-types CallProjection. */
-export interface ServiceCallProjection {
+interface ServiceCallProjection {
   readonly call: Call;
   readonly status: "truth" | "acceptable" | "wrong";
   readonly supportingMeanings: readonly string[];
@@ -144,14 +144,14 @@ export interface ServiceCallProjection {
 }
 
 /** Parse tree module verdict — service-owned mirror. */
-export enum ServiceParseTreeModuleVerdict {
+enum ServiceParseTreeModuleVerdict {
   Selected = "selected",
   Applicable = "applicable",
   Eliminated = "eliminated",
 }
 
 /** Parse tree condition — service-owned mirror of teaching-types ParseTreeCondition. */
-export interface ServiceParseTreeCondition {
+interface ServiceParseTreeCondition {
   readonly factId: string;
   readonly description: string;
   readonly satisfied: boolean;
@@ -159,7 +159,7 @@ export interface ServiceParseTreeCondition {
 }
 
 /** Parse tree module node — service-owned mirror of teaching-types ParseTreeModuleNode. */
-export interface ServiceParseTreeModuleNode {
+interface ServiceParseTreeModuleNode {
   readonly moduleId: string;
   readonly displayLabel: string;
   readonly verdict: ServiceParseTreeModuleVerdict;
@@ -174,7 +174,7 @@ export interface ServiceParseTreeModuleNode {
 }
 
 /** Parse tree view — service-owned mirror of teaching-types ParseTreeView. */
-export interface ServiceParseTreeView {
+interface ServiceParseTreeView {
   readonly modules: readonly ServiceParseTreeModuleNode[];
   readonly selectedPath: {
     readonly moduleId: string;
@@ -221,7 +221,7 @@ export interface ServiceFactConstraint {
 }
 
 /** Qualitative constraint — service-owned mirror of inference/inference-types QualitativeConstraint. */
-export interface ServiceQualitativeConstraint {
+interface ServiceQualitativeConstraint {
   readonly factId: string;
   readonly label: string;
   readonly operator: string;
@@ -244,7 +244,7 @@ export interface ServicePublicBeliefs {
 }
 
 /** Bid annotation — service-owned mirror of inference/types BidAnnotation. */
-export interface ServiceBidAnnotation {
+interface ServiceBidAnnotation {
   readonly call: Call;
   readonly seat: Seat;
   readonly conventionId: string | null;
@@ -419,7 +419,7 @@ export interface ClauseSystemVariant {
 }
 
 /** A single fact requirement on a learning surface. */
-export interface SurfaceClauseView {
+interface SurfaceClauseView {
   readonly factId: string;
   readonly operator: ServiceFactOperator;
   readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
@@ -446,7 +446,7 @@ interface TeachingSurfaceFields {
 }
 
 /** Surface detail with explanation text. */
-export interface SurfaceDetailView extends TeachingSurfaceFields {
+interface SurfaceDetailView extends TeachingSurfaceFields {
   readonly meaningId: string;
   readonly teachingLabel: ServiceTeachingLabel;
   readonly call: Call;

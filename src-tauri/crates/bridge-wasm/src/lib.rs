@@ -2,7 +2,6 @@ use wasm_bindgen::prelude::*;
 
 use bridge_engine::types::{Call, Card, Seat};
 use bridge_service::{ServicePort, ServicePortImpl, SessionConfig};
-use bridge_service::port::DevServicePort;
 
 // ── Serialization helpers ─────────────────────────────────────────
 
@@ -270,14 +269,6 @@ impl WasmServicePort {
         to_js(&result)
     }
 
-    pub fn get_play_suggestions(&self, handle: &str) -> Result<JsValue, JsError> {
-        let result = self
-            .inner
-            .get_play_suggestions(handle)
-            .map_err(|e| JsError::new(&e.to_string()))?;
-        to_js(&result)
-    }
-
     pub fn get_convention_name(&self, handle: &str) -> Result<JsValue, JsError> {
         let result = self
             .inner
@@ -285,11 +276,4 @@ impl WasmServicePort {
             .map_err(|e| JsError::new(&e.to_string()))?;
         to_js(&result)
     }
-}
-
-// ── Paid content injection ────────────────────────────────────────
-
-#[wasm_bindgen]
-pub fn load_bundle_defs(json: &str) -> u32 {
-    bridge_conventions::registry::bundle_registry::load_bundle_defs(json) as u32
 }

@@ -118,7 +118,6 @@ fn build_evidence_bundle(
                 description: c.description.clone(),
                 observed_value: c.observed_value.clone(),
                 threshold: None,
-                condition_role: None,
                 params: None,
             })
             .collect();
@@ -140,7 +139,6 @@ fn build_evidence_bundle(
                     description: c.description.clone(),
                     observed_value: c.observed_value.clone(),
                     threshold: None,
-                    condition_role: None,
                     params: None,
                 })
                 .collect();

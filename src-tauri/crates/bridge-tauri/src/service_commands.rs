@@ -5,18 +5,14 @@
 
 use std::sync::Mutex;
 
-use bridge_engine::types::{Call, Card, Seat, Vulnerability};
-use bridge_service::{
-    DevServicePort, ServicePort, ServicePortImpl, SessionConfig,
-};
+use bridge_engine::types::{Call, Card, Seat};
 use bridge_service::response_types::*;
-use bridge_service::evaluation::types::*;
+use bridge_service::{DevServicePort, ServicePort, ServicePortImpl, SessionConfig};
 use bridge_session::session::{
-    BiddingViewport, DeclarerPromptViewport, ExplanationViewport, ModuleCatalogEntry,
-    ModuleLearningViewport, PlayCardResult, SingleCardResult, PlayingViewport,
-    BundleFlowTreeViewport, ModuleFlowTreeViewport,
+    BiddingViewport, BundleFlowTreeViewport, DeclarerPromptViewport, ExplanationViewport,
+    ModuleCatalogEntry, ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult,
+    PlayingViewport, SingleCardResult,
 };
-use bridge_session::types::OpponentMode;
 
 /// Managed state type alias.
 pub type ServiceState = Mutex<ServicePortImpl>;
@@ -97,10 +93,7 @@ pub fn play_single_card(
 }
 
 #[tauri::command]
-pub fn skip_to_review(
-    state: tauri::State<ServiceState>,
-    handle: String,
-) -> Result<(), String> {
+pub fn skip_to_review(state: tauri::State<ServiceState>, handle: String) -> Result<(), String> {
     let mut service = state.lock().map_err(|e| e.to_string())?;
     service.skip_to_review(&handle).map_err(|e| e.to_string())
 }
@@ -184,36 +177,25 @@ pub fn get_dds_solution(
     handle: String,
 ) -> Result<DDSolutionResult, String> {
     let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_dds_solution(&handle)
-        .map_err(|e| e.to_string())
+    service.get_dds_solution(&handle).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub fn get_deal_pbn(
-    state: tauri::State<ServiceState>,
-    handle: String,
-) -> Result<String, String> {
+pub fn get_deal_pbn(state: tauri::State<ServiceState>, handle: String) -> Result<String, String> {
     let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_deal_pbn(&handle)
-        .map_err(|e| e.to_string())
+    service.get_deal_pbn(&handle).map_err(|e| e.to_string())
 }
 
 // ── Catalog ───────────────────────────────────────────────────────
 
 #[tauri::command]
-pub fn list_conventions(
-    state: tauri::State<ServiceState>,
-) -> Result<Vec<ConventionInfo>, String> {
+pub fn list_conventions(state: tauri::State<ServiceState>) -> Result<Vec<ConventionInfo>, String> {
     let service = state.lock().map_err(|e| e.to_string())?;
     Ok(service.list_conventions())
 }
 
 #[tauri::command]
-pub fn list_modules(
-    state: tauri::State<ServiceState>,
-) -> Result<Vec<ModuleCatalogEntry>, String> {
+pub fn list_modules(state: tauri::State<ServiceState>) -> Result<Vec<ModuleCatalogEntry>, String> {
     let service = state.lock().map_err(|e| e.to_string())?;
     Ok(service.list_modules())
 }
@@ -246,122 +228,6 @@ pub fn get_module_flow_tree(
     let service = state.lock().map_err(|e| e.to_string())?;
     Ok(service.get_module_flow_tree(&module_id))
 }
-
-// ── Evaluation (stateless) ────────────────────────────────────────
-
-#[tauri::command]
-pub fn evaluate_atom(
-    state: tauri::State<ServiceState>,
-    bundle_id: String,
-    atom_id: String,
-    seed: u64,
-    vuln: Option<Vulnerability>,
-    base_system: Option<String>,
-) -> Result<BiddingViewport, String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .evaluate_atom(
-            &bundle_id,
-            &atom_id,
-            seed,
-            vuln,
-            base_system.as_deref(),
-        )
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub fn grade_atom(
-    state: tauri::State<ServiceState>,
-    bundle_id: String,
-    atom_id: String,
-    seed: u64,
-    bid: String,
-    vuln: Option<Vulnerability>,
-    base_system: Option<String>,
-) -> Result<AtomGradeResult, String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .grade_atom(
-            &bundle_id,
-            &atom_id,
-            seed,
-            &bid,
-            vuln,
-            base_system.as_deref(),
-        )
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub fn start_playthrough(
-    state: tauri::State<ServiceState>,
-    bundle_id: String,
-    seed: u64,
-    vuln: Option<Vulnerability>,
-    opponents: Option<OpponentMode>,
-    base_system: Option<String>,
-) -> Result<PlaythroughStartResult, String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .start_playthrough(
-            &bundle_id,
-            seed,
-            vuln,
-            opponents,
-            base_system.as_deref(),
-        )
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub fn get_playthrough_step(
-    state: tauri::State<ServiceState>,
-    bundle_id: String,
-    seed: u64,
-    step_idx: usize,
-    vuln: Option<Vulnerability>,
-    opponents: Option<OpponentMode>,
-    base_system: Option<String>,
-) -> Result<BiddingViewport, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_playthrough_step(
-            &bundle_id,
-            seed,
-            step_idx,
-            vuln,
-            opponents,
-            base_system.as_deref(),
-        )
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub fn grade_playthrough_bid(
-    state: tauri::State<ServiceState>,
-    bundle_id: String,
-    seed: u64,
-    step_idx: usize,
-    bid: String,
-    vuln: Option<Vulnerability>,
-    opponents: Option<OpponentMode>,
-    base_system: Option<String>,
-) -> Result<PlaythroughGradeResult, String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .grade_playthrough_bid(
-            &bundle_id,
-            seed,
-            step_idx,
-            &bid,
-            vuln,
-            opponents,
-            base_system.as_deref(),
-        )
-        .map_err(|e| e.to_string())
-}
-
 // ── Dev/debug ─────────────────────────────────────────────────────
 
 #[tauri::command]
@@ -370,9 +236,7 @@ pub fn get_expected_bid(
     handle: String,
 ) -> Result<Option<Call>, String> {
     let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_expected_bid(&handle)
-        .map_err(|e| e.to_string())
+    service.get_expected_bid(&handle).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -392,9 +256,7 @@ pub fn get_debug_log(
     handle: String,
 ) -> Result<Vec<serde_json::Value>, String> {
     let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_debug_log(&handle)
-        .map_err(|e| e.to_string())
+    service.get_debug_log(&handle).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -405,17 +267,6 @@ pub fn get_inference_timeline(
     let service = state.lock().map_err(|e| e.to_string())?;
     service
         .get_inference_timeline(&handle)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub fn get_play_suggestions(
-    state: tauri::State<ServiceState>,
-    handle: String,
-) -> Result<serde_json::Value, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_play_suggestions(&handle)
         .map_err(|e| e.to_string())
 }
 

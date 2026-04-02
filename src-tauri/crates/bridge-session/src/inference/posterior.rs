@@ -13,9 +13,8 @@ use bridge_engine::{calculate_hcp, get_suit_length, is_balanced, Hand};
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
-use serde::{Deserialize, Serialize};
 
-use super::types::{DerivedRanges, NumberRange};
+use super::types::DerivedRanges;
 
 // ── Constants ─────────────────────────────────────────────────────
 
@@ -63,18 +62,10 @@ impl Posterior {
         }
     }
 
-    /// Fraction of samples where combined length of seats in suit ≥ min_combined.
-    pub fn fit_probability(&self, seats: &[Seat], suit: Suit, min_combined: u32) -> f64 {
-        match self {
-            Self::Uniform(u) => u.fit_probability(seats, suit, min_combined),
-            Self::MonteCarlo(mc) => mc.fit_probability(seats, suit, min_combined),
-        }
-    }
-
     /// Confidence of posterior estimates (0.0–1.0).
     pub fn confidence(&self) -> f64 {
         match self {
-            Self::Uniform(_) => 0.0,
+            Self::Uniform(u) => u.confidence(),
             Self::MonteCarlo(mc) => mc.confidence(),
         }
     }
@@ -253,62 +244,6 @@ impl PosteriorEngine {
         (sum / count as f64, self.confidence())
     }
 
-    /// Fraction of samples where combined suit length of given seats ≥ min_combined.
-    pub fn fit_probability(&self, seats: &[Seat], suit: Suit, min_combined: u32) -> f64 {
-        if self.samples.is_empty() {
-            return 0.5;
-        }
-        let idx = suit_to_shape_index(suit);
-        let mut hits = 0;
-        let mut total = 0;
-        for sample in &self.samples {
-            let combined: u32 = seats
-                .iter()
-                .filter_map(|s| {
-                    sample.hands.get(s).map(|cards| {
-                        let hand = Hand { cards: cards.clone() };
-                        get_suit_length(&hand)[idx] as u32
-                    })
-                })
-                .sum();
-            // Only count samples where we have data for all requested seats
-            if seats.iter().all(|s| sample.hands.contains_key(s)) {
-                total += 1;
-                if combined >= min_combined {
-                    hits += 1;
-                }
-            }
-        }
-        if total == 0 {
-            return 0.5;
-        }
-        hits as f64 / total as f64
-    }
-
-    /// Fraction of samples where a seat's suit length ≤ max_len.
-    pub fn short_suit_probability(&self, seat: Seat, suit: Suit, max_len: u32) -> f64 {
-        if self.samples.is_empty() {
-            return 0.5;
-        }
-        let idx = suit_to_shape_index(suit);
-        let mut hits = 0;
-        let mut total = 0;
-        for sample in &self.samples {
-            if let Some(cards) = sample.hands.get(&seat) {
-                let hand = Hand { cards: cards.clone() };
-                let len = get_suit_length(&hand)[idx] as u32;
-                total += 1;
-                if len <= max_len {
-                    hits += 1;
-                }
-            }
-        }
-        if total == 0 {
-            return 0.5;
-        }
-        hits as f64 / total as f64
-    }
-
     /// Confidence metric: min(1.0, sample_count / FULL_CONFIDENCE_THRESHOLD).
     pub fn confidence(&self) -> f64 {
         (self.samples.len() as f64 / FULL_CONFIDENCE_THRESHOLD).min(1.0)
@@ -368,40 +303,6 @@ fn suit_to_shape_index(suit: Suit) -> usize {
     }
 }
 
-// ── Posterior query types (retained for compatibility) ─────────────
-
-/// A posterior fact request — what fact to query for which seat.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PosteriorFactRequest {
-    pub fact_id: String,
-    pub seat_id: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub conditioned_on: Option<Vec<String>>,
-}
-
-/// A posterior fact value — the result of a posterior query.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PosteriorFactValue {
-    pub fact_id: String,
-    pub seat_id: String,
-    pub expected_value: f64,
-    pub confidence: f64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub conditioned_on: Option<Vec<String>>,
-}
-
-/// A belief view — posterior beliefs about a seat from an observer's perspective.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BeliefView {
-    pub seat_id: String,
-    pub observer_seat: String,
-    pub facts: Vec<PosteriorFactValue>,
-    pub staleness: f64,
-}
-
 // ── Uniform posterior stub ─────────────────────────────────────────
 
 /// Stub posterior that returns uniform (uninformative) distributions for all queries.
@@ -411,36 +312,6 @@ pub struct UniformPosterior;
 impl UniformPosterior {
     pub fn new() -> Self {
         Self
-    }
-
-    /// Query a posterior fact — returns a uniform/uninformative result.
-    pub fn query_fact(&self, request: &PosteriorFactRequest) -> PosteriorFactValue {
-        let expected = match request.fact_id.as_str() {
-            // HCP: uniform prior gives expected value of 10 (40 total / 4 hands)
-            f if f.starts_with("hand.hcp") => 10.0,
-            // Suit lengths: uniform prior gives expected value of 3.25 (13/4)
-            f if f.starts_with("hand.suitLength") => 3.25,
-            // Binary facts: uniform 0.5
-            _ => 0.5,
-        };
-
-        PosteriorFactValue {
-            fact_id: request.fact_id.clone(),
-            seat_id: request.seat_id.clone(),
-            expected_value: expected,
-            confidence: 0.0, // Zero confidence = no information
-            conditioned_on: request.conditioned_on.clone(),
-        }
-    }
-
-    /// Get belief view for a seat — returns an empty (uninformative) belief view.
-    pub fn get_belief_view(&self, seat_id: &str, observer_seat: &str) -> BeliefView {
-        BeliefView {
-            seat_id: seat_id.to_string(),
-            observer_seat: observer_seat.to_string(),
-            facts: Vec::new(),
-            staleness: 1.0, // Maximum staleness = no information
-        }
     }
 
     /// Marginal HCP query — returns uniform expected value.
@@ -454,14 +325,9 @@ impl UniformPosterior {
         (3.25, 0.0)
     }
 
-    /// Fit probability query — returns uninformative 0.5.
-    pub fn fit_probability(
-        &self,
-        _seats: &[Seat],
-        _suit: Suit,
-        _min_combined: u32,
-    ) -> f64 {
-        0.5
+    /// Confidence — always zero for uniform posterior.
+    pub fn confidence(&self) -> f64 {
+        0.0
     }
 }
 
@@ -474,9 +340,10 @@ impl Default for UniformPosterior {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::super::types::NumberRange;
     use bridge_engine::types::Rank;
 
-    // ── UniformPosterior tests (retained) ──────────────────────────
+    // ── UniformPosterior tests ────────────────────────────────────────
 
     #[test]
     fn uniform_hcp_query() {
@@ -495,48 +362,22 @@ mod tests {
     }
 
     #[test]
-    fn uniform_fit_probability() {
-        let posterior = UniformPosterior::new();
-        let prob = posterior.fit_probability(
-            &[Seat::North, Seat::South],
-            Suit::Hearts,
-            8,
-        );
-        assert_eq!(prob, 0.5);
+    fn marginal_hcp_uniform() {
+        let (mean, confidence) = UniformPosterior::new().marginal_hcp(Seat::North);
+        assert_eq!(mean, 10.0);
+        assert_eq!(confidence, 0.0);
     }
 
     #[test]
-    fn query_fact_hcp() {
-        let posterior = UniformPosterior::new();
-        let result = posterior.query_fact(&PosteriorFactRequest {
-            fact_id: "hand.hcp".to_string(),
-            seat_id: "N".to_string(),
-            conditioned_on: None,
-        });
-        assert_eq!(result.expected_value, 10.0);
-        assert_eq!(result.confidence, 0.0);
+    fn suit_length_uniform() {
+        let (mean, confidence) = UniformPosterior::new().suit_length(Seat::North, Suit::Spades);
+        assert_eq!(mean, 3.25);
+        assert_eq!(confidence, 0.0);
     }
 
     #[test]
-    fn query_fact_suit_length() {
-        let posterior = UniformPosterior::new();
-        let result = posterior.query_fact(&PosteriorFactRequest {
-            fact_id: "hand.suitLength.spades".to_string(),
-            seat_id: "N".to_string(),
-            conditioned_on: None,
-        });
-        assert_eq!(result.expected_value, 3.25);
-        assert_eq!(result.confidence, 0.0);
-    }
-
-    #[test]
-    fn belief_view_is_uninformative() {
-        let posterior = UniformPosterior::new();
-        let view = posterior.get_belief_view("N", "S");
-        assert_eq!(view.seat_id, "N");
-        assert_eq!(view.observer_seat, "S");
-        assert!(view.facts.is_empty());
-        assert_eq!(view.staleness, 1.0);
+    fn confidence_uniform() {
+        assert_eq!(UniformPosterior::new().confidence(), 0.0);
     }
 
     #[test]
@@ -679,31 +520,6 @@ mod tests {
         // each suit should average ~3.25 cards per seat
         assert!(length > 1.0 && length < 6.0, "Expected ~3.25, got {}", length);
         assert!(conf > 0.0);
-    }
-
-    #[test]
-    fn fit_probability_query() {
-        let mut known = HashMap::new();
-        known.insert(Seat::South, make_13_card_hand(Suit::Spades));
-
-        let engine = PosteriorEngine::new(Seat::South, known, HashMap::new(), 42);
-
-        // Probability that N+E have ≥8 hearts combined
-        let prob = engine.fit_probability(&[Seat::North, Seat::East], Suit::Hearts, 8);
-        // With 13 hearts split among 3 seats, 2 seats having ≥8 is common
-        assert!(prob > 0.0 && prob < 1.0, "Expected between 0 and 1, got {}", prob);
-    }
-
-    #[test]
-    fn short_suit_probability_query() {
-        let mut known = HashMap::new();
-        known.insert(Seat::South, make_13_card_hand(Suit::Spades));
-
-        let engine = PosteriorEngine::new(Seat::South, known, HashMap::new(), 42);
-
-        // Probability that North has ≤1 hearts
-        let prob = engine.short_suit_probability(Seat::North, Suit::Hearts, 1);
-        assert!(prob >= 0.0 && prob <= 1.0);
     }
 
     #[test]

@@ -31,11 +31,6 @@ pub struct PipelineInput<'a> {
     pub system_config: Option<&'a SystemConfig>,
 }
 
-/// Output from the pipeline.
-pub struct PipelineOutput {
-    pub result: PipelineResult,
-    pub facts: EvaluatedFacts,
-}
 
 /// Run the meaning pipeline — the 4-step pure transformation.
 ///

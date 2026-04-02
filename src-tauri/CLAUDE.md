@@ -64,7 +64,7 @@ crates/
                        DevServicePort commands.
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
                        for browser deployment. All 19 ServicePort methods + 6 DevServicePort
-                       methods (debug_assertions gated) + load_bundle_defs for paid content.
+                       methods (debug_assertions gated).
 ```
 
 ## Conventions

@@ -10,6 +10,7 @@ use bridge_conventions::adapter::protocol_adapter::ConventionStrategy;
 use bridge_conventions::adapter::strategy_evaluation::StrategyEvaluation;
 use bridge_conventions::fact_dsl::evaluator::evaluate_facts;
 use bridge_conventions::fact_dsl::types::{FactData, FactValue};
+use bridge_conventions::pipeline::observation::committed_step::initial_negotiation;
 use bridge_conventions::pipeline::observation::committed_step::{
     AuctionContext, ClaimRef, CommittedStep, CommittedStepStatus,
 };
@@ -18,7 +19,6 @@ use bridge_conventions::pipeline::observation::negotiation_extractor::{
     apply_negotiation_actions, compute_kernel_delta,
 };
 use bridge_conventions::pipeline::observation::normalize_intent::normalize_intent;
-use bridge_conventions::pipeline::observation::committed_step::initial_negotiation;
 use bridge_conventions::pipeline::observation::rule_interpreter::{
     collect_matching_claims_with_phases, flatten_surfaces,
 };
@@ -41,7 +41,9 @@ use bridge_session::heuristics::{BidResult, BiddingContext, BiddingStrategy};
 fn to_engine_disclosure(d: bridge_conventions::types::meaning::Disclosure) -> EngineDisclosure {
     match d {
         bridge_conventions::types::meaning::Disclosure::Alert => EngineDisclosure::Alert,
-        bridge_conventions::types::meaning::Disclosure::Announcement => EngineDisclosure::Announcement,
+        bridge_conventions::types::meaning::Disclosure::Announcement => {
+            EngineDisclosure::Announcement
+        }
         bridge_conventions::types::meaning::Disclosure::Natural => EngineDisclosure::Natural,
         bridge_conventions::types::meaning::Disclosure::Standard => EngineDisclosure::Standard,
     }
@@ -104,8 +106,7 @@ impl ConventionStrategyAdapter {
         let result = bid.map(|br| {
             let (truth_set_calls, acceptable_set_calls) =
                 Self::extract_alternative_calls(&evaluation, &br.call);
-            let near_miss_calls =
-                Self::extract_near_miss_calls(&evaluation, &br.call);
+            let near_miss_calls = Self::extract_near_miss_calls(&evaluation, &br.call);
             let disclosure = evaluation
                 .pipeline_result
                 .as_ref()
@@ -178,15 +179,13 @@ impl ConventionStrategyAdapter {
                 bridge_engine::auction::is_legal_call(&partial_auction, call, step_seat)
             };
 
-            let step_hand = all_hands
-                .and_then(|h| h.get(&entry.seat))
-                .or_else(|| {
-                    if entry.seat == ctx.seat {
-                        Some(&ctx.hand)
-                    } else {
-                        None
-                    }
-                });
+            let step_hand = all_hands.and_then(|h| h.get(&entry.seat)).or_else(|| {
+                if entry.seat == ctx.seat {
+                    Some(&ctx.hand)
+                } else {
+                    None
+                }
+            });
 
             let pipeline_result = if !surfaces.is_empty() {
                 if let Some(hand) = step_hand {
@@ -244,12 +243,7 @@ impl ConventionStrategyAdapter {
                 // Find the carrier matching the actual call (might not be "selected")
                 let matching_carrier = Self::find_carrier_for_call(pr, &entry.call);
                 if matching_carrier.is_some() {
-                    Self::build_step_from_carrier(
-                        entry.seat,
-                        &entry.call,
-                        matching_carrier,
-                        &log,
-                    )
+                    Self::build_step_from_carrier(entry.seat, &entry.call, matching_carrier, &log)
                 } else {
                     // Pipeline ran but actual call doesn't match any carrier → call-infer
                     Self::build_call_inferred_step(entry.seat, &entry.call, &surfaces, &log)
@@ -410,9 +404,7 @@ impl ConventionStrategyAdapter {
         prev_log: &[CommittedStep],
     ) -> CommittedStep {
         // Find the surface whose default_call matches the actual call
-        let matched = surfaces
-            .iter()
-            .find(|s| &s.encoding.default_call == call);
+        let matched = surfaces.iter().find(|s| &s.encoding.default_call == call);
 
         let (resolved_claim, public_actions, status) = match matched {
             Some(surface) => {
@@ -538,10 +530,7 @@ impl ConventionStrategyAdapter {
 
     /// Extract near-miss calls: eliminated candidates in the same surface group
     /// as the selected bid with at most one unsatisfied clause.
-    fn extract_near_miss_calls(
-        evaluation: &StrategyEvaluation,
-        selected_call: &Call,
-    ) -> Vec<Call> {
+    fn extract_near_miss_calls(evaluation: &StrategyEvaluation, selected_call: &Call) -> Vec<Call> {
         let pr = match &evaluation.pipeline_result {
             Some(pr) => pr,
             None => return Vec::new(),
@@ -555,9 +544,9 @@ impl ConventionStrategyAdapter {
             None => return Vec::new(),
         };
         let selected_meaning_id = &selected.proposal().meaning_id;
-        let group = groups.iter().find(|g| {
-            g.members.iter().any(|m| m == selected_meaning_id.as_str())
-        });
+        let group = groups
+            .iter()
+            .find(|g| g.members.iter().any(|m| m == selected_meaning_id.as_str()));
         let group = match group {
             Some(g) => g,
             None => return Vec::new(),
@@ -565,7 +554,12 @@ impl ConventionStrategyAdapter {
 
         let mut calls = Vec::new();
         for c in &pr.eliminated {
-            let failed = c.proposal().clauses.iter().filter(|cl| !cl.satisfied).count();
+            let failed = c
+                .proposal()
+                .clauses
+                .iter()
+                .filter(|cl| !cl.satisfied)
+                .count();
             if failed == 1
                 && group.members.iter().any(|m| m == &c.proposal().meaning_id)
                 && c.call() != selected_call
@@ -603,7 +597,10 @@ impl ConventionStrategyAdapter {
     /// Retrieve the last stashed evaluation (cloned, not taken).
     /// Returns None if no evaluation has been stashed yet.
     pub fn last_evaluation(&self) -> Option<StrategyEvaluation> {
-        self.last_evaluation.read().ok().and_then(|guard| guard.clone())
+        self.last_evaluation
+            .read()
+            .ok()
+            .and_then(|guard| guard.clone())
     }
 
     /// Extract FactConstraints from a StrategyEvaluation's selected carrier.
@@ -659,8 +656,7 @@ impl BiddingStrategy for ConventionStrategyAdapter {
         convention_bid.map(|br| {
             let (truth_set_calls, acceptable_set_calls) =
                 Self::extract_alternative_calls(&evaluation, &br.call);
-            let near_miss_calls =
-                Self::extract_near_miss_calls(&evaluation, &br.call);
+            let near_miss_calls = Self::extract_near_miss_calls(&evaluation, &br.call);
             let disclosure = evaluation
                 .pipeline_result
                 .as_ref()
@@ -679,7 +675,9 @@ impl BiddingStrategy for ConventionStrategyAdapter {
         })
     }
 
-    fn as_any(&self) -> &dyn std::any::Any { self }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 
     fn stashed_evaluation(&self) -> Option<Box<dyn std::any::Any + Send>> {
         self.last_evaluation()

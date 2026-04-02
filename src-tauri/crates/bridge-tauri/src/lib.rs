@@ -1,7 +1,7 @@
 mod service_commands;
 
-use std::sync::Mutex;
 use bridge_service::ServicePortImpl;
+use std::sync::Mutex;
 
 pub fn run() {
     tauri::Builder::default()
@@ -33,7 +33,6 @@ pub fn run() {
             service_commands::get_debug_snapshot,
             service_commands::get_debug_log,
             service_commands::get_inference_timeline,
-            service_commands::get_play_suggestions,
             service_commands::get_convention_name,
         ])
         .run(tauri::generate_context!())

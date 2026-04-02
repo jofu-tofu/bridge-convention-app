@@ -43,7 +43,6 @@ pub struct EncodingEligibility {
 #[serde(rename_all = "snake_case")]
 pub enum EncodingFailureReason {
     AllEncodingsIllegal,
-    IllegalInAuction,
 }
 
 /// Pedagogical eligibility.
@@ -105,18 +104,3 @@ pub struct EncodingOptionDTO {
     pub legal: bool,
 }
 
-/// Check eligibility dimensions for DTO — pedagogical is post-selection annotation, not a gate.
-pub fn is_dto_selectable(c: &ResolvedCandidateDTO) -> bool {
-    match &c.eligibility {
-        Some(e) => e.hand.satisfied && e.encoding.legal,
-        None => c.legal && c.failed_conditions.is_empty(),
-    }
-}
-
-/// Check pedagogical acceptability on DTO.
-pub fn is_dto_teaching_acceptable(c: &ResolvedCandidateDTO) -> bool {
-    match &c.eligibility {
-        Some(e) => e.pedagogical.acceptable,
-        None => true,
-    }
-}

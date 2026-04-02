@@ -12,7 +12,6 @@ import type { Card, Seat, PlayedCard } from "../service";
 import type { DevServicePort, SessionHandle } from "../service";
 import type { PlayingViewport, SingleCardResult, ServicePublicBeliefState, ServiceDerivedRanges } from "../service";
 import type { PhaseEvent } from "../service";
-import type { PlaySuggestions } from "../service/debug-types";
 import { mcDdsSuggest } from "../engine/mc-dds-play";
 import { partnerSeat } from "../service";
 import { TRICK_PAUSE, AI_PLAY_DELAY } from "./animate";
@@ -28,11 +27,10 @@ interface PlayPhaseState {
   showingTrickResult: boolean;
   processing: boolean;
   log: PlayLogEntry[];
-  suggestions: PlaySuggestions;
 }
 
 function freshPlayState(aborted = false): PlayPhaseState {
-  return { score: null, aborted, showingTrickResult: false, processing: false, log: [], suggestions: [] };
+  return { score: null, aborted, showingTrickResult: false, processing: false, log: [] };
 }
 
 // ── Dependency contract ─────────────────────────────────────────────
@@ -71,15 +69,6 @@ export function createPlayPhase(deps: PlayDeps) {
   });
 
   // ── Helpers ─────────────────────────────────────────────────────
-
-  async function fetchPlaySuggestions(handle: SessionHandle) {
-    if (!import.meta.env.DEV) return;
-    try {
-      play.suggestions = await deps.getActiveService().getPlaySuggestions(handle);
-    } catch {
-      play.suggestions = [];
-    }
-  }
 
   /**
    * Animate a sequence of AI plays with delays between cards and pauses at trick boundaries.
@@ -360,7 +349,6 @@ export function createPlayPhase(deps: PlayDeps) {
       if (!result.playComplete) {
         deps.setPlayingViewport(await activeService.getPlayingViewport(handle));
         if (deps.getActiveHandle() !== handle) return;
-        void fetchPlaySuggestions(handle);
       }
     } finally {
       play.processing = false;
@@ -443,13 +431,11 @@ export function createPlayPhase(deps: PlayDeps) {
       // Handle play completion (baseTrick.length === 4 branch)
       if (result.playComplete) {
         play.score = result.score;
-        play.suggestions = [];
         await deps.dispatchEvent(handle, { type: "PLAY_COMPLETE" });
       } else {
         // Normal mid-game — refresh viewport for next turn
         deps.setPlayingViewport(await activeService.getPlayingViewport(handle));
         if (deps.getActiveHandle() !== handle) return;
-        void fetchPlaySuggestions(handle);
       }
     } finally {
       play.processing = false;
@@ -480,7 +466,6 @@ export function createPlayPhase(deps: PlayDeps) {
     userPlayCardViaService,
     animateAiPlays,
     showFinalTrickAndTransition,
-    fetchPlaySuggestions,
     resetPlay,
 
     // Lifecycle

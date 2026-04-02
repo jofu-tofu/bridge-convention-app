@@ -52,7 +52,6 @@ function getBundleInput(id: string): { memberIds: readonly string[] } | undefine
   }
 }
 import type {
-  ConventionCardView,
   ConventionCardPanelView,
   ConventionCardSection,
   ConventionCardLineItem,
@@ -84,23 +83,6 @@ function formatOneNtResponse(config: SystemConfig): string {
     : forcing === "semi-forcing" ? "Semi-forcing"
     : "Forcing";
   return `${status} ${minHcp}\u2013${maxHcp}`;
-}
-
-// ── Old convention card (flat summary) ─────────────────────────
-
-/** Build a convention card summary from system config. */
-export function buildConventionCard(
-  systemConfig: SystemConfig,
-  partnership: string,
-): ConventionCardView {
-  return {
-    partnership,
-    systemName: systemShortLabel(systemConfig),
-    ntRange: `${systemConfig.ntOpening.minHcp}\u2013${systemConfig.ntOpening.maxHcp}`,
-    twoLevelForcing: formatForcingDuration(systemConfig.suitResponse.twoLevelForcingDuration),
-    oneNtResponse: formatOneNtResponse(systemConfig),
-    majorLength: `${systemConfig.openingRequirements.majorSuitMinLength}-card majors`,
-  };
 }
 
 // ── Convention card panel (structured sections) ────────────────

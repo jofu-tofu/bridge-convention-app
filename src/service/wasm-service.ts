@@ -30,7 +30,7 @@ import type {
   ServiceInferenceSnapshot,
   PlayRecommendation,
 } from "./response-types";
-import type { ServiceDebugSnapshot, ServiceDebugLogEntry, PlaySuggestions } from "./debug-types";
+import type { ServiceDebugSnapshot, ServiceDebugLogEntry } from "./debug-types";
 import type { PlayProfileId } from "./session-types";
 import { getDDSSolutionFromWorker } from "./dds-bridge";
 import { setWasmModule } from "./service-helpers";
@@ -66,7 +66,6 @@ interface WasmServicePortBindings {
   get_debug_snapshot?(handle: string): ServiceDebugSnapshot;
   get_debug_log?(handle: string): readonly ServiceDebugLogEntry[];
   get_inference_timeline?(handle: string): readonly ServiceInferenceSnapshot[];
-  get_play_suggestions?(handle: string): PlaySuggestions;
   get_convention_name?(handle: string): string;
 }
 
@@ -223,12 +222,6 @@ export class WasmService implements DevServicePort {
 
   async getInferenceTimeline(handle: SessionHandle): Promise<readonly ServiceInferenceSnapshot[]> {
     return getPort().get_inference_timeline?.(handle) ?? [];
-  }
-
-  async getPlaySuggestions(handle: SessionHandle): Promise<PlaySuggestions> {
-    const port = getPort();
-    if (!port.get_play_suggestions) throw new Error("getPlaySuggestions not available — WASM build may lack dev methods");
-    return port.get_play_suggestions(handle);
   }
 
   async getConventionName(handle: SessionHandle): Promise<string> {

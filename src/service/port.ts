@@ -35,7 +35,6 @@ import type {
 import type {
   ServiceDebugSnapshot,
   ServiceDebugLogEntry,
-  PlaySuggestions,
 } from "./debug-types";
 
 /** Production service interface — all methods return Promise<T>. */
@@ -103,9 +102,6 @@ export interface DevServicePort extends ServicePort {
   getDebugSnapshot(handle: SessionHandle): Promise<ServiceDebugSnapshot>;
   getDebugLog(handle: SessionHandle): Promise<readonly ServiceDebugLogEntry[]>;
   getInferenceTimeline(handle: SessionHandle): Promise<readonly ServiceInferenceSnapshot[]>;
-
-  /** Get play suggestions from all difficulty profiles for the current position. */
-  getPlaySuggestions(handle: SessionHandle): Promise<PlaySuggestions>;
 
   /** Return the resolved convention name for a session. */
   getConventionName(handle: SessionHandle): Promise<string>;

@@ -4,15 +4,6 @@
 
 use serde::{Deserialize, Serialize};
 
-/// Role a condition plays in the evaluation pipeline.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum ConditionRole {
-    Semantic,
-    Inferential,
-    Pedagogical,
-    Routing,
-}
 
 /// Base condition evaluation result.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -29,8 +20,6 @@ pub struct ConditionResult {
     pub observed_value: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub threshold: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub condition_role: Option<ConditionRole>,
 }
 
 /// Evidence for a single condition evaluation.
@@ -47,8 +36,6 @@ pub struct ConditionEvidence {
     pub observed_value: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub threshold: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub condition_role: Option<ConditionRole>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub params: Option<std::collections::HashMap<String, serde_json::Value>>,
 }

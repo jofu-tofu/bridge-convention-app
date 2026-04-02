@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use bridge_conventions::BaseSystemId;
 use bridge_engine::constants::{next_seat, partner_seat};
 use bridge_engine::types::Seat;
-use bridge_session::session::{DrillConfig, SeatStrategy};
 use bridge_session::session::start_drill::StartDrillOptions;
+use bridge_session::session::{DrillConfig, SeatStrategy};
 use bridge_session::types::{OpponentMode, PracticeMode, PracticeRole};
 
 use crate::request_types::SessionConfig;
@@ -102,10 +102,7 @@ pub(crate) fn build_seat_strategies(
         );
     }
 
-    let opp_seats = [
-        next_seat(user_seat),
-        next_seat(partner_seat(user_seat)),
-    ];
+    let opp_seats = [next_seat(user_seat), next_seat(partner_seat(user_seat))];
     for &opp in &opp_seats {
         match opponent_mode {
             OpponentMode::Natural => {

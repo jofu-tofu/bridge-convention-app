@@ -6,10 +6,10 @@
 use std::collections::HashMap;
 
 use bridge_conventions::registry::bundle_registry::{list_bundle_inputs, resolve_bundle};
-use bridge_conventions::BundleInput;
 use bridge_conventions::teaching::teaching_types::{SurfaceGroup, SurfaceGroupRelationship};
 use bridge_conventions::types::teaching::SurfaceGroupRelationship as BundleSGRelationship;
 use bridge_conventions::BaseSystemId;
+use bridge_conventions::BundleInput;
 use bridge_engine::types::{DealConstraints, Seat, Vulnerability};
 use bridge_session::session::start_drill::ConventionConfig;
 

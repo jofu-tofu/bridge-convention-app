@@ -133,10 +133,3 @@ pub fn get_bool(facts: &HashMap<String, FactValue>, fact_id: &str) -> bool {
         .unwrap_or(false)
 }
 
-/// Get a text fact value from the evaluated facts map.
-pub fn get_text<'a>(facts: &'a HashMap<String, FactValue>, fact_id: &str) -> &'a str {
-    facts
-        .get(fact_id)
-        .map(|fv| fv.value.as_text())
-        .unwrap_or("")
-}

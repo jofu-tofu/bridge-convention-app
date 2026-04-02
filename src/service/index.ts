@@ -16,7 +16,6 @@ export type {
   ServicePublicBeliefs,
   ServicePublicBeliefState,
   ServiceInferenceSnapshot,
-  ConventionCardView,
   ConventionCardLineItem,
   ConventionCardModuleDetail,
   ConventionCardSection,
@@ -109,7 +108,7 @@ export { listConventions, listModules, buildBaseModuleInfos } from "./service-he
 
 // ── 6. Display & Formatting ─────────────────────────────────────────
 export { displayConventionName, formatCall, formatContractWithDeclarer, formatRuleName, displayRank, formatCardLabel, SUIT_SYMBOLS, STRAIN_SYMBOLS } from "./display/format";
-export { buildConventionCard, buildConventionCardPanel, buildAcblCardPanel } from "./display/convention-card";
+export { buildConventionCardPanel, buildAcblCardPanel } from "./display/convention-card";
 
 // ── 7. Cross-cutting ────────────────────────────────────────────────
 export { delay } from "./util/delay";

@@ -224,15 +224,6 @@ pub fn format_call(call: &Call) -> String {
     }
 }
 
-/// Format a hand summary string: "4-3-3-3, 15 HCP".
-pub fn format_hand_summary(hand: &Hand) -> String {
-    let eval = evaluate_hand_hcp(hand);
-    format!(
-        "{}-{}-{}-{}, {} HCP",
-        eval.shape[0], eval.shape[1], eval.shape[2], eval.shape[3], eval.hcp
-    )
-}
-
 // ── Shared helpers ────────────────────────────────────────────────
 
 /// Build viewport-safe auction entries from raw auction + optional bid history.
@@ -537,17 +528,6 @@ mod tests {
             format_call(&Call::Bid { level: 2, strain: BidSuit::Diamonds }),
             "2D"
         );
-    }
-
-    // ── format_hand_summary test ──────────────────────────────────
-
-    #[test]
-    fn format_hand_summary_produces_shape_and_hcp() {
-        let hand = make_hand_13();
-        let summary = format_hand_summary(&hand);
-        // 4-3-3-3 shape, 37 HCP (all honors)
-        assert!(summary.contains("HCP"));
-        assert!(summary.contains("-"));
     }
 
     // ── Bidding viewport tests ────────────────────────────────────

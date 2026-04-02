@@ -6,7 +6,7 @@
 use std::collections::HashMap;
 
 use bridge_engine::types::Seat;
-use bridge_session::session::{DrillConfig, SessionState, SeatStrategy};
+use bridge_session::session::{DrillConfig, SeatStrategy, SessionState};
 
 use crate::error::ServiceError;
 use crate::request_types::SessionHandle;
@@ -98,10 +98,10 @@ impl Default for SessionManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
     use bridge_engine::types::{Deal, Hand, Seat, Vulnerability};
     use bridge_session::inference::InferenceCoordinator;
     use bridge_session::types::{PlayPreference, PracticeFocus, PracticeMode};
+    use std::collections::HashMap;
 
     fn make_deal() -> Deal {
         let mut hands = HashMap::new();

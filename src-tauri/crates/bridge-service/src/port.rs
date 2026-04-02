@@ -3,21 +3,18 @@
 //! All methods are synchronous. The UI/WASM layer calls these traits;
 //! implementations delegate to bridge-session controllers.
 
-use bridge_engine::types::{Call, Card, Seat, Vulnerability};
+use bridge_engine::types::{Call, Card, Seat};
 use bridge_session::session::{
-    BiddingViewport, DeclarerPromptViewport, ExplanationViewport, ModuleCatalogEntry,
-    ModuleLearningViewport, PlayCardResult, PlayRecommendation, SingleCardResult, PlayingViewport,
-    BundleFlowTreeViewport, ModuleFlowTreeViewport,
+    BiddingViewport, BundleFlowTreeViewport, DeclarerPromptViewport, ExplanationViewport,
+    ModuleCatalogEntry, ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult,
+    PlayRecommendation, PlayingViewport, SingleCardResult,
 };
-use bridge_session::types::OpponentMode;
 
 use crate::error::ServiceError;
-use crate::evaluation::types::{AtomGradeResult, PlaythroughGradeResult, PlaythroughStartResult};
 use crate::request_types::{SessionConfig, SessionHandle};
 use crate::response_types::{
-    BidSubmitResult, ConventionInfo, DDSolutionResult, DrillStartResult,
-    InferenceTimelineEntryDTO, PlaySuggestionsDTO, PromptAcceptResult,
-    ServiceDebugLogEntryDTO, ServiceDebugSnapshotDTO, ServicePublicBeliefState,
+    BidSubmitResult, ConventionInfo, DDSolutionResult, DrillStartResult, InferenceTimelineEntryDTO,
+    PromptAcceptResult, ServiceDebugLogEntryDTO, ServiceDebugSnapshotDTO, ServicePublicBeliefState,
 };
 
 /// Production service interface — all methods synchronous.
@@ -115,57 +112,6 @@ pub trait ServicePort {
     fn get_module_learning_viewport(&self, module_id: &str) -> Option<ModuleLearningViewport>;
     fn get_bundle_flow_tree(&self, bundle_id: &str) -> Option<BundleFlowTreeViewport>;
     fn get_module_flow_tree(&self, module_id: &str) -> Option<ModuleFlowTreeViewport>;
-
-    // ── Evaluation (stateless) ─────────────────────────────────────
-
-    fn evaluate_atom(
-        &mut self,
-        bundle_id: &str,
-        atom_id: &str,
-        seed: u64,
-        vuln: Option<Vulnerability>,
-        base_system: Option<&str>,
-    ) -> Result<BiddingViewport, ServiceError>;
-
-    fn grade_atom(
-        &mut self,
-        bundle_id: &str,
-        atom_id: &str,
-        seed: u64,
-        bid: &str,
-        vuln: Option<Vulnerability>,
-        base_system: Option<&str>,
-    ) -> Result<AtomGradeResult, ServiceError>;
-
-    fn start_playthrough(
-        &mut self,
-        bundle_id: &str,
-        seed: u64,
-        vuln: Option<Vulnerability>,
-        opponents: Option<OpponentMode>,
-        base_system: Option<&str>,
-    ) -> Result<PlaythroughStartResult, ServiceError>;
-
-    fn get_playthrough_step(
-        &self,
-        bundle_id: &str,
-        seed: u64,
-        step_idx: usize,
-        vuln: Option<Vulnerability>,
-        opponents: Option<OpponentMode>,
-        base_system: Option<&str>,
-    ) -> Result<BiddingViewport, ServiceError>;
-
-    fn grade_playthrough_bid(
-        &mut self,
-        bundle_id: &str,
-        seed: u64,
-        step_idx: usize,
-        bid: &str,
-        vuln: Option<Vulnerability>,
-        opponents: Option<OpponentMode>,
-        base_system: Option<&str>,
-    ) -> Result<PlaythroughGradeResult, ServiceError>;
 }
 
 /// Debug service methods — separate trait for feature-gating.
@@ -180,10 +126,10 @@ pub trait DevServicePort: ServicePort {
     fn get_debug_log(&self, handle: &str) -> Result<Vec<ServiceDebugLogEntryDTO>, ServiceError>;
 
     /// Get the inference timeline.
-    fn get_inference_timeline(&self, handle: &str) -> Result<Vec<InferenceTimelineEntryDTO>, ServiceError>;
-
-    /// Get play suggestions from heuristic chain.
-    fn get_play_suggestions(&self, handle: &str) -> Result<PlaySuggestionsDTO, ServiceError>;
+    fn get_inference_timeline(
+        &self,
+        handle: &str,
+    ) -> Result<Vec<InferenceTimelineEntryDTO>, ServiceError>;
 
     /// Get the convention name for the active session.
     fn get_convention_name(&self, handle: &str) -> Result<String, ServiceError>;

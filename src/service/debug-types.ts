@@ -9,9 +9,9 @@
  * DevServicePort interface.
  */
 
-import type { Call, Card, Seat } from "../engine/types";
+import type { Call, Seat } from "../engine/types";
 import type { ServiceGamePhase } from "./response-types";
-import type { PlayProfileId, BidResult, PosteriorSummary, TeachingProjection } from "./session-types";
+import type { BidResult, PosteriorSummary, TeachingProjection } from "./session-types";
 
 // ── Debug-only backend types ────────────────────────────────────────
 //
@@ -130,13 +130,3 @@ export interface DebugSnapshotBase extends StrategyEvaluation {
   readonly expectedBid: BidResult | null;
 }
 
-/** A single profile's play suggestion for the current position. */
-export interface PlaySuggestion {
-  readonly profileId: PlayProfileId;
-  readonly profileName: string;
-  readonly card: Card;
-  readonly reason: string;
-}
-
-/** Play suggestions from all profiles for the debug drawer. */
-export type PlaySuggestions = readonly PlaySuggestion[];

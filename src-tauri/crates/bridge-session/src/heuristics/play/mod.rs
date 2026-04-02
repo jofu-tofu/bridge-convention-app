@@ -30,60 +30,12 @@ pub use cover_honor::CoverHonorHeuristic;
 pub use trump_management::TrumpManagementHeuristic;
 pub use discard::DiscardHeuristic;
 
-use super::play_types::{is_legal_play, sort_by_rank_asc, PlayContext, PlayHeuristic, PlayResult};
-
-// ── Heuristic Play Strategy ─────────────────────────────────────────
-
-/// Returns the default ordered list of all play heuristics.
-pub fn default_heuristic_chain() -> Vec<Box<dyn PlayHeuristic>> {
-    vec![
-        Box::new(OpeningLeadHeuristic),
-        Box::new(MidGameLeadHeuristic),
-        Box::new(SecondHandLowHeuristic),
-        Box::new(ThirdHandHighHeuristic),
-        Box::new(FourthHandHeuristic),
-        Box::new(CoverHonorHeuristic),
-        Box::new(TrumpManagementHeuristic),
-        Box::new(DiscardHeuristic),
-    ]
-}
-
-/// Run the heuristic chain: try each heuristic in order, first Some wins.
-/// Falls back to lowest legal card if no heuristic matches.
-pub fn suggest_play(ctx: &PlayContext) -> PlayResult {
-    assert!(
-        !ctx.legal_plays.is_empty(),
-        "No legal plays available"
-    );
-
-    let heuristics = default_heuristic_chain();
-
-    for h in &heuristics {
-        if let Some(card) = h.apply(ctx) {
-            // Verify the card is in legal_plays
-            if is_legal_play(&card, &ctx.legal_plays) {
-                return PlayResult {
-                    card,
-                    reason: h.name().to_string(),
-                };
-            }
-        }
-    }
-
-    // Fallback: lowest legal card
-    let sorted = sort_by_rank_asc(&ctx.legal_plays);
-    let fallback = sorted.into_iter().next().unwrap_or_else(|| ctx.legal_plays[0].clone());
-    PlayResult {
-        card: fallback,
-        reason: "default-lowest".to_string(),
-    }
-}
-
 // ── Tests ───────────────────────────────────────────────────────────
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::heuristics::play_types::{PlayContext, PlayHeuristic};
     use bridge_engine::{BidSuit, Card, Contract, Hand, PlayedCard, Rank, Seat, Suit, Trick};
 
     fn card(suit: Suit, rank: Rank) -> Card {
@@ -101,16 +53,6 @@ mod tests {
         Contract {
             level: 4,
             strain: BidSuit::Spades,
-            doubled: false,
-            redoubled: false,
-            declarer,
-        }
-    }
-
-    fn nt_contract(declarer: Seat) -> Contract {
-        Contract {
-            level: 3,
-            strain: BidSuit::NoTrump,
             doubled: false,
             redoubled: false,
             declarer,
@@ -716,63 +658,4 @@ mod tests {
         assert!(h.apply(&ctx).is_none());
     }
 
-    // ── Full chain tests ────────────────────────────────────────────
-
-    #[test]
-    fn suggest_play_always_returns_legal_card() {
-        let cards = vec![
-            card(Suit::Spades, Rank::Five),
-            card(Suit::Hearts, Rank::Three),
-        ];
-        let legal = cards.clone();
-        let ctx = PlayContext {
-            hand: make_hand(cards),
-            current_trick: vec![played(Seat::North, Suit::Diamonds, Rank::Ten)],
-            previous_tricks: vec![],
-            contract: nt_contract(Seat::South),
-            seat: Seat::East,
-            trump_suit: None,
-            legal_plays: legal.clone(),
-            dummy_hand: None,
-            beliefs: None,
-        };
-        let result = suggest_play(&ctx);
-        assert!(legal.iter().any(|c| c.suit == result.card.suit && c.rank == result.card.rank));
-    }
-
-    #[test]
-    fn suggest_play_opening_lead_for_defender() {
-        let hand_cards = vec![
-            card(Suit::Hearts, Rank::King),
-            card(Suit::Hearts, Rank::Queen),
-            card(Suit::Hearts, Rank::Jack),
-            card(Suit::Hearts, Rank::Five),
-            card(Suit::Spades, Rank::Eight),
-            card(Suit::Spades, Rank::Seven),
-            card(Suit::Spades, Rank::Six),
-            card(Suit::Diamonds, Rank::Nine),
-            card(Suit::Diamonds, Rank::Four),
-            card(Suit::Diamonds, Rank::Three),
-            card(Suit::Clubs, Rank::Ten),
-            card(Suit::Clubs, Rank::Nine),
-            card(Suit::Clubs, Rank::Two),
-        ];
-        let legal = hand_cards.clone();
-        let ctx = PlayContext {
-            hand: make_hand(hand_cards),
-            current_trick: vec![],
-            previous_tricks: vec![],
-            contract: nt_contract(Seat::South),
-            seat: Seat::West,
-            trump_suit: None,
-            legal_plays: legal,
-            dummy_hand: None,
-            beliefs: None,
-        };
-        let result = suggest_play(&ctx);
-        assert_eq!(result.reason, "opening-lead");
-        // Should lead top of touching honors (KQJ of hearts)
-        assert_eq!(result.card.suit, Suit::Hearts);
-        assert_eq!(result.card.rank, Rank::King);
-    }
 }

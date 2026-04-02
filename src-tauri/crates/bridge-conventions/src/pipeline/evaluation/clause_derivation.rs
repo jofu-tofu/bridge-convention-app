@@ -44,16 +44,6 @@ pub fn derive_clause_description(clause: &BidMeaningClause) -> String {
     }
 }
 
-/// Fill clause defaults — ensures clause_id and description are set.
-pub fn fill_clause_defaults(clause: &mut BidMeaningClause) {
-    if clause.clause_id.is_none() {
-        clause.clause_id = Some(derive_clause_id(clause));
-    }
-    if clause.description.is_none() {
-        clause.description = Some(derive_clause_description(clause));
-    }
-}
-
 /// Map well-known fact IDs to display names.
 fn display_name(fact_id: &str) -> String {
     match fact_id {

@@ -21,19 +21,26 @@ pub fn assemble_viewport_feedback(
     let requires_retry = matches!(feedback.grade, BidGrade::NearMiss | BidGrade::Incorrect);
 
     // Extract teaching data from evaluation
-    let (correct_bid_label, correct_bid_explanation, conditions, acceptable_alternatives, near_misses, partner_hand_space, conventions_applied) =
-        match evaluation {
-            Some(eval) => extract_viewport_fields(eval, feedback),
-            None => (
-                None,
-                Some(feedback.explanation.clone()),
-                None,
-                None,
-                None,
-                None,
-                None,
-            ),
-        };
+    let (
+        correct_bid_label,
+        correct_bid_explanation,
+        conditions,
+        acceptable_alternatives,
+        near_misses,
+        partner_hand_space,
+        conventions_applied,
+    ) = match evaluation {
+        Some(eval) => extract_viewport_fields(eval, feedback),
+        None => (
+            None,
+            Some(feedback.explanation.clone()),
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+    };
 
     ViewportBidFeedbackDTO {
         grade: feedback.grade,
@@ -169,22 +176,21 @@ pub fn assemble_teaching_detail(
     let partner_summary = tp.and_then(|tp| tp.hand_space.partner_summary.clone());
 
     // Encoder kind
-    let encoder_kind = tp
-        .and_then(|tp| tp.encoder_kind.as_ref())
-        .map(|ek| {
-            serde_json::to_value(ek)
-                .ok()
-                .and_then(|v| v.as_str().map(|s| s.to_string()))
-                .unwrap_or_else(|| "default-call".to_string())
-        });
+    let encoder_kind = tp.and_then(|tp| tp.encoder_kind.as_ref()).map(|ek| {
+        serde_json::to_value(ek)
+            .ok()
+            .and_then(|v| v.as_str().map(|s| s.to_string()))
+            .unwrap_or_else(|| "default-call".to_string())
+    });
 
     // Practical recommendation
-    let practical_recommendation = eval.practical_recommendation.as_ref().map(|pr| {
-        PracticalRecDTO {
-            top_candidate_call: pr.call.clone(),
-            rationale: pr.reason.clone(),
-        }
-    });
+    let practical_recommendation =
+        eval.practical_recommendation
+            .as_ref()
+            .map(|pr| PracticalRecDTO {
+                top_candidate_call: pr.call.clone(),
+                rationale: pr.reason.clone(),
+            });
 
     // Primary bid + acceptable bids from pipeline result
     let primary_bid = pr.and_then(|pr| pr.selected.as_ref().map(|c| c.call().clone()));
@@ -218,9 +224,7 @@ pub fn assemble_teaching_detail(
     });
 
     // Ambiguity + grading type
-    let alt_count = pr
-        .map(|pr| pr.acceptable_set.len())
-        .unwrap_or(0);
+    let alt_count = pr.map(|pr| pr.acceptable_set.len()).unwrap_or(0);
     let ambiguity_score = Some((alt_count as f64 * 0.3).clamp(0.0, 0.8));
     let grading_type = Some(if alt_count == 0 {
         "exact".to_string()
@@ -493,8 +497,6 @@ fn format_explanation_kind(kind: &ExplanationKind) -> String {
     match kind {
         ExplanationKind::Text => "text".to_string(),
         ExplanationKind::Condition => "condition".to_string(),
-        ExplanationKind::CallReference => "call-reference".to_string(),
-        ExplanationKind::ConventionReference => "convention-reference".to_string(),
     }
 }
 
@@ -533,8 +535,7 @@ fn project_kernel(
         .and_then(|v| v.as_str().map(|s| s.to_string()))
         .unwrap_or_else(|| "undecided".to_string());
 
-    let competition =
-        serde_json::to_value(&state.competition).unwrap_or(serde_json::Value::Null);
+    let competition = serde_json::to_value(&state.competition).unwrap_or(serde_json::Value::Null);
 
     KernelViewDTO {
         fit_agreed,

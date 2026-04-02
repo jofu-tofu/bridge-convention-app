@@ -74,7 +74,6 @@ pub enum CallStatus {
 #[serde(rename_all = "kebab-case")]
 pub enum ProjectionKind {
     SingleRationale,
-    MergedEquivalent,
     MultiRationaleSameCall,
 }
 
@@ -98,7 +97,6 @@ pub struct MeaningView {
 pub enum MeaningStatus {
     Live,
     Eliminated,
-    NotApplicable,
 }
 
 /// Explanation node for structured teaching text.
@@ -121,8 +119,6 @@ pub struct ExplanationNode {
 pub enum ExplanationKind {
     Text,
     Condition,
-    CallReference,
-    ConventionReference,
 }
 
 /// "Why not this call?" entry.
