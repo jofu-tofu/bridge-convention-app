@@ -6,7 +6,7 @@
 use bridge_engine::types::{Call, Card, Seat, Vulnerability};
 use bridge_session::session::{
     BiddingViewport, DeclarerPromptViewport, ExplanationViewport, ModuleCatalogEntry,
-    ModuleLearningViewport, PlayCardResult, PlayingViewport,
+    ModuleLearningViewport, PlayCardResult, SingleCardResult, PlayingViewport,
     BundleFlowTreeViewport, ModuleFlowTreeViewport,
 };
 use bridge_session::types::OpponentMode;
@@ -54,6 +54,15 @@ pub trait ServicePort {
         card: Card,
         seat: Seat,
     ) -> Result<PlayCardResult, ServiceError>;
+
+    /// Play a single card without running the AI loop.
+    /// Used by MC+DDS profiles where TS drives AI card selection.
+    fn play_single_card(
+        &mut self,
+        handle: &str,
+        card: Card,
+        seat: Seat,
+    ) -> Result<SingleCardResult, ServiceError>;
 
     /// Skip play phase, go directly to review.
     fn skip_to_review(&mut self, handle: &str) -> Result<(), ServiceError>;

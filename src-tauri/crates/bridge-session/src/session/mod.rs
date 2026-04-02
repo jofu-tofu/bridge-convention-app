@@ -27,7 +27,7 @@ pub use start_drill::{
     rotate_auction, start_drill,
 };
 pub use bidding_controller::{process_bid, run_initial_ai_bids, initialize_auction, BidProcessResult, AiBidEntry};
-pub use play_controller::{process_play_card, run_initial_ai_plays, PlayCardResult, AiPlayEntry};
+pub use play_controller::{process_play_card, process_single_card, run_initial_ai_plays, PlayCardResult, SingleCardResult, AiPlayEntry};
 pub use bid_feedback_builder::{assemble_bid_feedback, BidFeedbackDTO, BidGrade, call_equals};
 pub use build_viewport::{
     format_call, format_hand_summary, build_auction_entries, filter_visible_hands,

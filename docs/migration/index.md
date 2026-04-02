@@ -89,7 +89,7 @@ One WASM binary for everyone. Free definitions baked into static build. Paid def
 
 | Stub | Impact | Status |
 |------|--------|--------|
-| Posterior inference stubbed (uniform distributions) | Inference ranges are wider than optimal for complex auctions | Follow-up work; natural inference handles common cases |
-| MC+DDS play deferred | Expert/world-class profiles use heuristic play | Heuristic chain covers 8 play situations; adequate for practice |
+| Posterior inference implemented (MC rejection sampling) | Monte Carlo posterior with 200-sample budget, wired into 3 heuristics | **Completed** |
+| MC+DDS play deferred | Expert/world-class profiles use heuristic play + MC posterior | Heuristic chain covers 8 play situations; DDS integration is follow-up |
 | Deal filtering (`customCheck`) not ported | Rust drills may produce off-convention deals more often | Grading system still works correctly |
 | DDS-via-handle integration | `getDDSSolution` needs `getDeal()` service method for full integration | Follow-up work; JS worker fallback operational in browser |

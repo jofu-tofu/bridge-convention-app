@@ -253,6 +253,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal.clone(),
             dummy_hand: None,
+            beliefs: None,
         };
 
         let mut rng = ChaCha8Rng::seed_from_u64(42);
@@ -281,6 +282,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal.clone(),
             dummy_hand: None,
+            beliefs: None,
         };
 
         // Run many times with beginner profile -- should sometimes skip cover-honor
@@ -318,6 +320,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
 
         // Expert should always cover

@@ -148,21 +148,20 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 **TS:** Expert and World Class profiles used MC+DDS — sampled N deals (12 or 30), solved each with DDS, picked card with highest average expected tricks. Included batched evaluation, early termination, close-call extension, and belief constraint filtering.
 
-**Rust:** All profiles use the same 8-heuristic chain. Comments acknowledge: "MC+DDS deferred to integration phase."
+**Rust:** All profiles use the 8-heuristic chain with MC posterior inference (opening lead, mid-game lead, discard are inference-aware). DDS browser solver is operational (`dds-client.ts` → `dds-worker.ts` → `dds.wasm`) but not called from the play controller for per-card evaluation.
 
 **Files:** Was `src/session/heuristics/montecarlo-play.ts`
 
-**Impact:** Expert/World Class profiles play identically to Club Player. The 4-tier difficulty system collapses to 2 tiers.
+**Impact:** Expert/World Class profiles now differ from Beginner (profile dispatch, inference in heuristics) but don't reach optimal play without DDS card evaluation. The 4-tier system is partially differentiated: Beginner (skip heuristics), Club Player (heuristics + L1 inference), Expert (same as Club Player currently), World Class (heuristics + MC posterior). Full differentiation requires wiring the DDS browser solver into MC+DDS play evaluation.
 
-### 5.2 Inference-aware play missing (P1)
+### 5.2 ~~Inference-aware play missing~~ (P1) ✅ COMPLETE
 
-**TS:** Three inference-enhanced heuristics: `auctionAwareLeadHeuristic` (lead partner's shown suit), `inferenceHonorPlayHeuristic` (finesse direction from HCP inference), `inferenceAwareDiscardHeuristic` (discard from declarer's known suits).
+**Fixed:** `PlayContext` now has `beliefs: Option<PlayBeliefs>` with L1 ranges, L2 posterior HCP/suit-lengths, and confidence. Three heuristics are inference-aware (gated on confidence > 0.3):
+- **opening_lead.rs**: NT — attack declarer's shortest posterior suit; Suit — lead through dummy's length, avoid declarer's short suits
+- **mid_game_lead.rs**: Prefer suits where opponent pair's combined posterior length is shortest
+- **discard.rs**: Tiebreaker favoring discards from suits where partner is short
 
-**Rust:** `PlayContext` has no `inferences` field. `use_inferences` and `inference_noise` on `PlayProfile` are dead config.
-
-**Files:** Was `src/session/heuristics/inference-play.ts`
-
-**Impact:** Defenders don't use auction information during play. All profiles play mechanically.
+`play_controller.rs` uses profile-based dispatch via `suggest_play_with_profile()` with deterministic per-seat RNG. `use_inferences` and `use_posterior` on `PlayProfile` are now active config.
 
 ### 5.3 Card counting and restricted choice missing (P1)
 
@@ -200,15 +199,13 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 ## 6. Inference & Posterior
 
-### 6.1 Posterior engine is a stub (P1)
+### 6.1 ~~Posterior engine is a stub~~ (P1) ✅ COMPLETE
 
-**TS:** Full Monte Carlo posterior engine (~1,300 LOC): rejection sampling, factor graph compilation, 6 query types (marginal HCP, suit length, fit probability, isBalanced, joint HCP, branch probability), 8 posterior fact handlers, latent branch resolution.
-
-**Rust:** `UniformPosterior` stub (186 LOC) returning hardcoded values: HCP → 10.0, suit length → 3.25, binary facts → 0.5, zero confidence on all queries.
+**Fixed:** `PosteriorEngine` implements Monte Carlo rejection sampling (200-sample budget, 2000 max attempts) constrained by L1 `DerivedRanges` (HCP bounds, suit-length bounds, is_balanced). Query methods: `marginal_hcp()`, `suit_length()`, `fit_probability()`, `short_suit_probability()`, `confidence()`. `update_with_played_cards()` re-samples after each trick. `Posterior` enum dispatches between `UniformPosterior` (for profiles with `use_posterior=false`) and `PosteriorEngine` (for `use_posterior=true`).
 
 **Files:** `bridge-session/src/inference/posterior.rs`
 
-**Impact:** Inference ranges are wider than optimal. Latent branch resolution (ambiguous bids) doesn't work. Posterior-dependent facts always return 0.5.
+**Not ported (lower priority):** Factor graph compilation, latent branch resolution, joint HCP queries, posterior fact handlers. The rejection sampler covers the core use case (expected suit lengths and HCP for heuristic play decisions). Factor graph compilation would be needed for soft evidence / complex conditional queries.
 
 ### 6.2 Private belief conditioning missing (P2)
 
@@ -311,10 +308,10 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 8. **7.1, 7.2** Practice focus derivation and initial auction
 
 ### Wave 3 — P1 play quality (AI behavior)
-9. **5.2** Inference-aware play heuristics
+9. ~~**5.2** Inference-aware play heuristics~~ ✅
 10. **5.3** Card counting and restricted choice
-11. **6.1** Posterior engine (partial — start with rejection sampler)
-12. **5.1** MC+DDS play (requires DDS integration)
+11. ~~**6.1** Posterior engine (partial — start with rejection sampler)~~ ✅
+12. **5.1** MC+DDS play (DDS browser solver is ready; needs play controller integration)
 
 ### Wave 4 — P2/P3 (completeness)
 13. Remaining P2 items (3.5–3.8, 4.1–4.5, 5.4–5.5, 6.2–6.4, 7.3–7.4, 8.1)
@@ -328,7 +325,7 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 |---|---|---|
 | `session/bid-feedback-builder.ts` | `bridge-session/session/bid_feedback_builder.rs` | 5-tier grading ✅ |
 | `session/bidding-controller.ts` | `bridge-session/session/bidding_controller.rs` | Missing history, debug, teaching |
-| `session/play-controller.ts` | `bridge-session/session/play_controller.rs` | Missing advisor, profiles |
+| `session/play-controller.ts` | `bridge-session/session/play_controller.rs` | Profile dispatch + beliefs wired ✅; MC+DDS advisor missing |
 | `session/session-state.ts` | `bridge-session/session/session_state.rs` | Missing many fields |
 | `session/drill-session.ts` | `bridge-session/session/drill_session.rs` | Ported |
 | `session/phase-machine.ts` | `bridge-session/phase_machine.rs` | Full parity |
@@ -354,10 +351,10 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 | `session/heuristics/heuristic-play.ts` | `bridge-session/heuristics/heuristic_play.rs` | Ported (split into 3 files) |
 | `session/heuristics/natural-fallback.ts` | `bridge-session/heuristics/natural_fallback.rs` | Full parity |
 | `session/heuristics/pass-strategy.ts` | `bridge-session/heuristics/pass_strategy.rs` | Full parity |
-| `session/heuristics/play-profiles.ts` | `bridge-session/heuristics/play_profiles.rs` | Ported (dead config flags) |
+| `session/heuristics/play-profiles.ts` | `bridge-session/heuristics/play_profiles.rs` | Ported (profile dispatch active, inference flags wired) |
 | `session/heuristics/random-play.ts` | `bridge-session/heuristics/random_play.rs` | Full parity |
 | `session/heuristics/strategy-chain.ts` | `bridge-session/heuristics/strategy_chain.rs` | Missing resultFilter, trace |
-| `inference/posterior/` (10 files) | `bridge-session/inference/posterior.rs` | **Stub** |
+| `inference/posterior/` (10 files) | `bridge-session/inference/posterior.rs` | MC rejection sampler ✅ (factor graph/latent branch deferred) |
 | `inference/private-belief.ts` | — | **Missing** |
 | `conventions/adapter/protocol-adapter.ts` | `bridge-conventions/adapter/protocol_adapter.rs` | Kernel delta ✅, relational ctx ✅ |
 | `conventions/adapter/meaning-strategy.ts` | `bridge-conventions/adapter/meaning_strategy.rs` | Ported (thinner) |

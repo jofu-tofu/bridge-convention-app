@@ -48,6 +48,10 @@ export type { BidHistoryEntry } from "../service";
 interface GameStoreOptions {
   /** Override the delay function used for AI bid/play timing. Defaults to setTimeout-based delay. */
   delayFn?: (ms: number) => Promise<void>;
+  /** Whether MC+DDS play should be used (Expert/WorldClass + DDS available). */
+  useMcDds?: () => boolean;
+  /** Whether belief-constraint filtering is active (WorldClass). */
+  useConstraints?: () => boolean;
 }
 
 /** Viewport-safe bid feedback for the current turn. */
@@ -470,6 +474,10 @@ export function createGameStore(
     setPlayingViewport: (vp) => { viewports.playing = vp; },
     dispatchEvent: (handle, event) => executeTransition(handle, event),
     delayFn,
+    useMcDds: options?.useMcDds ?? (() => false),
+    useConstraints: options?.useConstraints ?? (() => false),
+    getPublicBeliefState: (h) => activeService.getPublicBeliefState(h),
+    playSingleCard: (h, card, seat) => activeService.playSingleCard(h, card, seat),
   });
 
   // ── Play phase transitions ────────────────────────────────────

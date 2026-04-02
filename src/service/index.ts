@@ -26,6 +26,8 @@ export type {
   DeclarerPromptViewport,
   PlayingViewport,
   ExplanationViewport,
+  SingleCardResult,
+  ServiceDerivedRanges,
   PlayRecommendation,
   HandEvaluationView,
   AuctionEntryView,

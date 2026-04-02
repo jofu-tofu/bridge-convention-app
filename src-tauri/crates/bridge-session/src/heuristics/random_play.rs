@@ -60,6 +60,7 @@ mod tests {
             trump_suit: None,
             legal_plays,
             dummy_hand: None,
+            beliefs: None,
         }
     }
 

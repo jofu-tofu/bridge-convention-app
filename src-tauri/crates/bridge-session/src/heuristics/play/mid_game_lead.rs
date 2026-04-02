@@ -8,6 +8,9 @@ use crate::heuristics::play_types::{
     PlayContext, PlayHeuristic,
 };
 
+/// Minimum posterior confidence to use inference in heuristics.
+const INFERENCE_CONFIDENCE_GATE: f64 = 0.3;
+
 pub struct MidGameLeadHeuristic;
 
 impl PlayHeuristic for MidGameLeadHeuristic {
@@ -50,6 +53,15 @@ impl PlayHeuristic for MidGameLeadHeuristic {
             return touching;
         }
 
+        // ── Inference-guided mid-game lead ─────────────────────────
+        if let Some(ref beliefs) = ctx.beliefs {
+            if beliefs.posterior_confidence > INFERENCE_CONFIDENCE_GATE {
+                if let Some(card) = inference_guided_midgame(ctx, beliefs, &suit_groups) {
+                    return Some(card);
+                }
+            }
+        }
+
         // Lead from longest non-trump suit
         let mut best_suit: Option<&(Suit, Vec<Card>)> = None;
         let mut best_len = 0;
@@ -69,4 +81,56 @@ impl PlayHeuristic for MidGameLeadHeuristic {
         // Only trump left: lead lowest
         sort_by_rank_asc(&ctx.legal_plays).into_iter().next()
     }
+}
+
+/// Use posterior to prefer leading suits where opponents are shortest.
+fn inference_guided_midgame(
+    ctx: &PlayContext,
+    beliefs: &crate::heuristics::play_types::PlayBeliefs,
+    suit_groups: &[(Suit, Vec<Card>)],
+) -> Option<Card> {
+    let suit_lengths = beliefs.posterior_suit_lengths.as_ref()?;
+
+    let declarer = ctx.contract.declarer;
+    let dummy = bridge_engine::constants::partner_seat(declarer);
+
+    // Candidate non-trump suits
+    let candidates: Vec<&(Suit, Vec<Card>)> = suit_groups
+        .iter()
+        .filter(|(s, _)| Some(*s) != ctx.trump_suit)
+        .collect();
+
+    if candidates.is_empty() {
+        return None;
+    }
+
+    // Prefer suit where opponent pair's combined posterior length is shortest
+    let best = candidates.iter().min_by(|(suit_a, _), (suit_b, _)| {
+        let combined_a = opponent_combined_length(suit_lengths, declarer, dummy, *suit_a);
+        let combined_b = opponent_combined_length(suit_lengths, declarer, dummy, *suit_b);
+        combined_a.partial_cmp(&combined_b).unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    let (_, cards) = *best?;
+    sort_by_rank_asc(cards).into_iter().next()
+}
+
+/// Sum of declarer + dummy expected suit length.
+fn opponent_combined_length(
+    suit_lengths: &std::collections::HashMap<bridge_engine::Seat, std::collections::HashMap<Suit, f64>>,
+    declarer: bridge_engine::Seat,
+    dummy: bridge_engine::Seat,
+    suit: Suit,
+) -> f64 {
+    let decl = suit_lengths
+        .get(&declarer)
+        .and_then(|m| m.get(&suit))
+        .copied()
+        .unwrap_or(3.25);
+    let dum = suit_lengths
+        .get(&dummy)
+        .and_then(|m| m.get(&suit))
+        .copied()
+        .unwrap_or(3.25);
+    decl + dum
 }

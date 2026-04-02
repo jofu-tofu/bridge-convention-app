@@ -19,6 +19,7 @@ import type {
   BidSubmitResult,
   PromptAcceptResult,
   PlayCardResult,
+  SingleCardResult,
   DDSolutionResult,
   ConventionInfo,
   ModuleCatalogEntry,
@@ -43,6 +44,7 @@ interface WasmServicePortBindings {
   submit_bid(handle: string, call: Call): BidSubmitResult;
   accept_prompt(handle: string, mode: string | undefined, seatOverride: Seat | undefined): PromptAcceptResult;
   play_card(handle: string, card: Card, seat: Seat): PlayCardResult;
+  play_single_card(handle: string, card: Card, seat: Seat): SingleCardResult;
   skip_to_review(handle: string): void;
   update_play_profile(handle: string, profileId: string): void;
   get_bidding_viewport(handle: string): BiddingViewport | null;
@@ -130,6 +132,10 @@ export class WasmService implements DevServicePort {
   // ── Play ────────────────────────────────────────────────────────
   async playCard(handle: SessionHandle, card: Card, seat: Seat): Promise<PlayCardResult> {
     return getPort().play_card(handle, card, seat);
+  }
+
+  async playSingleCard(handle: SessionHandle, card: Card, seat: Seat): Promise<SingleCardResult> {
+    return getPort().play_single_card(handle, card, seat);
   }
 
   async skipToReview(handle: SessionHandle): Promise<void> {

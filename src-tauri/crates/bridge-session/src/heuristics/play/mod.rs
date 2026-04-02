@@ -143,6 +143,7 @@ mod tests {
             trump_suit: Some(Suit::Spades),
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         let result = h.apply(&ctx);
         assert!(result.is_some());
@@ -165,6 +166,7 @@ mod tests {
             trump_suit: Some(Suit::Spades),
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         assert!(h.apply(&ctx).is_none());
     }
@@ -187,6 +189,7 @@ mod tests {
             trump_suit: Some(Suit::Spades),
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         assert!(h.apply(&ctx).is_none());
     }
@@ -223,6 +226,7 @@ mod tests {
             trump_suit: Some(Suit::Spades),
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         // Partner (West) didn't lead, but North led diamonds.
         // East's partner is West. West did not lead. So no partner-led suit.
@@ -243,6 +247,7 @@ mod tests {
             trump_suit: None,
             legal_plays: vec![card(Suit::Spades, Rank::Ace)],
             dummy_hand: None,
+            beliefs: None,
         };
         assert!(h.apply(&ctx).is_none());
     }
@@ -263,6 +268,7 @@ mod tests {
             trump_suit: None,
             legal_plays: vec![card(Suit::Spades, Rank::Ace)],
             dummy_hand: None,
+            beliefs: None,
         };
         assert!(h.apply(&ctx).is_none());
     }
@@ -287,6 +293,7 @@ mod tests {
             trump_suit: Some(Suit::Hearts),
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         let result = h.apply(&ctx).unwrap();
         assert_eq!(result.rank, Rank::Three);
@@ -309,6 +316,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         // Should defer to cover-honor heuristic
         assert!(h.apply(&ctx).is_none());
@@ -329,6 +337,7 @@ mod tests {
             trump_suit: None,
             legal_plays: vec![card(Suit::Spades, Rank::Ace)],
             dummy_hand: None,
+            beliefs: None,
         };
         assert!(h.apply(&ctx).is_none());
     }
@@ -347,6 +356,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         assert!(h.apply(&ctx).is_none());
     }
@@ -374,6 +384,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         let result = h.apply(&ctx).unwrap();
         assert_eq!(result.rank, Rank::Queen);
@@ -402,6 +413,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         let result = h.apply(&ctx).unwrap();
         assert_eq!(result.rank, Rank::Five);
@@ -435,6 +447,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         let result = h.apply(&ctx).unwrap();
         // Should play Queen (cheapest winner over Jack)
@@ -463,6 +476,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         let result = h.apply(&ctx).unwrap();
         assert_eq!(result.rank, Rank::Three);
@@ -487,6 +501,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         let result = h.apply(&ctx).unwrap();
         assert_eq!(result.rank, Rank::King);
@@ -509,6 +524,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         assert!(h.apply(&ctx).is_none());
     }
@@ -530,6 +546,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         // Jack doesn't beat King
         assert!(h.apply(&ctx).is_none());
@@ -555,6 +572,7 @@ mod tests {
             trump_suit: Some(Suit::Hearts),
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         let result = h.apply(&ctx).unwrap();
         assert_eq!(result.suit, Suit::Hearts);
@@ -582,6 +600,7 @@ mod tests {
             trump_suit: Some(Suit::Hearts),
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         // Partner (North) is winning with Ace -- should not ruff
         assert!(h.apply(&ctx).is_none());
@@ -608,6 +627,7 @@ mod tests {
             trump_suit: Some(Suit::Hearts),
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         let result = h.apply(&ctx).unwrap();
         assert_eq!(result.suit, Suit::Hearts);
@@ -631,6 +651,7 @@ mod tests {
             trump_suit: Some(Suit::Hearts),
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         // Has spades to follow, so trump heuristic should not apply
         assert!(h.apply(&ctx).is_none());
@@ -657,6 +678,7 @@ mod tests {
             trump_suit: Some(Suit::Diamonds),
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         let result = h.apply(&ctx).unwrap();
         // Should discard from clubs (no honors) rather than hearts (has King)
@@ -681,6 +703,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         assert!(h.apply(&ctx).is_none());
     }
@@ -703,6 +726,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal.clone(),
             dummy_hand: None,
+            beliefs: None,
         };
         let result = suggest_play(&ctx);
         assert!(legal.iter().any(|c| c.suit == result.card.suit && c.rank == result.card.rank));
@@ -735,6 +759,7 @@ mod tests {
             trump_suit: None,
             legal_plays: legal,
             dummy_hand: None,
+            beliefs: None,
         };
         let result = suggest_play(&ctx);
         assert_eq!(result.reason, "opening-lead");

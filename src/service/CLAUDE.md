@@ -2,13 +2,13 @@
 
 # Service
 
-WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend (19 methods). The client holds an opaque `SessionHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never raw domain types. All game logic (conventions, inference, session) runs in Rust via `bridge-service`. TS `service/` is a thin serialize/call/deserialize proxy.
+WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend (20 methods). The client holds an opaque `SessionHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never raw domain types. All game logic (conventions, inference, session) runs in Rust via `bridge-service`. TS `service/` is a thin serialize/call/deserialize proxy.
 
-**ServicePort methods (19):**
+**ServicePort methods (20):**
 - **Session:** `createSession`, `startDrill`
 - **Bidding:** `submitBid`
 - **Transitions:** `acceptPrompt` (handles "play", "skip", "replay", "restart")
-- **Play:** `playCard`, `skipToReview`, `updatePlayProfile`
+- **Play:** `playCard`, `playSingleCard`, `skipToReview`, `updatePlayProfile`
 - **Query:** `getBiddingViewport`, `getDeclarerPromptViewport`, `getPlayingViewport`, `getExplanationViewport`
 - **Inference:** `getPublicBeliefState`
 - **DDS:** `getDDSSolution`, `getDealPBN`

@@ -460,6 +460,8 @@ mod tests {
             PracticeMode::DecisionDrill,
             PracticeFocus::default(),
             PlayPreference::Skip,
+            crate::heuristics::play_profiles::PlayProfileId::ClubPlayer,
+            0,
         )
     }
 

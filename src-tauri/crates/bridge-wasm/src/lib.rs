@@ -96,6 +96,21 @@ impl WasmServicePort {
         to_js(&result)
     }
 
+    pub fn play_single_card(
+        &mut self,
+        handle: &str,
+        card: JsValue,
+        seat: JsValue,
+    ) -> Result<JsValue, JsError> {
+        let card: Card = from_js(card)?;
+        let seat: Seat = from_js(seat)?;
+        let result = self
+            .inner
+            .play_single_card(handle, card, seat)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        to_js(&result)
+    }
+
     pub fn skip_to_review(&mut self, handle: &str) -> Result<JsValue, JsError> {
         self.inner
             .skip_to_review(handle)

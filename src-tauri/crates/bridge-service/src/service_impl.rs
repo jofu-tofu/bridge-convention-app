@@ -13,11 +13,11 @@ use bridge_session::session::{
     build_bidding_viewport, build_declarer_prompt_viewport, build_explanation_viewport,
     build_playing_viewport, build_module_catalog, build_module_learning_viewport,
     build_bundle_flow_tree, build_module_flow_tree, process_bid, run_initial_ai_bids,
-    process_play_card, run_initial_ai_plays, start_drill, BiddingViewport,
+    process_play_card, process_single_card, run_initial_ai_plays, start_drill, BiddingViewport,
     BuildBiddingViewportInput, BuildDeclarerPromptViewportInput,
     BuildExplanationViewportInput, BuildPlayingViewportInput, DeclarerPromptViewport,
     DrillConfig, ExplanationViewport, ModuleCatalogEntry, ModuleLearningViewport,
-    PlayCardResult, PlayingViewport, SeatStrategy, SessionState,
+    PlayCardResult, SingleCardResult, PlayingViewport, SeatStrategy, SessionState,
     BundleFlowTreeViewport, ModuleFlowTreeViewport,
 };
 use bridge_session::inference::InferenceCoordinator;
@@ -119,6 +119,8 @@ impl ServicePort for ServicePortImpl {
             drill_bundle.practice_mode,
             drill_bundle.practice_focus,
             drill_bundle.play_preference,
+            bridge_session::heuristics::play_profiles::PlayProfileId::ClubPlayer,
+            seed,
         );
 
         // Build seat strategies
@@ -382,6 +384,22 @@ impl ServicePort for ServicePortImpl {
         Ok(result)
     }
 
+    fn play_single_card(
+        &mut self,
+        handle: &str,
+        card: Card,
+        seat: Seat,
+    ) -> Result<SingleCardResult, ServiceError> {
+        let session = self.manager.get_mut(handle)?;
+
+        if session.state.phase != GamePhase::Playing {
+            return Err(ServiceError::WrongPhase);
+        }
+
+        let result = process_single_card(&mut session.state, card, seat);
+        Ok(result)
+    }
+
     fn skip_to_review(&mut self, handle: &str) -> Result<(), ServiceError> {
         let session = self.manager.get_mut(handle)?;
 
@@ -393,10 +411,12 @@ impl ServicePort for ServicePortImpl {
         Ok(())
     }
 
-    fn update_play_profile(&mut self, handle: &str, _profile_id: &str) -> Result<(), ServiceError> {
-        // Validate session exists
-        let _session = self.manager.get_mut(handle)?;
-        // Play profile updates deferred — play strategy is heuristic-only in Phase 4
+    fn update_play_profile(&mut self, handle: &str, profile_id: &str) -> Result<(), ServiceError> {
+        let session = self.manager.get_mut(handle)?;
+        let id: bridge_session::heuristics::play_profiles::PlayProfileId =
+            serde_json::from_value(serde_json::Value::String(profile_id.to_string()))
+                .map_err(|_| ServiceError::Internal(format!("Unknown profile: {}", profile_id)))?;
+        session.state.play_profile_id = id;
         Ok(())
     }
 

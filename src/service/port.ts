@@ -23,6 +23,7 @@ import type {
   BidSubmitResult,
   PromptAcceptResult,
   PlayCardResult,
+  SingleCardResult,
   DDSolutionResult,
   ConventionInfo,
   BundleFlowTreeViewport,
@@ -53,6 +54,8 @@ interface ServicePort {
 
   // ── Play ────────────────────────────────────────────────────────
   playCard(handle: SessionHandle, card: Card, seat: Seat): Promise<PlayCardResult>;
+  /** Play a single card without running the AI loop. Used by MC+DDS profiles. */
+  playSingleCard(handle: SessionHandle, card: Card, seat: Seat): Promise<SingleCardResult>;
   skipToReview(handle: SessionHandle): Promise<void>;
   updatePlayProfile(handle: SessionHandle, profileId: PlayProfileId): Promise<void>;
 

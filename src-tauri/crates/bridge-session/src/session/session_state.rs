@@ -14,7 +14,9 @@ use bridge_engine::constants::{bid_suit_to_suit, next_seat, partner_seat};
 
 use crate::inference::InferenceCoordinator;
 use crate::inference::types::{InferenceSnapshot, PublicBeliefState, PublicBeliefs};
+use crate::inference::{Posterior, PosteriorEngine, UniformPosterior};
 use crate::heuristics::{BiddingStrategy, BidResult};
+use crate::heuristics::play_profiles::{PlayProfileId, get_profile};
 use crate::types::{GamePhase, PlayPreference, PracticeFocus, PracticeMode};
 
 use super::build_viewport::BidHistoryEntryView;
@@ -80,6 +82,11 @@ pub struct SessionState {
 
     // Play state (separated for partial borrows)
     pub play: PlayState,
+
+    // Play configuration
+    pub posterior: Option<Posterior>,
+    pub play_profile_id: PlayProfileId,
+    pub play_seed: u64,
 }
 
 impl SessionState {
@@ -95,6 +102,8 @@ impl SessionState {
         practice_mode: PracticeMode,
         practice_focus: PracticeFocus,
         play_preference: PlayPreference,
+        play_profile_id: PlayProfileId,
+        play_seed: u64,
     ) -> Self {
         let public_belief_state = coordinator.get_public_belief_state().clone();
         let resolved_name = convention_name.unwrap_or_else(|| convention_id.clone());
@@ -122,6 +131,10 @@ impl SessionState {
             bid_history: Vec::new(),
 
             play: PlayState::default(),
+
+            posterior: None,
+            play_profile_id,
+            play_seed,
         }
     }
 
@@ -256,6 +269,42 @@ impl SessionState {
             trump_suit: bid_suit_to_suit(contract.strain),
             play_score: None,
         };
+        self.initialize_posterior();
+    }
+
+    /// Initialize posterior based on the play profile configuration.
+    fn initialize_posterior(&mut self) {
+        let profile = get_profile(self.play_profile_id);
+        if !profile.use_inferences {
+            self.posterior = None;
+            return;
+        }
+
+        let ranges: HashMap<Seat, crate::inference::types::DerivedRanges> = self
+            .public_belief_state
+            .beliefs
+            .iter()
+            .map(|(seat, beliefs)| (*seat, beliefs.ranges.clone()))
+            .collect();
+
+        if profile.use_posterior {
+            let observer_hand = self
+                .deal
+                .hands
+                .get(&self.user_seat)
+                .map(|h| h.cards.clone())
+                .unwrap_or_default();
+            let mut known_cards = HashMap::new();
+            known_cards.insert(self.user_seat, observer_hand);
+            self.posterior = Some(Posterior::MonteCarlo(PosteriorEngine::new(
+                self.user_seat,
+                known_cards,
+                ranges,
+                self.play_seed,
+            )));
+        } else {
+            self.posterior = Some(Posterior::Uniform(UniformPosterior::new()));
+        }
     }
 
     /// Check if a seat is user-controlled during play.
@@ -362,6 +411,8 @@ mod tests {
             PracticeMode::DecisionDrill,
             PracticeFocus::default(),
             PlayPreference::Skip,
+            PlayProfileId::ClubPlayer,
+            0,
         )
     }
 
@@ -540,6 +591,8 @@ mod tests {
             PracticeMode::DecisionDrill,
             PracticeFocus::default(),
             PlayPreference::Skip,
+            PlayProfileId::ClubPlayer,
+            0,
         );
         assert_eq!(state.convention_name, "1NT Responses");
     }

@@ -3,9 +3,29 @@
 //! PlayContext, PlayResult, PlayHeuristic trait, and helper functions
 //! used across all play heuristics.
 
+use std::collections::HashMap;
+
 use bridge_engine::constants::{partner_seat, rank_index};
 use bridge_engine::{Card, Contract, Hand, PlayedCard, Seat, Suit, Trick};
 use serde::{Deserialize, Serialize};
+
+use crate::inference::types::DerivedRanges;
+
+// ── Play beliefs ─────────────────────────────────────────────────────
+
+/// Inference data available to heuristics during play.
+/// Populated by play_controller based on the active PlayProfile.
+#[derive(Debug, Clone)]
+pub struct PlayBeliefs {
+    /// L1 inference: DerivedRanges per seat (HCP min/max, suit length min/max, is_balanced).
+    pub ranges: HashMap<Seat, DerivedRanges>,
+    /// L2 posterior: MC expected HCP per seat (None if profile.use_posterior is false).
+    pub posterior_hcp: Option<HashMap<Seat, f64>>,
+    /// L2 posterior: MC expected suit lengths per seat (None if profile.use_posterior is false).
+    pub posterior_suit_lengths: Option<HashMap<Seat, HashMap<Suit, f64>>>,
+    /// Confidence of posterior estimates (0.0–1.0). 0.0 = no MC data.
+    pub posterior_confidence: f64,
+}
 
 // ── Play context and result ──────────────────────────────────────────
 
@@ -21,6 +41,8 @@ pub struct PlayContext {
     pub legal_plays: Vec<Card>,
     /// Visible after opening lead; None before dummy is revealed.
     pub dummy_hand: Option<Hand>,
+    /// Inference beliefs for play decisions. None when profile doesn't use inferences.
+    pub beliefs: Option<PlayBeliefs>,
 }
 
 /// Result of a play strategy suggestion.

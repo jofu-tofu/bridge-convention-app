@@ -4,7 +4,7 @@ Pure TypeScript game logic. Zero platform dependencies.
 
 ## Conventions
 
-- Pure engine logic modules (`auction.ts`, `scoring.ts`, `play.ts`, `deal-generator.ts`, etc.) never import from `svelte`, `@tauri-apps/*`, `window`, `document`, or `localStorage`. DDS modules (`dds-client.ts`, `dds-worker.ts`) are the explicit exception.
+- Pure engine logic modules (`auction.ts`, `scoring.ts`, `play.ts`, `deal-generator.ts`, etc.) never import from `svelte`, `@tauri-apps/*`, `window`, `document`, or `localStorage`. DDS modules (`dds-client.ts`, `dds-worker.ts`) and `mc-dds-play.ts` are the explicit exceptions (DDS uses Worker API; mc-dds-play imports `ServiceDerivedRanges` type from `service/response-types`).
 - Engine is a leaf module — it does not import from `strategy/`, `conventions/`, `inference/`, `stores/`, `components/`, or other higher-level modules. Cross-boundary types that engine needs are defined locally in `engine/` or passed in by callers.
 - `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only
 - Utility functions (`calculateHcp`, `getSuitLength`, `isBalanced`) exported separately for reuse by deal-generator
@@ -40,6 +40,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `dds-wasm.ts`         | DDS PBN conversion, struct pack/unpack, `solveFromPBN()` (PBN-based table solve), `solveWithModule()` (Deal-based wrapper), `solveBoardWithModule()` (per-card) — pure logic, no DOM/Worker. Exports `handsToPBN()`, `cardsToPBNHand()`, DDS index helpers (`trumpToDdsIndex`, `seatToDdsIndex`, `rankToDdsValue`), and index mapping constants (`DDS_STRAIN_MAP`, `DDS_SEAT_MAP`, `DDS_SUIT_MAP_PLAY`, `DDS_RANK_MAP`). |
 | `dds-worker.ts`       | Classic Web Worker — loads DDS WASM via `importScripts`, handles `CalcAllTablesPBN` (Deal or PBN) and `SolveBoardPBN` requests |
 | `dds-client.ts`       | Main thread API — `initDDS()`, `isDDSAvailable()`, `solveDealWasm()`, `solveDealFromPBN()`, `solveBoardWasm()` via Worker messages |
+| `mc-dds-play.ts`      | MC+DDS play: deal sampling + batched DDS evaluation for Expert/WorldClass profiles. Pure functions, no service/store deps. |
 
 ## Gotchas
 

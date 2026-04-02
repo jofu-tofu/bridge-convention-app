@@ -126,6 +126,8 @@ mod tests {
             PracticeMode::DecisionDrill,
             PracticeFocus::default(),
             PlayPreference::Skip,
+            bridge_session::heuristics::play_profiles::PlayProfileId::ClubPlayer,
+            0,
         )
     }
 

@@ -78,6 +78,10 @@ function createMockService(): DevServicePort {
       legalPlays: [],
       currentPlayer: Seat.South,
     }),
+    playSingleCard: vi.fn().mockResolvedValue({
+      accepted: true, trickComplete: false, playComplete: false,
+      score: null, currentPlayer: Seat.South, legalPlays: [],
+    }),
     skipToReview: vi.fn().mockResolvedValue(undefined),
     updatePlayProfile: vi.fn().mockResolvedValue(undefined),
     getBiddingViewport: vi.fn().mockResolvedValue(MOCK_BIDDING_VP),

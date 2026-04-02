@@ -172,7 +172,7 @@ See `docs/migration/index.md` for the phase tracker and architectural decisions.
 - Component tests use `@testing-library/svelte` — components needing context (stores/engine) need wrapper setup in test-helpers.ts
 - Svelte `{#each}` blocks require keyed iteration (`{#each items as item (item.id)}`) per ESLint rule `svelte/require-each-key`
 - See `docs/gotchas.md` for detailed technical notes (DDS browser, vendor/dds, convention system details, CLI enumeration, deal generation)
-- **Posterior inference is stubbed** (uniform distributions). Natural inference handles common cases; posterior is a follow-up item. See `docs/migration/index.md` Known Remaining Stubs for details.
+- **MC+DDS play uses TS-driven AI loop.** For Expert/WorldClass profiles, the play-phase store (`play-phase.svelte.ts`) drives AI card selection via `playSingleCard` + `mcDdsSuggest` (async DDS). For Beginner/ClubPlayer, the Rust play controller drives AI via `playCard` (synchronous heuristic chain). The split exists because DDS runs in an async JS Web Worker and cannot be called from synchronous Rust WASM. Both paths use Rust as the single source of truth for game state validation. Expert samples randomly (no beliefs); WorldClass adds belief-constraint filtering (`PlayProfile.use_posterior`). Posterior inference (`PosteriorEngine` in `bridge-session/src/inference/posterior.rs`) uses rejection sampling against L1 `DerivedRanges`, 200-sample budget, wired into heuristics via `PlayBeliefs`.
 
 **Context tree** (read the relevant one before working in that directory):
 

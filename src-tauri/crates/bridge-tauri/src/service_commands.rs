@@ -13,7 +13,7 @@ use bridge_service::response_types::*;
 use bridge_service::evaluation::types::*;
 use bridge_session::session::{
     BiddingViewport, DeclarerPromptViewport, ExplanationViewport, ModuleCatalogEntry,
-    ModuleLearningViewport, PlayCardResult, PlayingViewport,
+    ModuleLearningViewport, PlayCardResult, SingleCardResult, PlayingViewport,
     BundleFlowTreeViewport, ModuleFlowTreeViewport,
 };
 use bridge_session::types::OpponentMode;
@@ -80,6 +80,19 @@ pub fn play_card(
     let mut service = state.lock().map_err(|e| e.to_string())?;
     service
         .play_card(&handle, card, seat)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn play_single_card(
+    state: tauri::State<ServiceState>,
+    handle: String,
+    card: Card,
+    seat: Seat,
+) -> Result<SingleCardResult, String> {
+    let mut service = state.lock().map_err(|e| e.to_string())?;
+    service
+        .play_single_card(&handle, card, seat)
         .map_err(|e| e.to_string())
 }
 

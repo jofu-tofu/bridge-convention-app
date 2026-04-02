@@ -13,6 +13,7 @@ pub fn run() {
             service_commands::submit_bid,
             service_commands::accept_prompt,
             service_commands::play_card,
+            service_commands::play_single_card,
             service_commands::skip_to_review,
             service_commands::update_play_profile,
             service_commands::get_bidding_viewport,

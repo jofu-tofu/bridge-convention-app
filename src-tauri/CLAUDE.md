@@ -49,16 +49,16 @@ crates/
                        `rationale` or `display_name()` instead.
   bridge-session/      Rust session logic: inference, heuristics, controllers, viewports.
                        Phase 4 of the migration. Depends on bridge-engine + bridge-conventions.
-                       Inference: natural inference + posterior stub (uniform distributions).
+                       Inference: natural inference + Monte Carlo posterior (rejection sampling).
                        Heuristics: bidding strategy chain + 8 play heuristics + play profiles.
                        Session: state management, bidding/play controllers (synchronous),
                        drill lifecycle, 4 viewport builders with information boundary.
-                       MC+DDS play and learning viewports deferred.
+                       MC posterior wired into play heuristics. DDS play and learning viewports deferred.
   bridge-service/      Service layer — ServicePort trait + ServicePortImpl wrapping SessionManager.
                        Thin hexagonal port between UI/WASM/CLI and game logic. Depends on
                        bridge-engine, bridge-conventions, bridge-session.
   bridge-tauri/        Tauri v2 app — #[tauri::command] handlers wrapping ServicePortImpl
-                       (Mutex-managed state). service_commands.rs has all 19 ServicePort + 6
+                       (Mutex-managed state). service_commands.rs has all 20 ServicePort + 6
                        DevServicePort commands.
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
                        for browser deployment. All 19 ServicePort methods + 6 DevServicePort

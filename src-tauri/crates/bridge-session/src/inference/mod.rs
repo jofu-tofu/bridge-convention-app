@@ -28,4 +28,4 @@ pub use belief_accumulator::{create_initial_belief_state, apply_annotation};
 pub use natural_inference::NaturalInferenceProvider;
 pub use inference_engine::InferenceEngine;
 pub use inference_coordinator::InferenceCoordinator;
-pub use posterior::UniformPosterior;
+pub use posterior::{UniformPosterior, PosteriorEngine, Posterior};

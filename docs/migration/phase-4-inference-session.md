@@ -55,7 +55,7 @@ src-tauri/crates/bridge-session/
       inference_engine.rs           # InferenceEngine (per-partnership)
       annotation_producer.rs        # BidAnnotation production
       inference_coordinator.rs      # NS/EW engine coordinator
-      posterior.rs                  # STUB: uniform distributions
+      posterior.rs                  # MC rejection sampler + UniformPosterior fallback
     heuristics/
       mod.rs                        # BiddingStrategy trait, BiddingContext, BidResult
       strategy_chain.rs             # Chain: first non-None wins
@@ -81,7 +81,7 @@ src-tauri/crates/bridge-session/
 
 ## Key Implementation Notes
 
-**Posterior can be stubbed initially.** The posterior engine is the most complex inference component but has the least impact on core gameplay. A stub that returns uniform distributions is acceptable for Phase 4, with full implementation following.
+**Posterior engine implemented.** `PosteriorEngine` uses MC rejection sampling (200 samples, constrained by L1 `DerivedRanges`). Wired into play heuristics via `PlayBeliefs` on `PlayContext`. `UniformPosterior` retained as fallback for profiles with `use_posterior=false`.
 
 **Session state ownership.** TS uses mutable state freely. Rust will need careful ownership design — likely `SessionState` owns everything, with controllers borrowing mutably during their phase.
 
@@ -113,13 +113,13 @@ When Rust output differs, ask: "bug or improvement?" Update the fixture and docu
 
 ## Completion Checklist
 
-- [x] Inference engine ported (posterior stubbed as uniform distributions)
+- [x] Inference engine ported (MC posterior + uniform fallback)
 - [x] Natural inference ported (NaturalInferenceProvider, SystemConfig-parameterized)
 - [x] Belief accumulator ported
-- [x] Factor compiler — DEFERRED (posterior stub only)
-- [x] Session state ported (SessionState, PlayState, SeatStrategy)
+- [x] Factor compiler — DEFERRED (rejection sampler covers core use case)
+- [x] Session state ported (SessionState, PlayState, SeatStrategy, posterior, play profiles)
 - [x] Bidding controller ported (synchronous, direct bridge_engine calls)
-- [x] Play controller ported (8 heuristics + chain)
+- [x] Play controller ported (8 heuristics + chain + profile dispatch + inference beliefs)
 - [x] Phase coordinator ported
 - [x] Strategy chain ported
 - [x] Natural fallback ported
