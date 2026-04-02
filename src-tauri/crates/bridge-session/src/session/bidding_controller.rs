@@ -161,7 +161,12 @@ fn get_expected_bid(
         dealer: Some(state.deal.dealer),
     };
 
-    strategy.suggest_bid(&context)
+    Some(strategy.suggest_bid(&context).unwrap_or_else(|| BidResult {
+        call: Call::Pass,
+        rule_name: None,
+        explanation: "No convention applies — pass".to_string(),
+        ..Default::default()
+    }))
 }
 
 /// Apply user's bid, run AI bids, and return result.
@@ -420,6 +425,16 @@ mod tests {
         fn as_any(&self) -> &dyn std::any::Any { self }
     }
 
+    struct NeverMatches;
+    impl BiddingStrategy for NeverMatches {
+        fn id(&self) -> &str { "never-matches" }
+        fn name(&self) -> &str { "Never Matches" }
+        fn suggest_bid(&self, _ctx: &BiddingContext) -> Option<BidResult> {
+            None
+        }
+        fn as_any(&self) -> &dyn std::any::Any { self }
+    }
+
     // ── Helpers ────────────────────────────────────────────────────
 
     fn make_deal() -> Deal {
@@ -657,5 +672,45 @@ mod tests {
         handle_auction_complete(&mut state);
         assert!(state.contract.is_none());
         assert_eq!(state.phase, GamePhase::Explanation);
+    }
+
+    #[test]
+    fn process_bid_rejects_non_pass_when_strategy_returns_none() {
+        let mut state = make_state();
+        state.deal.dealer = Seat::South;
+        // Strategy exists but returns None (no convention surfaces match)
+        let mut strategies = HashMap::new();
+        strategies.insert(Seat::South, SeatStrategy::Ai(Box::new(NeverMatches)));
+        strategies.insert(Seat::North, SeatStrategy::Ai(Box::new(AlwaysPass)));
+        strategies.insert(Seat::East, SeatStrategy::Ai(Box::new(AlwaysPass)));
+        strategies.insert(Seat::West, SeatStrategy::Ai(Box::new(AlwaysPass)));
+
+        // Non-pass bid should be rejected — expected bid defaults to Pass
+        let result = process_bid(
+            &mut state,
+            Call::Bid { level: 3, strain: BidSuit::Spades },
+            &strategies,
+        );
+        assert!(!result.accepted);
+        let feedback = result.feedback.unwrap();
+        assert_eq!(feedback.grade, BidGrade::Incorrect);
+        assert_eq!(feedback.expected_call, Some(Call::Pass));
+    }
+
+    #[test]
+    fn process_bid_accepts_pass_when_strategy_returns_none() {
+        let mut state = make_state();
+        state.deal.dealer = Seat::South;
+        let mut strategies = HashMap::new();
+        strategies.insert(Seat::South, SeatStrategy::Ai(Box::new(NeverMatches)));
+        strategies.insert(Seat::North, SeatStrategy::Ai(Box::new(AlwaysPass)));
+        strategies.insert(Seat::East, SeatStrategy::Ai(Box::new(AlwaysPass)));
+        strategies.insert(Seat::West, SeatStrategy::Ai(Box::new(AlwaysPass)));
+
+        // Pass should be accepted when no convention surfaces match
+        let result = process_bid(&mut state, Call::Pass, &strategies);
+        assert!(result.accepted);
+        let feedback = result.feedback.unwrap();
+        assert_eq!(feedback.grade, BidGrade::Correct);
     }
 }
