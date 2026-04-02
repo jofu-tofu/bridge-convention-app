@@ -45,7 +45,7 @@
       {/each}
     </div>
   {/if}
-  {#if ambiguityNote}
+  {#if ambiguityNote && isAcceptable}
     <p class="text-fb-correct-dim/50 text-[--text-annotation] mt-1 italic">{ambiguityNote}</p>
   {/if}
   {#if showPracticalNote && practicalRec}

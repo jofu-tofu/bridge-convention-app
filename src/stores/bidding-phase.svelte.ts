@@ -173,6 +173,15 @@ export function createBiddingPhase(deps: BiddingDeps) {
           biddingAnim = { totalAiBids: result.aiBids.length, revealed: i + 1 };
         }
         biddingAnim = null;
+      } else if (bidFeedback && !isFeedbackBlocking) {
+        // No AI bids follow — hold correct flash briefly before restoring bid panel
+        await deps.delayFn(600);
+        if (deps.getActiveHandle() !== handle) return;
+      }
+
+      // Auto-clear non-blocking (correct) feedback so bid panel reappears
+      if (bidFeedback && !isFeedbackBlocking) {
+        bidFeedback = null;
       }
 
       // Fetch belief state from service (single source of truth for inference)

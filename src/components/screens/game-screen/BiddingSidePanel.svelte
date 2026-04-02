@@ -23,9 +23,6 @@
   // acceptable blocks with Continue (bid already accepted), near-miss/incorrect block with Retry.
   const disabled = $derived(!gameStore.isUserTurn || gameStore.isFeedbackBlocking);
   const hasFeedback = $derived(gameStore.viewportFeedback !== null);
-  const feedbackReplacesBidTable = $derived(
-    gameStore.viewportFeedback !== null && gameStore.isFeedbackBlocking
-  );
 </script>
 
 <div class="flex flex-col h-full min-h-0">
@@ -37,7 +34,7 @@
       Waiting...
     {/if}
   </SectionHeader>
-  {#if feedbackReplacesBidTable}
+  {#if hasFeedback}
     <BidFeedbackPanel
       feedback={gameStore.viewportFeedback!}
       teaching={gameStore.teachingDetail}
@@ -49,18 +46,6 @@
     />
   {:else}
     <BidPanel legalCalls={gameStore.legalCalls} onBid={(call) => gameStore.userBid(call)} {disabled} compact />
-    <div class="mt-3" class:hidden={!hasFeedback}>
-      {#if gameStore.viewportFeedback}
-        <BidFeedbackPanel
-          feedback={gameStore.viewportFeedback}
-          teaching={gameStore.teachingDetail}
-          onRetry={() => gameStore.retryBid()}
-          handEval={gameStore.biddingViewport?.handEvaluation ?? null}
-          handSummary={gameStore.biddingViewport?.handSummary ?? null}
-          biddingOptions={gameStore.biddingViewport?.biddingOptions ?? []}
-        />
-      {/if}
-    </div>
   {/if}
 </div>
 
