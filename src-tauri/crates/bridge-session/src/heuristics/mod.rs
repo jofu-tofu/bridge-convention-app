@@ -12,7 +12,7 @@ pub mod strategy_chain;
 
 pub mod play_types;
 pub mod opening_leads;
-pub mod heuristic_play;
+pub mod play;
 pub mod random_play;
 pub mod play_profiles;
 
@@ -78,6 +78,6 @@ pub use pass_strategy::PassStrategy;
 pub use strategy_chain::StrategyChain;
 
 pub use play_types::{PlayContext, PlayHeuristic, PlayResult};
-pub use heuristic_play::suggest_play;
+pub use play::suggest_play;
 pub use random_play::RandomPlayStrategy;
 pub use play_profiles::{PlayProfileId, PlayProfile, get_profile, suggest_play_with_profile};

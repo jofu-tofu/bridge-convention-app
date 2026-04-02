@@ -11,6 +11,7 @@ import { tick } from "svelte";
 import type { Card, Seat, PlayedCard } from "../service";
 import type { DevServicePort, SessionHandle } from "../service";
 import type { PlayingViewport } from "../service";
+import type { PhaseEvent } from "../service";
 import type { PlaySuggestions } from "../service/debug-types";
 import { TRICK_PAUSE, AI_PLAY_DELAY } from "./animate";
 
@@ -39,7 +40,7 @@ export interface PlayDeps {
   getActiveService: () => DevServicePort;
   getPlayingViewport: () => PlayingViewport | null;
   setPlayingViewport: (vp: PlayingViewport | null) => void;
-  transitionToExplanation: () => void;
+  dispatchEvent: (handle: SessionHandle, event: PhaseEvent) => Promise<unknown>;
   delayFn: (ms: number) => Promise<void>;
 }
 
@@ -136,7 +137,7 @@ export function createPlayPhase(deps: PlayDeps) {
     if (deps.getActiveHandle() !== handle || play.aborted) return;
     play.score = resultScore;
     animatedTrickOverride = null;
-    deps.transitionToExplanation();
+    await deps.dispatchEvent(handle, { type: "PLAY_COMPLETE" });
   }
 
   // ── Main action ─────────────────────────────────────────────────
@@ -199,7 +200,7 @@ export function createPlayPhase(deps: PlayDeps) {
             await showFinalTrickAndTransition(handle, finalCompletedTrick, result.score);
           } else {
             play.score = result.score;
-            deps.transitionToExplanation();
+            await deps.dispatchEvent(handle, { type: "PLAY_COMPLETE" });
           }
           return;
         }
@@ -209,7 +210,7 @@ export function createPlayPhase(deps: PlayDeps) {
       if (result.playComplete) {
         play.score = result.score;
         play.suggestions = [];
-        deps.transitionToExplanation();
+        await deps.dispatchEvent(handle, { type: "PLAY_COMPLETE" });
       } else {
         // Normal mid-game — refresh viewport for next turn
         deps.setPlayingViewport(await activeService.getPlayingViewport(handle));

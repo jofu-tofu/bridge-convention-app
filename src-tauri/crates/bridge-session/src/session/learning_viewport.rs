@@ -1,26 +1,36 @@
 //! Learning viewport builders — projects convention module internals into
 //! viewport response types for UI consumption.
 //!
+//! Clause mapping and entry condition logic extracted to `clause_mapper` and
+//! `condition_caps` submodules. Re-exports preserved for backward compatibility.
+//!
 //! Ported from TS `src/session/learning-viewport.ts`.
 
 use std::collections::{HashMap, HashSet, VecDeque};
 
 use bridge_conventions::registry::bundle_registry::list_bundle_inputs;
 use bridge_conventions::registry::module_registry::{get_all_modules, get_base_module_ids, get_module};
-use bridge_conventions::registry::system_configs::get_system_config;
 use bridge_conventions::pipeline::observation::normalize_intent::normalize_intent;
 use bridge_conventions::pipeline::observation::route_matcher::match_obs;
 use bridge_conventions::{
-    BaseSystemId, BidMeaning, BidMeaningClause, ConventionModule, Disclosure,
-    ExplanationEntry, FactOperator, ConstraintValue, LocalFsm, ObsPattern,
-    PhaseRef, RecommendationBand, SystemConfig,
+    BaseSystemId, BidMeaning, ConventionModule, Disclosure,
+    ExplanationEntry, LocalFsm, ObsPattern,
+    PhaseRef, RecommendationBand,
 };
 use bridge_conventions::rule_types::TurnRole;
-use bridge_engine::types::{BidSuit, Call};
+use bridge_engine::types::Call;
 use serde::{Deserialize, Serialize};
 
 use super::build_viewport::format_call;
+use super::condition_caps::derive_root_phase_label;
 use super::format_obs_label::format_transition_label;
+
+// Re-export extracted items so mod.rs re-exports remain unchanged.
+pub use super::clause_mapper::{
+    map_clauses, derive_neutral_description,
+    ClauseSystemVariant, SurfaceClauseView, RelevantMetric,
+};
+pub use super::condition_caps::{derive_entry_condition, EntryCondition};
 
 // ── DTOs ─────────────────────────────────────────────────────────────
 
@@ -69,40 +79,6 @@ pub struct PhaseGroupView {
     pub surfaces: Vec<SurfaceDetailView>,
 }
 
-/// Clause system variant (per-system threshold descriptions).
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ClauseSystemVariant {
-    pub system_label: String,
-    pub description: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub trump_tp_description: Option<String>,
-}
-
-/// Relevant metric for a clause context.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum RelevantMetric {
-    #[serde(rename = "hcp")]
-    Hcp,
-    #[serde(rename = "trumpTp")]
-    TrumpTp,
-}
-
-/// Surface clause view for learning display.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SurfaceClauseView {
-    pub fact_id: String,
-    pub operator: FactOperator,
-    pub value: ConstraintValue,
-    pub description: String,
-    pub is_public: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub system_variants: Option<Vec<ClauseSystemVariant>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub relevant_metric: Option<RelevantMetric>,
-}
-
 /// Service teaching label (plain strings, not branded).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -134,15 +110,6 @@ pub struct BaseModuleInfo {
     pub description: String,
 }
 
-/// Entry condition for module root.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EntryCondition {
-    pub label: String,
-    pub call: Option<Call>,
-    pub turn: Option<String>,
-}
-
 // ── Bridge abbreviations ─────────────────────────────────────────────
 
 const BRIDGE_ABBREVIATIONS: &[&str] = &["nt", "sayc", "hcp"];
@@ -167,7 +134,7 @@ pub fn format_module_name(module_id: &str) -> String {
             if is_bridge_abbreviation(w) {
                 return w.to_uppercase();
             }
-            // Check for digit prefix + abbreviation suffix (e.g., "1nt" → "1NT")
+            // Check for digit prefix + abbreviation suffix (e.g., "1nt" -> "1NT")
             if let Some(pos) = lower.find(|c: char| !c.is_ascii_digit()) {
                 let (digits, rest) = lower.split_at(pos);
                 if !digits.is_empty() && is_bridge_abbreviation(rest) {
@@ -248,11 +215,11 @@ pub fn call_key(call: &Call) -> String {
         Call::Redouble => "XX".to_string(),
         Call::Bid { level, strain } => {
             let suit_str = match strain {
-                BidSuit::Clubs => "C",
-                BidSuit::Diamonds => "D",
-                BidSuit::Hearts => "H",
-                BidSuit::Spades => "S",
-                BidSuit::NoTrump => "NT",
+                bridge_engine::types::BidSuit::Clubs => "C",
+                bridge_engine::types::BidSuit::Diamonds => "D",
+                bridge_engine::types::BidSuit::Hearts => "H",
+                bridge_engine::types::BidSuit::Spades => "S",
+                bridge_engine::types::BidSuit::NoTrump => "NT",
             };
             format!("{}{}", level, suit_str)
         }
@@ -282,238 +249,6 @@ fn phase_ref_to_vec(pr: &PhaseRef) -> Vec<&str> {
     }
 }
 
-// ── System-fact clause helpers ───────────────────────────────────────
-
-/// All base systems with their short labels.
-struct SystemWithLabel {
-    sys: SystemConfig,
-    label: &'static str,
-}
-
-fn all_systems() -> Vec<SystemWithLabel> {
-    vec![
-        SystemWithLabel {
-            sys: get_system_config(BaseSystemId::Sayc),
-            label: "SAYC",
-        },
-        SystemWithLabel {
-            sys: get_system_config(BaseSystemId::TwoOverOne),
-            label: "2/1",
-        },
-        SystemWithLabel {
-            sys: get_system_config(BaseSystemId::Acol),
-            label: "Acol",
-        },
-    ]
-}
-
-/// Result of describing a system fact value.
-struct SystemFactDescription {
-    hcp: String,
-    trump_tp: Option<String>,
-}
-
-/// Describe what a system-derived fact concretely means for a given SystemConfig.
-fn describe_system_fact_value(fact_id: &str, sys: &SystemConfig) -> Option<SystemFactDescription> {
-    match fact_id {
-        "system.responder.weakHand" => {
-            let t = &sys.responder_thresholds;
-            Some(SystemFactDescription {
-                hcp: format!("< {} HCP", t.invite_min),
-                trump_tp: Some(format!("< {}", t.invite_min_tp.trump)),
-            })
-        }
-        "system.responder.inviteValues" => {
-            let t = &sys.responder_thresholds;
-            Some(SystemFactDescription {
-                hcp: format!("{}\u{2013}{} HCP", t.invite_min, t.invite_max),
-                trump_tp: Some(format!(
-                    "{}\u{2013}{}",
-                    t.invite_min_tp.trump, t.invite_max_tp.trump
-                )),
-            })
-        }
-        "system.responder.gameValues" => {
-            let t = &sys.responder_thresholds;
-            Some(SystemFactDescription {
-                hcp: format!("{}+ HCP", t.game_min),
-                trump_tp: Some(format!("{}+", t.game_min_tp.trump)),
-            })
-        }
-        "system.responder.slamValues" => {
-            let t = &sys.responder_thresholds;
-            Some(SystemFactDescription {
-                hcp: format!("{}+ HCP", t.slam_min),
-                trump_tp: Some(format!("{}+", t.slam_min_tp.trump)),
-            })
-        }
-        "system.opener.notMinimum" => {
-            let r = &sys.opener_rebid;
-            Some(SystemFactDescription {
-                hcp: format!("{}+ HCP", r.not_minimum),
-                trump_tp: Some(format!("{}+", r.not_minimum_tp.trump)),
-            })
-        }
-        "system.responder.twoLevelNewSuit" => Some(SystemFactDescription {
-            hcp: format!("{}+ HCP", sys.suit_response.two_level_min),
-            trump_tp: None,
-        }),
-        "system.suitResponse.isGameForcing" => {
-            let desc = match sys.suit_response.two_level_forcing_duration {
-                bridge_conventions::SuitResponseForcingDuration::Game => "Game-forcing",
-                bridge_conventions::SuitResponseForcingDuration::OneRound => "One-round forcing",
-            };
-            Some(SystemFactDescription {
-                hcp: desc.to_string(),
-                trump_tp: None,
-            })
-        }
-        "system.oneNtResponseAfterMajor.forcing" => {
-            let forcing_str = match sys.one_nt_response_after_major.forcing {
-                bridge_conventions::OneNtForcingStatus::NonForcing => "non-forcing",
-                bridge_conventions::OneNtForcingStatus::Forcing => "forcing",
-                bridge_conventions::OneNtForcingStatus::SemiForcing => "semi-forcing",
-            };
-            Some(SystemFactDescription {
-                hcp: format!("1NT is {}", forcing_str),
-                trump_tp: None,
-            })
-        }
-        "system.responder.oneNtRange" => Some(SystemFactDescription {
-            hcp: format!(
-                "{}\u{2013}{} HCP",
-                sys.one_nt_response_after_major.min_hcp, sys.one_nt_response_after_major.max_hcp
-            ),
-            trump_tp: None,
-        }),
-        "system.dontOvercall.inRange" => Some(SystemFactDescription {
-            hcp: format!(
-                "{}\u{2013}{} HCP",
-                sys.dont_overcall.min_hcp, sys.dont_overcall.max_hcp
-            ),
-            trump_tp: None,
-        }),
-        _ => None,
-    }
-}
-
-/// Build system variants for a system.* fact — one entry per known base system.
-fn build_system_variants(fact_id: &str) -> Vec<ClauseSystemVariant> {
-    all_systems()
-        .into_iter()
-        .map(|s| {
-            let result = describe_system_fact_value(fact_id, &s.sys);
-            match result {
-                Some(desc) => ClauseSystemVariant {
-                    system_label: s.label.to_string(),
-                    description: desc.hcp,
-                    trump_tp_description: desc.trump_tp,
-                },
-                None => ClauseSystemVariant {
-                    system_label: s.label.to_string(),
-                    description: fact_id.to_string(),
-                    trump_tp_description: None,
-                },
-            }
-        })
-        .collect()
-}
-
-// ── Display name resolution ──────────────────────────────────────────
-
-/// Well-known factId → natural language display name mappings.
-fn display_name(fact_id: &str) -> String {
-    match fact_id {
-        "hand.hcp" => return "HCP".to_string(),
-        "hand.isBalanced" => return "balanced".to_string(),
-        "bridge.hasFourCardMajor" => return "4-card major".to_string(),
-        "bridge.hasFiveCardMajor" => return "5-card major".to_string(),
-        "bridge.hasShortage" => return "short suit".to_string(),
-        "bridge.fitWithBoundSuit" => return "fit with partner's suit".to_string(),
-        "bridge.totalPointsForRaise" => return "total points".to_string(),
-        "system.dontOvercall.inRange" => return "HCP in overcall range".to_string(),
-        "system.responder.oneNtRange" => return "1NT response range".to_string(),
-        _ => {}
-    }
-
-    // Extract suit from suitLength path: hand.suitLength.hearts → "hearts"
-    if let Some(suit) = fact_id.strip_prefix("hand.suitLength.") {
-        return suit.to_string();
-    }
-
-    // Strip namespace prefix
-    let name = if let Some(rest) = fact_id.strip_prefix("hand.") {
-        rest.to_string()
-    } else if let Some(rest) = fact_id.strip_prefix("bridge.") {
-        rest.to_string()
-    } else if fact_id.starts_with("system.") || fact_id.starts_with("module.") {
-        // system.<role>.<concept> or module.<name>.<fact> — strip first two segments
-        let parts: Vec<&str> = fact_id.splitn(3, '.').collect();
-        if parts.len() >= 3 {
-            parts[2].to_string()
-        } else {
-            fact_id.to_string()
-        }
-    } else {
-        fact_id.to_string()
-    };
-
-    // Convert camelCase to space-separated, handle dots as spaces
-    let mut result = String::new();
-    for ch in name.chars() {
-        if ch == '.' {
-            result.push(' ');
-        } else if ch.is_uppercase() && !result.is_empty() && result.ends_with(|c: char| c.is_lowercase()) {
-            result.push(' ');
-            result.extend(ch.to_lowercase());
-        } else {
-            result.extend(ch.to_lowercase());
-        }
-    }
-    result
-}
-
-/// Derive a value-free, system-neutral description from a factId.
-pub fn derive_neutral_description(fact_id: &str, rationale: Option<&str>) -> String {
-    let dn = display_name(fact_id);
-    let capitalized = capitalize_first(&dn);
-
-    // For system facts, rationale is typically richer context — use it directly
-    if fact_id.starts_with("system.") {
-        if let Some(r) = rationale {
-            return capitalize_first(r);
-        }
-    }
-
-    with_rationale(&capitalized, rationale)
-}
-
-fn capitalize_first(s: &str) -> String {
-    let mut chars = s.chars();
-    match chars.next() {
-        None => String::new(),
-        Some(first) => {
-            let mut result = first.to_uppercase().to_string();
-            result.extend(chars);
-            result
-        }
-    }
-}
-
-fn with_rationale(base: &str, rationale: Option<&str>) -> String {
-    match rationale {
-        Some(r) => format!("{} ({})", base, r),
-        None => base.to_string(),
-    }
-}
-
-/// Read the description from a BidMeaningClause.
-fn read_clause_description(c: &BidMeaningClause) -> String {
-    c.description
-        .clone()
-        .unwrap_or_else(|| format!("{} {:?} {:?}", c.fact_id, c.operator, c.value))
-}
-
 // ── Module catalog ───────────────────────────────────────────────────
 
 /// Build module catalog entries for all registered modules.
@@ -521,7 +256,7 @@ pub fn build_module_catalog(system: BaseSystemId) -> Vec<ModuleCatalogEntry> {
     let all_modules = get_all_modules(system);
     let bundle_inputs = list_bundle_inputs();
 
-    // Build reverse map: moduleId → bundleIds that contain it
+    // Build reverse map: moduleId -> bundleIds that contain it
     let mut module_bundles: HashMap<&str, Vec<String>> = HashMap::new();
     for input in bundle_inputs {
         for member_id in &input.member_ids {
@@ -561,50 +296,6 @@ pub fn build_base_module_infos(base_system_id: BaseSystemId) -> Vec<BaseModuleIn
             })
         })
         .collect()
-}
-
-// ── Module learning viewport ─────────────────────────────────────────
-
-/// Build a full learning viewport for a single module.
-pub fn build_module_learning_viewport(
-    module_id: &str,
-    system: BaseSystemId,
-) -> Option<ModuleLearningViewport> {
-    let m = get_module(module_id, system)?;
-
-    let bundle_inputs = list_bundle_inputs();
-    let bundle_ids: Vec<String> = bundle_inputs
-        .iter()
-        .filter(|b| b.member_ids.iter().any(|mid| mid == module_id))
-        .map(|b| b.id.clone())
-        .collect();
-
-    let teaching = &m.teaching;
-    let phases = build_phase_groups(m, system);
-
-    Some(ModuleLearningViewport {
-        module_id: m.module_id.clone(),
-        display_name: format_module_name(&m.module_id),
-        description: format_bid_references(m.description.as_str()),
-        purpose: format_bid_references(m.purpose.as_str()),
-        teaching: LearningTeachingView {
-            tradeoff: {
-                let s = teaching.tradeoff.as_str();
-                if s.is_empty() { None } else { Some(format_bid_references(s)) }
-            },
-            principle: {
-                let s = teaching.principle.as_str();
-                if s.is_empty() { None } else { Some(format_bid_references(s)) }
-            },
-            common_mistakes: teaching
-                .common_mistakes
-                .iter()
-                .map(|item| format_bid_references(item.as_str()))
-                .collect(),
-        },
-        phases,
-        bundle_ids,
-    })
 }
 
 // ── Phase ordering ───────────────────────────────────────────────────
@@ -691,11 +382,21 @@ pub fn compute_post_fit_phases(module: &ConventionModule) -> HashSet<String> {
     result
 }
 
-/// Format a phase string for display. "asked" → "Asked", "shown-hearts" → "Shown Hearts".
+/// Format a phase string for display. "asked" -> "Asked", "shown-hearts" -> "Shown Hearts".
 fn format_phase_display(phase: &str, turn: Option<&str>) -> String {
     let phase_title = format_module_name(phase);
     if let Some(t) = turn {
-        let turn_title = capitalize_first(t);
+        let turn_title = {
+            let mut chars = t.chars();
+            match chars.next() {
+                None => String::new(),
+                Some(first) => {
+                    let mut result = first.to_uppercase().to_string();
+                    result.extend(chars);
+                    result
+                }
+            }
+        };
         format!("{} \u{2014} {}", phase_title, turn_title)
     } else {
         phase_title
@@ -712,112 +413,6 @@ pub fn find_explanation_text(entries: &[ExplanationEntry], meaning_id: &str) -> 
         }
     }
     None
-}
-
-/// Map raw BidMeaningClause[] to SurfaceClauseView[] for the learning viewport.
-pub fn map_clauses(
-    clauses: &[BidMeaningClause],
-    metric: Option<RelevantMetric>,
-) -> Vec<SurfaceClauseView> {
-    clauses
-        .iter()
-        .map(|c| {
-            let is_system_fact = c.fact_id.starts_with("system.");
-            let description = if is_system_fact {
-                derive_neutral_description(&c.fact_id, c.rationale.as_deref())
-            } else {
-                read_clause_description(c)
-            };
-
-            SurfaceClauseView {
-                fact_id: c.fact_id.clone(),
-                operator: c.operator,
-                value: c.value.clone(),
-                description,
-                is_public: c.is_public.unwrap_or(false),
-                system_variants: if is_system_fact {
-                    Some(build_system_variants(&c.fact_id))
-                } else {
-                    None
-                },
-                relevant_metric: if is_system_fact { metric } else { None },
-            }
-        })
-        .collect()
-}
-
-// ── Entry condition ──────────────────────────────────────────────────
-
-/// Capability → entry condition mapping.
-fn cap_entry_conditions() -> HashMap<&'static str, EntryCondition> {
-    let mut map = HashMap::new();
-    map.insert(
-        "opening.1nt",
-        EntryCondition {
-            label: "Partner opened 1NT".to_string(),
-            call: Some(Call::Bid {
-                level: 1,
-                strain: BidSuit::NoTrump,
-            }),
-            turn: Some("opener".to_string()),
-        },
-    );
-    map.insert(
-        "opening.major",
-        EntryCondition {
-            label: "Partner opened a major".to_string(),
-            call: None,
-            turn: Some("opener".to_string()),
-        },
-    );
-    map.insert(
-        "opening.weak-two",
-        EntryCondition {
-            label: "Partner opened a weak two".to_string(),
-            call: None,
-            turn: Some("opener".to_string()),
-        },
-    );
-    map.insert(
-        "opponent.1nt",
-        EntryCondition {
-            label: "Opponent opened 1NT".to_string(),
-            call: Some(Call::Bid {
-                level: 1,
-                strain: BidSuit::NoTrump,
-            }),
-            turn: None,
-        },
-    );
-    map
-}
-
-/// Get the primary capability key from declared capabilities.
-fn get_primary_capability(
-    declared_capabilities: Option<&HashMap<String, String>>,
-) -> Option<String> {
-    let caps = declared_capabilities?;
-    caps.keys().next().cloned()
-}
-
-/// Derive full entry condition from the module's host capability.
-pub fn derive_entry_condition(module_id: &str) -> Option<EntryCondition> {
-    let conditions = cap_entry_conditions();
-    for input in list_bundle_inputs() {
-        if !input.member_ids.iter().any(|id| id == module_id) {
-            continue;
-        }
-        let cap_id = get_primary_capability(input.declared_capabilities.as_ref())?;
-        if let Some(ec) = conditions.get(cap_id.as_str()) {
-            return Some(ec.clone());
-        }
-    }
-    None
-}
-
-/// Derive root phase label from the module's host capability.
-fn derive_root_phase_label(module_id: &str) -> Option<String> {
-    derive_entry_condition(module_id).map(|ec| ec.label)
 }
 
 /// Find the first surface at a given phase whose normalized intent matches a transition obs pattern.
@@ -848,6 +443,49 @@ fn turn_role_display(role: TurnRole) -> &'static str {
         TurnRole::Responder => "responder",
         TurnRole::Opponent => "opponent",
     }
+}
+
+// ── Module learning viewport ─────────────────────────────────────────
+
+/// Build a full learning viewport for a single module.
+pub fn build_module_learning_viewport(
+    module_id: &str,
+    system: BaseSystemId,
+) -> Option<ModuleLearningViewport> {
+    let m = get_module(module_id, system)?;
+
+    let bundle_ids: Vec<String> = list_bundle_inputs()
+        .iter()
+        .filter(|b| b.member_ids.iter().any(|mid| mid == module_id))
+        .map(|b| b.id.clone())
+        .collect();
+
+    let teaching = &m.teaching;
+    let phases = build_phase_groups(m, system);
+
+    Some(ModuleLearningViewport {
+        module_id: m.module_id.clone(),
+        display_name: format_module_name(&m.module_id),
+        description: format_bid_references(m.description.as_str()),
+        purpose: format_bid_references(m.purpose.as_str()),
+        teaching: LearningTeachingView {
+            tradeoff: {
+                let s = teaching.tradeoff.as_str();
+                if s.is_empty() { None } else { Some(format_bid_references(s)) }
+            },
+            principle: {
+                let s = teaching.principle.as_str();
+                if s.is_empty() { None } else { Some(format_bid_references(s)) }
+            },
+            common_mistakes: teaching
+                .common_mistakes
+                .iter()
+                .map(|item| format_bid_references(item.as_str()))
+                .collect(),
+        },
+        phases,
+        bundle_ids,
+    })
 }
 
 /// Build PhaseGroupView[] from a module's states, ordered by FSM topology.
@@ -988,7 +626,7 @@ mod tests {
     use super::*;
     use bridge_conventions::{LocalFsm, ObsPattern, ObsPatternAct, PhaseRef, PhaseTransition};
     use bridge_conventions::BidActionType;
-    use bridge_engine::types::{BidSuit, Call};
+    use bridge_engine::types::BidSuit;
 
     #[test]
     fn format_module_name_empty() {
@@ -1188,52 +826,8 @@ mod tests {
     }
 
     #[test]
-    fn derive_neutral_description_system_fact_with_rationale() {
-        let desc = derive_neutral_description(
-            "system.responder.inviteValues",
-            Some("invite values opposite 1NT"),
-        );
-        assert_eq!(desc, "Invite values opposite 1NT");
-    }
-
-    #[test]
-    fn derive_neutral_description_dont_overcall_no_rationale() {
-        let desc = derive_neutral_description("system.dontOvercall.inRange", None);
-        assert_eq!(desc, "HCP in overcall range");
-    }
-
-    #[test]
-    fn derive_neutral_description_one_nt_range_no_rationale() {
-        let desc = derive_neutral_description("system.responder.oneNtRange", None);
-        assert_eq!(desc, "1NT response range");
-    }
-
-    #[test]
-    fn derive_neutral_description_hand_hcp() {
-        let desc = derive_neutral_description("hand.hcp", Some("for Stayman"));
-        assert_eq!(desc, "HCP (for Stayman)");
-    }
-
-    #[test]
     fn build_base_module_infos_returns_4() {
         let infos = build_base_module_infos(BaseSystemId::Sayc);
         assert_eq!(infos.len(), 4);
-    }
-
-    #[test]
-    fn describe_system_fact_value_responder_invite() {
-        let sys = get_system_config(BaseSystemId::Sayc);
-        let desc = describe_system_fact_value("system.responder.inviteValues", &sys);
-        assert!(desc.is_some());
-        let d = desc.unwrap();
-        assert_eq!(d.hcp, "8\u{2013}9 HCP");
-        assert!(d.trump_tp.is_some());
-    }
-
-    #[test]
-    fn build_system_variants_responder_invite() {
-        let variants = build_system_variants("system.responder.inviteValues");
-        assert_eq!(variants.len(), 3); // SAYC, 2/1, Acol
-        assert_eq!(variants[0].system_label, "SAYC");
     }
 }

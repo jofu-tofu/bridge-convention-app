@@ -1,0 +1,100 @@
+---
+source: crates/bridge-session/src/session/build_viewport.rs
+expression: viewport
+---
+userSeat: S
+visibleHands:
+  N:
+    cards:
+      - suit: S
+        rank: T
+      - suit: S
+        rank: "9"
+      - suit: H
+        rank: J
+      - suit: H
+        rank: T
+      - suit: H
+        rank: "9"
+      - suit: D
+        rank: J
+      - suit: D
+        rank: T
+      - suit: D
+        rank: "9"
+      - suit: C
+        rank: J
+      - suit: C
+        rank: T
+      - suit: C
+        rank: "9"
+      - suit: C
+        rank: "8"
+      - suit: C
+        rank: "7"
+  S:
+    cards:
+      - suit: S
+        rank: A
+      - suit: S
+        rank: K
+      - suit: S
+        rank: Q
+      - suit: S
+        rank: J
+      - suit: H
+        rank: A
+      - suit: H
+        rank: K
+      - suit: H
+        rank: Q
+      - suit: D
+        rank: A
+      - suit: D
+        rank: K
+      - suit: D
+        rank: Q
+      - suit: C
+        rank: A
+      - suit: C
+        rank: K
+      - suit: C
+        rank: Q
+dealer: N
+vulnerability: Both
+auctionEntries:
+  - seat: N
+    call:
+      type: bid
+      level: 1
+      strain: NT
+    callDisplay: 1NT
+  - seat: E
+    call:
+      type: pass
+    callDisplay: Pass
+  - seat: S
+    call:
+      type: bid
+      level: 3
+      strain: NT
+    callDisplay: 3NT
+  - seat: W
+    call:
+      type: pass
+    callDisplay: Pass
+  - seat: N
+    call:
+      type: pass
+    callDisplay: Pass
+  - seat: E
+    call:
+      type: pass
+    callDisplay: Pass
+contract:
+  level: 3
+  strain: NT
+  doubled: false
+  redoubled: false
+  declarer: S
+promptMode: south-declarer

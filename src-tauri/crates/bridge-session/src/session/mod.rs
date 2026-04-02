@@ -13,8 +13,10 @@ pub mod bidding_controller;
 pub mod play_controller;
 pub mod bid_feedback_builder;
 pub mod build_viewport;
-pub mod flow_tree_builder;
+pub mod flow_tree;
 pub mod format_obs_label;
+pub mod clause_mapper;
+pub mod condition_caps;
 pub mod learning_viewport;
 
 pub use session_state::{SessionState, PlayState, SeatStrategy, get_current_turn};
@@ -37,7 +39,7 @@ pub use build_viewport::{
     BuildBiddingViewportInput, BuildDeclarerPromptViewportInput,
     BuildPlayingViewportInput, BuildExplanationViewportInput,
 };
-pub use flow_tree_builder::{
+pub use flow_tree::{
     build_bundle_flow_tree, build_module_flow_tree,
     FlowTreeNode, BundleFlowTreeViewport, ModuleFlowTreeViewport,
 };

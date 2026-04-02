@@ -1,16 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { OpponentMode } from "../../service/session-types";
 import {
   parseArgs,
   requireArg,
   optionalNumericArg,
   parseVulnerability,
   parseOpponentMode,
-  parseScenarioConfig,
-  assignSeedScenario,
-  formatHandBySuit,
+  parseCallString,
+  parsePracticeMode,
+  parsePracticeRole,
   Vulnerability,
-  type ScenarioConfig,
 } from "../shared";
 
 // ── Process.exit / console.error mocking ────────────────────────────
@@ -142,114 +140,85 @@ describe("parseOpponentMode", () => {
   });
 });
 
-// ── parseScenarioConfig ─────────────────────────────────────────────
+// ── parseCallString ─────────────────────────────────────────────────
 
-describe("parseScenarioConfig", () => {
-  it("default: fixed None + fixed natural", () => {
-    const cfg = parseScenarioConfig({});
-    expect(cfg.vuln).toEqual({ type: "fixed", value: Vulnerability.None });
-    expect(cfg.opponents).toEqual({ type: "fixed", value: OpponentMode.Natural });
+describe("parseCallString", () => {
+  it("parses pass variants", () => {
+    expect(parseCallString("P")).toEqual({ type: "pass" });
+    expect(parseCallString("pass")).toEqual({ type: "pass" });
   });
 
-  it("--vuln=mixed -> mixed vuln mode", () => {
-    const cfg = parseScenarioConfig({ vuln: "mixed" });
-    expect(cfg.vuln).toEqual({ type: "mixed" });
+  it("parses double variants", () => {
+    expect(parseCallString("X")).toEqual({ type: "double" });
+    expect(parseCallString("dbl")).toEqual({ type: "double" });
   });
 
-  it("--vuln=ns -> fixed NorthSouth", () => {
-    const cfg = parseScenarioConfig({ vuln: "ns" });
-    expect(cfg.vuln).toEqual({ type: "fixed", value: Vulnerability.NorthSouth });
+  it("parses redouble variants", () => {
+    expect(parseCallString("XX")).toEqual({ type: "redouble" });
+    expect(parseCallString("rdbl")).toEqual({ type: "redouble" });
   });
 
-  it("--opponents=mixed -> mixed with naturalRate 0.5", () => {
-    const cfg = parseScenarioConfig({ opponents: "mixed" });
-    expect(cfg.opponents).toEqual({ type: "mixed", naturalRate: 0.5 });
+  it("parses contract bids", () => {
+    expect(parseCallString("1C")).toEqual({ type: "bid", level: 1, strain: "C" });
+    expect(parseCallString("2H")).toEqual({ type: "bid", level: 2, strain: "H" });
+    expect(parseCallString("3NT")).toEqual({ type: "bid", level: 3, strain: "NT" });
+    expect(parseCallString("7S")).toEqual({ type: "bid", level: 7, strain: "S" });
   });
 
-  it("--opponents=none -> fixed none", () => {
-    const cfg = parseScenarioConfig({ opponents: "none" });
-    expect(cfg.opponents).toEqual({ type: "fixed", value: OpponentMode.None });
-  });
-});
-
-// ── assignSeedScenario ──────────────────────────────────────────────
-
-describe("assignSeedScenario", () => {
-  const fixedConfig: ScenarioConfig = {
-    vuln: { type: "fixed", value: Vulnerability.EastWest },
-    opponents: { type: "fixed", value: OpponentMode.None },
-  };
-
-  const mixedConfig: ScenarioConfig = {
-    vuln: { type: "mixed" },
-    opponents: { type: "mixed", naturalRate: 0.5 },
-  };
-
-  it("fixed config returns the fixed values", () => {
-    const result = assignSeedScenario(123, fixedConfig);
-    expect(result.vulnerability).toBe(Vulnerability.EastWest);
-    expect(result.opponents).toBe("none");
+  it("is case-insensitive", () => {
+    expect(parseCallString("2c")).toEqual({ type: "bid", level: 2, strain: "C" });
+    expect(parseCallString("3nt")).toEqual({ type: "bid", level: 3, strain: "NT" });
   });
 
-  it("mixed config is deterministic (same seed = same result)", () => {
-    const a = assignSeedScenario(42, mixedConfig);
-    const b = assignSeedScenario(42, mixedConfig);
-    expect(a).toEqual(b);
+  it("handles N as NT alias", () => {
+    expect(parseCallString("3N")).toEqual({ type: "bid", level: 3, strain: "NT" });
   });
 
-  it("different seeds can produce different results", () => {
-    const results = new Set<string>();
-    for (let seed = 0; seed < 100; seed++) {
-      const r = assignSeedScenario(seed, mixedConfig);
-      results.add(`${r.vulnerability}|${r.opponents}`);
-    }
-    expect(results.size).toBeGreaterThan(1);
+  it("exits for invalid bid", () => {
+    expect(() => parseCallString("bad")).toThrow("process.exit");
+    expect(exitSpy).toHaveBeenCalledWith(2);
   });
 
-  it("same seed always produces same result across calls", () => {
-    const seed = 0xDEAD;
-    const first = assignSeedScenario(seed, mixedConfig);
-    for (let i = 0; i < 5; i++) {
-      expect(assignSeedScenario(seed, mixedConfig)).toEqual(first);
-    }
+  it("exits for invalid level", () => {
+    expect(() => parseCallString("8C")).toThrow("process.exit");
+    expect(exitSpy).toHaveBeenCalledWith(2);
   });
 });
 
-// ── formatHandBySuit ────────────────────────────────────────────────
+// ── parsePracticeMode ───────────────────────────────────────────────
 
-describe("formatHandBySuit", () => {
-  const hand = {
-    cards: [
-      { suit: "S", rank: "A" },
-      { suit: "S", rank: "K" },
-      { suit: "H", rank: "Q" },
-      { suit: "H", rank: "J" },
-      { suit: "H", rank: "10" },
-      { suit: "D", rank: "9" },
-      { suit: "D", rank: "8" },
-      { suit: "D", rank: "7" },
-      { suit: "D", rank: "6" },
-      { suit: "C", rank: "5" },
-      { suit: "C", rank: "4" },
-      { suit: "C", rank: "3" },
-      { suit: "C", rank: "2" },
-    ],
-  } as any;
-
-  it("groups cards by suit correctly", () => {
-    const result = formatHandBySuit(hand);
-    expect(result.S).toEqual(["A", "K"]);
-    expect(result.H).toEqual(["Q", "J", "10"]);
-    expect(result.D).toEqual(["9", "8", "7", "6"]);
-    expect(result.C).toEqual(["5", "4", "3", "2"]);
+describe("parsePracticeMode", () => {
+  it("returns undefined when no --mode", () => {
+    expect(parsePracticeMode({})).toBeUndefined();
   });
 
-  it("returns rank strings (not card objects)", () => {
-    const result = formatHandBySuit(hand);
-    for (const suit of ["S", "H", "D", "C"]) {
-      for (const rank of result[suit]!) {
-        expect(typeof rank).toBe("string");
-      }
-    }
+  it("parses valid modes", () => {
+    expect(parsePracticeMode({ mode: "decision-drill" })).toBe("decision-drill");
+    expect(parsePracticeMode({ mode: "full-auction" })).toBe("full-auction");
+    expect(parsePracticeMode({ mode: "continuation-drill" })).toBe("continuation-drill");
+  });
+
+  it("exits for invalid mode", () => {
+    expect(() => parsePracticeMode({ mode: "bad" })).toThrow("process.exit");
+    expect(exitSpy).toHaveBeenCalledWith(2);
+  });
+});
+
+// ── parsePracticeRole ───────────────────────────────────────────────
+
+describe("parsePracticeRole", () => {
+  it("returns undefined when no --role", () => {
+    expect(parsePracticeRole({})).toBeUndefined();
+  });
+
+  it("parses valid roles", () => {
+    expect(parsePracticeRole({ role: "opener" })).toBe("opener");
+    expect(parsePracticeRole({ role: "responder" })).toBe("responder");
+    expect(parsePracticeRole({ role: "both" })).toBe("both");
+  });
+
+  it("exits for invalid role", () => {
+    expect(() => parsePracticeRole({ role: "bad" })).toThrow("process.exit");
+    expect(exitSpy).toHaveBeenCalledWith(2);
   });
 });

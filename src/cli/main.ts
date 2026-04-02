@@ -1,22 +1,21 @@
 #!/usr/bin/env -S npx tsx
-// ── Bridge Convention Coverage CLI ──────────────────────────────────
+// ── Bridge Convention CLI ────────────────────────────────────────────
 //
-// Protocol-frame-aware coverage runner for convention evaluation.
+// Session-based CLI for convention evaluation. Uses the same session API
+// as the UI: createSession → startDrill → submitBid.
 //
 // Subcommands:
-//   list      — enumerate all coverage atoms for a bundle
-//   eval      — per-atom evaluation (--atom, optional --bid for grading)
-//   play      — playthrough evaluation (--step, --bid, --reveal)
-//   selftest  — run strategy against itself for all atoms (CI)
-//   plan      — precompute two-phase evaluation plan
 //   bundles   — list all available bundles
-//   describe  — inspect a bundle in detail
-//   verify    — compositional verification (lint, interfere, explore, motif, fuzz, preflight)
+//   modules   — list all available modules
+//   describe  — inspect a bundle and its modules
+//   play      — session-based playthrough (viewport, bid grading)
+//   selftest  — strategy self-consistency check
 
 import { initWasmService, WasmService } from "../service";
-import { parseArgs, parseVulnerability, parseOpponentMode, parseBaseSystem } from "./shared";
-import { runEval } from "./commands/eval";
+import { parseArgs } from "./shared";
+import { runBundles, runModules, runDescribe } from "./commands/info";
 import { runPlay } from "./commands/play";
+import { runSelftest } from "./commands/selftest";
 import { printUsage, printSubcommandHelp } from "./help";
 
 // ── Main dispatch ───────────────────────────────────────────────────
@@ -36,33 +35,26 @@ if (flags["help"] === true || flags["h"] === true) {
   process.exit(0);
 }
 
-const baseSystem = parseBaseSystem(flags);
-
 // ── Service instance (requires WASM) ──────────────────────────────
-// CLI now requires `npm run wasm:build` before running.
 async function main(): Promise<void> {
   await initWasmService();
   const service = new WasmService();
 
   switch (subcommand) {
-    case "eval":
-      await runEval(service, flags, parseVulnerability(flags), baseSystem);
+    case "bundles":
+      await runBundles(service);
+      break;
+    case "modules":
+      await runModules(service);
+      break;
+    case "describe":
+      await runDescribe(service, flags);
       break;
     case "play":
-      await runPlay(service, flags, parseVulnerability(flags), parseOpponentMode(flags), baseSystem);
+      await runPlay(service, flags);
       break;
-    // Commands that depended on the TS backend (list, bundles, systems, describe,
-    // selftest, plan, verify) have been removed. Their functionality is now in
-    // Rust/WASM and will be re-exposed through WasmService methods.
-    case "list":
-    case "bundles":
-    case "systems":
-    case "describe":
     case "selftest":
-    case "plan":
-    case "verify":
-      console.error(`Subcommand "${subcommand}" has been removed — functionality moved to Rust/WASM.`);
-      process.exit(2);
+      await runSelftest(service, flags);
       break;
     default:
       console.error(`Unknown subcommand: "${subcommand}"`);

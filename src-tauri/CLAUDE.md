@@ -42,7 +42,7 @@ crates/
                        the single source of truth for module content.
                        **System fact clause descriptions:** The `description` field on clauses with
                        `system.*` fact IDs is ignored at runtime. The learning viewport
-                       (`bridge-session/src/session/learning_viewport.rs:map_clauses()`) derives
+                       (`bridge-session/src/session/clause_mapper.rs:map_clauses()`) derives
                        system fact descriptions dynamically using `derive_neutral_description()`,
                        which prefers the clause's `rationale` field and falls back to `display_name()`.
                        Editing system fact descriptions in fixture JSON has no UI effect — edit
@@ -58,10 +58,10 @@ crates/
                        Thin hexagonal port between UI/WASM/CLI and game logic. Depends on
                        bridge-engine, bridge-conventions, bridge-session.
   bridge-tauri/        Tauri v2 app — #[tauri::command] handlers wrapping ServicePortImpl
-                       (Mutex-managed state). service_commands.rs has all 23 ServicePort + 6
+                       (Mutex-managed state). service_commands.rs has all 18 ServicePort + 6
                        DevServicePort commands.
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
-                       for browser deployment. All 23 ServicePort methods + 6 DevServicePort
+                       for browser deployment. All 18 ServicePort methods + 6 DevServicePort
                        methods (debug_assertions gated) + load_bundle_defs for paid content.
 ```
 

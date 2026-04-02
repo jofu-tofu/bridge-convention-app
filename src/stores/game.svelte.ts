@@ -32,7 +32,7 @@ import type { ViewportBidGrade } from "../service";
 import { PracticeMode, PlayPreference, PromptMode } from "../service";
 import type { BidFeedbackDTO } from "../service/debug-types";
 import { isValidTransition, resolveTransition } from "../service";
-import type { GamePhase, ViewportNeeded } from "../service";
+import type { GamePhase, ViewportNeeded, PhaseEvent, ServiceAction, TransitionResult, PromptAcceptResult } from "../service";
 import { delay } from "../service";
 import { formatError } from "../service/util/format-error";
 import { computePromptMode, computeFaceUpSeats } from "./prompt-logic";
@@ -255,17 +255,13 @@ export function createGameStore(
     if (!desc.chainedEvent) return true; // "prompt" mode — stay at DECLARER_PROMPT
 
     if (desc.chainedEvent.type === "ACCEPT_PLAY") {
-      await acceptPrompt();
+      const seat = effectiveUserSeat ?? userSeat ?? Seat.South;
+      await dispatchPlayTransition(handle, { type: "ACCEPT_PLAY", seat });
       return activeHandle === handle;
     }
     if (desc.chainedEvent.type === "DECLINE_PLAY") {
-      try {
-        await activeService.acceptPrompt(handle, "skip");
-      } catch (err) {
-        console.error("auto-skip acceptPrompt failed:", err);
-      }
-      transitionToExplanation();
-      return true;
+      await executeTransition(handle, { type: "DECLINE_PLAY" });
+      return activeHandle === handle;
     }
     return true;
   }
@@ -312,6 +308,98 @@ export function createGameStore(
     return true;
   }
 
+  // ── Unified lifecycle executor ─────────────────────────────────
+
+  function resetPlayState(): void {
+    playPhase.play.aborted = false;
+    playPhase.animatedTrickOverride = null;
+    playPhase.play.score = null;
+    playPhase.play.showingTrickResult = false;
+    playPhase.play.processing = false;
+    playPhase.play.log = [];
+    playPhase.play.suggestions = [];
+  }
+
+  async function executeServiceAction(
+    handle: SessionHandle,
+    action: ServiceAction,
+  ): Promise<PromptAcceptResult | void> {
+    switch (action.type) {
+      case "acceptPrompt":
+        return activeService.acceptPrompt(handle, action.mode, action.seat);
+      case "skipToReview":
+        return activeService.skipToReview(handle);
+    }
+  }
+
+  async function executeTransition(
+    handle: SessionHandle,
+    event: PhaseEvent,
+  ): Promise<TransitionResult> {
+    const cancelled = (): TransitionResult => ({ serviceResult: null, completed: false });
+
+    const desc = resolveTransition(phase, event);
+    if (!desc.targetPhase) {
+      // No-op descriptor (e.g. PROMPT_ENTERED with "prompt" mode) — check for chained event
+      if (desc.chainedEvent) {
+        return executeTransition(handle, desc.chainedEvent);
+      }
+      return { serviceResult: null, completed: true };
+    }
+
+    // 1. Reset play state if needed
+    if (desc.resetPlay) resetPlayState();
+
+    // 2. Run service actions
+    let lastResult: PromptAcceptResult | null = null;
+    for (const action of desc.serviceActions) {
+      const result = await executeServiceAction(handle, action);
+      if (activeHandle !== handle) return cancelled();
+      if (result && typeof result === "object" && "phase" in result) {
+        lastResult = result;
+      }
+    }
+
+    // 3. Fetch viewports
+    for (const vp of desc.viewportsNeeded) {
+      await fetchAndCacheViewport(handle, vp);
+      if (activeHandle !== handle) return cancelled();
+    }
+
+    // 4. Phase transitions — intermediate phases first, then target
+    for (const p of desc.intermediatePhases) {
+      transitionTo(p);
+    }
+    // Skip transitionTo when target === current phase (e.g. RESTART_PLAY: PLAYING → PLAYING)
+    if (desc.targetPhase !== phase) {
+      transitionTo(desc.targetPhase);
+    }
+
+    // 5. Side effects
+    if (desc.triggerDDS) void triggerDDSSolve();
+
+    // 6. Chained event
+    if (desc.chainedEvent) {
+      return executeTransition(handle, desc.chainedEvent);
+    }
+
+    return { serviceResult: lastResult, completed: true };
+  }
+
+  async function dispatchPlayTransition(
+    handle: SessionHandle,
+    event: PhaseEvent,
+  ): Promise<void> {
+    const { serviceResult, completed } = await executeTransition(handle, event);
+    if (!completed) return;
+    const aiPlays = serviceResult?.aiPlays ?? [];
+    if (aiPlays.length > 0) {
+      const { ok } = await playPhase.animateAiPlays(handle, [...aiPlays], []);
+      if (!ok) return;
+    }
+    void playPhase.fetchPlaySuggestions(handle);
+  }
+
   // ── Bidding sub-module ────────────────────────────────────────
 
   const biddingPhase = createBiddingPhase({
@@ -337,14 +425,6 @@ export function createGameStore(
       throw new Error(msg);
     }
     return false;
-  }
-
-  function transitionToExplanation() {
-    if (!transitionTo("EXPLANATION")) return;
-    if (activeHandle) {
-      void triggerDDSSolve();
-    }
-    void refreshViewport();
   }
 
   /** Determine the current prompt mode from game state. */
@@ -388,84 +468,38 @@ export function createGameStore(
     getActiveService: () => activeService,
     getPlayingViewport: () => viewports.playing,
     setPlayingViewport: (vp) => { viewports.playing = vp; },
-    transitionToExplanation,
+    dispatchEvent: (handle, event) => executeTransition(handle, event),
     delayFn,
   });
 
   // ── Play phase transitions ────────────────────────────────────
 
-  async function acceptPlay(seatOverride?: Seat) {
+  async function acceptPromptAction(): Promise<void> {
     if (!contract || phase !== "DECLARER_PROMPT") return;
     if (!activeHandle) return;
-    const seat = seatOverride ?? effectiveUserSeat ?? userSeat ?? Seat.South;
-    effectiveUserSeat = seat;
     const handle = activeHandle;
-
-    try {
-      // Accept prompt on service side (initializes play state + runs initial AI plays)
-      const result = await activeService.acceptPrompt(handle, "play", seat);
-      if (activeHandle !== handle) return;
-
-      // Load viewport before transitioning phase so GameScreen has data to render
-      const playingVp = await activeService.getPlayingViewport(handle);
-      if (activeHandle !== handle) return;
-
-      if (!transitionTo("PLAYING")) return;
-      playPhase.play.aborted = false;
-      playPhase.animatedTrickOverride = null;
-      playPhase.play.score = null;
-      playPhase.play.showingTrickResult = false;
-      playPhase.play.processing = false;
-      playPhase.play.log = [];
-      viewports.playing = playingVp;
-
-      // Animate AI plays from the result
-      const aiPlays = result.aiPlays ?? [];
-      if (aiPlays.length > 0) {
-        const { ok } = await playPhase.animateAiPlays(handle, [...aiPlays], []);
-        if (!ok) return;
-      }
-
-      // Fetch play suggestions for the user's first turn
-      void playPhase.fetchPlaySuggestions(handle);
-    } catch (err) {
-      console.error('acceptPlay failed:', err);
-    }
-  }
-
-  function declinePlay() {
-    if (phase !== "DECLARER_PROMPT") return;
-    void (async () => {
-      try {
-        await activeService.acceptPrompt(activeHandle!, "skip");
-      } catch (err) {
-        console.error('acceptPrompt (skip) failed:', err);
-      }
-    })();
-    transitionToExplanation();
-  }
-
-  function acceptDeclarerSwap() {
-    if (!contract) return;
-    acceptPlay(contract.declarer);
-  }
-  function declineDeclarerSwap() { declinePlay(); }
-  function acceptDefend() { acceptPlay(); }
-  function declineDefend() { declinePlay(); }
-  function acceptSouthPlay() { acceptPlay(); }
-  function declineSouthPlay() { declinePlay(); }
-
-  function acceptPrompt() {
-    if (!contract || phase !== "DECLARER_PROMPT") return;
     const mode = getPromptMode();
-    if (mode === PromptMode.DeclarerSwap) {
-      return acceptPlay(contract.declarer);
-    } else {
-      return acceptPlay();
-    }
+    const seat = mode === PromptMode.DeclarerSwap
+      ? contract.declarer
+      : (effectiveUserSeat ?? userSeat ?? Seat.South);
+    effectiveUserSeat = seat;
+    await dispatchPlayTransition(handle, { type: "ACCEPT_PLAY", seat });
   }
 
-  function declinePrompt() { declinePlay(); }
+  async function declinePromptAction(): Promise<void> {
+    if (phase !== "DECLARER_PROMPT") return;
+    if (!activeHandle) return;
+    await executeTransition(activeHandle, { type: "DECLINE_PLAY" });
+  }
+
+  function acceptDeclarerSwap() { void acceptPromptAction(); }
+  function declineDeclarerSwap() { void declinePromptAction(); }
+  function acceptDefend() { void acceptPromptAction(); }
+  function declineDefend() { void declinePromptAction(); }
+  function acceptSouthPlay() { void acceptPromptAction(); }
+  function declineSouthPlay() { void declinePromptAction(); }
+  function acceptPrompt() { return acceptPromptAction(); }
+  function declinePrompt() { return declinePromptAction(); }
 
   // ── Reset ─────────────────────────────────────────────────────
 
@@ -497,60 +531,27 @@ export function createGameStore(
 
   // ── Lifecycle inner functions (guarded at the public boundary) ──
 
-  function skipToReviewImpl() {
+  async function skipToReviewAction(): Promise<void> {
     playPhase.play.aborted = true;
-    if (activeHandle) {
-      activeService.skipToReview(activeHandle)
-        .then(() => transitionToExplanation())
-        .catch((err) => { console.error('skipToReview failed:', err); });
-    }
+    if (!activeHandle) return;
+    await executeTransition(activeHandle, { type: "SKIP_TO_REVIEW" });
   }
 
-  function restartPlayImpl() {
+  async function restartPlayAction(): Promise<void> {
     if (!contract || phase !== "PLAYING") return;
     if (!activeHandle) return;
-    const handle = activeHandle;
-
-    // Cancel in-flight animations (keep stale viewport to avoid UI flash)
+    // Cancel in-flight animations before restart
     playPhase.play.aborted = true;
-    playPhase.play.score = null;
-    playPhase.play.showingTrickResult = false;
-    playPhase.play.processing = false;
-    playPhase.play.log = [];
-    playPhase.play.suggestions = [];
     playPhase.animatedTrickOverride = null;
-
-    void (async () => {
-      try {
-        playPhase.play.aborted = false;
-        const result = await activeService.acceptPrompt(handle, "restart");
-        if (activeHandle !== handle) return;
-
-        // Show play table
-        viewports.playing = await activeService.getPlayingViewport(handle);
-        if (activeHandle !== handle) return;
-
-        // Animate AI plays from the result
-        const aiPlays = result.aiPlays ?? [];
-        if (aiPlays.length > 0) {
-          const { ok } = await playPhase.animateAiPlays(handle, [...aiPlays], []);
-          if (!ok) return;
-        }
-
-        void playPhase.fetchPlaySuggestions(handle);
-      } catch (err) {
-        console.error('restartPlay failed:', err);
-      }
-    })();
+    await dispatchPlayTransition(activeHandle, { type: "RESTART_PLAY" });
   }
 
-  function playThisHandImpl() {
-    // contract is auto-derived from viewports — always in sync.
+  async function playThisHandAction(): Promise<void> {
     if (!contract) return;
     if (phase !== "EXPLANATION") return;
     if (!activeHandle) return;
     const handle = activeHandle;
-    const currentContract = contract; // capture before resetPlay clears viewports
+    const currentContract = contract;
     resetPlay();
     effectiveUserSeat = userSeat;
     dds = freshDDSState();
@@ -558,44 +559,11 @@ export function createGameStore(
     // Determine seat: if partner declares, play as declarer (swap); otherwise keep user seat
     const declarer = currentContract.declarer;
     const seat = (declarer !== userSeat && partnerSeat(declarer) === userSeat)
-      ? declarer  // declarer-swap: play as declarer from partner's seat
+      ? declarer
       : effectiveUserSeat ?? userSeat ?? Seat.South;
     effectiveUserSeat = seat;
 
-    // Go straight to PLAYING — skip DECLARER_PROMPT UI
-    if (!transitionTo("DECLARER_PROMPT")) return; // service needs EXPLANATION → DECLARER_PROMPT first
-    if (!transitionTo("PLAYING")) return;
-    playPhase.play.aborted = false;
-    playPhase.animatedTrickOverride = null;
-    playPhase.play.score = null;
-    playPhase.play.showingTrickResult = false;
-    playPhase.play.processing = false;
-    playPhase.play.log = [];
-
-    void (async () => {
-      try {
-        // Transition service: EXPLANATION → DECLARER_PROMPT → PLAYING
-        await activeService.acceptPrompt(handle, "replay");
-        if (activeHandle !== handle) return;
-        const result = await activeService.acceptPrompt(handle, "play", seat);
-        if (activeHandle !== handle) return;
-
-        // Show play table
-        viewports.playing = await activeService.getPlayingViewport(handle);
-        if (activeHandle !== handle) return;
-
-        // Animate AI plays from the result
-        const aiPlays = result.aiPlays ?? [];
-        if (aiPlays.length > 0) {
-          const { ok } = await playPhase.animateAiPlays(handle, [...aiPlays], []);
-          if (!ok) return;
-        }
-
-        void playPhase.fetchPlaySuggestions(handle);
-      } catch (err) {
-        console.error('playThisHand failed:', err);
-      }
-    })();
+    await dispatchPlayTransition(handle, { type: "PLAY_THIS_HAND", seat });
   }
 
   async function startDrillFromHandleImpl(handle: SessionHandle, drillService?: DevServicePort) {
@@ -858,14 +826,14 @@ export function createGameStore(
       playPhase.userPlayCardViaService(card, seat).catch((err) => { console.error('userPlayCard failed:', err); });
     },
 
-    skipToReview: guarded(skipToReviewImpl),
-    restartPlay: guarded(restartPlayImpl),
-    playThisHand: guarded(playThisHandImpl),
+    skipToReview: guarded(skipToReviewAction),
+    restartPlay: guarded(restartPlayAction),
+    playThisHand: guarded(playThisHandAction),
     startDrillFromHandle: startDrillFromHandleImpl,
     startNewDrill: startNewDrillImpl,
 
-    acceptPlay: guarded(acceptPlay),
-    declinePlay: guarded(declinePlay),
+    acceptPlay: guarded(acceptPromptAction),
+    declinePlay: guarded(declinePromptAction),
     acceptPrompt: guarded(acceptPrompt),
     declinePrompt: guarded(declinePrompt),
     acceptDeclarerSwap: guarded(acceptDeclarerSwap),
@@ -920,7 +888,7 @@ export function createGameStore(
 
       if (targetPhase === "review") {
         if (phase === "DECLARER_PROMPT") {
-          declinePrompt(); // skip to review
+          await declinePromptAction();
         }
         // Ensure the explanation viewport is loaded before returning, so the
         // review screen renders immediately without a momentary blank flash.

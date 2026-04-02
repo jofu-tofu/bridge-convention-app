@@ -341,11 +341,10 @@
                             {/if}
                             <span class="text-xs text-text-muted">{disclosureLabel(surface.disclosure)}</span>
                             {#if surface.clauses.some((c) => c.systemVariants)}
-                              {@const firstVariantClause = surface.clauses.find((c) => c.systemVariants)!}
                               <button
                                 class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-400 cursor-pointer hover:bg-amber-500/25 transition-colors"
-                                aria-label="Show per-system details"
-                                onclick={(e) => showVariance(e, firstVariantClause.systemVariants!, firstVariantClause.relevantMetric ?? "hcp")}
+                                title="Some requirements depend on the system"
+                                onclick={() => expandedClauses.add(surface.meaningId)}
                               >
                                 varies by system
                                 <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-70" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>

@@ -64,7 +64,8 @@ export function listModules(): ModuleCatalogEntry[] {
 export function getModuleLearningViewportSync(moduleId: string): { teaching: { principle: string | null; tradeoff: string | null; commonMistakes: readonly string[] } } | null {
   try {
     return getSyncPort().get_module_learning_viewport(moduleId) as { teaching: { principle: string | null; tradeoff: string | null; commonMistakes: readonly string[] } } | null;
-  } catch {
+  } catch (e) {
+    console.warn("getModuleLearningViewportSync failed for", moduleId, e);
     return null;
   }
 }

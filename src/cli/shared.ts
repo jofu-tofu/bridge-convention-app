@@ -1,58 +1,17 @@
 // ── CLI shared utilities ────────────────────────────────────────────
 //
 // Pure functions shared across CLI subcommands: argument parsing,
-// settings resolution, spec/bundle lookup, deal generation,
-// auction construction, hand formatting, and viewport construction.
+// settings resolution, call parsing.
 
-import { generateDeal } from "../engine/deal-generator";
-import { mulberry32 } from "../engine/seeded-rng";
-import { evaluateHand } from "../engine/hand-evaluator";
-import { callKey } from "../engine/call-helpers";
-import { Seat, Vulnerability } from "../engine/types";
-import type {
-  Auction,
-  Call,
-  Hand,
-  Deal,
-  DealConstraints,
-  Card,
-} from "../engine/types";
-import {
-  OpponentMode,
-  createBiddingContext,
-} from "../service/session-types";
-import type { BaseSystemId, BiddingContext } from "../service/session-types";
-
-// ── Stub types for convention catalog (now in Rust/WASM) ────────────
-// These were formerly imported from conventions/. The CLI commands that
-// depend on the full TS backend (info, selftest, plan, verify) have been
-// removed. Remaining stubs support shared.ts functions that are still used.
-
-export interface ConventionSpec {
-  readonly id: string;
-  readonly modules?: readonly unknown[];
-  suggest(context: BiddingContext): { call: Call; ruleName: string | null; explanation: string } | null;
-}
-
-export interface ConventionBundle {
-  readonly id: string;
-  readonly name: string;
-  readonly description?: string;
-  readonly category?: string;
-  readonly internal?: boolean;
-  readonly modules?: readonly unknown[];
-  readonly dealConstraints: DealConstraints;
-  readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
-}
-
-const BASE_SYSTEM_SAYC: BaseSystemId = "sayc";
-const BASE_SYSTEM_ACOL: BaseSystemId = "acol";
+import { Vulnerability, BidSuit } from "../engine/types";
+import type { Call } from "../engine/types";
+import { OpponentMode, PracticeMode, PracticeRole } from "../service/session-types";
+import type { BaseSystemId } from "../service/session-types";
 
 // ── Re-exports for convenience ──────────────────────────────────────
 
-export { Seat, Vulnerability };
-export { callKey };
-export type { Auction, Call, Deal, OpponentMode, BaseSystemId };
+export { Vulnerability };
+export type { Call, OpponentMode, BaseSystemId };
 
 // ── Flags type ──────────────────────────────────────────────────────
 
@@ -115,6 +74,9 @@ export function parseVulnerability(args: Flags): Vulnerability {
   return mapped;
 }
 
+const BASE_SYSTEM_SAYC: BaseSystemId = "sayc";
+const BASE_SYSTEM_ACOL: BaseSystemId = "acol";
+
 const SYSTEM_MAP: Record<string, BaseSystemId> = {
   sayc: BASE_SYSTEM_SAYC,
   "two-over-one": "two-over-one",
@@ -140,182 +102,58 @@ export function parseOpponentMode(args: Flags): OpponentMode {
   process.exit(2);
 }
 
-// ── Per-seed scenario config (plan command) ─────────────────────────
-//
-// "fixed"  — every seed uses the same vulnerability / opponent mode.
-// "mixed"  — each seed gets a deterministic assignment drawn from a
-//            uniform distribution (vulnerability × opponents).
+// ── Call parsing ────────────────────────────────────────────────────
 
-export type VulnMode =
-  | { type: "fixed"; value: Vulnerability }
-  | { type: "mixed" };
+const STRAIN_MAP: Record<string, BidSuit> = { C: BidSuit.Clubs, D: BidSuit.Diamonds, H: BidSuit.Hearts, S: BidSuit.Spades, NT: BidSuit.NoTrump, N: BidSuit.NoTrump };
 
-export type OpponentsModeConfig =
-  | { type: "fixed"; value: OpponentMode }
-  | { type: "mixed"; naturalRate: number };
-
-export interface ScenarioConfig {
-  vuln: VulnMode;
-  opponents: OpponentsModeConfig;
-}
-
-export function parseScenarioConfig(args: Flags): ScenarioConfig {
-  // Vulnerability
-  let vuln: VulnMode;
-  const vulnVal = args["vuln"];
-  if (vulnVal === undefined || vulnVal === true) {
-    vuln = { type: "fixed", value: Vulnerability.None };
-  } else if (typeof vulnVal === "string" && vulnVal.toLowerCase() === "mixed") {
-    vuln = { type: "mixed" };
-  } else if (typeof vulnVal === "string") {
-    const mapped = VULN_MAP[vulnVal.toLowerCase()];
-    if (mapped === undefined) {
-      console.error(`Invalid --vuln value: "${vulnVal}" (expected: none, ns, ew, both, mixed)`);
-      process.exit(2);
-    }
-    vuln = { type: "fixed", value: mapped };
-  } else {
-    vuln = { type: "fixed", value: Vulnerability.None };
-  }
-
-  // Opponents
-  let opponents: OpponentsModeConfig;
-  const oppVal = args["opponents"];
-  if (oppVal === undefined || oppVal === true) {
-    opponents = { type: "fixed", value: OpponentMode.Natural };
-  } else if (typeof oppVal === "string" && oppVal.toLowerCase() === "mixed") {
-    opponents = { type: "mixed", naturalRate: 0.5 };
-  } else if (oppVal === (OpponentMode.Natural as string) || oppVal === (OpponentMode.None as string)) {
-    opponents = { type: "fixed", value: oppVal as OpponentMode };
-  } else {
-    console.error(`Invalid --opponents value: "${oppVal}" (expected: natural, none, mixed)`);
+/** Parse a bid string like "2C", "P", "X", "XX" into a Call object. */
+export function parseCallString(s: string): Call {
+  const upper = s.toUpperCase().trim();
+  if (upper === "P" || upper === "PASS") return { type: "pass" };
+  if (upper === "X" || upper === "DBL" || upper === "DOUBLE") return { type: "double" };
+  if (upper === "XX" || upper === "RDBL" || upper === "REDOUBLE") return { type: "redouble" };
+  const match = upper.match(/^([1-7])(C|D|H|S|NT|N)$/);
+  if (!match) {
+    console.error(`Invalid bid: "${s}" (expected: P, X, XX, or 1C..7NT)`);
     process.exit(2);
   }
-
-  return { vuln, opponents };
+  const level = Number(match[1]) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  const strain = STRAIN_MAP[match[2]!]!;
+  return { type: "bid", level, strain };
 }
 
-/** Deterministically assign a (vulnerability, opponents) pair to a seed.
- *  Uses an RNG offset from the deal-generation RNG to avoid correlation. */
-export function assignSeedScenario(
-  seed: number,
-  config: ScenarioConfig,
-  _userSeat: Seat = Seat.South,
-): { vulnerability: Vulnerability; opponents: OpponentMode } {
-  const vulnerability = config.vuln.type === "fixed"
-    ? config.vuln.value
-    : pickVulnUniform(mulberry32(seed ^ 0x5C3A_410F)());
+// ── Practice mode/role parsing ──────────────────────────────────────
 
-  const opponents = config.opponents.type === "fixed"
-    ? config.opponents.value
-    : (mulberry32(seed ^ 0xA7E2_B93D)() < config.opponents.naturalRate ? OpponentMode.Natural : OpponentMode.None);
+const PRACTICE_MODE_MAP: Record<string, PracticeMode> = {
+  "decision-drill": PracticeMode.DecisionDrill,
+  "full-auction": PracticeMode.FullAuction,
+  "continuation-drill": PracticeMode.ContinuationDrill,
+};
 
-  return { vulnerability, opponents };
-}
-
-/** Pick a vulnerability from a uniform distribution over all 4 states. */
-function pickVulnUniform(roll: number): Vulnerability {
-  if (roll < 0.25) return Vulnerability.None;
-  if (roll < 0.50) return Vulnerability.NorthSouth;
-  if (roll < 0.75) return Vulnerability.EastWest;
-  return Vulnerability.Both;
-}
-
-// ── Resolve spec + bundle (stubs — catalog is now in Rust/WASM) ─────
-// The CLI commands that used these (info, selftest, plan, verify) have
-// been removed. These stubs remain for compilation but throw at runtime.
-
-export function printAvailableBundles(): void {
-  console.error("  (bundle catalog is now in Rust/WASM — use WasmService)");
-}
-
-export function resolveSpec(bundleId: string, _baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionSpec {
-  throw new Error(`resolveSpec("${bundleId}"): convention catalog has moved to Rust/WASM`);
-}
-
-function resolveBundle(bundleId: string, _baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionBundle {
-  throw new Error(`resolveBundle("${bundleId}"): convention catalog has moved to Rust/WASM`);
-}
-
-// ── Deal generation ─────────────────────────────────────────────────
-
-export function generateSeededDeal(
-  bundle: ConventionBundle,
-  seed: number,
-  vulnerability?: Vulnerability,
-): Deal {
-  const rng = mulberry32(seed);
-  const constraints: DealConstraints = {
-    ...bundle.dealConstraints,
-    ...(vulnerability !== undefined ? { vulnerability } : {}),
-  };
-  const result = generateDeal(constraints, rng);
-  return result.deal;
-}
-
-// ── Auction + context setup ─────────────────────────────────────────
-
-export function resolveUserSeat(bundle: ConventionBundle, deal: Deal): Seat {
-  const candidates: Seat[] = [Seat.South, Seat.East, Seat.North, Seat.West];
-  for (const seat of candidates) {
-    if (bundle.defaultAuction) {
-      const auction = bundle.defaultAuction(seat, deal);
-      if (auction && auction.entries.length > 0) {
-        return seat;
-      }
-    }
+export function parsePracticeMode(args: Flags): PracticeMode | undefined {
+  const val = args["mode"];
+  if (val === undefined || val === true) return undefined;
+  const mapped = PRACTICE_MODE_MAP[val.toLowerCase()];
+  if (mapped === undefined) {
+    console.error(`Invalid --mode value: "${val}" (expected: decision-drill, full-auction, continuation-drill)`);
+    process.exit(2);
   }
-  return Seat.South;
+  return mapped;
 }
 
-export function buildInitialAuction(
-  bundle: ConventionBundle,
-  userSeat: Seat,
-  deal: Deal,
-): Auction {
-  if (bundle.defaultAuction) {
-    const auction = bundle.defaultAuction(userSeat, deal);
-    if (auction) return auction;
+const PRACTICE_ROLE_MAP: Record<string, PracticeRole> = {
+  opener: PracticeRole.Opener,
+  responder: PracticeRole.Responder,
+  both: PracticeRole.Both,
+};
+
+export function parsePracticeRole(args: Flags): PracticeRole | undefined {
+  const val = args["role"];
+  if (val === undefined || val === true) return undefined;
+  const mapped = PRACTICE_ROLE_MAP[val.toLowerCase()];
+  if (mapped === undefined) {
+    console.error(`Invalid --role value: "${val}" (expected: opener, responder, both)`);
+    process.exit(2);
   }
-  return { entries: [], isComplete: false };
+  return mapped;
 }
-
-export function buildContext(
-  hand: Hand,
-  auction: Auction,
-  seat: Seat,
-  vulnerability: Vulnerability = Vulnerability.None,
-): BiddingContext {
-  const evaluation = evaluateHand(hand);
-  return createBiddingContext({
-    hand,
-    auction,
-    seat,
-    evaluation,
-    vulnerability,
-    dealer: auction.entries.length > 0 ? auction.entries[0]!.seat : Seat.North,
-  });
-}
-
-// ── Hand formatting ─────────────────────────────────────────────────
-
-export function formatHandBySuit(hand: Hand): Record<string, string[]> {
-  const suits: Record<string, Card[]> = { S: [], H: [], D: [], C: [] };
-  for (const card of hand.cards) {
-    suits[card.suit]!.push(card);
-  }
-  return {
-    S: suits.S!.map((c) => c.rank),
-    H: suits.H!.map((c) => c.rank),
-    D: suits.D!.map((c) => c.rank),
-    C: suits.C!.map((c) => c.rank),
-  };
-}
-
-/** Resolve a ConventionBundle with modules for rule enumeration.
- *  Stub — convention catalog has moved to Rust/WASM. */
-export function resolveBundleWithRules(bundleId: string, baseSystem: BaseSystemId = BASE_SYSTEM_SAYC): ConventionBundle {
-  return resolveBundle(bundleId, baseSystem);
-}
-
-

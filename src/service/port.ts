@@ -6,9 +6,8 @@
  * debug panels cast to DevServicePort.
  */
 
-import type { Call, Card, Seat, Vulnerability } from "../engine/types";
+import type { Call, Card, Seat } from "../engine/types";
 import type { PlayProfileId } from "./session-types";
-import type { OpponentMode } from "./session-types";
 import type {
   SessionHandle,
   SessionConfig,
@@ -36,7 +35,6 @@ import type {
   ServiceDebugLogEntry,
   PlaySuggestions,
 } from "./debug-types";
-import type { AtomGradeResult, PlaythroughHandle, PlaythroughGradeResult } from "./session-types";
 
 /** Production service interface — all methods return Promise<T>. */
 interface ServicePort {
@@ -71,13 +69,6 @@ interface ServicePort {
 
   // ── DDS analysis ────────────────────────────────────────────────
   getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult>;
-
-  // ── Stateless evaluation ────────────────────────────────────────
-  evaluateAtom(bundleId: string, atomId: string, seed: number, vuln?: Vulnerability, baseSystem?: string): Promise<BiddingViewport>;
-  gradeAtom(bundleId: string, atomId: string, seed: number, bid: string, vuln?: Vulnerability, baseSystem?: string): Promise<AtomGradeResult>;
-  startPlaythrough(bundleId: string, seed: number, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string): Promise<{ handle: PlaythroughHandle; firstStep: BiddingViewport | null }>;
-  getPlaythroughStep(bundleId: string, seed: number, stepIdx: number, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string): Promise<BiddingViewport>;
-  gradePlaythroughBid(bundleId: string, seed: number, stepIdx: number, bid: string, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string): Promise<PlaythroughGradeResult>;
 
   // ── Convention catalog ──────────────────────────────────────────
   listConventions(): Promise<ConventionInfo[]>;

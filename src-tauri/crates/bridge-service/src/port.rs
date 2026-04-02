@@ -16,7 +16,8 @@ use crate::evaluation::types::{AtomGradeResult, PlaythroughGradeResult, Playthro
 use crate::request_types::{SessionConfig, SessionHandle};
 use crate::response_types::{
     BidSubmitResult, ConventionInfo, DDSolutionResult, DrillStartResult,
-    PromptAcceptResult, ServicePublicBeliefState,
+    InferenceTimelineEntryDTO, PlaySuggestionsDTO, PromptAcceptResult,
+    ServiceDebugLogEntryDTO, ServiceDebugSnapshotDTO, ServicePublicBeliefState,
 };
 
 /// Production service interface — all methods synchronous.
@@ -153,16 +154,16 @@ pub trait DevServicePort: ServicePort {
     fn get_expected_bid(&self, handle: &str) -> Result<Option<Call>, ServiceError>;
 
     /// Get a debug snapshot of the current session state.
-    fn get_debug_snapshot(&self, handle: &str) -> Result<serde_json::Value, ServiceError>;
+    fn get_debug_snapshot(&self, handle: &str) -> Result<ServiceDebugSnapshotDTO, ServiceError>;
 
     /// Get the debug log (list of events).
-    fn get_debug_log(&self, handle: &str) -> Result<Vec<serde_json::Value>, ServiceError>;
+    fn get_debug_log(&self, handle: &str) -> Result<Vec<ServiceDebugLogEntryDTO>, ServiceError>;
 
     /// Get the inference timeline.
-    fn get_inference_timeline(&self, handle: &str) -> Result<Vec<serde_json::Value>, ServiceError>;
+    fn get_inference_timeline(&self, handle: &str) -> Result<Vec<InferenceTimelineEntryDTO>, ServiceError>;
 
     /// Get play suggestions from heuristic chain.
-    fn get_play_suggestions(&self, handle: &str) -> Result<serde_json::Value, ServiceError>;
+    fn get_play_suggestions(&self, handle: &str) -> Result<PlaySuggestionsDTO, ServiceError>;
 
     /// Get the convention name for the active session.
     fn get_convention_name(&self, handle: &str) -> Result<String, ServiceError>;

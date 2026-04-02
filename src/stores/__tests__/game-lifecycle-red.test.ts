@@ -95,11 +95,6 @@ function createMockService(): DevServicePort {
     getModuleLearningViewport: vi.fn().mockResolvedValue(null),
     getBundleFlowTree: vi.fn().mockResolvedValue(null),
     getModuleFlowTree: vi.fn().mockResolvedValue(null),
-    evaluateAtom: vi.fn().mockRejectedValue(new Error("stub")),
-    gradeAtom: vi.fn().mockRejectedValue(new Error("stub")),
-    startPlaythrough: vi.fn().mockRejectedValue(new Error("stub")),
-    getPlaythroughStep: vi.fn().mockRejectedValue(new Error("stub")),
-    gradePlaythroughBid: vi.fn().mockRejectedValue(new Error("stub")),
     // DevServicePort methods
     getExpectedBid: vi.fn().mockResolvedValue(null),
     getDebugSnapshot: vi.fn().mockResolvedValue({}),
@@ -353,5 +348,150 @@ describe("game store lifecycle (RED tests)", () => {
     // Service acceptPrompt should NOT have been called
     expect(mockService.acceptPrompt).not.toHaveBeenCalled();
     expect(store.phase).toBe("BIDDING");
+  });
+
+  // ── Executor transition tests ──────────────────────────────────
+
+  async function drillToDeclarerPrompt(store: ReturnType<typeof createGameStore>, svc: DevServicePort) {
+    (svc.submitBid as ReturnType<typeof vi.fn>).mockResolvedValue({
+      accepted: true, grade: "correct", feedback: null, teaching: null,
+      aiBids: [], nextViewport: MOCK_BIDDING_VP,
+      phaseTransition: { from: "BIDDING", to: "DECLARER_PROMPT" },
+      userHistoryEntry: null,
+    });
+    (svc.getDeclarerPromptViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
+      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
+      declarerSeat: Seat.North, userSeat: Seat.South,
+    });
+    await store.startDrillFromHandle("session-1");
+    store.userBid({ type: "pass" });
+    await vi.waitFor(() => { expect(store.phase).toBe("DECLARER_PROMPT"); });
+  }
+
+  it("ACCEPT_PLAY calls service, fetches viewport, transitions to PLAYING", async () => {
+    const store = createGameStore(mockService, { delayFn: () => Promise.resolve() });
+    await drillToDeclarerPrompt(store, mockService);
+
+    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
+    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
+      tricks: [], currentTrick: [], currentPlayer: Seat.West,
+      declarerTricksWon: 0, defenderTricksWon: 0,
+      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
+      legalPlays: [], userControlledSeats: [Seat.South], remainingCards: {},
+    });
+
+    store.acceptPrompt();
+    await vi.waitFor(() => {
+      expect(store.phase).toBe("PLAYING");
+      expect(mockService.acceptPrompt).toHaveBeenCalledWith("session-1", "play", expect.any(String));
+      expect(mockService.getPlayingViewport).toHaveBeenCalled();
+    });
+  });
+
+  it("DECLINE_PLAY calls service, transitions to EXPLANATION", async () => {
+    const store = createGameStore(mockService, { delayFn: () => Promise.resolve() });
+    await drillToDeclarerPrompt(store, mockService);
+
+    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "EXPLANATION" });
+    (mockService.getExplanationViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
+      contract: null, bidHistory: [], explanationEntries: [],
+    });
+
+    store.declinePrompt();
+    await vi.waitFor(() => {
+      expect(store.phase).toBe("EXPLANATION");
+      expect(mockService.acceptPrompt).toHaveBeenCalledWith("session-1", "skip", undefined);
+      expect(mockService.getExplanationViewport).toHaveBeenCalled();
+    });
+  });
+
+  it("SKIP_TO_REVIEW calls skipToReview service, transitions to EXPLANATION", async () => {
+    const store = createGameStore(mockService, { delayFn: () => Promise.resolve() });
+    await drillToDeclarerPrompt(store, mockService);
+
+    // First get to PLAYING
+    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
+    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
+      tricks: [], currentTrick: [], currentPlayer: Seat.West,
+      declarerTricksWon: 0, defenderTricksWon: 0,
+      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
+      legalPlays: [], userControlledSeats: [Seat.South], remainingCards: {},
+    });
+    store.acceptPrompt();
+    await vi.waitFor(() => { expect(store.phase).toBe("PLAYING"); });
+
+    (mockService.getExplanationViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
+      contract: null, bidHistory: [], explanationEntries: [],
+    });
+
+    store.skipToReview();
+    await vi.waitFor(() => {
+      expect(store.phase).toBe("EXPLANATION");
+      expect(mockService.skipToReview).toHaveBeenCalledWith("session-1");
+    });
+  });
+
+  it("RESTART_PLAY stays in PLAYING, refreshes viewport", async () => {
+    const store = createGameStore(mockService, { delayFn: () => Promise.resolve() });
+    await drillToDeclarerPrompt(store, mockService);
+
+    // Get to PLAYING first
+    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
+    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
+      tricks: [], currentTrick: [], currentPlayer: Seat.West,
+      declarerTricksWon: 0, defenderTricksWon: 0,
+      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
+      legalPlays: [], userControlledSeats: [Seat.South], remainingCards: {},
+    });
+    store.acceptPrompt();
+    await vi.waitFor(() => { expect(store.phase).toBe("PLAYING"); });
+
+    // Reset mocks to track restart calls
+    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockClear();
+    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockClear();
+    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
+    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
+      tricks: [], currentTrick: [], currentPlayer: Seat.West,
+      declarerTricksWon: 0, defenderTricksWon: 0,
+      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
+      legalPlays: [], userControlledSeats: [Seat.South], remainingCards: {},
+    });
+
+    store.restartPlay();
+    await vi.waitFor(() => {
+      expect(mockService.acceptPrompt).toHaveBeenCalledWith("session-1", "restart", undefined);
+      expect(mockService.getPlayingViewport).toHaveBeenCalled();
+      expect(store.phase).toBe("PLAYING");
+    });
+  });
+
+  it("guarded() tracks full async lifecycle including animation", async () => {
+    const delayResolvers: Array<() => void> = [];
+    const controlledDelay = () => new Promise<void>((resolve) => { delayResolvers.push(resolve); });
+    const store = createGameStore(mockService, { delayFn: controlledDelay });
+    await drillToDeclarerPrompt(store, mockService);
+
+    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({
+      phase: "PLAYING",
+      aiPlays: [{ seat: Seat.West, card: { suit: Suit.Spades, rank: Rank.Ace }, reason: "test" }],
+    });
+    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
+      tricks: [], currentTrick: [], currentPlayer: Seat.South,
+      declarerTricksWon: 0, defenderTricksWon: 0,
+      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
+      legalPlays: [], userControlledSeats: [Seat.South], remainingCards: {},
+    });
+
+    store.acceptPrompt();
+    // Wait for the service calls to complete (controlled delay hasn't been hit yet by service calls)
+    // The transition to PLAYING happens before animation, so phase will be PLAYING
+    await vi.waitFor(() => { expect(store.phase).toBe("PLAYING"); });
+
+    // transitioning should be true while animation is pending
+    expect(store.isTransitioning).toBe(true);
+
+    // Resolve all pending delays to let animation proceed
+    delayResolvers.forEach(r => r());
+    await vi.waitFor(() => { expect(store.isTransitioning).toBe(false); });
   });
 });

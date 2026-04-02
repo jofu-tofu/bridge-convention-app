@@ -3,6 +3,8 @@
 //! Delegates to bridge-session controllers. All methods are synchronous.
 //! Depends on bridge-engine, bridge-conventions, and bridge-session.
 
+pub(crate) mod bundle_resolver;
+pub(crate) mod config_resolver;
 pub mod convention_adapter;
 pub mod error;
 pub mod evaluation;

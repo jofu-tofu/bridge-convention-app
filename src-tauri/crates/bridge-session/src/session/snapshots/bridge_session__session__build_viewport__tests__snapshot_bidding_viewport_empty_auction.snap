@@ -1,0 +1,100 @@
+---
+source: crates/bridge-session/src/session/build_viewport.rs
+expression: viewport
+---
+seat: S
+conventionName: 1NT Responses
+hand:
+  cards:
+    - suit: S
+      rank: A
+    - suit: S
+      rank: K
+    - suit: S
+      rank: Q
+    - suit: S
+      rank: J
+    - suit: H
+      rank: A
+    - suit: H
+      rank: K
+    - suit: H
+      rank: Q
+    - suit: D
+      rank: A
+    - suit: D
+      rank: K
+    - suit: D
+      rank: Q
+    - suit: C
+      rank: A
+    - suit: C
+      rank: K
+    - suit: C
+      rank: Q
+handEvaluation:
+  hcp: 37
+  shape:
+    - 4
+    - 3
+    - 3
+    - 3
+  isBalanced: true
+  totalPoints: 37
+  distributionPoints:
+    shortness: 0
+    length: 0
+    total: 0
+handSummary: "4-3-3-3, 37 HCP"
+visibleHands:
+  S:
+    cards:
+      - suit: S
+        rank: A
+      - suit: S
+        rank: K
+      - suit: S
+        rank: Q
+      - suit: S
+        rank: J
+      - suit: H
+        rank: A
+      - suit: H
+        rank: K
+      - suit: H
+        rank: Q
+      - suit: D
+        rank: A
+      - suit: D
+        rank: K
+      - suit: D
+        rank: Q
+      - suit: C
+        rank: A
+      - suit: C
+        rank: K
+      - suit: C
+        rank: Q
+auctionEntries: []
+dealer: N
+vulnerability: Both
+legalCalls:
+  - type: bid
+    level: 1
+    strain: C
+  - type: bid
+    level: 1
+    strain: D
+  - type: bid
+    level: 1
+    strain: H
+  - type: bid
+    level: 1
+    strain: S
+  - type: bid
+    level: 1
+    strain: NT
+  - type: pass
+isUserTurn: false
+currentBidder: N
+practiceMode: decision-drill

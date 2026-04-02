@@ -7,7 +7,7 @@
 
 /* eslint-disable @typescript-eslint/require-await -- async wraps sync WASM calls to match ServicePort interface */
 
-import type { Call, Card, Seat, Vulnerability } from "../engine/types";
+import type { Call, Card, Seat } from "../engine/types";
 import type { DevServicePort } from "./port";
 import type { SessionHandle, SessionConfig } from "./request-types";
 import type {
@@ -28,9 +28,8 @@ import type {
   ServicePublicBeliefState,
   ServiceInferenceSnapshot,
 } from "./response-types";
-import type { AtomGradeResult, PlaythroughHandle, PlaythroughGradeResult } from "./session-types";
 import type { ServiceDebugSnapshot, ServiceDebugLogEntry, PlaySuggestions } from "./debug-types";
-import type { OpponentMode, PlayProfileId } from "./session-types";
+import type { PlayProfileId } from "./session-types";
 import { getDDSSolutionFromWorker } from "./dds-bridge";
 import { setWasmModule } from "./service-helpers";
 
@@ -52,11 +51,6 @@ interface WasmServicePortBindings {
   get_explanation_viewport(handle: string): ExplanationViewport | null;
   get_public_belief_state(handle: string): ServicePublicBeliefState;
   get_dds_solution(handle: string): DDSolutionResult;
-  evaluate_atom(bundleId: string, atomId: string, seed: number, vuln?: Vulnerability, baseSystem?: string): BiddingViewport;
-  grade_atom(bundleId: string, atomId: string, seed: number, bid: string, vuln?: Vulnerability, baseSystem?: string): AtomGradeResult;
-  start_playthrough(bundleId: string, seed: number, vuln?: Vulnerability, opponents?: string, baseSystem?: string): { handle: PlaythroughHandle; firstStep: BiddingViewport | null };
-  get_playthrough_step(bundleId: string, seed: number, stepIdx: number, vuln?: Vulnerability, opponents?: string, baseSystem?: string): BiddingViewport;
-  grade_playthrough_bid(bundleId: string, seed: number, stepIdx: number, bid: string, vuln?: Vulnerability, opponents?: string, baseSystem?: string): PlaythroughGradeResult;
   list_conventions(): ConventionInfo[];
   list_modules(): ModuleCatalogEntry[];
   get_module_learning_viewport(moduleId: string): ModuleLearningViewport | null;
@@ -75,14 +69,35 @@ let wasmPort: WasmServicePortBindings | null = null;
 
 /** Initialize the WASM service. Must be called once at startup. */
 export async function initWasmService(): Promise<void> {
-  // Dynamic import to avoid bundling WASM in SSR
-  const wasmModule = await import("bridge-wasm");
-  await wasmModule.default();
-  // Share the module reference for sync helpers
-  setWasmModule(wasmModule as unknown as Record<string, unknown>);
-  // any: WasmServicePort constructor from wasm-bindgen
-  const WasmServicePort = (wasmModule as Record<string, unknown>).WasmServicePort as new () => WasmServicePortBindings;
-  wasmPort = new WasmServicePort();
+  // Node.js: fetch() doesn't support file:// URLs, so use initSync with fs.readFileSync.
+  // Dynamic import("bridge-wasm") resolves to index.js (wrapper) in Node, which lacks
+  // initSync and WasmServicePort. Import bridge_wasm.js directly for the raw wasm-pack output.
+  const isNode = typeof globalThis.process !== "undefined" && globalThis.process.versions?.node;
+
+  if (isNode) {
+    // Dynamic import("bridge-wasm") resolves to index.js in Node (tsx), which lacks
+    // initSync/WasmServicePort. Import the raw wasm-pack output via relative path.
+    const wasmModule = await import("../../src-tauri/crates/bridge-wasm/pkg/bridge_wasm.js");
+    const raw = wasmModule as unknown as Record<string, unknown>;
+    const nodeFs = await import("node:fs");
+    const nodePath = await import("node:path");
+    const nodeUrl = await import("node:url");
+    const projectRoot = nodePath.resolve(nodePath.dirname(nodeUrl.fileURLToPath(import.meta.url)), "../..");
+    const wasmPath = nodePath.resolve(projectRoot, "src-tauri/crates/bridge-wasm/pkg/bridge_wasm_bg.wasm");
+    const wasmBytes = nodeFs.readFileSync(wasmPath);
+    const initSync = raw.initSync as (input: { module: WebAssembly.Module }) => void;
+    initSync({ module: new WebAssembly.Module(wasmBytes) });
+    setWasmModule(raw);
+    const WasmServicePort = raw.WasmServicePort as new () => WasmServicePortBindings;
+    wasmPort = new WasmServicePort();
+  } else {
+    const wasmModule = await import("bridge-wasm");
+    await wasmModule.default();
+    const raw = wasmModule as unknown as Record<string, unknown>;
+    setWasmModule(raw);
+    const WasmServicePort = raw.WasmServicePort as new () => WasmServicePortBindings;
+    wasmPort = new WasmServicePort();
+  }
 }
 
 function getPort(): WasmServicePortBindings {
@@ -152,27 +167,6 @@ export class WasmService implements DevServicePort {
     return getDDSSolutionFromWorker(handle);
   }
 
-  // ── Evaluation ──────────────────────────────────────────────────
-  async evaluateAtom(bundleId: string, atomId: string, seed: number, vuln?: Vulnerability, baseSystem?: string): Promise<BiddingViewport> {
-    return getPort().evaluate_atom(bundleId, atomId, seed, vuln, baseSystem);
-  }
-
-  async gradeAtom(bundleId: string, atomId: string, seed: number, bid: string, vuln?: Vulnerability, baseSystem?: string): Promise<AtomGradeResult> {
-    return getPort().grade_atom(bundleId, atomId, seed, bid, vuln, baseSystem);
-  }
-
-  async startPlaythrough(bundleId: string, seed: number, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string): Promise<{ handle: PlaythroughHandle; firstStep: BiddingViewport | null }> {
-    return getPort().start_playthrough(bundleId, seed, vuln, opponents, baseSystem);
-  }
-
-  async getPlaythroughStep(bundleId: string, seed: number, stepIdx: number, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string): Promise<BiddingViewport> {
-    return getPort().get_playthrough_step(bundleId, seed, stepIdx, vuln, opponents, baseSystem);
-  }
-
-  async gradePlaythroughBid(bundleId: string, seed: number, stepIdx: number, bid: string, vuln?: Vulnerability, opponents?: OpponentMode, baseSystem?: string): Promise<PlaythroughGradeResult> {
-    return getPort().grade_playthrough_bid(bundleId, seed, stepIdx, bid, vuln, opponents, baseSystem);
-  }
-
   // ── Catalog ─────────────────────────────────────────────────────
   async listConventions(): Promise<ConventionInfo[]> {
     return getPort().list_conventions();
@@ -201,7 +195,9 @@ export class WasmService implements DevServicePort {
   }
 
   async getDebugSnapshot(handle: SessionHandle): Promise<ServiceDebugSnapshot> {
-    return getPort().get_debug_snapshot?.(handle) ?? ({} as ServiceDebugSnapshot);
+    const port = getPort();
+    if (!port.get_debug_snapshot) throw new Error("getDebugSnapshot not available — WASM build may lack dev methods");
+    return port.get_debug_snapshot(handle);
   }
 
   async getDebugLog(handle: SessionHandle): Promise<readonly ServiceDebugLogEntry[]> {
@@ -213,7 +209,9 @@ export class WasmService implements DevServicePort {
   }
 
   async getPlaySuggestions(handle: SessionHandle): Promise<PlaySuggestions> {
-    return getPort().get_play_suggestions?.(handle) ?? ({} as PlaySuggestions);
+    const port = getPort();
+    if (!port.get_play_suggestions) throw new Error("getPlaySuggestions not available — WASM build may lack dev methods");
+    return port.get_play_suggestions(handle);
   }
 
   async getConventionName(handle: SessionHandle): Promise<string> {

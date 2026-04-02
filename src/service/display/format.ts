@@ -36,7 +36,7 @@ export function formatContractWithDeclarer(contract: Contract): string {
 }
 
 /** Known bridge abbreviations that should be fully uppercased. */
-const BRIDGE_ABBREVIATIONS = new Set(["nt", "sayc", "hcp"]);
+const BRIDGE_ABBREVIATIONS = new Set(["nt", "sayc", "hcp", "dont"]);
 
 /** Convert kebab-case rule name to Title Case display name.
  *  e.g., "stayman-ask" \u2192 "Stayman Ask", "sayc-open-1nt" \u2192 "SAYC Open 1NT" */

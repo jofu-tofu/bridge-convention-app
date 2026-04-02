@@ -6,7 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::heuristic_play::{
+use super::play::{
     CoverHonorHeuristic, DiscardHeuristic, FourthHandHeuristic,
     MidGameLeadHeuristic, OpeningLeadHeuristic, SecondHandLowHeuristic, ThirdHandHighHeuristic,
     TrumpManagementHeuristic,
@@ -178,7 +178,7 @@ pub fn suggest_play_with_profile(
 /// Convenience: suggest a play using the default (no-skip) heuristic chain.
 /// Equivalent to expert/world-class without MC+DDS.
 pub fn suggest_play_default(ctx: &PlayContext) -> PlayResult {
-    super::heuristic_play::suggest_play(ctx)
+    super::play::suggest_play(ctx)
 }
 
 /// Convenience: suggest a random play with a given seed.

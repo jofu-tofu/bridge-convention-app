@@ -1,9 +1,8 @@
 use wasm_bindgen::prelude::*;
 
-use bridge_engine::types::{Call, Card, Seat, Vulnerability};
+use bridge_engine::types::{Call, Card, Seat};
 use bridge_service::{ServicePort, ServicePortImpl, SessionConfig};
 use bridge_service::port::DevServicePort;
-use bridge_session::types::OpponentMode;
 
 // ── Serialization helpers ─────────────────────────────────────────
 
@@ -71,8 +70,8 @@ impl WasmServicePort {
         mode: JsValue,
         seat_override: JsValue,
     ) -> Result<JsValue, JsError> {
-        let mode: Option<String> = from_js(mode).ok();
-        let seat_override: Option<Seat> = from_js(seat_override).ok();
+        let mode: Option<String> = from_js(mode)?;
+        let seat_override: Option<Seat> = from_js(seat_override)?;
         let result = self
             .inner
             .accept_prompt(handle, mode.as_deref(), seat_override)
@@ -165,134 +164,6 @@ impl WasmServicePort {
         let result = self
             .inner
             .get_dds_solution(handle)
-            .map_err(|e| JsError::new(&e.to_string()))?;
-        to_js(&result)
-    }
-
-    // ── Evaluation (stateless) ────────────────────────────────────
-
-    pub fn evaluate_atom(
-        &mut self,
-        bundle_id: &str,
-        atom_id: &str,
-        seed: u32,
-        vuln: JsValue,
-        base_system: JsValue,
-    ) -> Result<JsValue, JsError> {
-        let vuln: Option<Vulnerability> = from_js(vuln).ok();
-        let base_system: Option<String> = from_js(base_system).ok();
-        let result = self
-            .inner
-            .evaluate_atom(
-                bundle_id,
-                atom_id,
-                seed as u64,
-                vuln,
-                base_system.as_deref(),
-            )
-            .map_err(|e| JsError::new(&e.to_string()))?;
-        to_js(&result)
-    }
-
-    pub fn grade_atom(
-        &mut self,
-        bundle_id: &str,
-        atom_id: &str,
-        seed: u32,
-        bid: &str,
-        vuln: JsValue,
-        base_system: JsValue,
-    ) -> Result<JsValue, JsError> {
-        let vuln: Option<Vulnerability> = from_js(vuln).ok();
-        let base_system: Option<String> = from_js(base_system).ok();
-        let result = self
-            .inner
-            .grade_atom(
-                bundle_id,
-                atom_id,
-                seed as u64,
-                bid,
-                vuln,
-                base_system.as_deref(),
-            )
-            .map_err(|e| JsError::new(&e.to_string()))?;
-        to_js(&result)
-    }
-
-    pub fn start_playthrough(
-        &mut self,
-        bundle_id: &str,
-        seed: u32,
-        vuln: JsValue,
-        opponents: JsValue,
-        base_system: JsValue,
-    ) -> Result<JsValue, JsError> {
-        let vuln: Option<Vulnerability> = from_js(vuln).ok();
-        let opponents: Option<OpponentMode> = from_js(opponents).ok();
-        let base_system: Option<String> = from_js(base_system).ok();
-        let result = self
-            .inner
-            .start_playthrough(
-                bundle_id,
-                seed as u64,
-                vuln,
-                opponents,
-                base_system.as_deref(),
-            )
-            .map_err(|e| JsError::new(&e.to_string()))?;
-        to_js(&result)
-    }
-
-    pub fn get_playthrough_step(
-        &self,
-        bundle_id: &str,
-        seed: u32,
-        step_idx: u32,
-        vuln: JsValue,
-        opponents: JsValue,
-        base_system: JsValue,
-    ) -> Result<JsValue, JsError> {
-        let vuln: Option<Vulnerability> = from_js(vuln).ok();
-        let opponents: Option<OpponentMode> = from_js(opponents).ok();
-        let base_system: Option<String> = from_js(base_system).ok();
-        let result = self
-            .inner
-            .get_playthrough_step(
-                bundle_id,
-                seed as u64,
-                step_idx as usize,
-                vuln,
-                opponents,
-                base_system.as_deref(),
-            )
-            .map_err(|e| JsError::new(&e.to_string()))?;
-        to_js(&result)
-    }
-
-    pub fn grade_playthrough_bid(
-        &mut self,
-        bundle_id: &str,
-        seed: u32,
-        step_idx: u32,
-        bid: &str,
-        vuln: JsValue,
-        opponents: JsValue,
-        base_system: JsValue,
-    ) -> Result<JsValue, JsError> {
-        let vuln: Option<Vulnerability> = from_js(vuln).ok();
-        let opponents: Option<OpponentMode> = from_js(opponents).ok();
-        let base_system: Option<String> = from_js(base_system).ok();
-        let result = self
-            .inner
-            .grade_playthrough_bid(
-                bundle_id,
-                seed as u64,
-                step_idx as usize,
-                bid,
-                vuln,
-                opponents,
-                base_system.as_deref(),
-            )
             .map_err(|e| JsError::new(&e.to_string()))?;
         to_js(&result)
     }

@@ -1,10 +1,16 @@
 //! Service-layer response DTOs that wrap bridge-session viewport types
 //! with additional metadata for the UI/WASM boundary.
 
-use bridge_engine::types::{Call, Seat};
+use bridge_engine::types::{Call, Card, Seat, Suit};
+use bridge_session::inference::types::{
+    BidAnnotation, DerivedRanges, NumberRange, PublicBeliefState, PublicBeliefs,
+    QualitativeConstraint,
+};
 use bridge_session::session::{AiBidEntry, AiPlayEntry, BidGrade, BidHistoryEntryView, BiddingViewport};
 use bridge_session::types::{GamePhase, PlayPreference, PracticeMode};
+use bridge_conventions::types::meaning::FactConstraint;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 // ── Drill start ───────────────────────────────────────────────────
 
@@ -19,6 +25,8 @@ pub struct DrillStartResult {
     pub phase: GamePhase,
     pub practice_mode: PracticeMode,
     pub play_preference: PlayPreference,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub play_inferences: Option<HashMap<Seat, ServicePublicBeliefsDTO>>,
 }
 
 // ── Bid submission ────────────────────────────────────────────────
@@ -38,6 +46,8 @@ pub struct BidSubmitResult {
     pub phase_transition: Option<PhaseTransition>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_history_entry: Option<BidHistoryEntryView>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub play_inferences: Option<HashMap<Seat, ServicePublicBeliefsDTO>>,
 }
 
 /// Phase transition notification.
@@ -87,13 +97,134 @@ pub struct ConventionInfo {
 
 // ── Inference ─────────────────────────────────────────────────────
 
-/// Public belief state summary (inference).
-/// Placeholder — posterior engine is stub in Phase 4.
+/// Public belief state — typed DTO mirroring TS ServicePublicBeliefState.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServicePublicBeliefState {
-    pub beliefs: serde_json::Value,
-    pub annotations: Vec<serde_json::Value>,
+    pub beliefs: HashMap<Seat, ServicePublicBeliefsDTO>,
+    pub annotations: Vec<ServiceBidAnnotationDTO>,
+}
+
+/// Per-seat public beliefs DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServicePublicBeliefsDTO {
+    pub seat: Seat,
+    pub constraints: Vec<ServiceFactConstraintDTO>,
+    pub ranges: ServiceDerivedRangesDTO,
+    pub qualitative: Vec<ServiceQualitativeConstraintDTO>,
+}
+
+/// Fact constraint DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceFactConstraintDTO {
+    pub fact_id: String,
+    pub operator: String,
+    pub value: serde_json::Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_public: Option<bool>,
+}
+
+/// Derived ranges DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceDerivedRangesDTO {
+    pub hcp: NumberRangeDTO,
+    pub suit_lengths: HashMap<Suit, NumberRangeDTO>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_balanced: Option<bool>,
+}
+
+/// Number range DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NumberRangeDTO {
+    pub min: u32,
+    pub max: u32,
+}
+
+/// Qualitative constraint DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceQualitativeConstraintDTO {
+    pub fact_id: String,
+    pub label: String,
+    pub operator: String,
+    pub value: serde_json::Value,
+}
+
+/// Bid annotation DTO.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceBidAnnotationDTO {
+    pub call: Call,
+    pub seat: Seat,
+    pub convention_id: Option<String>,
+    pub meaning: String,
+    pub constraints: Vec<ServiceFactConstraintDTO>,
+}
+
+impl From<&FactConstraint> for ServiceFactConstraintDTO {
+    fn from(fc: &FactConstraint) -> Self {
+        Self {
+            fact_id: fc.fact_id.clone(),
+            operator: serde_json::to_value(&fc.operator)
+                .ok().and_then(|v| v.as_str().map(String::from))
+                .unwrap_or_else(|| format!("{:?}", fc.operator)),
+            value: serde_json::to_value(&fc.value).unwrap_or(serde_json::Value::Null),
+            is_public: fc.is_public,
+        }
+    }
+}
+
+impl From<&NumberRange> for NumberRangeDTO {
+    fn from(r: &NumberRange) -> Self { Self { min: r.min, max: r.max } }
+}
+
+impl From<&DerivedRanges> for ServiceDerivedRangesDTO {
+    fn from(dr: &DerivedRanges) -> Self {
+        Self {
+            hcp: NumberRangeDTO::from(&dr.hcp),
+            suit_lengths: dr.suit_lengths.iter().map(|(s, r)| (*s, NumberRangeDTO::from(r))).collect(),
+            is_balanced: dr.is_balanced,
+        }
+    }
+}
+
+impl From<&QualitativeConstraint> for ServiceQualitativeConstraintDTO {
+    fn from(qc: &QualitativeConstraint) -> Self {
+        Self { fact_id: qc.fact_id.clone(), label: qc.label.clone(), operator: qc.operator.clone(), value: qc.value.clone() }
+    }
+}
+
+impl From<&PublicBeliefs> for ServicePublicBeliefsDTO {
+    fn from(pb: &PublicBeliefs) -> Self {
+        Self {
+            seat: pb.seat,
+            constraints: pb.constraints.iter().map(ServiceFactConstraintDTO::from).collect(),
+            ranges: ServiceDerivedRangesDTO::from(&pb.ranges),
+            qualitative: pb.qualitative.iter().map(ServiceQualitativeConstraintDTO::from).collect(),
+        }
+    }
+}
+
+impl From<&BidAnnotation> for ServiceBidAnnotationDTO {
+    fn from(ba: &BidAnnotation) -> Self {
+        Self {
+            call: ba.call.clone(), seat: ba.seat, convention_id: ba.convention_id.clone(),
+            meaning: ba.meaning.clone(),
+            constraints: ba.constraints.iter().map(ServiceFactConstraintDTO::from).collect(),
+        }
+    }
+}
+
+impl From<&PublicBeliefState> for ServicePublicBeliefState {
+    fn from(pbs: &PublicBeliefState) -> Self {
+        Self {
+            beliefs: pbs.beliefs.iter().map(|(s, b)| (*s, ServicePublicBeliefsDTO::from(b))).collect(),
+            annotations: pbs.annotations.iter().map(ServiceBidAnnotationDTO::from).collect(),
+        }
+    }
 }
 
 // ── DTO wrappers for session types lacking Serialize ──────────────
@@ -400,6 +531,62 @@ pub struct NearMissCallDTO {
     pub reason: String,
 }
 
+// ── Debug DTOs (DevServicePort) ──────────────────────────────────
+
+/// Debug snapshot — typed wrapper with session metadata + flattened strategy evaluation.
+/// The `strategy_eval` field is kept as `serde_json::Value` because
+/// `StrategyEvaluation` is deeply nested (PipelineResult, MachineDebugSnapshot, etc.)
+/// and these are debug-only payloads already correctly serialized by serde.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceDebugSnapshotDTO {
+    pub session_phase: GamePhase,
+    pub expected_bid: Option<serde_json::Value>,
+    /// StrategyEvaluation fields — kept dynamic since they are debug-only.
+    #[serde(flatten)]
+    pub strategy_eval: serde_json::Value,
+}
+
+/// Debug log entry — typed wrapper with kind/turnIndex/seat + dynamic snapshot.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceDebugLogEntryDTO {
+    pub kind: String,
+    pub turn_index: usize,
+    pub seat: Seat,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub call: Option<Call>,
+    pub snapshot: serde_json::Value,
+    pub feedback: Option<serde_json::Value>,
+}
+
+/// Inference timeline entry — typed wrapper (currently stubbed as empty).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InferenceTimelineEntryDTO {
+    pub turn_index: usize,
+    pub seat: Seat,
+    pub call: Call,
+    pub inferences: serde_json::Value,
+}
+
+/// Play suggestion from a single heuristic profile.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlaySuggestionDTO {
+    pub profile_id: String,
+    pub profile_name: String,
+    pub card: Card,
+    pub reason: String,
+}
+
+/// Collection of play suggestions from all profiles.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlaySuggestionsDTO {
+    pub suggestions: Vec<PlaySuggestionDTO>,
+}
+
 impl From<AiPlayEntry> for AiPlayEntryDTO {
     fn from(e: AiPlayEntry) -> Self {
         Self {
@@ -446,13 +633,29 @@ mod tests {
 
     #[test]
     fn service_public_belief_state_serde_roundtrip() {
-        let state = ServicePublicBeliefState {
-            beliefs: serde_json::json!({"north": {"hcp": [10, 15]}}),
-            annotations: Vec::new(),
-        };
+        let mut suit_lengths = std::collections::HashMap::new();
+        suit_lengths.insert(Suit::Spades, NumberRangeDTO { min: 0, max: 13 });
+        suit_lengths.insert(Suit::Hearts, NumberRangeDTO { min: 0, max: 13 });
+        suit_lengths.insert(Suit::Diamonds, NumberRangeDTO { min: 0, max: 13 });
+        suit_lengths.insert(Suit::Clubs, NumberRangeDTO { min: 0, max: 13 });
+
+        let mut beliefs_map = std::collections::HashMap::new();
+        beliefs_map.insert(Seat::North, ServicePublicBeliefsDTO {
+            seat: Seat::North,
+            constraints: vec![ServiceFactConstraintDTO {
+                fact_id: "hcp".to_string(), operator: "gte".to_string(),
+                value: serde_json::json!(12), is_public: Some(true),
+            }],
+            ranges: ServiceDerivedRangesDTO { hcp: NumberRangeDTO { min: 12, max: 40 }, suit_lengths, is_balanced: None },
+            qualitative: Vec::new(),
+        });
+
+        let state = ServicePublicBeliefState { beliefs: beliefs_map, annotations: Vec::new() };
         let json = serde_json::to_string(&state).unwrap();
         let rt: ServicePublicBeliefState = serde_json::from_str(&json).unwrap();
-        assert_eq!(rt.beliefs["north"]["hcp"][0], 10);
+        assert!(json.contains("\"factId\""));
+        assert!(json.contains("\"suitLengths\""));
+        assert_eq!(rt.beliefs[&Seat::North].ranges.hcp.min, 12);
     }
 
     #[test]
@@ -465,5 +668,83 @@ mod tests {
         let rt: DDSolutionResult = serde_json::from_str(&json).unwrap();
         assert!(rt.solution.is_some());
         assert!(rt.error.is_none());
+    }
+
+    #[test]
+    fn debug_snapshot_dto_serde_roundtrip() {
+        let dto = ServiceDebugSnapshotDTO {
+            session_phase: GamePhase::Bidding,
+            expected_bid: Some(serde_json::json!({
+                "call": {"type": "bid", "level": 1, "strain": "NT"},
+                "explanation": "15-17 HCP balanced"
+            })),
+            strategy_eval: serde_json::json!({
+                "pipelineResult": null,
+                "facts": {"hcp": 16}
+            }),
+        };
+        let json = serde_json::to_string(&dto).unwrap();
+        // Verify camelCase and flattening
+        assert!(json.contains("\"sessionPhase\""), "Expected sessionPhase in JSON: {}", json);
+        assert!(json.contains("\"expectedBid\""), "Expected expectedBid in JSON: {}", json);
+        // Flattened fields from strategy_eval should appear at top level
+        assert!(json.contains("\"pipelineResult\""), "Expected flattened pipelineResult in JSON: {}", json);
+        assert!(json.contains("\"facts\""), "Expected flattened facts in JSON: {}", json);
+        // Should NOT contain a "strategyEval" wrapper key
+        assert!(!json.contains("\"strategyEval\""), "strategy_eval should be flattened, not nested: {}", json);
+
+        let rt: ServiceDebugSnapshotDTO = serde_json::from_str(&json).unwrap();
+        assert_eq!(rt.session_phase, GamePhase::Bidding);
+        assert!(rt.expected_bid.is_some());
+    }
+
+    #[test]
+    fn debug_log_entry_dto_serde_roundtrip() {
+        let dto = ServiceDebugLogEntryDTO {
+            kind: "pre-bid".to_string(),
+            turn_index: 3,
+            seat: Seat::South,
+            call: None,
+            snapshot: serde_json::json!({"expectedBid": null}),
+            feedback: None,
+        };
+        let json = serde_json::to_string(&dto).unwrap();
+        assert!(json.contains("\"turnIndex\""), "Expected camelCase turnIndex: {}", json);
+        assert!(json.contains("\"pre-bid\""));
+        let rt: ServiceDebugLogEntryDTO = serde_json::from_str(&json).unwrap();
+        assert_eq!(rt.kind, "pre-bid");
+        assert_eq!(rt.turn_index, 3);
+        assert_eq!(rt.seat, Seat::South);
+    }
+
+    #[test]
+    fn play_suggestions_dto_serde_roundtrip() {
+        let dto = PlaySuggestionsDTO {
+            suggestions: vec![PlaySuggestionDTO {
+                profile_id: "aggressive".to_string(),
+                profile_name: "Aggressive".to_string(),
+                card: Card {
+                    suit: bridge_engine::types::Suit::Spades,
+                    rank: bridge_engine::types::Rank::Ace,
+                },
+                reason: "Lead ace of spades".to_string(),
+            }],
+        };
+        let json = serde_json::to_string(&dto).unwrap();
+        assert!(json.contains("\"profileId\""), "Expected camelCase profileId: {}", json);
+        assert!(json.contains("\"profileName\""), "Expected camelCase profileName: {}", json);
+        let rt: PlaySuggestionsDTO = serde_json::from_str(&json).unwrap();
+        assert_eq!(rt.suggestions.len(), 1);
+        assert_eq!(rt.suggestions[0].profile_id, "aggressive");
+    }
+
+    #[test]
+    fn play_suggestions_dto_empty() {
+        let dto = PlaySuggestionsDTO {
+            suggestions: Vec::new(),
+        };
+        let json = serde_json::to_string(&dto).unwrap();
+        let rt: PlaySuggestionsDTO = serde_json::from_str(&json).unwrap();
+        assert!(rt.suggestions.is_empty());
     }
 }

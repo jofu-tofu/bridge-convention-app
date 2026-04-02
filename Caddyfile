@@ -1,4 +1,4 @@
-:80 {
+bridgelab.net {
     root * /srv
     encode gzip zstd
 

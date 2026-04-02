@@ -3,6 +3,7 @@ import {
   ConventionCardSectionId,
 } from "../response-types";
 import { listModules, listConventions, buildBaseModuleInfos, getModuleLearningViewportSync } from "../service-helpers";
+import { formatRuleName } from "./format";
 
 // ── Convention catalog functions (delegating to Rust/WASM) ──────────
 
@@ -102,25 +103,6 @@ export function buildConventionCard(
 
 // ── Convention card panel (structured sections) ────────────────
 
-/** Known bridge abbreviations that should be fully uppercased. */
-const BRIDGE_ABBREVIATIONS = new Set(["nt", "sayc", "hcp", "dont"]);
-
-/** Convert kebab-case module ID to display name. */
-function formatModuleName(moduleId: string): string {
-  if (moduleId === "") return "";
-  return moduleId
-    .split("-")
-    .map((w) => {
-      const lower = w.toLowerCase();
-      if (BRIDGE_ABBREVIATIONS.has(lower)) return w.toUpperCase();
-      const match = lower.match(/^(\d+)(.+)$/);
-      if (match && BRIDGE_ABBREVIATIONS.has(match[2]!)) {
-        return match[1] + match[2]!.toUpperCase();
-      }
-      return w.charAt(0).toUpperCase() + w.slice(1);
-    })
-    .join(" ");
-}
 
 /** Section definition for the convention card panel. */
 interface SectionDef {
@@ -199,7 +181,7 @@ function buildModuleDetail(moduleId: string, sys: SystemConfig): ConventionCardM
   if (!mod) return undefined;
   return {
     moduleId: mod.moduleId,
-    moduleName: formatModuleName(mod.moduleId),
+    moduleName: formatRuleName(mod.moduleId),
     description: mod.description,
     principle: mod.teaching.principle || undefined,
     tradeoff: mod.teaching.tradeoff || undefined,

@@ -8,7 +8,7 @@
  */
 
 import { Seat, Vulnerability } from "../engine/types";
-import type { Call, DealConstraints, Deal, Auction, Hand, HandEvaluation } from "../engine/types";
+import type { Call, Card, DealConstraints, Deal, Auction, Hand, HandEvaluation } from "../engine/types";
 
 // ── Convention types ───────────────────────────────────────────────
 
@@ -320,11 +320,11 @@ export function isValidTransition(from: GamePhase, to: GamePhase): boolean {
 
 export type ViewportNeeded = "bidding" | "declarerPrompt" | "playing" | "explanation";
 
-type ServiceAction =
+export type ServiceAction =
   | { type: "acceptPrompt"; mode: "play" | "skip" | "replay" | "restart"; seat?: Seat }
   | { type: "skipToReview" };
 
-type PhaseEvent =
+export type PhaseEvent =
   | { type: "AUCTION_COMPLETE"; servicePhase: GamePhase }
   | { type: "PROMPT_ENTERED"; playPreference: PlayPreference }
   | { type: "ACCEPT_PLAY"; seat?: Seat }
@@ -334,7 +334,7 @@ type PhaseEvent =
   | { type: "PLAY_THIS_HAND"; seat: Seat }
   | { type: "RESTART_PLAY" };
 
-interface TransitionDescriptor {
+export interface TransitionDescriptor {
   readonly targetPhase: GamePhase | null;
   readonly viewportsNeeded: readonly ViewportNeeded[];
   readonly triggerDDS: boolean;
@@ -342,12 +342,23 @@ interface TransitionDescriptor {
   readonly serviceActions: readonly ServiceAction[];
   readonly resetPlay: boolean;
   readonly chainedEvent: PhaseEvent | null;
+  readonly intermediatePhases: readonly GamePhase[];
+}
+
+export interface TransitionResult {
+  readonly serviceResult: PromptAcceptResult | null;
+  readonly completed: boolean;
+}
+
+export interface PromptAcceptResult {
+  readonly phase: GamePhase;
+  readonly aiPlays?: readonly { seat: Seat; card: Card; reason: string; trickComplete?: boolean }[] | null;
 }
 
 function noTransition(): TransitionDescriptor {
   return {
     targetPhase: null, viewportsNeeded: [], triggerDDS: false,
-    captureInferences: false, serviceActions: [], resetPlay: false, chainedEvent: null,
+    captureInferences: false, serviceActions: [], resetPlay: false, chainedEvent: null, intermediatePhases: [],
   };
 }
 
@@ -356,17 +367,17 @@ function resolveAuctionComplete(servicePhase: GamePhase): TransitionDescriptor {
     case "DECLARER_PROMPT":
       return {
         targetPhase: "DECLARER_PROMPT", viewportsNeeded: ["declarerPrompt"],
-        triggerDDS: true, captureInferences: true, serviceActions: [], resetPlay: false, chainedEvent: null,
+        triggerDDS: true, captureInferences: true, serviceActions: [], resetPlay: false, chainedEvent: null, intermediatePhases: [],
       };
     case "PLAYING":
       return {
         targetPhase: "PLAYING", viewportsNeeded: ["playing"],
-        triggerDDS: true, captureInferences: true, serviceActions: [], resetPlay: true, chainedEvent: null,
+        triggerDDS: true, captureInferences: true, serviceActions: [], resetPlay: true, chainedEvent: null, intermediatePhases: [],
       };
     case "EXPLANATION":
       return {
         targetPhase: "EXPLANATION", viewportsNeeded: ["explanation"],
-        triggerDDS: false, captureInferences: false, serviceActions: [], resetPlay: false, chainedEvent: null,
+        triggerDDS: false, captureInferences: false, serviceActions: [], resetPlay: false, chainedEvent: null, intermediatePhases: [],
       };
     default:
       return noTransition();
@@ -380,14 +391,14 @@ function resolvePromptEntered(playPreference: PlayPreference): TransitionDescrip
         targetPhase: null, viewportsNeeded: [], triggerDDS: false,
         captureInferences: false, serviceActions: [],
         resetPlay: false,
-        chainedEvent: { type: "DECLINE_PLAY" },
+        chainedEvent: { type: "DECLINE_PLAY" }, intermediatePhases: [],
       };
     case PlayPreference.Always:
       return {
         targetPhase: null, viewportsNeeded: [], triggerDDS: false,
         captureInferences: false, serviceActions: [],
         resetPlay: false,
-        chainedEvent: { type: "ACCEPT_PLAY" },
+        chainedEvent: { type: "ACCEPT_PLAY" }, intermediatePhases: [],
       };
     default:
       return noTransition();
@@ -399,7 +410,7 @@ function resolveAcceptPlay(seat?: Seat): TransitionDescriptor {
     targetPhase: "PLAYING", viewportsNeeded: ["playing"],
     triggerDDS: false, captureInferences: false,
     serviceActions: [{ type: "acceptPrompt", mode: "play", seat }],
-    resetPlay: true, chainedEvent: null,
+    resetPlay: true, chainedEvent: null, intermediatePhases: [],
   };
 }
 
@@ -408,7 +419,7 @@ function resolveDeclinePlay(): TransitionDescriptor {
     targetPhase: "EXPLANATION", viewportsNeeded: ["explanation"],
     triggerDDS: false, captureInferences: false,
     serviceActions: [{ type: "acceptPrompt", mode: "skip" }],
-    resetPlay: false, chainedEvent: null,
+    resetPlay: false, chainedEvent: null, intermediatePhases: [],
   };
 }
 
@@ -427,22 +438,27 @@ export function resolveTransition(_currentPhase: GamePhase, event: PhaseEvent): 
         targetPhase: "EXPLANATION", viewportsNeeded: ["explanation"],
         triggerDDS: false, captureInferences: false,
         serviceActions: [{ type: "skipToReview" }],
-        resetPlay: false, chainedEvent: null,
+        resetPlay: false, chainedEvent: null, intermediatePhases: [],
       };
     case "PLAY_COMPLETE":
       return {
         targetPhase: "EXPLANATION", viewportsNeeded: ["explanation"],
-        triggerDDS: false, captureInferences: false, serviceActions: [],
-        resetPlay: false, chainedEvent: null,
+        triggerDDS: true, captureInferences: false, serviceActions: [],
+        resetPlay: false, chainedEvent: null, intermediatePhases: [],
       };
     case "PLAY_THIS_HAND":
-      return resolveAcceptPlay(event.seat);
+      return {
+        targetPhase: "PLAYING", viewportsNeeded: ["playing"],
+        triggerDDS: false, captureInferences: false,
+        serviceActions: [{ type: "acceptPrompt", mode: "replay" }, { type: "acceptPrompt", mode: "play", seat: event.seat }],
+        resetPlay: true, chainedEvent: null, intermediatePhases: ["DECLARER_PROMPT"],
+      };
     case "RESTART_PLAY":
       return {
         targetPhase: "PLAYING", viewportsNeeded: ["playing"],
         triggerDDS: false, captureInferences: false,
         serviceActions: [{ type: "acceptPrompt", mode: "restart" }],
-        resetPlay: true, chainedEvent: null,
+        resetPlay: true, chainedEvent: null, intermediatePhases: [],
       };
     default:
       return noTransition();
