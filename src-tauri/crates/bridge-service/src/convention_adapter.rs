@@ -528,47 +528,20 @@ impl ConventionStrategyAdapter {
         (truth_set_calls, acceptable_set_calls)
     }
 
-    /// Extract near-miss calls: eliminated candidates in the same surface group
-    /// as the selected bid with at most one unsatisfied clause.
+    /// Extract near-miss calls: delegates to the testable free function in
+    /// bridge-conventions arbitration_helpers.
     fn extract_near_miss_calls(evaluation: &StrategyEvaluation, selected_call: &Call) -> Vec<Call> {
         let pr = match &evaluation.pipeline_result {
             Some(pr) => pr,
-            None => return Vec::new(),
-        };
-        let selected = match &pr.selected {
-            Some(s) => s,
             None => return Vec::new(),
         };
         let groups = match &evaluation.surface_groups {
             Some(g) => g,
             None => return Vec::new(),
         };
-        let selected_meaning_id = &selected.proposal().meaning_id;
-        let group = groups
-            .iter()
-            .find(|g| g.members.iter().any(|m| m == selected_meaning_id.as_str()));
-        let group = match group {
-            Some(g) => g,
-            None => return Vec::new(),
-        };
-
-        let mut calls = Vec::new();
-        for c in &pr.eliminated {
-            let failed = c
-                .proposal()
-                .clauses
-                .iter()
-                .filter(|cl| !cl.satisfied)
-                .count();
-            if failed == 1
-                && group.members.iter().any(|m| m == &c.proposal().meaning_id)
-                && c.call() != selected_call
-                && !calls.contains(c.call())
-            {
-                calls.push(c.call().clone());
-            }
-        }
-        calls
+        bridge_conventions::pipeline::evaluation::arbitration_helpers::extract_near_miss_calls(
+            pr, groups, selected_call,
+        )
     }
 
     fn vulnerability_facts(

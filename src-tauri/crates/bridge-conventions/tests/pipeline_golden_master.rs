@@ -107,9 +107,8 @@ fn validate_bundle_snapshots(bundle_id: &str) {
             snapshot.label,
         );
 
-        // Acceptable set may include alternatives not in truth set
-        // (priority-based alternatives from teaching resolution).
-        // Just verify it's non-negative count.
+        // Acceptable set = truth set (all conditions pass, legal encoding).
+        // Just verify it deserializes.
         let _ = snapshot.acceptable_set_meaning_ids.len();
     }
 
