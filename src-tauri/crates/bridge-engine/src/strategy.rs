@@ -71,9 +71,6 @@ pub struct BidResult {
     /// Other valid calls from the convention's "truth set" (correct but not preferred).
     #[serde(default)]
     pub truth_set_calls: Vec<Call>,
-    /// Acceptable alternative calls (convention allows but not standard).
-    #[serde(default)]
-    pub acceptable_set_calls: Vec<Call>,
     /// Near-miss calls — bids on a considered surface with at most one unsatisfied condition.
     #[serde(default)]
     pub near_miss_calls: Vec<Call>,

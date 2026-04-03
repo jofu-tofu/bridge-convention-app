@@ -64,9 +64,7 @@ pub fn assemble_bid_feedback(
         Some(result) => {
             let grade = if call_equals(user_call, &result.call) {
                 BidGrade::Correct
-            } else if result.truth_set_calls.iter().any(|c| call_equals(user_call, c))
-                || result.acceptable_set_calls.iter().any(|c| call_equals(user_call, c))
-            {
+            } else if result.truth_set_calls.iter().any(|c| call_equals(user_call, c)) {
                 BidGrade::Acceptable
             } else if result.near_miss_calls.iter().any(|c| call_equals(user_call, c)) {
                 BidGrade::NearMiss

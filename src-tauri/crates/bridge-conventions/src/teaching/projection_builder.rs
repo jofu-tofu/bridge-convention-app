@@ -59,20 +59,6 @@ fn build_call_views(result: &PipelineResult) -> Vec<CallProjection> {
         entry.supporting_meanings.push(carrier.proposal().meaning_id.clone());
     }
 
-    // Add acceptable set calls not in truth set
-    for carrier in &result.acceptable_set {
-        let call_key = format!("{:?}", carrier.call());
-        if !call_map.contains_key(&call_key) {
-            call_map.insert(call_key, CallProjection {
-                call: carrier.call().clone(),
-                status: CallStatus::Acceptable,
-                supporting_meanings: vec![carrier.proposal().meaning_id.clone()],
-                primary_meaning: None,
-                projection_kind: ProjectionKind::SingleRationale,
-            });
-        }
-    }
-
     // Set primary meaning
     if let Some(ref selected) = result.selected {
         let call_key = format!("{:?}", selected.call());

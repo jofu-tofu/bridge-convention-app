@@ -216,7 +216,7 @@ fn build_explanation_catalog(surface_results: &[ModuleSurfaceResult]) -> Explana
     ExplanationCatalog { entries }
 }
 
-/// Build resolved candidates from pipeline truth_set and acceptable_set.
+/// Build resolved candidates from the pipeline truth_set.
 ///
 /// Maps each `PipelineCarrier` to a `ResolvedCandidateDTO` with eligibility,
 /// conditions, and encodings.
@@ -226,7 +226,6 @@ fn build_resolved_candidates(pipeline_result: &PipelineResult) -> Vec<ResolvedCa
     let mut candidates = Vec::new();
     let mut seen: HashSet<String> = HashSet::new();
 
-    // Truth set carriers — fully matched
     for carrier in &pipeline_result.truth_set {
         let p = carrier.proposal();
         let meaning_id = p.meaning_id.clone();
@@ -235,17 +234,6 @@ fn build_resolved_candidates(pipeline_result: &PipelineResult) -> Vec<ResolvedCa
         }
         seen.insert(meaning_id);
         candidates.push(carrier_to_candidate(carrier, true));
-    }
-
-    // Acceptable set carriers — may include hand-gate-failed-but-legal
-    for carrier in &pipeline_result.acceptable_set {
-        let p = carrier.proposal();
-        let meaning_id = p.meaning_id.clone();
-        if seen.contains(&meaning_id) {
-            continue;
-        }
-        seen.insert(meaning_id);
-        candidates.push(carrier_to_candidate(carrier, false));
     }
 
     candidates

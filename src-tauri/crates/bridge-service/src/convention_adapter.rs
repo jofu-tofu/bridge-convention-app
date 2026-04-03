@@ -104,8 +104,7 @@ impl ConventionStrategyAdapter {
     ) -> (Option<BidResult>, StrategyEvaluation) {
         let (bid, evaluation) = self.run_pipeline(ctx, all_hands);
         let result = bid.map(|br| {
-            let (truth_set_calls, acceptable_set_calls) =
-                Self::extract_alternative_calls(&evaluation, &br.call);
+            let truth_set_calls = Self::extract_truth_set_calls(&evaluation, &br.call);
             let near_miss_calls = Self::extract_near_miss_calls(&evaluation, &br.call);
             let disclosure = evaluation
                 .pipeline_result
@@ -118,7 +117,6 @@ impl ConventionStrategyAdapter {
                 explanation: extract_explanation(&evaluation),
                 disclosure,
                 truth_set_calls,
-                acceptable_set_calls,
                 near_miss_calls,
                 trace: None,
             }
@@ -342,14 +340,7 @@ impl ConventionStrategyAdapter {
             return Some(found);
         }
         // Then recommended
-        if let Some(found) = result.recommended.iter().find(|c| c.call() == actual_call) {
-            return Some(found);
-        }
-        // Then acceptable_set
-        result
-            .acceptable_set
-            .iter()
-            .find(|c| c.call() == actual_call)
+        result.recommended.iter().find(|c| c.call() == actual_call)
     }
 
     /// Build a CommittedStep from a specific carrier (or None for off-system).
@@ -502,30 +493,20 @@ impl ConventionStrategyAdapter {
         None
     }
 
-    /// Extract alternative calls from the pipeline evaluation.
-    /// truth_set_calls = other calls in truth_set (excluding selected).
-    /// acceptable_set_calls = calls in acceptable_set not already in truth_set.
-    fn extract_alternative_calls(
+    /// Extract truth-set alternative calls (excluding the selected bid).
+    fn extract_truth_set_calls(
         evaluation: &StrategyEvaluation,
         selected_call: &Call,
-    ) -> (Vec<Call>, Vec<Call>) {
+    ) -> Vec<Call> {
         let pr = match &evaluation.pipeline_result {
             Some(pr) => pr,
-            None => return (Vec::new(), Vec::new()),
+            None => return Vec::new(),
         };
-        let truth_set_calls: Vec<Call> = pr
-            .truth_set
+        pr.truth_set
             .iter()
             .map(|c| c.call().clone())
             .filter(|c| c != selected_call)
-            .collect();
-        let acceptable_set_calls: Vec<Call> = pr
-            .acceptable_set
-            .iter()
-            .map(|c| c.call().clone())
-            .filter(|c| c != selected_call && !truth_set_calls.contains(c))
-            .collect();
-        (truth_set_calls, acceptable_set_calls)
+            .collect()
     }
 
     /// Extract near-miss calls: delegates to the testable free function in
@@ -627,8 +608,7 @@ impl BiddingStrategy for ConventionStrategyAdapter {
         }
 
         convention_bid.map(|br| {
-            let (truth_set_calls, acceptable_set_calls) =
-                Self::extract_alternative_calls(&evaluation, &br.call);
+            let truth_set_calls = Self::extract_truth_set_calls(&evaluation, &br.call);
             let near_miss_calls = Self::extract_near_miss_calls(&evaluation, &br.call);
             let disclosure = evaluation
                 .pipeline_result
@@ -641,7 +621,6 @@ impl BiddingStrategy for ConventionStrategyAdapter {
                 explanation: extract_explanation(&evaluation),
                 disclosure,
                 truth_set_calls,
-                acceptable_set_calls,
                 near_miss_calls,
                 trace: None,
             }
