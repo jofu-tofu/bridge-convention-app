@@ -302,21 +302,22 @@ pub fn start_drill(
     // ── Practice focus + initial auction ────────────────────────
     let base_module_ids: &[&str] = &["natural-bids", "stayman", "jacoby-transfers", "blackwood"];
 
-    let (practice_focus, initial_auction) = if let Some(ref target_id) = options.target_module_id {
+    // Practice focus (gated on target module)
+    let practice_focus = if let Some(ref target_id) = options.target_module_id {
         let member_ids = options.bundle_member_ids.as_deref().unwrap_or(&[]);
-        let focus = derive_practice_focus(member_ids, target_id, base_module_ids);
-
-        let dealer = deal_result.deal.dealer;
-        let auction = derive_initial_auction(
-            resolved_role,
-            dealer,
-            options.bundle_deal_constraints.as_ref(),
-        );
-
-        (focus, auction)
+        derive_practice_focus(member_ids, target_id, base_module_ids)
     } else {
-        (PracticeFocus::default(), None)
+        PracticeFocus::default()
     };
+
+    // Initial auction (always derived from convention constraints)
+    let dealer = deal_result.deal.dealer;
+    let initial_auction = derive_initial_auction(
+        resolved_role,
+        dealer,
+        Some(&convention.deal_constraints),
+        Some(&deal_result.deal),
+    );
 
     Ok(DrillBundle {
         deal: deal_result.deal,
@@ -335,6 +336,7 @@ pub fn start_drill(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bridge_engine::types::{BidSuit, Call, Suit};
     use std::collections::HashMap;
 
     // ── Rotation tests ──────────────────────────────────────────
@@ -694,5 +696,210 @@ mod tests {
 
         // Full auction defaults to Prompt, not Skip
         assert_eq!(bundle.play_preference, PlayPreference::Prompt);
+    }
+
+    // ── Initial auction derivation tests ────────────────────────
+
+    fn bergen_like_convention(seed: u64) -> (ConventionConfig, DrillConfig, StartDrillOptions) {
+        let mut min_any_n = HashMap::new();
+        min_any_n.insert(Suit::Hearts, 5_u8);
+        min_any_n.insert(Suit::Spades, 5_u8);
+
+        let convention = ConventionConfig {
+            id: "bergen-test".to_string(),
+            deal_constraints: DealConstraints {
+                seats: vec![SeatConstraint {
+                    seat: Seat::North,
+                    min_hcp: Some(12),
+                    max_hcp: Some(21),
+                    balanced: None,
+                    min_length: None,
+                    max_length: None,
+                    min_length_any: Some(min_any_n),
+                }],
+                dealer: Some(Seat::North),
+                vulnerability: None,
+                max_attempts: Some(50_000),
+                seed: None,
+            },
+            allowed_dealers: None,
+            off_convention_constraints: None,
+        };
+
+        let config = DrillConfig {
+            convention_id: "bergen-test".to_string(),
+            user_seat: Seat::South,
+            seat_strategies: HashMap::new(),
+        };
+
+        let options = StartDrillOptions {
+            seed: Some(seed),
+            ..Default::default()
+        };
+
+        (convention, config, options)
+    }
+
+    #[test]
+    fn start_drill_bergen_constraints_produce_major_opening() {
+        let (convention, config, options) = bergen_like_convention(42);
+        let mut rng_val = 0.5_f64;
+        let bundle = start_drill(
+            &convention,
+            Seat::South,
+            config,
+            &options,
+            &mut || { let v = rng_val; rng_val += 0.1; v },
+        ).unwrap();
+
+        // Bergen-like constraints should always produce an initial 1H or 1S auction
+        let auction = bundle.initial_auction.expect("Bergen should have initial auction");
+        assert_eq!(auction.entries.len(), 1);
+        assert_eq!(auction.entries[0].seat, Seat::North);
+        match &auction.entries[0].call {
+            Call::Bid { level: 1, strain: BidSuit::Hearts }
+            | Call::Bid { level: 1, strain: BidSuit::Spades } => {}
+            other => panic!("Expected 1H or 1S, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn start_drill_bergen_picks_correct_major_for_deal() {
+        // Try multiple seeds — the opening should match the deal's longer major
+        for seed in 42..52 {
+            let (convention, config, options) = bergen_like_convention(seed);
+            let mut rng_val = 0.5_f64;
+            let bundle = start_drill(
+                &convention,
+                Seat::South,
+                config,
+                &options,
+                &mut || { let v = rng_val; rng_val += 0.1; v },
+            ).unwrap();
+
+            let auction = bundle.initial_auction.expect("Should have initial auction");
+            let opener_hand = bundle.deal.hands.get(&Seat::North).unwrap();
+            let hearts = opener_hand.cards.iter().filter(|c| c.suit == Suit::Hearts).count();
+            let spades = opener_hand.cards.iter().filter(|c| c.suit == Suit::Spades).count();
+
+            let expected_strain = if spades > hearts { BidSuit::Spades } else { BidSuit::Hearts };
+            assert_eq!(
+                auction.entries[0].call,
+                Call::Bid { level: 1, strain: expected_strain },
+                "seed={seed}: North has {hearts}H {spades}S, expected {:?}",
+                expected_strain,
+            );
+        }
+    }
+
+    #[test]
+    fn start_drill_nt_constraints_produce_1nt_opening() {
+        let convention = ConventionConfig {
+            id: "nt-test".to_string(),
+            deal_constraints: DealConstraints {
+                seats: vec![SeatConstraint {
+                    seat: Seat::North,
+                    min_hcp: Some(15),
+                    max_hcp: Some(17),
+                    balanced: Some(true),
+                    min_length: None,
+                    max_length: None,
+                    min_length_any: None,
+                }],
+                dealer: Some(Seat::North),
+                vulnerability: None,
+                max_attempts: Some(50_000),
+                seed: None,
+            },
+            allowed_dealers: None,
+            off_convention_constraints: None,
+        };
+
+        let config = DrillConfig {
+            convention_id: "nt-test".to_string(),
+            user_seat: Seat::South,
+            seat_strategies: HashMap::new(),
+        };
+
+        let options = StartDrillOptions {
+            seed: Some(42),
+            ..Default::default()
+        };
+
+        let mut rng_val = 0.5_f64;
+        let bundle = start_drill(
+            &convention,
+            Seat::South,
+            config,
+            &options,
+            &mut || { let v = rng_val; rng_val += 0.1; v },
+        ).unwrap();
+
+        let auction = bundle.initial_auction.expect("NT should have initial auction");
+        assert_eq!(auction.entries.len(), 1);
+        assert_eq!(
+            auction.entries[0].call,
+            Call::Bid { level: 1, strain: BidSuit::NoTrump }
+        );
+    }
+
+    #[test]
+    fn start_drill_opener_role_gets_no_initial_auction() {
+        let (convention, config, options) = bergen_like_convention(42);
+        let options = StartDrillOptions {
+            practice_role: PracticeRole::Opener,
+            ..options
+        };
+
+        let bundle = start_drill(
+            &convention,
+            Seat::South,
+            config,
+            &options,
+            &mut || 0.5,
+        ).unwrap();
+
+        assert!(
+            bundle.initial_auction.is_none(),
+            "Opener should not get initial auction — they make the first bid"
+        );
+    }
+
+    #[test]
+    fn start_drill_no_constraints_no_initial_auction() {
+        let convention = ConventionConfig {
+            id: "empty".to_string(),
+            deal_constraints: DealConstraints {
+                seats: vec![],
+                dealer: Some(Seat::North),
+                vulnerability: None,
+                max_attempts: None,
+                seed: None,
+            },
+            allowed_dealers: None,
+            off_convention_constraints: None,
+        };
+
+        let config = DrillConfig {
+            convention_id: "empty".to_string(),
+            user_seat: Seat::South,
+            seat_strategies: HashMap::new(),
+        };
+
+        let options = StartDrillOptions {
+            seed: Some(42),
+            ..Default::default()
+        };
+
+        let mut rng_val = 0.5_f64;
+        let bundle = start_drill(
+            &convention,
+            Seat::South,
+            config,
+            &options,
+            &mut || { let v = rng_val; rng_val += 0.1; v },
+        ).unwrap();
+
+        assert!(bundle.initial_auction.is_none());
     }
 }

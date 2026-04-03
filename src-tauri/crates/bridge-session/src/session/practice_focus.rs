@@ -1,6 +1,6 @@
 //! Practice focus — derives module ordering and initial auction for targeted practice.
 
-use bridge_engine::types::{Auction, AuctionEntry, BidSuit, Call, DealConstraints, Seat, Suit};
+use bridge_engine::types::{Auction, AuctionEntry, BidSuit, Call, Deal, DealConstraints, Seat, Suit};
 use crate::types::{PracticeFocus, PracticeRole};
 
 /// Derive practice focus — which modules are target, prerequisites, follow-up, background.
@@ -76,6 +76,7 @@ pub fn derive_initial_auction(
     resolved_role: PracticeRole,
     dealer: Seat,
     deal_constraints: Option<&DealConstraints>,
+    deal: Option<&Deal>,
 ) -> Option<Auction> {
     // Rule 1: opener makes the first bid
     if resolved_role == PracticeRole::Opener {
@@ -136,6 +137,37 @@ pub fn derive_initial_auction(
                         is_complete: false,
                     });
                 }
+            }
+        }
+
+        // Rule 4b/5b: min_length_any — OR semantics (5+ in any listed major)
+        if let Some(ref min_any) = sc.min_length_any {
+            let has_major_any = min_any.get(&Suit::Hearts).map_or(false, |&m| m >= 5)
+                || min_any.get(&Suit::Spades).map_or(false, |&m| m >= 5);
+            if has_major_any {
+                // Use actual deal to pick the correct major
+                if let Some(deal) = deal {
+                    if let Some(hand) = deal.hands.get(&dealer) {
+                        let hearts = hand.cards.iter().filter(|c| c.suit == Suit::Hearts).count();
+                        let spades = hand.cards.iter().filter(|c| c.suit == Suit::Spades).count();
+                        let strain = if spades > hearts { BidSuit::Spades } else { BidSuit::Hearts };
+                        return Some(Auction {
+                            entries: vec![AuctionEntry {
+                                seat: dealer,
+                                call: Call::Bid { level: 1, strain },
+                            }],
+                            is_complete: false,
+                        });
+                    }
+                }
+                // Fallback without deal: pick hearts
+                return Some(Auction {
+                    entries: vec![AuctionEntry {
+                        seat: dealer,
+                        call: Call::Bid { level: 1, strain: BidSuit::Hearts },
+                    }],
+                    is_complete: false,
+                });
             }
         }
     }
@@ -207,13 +239,13 @@ mod tests {
 
     #[test]
     fn opener_gets_no_initial_auction() {
-        let result = derive_initial_auction(PracticeRole::Opener, Seat::North, None);
+        let result = derive_initial_auction(PracticeRole::Opener, Seat::North, None, None);
         assert!(result.is_none());
     }
 
     #[test]
     fn no_constraints_returns_none() {
-        let result = derive_initial_auction(PracticeRole::Responder, Seat::North, None);
+        let result = derive_initial_auction(PracticeRole::Responder, Seat::North, None, None);
         assert!(result.is_none());
     }
 
@@ -239,6 +271,7 @@ mod tests {
             PracticeRole::Responder,
             Seat::North,
             Some(&constraints),
+            None,
         );
         let auction = result.expect("should produce 1NT auction");
         assert_eq!(auction.entries.len(), 1);
@@ -275,6 +308,7 @@ mod tests {
             PracticeRole::Responder,
             Seat::North,
             Some(&constraints),
+            None,
         );
         let auction = result.expect("should produce 1H auction");
         assert_eq!(
@@ -308,11 +342,109 @@ mod tests {
             PracticeRole::Responder,
             Seat::North,
             Some(&constraints),
+            None,
         );
         let auction = result.expect("should produce 1S auction");
         assert_eq!(
             auction.entries[0].call,
             Call::Bid { level: 1, strain: BidSuit::Spades }
+        );
+    }
+
+    #[test]
+    fn min_length_any_with_deal_picks_longer_major() {
+        use bridge_engine::types::{Card, Deal, Hand, Rank, Vulnerability};
+
+        let mut min_any = HashMap::new();
+        min_any.insert(Suit::Hearts, 5);
+        min_any.insert(Suit::Spades, 5);
+
+        let constraints = DealConstraints {
+            seats: vec![SeatConstraint {
+                seat: Seat::North,
+                min_hcp: Some(12),
+                max_hcp: Some(21),
+                balanced: None,
+                min_length: None,
+                max_length: None,
+                min_length_any: Some(min_any),
+            }],
+            dealer: Some(Seat::North),
+            vulnerability: None,
+            max_attempts: None,
+            seed: None,
+        };
+
+        // North has 5 spades and 3 hearts → should pick 1S
+        let mut hands = HashMap::new();
+        hands.insert(Seat::North, Hand {
+            cards: vec![
+                Card { suit: Suit::Spades, rank: Rank::Ace },
+                Card { suit: Suit::Spades, rank: Rank::King },
+                Card { suit: Suit::Spades, rank: Rank::Queen },
+                Card { suit: Suit::Spades, rank: Rank::Jack },
+                Card { suit: Suit::Spades, rank: Rank::Ten },
+                Card { suit: Suit::Hearts, rank: Rank::Ace },
+                Card { suit: Suit::Hearts, rank: Rank::King },
+                Card { suit: Suit::Hearts, rank: Rank::Queen },
+                Card { suit: Suit::Diamonds, rank: Rank::Ace },
+                Card { suit: Suit::Diamonds, rank: Rank::King },
+                Card { suit: Suit::Clubs, rank: Rank::Ace },
+                Card { suit: Suit::Clubs, rank: Rank::King },
+                Card { suit: Suit::Clubs, rank: Rank::Queen },
+            ],
+        });
+        let deal = Deal {
+            hands,
+            dealer: Seat::North,
+            vulnerability: Vulnerability::None,
+        };
+
+        let result = derive_initial_auction(
+            PracticeRole::Responder,
+            Seat::North,
+            Some(&constraints),
+            Some(&deal),
+        );
+        let auction = result.expect("should produce 1S auction");
+        assert_eq!(
+            auction.entries[0].call,
+            Call::Bid { level: 1, strain: BidSuit::Spades }
+        );
+    }
+
+    #[test]
+    fn min_length_any_without_deal_defaults_to_hearts() {
+        let mut min_any = HashMap::new();
+        min_any.insert(Suit::Hearts, 5);
+        min_any.insert(Suit::Spades, 5);
+
+        let constraints = DealConstraints {
+            seats: vec![SeatConstraint {
+                seat: Seat::North,
+                min_hcp: Some(12),
+                max_hcp: Some(21),
+                balanced: None,
+                min_length: None,
+                max_length: None,
+                min_length_any: Some(min_any),
+            }],
+            dealer: Some(Seat::North),
+            vulnerability: None,
+            max_attempts: None,
+            seed: None,
+        };
+
+        let result = derive_initial_auction(
+            PracticeRole::Responder,
+            Seat::North,
+            Some(&constraints),
+            None,
+        );
+        let auction = result.expect("should produce 1H auction (fallback)");
+        assert_eq!(
+            auction.entries[0].call,
+            Call::Bid { level: 1, strain: BidSuit::Hearts }
         );
     }
 
@@ -338,6 +470,7 @@ mod tests {
             PracticeRole::Responder,
             Seat::North,
             Some(&constraints),
+            None,
         );
         assert!(result.is_none());
     }

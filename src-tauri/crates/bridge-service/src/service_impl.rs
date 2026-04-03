@@ -13,8 +13,9 @@ use bridge_session::inference::InferenceCoordinator;
 use bridge_session::session::{
     build_bidding_viewport, build_bundle_flow_tree, build_declarer_prompt_viewport,
     build_explanation_viewport, build_module_catalog, build_module_flow_tree,
-    build_module_learning_viewport, build_playing_viewport, process_bid, process_play_card,
-    process_single_card, run_initial_ai_bids, run_initial_ai_plays, start_drill, BiddingViewport,
+    build_module_learning_viewport, build_playing_viewport, initialize_auction, process_bid,
+    process_play_card, process_single_card, run_initial_ai_bids, run_initial_ai_plays,
+    start_drill, BiddingViewport,
     BuildBiddingViewportInput, BuildDeclarerPromptViewportInput, BuildExplanationViewportInput,
     BuildPlayingViewportInput, BundleFlowTreeViewport, DeclarerPromptViewport, DrillConfig,
     ExplanationViewport, ModuleCatalogEntry, ModuleFlowTreeViewport, ModuleLearningViewport,
@@ -104,8 +105,8 @@ impl ServicePort for ServicePortImpl {
         // Build inference coordinator
         let coordinator = InferenceCoordinator::new(None);
 
-        // Create SessionState
-        let state = SessionState::new(
+        // Create SessionState (mutable for initial auction application)
+        let mut state = SessionState::new(
             drill_bundle.deal,
             resolved.user_seat,
             config.convention_id.clone(),
@@ -118,6 +119,11 @@ impl ServicePort for ServicePortImpl {
             bridge_session::heuristics::play_profiles::PlayProfileId::ClubPlayer,
             seed,
         );
+
+        // Apply initial auction (pre-fills opening bids for practice focus)
+        if let Some(ref initial_auction) = drill_bundle.initial_auction {
+            initialize_auction(&mut state, initial_auction, &HashMap::new());
+        }
 
         // Build seat strategies
         let seat_strategies = config_resolver::build_seat_strategies(
@@ -890,5 +896,102 @@ mod tests {
         let service = ServicePortImpl::new();
         let result = service.get_dds_solution("session-1");
         assert!(matches!(result, Err(ServiceError::DdsNotAvailable)));
+    }
+
+    // ── Initial auction integration tests ────────────────────────
+
+    use bridge_engine::types::{BidSuit, Call};
+
+    fn create_session_for_bundle(
+        service: &mut ServicePortImpl,
+        convention_id: &str,
+        seed: u64,
+    ) -> (SessionHandle, crate::response_types::DrillStartResult) {
+        let config = SessionConfig {
+            convention_id: convention_id.to_string(),
+            seed: Some(seed),
+            user_seat: None,
+            base_system_id: None,
+            practice_mode: None,
+            target_module_id: None,
+            practice_role: None,
+            play_preference: None,
+            opponent_mode: None,
+            vulnerability: None,
+        };
+        let handle = service.create_session(config).expect("create_session should succeed");
+        let result = service.start_drill(&handle).expect("start_drill should succeed");
+        (handle, result)
+    }
+
+    #[test]
+    fn bergen_session_has_major_opening_in_viewport() {
+        let mut service = ServicePortImpl::new();
+        // Try several seeds to verify consistent behavior
+        for seed in 42..52 {
+            let (_handle, result) = create_session_for_bundle(&mut service, "bergen-bundle", seed);
+
+            // The viewport's auction entries should contain at least one entry
+            // with a 1H or 1S opening from the dealer (North)
+            let has_major_opening = result.viewport.auction_entries.iter().any(|e| {
+                matches!(
+                    &e.call,
+                    Call::Bid { level: 1, strain: BidSuit::Hearts }
+                    | Call::Bid { level: 1, strain: BidSuit::Spades }
+                )
+            });
+            assert!(
+                has_major_opening,
+                "seed={seed}: Bergen session should have 1H or 1S in auction, got: {:?}",
+                result.viewport.auction_entries.iter().map(|e| &e.call).collect::<Vec<_>>()
+            );
+
+            // Should NOT have a 1NT opening (the bug we're fixing)
+            let has_1nt = result.viewport.auction_entries.iter().any(|e| {
+                matches!(&e.call, Call::Bid { level: 1, strain: BidSuit::NoTrump })
+            });
+            assert!(
+                !has_1nt,
+                "seed={seed}: Bergen session should not have 1NT opening"
+            );
+        }
+    }
+
+    #[test]
+    fn nt_session_has_1nt_opening_in_viewport() {
+        let mut service = ServicePortImpl::new();
+        for seed in 42..47 {
+            let (_handle, result) = create_session_for_bundle(&mut service, "nt-bundle", seed);
+
+            let has_1nt = result.viewport.auction_entries.iter().any(|e| {
+                matches!(&e.call, Call::Bid { level: 1, strain: BidSuit::NoTrump })
+            });
+            assert!(
+                has_1nt,
+                "seed={seed}: NT session should have 1NT in auction, got: {:?}",
+                result.viewport.auction_entries.iter().map(|e| &e.call).collect::<Vec<_>>()
+            );
+        }
+    }
+
+    #[test]
+    fn bergen_opening_matches_deal_major() {
+        let mut service = ServicePortImpl::new();
+        for seed in 42..52 {
+            let (handle, result) = create_session_for_bundle(&mut service, "bergen-bundle", seed);
+
+            // Get the deal PBN to verify the opening matches the hand
+            let _pbn = service.get_deal_pbn(&handle).expect("get_deal_pbn");
+
+            // The first auction entry should be the pre-filled opening
+            let first_entry = &result.viewport.auction_entries[0];
+            assert_eq!(first_entry.seat, result.viewport.dealer,
+                "First bid should be from dealer");
+            match &first_entry.call {
+                Call::Bid { level: 1, strain: BidSuit::Hearts }
+                | Call::Bid { level: 1, strain: BidSuit::Spades } => {}
+                other => panic!("seed={seed}: Expected 1H or 1S as first bid, got {:?}", other),
+            }
+        }
     }
 }
