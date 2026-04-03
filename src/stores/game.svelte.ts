@@ -75,10 +75,10 @@ export interface DebugLogEntry {
   readonly turnIndex: number;
   readonly seat: Seat;
   readonly call?: Call;
-  /** Pipeline state at this moment (null for AI bids). */
-  readonly snapshot: DebugSnapshot;
+  /** Pipeline state at this moment (null in release builds). */
+  readonly snapshot?: DebugSnapshot | null;
   /** Feedback from grading (only on user-bid entries). */
-  readonly feedback: BidFeedbackDTO | null;
+  readonly feedback?: DebugBidFeedback | null;
 }
 
 export interface PlayLogEntry {

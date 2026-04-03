@@ -25,15 +25,15 @@
           {#if entry.feedback}
             <span class="px-1 rounded text-[9px] {entry.feedback.grade === 'correct' ? 'bg-green-900/50 text-green-300' : entry.feedback.grade === 'incorrect' ? 'bg-red-900/50 text-red-300' : entry.feedback.grade === 'near-miss' ? 'bg-yellow-900/50 text-yellow-300' : 'bg-teal-900/50 text-teal-300'}">{entry.feedback.grade}</span>
           {/if}
-          {#if entry.snapshot.expectedBid}
+          {#if entry.snapshot?.expectedBid}
             <span class="text-text-muted">exp: <span class="text-green-300">{formatCall(entry.snapshot.expectedBid.call)}</span></span>
           {/if}
         </summary>
         <div class="pl-3 text-[10px] pb-0.5 border-l-2 ml-1 {gradeBorderColor(entry.feedback?.grade)}">
-          {#if entry.snapshot.expectedBid?.meaning}
+          {#if entry.snapshot?.expectedBid?.meaning}
             <div class="text-text-muted">meaning: <span class="text-yellow-300">{entry.snapshot.expectedBid.meaning}</span></div>
           {/if}
-          {#if entry.snapshot.machineSnapshot}
+          {#if entry.snapshot?.machineSnapshot}
             <div class="text-text-muted">
               state: <span class="text-cyan-300">{entry.snapshot.machineSnapshot.currentStateId}</span>
               {#if entry.snapshot.machineSnapshot.registers}| forcing: <span class="text-text-primary">{entry.snapshot.machineSnapshot.registers.forcingState}</span>{/if}

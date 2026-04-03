@@ -46,19 +46,21 @@
   type PipelineView = "current" | "last-bid";
   let pipelineView = $state<PipelineView>("current");
 
-  // ─── Reactive debug data ─────────────────────────────────────
-  // Latest snapshot (pre-bid for current position).
+  // ─── Log-based debug data ────────────────────────────────────
+  // All state derived from gameStore.debugLog — no separate reactive snapshots.
+
+  // Latest snapshot (current position — last entry in log).
   const currentSnap = $derived.by<DebugSnapshot | null>(() => {
     const log = gameStore.debugLog;
-    if (log.length > 0) return log[log.length - 1]!.snapshot;
-    return null;
+    if (log.length === 0) return null;
+    return log[log.length - 1]?.snapshot ?? null;
   });
 
   // Most recent user-bid snapshot (pipeline state when the user last bid).
   const lastBidSnap = $derived.by<DebugSnapshot | null>(() => {
     const log = gameStore.debugLog;
     for (let i = log.length - 1; i >= 0; i--) {
-      if (log[i]!.kind === "user-bid") return log[i]!.snapshot;
+      if (log[i]!.kind === "user-bid") return log[i]!.snapshot ?? null;
     }
     return null;
   });
@@ -71,13 +73,11 @@
   // Whether the toggle should be shown (only when there's a user-bid entry).
   const hasLastBid = $derived(lastBidSnap !== null);
 
-  // Feedback: scan backwards for the most recent entry that has feedback
-  // (user-bid entries). Pre-bid entries have null feedback, so reading
-  // only the last entry would hide teaching after each bid cycle.
+  // Feedback: scan backwards for the most recent entry with feedback.
   const feedback = $derived.by<DebugBidFeedback | null>(() => {
     const log = gameStore.debugLog;
     for (let i = log.length - 1; i >= 0; i--) {
-      if (log[i]!.feedback) return log[i]!.feedback;
+      if (log[i]!.feedback) return log[i]!.feedback ?? null;
     }
     return null;
   });

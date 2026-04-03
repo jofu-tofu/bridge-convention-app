@@ -612,10 +612,42 @@ pub struct ServiceDebugLogEntryDTO {
     pub grade: Option<BidGrade>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trace: Option<ChainTrace>,
+
+    /// Pipeline snapshot serialized as JSON.
+    /// Shape matches TS DebugSnapshotBase: StrategyEvaluation fields (camelCase via serde)
+    /// plus an injected `expectedBid` field built from the flat expected_call/expected_explanation.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub snapshot: Option<serde_json::Value>,
+
+    /// Bid feedback serialized as JSON (user-bid entries only).
+    /// Shape matches TS BidFeedbackDTO: grade, userCall, expectedCall, explanation.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub feedback: Option<serde_json::Value>,
 }
 
 impl From<&DebugLogEntry> for ServiceDebugLogEntryDTO {
     fn from(entry: &DebugLogEntry) -> Self {
+        let snapshot = entry.evaluation_snapshot.as_ref().and_then(|eval| {
+            let mut obj = match serde_json::to_value(eval).ok()? {
+                serde_json::Value::Object(m) => m,
+                _ => return None,
+            };
+            // Inject expectedBid to match TS DebugSnapshotBase shape
+            let expected_bid = entry.expected_call.as_ref().map(|call| {
+                serde_json::json!({
+                    "call": call,
+                    "explanation": entry.expected_explanation.as_deref().unwrap_or(""),
+                    "ruleName": serde_json::Value::Null,
+                })
+            });
+            obj.insert("expectedBid".into(),
+                expected_bid.unwrap_or(serde_json::Value::Null));
+            Some(serde_json::Value::Object(obj))
+        });
+
+        let feedback = entry.bid_feedback.as_ref()
+            .and_then(|fb| serde_json::to_value(fb).ok());
+
         Self {
             kind: entry.kind.clone(),
             turn_index: entry.turn_index,
@@ -625,6 +657,8 @@ impl From<&DebugLogEntry> for ServiceDebugLogEntryDTO {
             expected_explanation: entry.expected_explanation.clone(),
             grade: entry.grade,
             trace: entry.trace.clone(),
+            snapshot,
+            feedback,
         }
     }
 }
@@ -799,6 +833,8 @@ mod tests {
             expected_explanation: Some("No convention applies".to_string()),
             grade: Some(BidGrade::Correct),
             trace: None,
+            snapshot: None,
+            feedback: None,
         };
         let json = serde_json::to_string(&dto).unwrap();
         assert!(

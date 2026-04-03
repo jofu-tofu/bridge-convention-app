@@ -18,11 +18,13 @@ use crate::inference::{Posterior, PosteriorEngine, UniformPosterior};
 use bridge_engine::strategy::ChainTrace;
 use serde::{Serialize, Deserialize};
 
+use bridge_conventions::adapter::strategy_evaluation::StrategyEvaluation;
+
 use crate::heuristics::{BiddingStrategy, BidResult};
 use crate::heuristics::play_profiles::{PlayProfileId, get_profile};
 use crate::types::{GamePhase, PlayPreference, PracticeFocus, PracticeMode};
 
-use super::bid_feedback_builder::BidGrade;
+use super::bid_feedback_builder::{BidFeedbackDTO, BidGrade};
 use super::build_viewport::BidHistoryEntryView;
 use super::build_viewport::AnnotationType;
 
@@ -54,6 +56,15 @@ pub struct DebugLogEntry {
     /// Strategy chain trace showing which strategies were attempted
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trace: Option<ChainTrace>,
+
+    /// Full strategy evaluation snapshot from the pipeline at this point in the auction.
+    /// Only populated in debug builds via cfg!(debug_assertions).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evaluation_snapshot: Option<StrategyEvaluation>,
+
+    /// Bid feedback from grading (user-bid entries only).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bid_feedback: Option<BidFeedbackDTO>,
 }
 
 // ── SeatStrategy ────────────────────────────────────────────────────

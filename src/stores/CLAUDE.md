@@ -39,6 +39,8 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Exported types:** `BidFeedback` (viewport-safe: `grade: ViewportBidGrade` (string), `viewportFeedback: ViewportBidFeedback`, `teaching: TeachingDetail | null`). `BidHistoryEntry` (re-exported from `service/`), `GamePhase`, `PlayLogEntry`.
 
+**Debug log is log-based, not reactive.** The debug drawer derives all state (`currentSnap`, `lastBidSnap`, `feedback`) from `gameStore.debugLog` entries via `$derived`. No separate reactive snapshot state — the log accumulates entries over the bidding phase with full `StrategyEvaluation` snapshots and `BidFeedbackDTO` embedded by Rust. Intended for extension to a review-phase analysis panel.
+
 **Viewport as single source of truth.** The store is a thin reactive cache of viewports from the service. Bidding state (`auction`, `bidHistory`, `legalCalls`, `currentTurn`, `isUserTurn`) and play state (`tricks`, `currentTrick`, `currentPlayer`, etc.) are derived from `cachedBiddingViewport` / `cachedPlayingViewport` via `$derived`. No local state mutation during the game — the service owns the truth. There is no legacy local path — all game operations go through the service.
 
 **Animation via incremental reveal.** AI bid/play animation uses an overlay counter (`biddingAnim` / `playAnim`) that controls how much of a complete viewport to display. The service returns the *final* viewport (including all AI bids/plays); the store holds `{ totalAiBids, revealed }` and increments `revealed` with delays. `displayedAuctionEntries` / `displayedCurrentTrick` are `$derived` values that slice the viewport's entries. No state mutation during animation.

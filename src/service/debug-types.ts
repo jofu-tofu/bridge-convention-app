@@ -120,8 +120,8 @@ export interface ServiceDebugLogEntry {
   readonly turnIndex: number;
   readonly seat: Seat;
   readonly call?: Call;
-  readonly snapshot: DebugSnapshotBase;
-  readonly feedback: BidFeedbackDTO | null;
+  readonly snapshot?: DebugSnapshotBase | null;
+  readonly feedback?: BidFeedbackDTO | null;
 }
 
 /** Base debug snapshot without sessionPhase — used in log entries

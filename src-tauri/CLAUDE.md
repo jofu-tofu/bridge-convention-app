@@ -69,6 +69,7 @@ crates/
 
 ## Conventions
 
+- **Debug log carries evaluation snapshots.** `DebugLogEntry` in `bridge-session` stores `Option<StrategyEvaluation>` captured from `stashed_evaluation()` at each bid. Gated by `cfg!(debug_assertions)` — release builds store `None`. The service DTO serializes this to JSON (`serde_json::Value`) at the transport boundary, injecting an `expectedBid` field to match the TS `DebugSnapshotBase` shape. This log is the single source of truth for the debug drawer and future review-phase analysis panel.
 - **bridge-engine purity:** Zero platform deps (no tauri, axum, tokio). Only serde, rand, thiserror. No convention awareness — `BidResult` carries no `FactConstraint`. Convention constraints flow through `SessionState::process_bid()` as a separate parameter. `BiddingStrategy::stashed_evaluation()` returns `Box<dyn Any>` so `bridge-session` can downcast to `StrategyEvaluation` without `bridge-engine` importing convention types.
 - **Free functions, not a trait:** Engine functions called directly. Transport crates are the abstraction.
 - **Error boundary:** `EngineError` for domain logic. Tauri returns `Result<T, String>`. WASM returns `Result<JsValue, JsError>`.

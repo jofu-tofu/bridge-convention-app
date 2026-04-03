@@ -83,6 +83,8 @@ pub fn process_bid(
         expected_explanation: expected_result.as_ref().map(|r| r.explanation.clone()),
         grade: Some(feedback.grade),
         trace: expected_result.as_ref().and_then(|r| r.trace.clone()),
+        evaluation_snapshot: capture_evaluation_snapshot(current_turn, seat_strategies),
+        bid_feedback: Some(feedback.clone()),
     });
 
     // Grade-acceptance policy: Correct/Acceptable advance;
@@ -151,6 +153,24 @@ pub fn initialize_auction(
 }
 
 // ── Internal helpers ───────────────────────────────────────────────
+
+/// Capture the stashed StrategyEvaluation for the debug log.
+/// Returns None in release builds or when no evaluation is stashed.
+///
+/// Note: all seats (including the human player's) use SeatStrategy::Ai in production
+/// (see config_resolver.rs:86-92). SeatStrategy::User is only used in test helpers.
+fn capture_evaluation_snapshot(
+    seat: Seat,
+    seat_strategies: &HashMap<Seat, SeatStrategy>,
+) -> Option<StrategyEvaluation> {
+    if !cfg!(debug_assertions) { return None; }
+    let strategy = match seat_strategies.get(&seat) {
+        Some(SeatStrategy::Ai(s)) => s,
+        _ => return None,
+    };
+    let boxed = strategy.stashed_evaluation()?;
+    boxed.downcast_ref::<StrategyEvaluation>().cloned()
+}
 
 /// Extract FactConstraints from a seat's strategy evaluation.
 /// Uses `stashed_evaluation()` on BiddingStrategy, then downcasts to
@@ -317,7 +337,7 @@ fn run_ai_bid_loop(
                 BidResult {
                     call: Call::Pass,
                     rule_name: None,
-                    explanation: "Pass".to_string(),
+                    explanation: String::new(),
                     ..Default::default()
                 }
             }
@@ -344,6 +364,8 @@ fn run_ai_bid_loop(
             expected_explanation: Some(result.explanation.clone()),
             grade: None,
             trace: result.trace.clone(),
+            evaluation_snapshot: capture_evaluation_snapshot(current_seat, seat_strategies),
+            bid_feedback: None,
         });
 
         // Process through inference — extract constraints from the AI seat's strategy
@@ -406,7 +428,7 @@ fn get_ai_bid(
         None => Some(BidResult {
             call: Call::Pass,
             rule_name: None,
-            explanation: "Pass".to_string(),
+            explanation: String::new(),
             ..Default::default()
         }),
         Some(bid_result) => {
@@ -415,7 +437,7 @@ fn get_ai_bid(
                 Some(BidResult {
                     call: Call::Pass,
                     rule_name: None,
-                    explanation: "Pass".to_string(),
+                    explanation: String::new(),
                     ..Default::default()
                 })
             } else {
