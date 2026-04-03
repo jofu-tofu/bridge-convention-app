@@ -29,7 +29,7 @@ import type {
   ServicePublicBeliefState,
   ServiceInferenceSnapshot,
 } from "./response-types";
-import type { ServiceDebugSnapshot, ServiceDebugLogEntry } from "./debug-types";
+import type { ServiceDebugLogEntry } from "./debug-types";
 import type { PlayProfileId } from "./session-types";
 import { getDDSSolutionFromWorker } from "./dds-bridge";
 import { setWasmModule } from "./service-helpers";
@@ -61,7 +61,6 @@ interface WasmServicePortBindings {
   get_module_flow_tree(moduleId: string): ModuleFlowTreeViewport | null;
   // Dev methods (available in debug builds only)
   get_expected_bid?(handle: string): { call: Call } | null;
-  get_debug_snapshot?(handle: string): ServiceDebugSnapshot;
   get_debug_log?(handle: string): readonly ServiceDebugLogEntry[];
   get_inference_timeline?(handle: string): readonly ServiceInferenceSnapshot[];
   get_convention_name?(handle: string): string;
@@ -202,12 +201,6 @@ export class WasmService implements DevServicePort {
   // ── DevServicePort ──────────────────────────────────────────────
   async getExpectedBid(handle: SessionHandle): Promise<{ call: Call } | null> {
     return getPort().get_expected_bid?.(handle) ?? null;
-  }
-
-  async getDebugSnapshot(handle: SessionHandle): Promise<ServiceDebugSnapshot> {
-    const port = getPort();
-    if (!port.get_debug_snapshot) throw new Error("getDebugSnapshot not available — WASM build may lack dev methods");
-    return port.get_debug_snapshot(handle);
   }
 
   async getDebugLog(handle: SessionHandle): Promise<readonly ServiceDebugLogEntry[]> {

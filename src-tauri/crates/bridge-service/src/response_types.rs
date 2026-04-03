@@ -569,32 +569,6 @@ pub struct NearMissCallDTO {
 
 // ── Debug DTOs (DevServicePort) ──────────────────────────────────
 
-/// Typed expected bid for debug snapshot.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ExpectedBidDTO {
-    pub call: Call,
-    pub explanation: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rule_name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub trace: Option<ChainTrace>,
-}
-
-/// Debug snapshot — typed wrapper with session metadata + flattened strategy evaluation.
-/// The `strategy_eval` field is kept as `serde_json::Value` because
-/// `StrategyEvaluation` is deeply nested (PipelineResult, MachineDebugSnapshot, etc.)
-/// and these are debug-only payloads already correctly serialized by serde.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ServiceDebugSnapshotDTO {
-    pub session_phase: GamePhase,
-    pub expected_bid: Option<ExpectedBidDTO>,
-    /// StrategyEvaluation fields — kept dynamic since they are debug-only.
-    #[serde(flatten)]
-    pub strategy_eval: serde_json::Value,
-}
-
 /// Debug log entry — typed wrapper with kind/turnIndex/seat + typed fields.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -767,59 +741,6 @@ mod tests {
         let rt: DDSolutionResult = serde_json::from_str(&json).unwrap();
         assert!(rt.solution.is_some());
         assert!(rt.error.is_none());
-    }
-
-    #[test]
-    fn debug_snapshot_dto_serde_roundtrip() {
-        let dto = ServiceDebugSnapshotDTO {
-            session_phase: GamePhase::Bidding,
-            expected_bid: Some(ExpectedBidDTO {
-                call: Call::Bid {
-                    level: 1,
-                    strain: bridge_engine::types::BidSuit::NoTrump,
-                },
-                explanation: "15-17 HCP balanced".to_string(),
-                rule_name: None,
-                trace: None,
-            }),
-            strategy_eval: serde_json::json!({
-                "pipelineResult": null,
-                "facts": {"hcp": 16}
-            }),
-        };
-        let json = serde_json::to_string(&dto).unwrap();
-        // Verify camelCase and flattening
-        assert!(
-            json.contains("\"sessionPhase\""),
-            "Expected sessionPhase in JSON: {}",
-            json
-        );
-        assert!(
-            json.contains("\"expectedBid\""),
-            "Expected expectedBid in JSON: {}",
-            json
-        );
-        // Flattened fields from strategy_eval should appear at top level
-        assert!(
-            json.contains("\"pipelineResult\""),
-            "Expected flattened pipelineResult in JSON: {}",
-            json
-        );
-        assert!(
-            json.contains("\"facts\""),
-            "Expected flattened facts in JSON: {}",
-            json
-        );
-        // Should NOT contain a "strategyEval" wrapper key
-        assert!(
-            !json.contains("\"strategyEval\""),
-            "strategy_eval should be flattened, not nested: {}",
-            json
-        );
-
-        let rt: ServiceDebugSnapshotDTO = serde_json::from_str(&json).unwrap();
-        assert_eq!(rt.session_phase, GamePhase::Bidding);
-        assert!(rt.expected_bid.is_some());
     }
 
     #[test]

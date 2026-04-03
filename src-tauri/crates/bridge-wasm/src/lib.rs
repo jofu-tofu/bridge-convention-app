@@ -235,14 +235,6 @@ impl WasmServicePort {
         to_js(&result)
     }
 
-    pub fn get_debug_snapshot(&self, handle: &str) -> Result<JsValue, JsError> {
-        let result = self
-            .inner
-            .get_debug_snapshot(handle)
-            .map_err(|e| JsError::new(&e.to_string()))?;
-        to_js(&result)
-    }
-
     pub fn get_debug_log(&self, handle: &str) -> Result<JsValue, JsError> {
         let result = self
             .inner

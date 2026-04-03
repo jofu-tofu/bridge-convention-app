@@ -30,7 +30,6 @@ pub fn run() {
             service_commands::get_module_flow_tree,
             // Dev/debug
             service_commands::get_expected_bid,
-            service_commands::get_debug_snapshot,
             service_commands::get_debug_log,
             service_commands::get_inference_timeline,
             service_commands::get_convention_name,

@@ -14,7 +14,7 @@ use crate::error::ServiceError;
 use crate::request_types::{SessionConfig, SessionHandle};
 use crate::response_types::{
     BidSubmitResult, ConventionInfo, DDSolutionResult, DrillStartResult, InferenceTimelineEntryDTO,
-    PromptAcceptResult, ServiceDebugLogEntryDTO, ServiceDebugSnapshotDTO, ServicePublicBeliefState,
+    PromptAcceptResult, ServiceDebugLogEntryDTO, ServicePublicBeliefState,
 };
 
 /// Production service interface — all methods synchronous.
@@ -110,9 +110,6 @@ pub trait ServicePort {
 pub trait DevServicePort: ServicePort {
     /// Get the expected bid from convention strategy.
     fn get_expected_bid(&self, handle: &str) -> Result<Option<Call>, ServiceError>;
-
-    /// Get a debug snapshot of the current session state.
-    fn get_debug_snapshot(&self, handle: &str) -> Result<ServiceDebugSnapshotDTO, ServiceError>;
 
     /// Get the debug log (list of events).
     fn get_debug_log(&self, handle: &str) -> Result<Vec<ServiceDebugLogEntryDTO>, ServiceError>;

@@ -32,7 +32,6 @@ import type {
   ServicePublicBeliefState,
 } from "./response-types";
 import type {
-  ServiceDebugSnapshot,
   ServiceDebugLogEntry,
 } from "./debug-types";
 
@@ -96,7 +95,6 @@ interface ServicePort {
  *  local-service.ts implements both. */
 export interface DevServicePort extends ServicePort {
   getExpectedBid(handle: SessionHandle): Promise<{ call: Call } | null>;
-  getDebugSnapshot(handle: SessionHandle): Promise<ServiceDebugSnapshot>;
   getDebugLog(handle: SessionHandle): Promise<readonly ServiceDebugLogEntry[]>;
   getInferenceTimeline(handle: SessionHandle): Promise<readonly ServiceInferenceSnapshot[]>;
 

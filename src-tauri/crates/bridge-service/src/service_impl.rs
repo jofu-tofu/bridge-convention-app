@@ -30,8 +30,8 @@ use crate::port::{DevServicePort, ServicePort};
 use crate::request_types::{SessionConfig, SessionHandle};
 use crate::response_types::{
     AiBidEntryDTO, AiPlayEntryDTO, BidSubmitResult, ConventionInfo, DDSolutionResult,
-    DrillStartResult, ExpectedBidDTO, InferenceTimelineEntryDTO, PhaseTransition,
-    PromptAcceptResult, ServiceDebugLogEntryDTO, ServiceDebugSnapshotDTO, ServiceFactConstraintDTO,
+    DrillStartResult, InferenceTimelineEntryDTO, PhaseTransition,
+    PromptAcceptResult, ServiceDebugLogEntryDTO, ServiceFactConstraintDTO,
     ServicePublicBeliefState, ServicePublicBeliefsDTO,
 };
 use crate::session_manager::SessionManager;
@@ -704,49 +704,6 @@ impl DevServicePort for ServicePortImpl {
         };
         let (bid, _eval) = adapter.suggest_with_evaluation(&ctx, Some(&session.state.deal.hands));
         Ok(bid.map(|b| b.call))
-    }
-
-    fn get_debug_snapshot(&self, handle: &str) -> Result<ServiceDebugSnapshotDTO, ServiceError> {
-        let session = self.manager.get(handle)?;
-        let empty_eval = || serde_json::Value::Object(serde_json::Map::new());
-
-        let adapter = match Self::get_convention_adapter(session) {
-            Some(a) => a,
-            None => {
-                return Ok(ServiceDebugSnapshotDTO {
-                    session_phase: session.state.phase,
-                    expected_bid: None,
-                    strategy_eval: empty_eval(),
-                });
-            }
-        };
-        let ctx = match Self::build_user_bidding_context(session) {
-            Some(c) => c,
-            None => {
-                return Ok(ServiceDebugSnapshotDTO {
-                    session_phase: session.state.phase,
-                    expected_bid: None,
-                    strategy_eval: empty_eval(),
-                });
-            }
-        };
-        let (bid, evaluation) =
-            adapter.suggest_with_evaluation(&ctx, Some(&session.state.deal.hands));
-
-        let expected_bid = bid.map(|b| ExpectedBidDTO {
-            call: b.call.clone(),
-            explanation: b.explanation.clone(),
-            rule_name: b.rule_name.clone(),
-            trace: b.trace.clone(),
-        });
-
-        let strategy_eval = serde_json::to_value(&evaluation).unwrap_or_else(|_| empty_eval());
-
-        Ok(ServiceDebugSnapshotDTO {
-            session_phase: session.state.phase,
-            expected_bid,
-            strategy_eval,
-        })
     }
 
     fn get_debug_log(&self, handle: &str) -> Result<Vec<ServiceDebugLogEntryDTO>, ServiceError> {

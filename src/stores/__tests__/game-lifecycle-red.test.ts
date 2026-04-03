@@ -102,7 +102,6 @@ function createMockService(): DevServicePort {
     getModuleFlowTree: vi.fn().mockResolvedValue(null),
     // DevServicePort methods
     getExpectedBid: vi.fn().mockResolvedValue(null),
-    getDebugSnapshot: vi.fn().mockResolvedValue({}),
     getDebugLog: vi.fn().mockResolvedValue([]),
     getInferenceTimeline: vi.fn().mockResolvedValue([]),
     getConventionName: vi.fn().mockResolvedValue("Test Convention"),

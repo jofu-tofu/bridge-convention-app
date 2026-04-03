@@ -5,12 +5,10 @@
  * response-types.ts has zero backend imports (only engine vocabulary).
  * This file bridges the gap for debug/dev types that need backend detail.
  *
- * Consumers: debug drawer components, stores (for getDebugSnapshot),
- * DevServicePort interface.
+ * Consumers: debug drawer components, stores, DevServicePort interface.
  */
 
 import type { Call, Seat } from "../engine/types";
-import type { ServiceGamePhase } from "./response-types";
 import type { BidResult, PosteriorSummary, TeachingProjection } from "./session-types";
 
 // ── Debug-only backend types ────────────────────────────────────────
@@ -106,12 +104,6 @@ export interface StrategyEvaluation {
   readonly facts?: EvaluatedFacts | null;
   readonly machineSnapshot?: MachineDebugSnapshot | null;
   readonly auctionContext?: Record<string, unknown> | null;
-}
-
-/** Debug snapshot visible through DevServicePort. */
-export interface ServiceDebugSnapshot extends StrategyEvaluation {
-  readonly sessionPhase: ServiceGamePhase;
-  readonly expectedBid: BidResult | null;
 }
 
 /** Debug log entry visible through DevServicePort. */

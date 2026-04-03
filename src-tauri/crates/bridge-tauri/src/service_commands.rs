@@ -240,17 +240,6 @@ pub fn get_expected_bid(
 }
 
 #[tauri::command]
-pub fn get_debug_snapshot(
-    state: tauri::State<ServiceState>,
-    handle: String,
-) -> Result<serde_json::Value, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_debug_snapshot(&handle)
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
 pub fn get_debug_log(
     state: tauri::State<ServiceState>,
     handle: String,

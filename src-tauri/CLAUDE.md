@@ -60,10 +60,10 @@ crates/
                        Thin hexagonal port between UI/WASM/CLI and game logic. Depends on
                        bridge-engine, bridge-conventions, bridge-session.
   bridge-tauri/        Tauri v2 app — #[tauri::command] handlers wrapping ServicePortImpl
-                       (Mutex-managed state). service_commands.rs has all 20 ServicePort + 6
+                       (Mutex-managed state). service_commands.rs has all 20 ServicePort + 5
                        DevServicePort commands.
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
-                       for browser deployment. All 19 ServicePort methods + 6 DevServicePort
+                       for browser deployment. All 19 ServicePort methods + 5 DevServicePort
                        methods (debug_assertions gated).
 ```
 
