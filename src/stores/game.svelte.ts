@@ -93,18 +93,6 @@ export interface PlayLogEntry {
 // ── Internal constants ──────────────────────────────────────────────
 
 
-/** Default empty evaluation — used when no strategy is wired or before first suggest(). */
-const EMPTY_EVALUATION: StrategyEvaluation = {
-  practicalRecommendation: null,
-  surfaceGroups: null,
-  pipelineResult: null,
-  posteriorSummary: null,
-  explanationCatalog: null,
-  teachingProjection: null,
-  facts: null,
-  machineSnapshot: null,
-  auctionContext: null,
-};
 
 // ── Grouped phase state types ───────────────────────────────────────
 
@@ -887,14 +875,6 @@ export function createGameStore(
       if (!activeHandle) return null;
       return activeService.getExpectedBid(activeHandle);
     },
-    async getDebugSnapshot(): Promise<DebugSnapshot> {
-      if (!activeHandle) {
-        return { expectedBid: null, ...EMPTY_EVALUATION };
-      }
-      const snap = await activeService.getDebugSnapshot(activeHandle);
-      return { ...snap, expectedBid: snap.expectedBid ?? null };
-    },
-
     reset(): void {
       resetImpl();
     },

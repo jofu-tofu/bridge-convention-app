@@ -22,7 +22,6 @@ import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, Explanat
 import type {
   BidFeedback,
   BidHistoryEntry,
-  DebugSnapshot,
   DebugLogEntry,
   PlayLogEntry,
 } from "./game.svelte";
@@ -145,6 +144,5 @@ export interface GameStore {
   userBid(call: Call): void;
   retryBid(): void;
   getExpectedBid(): Promise<{ call: Call } | null>;
-  getDebugSnapshot(): Promise<DebugSnapshot>;
   reset(): void;
 }
