@@ -73,6 +73,7 @@ Backward compat aliases: `?coverage=true` → `?screen=coverage`, `?profiles=tru
 ## Code Hygiene
 
 - **Fix all lint errors and warnings you encounter** — even if they weren't caused by your changes. If `npm run lint` or a hook reports errors/warnings in files you touched, fix them before finishing.
+- **Remove dead code after every change.** When a change makes code unreachable, unused, or semantically dead (reachable but its result is never consumed), delete it immediately — don't leave it for a follow-up. This includes: unused imports, functions, types, struct fields, enum variants, variables, parameters, feature flags that always resolve one way, and code behind conditions that are always true/false. Run `npm run lint:dead` (Knip) for TS and `cargo test --workspace` + compiler warnings for Rust. Do not comment out dead code or rename it with `_` prefixes — delete it.
 - **Lint is scoped to app code, tests, and root JS/TS config files.** `npm run lint` is not a workspace-wide sweep; it excludes generated/tooling directories outside the app surface.
 - **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `stores/`, `cli/`, `components/`), the UI/backend boundary (components/ cannot import from any backend module -- must use service/), design token usage in game components (`no-hardcoded-style-classes`), and protocol trigger scope (`no-full-scope-trigger`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
 
