@@ -30,7 +30,6 @@ import type {
   ModuleFlowTreeViewport,
   ServiceInferenceSnapshot,
   ServicePublicBeliefState,
-  PlayRecommendation,
 } from "./response-types";
 import type {
   ServiceDebugSnapshot,
@@ -56,8 +55,6 @@ interface ServicePort {
   playCard(handle: SessionHandle, card: Card, seat: Seat): Promise<PlayCardResult>;
   /** Play a single card without running the AI loop. Used by MC+DDS profiles. */
   playSingleCard(handle: SessionHandle, card: Card, seat: Seat): Promise<SingleCardResult>;
-  /** Record a play recommendation from TS-side MC+DDS analysis. */
-  recordPlayRecommendation(handle: SessionHandle, recommendation: PlayRecommendation): Promise<void>;
   skipToReview(handle: SessionHandle): Promise<void>;
   updatePlayProfile(handle: SessionHandle, profileId: PlayProfileId): Promise<void>;
 

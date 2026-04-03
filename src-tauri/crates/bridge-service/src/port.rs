@@ -7,7 +7,7 @@ use bridge_engine::types::{Call, Card, Seat};
 use bridge_session::session::{
     BiddingViewport, BundleFlowTreeViewport, DeclarerPromptViewport, ExplanationViewport,
     ModuleCatalogEntry, ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult,
-    PlayRecommendation, PlayingViewport, SingleCardResult,
+    PlayingViewport, SingleCardResult,
 };
 
 use crate::error::ServiceError;
@@ -60,14 +60,6 @@ pub trait ServicePort {
         card: Card,
         seat: Seat,
     ) -> Result<SingleCardResult, ServiceError>;
-
-    /// Record a play recommendation from TS-side MC+DDS analysis.
-    /// TS pushes recommendations into Rust session state during play.
-    fn record_play_recommendation(
-        &mut self,
-        handle: &str,
-        recommendation: PlayRecommendation,
-    ) -> Result<(), ServiceError>;
 
     /// Skip play phase, go directly to review.
     fn skip_to_review(&mut self, handle: &str) -> Result<(), ServiceError>;

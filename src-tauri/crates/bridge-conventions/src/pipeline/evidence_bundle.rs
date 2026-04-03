@@ -5,23 +5,6 @@
 use serde::{Deserialize, Serialize};
 
 
-/// Base condition evaluation result.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ConditionResult {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub condition_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub fact_id: Option<String>,
-    pub satisfied: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub observed_value: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub threshold: Option<serde_json::Value>,
-}
-
 /// Evidence for a single condition evaluation.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -487,12 +487,6 @@ export function createGameStore(
     await executeTransition(activeHandle, { type: "DECLINE_PLAY" });
   }
 
-  function acceptDeclarerSwap() { void acceptPromptAction(); }
-  function declineDeclarerSwap() { void declinePromptAction(); }
-  function acceptDefend() { void acceptPromptAction(); }
-  function declineDefend() { void declinePromptAction(); }
-  function acceptSouthPlay() { void acceptPromptAction(); }
-  function declineSouthPlay() { void declinePromptAction(); }
   function acceptPrompt() { return acceptPromptAction(); }
   function declinePrompt() { return declinePromptAction(); }
 
@@ -812,16 +806,8 @@ export function createGameStore(
     startDrillFromHandle: startDrillFromHandleImpl,
     startNewDrill: startNewDrillImpl,
 
-    acceptPlay: guarded(acceptPromptAction),
-    declinePlay: guarded(declinePromptAction),
     acceptPrompt: guarded(acceptPrompt),
     declinePrompt: guarded(declinePrompt),
-    acceptDeclarerSwap: guarded(acceptDeclarerSwap),
-    declineDeclarerSwap: guarded(declineDeclarerSwap),
-    acceptDefend: guarded(acceptDefend),
-    declineDefend: guarded(declineDefend),
-    acceptSouthPlay: guarded(acceptSouthPlay),
-    declineSouthPlay: guarded(declineSouthPlay),
 
     /**
      * Instantly auto-complete bidding and advance to the target phase.

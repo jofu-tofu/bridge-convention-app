@@ -2,6 +2,8 @@ use wasm_bindgen::prelude::*;
 
 use bridge_engine::types::{Call, Card, Seat};
 use bridge_service::{ServicePort, ServicePortImpl, SessionConfig};
+#[cfg(debug_assertions)]
+use bridge_service::DevServicePort;
 
 // ── Serialization helpers ─────────────────────────────────────────
 
@@ -108,18 +110,6 @@ impl WasmServicePort {
             .play_single_card(handle, card, seat)
             .map_err(|e| JsError::new(&e.to_string()))?;
         to_js(&result)
-    }
-
-    pub fn record_play_recommendation(
-        &mut self,
-        handle: &str,
-        recommendation: JsValue,
-    ) -> Result<JsValue, JsError> {
-        let rec: bridge_session::session::PlayRecommendation = from_js(recommendation)?;
-        self.inner
-            .record_play_recommendation(handle, rec)
-            .map_err(|e| JsError::new(&e.to_string()))?;
-        to_js(&())
     }
 
     pub fn skip_to_review(&mut self, handle: &str) -> Result<JsValue, JsError> {

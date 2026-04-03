@@ -118,11 +118,6 @@ pub fn get_base_module_ids(_system: BaseSystemId) -> &'static [&'static str] {
     BASE_MODULE_IDS
 }
 
-/// Returns all registered module IDs in definition order.
-pub fn all_module_ids() -> &'static [&'static str] {
-    MODULE_IDS
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

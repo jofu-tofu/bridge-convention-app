@@ -15,8 +15,6 @@ pub mod bid_feedback_builder;
 pub mod build_viewport;
 pub mod flow_tree;
 pub mod format_obs_label;
-pub mod clause_mapper;
-pub mod condition_caps;
 pub mod learning_viewport;
 
 pub use session_state::{SessionState, PlayState, SeatStrategy, DebugLogEntry, get_current_turn};

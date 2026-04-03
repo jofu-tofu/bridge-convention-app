@@ -10,7 +10,7 @@ pub fn is_vulnerable(declarer: Seat, vulnerability: Vulnerability) -> bool {
 }
 
 /// Trick points for the contract (before bonuses).
-pub fn calculate_trick_points(contract: &Contract) -> i32 {
+fn calculate_trick_points(contract: &Contract) -> i32 {
     let base = match contract.strain {
         BidSuit::Clubs | BidSuit::Diamonds => 20 * contract.level as i32,
         BidSuit::Hearts | BidSuit::Spades => 30 * contract.level as i32,
@@ -24,10 +24,6 @@ pub fn calculate_trick_points(contract: &Contract) -> i32 {
     } else {
         base
     }
-}
-
-pub fn is_game(contract: &Contract) -> bool {
-    calculate_trick_points(contract) >= 100
 }
 
 fn trick_value(strain: BidSuit) -> i32 {

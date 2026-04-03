@@ -147,7 +147,7 @@ fn find_restricted_choice_signals(
 /// Given a restricted choice signal, suggest a finesse if we have the right
 /// holding in the suit.
 fn suggest_finesse(
-    ctx: &PlayContext,
+    _ctx: &PlayContext,
     signal: &RestrictedChoiceSignal,
     suit_groups: &[(Suit, Vec<Card>)],
 ) -> Option<Card> {

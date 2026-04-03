@@ -23,7 +23,7 @@ impl BiddingStrategy for PassStrategy {
         Some(BidResult {
             call: Call::Pass,
             rule_name: None,
-            explanation: "Pass".to_string(),
+            explanation: String::new(),
             ..Default::default()
         })
     }

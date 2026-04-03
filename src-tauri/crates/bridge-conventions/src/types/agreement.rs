@@ -5,7 +5,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::meaning::FactConstraint;
 use super::system_config::SystemConfig;
 
 /// Auction pattern for attachment matching.
@@ -56,22 +55,6 @@ pub enum GuardOperator {
     In,
     #[serde(rename = "exists")]
     Exists,
-}
-
-/// Hand predicate based on fact constraints.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct HandPredicate {
-    pub clauses: Vec<FactConstraint>,
-    pub conjunction: Conjunction,
-}
-
-/// Conjunction type for hand predicates.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum Conjunction {
-    #[serde(rename = "all")]
-    All,
-    #[serde(rename = "any")]
-    Any,
 }
 
 /// Deal constraint — typed enum per kind.

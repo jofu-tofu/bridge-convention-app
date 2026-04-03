@@ -84,7 +84,7 @@ export function getModuleLearningViewportSync(moduleId: string): { teaching: { p
  * Build base module info for a given system.
  * Currently returns from module catalog filtered to base module IDs.
  */
-export function buildBaseModuleInfos(baseSystemId: BaseSystemId): readonly BaseModuleInfo[] {
+export function buildBaseModuleInfos(_baseSystemId: BaseSystemId): readonly BaseModuleInfo[] {
   // Base modules are: natural-bids, stayman, jacoby-transfers, blackwood
   const BASE_IDS = ["natural-bids", "stayman", "jacoby-transfers", "blackwood"];
   const allModules = listModules();

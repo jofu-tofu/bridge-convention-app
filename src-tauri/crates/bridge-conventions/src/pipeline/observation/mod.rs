@@ -9,5 +9,4 @@ pub mod local_fsm;
 pub mod committed_step;
 pub mod negotiation_extractor;
 pub mod rule_interpreter;
-pub mod observation_log_builder;
 pub mod normalize_intent;

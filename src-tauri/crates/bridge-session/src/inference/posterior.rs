@@ -77,7 +77,7 @@ impl Posterior {
 pub struct PosteriorEngine {
     samples: Vec<SampledDeal>,
     constraints: HashMap<Seat, DerivedRanges>,
-    observer_seat: Seat,
+    _observer_seat: Seat,
     known_cards: HashMap<Seat, Vec<Card>>,
     rng: ChaCha8Rng,
 }
@@ -93,7 +93,7 @@ impl PosteriorEngine {
         let mut engine = Self {
             samples: Vec::new(),
             constraints,
-            observer_seat,
+            _observer_seat: observer_seat,
             known_cards,
             rng: ChaCha8Rng::seed_from_u64(seed),
         };

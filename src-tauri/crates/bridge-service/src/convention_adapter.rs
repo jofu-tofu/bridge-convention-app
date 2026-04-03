@@ -127,8 +127,8 @@ impl ConventionStrategyAdapter {
     /// Core pipeline execution.
     ///
     /// Replays the full auction through the convention pipeline so each prior bid
-    /// gets a proper PipelineResult. Without this, build_observation_log_via_rules
-    /// treats all prior bids as OffSystem and FSMs never advance to response states.
+    /// gets a proper PipelineResult. Without this, prior bids would be treated as
+    /// OffSystem and FSMs would never advance to response states.
     ///
     /// When `all_hands` is None (the BiddingStrategy path), prior bids from other
     /// seats can't be fact-evaluated. In that case, we infer the bid's meaning by

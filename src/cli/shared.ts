@@ -11,7 +11,6 @@ import type { BaseSystemId } from "../service/session-types";
 // ── Re-exports for convenience ──────────────────────────────────────
 
 export { Vulnerability };
-export type { Call, OpponentMode, BaseSystemId };
 
 // ── Flags type ──────────────────────────────────────────────────────
 

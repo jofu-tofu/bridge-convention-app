@@ -85,13 +85,3 @@ pub struct ApplicabilityEvidence {
     pub eliminated_count: usize,
 }
 
-/// Full decision provenance record.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DecisionProvenance {
-    pub activation: Vec<ActivationTrace>,
-    pub arbitration: Vec<ArbitrationTrace>,
-    pub handoffs: Vec<HandoffTrace>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub selected_meaning_id: Option<String>,
-}

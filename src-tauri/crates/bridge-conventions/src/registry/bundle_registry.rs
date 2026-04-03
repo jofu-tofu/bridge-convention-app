@@ -121,15 +121,6 @@ pub fn resolve_bundle(id: &str, _system: BaseSystemId) -> Option<&'static Conven
     bundle_cache().get(id)
 }
 
-/// Load paid bundle definitions at runtime (injected, not embedded).
-/// Returns the number of bundles loaded.
-pub fn load_bundle_defs(_modules_json: &str) -> usize {
-    // Paid content injection — placeholder for future implementation.
-    // When implemented, this will deserialize the JSON and add bundles
-    // to a separate runtime cache that resolve_bundle checks.
-    0
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

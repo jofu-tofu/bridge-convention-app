@@ -1,12 +1,10 @@
 import { describe, test, expect } from "vitest";
 import { Suit } from "../types";
-import type { Card } from "../types";
 import {
   calculateHcp,
   getSuitLength,
   isBalanced,
   calculateDistributionPoints,
-  getCardsInSuit,
   evaluateHand,
 } from "../hand-evaluator";
 import { HCP_VALUES, createDeck } from "../constants";
@@ -240,34 +238,6 @@ describe("calculateDistributionPoints", () => {
   });
 });
 
-describe("getCardsInSuit", () => {
-  test("returns only cards of requested suit", () => {
-    const spades = getCardsInSuit(HAND_15_BALANCED, Suit.Spades);
-    expect(spades).toHaveLength(4);
-    expect(spades.every((c: Card) => c.suit === Suit.Spades)).toBe(true);
-  });
-
-  test("returns empty array for void suit", () => {
-    const voidHand = hand(
-      "SA",
-      "SK",
-      "SQ",
-      "SJ",
-      "S9",
-      "HA",
-      "HK",
-      "HQ",
-      "HJ",
-      "DA",
-      "DK",
-      "DQ",
-      "DJ",
-    );
-    const clubs = getCardsInSuit(voidHand, Suit.Clubs);
-    expect(clubs).toHaveLength(0);
-  });
-});
-
 describe("evaluateHand", () => {
   test("balanced 15 HCP hand evaluates to 15 total points", () => {
     const result = evaluateHand(HAND_15_BALANCED);
@@ -467,7 +437,7 @@ describe("deck HCP invariants", () => {
       "D4",
       "C2",
     );
-    const spadesCards = getCardsInSuit(suitHand, Suit.Spades);
+    const spadesCards = suitHand.cards.filter(c => c.suit === Suit.Spades);
     let suitHcp = 0;
     for (const c of spadesCards) {
       suitHcp += HCP_VALUES[c.rank];

@@ -135,16 +135,8 @@ export interface GameStore {
   userPlayCard(card: Card, seat: Seat): void;
   skipToReview(): void;
   restartPlay(): void;
-  acceptPlay(seatOverride?: Seat): void;
-  declinePlay(): void;
   acceptPrompt(): void;
   declinePrompt(): void;
-  acceptDeclarerSwap(): void;
-  declineDeclarerSwap(): void;
-  acceptDefend(): void;
-  declineDefend(): void;
-  acceptSouthPlay(): void;
-  declineSouthPlay(): void;
   playThisHand(): void;
   startNewDrill(config: SessionConfig): void;
   startDrillFromHandle(handle: SessionHandle, service?: DevServicePort): Promise<void>;

@@ -396,16 +396,6 @@ impl ServicePort for ServicePortImpl {
         Ok(result)
     }
 
-    fn record_play_recommendation(
-        &mut self,
-        handle: &str,
-        recommendation: bridge_session::session::PlayRecommendation,
-    ) -> Result<(), ServiceError> {
-        let session = self.manager.get_mut(handle)?;
-        session.state.play_recommendations.push(recommendation);
-        Ok(())
-    }
-
     fn skip_to_review(&mut self, handle: &str) -> Result<(), ServiceError> {
         let session = self.manager.get_mut(handle)?;
 

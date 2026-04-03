@@ -124,15 +124,6 @@ pub struct SystemConfig {
     pub dont_overcall: DontOvercallConfig,
 }
 
-/// UI-friendly metadata for each base system.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BaseSystemMeta {
-    pub id: BaseSystemId,
-    pub label: String,
-    pub short_label: String,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

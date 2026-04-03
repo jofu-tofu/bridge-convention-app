@@ -99,7 +99,6 @@ components/
   shared/
     Button.svelte                    Primary/secondary/ghost variants
     Card.svelte                      70x98 visual playing card
-    ConventionCallout.svelte         Rule badge + explanation
     Spinner.svelte                   Inline loading spinner (sm/md sizes)
     SectionHeader.svelte             Uppercase muted section heading (h2/h3)
     SettingsButton.svelte            Full-width settings gear button

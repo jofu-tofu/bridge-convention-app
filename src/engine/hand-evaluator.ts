@@ -115,11 +115,6 @@ export function calculateDistributionPoints(
   return { shortness, length, total: shortness + length };
 }
 
-/** @internal */
-export function getCardsInSuit(hand: Hand, suit: Suit): Card[] {
-  return hand.cards.filter((c) => c.suit === suit);
-}
-
 const hcpStrategy: HandEvaluationStrategy = {
   name: "HCP",
   evaluate(hand: Hand): HandEvaluation {

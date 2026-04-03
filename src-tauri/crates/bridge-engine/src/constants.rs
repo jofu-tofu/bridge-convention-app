@@ -1,6 +1,6 @@
 use crate::types::{BidSuit, Card, Hand, Rank, Seat, Suit};
 
-pub const SUITS: [Suit; 4] = [Suit::Clubs, Suit::Diamonds, Suit::Hearts, Suit::Spades];
+const SUITS: [Suit; 4] = [Suit::Clubs, Suit::Diamonds, Suit::Hearts, Suit::Spades];
 
 /// Suit ordering matching SuitLength tuple: [Spades, Hearts, Diamonds, Clubs]
 pub const SUIT_ORDER: [Suit; 4] = [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs];

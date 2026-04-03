@@ -1,6 +1,6 @@
 use crate::constants::hcp_value;
 use crate::types::{
-    Card, DistributionPoints, Hand, HandEvaluation, HandEvaluationStrategy, Suit, SuitLength,
+    DistributionPoints, Hand, HandEvaluation, HandEvaluationStrategy, Suit, SuitLength,
 };
 
 /// Sum of high card points (A=4, K=3, Q=2, J=1) in the hand.
@@ -78,11 +78,6 @@ pub fn calculate_distribution_points(shape: &SuitLength) -> DistributionPoints {
         length,
         total: shortness + length,
     }
-}
-
-/// Filter and return all cards of the given suit from the hand.
-pub fn get_cards_in_suit(hand: &Hand, suit: Suit) -> Vec<Card> {
-    hand.cards.iter().filter(|c| c.suit == suit).cloned().collect()
 }
 
 // --- HCP Strategy (V1 default) ---

@@ -3,8 +3,6 @@ import { Seat, BidSuit } from "../types";
 import type { ContractBid } from "../types";
 import {
   lastContractBid,
-  bidsInSequence,
-  seatBidCount,
   auctionMatchesExact,
   parsePatternCall,
   buildAuction as auctionFromBids,
@@ -30,58 +28,6 @@ describe("lastContractBid", () => {
     const auction = { entries: [], isComplete: false };
     const last = lastContractBid(auction);
     expect(last).toBeNull();
-  });
-});
-
-describe("bidsInSequence", () => {
-  test("filters out non-contract bids", () => {
-    const auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]);
-    const bids = bidsInSequence(auction);
-    expect(bids).toHaveLength(2);
-    expect(bids[0]!.level).toBe(1);
-    expect(bids[0]!.strain).toBe(BidSuit.NoTrump);
-    expect(bids[1]!.level).toBe(2);
-    expect(bids[1]!.strain).toBe(BidSuit.Clubs);
-  });
-
-  test("returns empty array for all-pass auction", () => {
-    const auction = auctionFromBids(Seat.North, ["P", "P", "P", "P"]);
-    const bids = bidsInSequence(auction);
-    expect(bids).toHaveLength(0);
-  });
-});
-
-describe("seatBidCount", () => {
-  test("counts bids for a specific seat", () => {
-    const auction = auctionFromBids(Seat.North, ["1NT", "P", "2C", "P"]);
-    // North bid 1NT (index 0), South bid 2C (index 2)
-    expect(seatBidCount(auction, Seat.North)).toBe(1);
-    expect(seatBidCount(auction, Seat.South)).toBe(1);
-    expect(seatBidCount(auction, Seat.East)).toBe(1); // pass counts as a call
-    expect(seatBidCount(auction, Seat.West)).toBe(1);
-  });
-
-  test("returns 0 for seat with no entries", () => {
-    const auction = auctionFromBids(Seat.North, ["1NT"]);
-    expect(seatBidCount(auction, Seat.East)).toBe(0);
-  });
-});
-
-describe("bidsInSequence edge cases", () => {
-  test("empty auction returns empty array", () => {
-    const auction = { entries: [], isComplete: false };
-    const bids = bidsInSequence(auction);
-    expect(bids).toHaveLength(0);
-  });
-});
-
-describe("seatBidCount edge cases", () => {
-  test("empty auction returns 0 for any seat", () => {
-    const auction = { entries: [], isComplete: false };
-    expect(seatBidCount(auction, Seat.North)).toBe(0);
-    expect(seatBidCount(auction, Seat.East)).toBe(0);
-    expect(seatBidCount(auction, Seat.South)).toBe(0);
-    expect(seatBidCount(auction, Seat.West)).toBe(0);
   });
 });
 

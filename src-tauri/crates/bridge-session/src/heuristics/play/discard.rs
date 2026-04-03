@@ -51,7 +51,6 @@ impl PlayHeuristic for DiscardHeuristic {
         // Score each suit: prefer discarding from suits without honors,
         // avoid baring an honor (e.g. Kx -> lone K), then prefer shorter suits
         struct SuitScore {
-            suit: Suit,
             cards: Vec<Card>,
             honor_count: usize,
             would_bare_honor: bool,
@@ -69,7 +68,6 @@ impl PlayHeuristic for DiscardHeuristic {
                     .as_ref()
                     .map_or(false, |shorts| shorts.contains(&suit));
                 SuitScore {
-                    suit,
                     cards,
                     honor_count,
                     would_bare_honor,

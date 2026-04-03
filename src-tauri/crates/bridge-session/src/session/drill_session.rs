@@ -44,7 +44,7 @@ pub fn get_next_bid(
             Some(BidResult {
                 call: Call::Pass,
                 rule_name: None,
-                explanation: "Pass".to_string(),
+                explanation: String::new(),
                 ..Default::default()
             })
         }
@@ -54,7 +54,7 @@ pub fn get_next_bid(
                 Some(BidResult {
                     call: Call::Pass,
                     rule_name: None,
-                    explanation: "Pass".to_string(),
+                    explanation: String::new(),
                     ..Default::default()
                 })
             } else {

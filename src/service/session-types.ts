@@ -23,10 +23,8 @@ export enum ConventionCategory {
 export interface ConventionTeaching {
   readonly purpose?: string;
   readonly whenToUse?: string;
-  readonly whenNotToUse?: readonly string[];
   readonly tradeoff?: string;
   readonly principle?: string;
-  readonly roles?: string;
 }
 
 export interface ConventionConfig {

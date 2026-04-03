@@ -13,26 +13,6 @@ export function lastContractBid(auction: Auction): ContractBid | null {
   return null;
 }
 
-/** Returns all contract bids in order, filtering out passes/doubles/redoubles. @internal */
-export function bidsInSequence(auction: Auction): ContractBid[] {
-  const bids: ContractBid[] = [];
-  for (const entry of auction.entries) {
-    if (entry.call.type === "bid") {
-      bids.push(entry.call);
-    }
-  }
-  return bids;
-}
-
-/** Counts the number of entries (calls) by a specific seat. @internal */
-export function seatBidCount(auction: Auction, seat: Seat): number {
-  let count = 0;
-  for (const entry of auction.entries) {
-    if (entry.seat === seat) count++;
-  }
-  return count;
-}
-
 const STRAIN_MAP: Record<string, BidSuit> = {
   C: BidSuit.Clubs,
   D: BidSuit.Diamonds,

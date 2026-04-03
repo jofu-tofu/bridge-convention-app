@@ -15,9 +15,7 @@ use crate::adapter::strategy_evaluation::{
 use crate::adapter::practical_scorer::{build_practical_recommendation, PartnerContext};
 use crate::adapter::tree_evaluation::ResolvedCandidateDTO;
 use crate::fact_dsl::types::EvaluatedFacts;
-use crate::pipeline::observation::committed_step::{AuctionContext, CommittedStep, initial_negotiation};
-use crate::pipeline::observation::local_fsm::advance_local_fsm;
-use crate::pipeline::observation::normalize_intent::normalize_intent;
+use crate::pipeline::observation::committed_step::AuctionContext;
 use crate::pipeline::observation::rule_interpreter::{
     collect_matching_claims, flatten_surfaces,
     ModuleSurfaceResult,
@@ -28,14 +26,7 @@ use crate::pipeline::types::PipelineResult;
 use crate::teaching::projection_builder::project_teaching;
 use crate::teaching::teaching_types::SurfaceGroup;
 use crate::types::meaning::{BidMeaning, ConstraintDimension};
-use crate::types::module_types::ConventionModule;
 use crate::types::spec_types::ConventionSpec;
-
-/// Result of a strategy suggestion.
-pub struct SuggestResult {
-    pub bid_result: Option<BidResult>,
-    pub evaluation: StrategyEvaluation,
-}
 
 /// A bid result from the strategy.
 #[derive(Debug, Clone)]
@@ -271,89 +262,6 @@ fn carrier_to_candidate(carrier: &crate::pipeline::types::PipelineCarrier, is_ma
         semantic_class_id: Some(p.semantic_class_id.clone()),
         recommendation_band: Some(p.ranking.recommendation_band),
     }
-}
-
-/// Build observation log via rules — incremental observation log construction.
-///
-/// Replays the auction, collecting matching claims at each step and advancing
-/// local FSMs incrementally to avoid O(N²×M) cost.
-pub fn build_observation_log_via_rules(
-    modules: &[ConventionModule],
-    steps: &[(Seat, Call, Option<PipelineResult>)],
-) -> Vec<CommittedStep> {
-    let mut log: Vec<CommittedStep> = Vec::new();
-    let mut local_phases: HashMap<String, String> = HashMap::new();
-
-    // Initialize phases
-    for module in modules {
-        local_phases.insert(module.module_id.clone(), module.local.initial.clone());
-    }
-
-    let mut prev_kernel = initial_negotiation();
-
-    for (actor, call, pipeline_result) in steps {
-        let resolved_claim = pipeline_result
-            .as_ref()
-            .and_then(|r| r.selected.as_ref())
-            .map(|carrier| crate::pipeline::observation::committed_step::ClaimRef {
-                module_id: carrier.proposal().module_id.clone(),
-                meaning_id: carrier.proposal().meaning_id.clone(),
-                semantic_class_id: carrier.proposal().semantic_class_id.clone(),
-                source_intent: carrier.proposal().source_intent.clone(),
-            });
-
-        let public_actions = pipeline_result
-            .as_ref()
-            .and_then(|r| r.selected.as_ref())
-            .map(|carrier| normalize_intent(&carrier.proposal().source_intent))
-            .unwrap_or_default();
-
-        let state_after = crate::pipeline::observation::negotiation_extractor::apply_negotiation_actions(
-            &prev_kernel, &public_actions, *actor,
-        );
-
-        let status = match pipeline_result {
-            None => crate::pipeline::observation::committed_step::CommittedStepStatus::OffSystem,
-            Some(r) if r.selected.is_some() => {
-                crate::pipeline::observation::committed_step::CommittedStepStatus::Resolved
-            }
-            Some(r) if !r.truth_set.is_empty() => {
-                crate::pipeline::observation::committed_step::CommittedStepStatus::Ambiguous
-            }
-            _ => crate::pipeline::observation::committed_step::CommittedStepStatus::OffSystem,
-        };
-
-        let negotiation_delta =
-            crate::pipeline::observation::negotiation_extractor::compute_kernel_delta(
-                &prev_kernel,
-                &state_after,
-            );
-
-        let step = CommittedStep {
-            actor: *actor,
-            call: call.clone(),
-            resolved_claim,
-            public_actions,
-            negotiation_delta,
-            state_after: state_after.clone(),
-            status,
-        };
-
-        // Advance local FSMs
-        for module in modules {
-            let current = local_phases
-                .get(&module.module_id)
-                .cloned()
-                .unwrap_or_else(|| module.local.initial.clone());
-            let next = advance_local_fsm(&current, &step, &module.local.transitions);
-            local_phases.insert(module.module_id.clone(), next);
-        }
-
-        prev_kernel = step.state_after.clone();
-        log.push(step);
-    }
-
-    log
 }
 
 /// Build a MachineDebugSnapshot from surface results.

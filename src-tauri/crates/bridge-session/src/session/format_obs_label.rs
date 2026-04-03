@@ -89,7 +89,6 @@ fn feature_phrase(feature: Option<HandFeature>, suit: Option<ObsSuit>) -> String
 
 /// Format an ObsPattern's action as a human-readable phrase.
 pub fn format_obs_action(obs: &ObsPattern) -> String {
-    let _f = obs.feature;
     let s = suit_or_strain_phrase(obs.suit, obs.strain);
     let fp = feature_phrase(obs.feature, obs.suit);
 

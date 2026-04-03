@@ -32,17 +32,6 @@ pub struct EncodingOption {
     pub legal: bool,
 }
 
-/// Gate attribution for eliminated candidates.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EliminationRecord {
-    pub candidate_bid_name: String,
-    pub module_id: String,
-    pub reason: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub gate_id: Option<String>,
-}
-
 /// A surface carried through the entire pipeline with per-surface traces.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PipelineCarrier {

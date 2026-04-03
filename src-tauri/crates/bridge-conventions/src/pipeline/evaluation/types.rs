@@ -101,14 +101,6 @@ pub struct EvaluationEvidence {
     pub failed_conditions: Vec<ConditionEvidence>,
 }
 
-/// Meaning reference — minimal identifying info.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MeaningRef {
-    pub module_id: String,
-    pub meaning_id: MeaningId,
-}
-
 /// A fully evaluated meaning proposal.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

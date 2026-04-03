@@ -285,22 +285,6 @@ pub trait HandEvaluationStrategy: Send + Sync {
     fn evaluate(&self, hand: &Hand) -> HandEvaluation;
 }
 
-/// Play AI strategy (Phase 7: heuristic → DDS-assisted → convention-aware)
-pub trait PlayStrategy: Send + Sync {
-    fn suggest_play(
-        &self,
-        hand: &Hand,
-        current_trick: &Trick,
-        trump_suit: Option<Suit>,
-        previous_tricks: &[Trick],
-    ) -> Card;
-}
-
-/// Double dummy solver interface (V2: dds-bridge-sys FFI)
-pub trait DoubleDummySolver: Send + Sync {
-    fn solve(&self, deal: &Deal) -> Result<DDSolution, crate::error::EngineError>;
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ParContract {

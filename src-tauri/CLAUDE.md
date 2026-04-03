@@ -42,7 +42,7 @@ crates/
                        the single source of truth for module content.
                        **System fact clause descriptions:** The `description` field on clauses with
                        `system.*` fact IDs is ignored at runtime. The learning viewport
-                       (`bridge-session/src/session/clause_mapper.rs:map_clauses()`) derives
+                       (`bridge-session/src/session/learning_viewport.rs:map_clauses()`) derives
                        system fact descriptions dynamically using `derive_neutral_description()`,
                        which prefers the clause's `rationale` field and falls back to `display_name()`.
                        Editing system fact descriptions in fixture JSON has no UI effect — edit
