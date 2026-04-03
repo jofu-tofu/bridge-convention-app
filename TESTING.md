@@ -155,11 +155,46 @@ npm run test:all
 | Component tests   | Yes — mock engine | Pass known data as props |
 | E2E tests         | No                | Test the real app        |
 
-## TDD Workflow (Engine)
+## TDD Philosophy
+
+**Core insight:** If you have to change your tests to make them pass after a legitimate refactoring, your tests are testing the wrong thing.
+
+### Principles (ranked by priority when they conflict)
+
+1. **Behavior Over Implementation** — Test WHAT, not HOW. Assert outputs and observable effects, never internal method calls, SQL queries, or data structure choices. A test should survive: algorithm rewrites, caching layers, ORM migrations, internal refactors.
+2. **Characterize Before Changing** — When modifying unfamiliar code, write tests that capture current behavior first. These are your safety net — they detect unintended changes during refactoring.
+3. **Test Pyramid** — Many fast unit tests, fewer integration tests, minimal E2E. If the suite is slow or flaky, you likely have an inverted pyramid (too many E2E, too few unit).
+4. **FIRST** — Fast (< 2s total), Independent (no test ordering), Repeatable (no flakiness), Self-Validating (pass/fail, no manual inspection), Timely (written with or before the code).
+5. **Side-Effect Isolation** — Pure logic needs no mocks. If testing requires many mocks, the code mixes logic with side effects — fix the design. This is why `engine/` has zero framework imports.
+
+### Red-Green-Refactor Workflow
 
 1. **RED:** Write a failing test in `__tests__/<module>.test.ts`. Run `npm run test:run`. See it fail.
 2. **GREEN:** Write minimum code in `<module>.ts` to make it pass. Run tests. See green.
 3. **REFACTOR:** Clean up while tests stay green. Run tests after each change.
 4. Repeat for the next behavior.
+
+### Decision Tree
+
+```
+Is this legacy/unfamiliar code?
+├─ YES → Write characterization tests first (capture behavior as-is)
+└─ NO → Is this new development?
+        ├─ YES → Red-Green-Refactor (write failing test first)
+        └─ NO → Are tests breaking on refactoring?
+                ├─ YES → Tests are coupled to implementation — rewrite to test behavior
+                └─ NO → Do tests require many mocks?
+                        ├─ YES → Code mixes logic with side effects — refactor to pure core
+                        └─ NO → Evaluate with FIRST principles
+```
+
+### Anti-Patterns to Avoid
+
+- **Over-Mocked Tests** — Testing wiring instead of behavior. If a test has more mock setup than assertions, it's testing the wrong thing.
+- **The Liar** — Always-passing test whose assertion never actually runs (hidden behind early returns or wrong async handling).
+- **God Test** — One test verifying too many unrelated behaviors. Each `test` block verifies one behavior.
+- **Ice Cream Cone** — Inverted pyramid (many E2E, few unit). Slow, flaky, hard to debug.
+
+### Test Organization
 
 Keep test files focused on one module. One `describe` block per type or function. Each `test` block verifies one behavior.

@@ -24,6 +24,12 @@ Principles that guide architectural decisions across the codebase. Read this bef
 
 10. **System-agnostic modules, system-aware facts.** Modules never import concrete system configs or branch on system identity. System-level differences (HCP thresholds, forcing durations) are expressed as `SystemConfig` fields, surfaced as system facts via `system-fact-vocabulary.ts`, and referenced in surface clauses.
 
+11. **Test behavior, not implementation.** Tests assert WHAT the code does, never HOW it does it. A test must pass unchanged after a legitimate refactoring (different algorithm, changed internals, added caching). If you must change tests to refactor code, the tests are coupled to implementation. Test the public contract: given these inputs, expect these outputs. This applies at every layer — engine unit tests verify bidding/scoring behavior, convention tests verify pipeline outputs, component tests verify what the user sees.
+
+12. **Functional core, imperative shell.** Separate pure logic from side effects so testing is trivial. Pure functions (engine, conventions, inference) need no mocks — pass data in, assert data out. Side effects (WASM init, localStorage, DOM) live at the edges. Code that is hard to test is poorly designed; fix the design, don't add mocks. This principle is why `src/engine/` has zero framework imports and why the service boundary exists.
+
+13. **Characterize before changing.** When modifying code you don't fully understand, write characterization tests first — tests that capture current behavior as-is, without judging correctness. These act as a safety net: if your refactor changes behavior unintentionally, a characterization test fails. Especially important for convention pipeline logic where subtle bid-evaluation changes can cascade.
+
 ## Subsystem Design Rationale
 
 ### Stores: Correct-path-only bidding

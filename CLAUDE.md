@@ -88,10 +88,14 @@ Backward compat aliases: `?coverage=true` → `?screen=coverage`, `?profiles=tru
 - **PlayerViewport boundary.** Game phase components never access raw `Deal`. Everything the player sees flows through viewport types: `BiddingViewport` (bidding), `DeclarerPromptViewport` (declarer prompt), `PlayingViewport` (play), `ExplanationViewport` (review). Viewport builders live in Rust (`bridge-service`).
 - **Callers own their types.** Service defines its own viewport/response types. Engine domain primitives (`Call`, `Card`, `Seat`, `Hand`) are acceptable to re-export since they are universal vocabulary.
 - **Coverage optimization.** Tree LP computes minimal test sessions; two-phase algorithm (leaf sweep + gap fill) covers all (state, surface) pairs efficiently. Module interference detection uses static prefix-overlap analysis.
+- **Test behavior, not implementation.** Tests assert WHAT code does (inputs → outputs), never HOW (internal calls, query strings, data structure choices). Litmus test: would this test pass unchanged if the internals were rewritten with a different algorithm? If no, rewrite the test. No `was_called_with` on internal methods; no asserting internal state.
+- **Characterize before changing.** Before modifying code you don't fully understand, write tests that capture current behavior as-is. These are your safety net — run them after each change. Especially important for convention pipeline and bid-evaluation logic where subtle changes cascade.
+- **No mocks for pure logic.** Engine, conventions, inference, and session logic are pure — pass data in, assert data out. If testing requires mocks, the code mixes logic with side effects; fix the design, don't add mocks. Mocks are acceptable only at system boundaries (WASM init, localStorage, DOM, network).
+- **Red-Green-Refactor for new code.** Write a failing test first, then the minimum code to pass, then refactor with tests green. Do not write implementation first and tests after — tests written after implementation tend to mirror the implementation rather than specify behavior.
 
 ## Design Philosophy
 
-See `docs/design-philosophy.md` for the full set of 10 design principles and subsystem design rationale.
+See `docs/design-philosophy.md` for the full set of 13 design principles and subsystem design rationale. See `TESTING.md` § TDD Philosophy for the decision tree, anti-patterns, and ranked priorities when principles conflict.
 
 ## System Parameterization
 
