@@ -238,24 +238,6 @@ fn fact_data_to_json(data: &FactData) -> serde_json::Value {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::fact_dsl::types::FactValue;
-
-    fn make_facts(entries: Vec<(&str, FactData)>) -> EvaluatedFacts {
-        let mut facts = HashMap::new();
-        for (id, val) in entries {
-            facts.insert(
-                id.to_string(),
-                FactValue {
-                    fact_id: id.to_string(),
-                    value: val,
-                },
-            );
-        }
-        EvaluatedFacts {
-            world: crate::types::fact_types::EvaluationWorld::ActingHand,
-            facts,
-        }
-    }
 
     #[test]
     fn check_gte_satisfied() {

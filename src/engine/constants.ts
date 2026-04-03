@@ -1,5 +1,5 @@
 import { Suit, Rank, Seat } from "./types";
-import type { Card, Hand, SuitName } from "./types";
+import type { Card, Hand } from "./types";
 
 export const SUITS: readonly Suit[] = [
   Suit.Clubs,
@@ -76,12 +76,6 @@ export const HCP_VALUES: Record<Rank, number> = {
   [Rank.Queen]: 2,
   [Rank.King]: 3,
   [Rank.Ace]: 4,
-};
-
-/** Maps suit name strings (both short and long forms) to Suit enum values. */
-export const SUIT_NAME_MAP: Record<Suit | SuitName, Suit> = {
-  S: Suit.Spades, H: Suit.Hearts, D: Suit.Diamonds, C: Suit.Clubs,
-  spades: Suit.Spades, hearts: Suit.Hearts, diamonds: Suit.Diamonds, clubs: Suit.Clubs,
 };
 
 export function createDeck(): Card[] {

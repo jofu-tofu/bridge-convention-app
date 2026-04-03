@@ -4,9 +4,6 @@ import type { Contract } from "../types";
 import {
   isVulnerable,
   calculateTrickPoints,
-  isGame,
-  isSmallSlam,
-  isGrandSlam,
   calculateMakingScore,
   calculatePenalty,
   calculateScore,
@@ -116,84 +113,6 @@ describe("calculateTrickPoints", () => {
         contract(1, BidSuit.Hearts, Seat.South, false, true),
       ),
     ).toBe(120);
-  });
-});
-
-describe("isGame", () => {
-  test("3NT is game (100)", () => {
-    expect(isGame(contract(3, BidSuit.NoTrump))).toBe(true);
-  });
-
-  test("4H is game (120)", () => {
-    expect(isGame(contract(4, BidSuit.Hearts))).toBe(true);
-  });
-
-  test("4S is game (120)", () => {
-    expect(isGame(contract(4, BidSuit.Spades))).toBe(true);
-  });
-
-  test("5C is game (100)", () => {
-    expect(isGame(contract(5, BidSuit.Clubs))).toBe(true);
-  });
-
-  test("5D is game (100)", () => {
-    expect(isGame(contract(5, BidSuit.Diamonds))).toBe(true);
-  });
-
-  test("2NT is not game (70)", () => {
-    expect(isGame(contract(2, BidSuit.NoTrump))).toBe(false);
-  });
-
-  test("2S is not game (60)", () => {
-    expect(isGame(contract(2, BidSuit.Spades))).toBe(false);
-  });
-
-  test("4D is not game (80)", () => {
-    expect(isGame(contract(4, BidSuit.Diamonds))).toBe(false);
-  });
-
-  test("1H doubled is game (60 trick points, but doubled to 60... wait no)", () => {
-    // 1H doubled: trick points = 30 * 1 * 2 = 60, NOT game
-    expect(isGame(contract(1, BidSuit.Hearts, Seat.South, true))).toBe(false);
-  });
-
-  test("2D doubled is not game (80)", () => {
-    // 2D doubled: 20 * 2 * 2 = 80
-    expect(isGame(contract(2, BidSuit.Diamonds, Seat.South, true))).toBe(false);
-  });
-
-  test("2H doubled is game (120)", () => {
-    // 2H doubled: 30 * 2 * 2 = 120
-    expect(isGame(contract(2, BidSuit.Hearts, Seat.South, true))).toBe(true);
-  });
-
-  test("3D doubled is game (120)", () => {
-    // 3D doubled: 20 * 3 * 2 = 120
-    expect(isGame(contract(3, BidSuit.Diamonds, Seat.South, true))).toBe(true);
-  });
-});
-
-describe("isSmallSlam", () => {
-  test("level 6 is small slam", () => {
-    expect(isSmallSlam(contract(6, BidSuit.NoTrump))).toBe(true);
-  });
-
-  test("level 5 is not small slam", () => {
-    expect(isSmallSlam(contract(5, BidSuit.Clubs))).toBe(false);
-  });
-
-  test("level 7 is not small slam", () => {
-    expect(isSmallSlam(contract(7, BidSuit.NoTrump))).toBe(false);
-  });
-});
-
-describe("isGrandSlam", () => {
-  test("level 7 is grand slam", () => {
-    expect(isGrandSlam(contract(7, BidSuit.NoTrump))).toBe(true);
-  });
-
-  test("level 6 is not grand slam", () => {
-    expect(isGrandSlam(contract(6, BidSuit.Hearts))).toBe(false);
   });
 });
 
@@ -684,24 +603,23 @@ describe("calculateScore", () => {
 describe("doubled contract game thresholds", () => {
   test("2C doubled is NOT game (80 trick points < 100)", () => {
     // 2C doubled: 20 * 2 * 2 = 80
-    expect(
-      calculateTrickPoints(contract(2, BidSuit.Clubs, Seat.South, true)),
-    ).toBe(80);
-    expect(isGame(contract(2, BidSuit.Clubs, Seat.South, true))).toBe(false);
+    const tp = calculateTrickPoints(contract(2, BidSuit.Clubs, Seat.South, true));
+    expect(tp).toBe(80);
+    expect(tp >= 100).toBe(false);
   });
 
   test("3C doubled IS game (120 trick points >= 100)", () => {
     // 3C doubled: 20 * 3 * 2 = 120
-    expect(
-      calculateTrickPoints(contract(3, BidSuit.Clubs, Seat.South, true)),
-    ).toBe(120);
-    expect(isGame(contract(3, BidSuit.Clubs, Seat.South, true))).toBe(true);
+    const tp = calculateTrickPoints(contract(3, BidSuit.Clubs, Seat.South, true));
+    expect(tp).toBe(120);
+    expect(tp >= 100).toBe(true);
   });
 
   test("4C undoubled is NOT game (80 trick points < 100)", () => {
     // 4C: 20 * 4 = 80
-    expect(calculateTrickPoints(contract(4, BidSuit.Clubs))).toBe(80);
-    expect(isGame(contract(4, BidSuit.Clubs))).toBe(false);
+    const tp = calculateTrickPoints(contract(4, BidSuit.Clubs));
+    expect(tp).toBe(80);
+    expect(tp >= 100).toBe(false);
   });
 });
 

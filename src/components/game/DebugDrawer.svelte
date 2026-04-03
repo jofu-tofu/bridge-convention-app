@@ -106,15 +106,6 @@
     </button>
   </div>
 
-  <!-- Engine status bar -->
-  {#if appStore.engineStatus}
-    <div
-      class="px-3 py-1 text-[10px] font-mono border-b border-border-subtle {appStore.engineStatus.includes('UNREACHABLE') ? 'bg-red-900/80 text-red-200' : 'bg-green-900/80 text-green-200'}"
-    >
-      {appStore.engineStatus}
-    </div>
-  {/if}
-
   <div class="p-2 flex flex-col gap-2 min-w-[420px]">
     <!-- At-a-glance summary — always visible, always shows current position -->
     <DebugAtAGlance snapshot={currentSnap} {feedback} phase={gameStore.phase} />

@@ -251,7 +251,6 @@ async function getCorrectBidFromDebugPanel(page: Page): Promise<{
     if (text.includes("No convention bid")) {
       return { bidText: "Pass", meaningText: "No convention bid" };
     }
-    const callMatch = text.match(/rule\n(\S+)/);
     const meaningMatch = text.match(/Suggested Bid\n(\S+)\n([^\n]*)/);
     return {
       bidText: meaningMatch ? meaningMatch[1]!.trim() : "unknown",

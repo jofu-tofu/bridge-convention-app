@@ -91,7 +91,7 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
       description: "",
       category: ConventionCategory.Asking,
     };
-    store.selectConvention(config as ConventionInfo);
+    store.selectConvention(config);
   }
 
   // ── Coverage targeting ─────────────────────────────────────

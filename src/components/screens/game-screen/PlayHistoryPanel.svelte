@@ -15,10 +15,10 @@
 
   let {
     tricks,
-    declarerSeat,
+    declarerSeat: _declarerSeat,
     auctionEntries,
     dealer,
-    bidHistory,
+    bidHistory: _bidHistory,
     highlightTrickIndex = null,
     onClickTrick,
     visibleTrickCount,

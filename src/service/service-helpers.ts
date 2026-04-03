@@ -38,7 +38,7 @@ function getSyncPort() {
     cachedPort = new WasmServicePort();
   }
   // any: wasm-bindgen generated class — no TS type declarations
-  return cachedPort!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  return cachedPort!;
 }
 
 /**

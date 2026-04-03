@@ -1,11 +1,8 @@
 <script lang="ts">
   import type { BaseSystemId } from "../../service";
   import { AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../../service";
-  import { getAppStore } from "../../stores/context";
   import SystemDetailView from "./SystemDetailView.svelte";
   import SystemCompareView from "./SystemCompareView.svelte";
-
-  const appStore = getAppStore();
 
   let selectedSystem = $state<BaseSystemId>("sayc");
   let compareMode = $state(false);

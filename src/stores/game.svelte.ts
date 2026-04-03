@@ -121,7 +121,6 @@ export function createGameStore(
   let activeService: DevServicePort = service;
   let deal = $state<Deal | null>(null);
   let phase = $state<GamePhase>("BIDDING");
-  let conventionName = $state("");
   let effectiveUserSeat = $state<Seat | null>(null);
   let practiceMode = $state<PracticeMode>(PracticeMode.DecisionDrill);
   let playPreference = $state<PlayPreference>(PlayPreference.Prompt);
@@ -490,7 +489,6 @@ export function createGameStore(
     deal = null;
     phase = "BIDDING";
     effectiveUserSeat = null;
-    conventionName = "";
     practiceMode = PracticeMode.DecisionDrill;
     playPreference = PlayPreference.Prompt;
 
@@ -547,10 +545,6 @@ export function createGameStore(
     resetImpl();
     activeHandle = handle;
     activeService = drillService ?? service;
-
-    // Fetch convention name from service
-    conventionName = await activeService.getConventionName(handle);
-    if (activeHandle !== handle) return;
 
     phase = "BIDDING";
 
@@ -782,7 +776,7 @@ export function createGameStore(
     get playLog() { return playPhase.play.log; },
     get playInferences() { return inference.playInferences; },
 
-    setConventionName(name: string) { conventionName = name; },
+
 
     userPlayCard(card: Card, seat: Seat): void {
       playPhase.userPlayCardViaService(card, seat).catch((err) => { console.error('userPlayCard failed:', err); });

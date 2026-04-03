@@ -31,7 +31,6 @@
     positionAtStep,
     stepAtPosition,
     visibleTricksAtPosition,
-    isDecisionPoint,
     findNextDecision,
     remainingCardsAtPosition,
   } from "../../game/replay-state";
@@ -100,9 +99,6 @@
   const maxSteps = $derived(totalSteps(viewport.tricks));
   const replayPos = $derived(positionAtStep(replayStep, viewport.tricks));
   const replayVis = $derived(visibleTricksAtPosition(replayPos));
-  const currentDecision = $derived(
-    isDecisionPoint(replayPos, viewport.playRecommendations, viewport.userSeat),
-  );
   const hasNextDecision = $derived(
     findNextDecision(replayStep, viewport.tricks, viewport.playRecommendations, viewport.userSeat) !== null,
   );

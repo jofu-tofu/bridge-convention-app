@@ -4,7 +4,7 @@ import type { Hand } from "../../../engine/types";
 import { computeVisibleSeats } from "../../game/AuctionStepPanel";
 import type { BidHistoryEntry } from "../../../service";
 
-function makeHand(label: string): Hand {
+function makeHand(_label: string): Hand {
   return { cards: [], hcp: 0 } as unknown as Hand;
 }
 

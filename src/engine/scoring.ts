@@ -87,21 +87,6 @@ export function calculateTrickPoints(contract: Contract): number {
   return base;
 }
 
-/** Game requires trick points >= GAME_TRICK_POINT_THRESHOLD. @internal */
-export function isGame(contract: Contract): boolean {
-  return calculateTrickPoints(contract) >= GAME_TRICK_POINT_THRESHOLD;
-}
-
-/** Small slam = level 6. @internal */
-export function isSmallSlam(contract: Contract): boolean {
-  return contract.level === SMALL_SLAM_LEVEL;
-}
-
-/** Grand slam = level 7. @internal */
-export function isGrandSlam(contract: Contract): boolean {
-  return contract.level === GRAND_SLAM_LEVEL;
-}
-
 /** Per-trick value for the contract strain (undoubled). */
 function trickValue(strain: BidSuit): number {
   if (strain === BidSuit.Clubs || strain === BidSuit.Diamonds) return MINOR_TRICK_VALUE;

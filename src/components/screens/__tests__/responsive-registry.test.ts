@@ -65,10 +65,6 @@ describe("responsive-registry mobile constraints", () => {
     (e) => e.mobileStrategy !== "embedded",
   );
 
-  const embeddedEntries = SCREEN_REGISTRY.filter(
-    (e) => e.mobileStrategy === "embedded",
-  );
-
   it("every entry has a valid mobileStrategy", () => {
     for (const entry of SCREEN_REGISTRY) {
       expect(

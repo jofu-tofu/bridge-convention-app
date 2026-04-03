@@ -3,6 +3,7 @@
 //! Mirrors TS from `pipeline/observation/rule-interpreter.ts`.
 
 use bridge_engine::types::Seat;
+use bridge_engine::partner_seat;
 use std::collections::HashMap;
 
 use crate::pipeline::observation::committed_step::{AuctionContext, CommittedStep, CommittedStepStatus};
@@ -326,15 +327,6 @@ fn state_entry_matches(
     }
 
     true
-}
-
-fn partner_seat(seat: Seat) -> Seat {
-    match seat {
-        Seat::North => Seat::South,
-        Seat::South => Seat::North,
-        Seat::East => Seat::West,
-        Seat::West => Seat::East,
-    }
 }
 
 #[cfg(test)]

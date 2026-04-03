@@ -182,12 +182,6 @@ pub fn suggest_play_with_profile(
     }
 }
 
-/// Convenience: suggest a random play with a given seed.
-pub fn suggest_random_play(ctx: &PlayContext, seed: u64) -> PlayResult {
-    let strategy = super::random_play::RandomPlayStrategy::new(seed);
-    strategy.suggest(ctx)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -16,8 +16,7 @@ Pure TypeScript game logic. Zero platform dependencies.
 
 ```
 types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
-                        ↘ auction.ts → auction-helpers.ts
-                        ↘ play.ts
+                        ↘ auction.ts
          types.ts → scoring.ts
          call-helpers.ts (standalone, no engine imports)
 ```
@@ -31,12 +30,9 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `hand-evaluator.ts`   | HCP calculation, strategy pattern for evaluation                                          |
 | `deal-generator.ts`   | Rejection sampling with Fisher-Yates shuffle, seat constraints                            |
 | `auction.ts`          | Auction logic: bid comparison, legality, completion, contract/declarer extraction         |
-| `play.ts`             | Stub — all runtime play logic lives in Rust (bridge-engine). TS reference implementations removed. |
 | `scoring.ts`          | Contract scoring: trick points, bonuses, penalties, unified score calculation             |
-| `auction-helpers.ts`  | Auction query utils: lastContractBid, auctionMatchesExact, buildAuction, parsePatternCall  |
 | `notation.ts`         | Card notation parser (`parseCard`, `parseHand`) — shared by CLI and test fixtures         |
 | `call-helpers.ts`     | Canonical `callsMatch()` — call equality check shared by stores and inference             |
-| `constraint-utils.ts` | Stub — `cleanConstraints()` removed (all deal generation runs in Rust)                    |
 | `dds-wasm.ts`         | DDS PBN conversion, struct pack/unpack, `solveFromPBN()` (PBN-based table solve), `solveWithModule()` (Deal-based wrapper), `solveBoardWithModule()` (per-card) — pure logic, no DOM/Worker. Exports `handsToPBN()`, `cardsToPBNHand()`, DDS index helpers (`trumpToDdsIndex`, `seatToDdsIndex`, `rankToDdsValue`), and index mapping constants (`DDS_STRAIN_MAP`, `DDS_SEAT_MAP`, `DDS_SUIT_MAP_PLAY`, `DDS_RANK_MAP`). |
 | `dds-worker.ts`       | Classic Web Worker — loads DDS WASM via `importScripts`, handles `CalcAllTablesPBN` (Deal or PBN) and `SolveBoardPBN` requests |
 | `dds-client.ts`       | Main thread API — `initDDS()`, `isDDSAvailable()`, `solveDealFromPBN()`, `solveBoardWasm()` via Worker messages |

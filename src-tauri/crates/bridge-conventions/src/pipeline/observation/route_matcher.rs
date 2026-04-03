@@ -3,6 +3,7 @@
 //! Mirrors TS from `pipeline/observation/route-matcher.ts`.
 
 use bridge_engine::types::Seat;
+use bridge_engine::partner_seat;
 
 use crate::pipeline::observation::committed_step::CommittedStep;
 use crate::types::bid_action::{BidAction, BidSuitName};
@@ -17,16 +18,6 @@ fn derive_actor_role(actor: Seat, opener_seat: Seat) -> TurnRole {
         return TurnRole::Responder;
     }
     TurnRole::Opponent
-}
-
-/// Get the partner seat.
-fn partner_seat(seat: Seat) -> Seat {
-    match seat {
-        Seat::North => Seat::South,
-        Seat::South => Seat::North,
-        Seat::East => Seat::West,
-        Seat::West => Seat::East,
-    }
 }
 
 /// Match a single ObsPattern against a single BidAction.

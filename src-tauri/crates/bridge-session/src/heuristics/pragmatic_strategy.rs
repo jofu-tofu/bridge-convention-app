@@ -152,8 +152,6 @@ fn is_opponent(entry: &AuctionEntry, context: &BiddingContext) -> bool {
 mod tests {
     use super::*;
     use bridge_engine::types::{Auction, AuctionEntry, Hand, HandEvaluation, Seat};
-    use bridge_engine::DistributionPoints;
-
     fn make_context(hcp: u32, shape: [u8; 4], entries: Vec<AuctionEntry>) -> BiddingContext {
         let distribution = bridge_engine::calculate_distribution_points(&shape);
         BiddingContext {

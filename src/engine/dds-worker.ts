@@ -91,7 +91,7 @@ self.onmessage = (e: MessageEvent<SolveBoardMessage | SolveTableMessage | SolveT
 
   // PBN-based request (from service handle path)
   if ("pbn" in msg && !("deal" in msg)) {
-    const { id, pbn } = msg as SolveTablePBNMessage;
+    const { id, pbn } = msg;
     try {
       if (!ddsModule) throw new Error("DDS not initialized");
       const solution = solveFromPBN(ddsModule, pbn);

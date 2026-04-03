@@ -130,7 +130,6 @@ export interface GameStore {
   };
 
   // Methods
-  setConventionName(name: string): void;
   userPlayCard(card: Card, seat: Seat): void;
   skipToReview(): void;
   restartPlay(): void;
@@ -143,6 +142,7 @@ export interface GameStore {
   skipToPhase(targetPhase: "review" | "playing" | "declarer"): Promise<boolean>;
   userBid(call: Call): void;
   retryBid(): void;
+  dismissFeedback(): void;
   getExpectedBid(): Promise<{ call: Call } | null>;
   reset(): void;
 }
