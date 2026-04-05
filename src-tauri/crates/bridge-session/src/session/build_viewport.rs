@@ -25,7 +25,6 @@ pub struct HandEvaluationView {
     pub hcp: u32,
     pub shape: SuitLength,
     pub is_balanced: bool,
-    pub total_points: u32,
     pub distribution_points: DistributionPoints,
 }
 
@@ -345,7 +344,6 @@ pub fn build_bidding_viewport(input: BuildBiddingViewportInput) -> BiddingViewpo
         hcp: eval.hcp,
         shape: eval.shape,
         is_balanced: is_balanced(&eval.shape),
-        total_points: eval.total_points,
         distribution_points: eval.distribution,
     };
 

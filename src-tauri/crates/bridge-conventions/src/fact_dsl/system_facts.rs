@@ -9,7 +9,7 @@ use crate::types::{
     OneNtForcingStatus, SuitResponseForcingDuration, SystemConfig,
 };
 
-use super::primitives::{suit_name_to_index, SUIT_LENGTH_FACT_IDS};
+use super::point_helpers::compute_total_points;
 use super::types::{
     fv_bool, fv_text, FactValue, RelationalFactContext, get_num,
 };
@@ -132,7 +132,7 @@ pub fn evaluate_system_relational(
 
     // If no trump suit agreed, standard values stand (no overrides)
     let tp = if let Some(suit_name) = trump_suit_name {
-        compute_trump_total_points(facts, suit_name)
+        compute_total_points(facts, sys.point_config.trump_formula, Some(suit_name))
     } else {
         return;
     };
@@ -175,32 +175,6 @@ pub fn evaluate_system_relational(
         ),
     );
     // Note: SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT has no Tp variant in TS — no override
-}
-
-/// Compute total points for a trump fit: HCP + shortage points (3/2/1 for void/singleton/doubleton)
-/// in non-trump suits.
-fn compute_trump_total_points(
-    facts: &HashMap<String, FactValue>,
-    trump_suit_name: &str,
-) -> f64 {
-    let hcp = get_num(facts, "hand.hcp");
-    let trump_idx = suit_name_to_index(trump_suit_name);
-
-    let mut shortage_points = 0.0;
-    for i in 0..4 {
-        if Some(i) == trump_idx {
-            continue;
-        }
-        let length = get_num(facts, SUIT_LENGTH_FACT_IDS[i]);
-        if length == 0.0 {
-            shortage_points += 3.0;
-        } else if length == 1.0 {
-            shortage_points += 2.0;
-        } else if length == 2.0 {
-            shortage_points += 1.0;
-        }
-    }
-    hcp + shortage_points
 }
 
 /// Detect trump suit from relational context's fitAgreed.

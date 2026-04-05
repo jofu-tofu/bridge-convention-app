@@ -29,7 +29,6 @@ const MOCK_BIDDING_VP = {
     hcp: 10,
     shape: [4, 3, 3, 3],
     isBalanced: true,
-    totalPoints: 10,
     distributionPoints: { shortness: 0, length: 0 },
   },
   handSummary: "4♠ 3♥ 3♦ 3♣, 10 HCP",
@@ -46,7 +45,7 @@ const MOCK_BIDDING_VP = {
 // ── Mock service factory ─────────────────────────────────────────
 function createMockService(): DevServicePort {
   return {
-    createSession: vi.fn().mockResolvedValue("session-1"),
+    createDrillSession: vi.fn().mockResolvedValue("session-1"),
     startDrill: vi.fn().mockResolvedValue({
       viewport: MOCK_BIDDING_VP,
       isOffConvention: false,
@@ -66,7 +65,12 @@ function createMockService(): DevServicePort {
       phaseTransition: null,
       userHistoryEntry: null,
     }),
-    acceptPrompt: vi
+    enterPlay: vi
+      .fn()
+      .mockResolvedValue({ phase: "PLAYING", aiPlays: null }),
+    declinePlay: vi.fn().mockResolvedValue(undefined),
+    returnToPrompt: vi.fn().mockResolvedValue(undefined),
+    restartPlay: vi
       .fn()
       .mockResolvedValue({ phase: "PLAYING", aiPlays: null }),
     playCard: vi.fn().mockResolvedValue({
@@ -105,7 +109,7 @@ function createMockService(): DevServicePort {
     getDebugLog: vi.fn().mockResolvedValue([]),
     getInferenceTimeline: vi.fn().mockResolvedValue([]),
     getConventionName: vi.fn().mockResolvedValue("Test Convention"),
-    createSessionFromBundle: vi.fn().mockRejectedValue(new Error("stub")),
+    createDrillSessionFromBundle: vi.fn().mockRejectedValue(new Error("stub")),
   } as unknown as DevServicePort;
 }
 
@@ -116,7 +120,7 @@ describe("game store lifecycle (RED tests)", () => {
     mockService = createMockService();
   });
 
-  it("RED: startNewDrill calls createSession then startDrill and caches viewport", async () => {
+  it("RED: startNewDrill calls createDrillSession then startDrill and caches viewport", async () => {
     const store = createGameStore(mockService, {
       delayFn: () => Promise.resolve(),
     });
@@ -129,7 +133,7 @@ describe("game store lifecycle (RED tests)", () => {
 
     // Allow async operations to settle
     await vi.waitFor(() => {
-      expect(mockService.createSession).toHaveBeenCalledWith(
+      expect(mockService.createDrillSession).toHaveBeenCalledWith(
         expect.objectContaining({ conventionId: "nt-bundle" }),
       );
       expect(mockService.startDrill).toHaveBeenCalledWith("session-1");
@@ -251,10 +255,6 @@ describe("game store lifecycle (RED tests)", () => {
       userHistoryEntry: null,
     });
 
-    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({
-      phase: "EXPLANATION",
-    });
-
     (mockService.getExplanationViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
       contract: null,
       bidHistory: [],
@@ -330,8 +330,8 @@ describe("game store lifecycle (RED tests)", () => {
     store.startNewDrill({ conventionId: "nt-bundle", seed: 2 });
 
     await vi.waitFor(() => {
-      // Second drill should win — createSession called twice
-      expect(mockService.createSession).toHaveBeenCalledTimes(2);
+      // Second drill should win — createDrillSession called twice
+      expect(mockService.createDrillSession).toHaveBeenCalledTimes(2);
       // Store should reflect the second drill, not the first
       expect(store.activeHandle).not.toBeNull();
     });
@@ -348,8 +348,8 @@ describe("game store lifecycle (RED tests)", () => {
     // acceptPrompt during BIDDING should be a no-op (guarded)
     store.acceptPrompt();
 
-    // Service acceptPrompt should NOT have been called
-    expect(mockService.acceptPrompt).not.toHaveBeenCalled();
+    // Service enterPlay should NOT have been called
+    expect(mockService.enterPlay).not.toHaveBeenCalled();
     expect(store.phase).toBe("BIDDING");
   });
 
@@ -375,7 +375,7 @@ describe("game store lifecycle (RED tests)", () => {
     const store = createGameStore(mockService, { delayFn: () => Promise.resolve() });
     await drillToDeclarerPrompt(store, mockService);
 
-    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
+    (mockService.enterPlay as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
     (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
       tricks: [], currentTrick: [], currentPlayer: Seat.West,
       declarerTricksWon: 0, defenderTricksWon: 0,
@@ -386,7 +386,7 @@ describe("game store lifecycle (RED tests)", () => {
     store.acceptPrompt();
     await vi.waitFor(() => {
       expect(store.phase).toBe("PLAYING");
-      expect(mockService.acceptPrompt).toHaveBeenCalledWith("session-1", "play", expect.any(String));
+      expect(mockService.enterPlay).toHaveBeenCalledWith("session-1", expect.any(String));
       expect(mockService.getPlayingViewport).toHaveBeenCalled();
     });
   });
@@ -395,7 +395,6 @@ describe("game store lifecycle (RED tests)", () => {
     const store = createGameStore(mockService, { delayFn: () => Promise.resolve() });
     await drillToDeclarerPrompt(store, mockService);
 
-    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "EXPLANATION" });
     (mockService.getExplanationViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
       contract: null, bidHistory: [], explanationEntries: [],
     });
@@ -403,7 +402,7 @@ describe("game store lifecycle (RED tests)", () => {
     store.declinePrompt();
     await vi.waitFor(() => {
       expect(store.phase).toBe("EXPLANATION");
-      expect(mockService.acceptPrompt).toHaveBeenCalledWith("session-1", "skip", undefined);
+      expect(mockService.declinePlay).toHaveBeenCalledWith("session-1");
       expect(mockService.getExplanationViewport).toHaveBeenCalled();
     });
   });
@@ -413,7 +412,7 @@ describe("game store lifecycle (RED tests)", () => {
     await drillToDeclarerPrompt(store, mockService);
 
     // First get to PLAYING
-    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
+    (mockService.enterPlay as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
     (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
       tricks: [], currentTrick: [], currentPlayer: Seat.West,
       declarerTricksWon: 0, defenderTricksWon: 0,
@@ -439,7 +438,7 @@ describe("game store lifecycle (RED tests)", () => {
     await drillToDeclarerPrompt(store, mockService);
 
     // Get to PLAYING first
-    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
+    (mockService.enterPlay as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
     (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
       tricks: [], currentTrick: [], currentPlayer: Seat.West,
       declarerTricksWon: 0, defenderTricksWon: 0,
@@ -450,9 +449,9 @@ describe("game store lifecycle (RED tests)", () => {
     await vi.waitFor(() => { expect(store.phase).toBe("PLAYING"); });
 
     // Reset mocks to track restart calls
-    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockClear();
+    (mockService.restartPlay as ReturnType<typeof vi.fn>).mockClear();
     (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockClear();
-    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
+    (mockService.restartPlay as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
     (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
       tricks: [], currentTrick: [], currentPlayer: Seat.West,
       declarerTricksWon: 0, defenderTricksWon: 0,
@@ -462,7 +461,7 @@ describe("game store lifecycle (RED tests)", () => {
 
     store.restartPlay();
     await vi.waitFor(() => {
-      expect(mockService.acceptPrompt).toHaveBeenCalledWith("session-1", "restart", undefined);
+      expect(mockService.restartPlay).toHaveBeenCalledWith("session-1");
       expect(mockService.getPlayingViewport).toHaveBeenCalled();
       expect(store.phase).toBe("PLAYING");
     });
@@ -474,7 +473,7 @@ describe("game store lifecycle (RED tests)", () => {
     const store = createGameStore(mockService, { delayFn: controlledDelay });
     await drillToDeclarerPrompt(store, mockService);
 
-    (mockService.acceptPrompt as ReturnType<typeof vi.fn>).mockResolvedValue({
+    (mockService.enterPlay as ReturnType<typeof vi.fn>).mockResolvedValue({
       phase: "PLAYING",
       aiPlays: [{ seat: Seat.West, card: { suit: Suit.Spades, rank: Rank.Ace }, reason: "test" }],
     });

@@ -12,8 +12,11 @@ use crate::types::{
     PrimitiveClause, PrimitiveClauseOperator, PrimitiveClauseValue,
 };
 
+use crate::types::system_config::PointFormulaId;
+
 use super::composition::evaluate_composition;
-use super::primitives::{suit_name_to_fact_id, SUIT_LENGTH_FACT_IDS};
+use super::point_helpers::compute_total_points;
+use super::primitives::suit_name_to_fact_id;
 use super::types::{
     fv_bool, fv_num, get_num, FactValue, RelationalFactContext,
 };
@@ -201,22 +204,7 @@ pub fn evaluate_bridge_relational(
 
     // bridge.totalPointsForRaise — HCP + shortage points excluding bound suit
     let tp = if let Some(suit_name) = bound_suit_name {
-        let hcp = get_num(facts, "hand.hcp");
-        let mut shortage_points = 0.0;
-        for (i, sn) in super::primitives::SUIT_NAMES.iter().enumerate() {
-            if *sn == suit_name.as_str() {
-                continue;
-            }
-            let length = get_num(facts, SUIT_LENGTH_FACT_IDS[i]);
-            if length == 0.0 {
-                shortage_points += 3.0;
-            } else if length == 1.0 {
-                shortage_points += 2.0;
-            } else if length == 2.0 {
-                shortage_points += 1.0;
-            }
-        }
-        hcp + shortage_points
+        compute_total_points(facts, PointFormulaId::HcpPlusShortage, Some(suit_name))
     } else {
         get_num(facts, "hand.hcp")
     };

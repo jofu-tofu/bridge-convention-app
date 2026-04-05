@@ -6,7 +6,7 @@
  * interfaces — never re-exported from backend modules.
  *
  * ALLOWED to cross: BiddingViewport, ViewportBidFeedback, TeachingDetail,
- *   Call, Card, Seat, Vulnerability, SessionHandle, session config DTOs,
+ *   Call, Card, Seat, Vulnerability, DrillHandle, session config DTOs,
  *   FlowTreeNode, BundleFlowTreeViewport.
  *
  * NEVER crosses: Deal, BidResult, DrillSession, DrillBundle,
@@ -311,8 +311,8 @@ export interface PhaseTransition {
   readonly to: ServiceGamePhase;
 }
 
-/** Result of accepting a prompt (play/skip). */
-export interface PromptAcceptResult {
+/** Result of entering the play phase (play/restart). */
+export interface PlayEntryResult {
   readonly phase: ServiceGamePhase;
   /** AI plays that ran immediately after entering the play phase (opening lead by AI, etc.). */
   readonly aiPlays?: readonly AiPlayEntry[];
@@ -547,7 +547,6 @@ export interface HandEvaluationView {
   readonly hcp: number;
   readonly shape: SuitLength; // [spades, hearts, diamonds, clubs]
   readonly isBalanced: boolean;
-  readonly totalPoints: number;
   /** Distribution point breakdown: shortness (voids/singletons/doubletons)
    *  and length (suits longer than 4 cards). */
   readonly distributionPoints: DistributionPoints;

@@ -139,7 +139,6 @@ const hcpStrategy: HandEvaluationStrategy = {
       hcp,
       distribution,
       shape,
-      totalPoints: hcp + distribution.total,
       strategy: "HCP",
     };
   },

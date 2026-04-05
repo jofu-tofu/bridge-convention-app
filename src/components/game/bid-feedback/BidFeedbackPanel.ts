@@ -208,7 +208,6 @@ export function enrichConditionText(node: ServiceExplanationNode, eval_: HandEva
 function lookupHandValue(factId: string, eval_: HandEvaluationView): number | boolean | undefined {
   switch (factId) {
     case "hand.hcp": return eval_.hcp;
-    case "hand.totalPoints": return eval_.totalPoints;
     case "hand.suitLength.spades": return eval_.shape[0];
     case "hand.suitLength.hearts": return eval_.shape[1];
     case "hand.suitLength.diamonds": return eval_.shape[2];

@@ -30,6 +30,8 @@ crates/
                        and TopHonorCount/SuitCompare/LongestSuitIs/AceCount/KingCount/VulnerabilityIs
                        clause types not in TS. Facts using these have Rust-constructed trees in
                        fact_dsl/rust_compositions.rs. Zero built-in evaluator registry.
+                       Point formula configuration via `PointConfig` on `SystemConfig`.
+                       Centralized computation in `fact_dsl/point_helpers.rs`.
                        Phase 3 adds `pipeline/` (observation + evaluation + run_pipeline), `teaching/`
                        (resolution, projection, parse tree), and `adapter/` (protocol adapter, strategy
                        evaluation, practical scorer). `ConventionStrategy::suggest()` returns

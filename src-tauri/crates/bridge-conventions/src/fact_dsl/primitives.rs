@@ -1,9 +1,11 @@
 //! Primitive fact evaluators — layer 1.
 //!
-//! Evaluates 6 hardcoded facts directly from Hand and HandEvaluation:
+//! Evaluates 8 hardcoded facts directly from Hand and HandEvaluation:
 //! - hand.hcp
 //! - hand.suitLength.{spades,hearts,diamonds,clubs}
 //! - hand.isBalanced
+//! - hand.shortagePoints
+//! - hand.lengthPoints
 
 use std::collections::HashMap;
 
@@ -23,7 +25,7 @@ pub const SUIT_LENGTH_FACT_IDS: [&str; 4] = [
 pub const SUIT_NAMES: [&str; 4] = ["spades", "hearts", "diamonds", "clubs"];
 
 /// Evaluate layer 1 primitive facts from hand data.
-/// Inserts 6 facts into the provided map.
+/// Inserts 8 facts into the provided map.
 pub fn evaluate_primitives(
     _hand: &Hand,
     evaluation: &HandEvaluation,
@@ -47,6 +49,16 @@ pub fn evaluate_primitives(
     facts.insert(
         "hand.isBalanced".to_string(),
         fv_bool("hand.isBalanced", is_balanced(&evaluation.shape)),
+    );
+
+    // Distribution point components (raw per-hand values, all 4 suits counted)
+    facts.insert(
+        "hand.shortagePoints".to_string(),
+        fv_num("hand.shortagePoints", evaluation.distribution.shortness as f64),
+    );
+    facts.insert(
+        "hand.lengthPoints".to_string(),
+        fv_num("hand.lengthPoints", evaluation.distribution.length as f64),
     );
 }
 

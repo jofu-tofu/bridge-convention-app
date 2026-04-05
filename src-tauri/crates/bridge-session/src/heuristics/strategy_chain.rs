@@ -208,7 +208,7 @@ mod tests {
                     total: 0,
                 },
                 shape: [4, 3, 3, 3],
-                total_points: 10,
+
                 strategy: "HCP".to_string(),
             },
             vulnerability: None,

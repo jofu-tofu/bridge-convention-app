@@ -5,8 +5,8 @@
 use crate::types::system_config::{
     BaseSystemId, DontOvercallConfig, InterferenceThresholds, NtOpeningConfig,
     OneNtForcingStatus, OneNtResponseAfterMajorConfig, OpeningRequirements,
-    OpenerRebidThresholds, ResponderThresholds, SuitResponseConfig,
-    SuitResponseForcingDuration, SystemConfig, TotalPointEquivalent,
+    OpenerRebidThresholds, PointConfig, PointFormulaId, ResponderThresholds,
+    SuitResponseConfig, SuitResponseForcingDuration, SystemConfig, TotalPointEquivalent,
 };
 
 /// Standard American Yellow Card (SAYC) system configuration.
@@ -48,6 +48,10 @@ pub fn sayc_system_config() -> SystemConfig {
         dont_overcall: DontOvercallConfig {
             min_hcp: 8,
             max_hcp: 15,
+        },
+        point_config: PointConfig {
+            nt_formula: PointFormulaId::HcpOnly,
+            trump_formula: PointFormulaId::HcpPlusShortage,
         },
     }
 }
@@ -92,6 +96,10 @@ pub fn two_over_one_system_config() -> SystemConfig {
             min_hcp: 8,
             max_hcp: 15,
         },
+        point_config: PointConfig {
+            nt_formula: PointFormulaId::HcpOnly,
+            trump_formula: PointFormulaId::HcpPlusShortage,
+        },
     }
 }
 
@@ -134,6 +142,10 @@ pub fn acol_system_config() -> SystemConfig {
         dont_overcall: DontOvercallConfig {
             min_hcp: 8,
             max_hcp: 15,
+        },
+        point_config: PointConfig {
+            nt_formula: PointFormulaId::HcpOnly,
+            trump_formula: PointFormulaId::HcpPlusShortage,
         },
     }
 }

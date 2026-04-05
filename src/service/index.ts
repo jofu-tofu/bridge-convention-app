@@ -3,7 +3,7 @@
 // ── 1. Service Port & Implementation ─────────────────────────────────
 export type { DevServicePort } from "./port";
 export { WasmService, initWasmService } from "./wasm-service";
-export type { SessionHandle, SessionConfig } from "./request-types";
+export type { DrillHandle, SessionConfig } from "./request-types";
 
 // ── 2. Viewports & Response Types (service-owned) ────────────────────
 export {
@@ -80,6 +80,8 @@ export type {
   ConventionTeaching,
   BaseSystemId,
   SystemConfig,
+  PointFormulaId,
+  PointConfig,
   TotalPointEquivalent,
   VulnerabilityDistribution,
   DrillSettings,
@@ -90,7 +92,7 @@ export type {
   ServiceAction,
   TransitionDescriptor,
   TransitionResult,
-  PromptAcceptResult,
+  PlayEntryResult,
   PracticePreferences,
   DisplayPreferences,
   BiddingContext,

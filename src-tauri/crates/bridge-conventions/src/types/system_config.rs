@@ -4,6 +4,37 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Point formula identifiers for composing total-point values.
+///
+/// The engine computes raw components (HCP, shortage, length).
+/// The fact DSL composes them using these formula IDs via `compute_total_points()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum PointFormulaId {
+    HcpOnly,
+    HcpPlusShortage,
+    HcpPlusAllDistribution,
+}
+
+/// Point formula configuration per contract type (NT vs trump).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PointConfig {
+    pub nt_formula: PointFormulaId,
+    pub trump_formula: PointFormulaId,
+}
+
+fn default_point_config() -> PointConfig {
+    PointConfig {
+        nt_formula: PointFormulaId::HcpOnly,
+        trump_formula: PointFormulaId::HcpPlusShortage,
+    }
+}
+
+fn is_default_point_config(config: &PointConfig) -> bool {
+    *config == default_point_config()
+}
+
 /// Base bidding system identifiers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BaseSystemId {
@@ -121,6 +152,8 @@ pub struct SystemConfig {
     pub one_nt_response_after_major: OneNtResponseAfterMajorConfig,
     pub opening_requirements: OpeningRequirements,
     pub dont_overcall: DontOvercallConfig,
+    #[serde(default = "default_point_config", skip_serializing_if = "is_default_point_config")]
+    pub point_config: PointConfig,
 }
 
 #[cfg(test)]
@@ -207,9 +240,38 @@ mod tests {
                 min_hcp: 8,
                 max_hcp: 15,
             },
+            point_config: PointConfig {
+                nt_formula: PointFormulaId::HcpOnly,
+                trump_formula: PointFormulaId::HcpPlusShortage,
+            },
         };
         let json = serde_json::to_string(&config).unwrap();
         let back: SystemConfig = serde_json::from_str(&json).unwrap();
         assert_eq!(back, config);
+    }
+
+    #[test]
+    fn point_formula_id_serde() {
+        assert_eq!(
+            serde_json::to_string(&PointFormulaId::HcpOnly).unwrap(),
+            "\"hcp-only\""
+        );
+        assert_eq!(
+            serde_json::to_string(&PointFormulaId::HcpPlusShortage).unwrap(),
+            "\"hcp-plus-shortage\""
+        );
+        assert_eq!(
+            serde_json::to_string(&PointFormulaId::HcpPlusAllDistribution).unwrap(),
+            "\"hcp-plus-all-distribution\""
+        );
+    }
+
+    #[test]
+    fn point_config_default_on_missing_field() {
+        // Ensure SystemConfig without pointConfig deserializes with default
+        let json = r#"{"systemId":"sayc","displayName":"test","ntOpening":{"minHcp":15,"maxHcp":17},"responderThresholds":{"inviteMin":8,"inviteMax":9,"gameMin":10,"slamMin":15,"inviteMinTp":{"trump":8},"inviteMaxTp":{"trump":10},"gameMinTp":{"trump":10},"slamMinTp":{"trump":16}},"openerRebid":{"notMinimum":16,"notMinimumTp":{"trump":16}},"interference":{"redoubleMin":10},"suitResponse":{"twoLevelMin":10,"twoLevelForcingDuration":"one-round"},"oneNtResponseAfterMajor":{"forcing":"non-forcing","maxHcp":10,"minHcp":6},"openingRequirements":{"majorSuitMinLength":5},"dontOvercall":{"minHcp":8,"maxHcp":15}}"#;
+        let config: SystemConfig = serde_json::from_str(json).unwrap();
+        assert_eq!(config.point_config.nt_formula, PointFormulaId::HcpOnly);
+        assert_eq!(config.point_config.trump_formula, PointFormulaId::HcpPlusShortage);
     }
 }

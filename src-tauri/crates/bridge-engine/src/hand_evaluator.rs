@@ -106,7 +106,6 @@ impl HandEvaluationStrategy for HcpStrategy {
             hcp,
             distribution,
             shape,
-            total_points: hcp + distribution.total,
             strategy: "HCP".to_string(),
         }
     }
@@ -336,7 +335,6 @@ mod tests {
         assert_eq!(eval.hcp, 37);
         assert_eq!(eval.shape, [4, 3, 3, 3]);
         assert_eq!(eval.distribution.total, 0);
-        assert_eq!(eval.total_points, 37);
         assert_eq!(eval.strategy, "HCP");
     }
 

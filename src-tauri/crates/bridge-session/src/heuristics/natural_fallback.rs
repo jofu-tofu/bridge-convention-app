@@ -146,7 +146,7 @@ mod tests {
                 hcp,
                 distribution,
                 shape,
-                total_points: hcp + distribution.total,
+
                 strategy: "HCP".to_string(),
             },
             vulnerability: None,

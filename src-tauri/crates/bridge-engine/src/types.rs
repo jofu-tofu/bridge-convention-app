@@ -216,8 +216,6 @@ pub struct HandEvaluation {
     pub hcp: u32,
     pub distribution: DistributionPoints,
     pub shape: SuitLength,
-    #[serde(rename = "totalPoints")]
-    pub total_points: u32,
     pub strategy: String,
 }
 
@@ -452,16 +450,16 @@ mod tests {
     }
 
     #[test]
-    fn hand_evaluation_total_points_camel_case() {
+    fn hand_evaluation_serde_roundtrip() {
         let he = HandEvaluation {
             hcp: 10,
             distribution: DistributionPoints { shortness: 0, length: 0, total: 0 },
             shape: [4, 3, 3, 3],
-            total_points: 10,
             strategy: "HCP".to_string(),
         };
         let json = serde_json::to_string(&he).unwrap();
-        assert!(json.contains("totalPoints"));
+        let back: HandEvaluation = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, he);
     }
 
     #[test]

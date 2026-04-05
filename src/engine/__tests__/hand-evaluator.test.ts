@@ -239,23 +239,17 @@ describe("calculateDistributionPoints", () => {
 });
 
 describe("evaluateHand", () => {
-  test("balanced 15 HCP hand evaluates to 15 total points", () => {
+  test("balanced 15 HCP hand", () => {
     const result = evaluateHand(HAND_15_BALANCED);
     expect(result.hcp).toBe(15);
     expect(result.shape).toEqual([4, 3, 3, 3]);
-    expect(result.totalPoints).toBe(15); // balanced = 0 distribution points
+    expect(result.distribution.total).toBe(0);
   });
 
-  test("total points equals HCP plus distribution points", () => {
-    const result = evaluateHand(HAND_15_BALANCED);
-    expect(result.totalPoints).toBe(result.hcp + result.distribution.total);
-  });
-
-  test("unbalanced hand includes distribution points in total", () => {
+  test("unbalanced hand has distribution points", () => {
     const result = evaluateHand(HAND_20_UNBAL);
     expect(result.hcp).toBe(20);
     expect(result.distribution.total).toBeGreaterThan(0);
-    expect(result.totalPoints).toBe(result.hcp + result.distribution.total);
   });
 });
 
@@ -340,13 +334,13 @@ describe("extreme hand shapes — bridge edge cases", () => {
 });
 
 describe("hand evaluator edge cases", () => {
-  test("yarborough total points = 0 (0 HCP + 4-3-3-3 shape)", () => {
+  test("yarborough: 0 HCP, 4-3-3-3 shape", () => {
     const result = evaluateHand(HAND_YARBOROUGH);
     expect(result.hcp).toBe(0);
-    expect(result.totalPoints).toBe(0);
+    expect(result.distribution.total).toBe(0);
   });
 
-  test("13-0-0-0 total points = 28 (10 HCP + 18 distribution)", () => {
+  test("13-0-0-0: 10 HCP + 18 distribution", () => {
     const monosuit = hand(
       "SA",
       "SK",
@@ -365,7 +359,6 @@ describe("hand evaluator edge cases", () => {
     const result = evaluateHand(monosuit);
     expect(result.hcp).toBe(10);
     expect(result.distribution.total).toBe(18);
-    expect(result.totalPoints).toBe(28);
   });
 
   test("5-3-3-2 with 5-card minor is balanced", () => {

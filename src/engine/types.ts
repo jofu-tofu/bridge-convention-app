@@ -103,7 +103,6 @@ export interface HandEvaluation {
   readonly hcp: number;
   readonly distribution: DistributionPoints;
   readonly shape: SuitLength;
-  readonly totalPoints: number;
   readonly strategy: string;
 }
 

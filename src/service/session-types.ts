@@ -48,6 +48,15 @@ export interface ConventionConfig {
 
 export type BaseSystemId = "sayc" | "two-over-one" | "acol";
 
+/** Point formula identifiers for composing total-point values. */
+export type PointFormulaId = "hcp-only" | "hcp-plus-shortage" | "hcp-plus-all-distribution";
+
+/** Point formula configuration per contract type (NT vs trump). */
+export interface PointConfig {
+  readonly ntFormula: PointFormulaId;
+  readonly trumpFormula: PointFormulaId;
+}
+
 /** Suit total-point equivalents for a threshold. */
 export interface TotalPointEquivalent {
   readonly trump: number;
@@ -109,6 +118,7 @@ export interface SystemConfig {
   readonly oneNtResponseAfterMajor: OneNtResponseAfterMajorConfig;
   readonly openingRequirements: OpeningRequirements;
   readonly dontOvercall: DontOvercallConfig;
+  readonly pointConfig?: PointConfig;
 }
 
 // ── System config constants ────────────────────────────────────────
@@ -128,6 +138,7 @@ export const SAYC_SYSTEM_CONFIG: SystemConfig = {
   oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 10, minHcp: 6 },
   openingRequirements: { majorSuitMinLength: 5 },
   dontOvercall: { minHcp: 8, maxHcp: 15 },
+  pointConfig: { ntFormula: "hcp-only", trumpFormula: "hcp-plus-shortage" },
 };
 
 export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
@@ -145,6 +156,7 @@ export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
   oneNtResponseAfterMajor: { forcing: "semi-forcing", maxHcp: 12, minHcp: 6 },
   openingRequirements: { majorSuitMinLength: 5 },
   dontOvercall: { minHcp: 8, maxHcp: 15 },
+  pointConfig: { ntFormula: "hcp-only", trumpFormula: "hcp-plus-shortage" },
 };
 
 export const ACOL_SYSTEM_CONFIG: SystemConfig = {
@@ -162,6 +174,7 @@ export const ACOL_SYSTEM_CONFIG: SystemConfig = {
   oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 9, minHcp: 6 },
   openingRequirements: { majorSuitMinLength: 4 },
   dontOvercall: { minHcp: 8, maxHcp: 15 },
+  pointConfig: { ntFormula: "hcp-only", trumpFormula: "hcp-plus-shortage" },
 };
 
 interface BaseSystemMeta {
@@ -318,7 +331,10 @@ export function isValidTransition(from: GamePhase, to: GamePhase): boolean {
 export type ViewportNeeded = "bidding" | "declarerPrompt" | "playing" | "explanation";
 
 export type ServiceAction =
-  | { type: "acceptPrompt"; mode: "play" | "skip" | "replay" | "restart"; seat?: Seat }
+  | { type: "enterPlay"; seat?: Seat }
+  | { type: "declinePlay" }
+  | { type: "returnToPrompt" }
+  | { type: "restartPlay" }
   | { type: "skipToReview" };
 
 export type PhaseEvent =
@@ -343,11 +359,11 @@ export interface TransitionDescriptor {
 }
 
 export interface TransitionResult {
-  readonly serviceResult: PromptAcceptResult | null;
+  readonly serviceResult: PlayEntryResult | null;
   readonly completed: boolean;
 }
 
-export interface PromptAcceptResult {
+export interface PlayEntryResult {
   readonly phase: GamePhase;
   readonly aiPlays?: readonly { seat: Seat; card: Card; reason: string; trickComplete?: boolean }[] | null;
 }
@@ -406,7 +422,7 @@ function resolveAcceptPlay(seat?: Seat): TransitionDescriptor {
   return {
     targetPhase: "PLAYING", viewportsNeeded: ["playing"],
     triggerDDS: false, captureInferences: false,
-    serviceActions: [{ type: "acceptPrompt", mode: "play", seat }],
+    serviceActions: [{ type: "enterPlay", seat }],
     resetPlay: true, chainedEvent: null, intermediatePhases: [],
   };
 }
@@ -415,7 +431,7 @@ function resolveDeclinePlay(): TransitionDescriptor {
   return {
     targetPhase: "EXPLANATION", viewportsNeeded: ["explanation"],
     triggerDDS: false, captureInferences: false,
-    serviceActions: [{ type: "acceptPrompt", mode: "skip" }],
+    serviceActions: [{ type: "declinePlay" }],
     resetPlay: false, chainedEvent: null, intermediatePhases: [],
   };
 }
@@ -447,14 +463,14 @@ export function resolveTransition(_currentPhase: GamePhase, event: PhaseEvent): 
       return {
         targetPhase: "PLAYING", viewportsNeeded: ["playing"],
         triggerDDS: false, captureInferences: false,
-        serviceActions: [{ type: "acceptPrompt", mode: "replay" }, { type: "acceptPrompt", mode: "play", seat: event.seat }],
+        serviceActions: [{ type: "returnToPrompt" }, { type: "enterPlay", seat: event.seat }],
         resetPlay: true, chainedEvent: null, intermediatePhases: ["DECLARER_PROMPT"],
       };
     case "RESTART_PLAY":
       return {
         targetPhase: "PLAYING", viewportsNeeded: ["playing"],
         triggerDDS: false, captureInferences: false,
-        serviceActions: [{ type: "acceptPrompt", mode: "restart" }],
+        serviceActions: [{ type: "restartPlay" }],
         resetPlay: true, chainedEvent: null, intermediatePhases: [],
       };
     default:
