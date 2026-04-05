@@ -2,16 +2,16 @@
 
 # Service
 
-WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend (20 methods). The client holds an opaque `SessionHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never raw domain types. All game logic (conventions, inference, session) runs in Rust via `bridge-service`. TS `service/` is a thin serialize/call/deserialize proxy.
+WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend (22 methods). The client holds an opaque `DrillHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never raw domain types. All game logic (conventions, inference, session) runs in Rust via `bridge-service`. TS `service/` is a thin serialize/call/deserialize proxy. DDS solver is injected at init via `wireDdsSolver()` — the WASM layer routes Expert/WorldClass profiles through async DDS play internally.
 
-**ServicePort methods (20):**
-- **Session:** `createSession`, `startDrill`
+**ServicePort methods (22):**
+- **Session:** `createDrillSession`, `startDrill`
 - **Bidding:** `submitBid`
-- **Transitions:** `acceptPrompt` (handles "play", "skip", "replay", "restart")
-- **Play:** `playCard`, `playSingleCard`, `skipToReview`, `updatePlayProfile`
+- **Transitions:** `enterPlay`, `declinePlay`, `returnToPrompt`, `restartPlay`
+- **Play:** `playCard`, `skipToReview`, `updatePlayProfile`
 - **Query:** `getBiddingViewport`, `getDeclarerPromptViewport`, `getPlayingViewport`, `getExplanationViewport`
 - **Inference:** `getPublicBeliefState`
-- **DDS:** `getDDSSolution`, `getDealPBN`
+- **DDS:** `getDDSSolution`
 - **Catalog:** `listConventions`
 - **Learning:** `listModules`, `getModuleLearningViewport`, `getBundleFlowTree`, `getModuleFlowTree`
 
@@ -21,13 +21,12 @@ WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend 
 |------|------|
 | `index.ts` | Barrel organized by consumer concern: (1) port & impl, (2) viewports/responses, (3) engine primitives, (4) convention catalog, (5) coverage utils, (6) session config, (7) display, (8) evaluation facade, (9) cross-cutting. Debug types route through `debug-types.ts`. |
 | `debug-types.ts` | Debug-only types for DevServicePort — allowed to import backend types by design. |
-| `request-types.ts` | Request DTOs: SessionHandle, SessionConfig (includes `practiceMode` and `targetModuleId`) |
+| `request-types.ts` | Request DTOs: DrillHandle, SessionConfig (includes `practiceMode` and `targetModuleId`) |
 | `response-types.ts` | Response DTOs: DrillStartResult, BidSubmitResult, PlayCardResult, viewports, ModuleCatalogEntry, ModuleLearningViewport, FlowTreeNode, etc. |
 | `session-types.ts` | Stub type definitions matching Rust JSON schema — TS interfaces for types that cross the WASM boundary |
 | `port.ts` | ServicePort + DevServicePort interfaces |
 | `wasm-service.ts` | `WasmService` — thin proxy implementing ServicePort via `wasm-bindgen` calls to Rust `WasmServicePort` |
 | `service-helpers.ts` | Sync WASM wrappers for UI components: `listConventions()`, `listModules()`, `buildBaseModuleInfos()`, `getModuleLearningViewportSync()` |
-| `dds-bridge.ts` | DDS platform dispatch: Tauri = native DDS via bridge-engine, WASM = JS worker fallback via PBN extraction. **Anti-pattern:** must not import wasm-service.ts directly — circular import. Uses callback injection for `getDealPBN`. |
 | `display/` | Call/contract/card formatting, convention card builders (`convention-card.ts` — `buildConventionCardPanel` for App format, `buildAcblCardPanel` for ACBL format, wired to WASM via service-helpers) |
 | `util/delay.ts` | Pure delay utility |
 
@@ -42,13 +41,13 @@ WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend 
 
 - **`retryBid()` is intentionally absent from `ServicePort`.** Wrong bids never modify session state (correct-path-only). Retry is store-local: clear `$state` feedback.
 - **`submitBid` is atomic.** Grade + apply + run AI bids + return next viewport — one call. The service runs AI bids with NO delays. The store owns animation timing.
-- **Single-session invariant.** `createSession` destroys the previous session — ServicePort supports only one active session per client.
-- **`acceptPrompt` is polymorphic.** Handles all post-auction transitions: `acceptPrompt(handle, "play")`, `acceptPrompt(handle, "skip")`, `acceptPrompt(handle, "replay")`, `acceptPrompt(handle, "restart")`.
+- **Single-session invariant.** `createDrillSession` destroys the previous session — ServicePort supports only one active session per client.
+- **Phase transitions are explicit.** Four focused methods replace the old polymorphic `acceptPrompt`: `enterPlay(handle, seat?)` enters the play phase, `declinePlay(handle)` skips to review, `returnToPrompt(handle)` returns to the declarer prompt (used in "play this hand" flow), `restartPlay(handle)` restarts the play phase.
 - **`DevServicePort` vs `ServicePort`.** Debug methods on `DevServicePort` only. Production stores type against `ServicePort`.
 
 ## Boundary Types
 
-**Allowed to cross:** `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`, `ServiceTeachingLabel`, `Call`, `Card`, `Seat`, `Vulnerability`, `BidGrade`, `BidHistoryEntry`, `GamePhase`, `SessionHandle` (opaque string), session config DTOs.
+**Allowed to cross:** `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail`, `ServiceTeachingLabel`, `Call`, `Card`, `Seat`, `Vulnerability`, `BidGrade`, `BidHistoryEntry`, `GamePhase`, `DrillHandle` (opaque string), session config DTOs.
 
 **Never crosses (main barrel):** `Deal`, `BidResult`, `DrillSession`, `DrillBundle`, `ConventionStrategy`, `ArbitrationResult`, `BidMeaning`, `InferenceEngine`. Debug types route through `debug-types.ts`.
 

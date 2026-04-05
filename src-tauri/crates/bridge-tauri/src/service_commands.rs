@@ -12,7 +12,7 @@ use bridge_service::{DevServicePort, ServicePort, ServicePortImpl, SessionConfig
 use bridge_session::session::{
     BiddingViewport, BundleFlowTreeViewport, DeclarerPromptViewport, ExplanationViewport,
     ModuleCatalogEntry, ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult,
-    PlayingViewport, SingleCardResult,
+    PlayingViewport,
 };
 
 /// Managed state type alias.
@@ -37,11 +37,11 @@ fn with_service_mut<T>(
 // ── Session lifecycle ─────────────────────────────────────────────
 
 #[tauri::command]
-pub fn create_session(
+pub fn create_drill_session(
     state: tauri::State<ServiceState>,
     config: SessionConfig,
 ) -> Result<String, String> {
-    with_service_mut(state, |service| service.create_session(config))
+    with_service_mut(state, |service| service.create_drill_session(config))
 }
 
 #[tauri::command]
@@ -66,15 +66,32 @@ pub fn submit_bid(
 // ── Phase transitions ─────────────────────────────────────────────
 
 #[tauri::command]
-pub fn accept_prompt(
+pub fn enter_play(
     state: tauri::State<ServiceState>,
     handle: String,
-    mode: Option<String>,
     seat_override: Option<Seat>,
-) -> Result<PromptAcceptResult, String> {
+) -> Result<PlayEntryResult, String> {
     with_service_mut(state, |service| {
-        service.accept_prompt(&handle, mode.as_deref(), seat_override)
+        service.enter_play(&handle, seat_override)
     })
+}
+
+#[tauri::command]
+pub fn decline_play(state: tauri::State<ServiceState>, handle: String) -> Result<(), String> {
+    with_service_mut(state, |service| service.decline_play(&handle))
+}
+
+#[tauri::command]
+pub fn return_to_prompt(state: tauri::State<ServiceState>, handle: String) -> Result<(), String> {
+    with_service_mut(state, |service| service.return_to_prompt(&handle))
+}
+
+#[tauri::command]
+pub fn restart_play(
+    state: tauri::State<ServiceState>,
+    handle: String,
+) -> Result<PlayEntryResult, String> {
+    with_service_mut(state, |service| service.restart_play(&handle))
 }
 
 // ── Play ──────────────────────────────────────────────────────────
@@ -87,18 +104,6 @@ pub fn play_card(
     seat: Seat,
 ) -> Result<PlayCardResult, String> {
     with_service_mut(state, |service| service.play_card(&handle, card, seat))
-}
-
-#[tauri::command]
-pub fn play_single_card(
-    state: tauri::State<ServiceState>,
-    handle: String,
-    card: Card,
-    seat: Seat,
-) -> Result<SingleCardResult, String> {
-    with_service_mut(state, |service| {
-        service.play_single_card(&handle, card, seat)
-    })
 }
 
 #[tauri::command]
@@ -171,11 +176,6 @@ pub fn get_dds_solution(
     handle: String,
 ) -> Result<DDSolutionResult, String> {
     with_service(state, |service| service.get_dds_solution(&handle))
-}
-
-#[tauri::command]
-pub fn get_deal_pbn(state: tauri::State<ServiceState>, handle: String) -> Result<String, String> {
-    with_service(state, |service| service.get_deal_pbn(&handle))
 }
 
 // ── Catalog ───────────────────────────────────────────────────────

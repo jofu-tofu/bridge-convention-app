@@ -23,6 +23,3 @@ pub use auction::{
 };
 pub use scoring::calculate_score;
 pub use play::{get_legal_plays, get_trick_winner};
-
-#[cfg(feature = "dds")]
-pub mod dds;

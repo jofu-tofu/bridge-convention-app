@@ -9,7 +9,7 @@
 import type { Call, Card, Seat } from "../engine/types";
 import type { PlayProfileId } from "./session-types";
 import type {
-  SessionHandle,
+  DrillHandle,
   SessionConfig,
 } from "./request-types";
 import type {
@@ -21,9 +21,8 @@ import type {
   ModuleLearningViewport,
   DrillStartResult,
   BidSubmitResult,
-  PromptAcceptResult,
+  PlayEntryResult,
   PlayCardResult,
-  SingleCardResult,
   DDSolutionResult,
   ConventionInfo,
   BundleFlowTreeViewport,
@@ -38,41 +37,39 @@ import type {
 /** Production service interface — all methods return Promise<T>. */
 interface ServicePort {
   // ── Session lifecycle ───────────────────────────────────────────
-  createSession(config: SessionConfig): Promise<SessionHandle>;
+  createDrillSession(config: SessionConfig): Promise<DrillHandle>;
 
   // ── Drill lifecycle ─────────────────────────────────────────────
-  startDrill(handle: SessionHandle): Promise<DrillStartResult>;
+  startDrill(handle: DrillHandle): Promise<DrillStartResult>;
 
   // ── Bidding ─────────────────────────────────────────────────────
   /** Grade + apply + run AI + return next viewport — single round-trip. */
-  submitBid(handle: SessionHandle, call: Call): Promise<BidSubmitResult>;
+  submitBid(handle: DrillHandle, call: Call): Promise<BidSubmitResult>;
 
   // ── Phase transitions ───────────────────────────────────────────
-  acceptPrompt(handle: SessionHandle, mode?: "play" | "skip" | "replay" | "restart", seatOverride?: Seat): Promise<PromptAcceptResult>;
+  enterPlay(handle: DrillHandle, seatOverride?: Seat): Promise<PlayEntryResult>;
+  declinePlay(handle: DrillHandle): Promise<void>;
+  returnToPrompt(handle: DrillHandle): Promise<void>;
+  restartPlay(handle: DrillHandle): Promise<PlayEntryResult>;
 
   // ── Play ────────────────────────────────────────────────────────
-  playCard(handle: SessionHandle, card: Card, seat: Seat): Promise<PlayCardResult>;
-  /** Play a single card without running the AI loop. Used by MC+DDS profiles. */
-  playSingleCard(handle: SessionHandle, card: Card, seat: Seat): Promise<SingleCardResult>;
-  skipToReview(handle: SessionHandle): Promise<void>;
-  updatePlayProfile(handle: SessionHandle, profileId: PlayProfileId): Promise<void>;
+  playCard(handle: DrillHandle, card: Card, seat: Seat): Promise<PlayCardResult>;
+  skipToReview(handle: DrillHandle): Promise<void>;
+  updatePlayProfile(handle: DrillHandle, profileId: PlayProfileId): Promise<void>;
 
   // ── Query ───────────────────────────────────────────────────────
-  getBiddingViewport(handle: SessionHandle): Promise<BiddingViewport | null>;
-  getDeclarerPromptViewport(handle: SessionHandle): Promise<DeclarerPromptViewport | null>;
-  getPlayingViewport(handle: SessionHandle): Promise<PlayingViewport | null>;
-  getExplanationViewport(handle: SessionHandle): Promise<ExplanationViewport | null>;
+  getBiddingViewport(handle: DrillHandle): Promise<BiddingViewport | null>;
+  getDeclarerPromptViewport(handle: DrillHandle): Promise<DeclarerPromptViewport | null>;
+  getPlayingViewport(handle: DrillHandle): Promise<PlayingViewport | null>;
+  getExplanationViewport(handle: DrillHandle): Promise<ExplanationViewport | null>;
 
   // ── Inference ─────────────────────────────────────────────────────
   /** Get the current public belief state from the session's inference coordinator.
    *  Eliminates the need for the store to maintain its own inference coordinator. */
-  getPublicBeliefState(handle: SessionHandle): Promise<ServicePublicBeliefState>;
+  getPublicBeliefState(handle: DrillHandle): Promise<ServicePublicBeliefState>;
 
   // ── DDS analysis ────────────────────────────────────────────────
-  getDDSSolution(handle: SessionHandle): Promise<DDSolutionResult>;
-
-  /** Get the deal in PBN format for browser DDS solving. */
-  getDealPBN(handle: SessionHandle): Promise<string>;
+  getDDSSolution(handle: DrillHandle): Promise<DDSolutionResult>;
 
   // ── Convention catalog ──────────────────────────────────────────
   listConventions(): Promise<ConventionInfo[]>;
@@ -94,14 +91,14 @@ interface ServicePort {
  *  Production builds use ServicePort only.
  *  local-service.ts implements both. */
 export interface DevServicePort extends ServicePort {
-  getExpectedBid(handle: SessionHandle): Promise<{ call: Call } | null>;
-  getDebugLog(handle: SessionHandle): Promise<readonly ServiceDebugLogEntry[]>;
-  getInferenceTimeline(handle: SessionHandle): Promise<readonly ServiceInferenceSnapshot[]>;
+  getExpectedBid(handle: DrillHandle): Promise<{ call: Call } | null>;
+  getDebugLog(handle: DrillHandle): Promise<readonly ServiceDebugLogEntry[]>;
+  getInferenceTimeline(handle: DrillHandle): Promise<readonly ServiceInferenceSnapshot[]>;
 
   /** Return the resolved convention name for a session. */
-  getConventionName(handle: SessionHandle): Promise<string>;
+  getConventionName(handle: DrillHandle): Promise<string>;
 
   /** Create a session from a pre-built DrillBundle (for tests using stub engines).
    *  @deprecated Only available in LocalService (TS backend). Not supported in WasmService. */
-  createSessionFromBundle(bundle: unknown): Promise<SessionHandle>;
+  createDrillSessionFromBundle(bundle: unknown): Promise<DrillHandle>;
 }

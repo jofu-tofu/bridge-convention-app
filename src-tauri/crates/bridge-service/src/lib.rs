@@ -16,11 +16,11 @@ pub mod session_manager;
 
 pub use error::ServiceError;
 pub use port::{DevServicePort, ServicePort};
-pub use request_types::{SessionConfig, SessionHandle};
-pub use service_impl::ServicePortImpl;
+pub use request_types::{DrillHandle, SessionConfig};
+pub use service_impl::{DdsPlayContext, ServicePortImpl};
 
 // Re-export response types
 pub use response_types::{
     AiBidEntryDTO, AiPlayEntryDTO, BidSubmitResult, ConventionInfo, DDSolutionResult,
-    DrillStartResult, PhaseTransition, PromptAcceptResult, ServicePublicBeliefState,
+    DrillStartResult, PhaseTransition, PlayEntryResult, ServicePublicBeliefState,
 };

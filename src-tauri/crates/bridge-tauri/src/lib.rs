@@ -8,12 +8,14 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .manage(Mutex::new(ServicePortImpl::new()))
         .invoke_handler(tauri::generate_handler![
-            service_commands::create_session,
+            service_commands::create_drill_session,
             service_commands::start_drill,
             service_commands::submit_bid,
-            service_commands::accept_prompt,
+            service_commands::enter_play,
+            service_commands::decline_play,
+            service_commands::return_to_prompt,
+            service_commands::restart_play,
             service_commands::play_card,
-            service_commands::play_single_card,
             service_commands::skip_to_review,
             service_commands::update_play_profile,
             service_commands::get_bidding_viewport,
@@ -22,7 +24,6 @@ pub fn run() {
             service_commands::get_explanation_viewport,
             service_commands::get_public_belief_state,
             service_commands::get_dds_solution,
-            service_commands::get_deal_pbn,
             service_commands::list_conventions,
             service_commands::list_modules,
             service_commands::get_module_learning_viewport,

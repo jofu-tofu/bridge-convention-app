@@ -114,12 +114,12 @@ Multi-system support (SAYC, 2/1, Acol). Modules are system-agnostic — differen
 components/ → stores/ → service/ (WASM proxy) → [Rust: bridge-service → bridge-session → {bridge-engine, bridge-conventions}]
 cli/commands/ → service/
 ```
-UI layers (`components/`, `stores/`) import ONLY from `service/`. `service/` is a thin WASM proxy: `ServicePort` interface, `WasmService` impl, barrel, `display/`, `util/`, `session-types.ts`, `dds-bridge.ts`. Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
+UI layers (`components/`, `stores/`) import ONLY from `service/`. `service/` is a thin WASM proxy: `ServicePort` interface, `WasmService` impl, barrel, `display/`, `util/`, `session-types.ts`. Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
 
 ```
 src/
   engine/          Pure TS engine types + DDS browser support (types, auction, scoring, play, dds-client, dds-worker)
-  service/         WASM proxy: ServicePort, WasmService, barrel, session-types, dds-bridge, display/, util/
+  service/         WASM proxy: ServicePort, WasmService, barrel, session-types, display/, util/
     display/       Call/contract/card formatting, hand summary, convention card builder
     util/          Pure utilities: delay
   cli/             Session-based convention evaluation CLI (main.ts + shared.ts + commands/)
@@ -151,7 +151,7 @@ tests/
 | Conventions (Rust) | `src-tauri/crates/bridge-conventions/` | Convention types, fact DSL, pipeline, teaching, adapter |
 | Session (Rust) | `src-tauri/crates/bridge-session/` | Session state, controllers, heuristics, inference |
 | Service (Rust) | `src-tauri/crates/bridge-service/` | ServicePort impl, viewport builders |
-| Service (TS) | `src/service/index.ts` | WASM proxy + barrel + session-types + display/ + util/ + dds-bridge |
+| Service (TS) | `src/service/index.ts` | WASM proxy + barrel + session-types + display/ + util/ |
 | CLI | `src/cli/main.ts` | Session-based convention evaluation CLI |
 | Test Support | `src/test-support/engine-stub.ts` | Shared test factories |
 | Stores | `src/stores/app.svelte.ts` | Svelte stores + game coordinator |
@@ -180,7 +180,7 @@ See `docs/migration/index.md` for the phase tracker and architectural decisions.
 - Component tests use `@testing-library/svelte` — components needing context (stores/engine) need wrapper setup in test-helpers.ts
 - Svelte `{#each}` blocks require keyed iteration (`{#each items as item (item.id)}`) per ESLint rule `svelte/require-each-key`
 - See `docs/gotchas.md` for detailed technical notes (DDS browser, vendor/dds, convention system details, CLI enumeration, deal generation)
-- **MC+DDS play uses TS-driven AI loop.** For Expert/WorldClass profiles, the play-phase store (`play-phase.svelte.ts`) drives AI card selection via `playSingleCard` + `mcDdsSuggest` (async DDS). For Beginner/ClubPlayer, the Rust play controller drives AI via `playCard` (synchronous heuristic chain). The split exists because DDS runs in an async JS Web Worker and cannot be called from synchronous Rust WASM. Both paths use Rust as the single source of truth for game state validation. Expert samples randomly (no beliefs); WorldClass adds belief-constraint filtering (`PlayProfile.use_posterior`). Posterior inference (`PosteriorEngine` in `bridge-session/src/inference/posterior.rs`) uses rejection sampling against L1 `DerivedRanges`, 200-sample budget, wired into heuristics via `PlayBeliefs`.
+- **MC+DDS play runs entirely in Rust/WASM.** The DDS Worker callback is injected at service init via `wireDdsSolver()`. The store calls `playCard` and receives all AI plays regardless of profile — Expert/WorldClass use MC+DDS (async DDS via injected JS solver in `bridge-wasm`), Beginner/ClubPlayer use synchronous heuristic chain. MC sampling, evaluation, and suggest logic live in `bridge-session/src/dds/`. Expert samples randomly (no beliefs); WorldClass adds belief-constraint filtering (`PlayProfile.use_posterior`). Posterior inference (`PosteriorEngine` in `bridge-session/src/inference/posterior.rs`) uses rejection sampling against L1 `DerivedRanges`, 200-sample budget, wired into heuristics via `PlayBeliefs`.
 
 **Context tree** (read the relevant one before working in that directory):
 

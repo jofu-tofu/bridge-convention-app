@@ -3,10 +3,6 @@ name = "bridge-tauri"
 version = "0.1.0"
 edition = "2021"
 
-[features]
-default = ["dds"]
-dds = ["bridge-engine/dds"]
-
 [dependencies]
 bridge-engine = { path = "../bridge-engine" }
 bridge-conventions = { path = "../bridge-conventions" }

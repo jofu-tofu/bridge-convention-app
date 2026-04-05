@@ -82,10 +82,6 @@ function createMockService(): DevServicePort {
       legalPlays: [],
       currentPlayer: Seat.South,
     }),
-    playSingleCard: vi.fn().mockResolvedValue({
-      accepted: true, trickComplete: false, playComplete: false,
-      score: null, currentPlayer: Seat.South, legalPlays: [],
-    }),
     skipToReview: vi.fn().mockResolvedValue(undefined),
     updatePlayProfile: vi.fn().mockResolvedValue(undefined),
     getBiddingViewport: vi.fn().mockResolvedValue(MOCK_BIDDING_VP),
@@ -95,7 +91,6 @@ function createMockService(): DevServicePort {
     getPublicBeliefState: vi
       .fn()
       .mockResolvedValue({ beliefs: {}, annotations: [] }),
-    getDealPBN: vi.fn().mockResolvedValue("N:AKQ.JT98.765.432 QJ.K654.AK43.765 T987.32.QJ2.AT98 6543.A7.T98.KQJ2"),
     getDDSSolution: vi
       .fn()
       .mockRejectedValue(new Error("not available")),

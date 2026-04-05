@@ -14,12 +14,12 @@ use bridge_session::session::{
     build_bidding_viewport, build_bundle_flow_tree, build_declarer_prompt_viewport,
     build_explanation_viewport, build_module_catalog, build_module_flow_tree,
     build_module_learning_viewport, build_playing_viewport, initialize_auction, process_bid,
-    process_play_card, process_single_card, run_initial_ai_bids, run_initial_ai_plays, start_drill,
+    process_play_card, run_initial_ai_bids, run_initial_ai_plays, start_drill,
     AiPlayEntry, BiddingViewport, BuildBiddingViewportInput, BuildDeclarerPromptViewportInput,
     BuildExplanationViewportInput, BuildPlayingViewportInput, BundleFlowTreeViewport,
     DeclarerPromptViewport, DrillConfig, ExplanationViewport, ModuleCatalogEntry,
     ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult, PlayingViewport, SeatStrategy,
-    SessionState, SingleCardResult,
+    SessionState,
 };
 use bridge_session::types::{GamePhase, PromptMode};
 
@@ -27,10 +27,10 @@ use crate::bundle_resolver;
 use crate::config_resolver;
 use crate::error::ServiceError;
 use crate::port::{DevServicePort, ServicePort};
-use crate::request_types::{SessionConfig, SessionHandle};
+use crate::request_types::{DrillHandle, SessionConfig};
 use crate::response_types::{
     AiBidEntryDTO, AiPlayEntryDTO, BidSubmitResult, ConventionInfo, DDSolutionResult,
-    DrillStartResult, InferenceTimelineEntryDTO, PhaseTransition, PromptAcceptResult,
+    DrillStartResult, InferenceTimelineEntryDTO, PhaseTransition, PlayEntryResult,
     ServiceDebugLogEntryDTO, ServiceFactConstraintDTO, ServicePublicBeliefState,
     ServicePublicBeliefsDTO,
 };
@@ -84,6 +84,27 @@ fn initial_ai_play_dtos(
     ai_play_dtos(run_initial_ai_plays(&mut session.state))
 }
 
+fn initialize_play_phase(
+    session: &mut crate::session_manager::ActiveSession,
+) -> PlayEntryResult {
+    if let Some(ref contract) = session.state.contract {
+        let contract = contract.clone();
+        session.state.initialize_play(&contract);
+        session.state.phase = GamePhase::Playing;
+        PlayEntryResult {
+            phase: session.state.phase,
+            ai_plays: initial_ai_play_dtos(session),
+        }
+    } else {
+        // Passout — skip to explanation
+        session.state.phase = GamePhase::Explanation;
+        PlayEntryResult {
+            phase: session.state.phase,
+            ai_plays: None,
+        }
+    }
+}
+
 // ── ServicePortImpl ───────────────────────────────────────────────
 
 /// Main implementation of ServicePort.
@@ -111,7 +132,7 @@ impl Default for ServicePortImpl {
 impl ServicePort for ServicePortImpl {
     // ── Session lifecycle ──────────────────────────────────────────
 
-    fn create_session(&mut self, config: SessionConfig) -> Result<SessionHandle, ServiceError> {
+    fn create_drill_session(&mut self, config: SessionConfig) -> Result<DrillHandle, ServiceError> {
         // Resolve config defaults
         let resolved = config_resolver::resolve_config(&config);
 
@@ -276,71 +297,34 @@ impl ServicePort for ServicePortImpl {
 
     // ── Phase transitions ──────────────────────────────────────────
 
-    fn accept_prompt(
+    fn enter_play(
         &mut self,
         handle: &str,
-        mode: Option<&str>,
         seat_override: Option<Seat>,
-    ) -> Result<PromptAcceptResult, ServiceError> {
+    ) -> Result<PlayEntryResult, ServiceError> {
         let session = self.manager.get_mut(handle)?;
-
-        match mode {
-            Some("skip") | None => {
-                session.state.phase = GamePhase::Explanation;
-                Ok(PromptAcceptResult {
-                    phase: session.state.phase,
-                    ai_plays: None,
-                })
-            }
-            Some("play") => {
-                // Transition to playing
-                if let Some(ref contract) = session.state.contract {
-                    let contract = contract.clone();
-                    if let Some(seat) = seat_override {
-                        session.state.effective_user_seat = Some(seat);
-                    }
-                    session.state.initialize_play(&contract);
-                    session.state.phase = GamePhase::Playing;
-
-                    Ok(PromptAcceptResult {
-                        phase: session.state.phase,
-                        ai_plays: initial_ai_play_dtos(session),
-                    })
-                } else {
-                    // Passout — skip to explanation
-                    session.state.phase = GamePhase::Explanation;
-                    Ok(PromptAcceptResult {
-                        phase: session.state.phase,
-                        ai_plays: None,
-                    })
-                }
-            }
-            Some("replay") => {
-                // Transition back to DECLARER_PROMPT from EXPLANATION
-                session.state.phase = GamePhase::DeclarerPrompt;
-                Ok(PromptAcceptResult {
-                    phase: session.state.phase,
-                    ai_plays: None,
-                })
-            }
-            Some("restart") => {
-                // Reset play state and restart from current position
-                session.state.play = bridge_session::session::PlayState::default();
-                if let Some(ref contract) = session.state.contract {
-                    let contract = contract.clone();
-                    session.state.initialize_play(&contract);
-                }
-
-                Ok(PromptAcceptResult {
-                    phase: session.state.phase,
-                    ai_plays: initial_ai_play_dtos(session),
-                })
-            }
-            Some(other) => Err(ServiceError::Internal(format!(
-                "Unknown prompt mode: {}",
-                other
-            ))),
+        if let Some(seat) = seat_override {
+            session.state.effective_user_seat = Some(seat);
         }
+        Ok(initialize_play_phase(session))
+    }
+
+    fn decline_play(&mut self, handle: &str) -> Result<(), ServiceError> {
+        let session = self.manager.get_mut(handle)?;
+        session.state.phase = GamePhase::Explanation;
+        Ok(())
+    }
+
+    fn return_to_prompt(&mut self, handle: &str) -> Result<(), ServiceError> {
+        let session = self.manager.get_mut(handle)?;
+        session.state.phase = GamePhase::DeclarerPrompt;
+        Ok(())
+    }
+
+    fn restart_play(&mut self, handle: &str) -> Result<PlayEntryResult, ServiceError> {
+        let session = self.manager.get_mut(handle)?;
+        session.state.play = bridge_session::session::PlayState::default();
+        Ok(initialize_play_phase(session))
     }
 
     // ── Play ───────────────────────────────────────────────────────
@@ -358,22 +342,6 @@ impl ServicePort for ServicePortImpl {
         }
 
         let result = process_play_card(&mut session.state, card, seat);
-        Ok(result)
-    }
-
-    fn play_single_card(
-        &mut self,
-        handle: &str,
-        card: Card,
-        seat: Seat,
-    ) -> Result<SingleCardResult, ServiceError> {
-        let session = self.manager.get_mut(handle)?;
-
-        if session.state.phase != GamePhase::Playing {
-            return Err(ServiceError::WrongPhase);
-        }
-
-        let result = process_single_card(&mut session.state, card, seat);
         Ok(result)
     }
 
@@ -607,11 +575,6 @@ impl ServicePort for ServicePortImpl {
         Err(ServiceError::DdsNotAvailable)
     }
 
-    fn get_deal_pbn(&self, handle: &str) -> Result<String, ServiceError> {
-        let session = self.manager.get(handle)?;
-        Ok(session.state.deal.to_pbn())
-    }
-
     // ── Catalog ────────────────────────────────────────────────────
 
     fn list_conventions(&self) -> Vec<ConventionInfo> {
@@ -669,6 +632,130 @@ impl ServicePortImpl {
             vulnerability: Some(session.state.deal.vulnerability),
             dealer: Some(session.state.deal.dealer),
         })
+    }
+}
+
+// ── DDS play helpers (not on ServicePort trait — WASM-only) ─────
+
+/// Context for MC+DDS play decision at the current position.
+pub struct DdsPlayContext {
+    pub current_player: Seat,
+    pub legal_plays: Vec<Card>,
+    pub contract: bridge_engine::types::Contract,
+    pub current_trick: Vec<bridge_engine::types::PlayedCard>,
+    pub remaining_cards: HashMap<Seat, Vec<Card>>,
+    pub visible_seats: Vec<Seat>,
+    pub beliefs: HashMap<Seat, bridge_session::inference::types::DerivedRanges>,
+    pub use_constraints: bool,
+}
+
+impl ServicePortImpl {
+    /// Check if the current profile requires DDS-based play.
+    pub fn needs_dds_play(&self, handle: &str) -> Result<bool, ServiceError> {
+        let session = self.manager.get(handle)?;
+        let profile = bridge_session::heuristics::play_profiles::get_profile(
+            session.state.play_profile_id,
+        );
+        Ok(profile.use_posterior)
+    }
+
+    /// Play a single card without running the AI loop. For WASM DDS orchestration.
+    pub fn apply_single_card(
+        &mut self,
+        handle: &str,
+        card: Card,
+        seat: Seat,
+    ) -> Result<bridge_session::session::SingleCardResult, ServiceError> {
+        let session = self.manager.get_mut(handle)?;
+        if session.state.phase != GamePhase::Playing {
+            return Err(ServiceError::WrongPhase);
+        }
+        Ok(bridge_session::session::process_single_card(
+            &mut session.state,
+            card,
+            seat,
+        ))
+    }
+
+    /// Build DDS play context for the current position. Returns None if play is complete
+    /// or current player is user-controlled.
+    pub fn get_dds_play_context(
+        &self,
+        handle: &str,
+    ) -> Result<Option<DdsPlayContext>, ServiceError> {
+        let session = self.manager.get(handle)?;
+        let current_player = match session.state.play.current_player {
+            Some(p) => p,
+            None => return Ok(None),
+        };
+
+        // Only return context for AI-controlled seats
+        if session.state.is_user_controlled_play(current_player) {
+            return Ok(None);
+        }
+
+        let contract = match &session.state.contract {
+            Some(c) => c.clone(),
+            None => return Ok(None),
+        };
+
+        // Legal plays for current player
+        let remaining_for_player = session.state.get_remaining_cards(current_player);
+        let lead_suit = session.state.get_lead_suit();
+        let legal_plays = bridge_engine::play::get_legal_plays(
+            &bridge_engine::types::Hand {
+                cards: remaining_for_player,
+            },
+            lead_suit,
+        );
+        if legal_plays.is_empty() {
+            return Ok(None);
+        }
+
+        // Remaining cards per seat
+        let mut remaining_cards = HashMap::new();
+        for &seat in &bridge_engine::constants::SEATS {
+            remaining_cards.insert(seat, session.state.get_remaining_cards(seat));
+        }
+
+        // Visible seats: user-controlled + dummy
+        let mut visible_seats = vec![session.state.user_seat];
+        if let Some(dummy) = session.state.play.dummy_seat {
+            if !visible_seats.contains(&dummy) {
+                visible_seats.push(dummy);
+            }
+        }
+
+        // Beliefs (DerivedRanges) from inference
+        let beliefs: HashMap<Seat, bridge_session::inference::types::DerivedRanges> = session
+            .state
+            .public_belief_state
+            .beliefs
+            .iter()
+            .map(|(s, b)| (*s, b.ranges.clone()))
+            .collect();
+
+        let profile = bridge_session::heuristics::play_profiles::get_profile(
+            session.state.play_profile_id,
+        );
+
+        Ok(Some(DdsPlayContext {
+            current_player,
+            legal_plays,
+            contract,
+            current_trick: session.state.play.current_trick.clone(),
+            remaining_cards,
+            visible_seats,
+            beliefs,
+            use_constraints: profile.use_posterior,
+        }))
+    }
+
+    /// Get deal PBN for internal use (WASM DDS table solver).
+    /// Not on ServicePort — only used by WASM layer.
+    pub fn get_deal_pbn(&self, handle: &str) -> Result<String, ServiceError> {
+        let session = self.manager.get(handle)?;
+        Ok(session.state.deal.to_pbn())
     }
 }
 
@@ -834,7 +921,7 @@ mod tests {
         service: &mut ServicePortImpl,
         convention_id: &str,
         seed: u64,
-    ) -> (SessionHandle, crate::response_types::DrillStartResult) {
+    ) -> (DrillHandle, crate::response_types::DrillStartResult) {
         let config = SessionConfig {
             convention_id: convention_id.to_string(),
             seed: Some(seed),
@@ -848,8 +935,8 @@ mod tests {
             vulnerability: None,
         };
         let handle = service
-            .create_session(config)
-            .expect("create_session should succeed");
+            .create_drill_session(config)
+            .expect("create_drill_session should succeed");
         let result = service
             .start_drill(&handle)
             .expect("start_drill should succeed");

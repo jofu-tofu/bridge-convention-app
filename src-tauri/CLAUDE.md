@@ -10,7 +10,7 @@ Cargo workspace with six crates implementing the bridge engine, convention data 
 | `cargo test --workspace`      | Run all Rust tests                                          |
 | `cargo test -p bridge-engine` | Test engine crate only                                      |
 | `cargo test -p bridge-conventions` | Test conventions crate (includes golden-master fixture tests) |
-| `cargo test -p bridge-session` | Test session crate (252 tests) |
+| `cargo test -p bridge-session` | Test session crate (353 tests) |
 | `wasm-pack build crates/bridge-wasm --target web --out-dir pkg` | Build WASM package        |
 | `wasm-pack test --node crates/bridge-wasm` | Run WASM integration tests                   |
 
@@ -57,16 +57,20 @@ crates/
                        card counting + restricted choice) + play profiles.
                        Session: state management, bidding/play controllers (synchronous),
                        drill lifecycle, 4 viewport builders with information boundary.
-                       MC posterior wired into play heuristics. DDS play and learning viewports deferred.
+                       Phase 1 DDS module (`bridge-session/src/dds/`) ports MC sampling,
+                       PBN conversion, batched DDS evaluation, and suggest logic into Rust
+                       behind an async solver closure. Play-controller integration and
+                       learning viewports remain deferred.
   bridge-service/      Service layer — ServicePort trait + ServicePortImpl wrapping SessionManager.
                        Thin hexagonal port between UI/WASM/CLI and game logic. Depends on
                        bridge-engine, bridge-conventions, bridge-session.
   bridge-tauri/        Tauri v2 app — #[tauri::command] handlers wrapping ServicePortImpl
-                       (Mutex-managed state). service_commands.rs has all 20 ServicePort + 5
+                       (Mutex-managed state). service_commands.rs has all 19 ServicePort + 5
                        DevServicePort commands.
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
-                       for browser deployment. All 19 ServicePort methods + 5 DevServicePort
-                       methods (debug_assertions gated).
+                       for browser deployment. All 18 ServicePort methods + async DDS play
+                       methods (play_card_dds, needs_dds_play, set_dds_solver) +
+                       5 DevServicePort methods (debug_assertions gated).
 ```
 
 ## Conventions
@@ -95,11 +99,7 @@ crates/
 
 ## DDS Integration
 
-- `dds-bridge` v0.8 optional dependency behind `dds` feature flag (default on in bridge-tauri only)
-- `bridge-engine/src/dds.rs`: `to_dds_deal()`, `from_tricks_table()`, `solve_deal_with_par()` — type conversion + solver wrapper
-- `solve_deal` command returns `DDSolution { tricks, par }` with 4×5 tricks table and optional par info
-- Requires `libclang-dev` for `dds-bridge-sys` C++ compilation (bindgen)
-- DDS cannot compile to `wasm32-unknown-unknown` (C++ FFI) — desktop only
+- **No native DDS in Rust.** DDS runs in browser via Emscripten C++ Web Worker (`/static/dds/`). JS solver callbacks are injected into WASM at init via `set_dds_solver()` (per-card) and `set_dds_table_solver()` (table-level). Rust MC+DDS logic in `bridge-session/src/dds/` calls the injected solver asynchronously.
 
 ## Serde Contract
 
@@ -139,4 +139,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-03-29 | version=4 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:40 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-05 | version=5 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:40 -->

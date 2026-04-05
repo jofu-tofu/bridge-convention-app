@@ -2,7 +2,7 @@
 
 // ── 1. Service Port & Implementation ─────────────────────────────────
 export type { DevServicePort } from "./port";
-export { WasmService, initWasmService } from "./wasm-service";
+export { WasmService, initWasmService, wireDdsSolver } from "./wasm-service";
 export type { DrillHandle, SessionConfig } from "./request-types";
 
 // ── 2. Viewports & Response Types (service-owned) ────────────────────
@@ -26,7 +26,6 @@ export type {
   DeclarerPromptViewport,
   PlayingViewport,
   ExplanationViewport,
-  SingleCardResult,
   ServiceDerivedRanges,
   PlayRecommendation,
   HandEvaluationView,

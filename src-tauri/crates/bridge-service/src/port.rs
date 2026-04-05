@@ -7,14 +7,14 @@ use bridge_engine::types::{Call, Card, Seat};
 use bridge_session::session::{
     BiddingViewport, BundleFlowTreeViewport, DeclarerPromptViewport, ExplanationViewport,
     ModuleCatalogEntry, ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult,
-    PlayingViewport, SingleCardResult,
+    PlayingViewport,
 };
 
 use crate::error::ServiceError;
-use crate::request_types::{SessionConfig, SessionHandle};
+use crate::request_types::{DrillHandle, SessionConfig};
 use crate::response_types::{
     BidSubmitResult, ConventionInfo, DDSolutionResult, DrillStartResult, InferenceTimelineEntryDTO,
-    PromptAcceptResult, ServiceDebugLogEntryDTO, ServicePublicBeliefState,
+    PlayEntryResult, ServiceDebugLogEntryDTO, ServicePublicBeliefState,
 };
 
 /// Production service interface — all methods synchronous.
@@ -22,7 +22,7 @@ pub trait ServicePort {
     // ── Session lifecycle ──────────────────────────────────────────
 
     /// Create a new drill session from configuration.
-    fn create_session(&mut self, config: SessionConfig) -> Result<SessionHandle, ServiceError>;
+    fn create_drill_session(&mut self, config: SessionConfig) -> Result<DrillHandle, ServiceError>;
 
     /// Start the drill: generate deal, run initial AI bids, return viewport.
     fn start_drill(&mut self, handle: &str) -> Result<DrillStartResult, ServiceError>;
@@ -34,13 +34,21 @@ pub trait ServicePort {
 
     // ── Phase transitions ──────────────────────────────────────────
 
-    /// Accept a prompt (play/skip/replay/restart).
-    fn accept_prompt(
+    /// Enter the play phase from the declarer prompt.
+    fn enter_play(
         &mut self,
         handle: &str,
-        mode: Option<&str>,
         seat_override: Option<Seat>,
-    ) -> Result<PromptAcceptResult, ServiceError>;
+    ) -> Result<PlayEntryResult, ServiceError>;
+
+    /// Decline play — skip directly to explanation.
+    fn decline_play(&mut self, handle: &str) -> Result<(), ServiceError>;
+
+    /// Return to the declarer prompt from explanation (replay).
+    fn return_to_prompt(&mut self, handle: &str) -> Result<(), ServiceError>;
+
+    /// Restart play from the current position.
+    fn restart_play(&mut self, handle: &str) -> Result<PlayEntryResult, ServiceError>;
 
     // ── Play ───────────────────────────────────────────────────────
 
@@ -51,15 +59,6 @@ pub trait ServicePort {
         card: Card,
         seat: Seat,
     ) -> Result<PlayCardResult, ServiceError>;
-
-    /// Play a single card without running the AI loop.
-    /// Used by MC+DDS profiles where TS drives AI card selection.
-    fn play_single_card(
-        &mut self,
-        handle: &str,
-        card: Card,
-        seat: Seat,
-    ) -> Result<SingleCardResult, ServiceError>;
 
     /// Skip play phase, go directly to review.
     fn skip_to_review(&mut self, handle: &str) -> Result<(), ServiceError>;
@@ -90,9 +89,6 @@ pub trait ServicePort {
     // ── DDS ────────────────────────────────────────────────────────
 
     fn get_dds_solution(&self, handle: &str) -> Result<DDSolutionResult, ServiceError>;
-
-    /// Get the deal in PBN format for browser DDS solving.
-    fn get_deal_pbn(&self, handle: &str) -> Result<String, ServiceError>;
 
     // ── Catalog ────────────────────────────────────────────────────
 

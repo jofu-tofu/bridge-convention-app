@@ -11,13 +11,13 @@ import type {
 import { Seat } from "../service";
 import type {
   DevServicePort,
-  SessionHandle,
+  DrillHandle,
   SessionConfig,
 } from "../service";
 import type { BidResult, BidHistoryEntry } from "../service";
-import type { ServicePublicBeliefs } from "../service";
 import type { StrategyEvaluation } from "../service/debug-types";
 import type { ServicePublicBeliefState } from "../service";
+import type { ServicePublicBeliefs } from "../service";
 import { partnerSeat } from "../service";
 
 import type {
@@ -32,7 +32,7 @@ import type { ViewportBidGrade } from "../service";
 import { PracticeMode, PlayPreference, PromptMode } from "../service";
 import type { BidFeedbackDTO } from "../service/debug-types";
 import { isValidTransition, resolveTransition } from "../service";
-import type { GamePhase, ViewportNeeded, PhaseEvent, ServiceAction, TransitionResult, PromptAcceptResult } from "../service";
+import type { GamePhase, ViewportNeeded, PhaseEvent, ServiceAction, TransitionResult, PlayEntryResult } from "../service";
 import { delay } from "../service";
 import { computePromptMode, computeFaceUpSeats } from "./prompt-logic";
 import { createBiddingPhase } from "./bidding-phase.svelte";
@@ -47,10 +47,6 @@ export type { BidHistoryEntry } from "../service";
 interface GameStoreOptions {
   /** Override the delay function used for AI bid/play timing. Defaults to setTimeout-based delay. */
   delayFn?: (ms: number) => Promise<void>;
-  /** Whether MC+DDS play should be used (Expert/WorldClass + DDS available). */
-  useMcDds?: () => boolean;
-  /** Whether belief-constraint filtering is active (WorldClass). */
-  useConstraints?: () => boolean;
 }
 
 /** Viewport-safe bid feedback for the current turn. */
@@ -116,7 +112,7 @@ export function createGameStore(
   const delayFn = options?.delayFn ?? delay;
 
   // ── Session state (flat — span all phases) ───────────────────
-  let activeHandle = $state<SessionHandle | null>(null);
+  let activeHandle = $state<DrillHandle | null>(null);
   // Not $state — activeService is swapped atomically per-drill, not per-render.
   // Making it reactive would cause components to re-render mid-transition when
   // the old drill's service is still being cleaned up. Closures capture it at
@@ -180,7 +176,7 @@ export function createGameStore(
     };
   }
 
-  async function fetchAndCacheViewport(handle: SessionHandle, vpName: ViewportNeeded): Promise<void> {
+  async function fetchAndCacheViewport(handle: DrillHandle, vpName: ViewportNeeded): Promise<void> {
     switch (vpName) {
       case "bidding":
         viewports.bidding = await activeService.getBiddingViewport(handle);
@@ -223,7 +219,7 @@ export function createGameStore(
    * Uses phase coordinator to decide whether to auto-accept or auto-skip.
    * Returns true if still active (not cancelled).
    */
-  async function handleAutoPromptTransition(handle: SessionHandle): Promise<boolean> {
+  async function handleAutoPromptTransition(handle: DrillHandle): Promise<boolean> {
     const desc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference });
     if (!desc.chainedEvent) return true; // "prompt" mode — stay at DECLARER_PROMPT
 
@@ -244,7 +240,7 @@ export function createGameStore(
    * Replaces the duplicated if/else chain in userBidViaService, startDrillFromHandle, and skipToPhase.
    */
   async function handlePostAuction(
-    handle: SessionHandle,
+    handle: DrillHandle,
     servicePhase: GamePhase,
   ): Promise<boolean> {
     const desc = resolveTransition("BIDDING", { type: "AUCTION_COMPLETE", servicePhase });
@@ -286,19 +282,25 @@ export function createGameStore(
   }
 
   async function executeServiceAction(
-    handle: SessionHandle,
+    handle: DrillHandle,
     action: ServiceAction,
-  ): Promise<PromptAcceptResult | void> {
+  ): Promise<PlayEntryResult | void> {
     switch (action.type) {
-      case "acceptPrompt":
-        return activeService.acceptPrompt(handle, action.mode, action.seat);
+      case "enterPlay":
+        return activeService.enterPlay(handle, action.seat);
+      case "declinePlay":
+        return void await activeService.declinePlay(handle);
+      case "returnToPrompt":
+        return void await activeService.returnToPrompt(handle);
+      case "restartPlay":
+        return activeService.restartPlay(handle);
       case "skipToReview":
         return activeService.skipToReview(handle);
     }
   }
 
   async function executeTransition(
-    handle: SessionHandle,
+    handle: DrillHandle,
     event: PhaseEvent,
   ): Promise<TransitionResult> {
     const cancelled = (): TransitionResult => ({ serviceResult: null, completed: false });
@@ -316,7 +318,7 @@ export function createGameStore(
     if (desc.resetPlay) resetPlayState();
 
     // 2. Run service actions
-    let lastResult: PromptAcceptResult | null = null;
+    let lastResult: PlayEntryResult | null = null;
     for (const action of desc.serviceActions) {
       const result = await executeServiceAction(handle, action);
       if (activeHandle !== handle) return cancelled();
@@ -352,7 +354,7 @@ export function createGameStore(
   }
 
   async function dispatchPlayTransition(
-    handle: SessionHandle,
+    handle: DrillHandle,
     event: PhaseEvent,
   ): Promise<void> {
     const { serviceResult, completed } = await executeTransition(handle, event);
@@ -434,10 +436,6 @@ export function createGameStore(
     setPlayingViewport: (vp) => { viewports.playing = vp; },
     dispatchEvent: (handle, event) => executeTransition(handle, event),
     delayFn,
-    useMcDds: options?.useMcDds ?? (() => false),
-    useConstraints: options?.useConstraints ?? (() => false),
-    getPublicBeliefState: (h) => activeService.getPublicBeliefState(h),
-    playSingleCard: (h, card, seat) => activeService.playSingleCard(h, card, seat),
   });
 
   // ── Play phase transitions ────────────────────────────────────
@@ -527,7 +525,7 @@ export function createGameStore(
     await dispatchPlayTransition(handle, { type: "PLAY_THIS_HAND", seat });
   }
 
-  async function startDrillFromHandleImpl(handle: SessionHandle, drillService?: DevServicePort) {
+  async function startDrillFromHandleImpl(handle: DrillHandle, drillService?: DevServicePort) {
     resetImpl();
     activeHandle = handle;
     activeService = drillService ?? service;
@@ -584,7 +582,7 @@ export function createGameStore(
   async function startNewDrillImpl(config: SessionConfig) {
     isStarting = true;
     try {
-      const handle = await service.createSession(config);
+      const handle = await service.createDrillSession(config);
       await startDrillFromHandleImpl(handle);
     } finally {
       isStarting = false;

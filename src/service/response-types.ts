@@ -332,16 +332,6 @@ export interface PlayCardResult {
   readonly currentPlayer: Seat | null;
 }
 
-/** Result of playing a single card (no AI loop). Used by MC+DDS profiles. */
-export interface SingleCardResult {
-  readonly accepted: boolean;
-  readonly trickComplete: boolean;
-  readonly playComplete: boolean;
-  readonly score: number | null;
-  readonly currentPlayer: Seat | null;
-  readonly legalPlays: readonly Card[];
-}
-
 /** A single AI play entry for animation (analogous to AiBidEntry). */
 export interface AiPlayEntry {
   readonly seat: Seat;
