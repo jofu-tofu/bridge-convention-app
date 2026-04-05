@@ -1,9 +1,9 @@
 {
   "moduleId": "natural-bids",
-  "description": "Standard non-alertable bids: natural openings, notrump responses, and common natural sequences",
-  "purpose": "Provide the universal base layer of natural bids so every convention has standard entry points and fallback bidding",
+  "description": "Standard natural bids: opening bids, natural notrump raises, and other common non-convention sequences",
+  "purpose": "Learn the standard natural bids you use when no special convention applies",
   "teaching": {
-    "tradeoff": "Natural bids have no tradeoff — they are the default base layer that other conventions build on",
+    "tradeoff": "There is no special tradeoff here — these bids keep their usual natural meanings",
     "principle": "When no major fit exists, raise notrump to the level your combined HCP supports — 25 total for game.",
     "commonMistakes": [
       "Don't jump to 3NT with a worthless doubleton — consider if a suit contract might be safer",
