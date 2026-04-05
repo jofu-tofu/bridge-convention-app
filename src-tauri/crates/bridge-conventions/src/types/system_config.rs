@@ -15,11 +15,10 @@ pub enum BaseSystemId {
     Acol,
 }
 
-/// Total-point equivalents for a threshold.
+/// Suit total-point equivalents for a threshold.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TotalPointEquivalent {
     pub trump: u32,
-    pub nt: u32,
 }
 
 /// 1NT opening HCP range.
@@ -182,14 +181,14 @@ mod tests {
                 invite_max: 9,
                 game_min: 10,
                 slam_min: 15,
-                invite_min_tp: TotalPointEquivalent { trump: 8, nt: 8 },
-                invite_max_tp: TotalPointEquivalent { trump: 10, nt: 9 },
-                game_min_tp: TotalPointEquivalent { trump: 10, nt: 10 },
-                slam_min_tp: TotalPointEquivalent { trump: 16, nt: 15 },
+                invite_min_tp: TotalPointEquivalent { trump: 8 },
+                invite_max_tp: TotalPointEquivalent { trump: 10 },
+                game_min_tp: TotalPointEquivalent { trump: 10 },
+                slam_min_tp: TotalPointEquivalent { trump: 16 },
             },
             opener_rebid: OpenerRebidThresholds {
                 not_minimum: 16,
-                not_minimum_tp: TotalPointEquivalent { trump: 16, nt: 16 },
+                not_minimum_tp: TotalPointEquivalent { trump: 16 },
             },
             interference: InterferenceThresholds { redouble_min: 10 },
             suit_response: SuitResponseConfig {

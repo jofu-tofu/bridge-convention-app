@@ -23,27 +23,22 @@
           "gameMin": 10,
           "slamMin": 15,
           "inviteMinTp": {
-            "trump": 8,
-            "nt": 8
+            "trump": 8
           },
           "inviteMaxTp": {
-            "trump": 10,
-            "nt": 9
+            "trump": 10
           },
           "gameMinTp": {
-            "trump": 10,
-            "nt": 10
+            "trump": 10
           },
           "slamMinTp": {
-            "trump": 16,
-            "nt": 15
+            "trump": 16
           }
         },
         "openerRebid": {
           "notMinimum": 16,
           "notMinimumTp": {
-            "trump": 16,
-            "nt": 16
+            "trump": 16
           }
         },
         "interference": {
@@ -161,27 +156,22 @@
           "gameMin": 10,
           "slamMin": 15,
           "inviteMinTp": {
-            "trump": 8,
-            "nt": 8
+            "trump": 8
           },
           "inviteMaxTp": {
-            "trump": 10,
-            "nt": 9
+            "trump": 10
           },
           "gameMinTp": {
-            "trump": 10,
-            "nt": 10
+            "trump": 10
           },
           "slamMinTp": {
-            "trump": 16,
-            "nt": 15
+            "trump": 16
           }
         },
         "openerRebid": {
           "notMinimum": 16,
           "notMinimumTp": {
-            "trump": 16,
-            "nt": 16
+            "trump": 16
           }
         },
         "interference": {
@@ -263,27 +253,22 @@
           "gameMin": 10,
           "slamMin": 15,
           "inviteMinTp": {
-            "trump": 8,
-            "nt": 8
+            "trump": 8
           },
           "inviteMaxTp": {
-            "trump": 10,
-            "nt": 9
+            "trump": 10
           },
           "gameMinTp": {
-            "trump": 10,
-            "nt": 10
+            "trump": 10
           },
           "slamMinTp": {
-            "trump": 16,
-            "nt": 15
+            "trump": 16
           }
         },
         "openerRebid": {
           "notMinimum": 16,
           "notMinimumTp": {
-            "trump": 16,
-            "nt": 16
+            "trump": 16
           }
         },
         "interference": {
@@ -364,27 +349,22 @@
           "gameMin": 10,
           "slamMin": 15,
           "inviteMinTp": {
-            "trump": 8,
-            "nt": 8
+            "trump": 8
           },
           "inviteMaxTp": {
-            "trump": 10,
-            "nt": 9
+            "trump": 10
           },
           "gameMinTp": {
-            "trump": 10,
-            "nt": 10
+            "trump": 10
           },
           "slamMinTp": {
-            "trump": 16,
-            "nt": 15
+            "trump": 16
           }
         },
         "openerRebid": {
           "notMinimum": 16,
           "notMinimumTp": {
-            "trump": 16,
-            "nt": 16
+            "trump": 16
           }
         },
         "interference": {
@@ -472,27 +452,22 @@
           "gameMin": 10,
           "slamMin": 15,
           "inviteMinTp": {
-            "trump": 8,
-            "nt": 8
+            "trump": 8
           },
           "inviteMaxTp": {
-            "trump": 10,
-            "nt": 9
+            "trump": 10
           },
           "gameMinTp": {
-            "trump": 10,
-            "nt": 10
+            "trump": 10
           },
           "slamMinTp": {
-            "trump": 16,
-            "nt": 15
+            "trump": 16
           }
         },
         "openerRebid": {
           "notMinimum": 16,
           "notMinimumTp": {
-            "trump": 16,
-            "nt": 16
+            "trump": 16
           }
         },
         "interference": {
@@ -572,27 +547,22 @@
           "gameMin": 10,
           "slamMin": 15,
           "inviteMinTp": {
-            "trump": 8,
-            "nt": 8
+            "trump": 8
           },
           "inviteMaxTp": {
-            "trump": 10,
-            "nt": 9
+            "trump": 10
           },
           "gameMinTp": {
-            "trump": 10,
-            "nt": 10
+            "trump": 10
           },
           "slamMinTp": {
-            "trump": 16,
-            "nt": 15
+            "trump": 16
           }
         },
         "openerRebid": {
           "notMinimum": 16,
           "notMinimumTp": {
-            "trump": 16,
-            "nt": 16
+            "trump": 16
           }
         },
         "interference": {

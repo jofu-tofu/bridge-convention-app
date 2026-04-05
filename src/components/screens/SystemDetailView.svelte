@@ -31,8 +31,8 @@
             <thead>
               <tr class="text-xs text-text-muted">
                 <th class="text-left font-medium pb-1.5 w-[40%]"></th>
-                <th class="text-right font-medium pb-1.5 px-2">HCP</th>
-                <th class="text-right font-medium pb-1.5 px-2">Trump TP</th>
+                <th class="text-right font-medium pb-1.5 px-2">NT / HCP</th>
+                <th class="text-right font-medium pb-1.5 px-2">Suit / TP</th>
               </tr>
             </thead>
             <tbody>

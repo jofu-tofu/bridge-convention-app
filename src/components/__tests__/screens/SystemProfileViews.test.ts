@@ -5,21 +5,25 @@ import SystemDetailView from "../../screens/SystemDetailView.svelte";
 import SystemCompareView from "../../screens/SystemCompareView.svelte";
 
 describe("SystemDetailView", () => {
-  it("shows HCP and trump total points without a separate NT total-points column", () => {
+  it("shows NT/HCP and Suit/TP headers without a separate NT total-points column", () => {
     const { container } = render(SystemDetailView, {
       props: { config: SAYC_SYSTEM_CONFIG },
     });
+    const text = container.textContent?.replace(/\s+/g, " ") ?? "";
 
-    expect(container.textContent).toContain("Trump TP");
-    expect(container.textContent).not.toContain("NT TP");
+    expect(text).toContain("NT / HCP");
+    expect(text).toContain("Suit / TP");
+    expect(text).not.toContain("NT TP");
   });
 });
 
 describe("SystemCompareView", () => {
-  it("shows HCP and trump comparison rows without an NT row", () => {
+  it("shows NT/HCP and Suit/TP comparison rows without an NT row", () => {
     const { container } = render(SystemCompareView);
+    const text = container.textContent?.replace(/\s+/g, " ") ?? "";
 
-    expect(container.textContent).toContain("Trump Invite Range");
-    expect(container.textContent).not.toContain("NT Invite Range");
+    expect(text).toContain("NT / HCP Invite Range");
+    expect(text).toContain("Suit / TP Invite Range");
+    expect(text).not.toContain("NT Invite Range");
   });
 });

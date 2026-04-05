@@ -17,6 +17,15 @@
     <h1 class="text-3xl font-bold tracking-tight text-text-primary mb-1">Base Profiles</h1>
     <p class="text-text-secondary mb-5">System thresholds and bidding parameters.</p>
 
+    <div class="flex flex-wrap items-center gap-2 mb-4 ml-1">
+      <span class="px-2 py-1 rounded-full border border-border-subtle bg-bg-card text-[11px] font-semibold tracking-wide text-text-muted">
+        NT / HCP
+      </span>
+      <span class="px-2 py-1 rounded-full border border-border-subtle bg-bg-card text-[11px] font-semibold tracking-wide text-text-muted">
+        Suit / TP
+      </span>
+    </div>
+
     <!-- Tab bar -->
     <div class="flex items-center gap-1 mb-5 p-1 rounded-[--radius-lg] bg-bg-card border border-border-subtle">
       {#each AVAILABLE_BASE_SYSTEMS as sys (sys.id)}

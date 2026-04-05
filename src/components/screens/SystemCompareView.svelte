@@ -47,7 +47,7 @@
                 {hcpDiffers ? 'diff-row' : ''}"
             >
               <td class="px-4 py-1.5 text-text-secondary">
-                <span class="text-xs text-text-muted mr-1">HCP</span>
+                <span class="text-xs text-text-muted mr-1">NT / HCP</span>
                 {field.label}
               </td>
               {#each allConfigs as config (config.systemId)}
@@ -59,14 +59,14 @@
                 </td>
               {/each}
             </tr>
-            <!-- Trump TP sub-row -->
+            <!-- Suit TP sub-row -->
             {@const trumpDiffers = !valuesMatchTrumpTp(allConfigs, field)}
             <tr
               class="border-t border-border-subtle/20 transition-colors
                 {trumpDiffers ? 'diff-row' : ''}"
             >
               <td class="px-4 py-1.5 text-text-secondary">
-                <span class="text-xs text-text-muted mr-1">Trump</span>
+                <span class="text-xs text-text-muted mr-1">Suit / TP</span>
                 {field.label}
               </td>
               {#each allConfigs as config (config.systemId)}
