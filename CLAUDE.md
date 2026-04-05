@@ -93,6 +93,7 @@ Backward compat aliases: `?coverage=true` → `?screen=coverage`, `?profiles=tru
 - **Characterize before changing.** Before modifying code you don't fully understand, write tests that capture current behavior as-is. These are your safety net — run them after each change. Especially important for convention pipeline and bid-evaluation logic where subtle changes cascade.
 - **No mocks for pure logic.** Engine, conventions, inference, and session logic are pure — pass data in, assert data out. If testing requires mocks, the code mixes logic with side effects; fix the design, don't add mocks. Mocks are acceptable only at system boundaries (WASM init, localStorage, DOM, network).
 - **Red-Green-Refactor for new code.** Write a failing test first, then the minimum code to pass, then refactor with tests green. Do not write implementation first and tests after — tests written after implementation tend to mirror the implementation rather than specify behavior.
+- **Playwright is for smoke, not matrices.** End-to-end coverage is intentionally small: app smoke, session-mode behavior, two representative bundles (Jacoby Transfers and Bergen Raises), and responsive shell checks. Do not add per-convention browser sweeps or seed matrices; put that coverage in service, Rust, or CLI tests instead.
 
 ## Design Philosophy
 
@@ -190,6 +191,8 @@ See `docs/migration/index.md` for the phase tracker and architectural decisions.
 - `src/test-support/CLAUDE.md` — shared test factories, dependency rules
 - `tests/CLAUDE.md` — E2E config, test running
 
+**E2E policy:** Playwright exists to prove user-visible stability. Prefer adding browser coverage for routing, practice-mode/session semantics, autoplay/review lifecycle, and responsive shell behavior. If a proposed E2E test is mainly about convention correctness across many bundles or seeds, that is the wrong layer.
+
 ## Reference Knowledge (docs/)
 
 The `docs/` folder contains decision history, design philosophy, architecture specs,
@@ -263,4 +266,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-29 | version=20 | dir-commits-at-audit=67 | tree-sig=dirs:15,files:100+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-05 | version=21 | dir-commits-at-audit=67 | tree-sig=dirs:15,files:100+ -->

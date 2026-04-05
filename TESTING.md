@@ -6,9 +6,7 @@
 | --------- | ----------------------- | ------------------------------------ | ------------------ |
 | Unit      | Vitest                  | `src/<module>/__tests__/*.test.ts`   | 190+ at completion |
 | Component | @testing-library/svelte | `src/components/__tests__/*.test.ts` | 25 at completion   |
-| E2E       | Playwright              | `tests/e2e/*.spec.ts`                | 2-5 smoke tests    |
-
-**Current (Phase 2):** 291 unit tests, 0 component tests, 2 E2E tests.
+| E2E       | Playwright              | `tests/e2e/*.spec.ts`                | 3-6 focused specs  |
 
 **Runtime targets:** Unit <2s, Component ~5s, E2E ~30s, Total <40s.
 
@@ -93,7 +91,46 @@ Also re-exports `hand()` and `card()` from engine fixtures.
 - **Dev server:** Auto-started on port 1420 if not running
 - **Base URL:** `http://localhost:1420`
 - **When:** Critical user journey smoke tests only
-- **Philosophy:** Test structural concerns (elements render, navigation works) not specific copy
+- **Philosophy:** Test structural concerns, session behavior, and a small number of representative bundle flows. Convention correctness matrices belong at lower layers
+- **Project split:** Desktop runs the full E2E suite. Mobile/tablet run `responsive-layout.spec.ts` only
+
+### Current E2E Scope
+
+Playwright covers only four categories:
+
+1. `smoke.spec.ts` — app shell and routing smoke: home search, picker flow, deep links, blocking feedback, navigation
+2. `session-modes.spec.ts` — session semantics: decision-drill default, full-auction/continuation wiring, autoplay to review, next-deal loop, review analysis tab
+3. `representative-conventions.spec.ts` — two representative bundles only: Jacoby Transfers and Bergen Raises
+4. `responsive-layout.spec.ts` — responsive shell checks; this is the only file that runs on mobile/tablet projects
+
+### What Must Not Go In Playwright
+
+Do not add any of the following to browser E2E:
+
+- Per-convention browser matrices
+- Seed sweeps across many hands
+- Convention rule verification via debug-drawer parsing
+- Exhaustive bundle-by-bundle deep-link checks
+- Logic-heavy assertions that can be expressed through service, Rust, or CLI tests
+
+If a test idea depends on checking many seeds, many bundles, or exact convention-rule correctness, it belongs below the browser layer.
+
+### Where That Coverage Goes Instead
+
+- Convention correctness and bidding-rule matrices: Rust tests or service tests
+- Seed sweeps and broad session enumeration: CLI/self-test coverage
+- UI wiring, routing, and stable visible behavior: Playwright
+- Responsive shell behavior: Playwright responsive project only
+
+### E2E Admission Rule
+
+Before adding a new Playwright test, ask:
+
+1. Does this prove a user-visible workflow rather than convention logic?
+2. Would one or two representative bundles cover the same UI behavior?
+3. Would this still be worth running on every UI change?
+
+If any answer is "no", do not add it to Playwright.
 
 ## Dev-Time Browser Testing
 
@@ -193,7 +230,8 @@ Is this legacy/unfamiliar code?
 - **Over-Mocked Tests** — Testing wiring instead of behavior. If a test has more mock setup than assertions, it's testing the wrong thing.
 - **The Liar** — Always-passing test whose assertion never actually runs (hidden behind early returns or wrong async handling).
 - **God Test** — One test verifying too many unrelated behaviors. Each `test` block verifies one behavior.
-- **Ice Cream Cone** — Inverted pyramid (many E2E, few unit). Slow, flaky, hard to debug.
+- **Ice Cream Cone** — Inverted pyramid (many E2E, few unit). Slow, flaky, hard to debug. If a browser test loops through many seeds or validates a full convention matrix, move it to service, Rust, or CLI tests.
+- **Browser Matrix Creep** — Repeating the same UI assertions across every bundle or many seeds. Keep Playwright on representative flows and move combinatorial coverage down a layer.
 
 ### Test Organization
 

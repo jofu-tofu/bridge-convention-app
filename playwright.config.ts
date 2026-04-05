@@ -19,8 +19,10 @@ export default defineConfig({
     },
     {
       name: "mobile",
+      testMatch: /responsive-layout\.spec\.ts/,
       use: {
         ...devices["iPhone 14"],
+        browserName: "chromium",
         launchOptions: {
           env: {
             // WPE WebKit needs Mesa EGL on systems with NVIDIA drivers
@@ -33,8 +35,10 @@ export default defineConfig({
     },
     {
       name: "tablet",
+      testMatch: /responsive-layout\.spec\.ts/,
       use: {
         ...devices["iPad Mini"],
+        browserName: "chromium",
         launchOptions: {
           env: {
             __EGL_VENDOR_LIBRARY_FILENAMES:

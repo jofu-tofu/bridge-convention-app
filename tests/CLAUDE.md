@@ -25,24 +25,21 @@ Playwright end-to-end smoke tests for user-facing behavior.
 
 | File                                   | Role                                                               |
 | -------------------------------------- | ------------------------------------------------------------------ |
-| `e2e/smoke.spec.ts`                    | Primary smoke tests: home, navigation, bidding, settings, all conventions |
+| `e2e/smoke.spec.ts`                    | Core app smoke: home search/filter, picker, deep links, blocking feedback, settings/home nav |
 | `e2e/helpers.ts`                      | Shared Playwright helpers for debug-drawer cleanup, drawer text reads, and bid test IDs |
-| `e2e/responsive-layout.spec.ts`       | Responsive mobile/tablet layout behavior (only file run on all 3 device projects) |
-| `e2e/flow-multi-convention.spec.ts`   | Multi-convention switching flow                                    |
-| `e2e/play-phase.spec.ts`              | Autoplay reaches review; review content renders                    |
-| `e2e/dds-browser.spec.ts`             | DDS analysis tab renders in review phase                           |
-| `e2e/test-1nt-full.spec.ts`           | 1NT response convention coverage (seeds 1-5)                      |
-| `e2e/test-bergen.spec.ts`             | Bergen Raises convention coverage (seeds 1-5)                      |
-| `e2e/test-dont.spec.ts`               | DONT convention coverage (seeds 1-5) + rule verification           |
-| `e2e/test-transfers.spec.ts`          | Jacoby Transfers convention coverage (seeds 1-5)                   |
-| `e2e/test-weak-two.spec.ts`           | Weak Twos convention coverage (seeds 1-5)                          |
+| `e2e/session-modes.spec.ts`           | Session-mode wiring smoke: default decision drill, full-auction/continuation labels, autoplay→review, review analysis tab |
+| `e2e/representative-conventions.spec.ts` | Desktop-only representative bundle flows: Jacoby Transfers and Bergen Raises |
+| `e2e/responsive-layout.spec.ts`       | Responsive shell checks for home, game, and settings. Desktop also runs it; mobile/tablet run this file only |
 
 ## Constraints
 
 - Full testing playbook in **TESTING.md** at project root
-- E2E tests are smoke tests only — keep count low and focused on user-facing behavior
-- Convention tests use 5 seeds max — more seeds belong in CLI coverage (`verify preflight`), not E2E
-- Only `responsive-layout.spec.ts` runs on mobile/tablet projects; all other tests run desktop-only
+- E2E tests are smoke tests only — keep them focused on routing, session behavior, and a small number of representative bundle flows
+- Do not add per-convention seed sweeps to Playwright. Convention correctness matrices belong in service, Rust, or CLI tests
+- Mobile/tablet projects run `responsive-layout.spec.ts` only; all other E2E coverage is desktop-only
+- The default representative bundles are Jacoby Transfers and Bergen Raises. Adding a third representative bundle needs a concrete UI-behavior gap the existing two do not cover
+- If a browser test idea needs the debug drawer to prove convention correctness, it almost certainly belongs at a lower layer instead
+- Prefer extending `session-modes.spec.ts` when the user-visible difference is about drill lifecycle or practice-mode semantics rather than a specific convention
 
 ---
 
@@ -65,4 +62,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `e2e/smoke.spec.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-21 | version=9 | dir-commits-at-audit=21 | tree-sig=dirs:1,files:10,exts:ts:10,md:1 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-05 | version=11 | dir-commits-at-audit=21 | tree-sig=dirs:1,files:6,exts:ts:6,md:1 -->

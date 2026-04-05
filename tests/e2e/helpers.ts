@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 export function bidTextToTestId(bidText: string): string {
   const normalized = bidText.trim();
@@ -45,4 +45,23 @@ export async function readDebugDrawerText(page: Page): Promise<string> {
     }
     return document.body.innerText;
   });
+}
+
+export async function waitForPhase(
+  page: Page,
+  phase: "Bidding" | "Declarer" | "Defend" | "Playing" | "Review",
+  timeout = 10_000,
+): Promise<void> {
+  await expect(page.getByTestId("game-phase")).toHaveText(phase, { timeout });
+}
+
+export async function startPracticeFromHome(
+  page: Page,
+  conventionId: string,
+  mode: "decision-drill" | "full-auction" = "decision-drill",
+): Promise<void> {
+  await page.goto("/");
+  await page.getByTestId(`practice-${conventionId}`).click();
+  await page.getByTestId(`mode-${mode}`).click({ timeout: 5_000 });
+  await waitForPhase(page, "Bidding");
 }
