@@ -5,10 +5,8 @@
     PROFILE_CATEGORIES,
     formatFieldValue,
     formatTrumpTpValue,
-    formatNtTpValue,
     valuesMatch,
     valuesMatchTrumpTp,
-    valuesMatchNtTp,
   } from "./profile-display";
 
   const allConfigs = AVAILABLE_BASE_SYSTEMS.map((s) => getSystemConfig(s.id as BaseSystemId));
@@ -77,25 +75,6 @@
                     {trumpDiffers ? 'font-semibold text-accent-primary' : 'text-text-primary'}"
                 >
                   {formatTrumpTpValue(config, field)}
-                </td>
-              {/each}
-            </tr>
-            <!-- NT TP sub-row -->
-            {@const ntDiffers = !valuesMatchNtTp(allConfigs, field)}
-            <tr
-              class="border-t border-border-subtle/20 transition-colors
-                {ntDiffers ? 'diff-row' : ''}"
-            >
-              <td class="px-4 py-1.5 text-text-secondary">
-                <span class="text-xs text-text-muted mr-1">NT</span>
-                {field.label}
-              </td>
-              {#each allConfigs as config (config.systemId)}
-                <td
-                  class="px-3 py-1.5 text-center tabular-nums tracking-tight
-                    {ntDiffers ? 'font-semibold text-accent-primary' : 'text-text-primary'}"
-                >
-                  {formatNtTpValue(config, field)}
                 </td>
               {/each}
             </tr>

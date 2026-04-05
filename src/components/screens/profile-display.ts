@@ -50,29 +50,20 @@ export function formatFieldValue(config: SystemConfig, field: ProfileField): str
   }
 }
 
-function formatTotalPointValue(
-  config: SystemConfig,
-  field: ProfileField,
-  pointKind: "trump" | "nt",
-): string {
+function formatTrumpTotalPointValue(config: SystemConfig, field: ProfileField): string {
   const fmt = field.format;
   if (fmt.type === "rangeWithTp") {
-    return `${fmt.minTp(config)[pointKind]}\u2013${fmt.maxTp(config)[pointKind]} TP`;
+    return `${fmt.minTp(config).trump}\u2013${fmt.maxTp(config).trump} TP`;
   }
   if (fmt.type === "thresholdWithTp") {
-    return `${fmt.tp(config)[pointKind]}+ TP`;
+    return `${fmt.tp(config).trump}+ TP`;
   }
   return "";
 }
 
 /** Format the trump total-point value for a field. Returns "" for non-TP fields. */
 export function formatTrumpTpValue(config: SystemConfig, field: ProfileField): string {
-  return formatTotalPointValue(config, field, "trump");
-}
-
-/** Format the NT total-point value for a field. Returns "" for non-TP fields. */
-export function formatNtTpValue(config: SystemConfig, field: ProfileField): string {
-  return formatTotalPointValue(config, field, "nt");
+  return formatTrumpTotalPointValue(config, field);
 }
 
 // ─── Comparison ───────────────────────────────────────────────
@@ -93,10 +84,6 @@ export function valuesMatch(configs: SystemConfig[], field: ProfileField): boole
 
 export function valuesMatchTrumpTp(configs: SystemConfig[], field: ProfileField): boolean {
   return valuesMatchFormatted(configs, field, formatTrumpTpValue);
-}
-
-export function valuesMatchNtTp(configs: SystemConfig[], field: ProfileField): boolean {
-  return valuesMatchFormatted(configs, field, formatNtTpValue);
 }
 
 // ─── Category definitions ─────────────────────────────────────

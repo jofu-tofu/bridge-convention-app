@@ -6,10 +6,8 @@ import {
 import {
   formatFieldValue,
   formatTrumpTpValue,
-  formatNtTpValue,
   valuesMatch,
   valuesMatchTrumpTp,
-  valuesMatchNtTp,
   PROFILE_CATEGORIES,
   type ProfileField,
 } from "../profile-display";
@@ -43,25 +41,6 @@ describe("formatTrumpTpValue", () => {
   });
 });
 
-// ─── formatNtTpValue ────────────────────────────────────────────
-
-describe("formatNtTpValue", () => {
-  it("returns range for rangeWithTp fields (SAYC invite)", () => {
-    const field = findField("Responder Thresholds", "Invite Range");
-    expect(formatNtTpValue(SAYC_SYSTEM_CONFIG, field)).toBe("8\u20139 TP");
-  });
-
-  it("returns threshold for thresholdWithTp fields (SAYC slam)", () => {
-    const field = findField("Responder Thresholds", "Slam Explore");
-    expect(formatNtTpValue(SAYC_SYSTEM_CONFIG, field)).toBe("15+ TP");
-  });
-
-  it("returns empty string for non-TP fields", () => {
-    const field = findField("Suit Responses", "2-Level Minimum");
-    expect(formatNtTpValue(SAYC_SYSTEM_CONFIG, field)).toBe("");
-  });
-});
-
 // ─── formatFieldValue still works ───────────────────────────────
 
 describe("formatFieldValue", () => {
@@ -76,7 +55,7 @@ describe("formatFieldValue", () => {
   });
 });
 
-// ─── valuesMatchTrumpTp / valuesMatchNtTp ───────────────────────
+// ─── valuesMatchTrumpTp ─────────────────────────────────────────
 
 describe("valuesMatchTrumpTp", () => {
   it("returns false when SAYC vs Acol trump TP differs", () => {
@@ -90,15 +69,6 @@ describe("valuesMatchTrumpTp", () => {
     expect(valuesMatchTrumpTp([SAYC_SYSTEM_CONFIG], field)).toBe(true);
   });
 });
-
-describe("valuesMatchNtTp", () => {
-  it("returns false when SAYC vs Acol NT TP differs", () => {
-    const field = findField("Responder Thresholds", "Invite Range");
-    // SAYC: 8–9 TP, Acol: 10–12 TP
-    expect(valuesMatchNtTp([SAYC_SYSTEM_CONFIG, ACOL_SYSTEM_CONFIG], field)).toBe(false);
-  });
-});
-
 // ─── valuesMatch for non-TP fields ──────────────────────────────
 
 describe("valuesMatch", () => {

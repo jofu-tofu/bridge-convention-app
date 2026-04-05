@@ -48,10 +48,9 @@ export interface ConventionConfig {
 
 export type BaseSystemId = "sayc" | "two-over-one" | "acol";
 
-/** Total-point equivalents for a threshold. */
+/** Suit total-point equivalents for a threshold. */
 export interface TotalPointEquivalent {
   readonly trump: number;
-  readonly nt: number;
 }
 
 export interface NtOpeningConfig {
@@ -120,10 +119,10 @@ export const SAYC_SYSTEM_CONFIG: SystemConfig = {
   ntOpening: { minHcp: 15, maxHcp: 17 },
   responderThresholds: {
     inviteMin: 8, inviteMax: 9, gameMin: 10, slamMin: 15,
-    inviteMinTp: { trump: 8, nt: 8 }, inviteMaxTp: { trump: 10, nt: 9 },
-    gameMinTp: { trump: 10, nt: 10 }, slamMinTp: { trump: 16, nt: 15 },
+    inviteMinTp: { trump: 8 }, inviteMaxTp: { trump: 10 },
+    gameMinTp: { trump: 10 }, slamMinTp: { trump: 16 },
   },
-  openerRebid: { notMinimum: 16, notMinimumTp: { trump: 16, nt: 16 } },
+  openerRebid: { notMinimum: 16, notMinimumTp: { trump: 16 } },
   interference: { redoubleMin: 10 },
   suitResponse: { twoLevelMin: 10, twoLevelForcingDuration: "one-round" },
   oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 10, minHcp: 6 },
@@ -137,10 +136,10 @@ export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
   ntOpening: { minHcp: 15, maxHcp: 17 },
   responderThresholds: {
     inviteMin: 8, inviteMax: 9, gameMin: 10, slamMin: 15,
-    inviteMinTp: { trump: 8, nt: 8 }, inviteMaxTp: { trump: 10, nt: 9 },
-    gameMinTp: { trump: 10, nt: 10 }, slamMinTp: { trump: 16, nt: 15 },
+    inviteMinTp: { trump: 8 }, inviteMaxTp: { trump: 10 },
+    gameMinTp: { trump: 10 }, slamMinTp: { trump: 16 },
   },
-  openerRebid: { notMinimum: 16, notMinimumTp: { trump: 16, nt: 16 } },
+  openerRebid: { notMinimum: 16, notMinimumTp: { trump: 16 } },
   interference: { redoubleMin: 10 },
   suitResponse: { twoLevelMin: 12, twoLevelForcingDuration: "game" },
   oneNtResponseAfterMajor: { forcing: "semi-forcing", maxHcp: 12, minHcp: 6 },
@@ -154,10 +153,10 @@ export const ACOL_SYSTEM_CONFIG: SystemConfig = {
   ntOpening: { minHcp: 12, maxHcp: 14 },
   responderThresholds: {
     inviteMin: 10, inviteMax: 12, gameMin: 13, slamMin: 19,
-    inviteMinTp: { trump: 10, nt: 10 }, inviteMaxTp: { trump: 13, nt: 12 },
-    gameMinTp: { trump: 13, nt: 13 }, slamMinTp: { trump: 20, nt: 19 },
+    inviteMinTp: { trump: 10 }, inviteMaxTp: { trump: 13 },
+    gameMinTp: { trump: 13 }, slamMinTp: { trump: 20 },
   },
-  openerRebid: { notMinimum: 13, notMinimumTp: { trump: 13, nt: 13 } },
+  openerRebid: { notMinimum: 13, notMinimumTp: { trump: 13 } },
   interference: { redoubleMin: 9 },
   suitResponse: { twoLevelMin: 10, twoLevelForcingDuration: "one-round" },
   oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 9, minHcp: 6 },
@@ -601,4 +600,3 @@ export type GetConventionFn = (id: string) => ConventionConfig;
 
 /** Type alias for getModule — delegates to WasmService catalog. */
 export type GetModuleFn = (id: string) => unknown;
-

@@ -31,9 +31,9 @@ components/
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     ProfilesScreen.svelte            Read-only base system profiles (SAYC/2-1/Acol) with detail + compare views
-    SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards. TP-enabled categories render 4-column mini-table (HCP / Trump TP / NT TP).
-    SystemCompareView.svelte         Side-by-side comparison table with diff highlighting. TP-enabled fields render 3 sub-rows (HCP / Trump TP / NT TP) with independent diff highlighting per metric.
-    profile-display.ts               Pure display logic: category definitions, value formatting (formatFieldValue, formatTrumpTpValue, formatNtTpValue), comparison helpers. FieldFormat includes rangeWithTp/thresholdWithTp variants for TP-enabled categories.
+    SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards. TP-enabled categories render 3-column mini-table (HCP / Trump TP).
+    SystemCompareView.svelte         Side-by-side comparison table with diff highlighting. TP-enabled fields render 2 sub-rows (HCP / Trump TP) with independent diff highlighting per metric.
+    profile-display.ts               Pure display logic: category definitions, value formatting (formatFieldValue, formatTrumpTpValue), comparison helpers. FieldFormat includes rangeWithTp/thresholdWithTp variants for TP-enabled categories.
     game-screen/
       GameScreen.svelte              Phase router + responsive layout + drill lifecycle (~280 LOC)
       BiddingPhase.svelte            Bidding phase template (pure — data via props). Shows context banner in Decision Drill mode.
@@ -156,4 +156,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `App.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-03-22 | version=12 | dir-commits-at-audit=20 | tree-sig=dirs:10,files:50,exts:svelte:34,ts:15,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-05 | version=13 | dir-commits-at-audit=20 | tree-sig=dirs:10,files:50,exts:svelte:34,ts:15,md:1 -->

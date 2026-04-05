@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { SystemConfig } from "../../service";
-  import { PROFILE_CATEGORIES, formatFieldValue, formatTrumpTpValue, formatNtTpValue } from "./profile-display";
+  import { PROFILE_CATEGORIES, formatFieldValue, formatTrumpTpValue } from "./profile-display";
 
   interface Props {
     config: SystemConfig;
@@ -26,14 +26,13 @@
       <!-- Fields -->
       <div class="px-5 pb-4">
         {#if category.hasTotalPoints}
-          <!-- 4-column layout for TP-enabled categories -->
+          <!-- 3-column layout for TP-enabled categories -->
           <table class="w-full text-sm">
             <thead>
               <tr class="text-xs text-text-muted">
-                <th class="text-left font-medium pb-1.5 w-[30%]"></th>
+                <th class="text-left font-medium pb-1.5 w-[40%]"></th>
                 <th class="text-right font-medium pb-1.5 px-2">HCP</th>
                 <th class="text-right font-medium pb-1.5 px-2">Trump TP</th>
-                <th class="text-right font-medium pb-1.5 px-2">NT TP</th>
               </tr>
             </thead>
             <tbody>
@@ -45,9 +44,6 @@
                   </td>
                   <td class="py-2.5 px-2 text-right font-semibold text-text-primary tabular-nums tracking-tight">
                     {formatTrumpTpValue(config, field)}
-                  </td>
-                  <td class="py-2.5 px-2 text-right font-semibold text-text-primary tabular-nums tracking-tight">
-                    {formatNtTpValue(config, field)}
                   </td>
                 </tr>
               {/each}
