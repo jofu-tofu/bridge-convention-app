@@ -45,7 +45,8 @@ impl PlayHeuristic for RestrictedChoiceHeuristic {
             return None;
         }
 
-        let signals = find_restricted_choice_signals(&ctx.previous_tricks, ctx.seat, ctx.contract.declarer);
+        let signals =
+            find_restricted_choice_signals(&ctx.previous_tricks, ctx.seat, ctx.contract.declarer);
         if signals.is_empty() {
             return None;
         }
@@ -209,8 +210,7 @@ mod tests {
             winner: Some(Seat::North),
         };
 
-        let signals =
-            find_restricted_choice_signals(&[trick], Seat::South, Seat::South);
+        let signals = find_restricted_choice_signals(&[trick], Seat::South, Seat::South);
         assert!(!signals.is_empty());
         let sig = signals.iter().find(|s| s.suit == Suit::Spades).unwrap();
         assert_eq!(sig.opponent, Seat::East);
@@ -270,15 +270,16 @@ mod tests {
             winner: Some(Seat::North),
         };
 
-        let signals =
-            find_restricted_choice_signals(&[trick], Seat::South, Seat::South);
+        let signals = find_restricted_choice_signals(&[trick], Seat::South, Seat::South);
         assert!(signals.is_empty());
     }
 
     #[test]
     fn does_not_fire_on_first_trick() {
         let ctx = PlayContext {
-            hand: Hand { cards: vec![card(Suit::Spades, Rank::Ace)] },
+            hand: Hand {
+                cards: vec![card(Suit::Spades, Rank::Ace)],
+            },
             current_trick: vec![],
             previous_tricks: vec![],
             contract: nt_contract(),

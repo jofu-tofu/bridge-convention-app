@@ -90,16 +90,15 @@ impl BiddingStrategy for NaturalFallbackStrategy {
         None
     }
 
-    fn as_any(&self) -> &dyn std::any::Any { self }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_engine::{
-        Auction, AuctionEntry, Card, Hand, HandEvaluation,
-        Rank, Seat, Suit,
-    };
+    use bridge_engine::{Auction, AuctionEntry, Card, Hand, HandEvaluation, Rank, Seat, Suit};
 
     fn make_hand(specs: &[(&str, &str)]) -> Hand {
         let cards: Vec<Card> = specs

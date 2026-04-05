@@ -71,10 +71,7 @@ pub(crate) fn collect_module_data(
                 surfaces,
             };
 
-            phase_map
-                .entry(phase.to_string())
-                .or_default()
-                .push(state);
+            phase_map.entry(phase.to_string()).or_default().push(state);
         }
     }
 

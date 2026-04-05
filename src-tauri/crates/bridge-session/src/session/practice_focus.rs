@@ -1,7 +1,9 @@
 //! Practice focus — derives module ordering and initial auction for targeted practice.
 
-use bridge_engine::types::{Auction, AuctionEntry, BidSuit, Call, Deal, DealConstraints, Seat, Suit};
 use crate::types::{PracticeFocus, PracticeRole};
+use bridge_engine::types::{
+    Auction, AuctionEntry, BidSuit, Call, Deal, DealConstraints, Seat, Suit,
+};
 
 /// Derive practice focus — which modules are target, prerequisites, follow-up, background.
 ///
@@ -150,7 +152,11 @@ pub fn derive_initial_auction(
                     if let Some(hand) = deal.hands.get(&dealer) {
                         let hearts = hand.cards.iter().filter(|c| c.suit == Suit::Hearts).count();
                         let spades = hand.cards.iter().filter(|c| c.suit == Suit::Spades).count();
-                        let strain = if spades > hearts { BidSuit::Spades } else { BidSuit::Hearts };
+                        let strain = if spades > hearts {
+                            BidSuit::Spades
+                        } else {
+                            BidSuit::Hearts
+                        };
                         return Some(Auction {
                             entries: vec![AuctionEntry {
                                 seat: dealer,
@@ -164,7 +170,10 @@ pub fn derive_initial_auction(
                 return Some(Auction {
                     entries: vec![AuctionEntry {
                         seat: dealer,
-                        call: Call::Bid { level: 1, strain: BidSuit::Hearts },
+                        call: Call::Bid {
+                            level: 1,
+                            strain: BidSuit::Hearts,
+                        },
                     }],
                     is_complete: false,
                 });
@@ -197,15 +206,14 @@ mod tests {
         assert_eq!(focus.follow_up_module_ids, vec!["quantitative"]);
         // "stayman" is before target, "blackwood" is a base module not elsewhere
         assert!(focus.background_module_ids.contains(&"stayman".to_string()));
-        assert!(focus.background_module_ids.contains(&"blackwood".to_string()));
+        assert!(focus
+            .background_module_ids
+            .contains(&"blackwood".to_string()));
     }
 
     #[test]
     fn focus_target_is_first() {
-        let members = vec![
-            "stayman".to_string(),
-            "transfers".to_string(),
-        ];
+        let members = vec!["stayman".to_string(), "transfers".to_string()];
         let focus = derive_practice_focus(&members, "stayman", &["natural-bids"]);
 
         assert_eq!(focus.target_module_ids, vec!["stayman"]);
@@ -278,7 +286,10 @@ mod tests {
         assert_eq!(auction.entries[0].seat, Seat::North);
         assert_eq!(
             auction.entries[0].call,
-            Call::Bid { level: 1, strain: BidSuit::NoTrump }
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump
+            }
         );
         assert!(!auction.is_complete);
     }
@@ -313,7 +324,10 @@ mod tests {
         let auction = result.expect("should produce 1H auction");
         assert_eq!(
             auction.entries[0].call,
-            Call::Bid { level: 1, strain: BidSuit::Hearts }
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts
+            }
         );
     }
 
@@ -347,7 +361,10 @@ mod tests {
         let auction = result.expect("should produce 1S auction");
         assert_eq!(
             auction.entries[0].call,
-            Call::Bid { level: 1, strain: BidSuit::Spades }
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades
+            }
         );
     }
 
@@ -377,23 +394,65 @@ mod tests {
 
         // North has 5 spades and 3 hearts → should pick 1S
         let mut hands = HashMap::new();
-        hands.insert(Seat::North, Hand {
-            cards: vec![
-                Card { suit: Suit::Spades, rank: Rank::Ace },
-                Card { suit: Suit::Spades, rank: Rank::King },
-                Card { suit: Suit::Spades, rank: Rank::Queen },
-                Card { suit: Suit::Spades, rank: Rank::Jack },
-                Card { suit: Suit::Spades, rank: Rank::Ten },
-                Card { suit: Suit::Hearts, rank: Rank::Ace },
-                Card { suit: Suit::Hearts, rank: Rank::King },
-                Card { suit: Suit::Hearts, rank: Rank::Queen },
-                Card { suit: Suit::Diamonds, rank: Rank::Ace },
-                Card { suit: Suit::Diamonds, rank: Rank::King },
-                Card { suit: Suit::Clubs, rank: Rank::Ace },
-                Card { suit: Suit::Clubs, rank: Rank::King },
-                Card { suit: Suit::Clubs, rank: Rank::Queen },
-            ],
-        });
+        hands.insert(
+            Seat::North,
+            Hand {
+                cards: vec![
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::King,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Queen,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Jack,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Ten,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::King,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Queen,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::King,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::King,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Queen,
+                    },
+                ],
+            },
+        );
         let deal = Deal {
             hands,
             dealer: Seat::North,
@@ -409,7 +468,10 @@ mod tests {
         let auction = result.expect("should produce 1S auction");
         assert_eq!(
             auction.entries[0].call,
-            Call::Bid { level: 1, strain: BidSuit::Spades }
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades
+            }
         );
     }
 
@@ -444,7 +506,10 @@ mod tests {
         let auction = result.expect("should produce 1H auction (fallback)");
         assert_eq!(
             auction.entries[0].call,
-            Call::Bid { level: 1, strain: BidSuit::Hearts }
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts
+            }
         );
     }
 

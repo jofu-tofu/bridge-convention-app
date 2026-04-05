@@ -4,10 +4,10 @@
 //! bidding theory. System-dependent ranges (1NT opening, 1NT response)
 //! come from `SystemConfig`.
 
-use std::collections::HashMap;
+use bridge_conventions::types::system_config::SystemConfig;
 use bridge_engine::types::{Auction, AuctionEntry, BidSuit, Call, Seat, Suit};
 use bridge_engine::{bid_suit_to_suit, partner_seat};
-use bridge_conventions::types::system_config::SystemConfig;
+use std::collections::HashMap;
 
 use super::types::{HandInference, InferenceProvider, SuitInference};
 
@@ -63,8 +63,15 @@ impl NaturalInferenceProvider {
                     min_hcp: Some(12),
                     max_hcp: None,
                     is_balanced: None,
-                    suits: [(Suit::Clubs, SuitInference { min_length: Some(3), max_length: None })]
-                        .into_iter().collect(),
+                    suits: [(
+                        Suit::Clubs,
+                        SuitInference {
+                            min_length: Some(3),
+                            max_length: None,
+                        },
+                    )]
+                    .into_iter()
+                    .collect(),
                     source: "natural:1C-opening".to_string(),
                 }),
                 BidSuit::Diamonds => Some(HandInference {
@@ -72,8 +79,15 @@ impl NaturalInferenceProvider {
                     min_hcp: Some(12),
                     max_hcp: None,
                     is_balanced: None,
-                    suits: [(Suit::Diamonds, SuitInference { min_length: Some(4), max_length: None })]
-                        .into_iter().collect(),
+                    suits: [(
+                        Suit::Diamonds,
+                        SuitInference {
+                            min_length: Some(4),
+                            max_length: None,
+                        },
+                    )]
+                    .into_iter()
+                    .collect(),
                     source: "natural:1D-opening".to_string(),
                 }),
                 BidSuit::Hearts => Some(HandInference {
@@ -81,8 +95,15 @@ impl NaturalInferenceProvider {
                     min_hcp: Some(12),
                     max_hcp: None,
                     is_balanced: None,
-                    suits: [(Suit::Hearts, SuitInference { min_length: Some(5), max_length: None })]
-                        .into_iter().collect(),
+                    suits: [(
+                        Suit::Hearts,
+                        SuitInference {
+                            min_length: Some(5),
+                            max_length: None,
+                        },
+                    )]
+                    .into_iter()
+                    .collect(),
                     source: "natural:1H-opening".to_string(),
                 }),
                 BidSuit::Spades => Some(HandInference {
@@ -90,8 +111,15 @@ impl NaturalInferenceProvider {
                     min_hcp: Some(12),
                     max_hcp: None,
                     is_balanced: None,
-                    suits: [(Suit::Spades, SuitInference { min_length: Some(5), max_length: None })]
-                        .into_iter().collect(),
+                    suits: [(
+                        Suit::Spades,
+                        SuitInference {
+                            min_length: Some(5),
+                            max_length: None,
+                        },
+                    )]
+                    .into_iter()
+                    .collect(),
                     source: "natural:1S-opening".to_string(),
                 }),
                 BidSuit::NoTrump => Some(HandInference {
@@ -118,8 +146,15 @@ impl NaturalInferenceProvider {
                     min_hcp: Some(5),
                     max_hcp: Some(11),
                     is_balanced: None,
-                    suits: [(Suit::Hearts, SuitInference { min_length: Some(6), max_length: None })]
-                        .into_iter().collect(),
+                    suits: [(
+                        Suit::Hearts,
+                        SuitInference {
+                            min_length: Some(6),
+                            max_length: None,
+                        },
+                    )]
+                    .into_iter()
+                    .collect(),
                     source: "natural:2H-opening".to_string(),
                 }),
                 BidSuit::Spades => Some(HandInference {
@@ -127,8 +162,15 @@ impl NaturalInferenceProvider {
                     min_hcp: Some(5),
                     max_hcp: Some(11),
                     is_balanced: None,
-                    suits: [(Suit::Spades, SuitInference { min_length: Some(6), max_length: None })]
-                        .into_iter().collect(),
+                    suits: [(
+                        Suit::Spades,
+                        SuitInference {
+                            min_length: Some(6),
+                            max_length: None,
+                        },
+                    )]
+                    .into_iter()
+                    .collect(),
                     source: "natural:2S-opening".to_string(),
                 }),
                 BidSuit::Diamonds => Some(HandInference {
@@ -136,8 +178,15 @@ impl NaturalInferenceProvider {
                     min_hcp: Some(5),
                     max_hcp: Some(11),
                     is_balanced: None,
-                    suits: [(Suit::Diamonds, SuitInference { min_length: Some(6), max_length: None })]
-                        .into_iter().collect(),
+                    suits: [(
+                        Suit::Diamonds,
+                        SuitInference {
+                            min_length: Some(6),
+                            max_length: None,
+                        },
+                    )]
+                    .into_iter()
+                    .collect(),
                     source: "natural:weak-2D-opening".to_string(),
                 }),
                 BidSuit::NoTrump => Some(HandInference {
@@ -156,7 +205,10 @@ impl NaturalInferenceProvider {
 
     /// Infer from a pass.
     fn infer_from_pass(&self, auction_before: &Auction, seat: Seat) -> Option<HandInference> {
-        let has_contract_bid = auction_before.entries.iter().any(|e| matches!(e.call, Call::Bid { .. }));
+        let has_contract_bid = auction_before
+            .entries
+            .iter()
+            .any(|e| matches!(e.call, Call::Bid { .. }));
 
         if has_contract_bid {
             // Pass over an opening/bid: often 0-11 HCP without a suitable call
@@ -171,7 +223,9 @@ impl NaturalInferenceProvider {
         }
 
         // Pass in first or second seat with no bids: less than 12 HCP
-        let pass_count = auction_before.entries.iter()
+        let pass_count = auction_before
+            .entries
+            .iter()
             .filter(|e| matches!(e.call, Call::Pass))
             .count();
 
@@ -217,8 +271,15 @@ impl NaturalInferenceProvider {
                     min_hcp: Some(6),
                     max_hcp: None,
                     is_balanced: None,
-                    suits: [(suit, SuitInference { min_length: Some(4), max_length: None })]
-                        .into_iter().collect(),
+                    suits: [(
+                        suit,
+                        SuitInference {
+                            min_length: Some(4),
+                            max_length: None,
+                        },
+                    )]
+                    .into_iter()
+                    .collect(),
                     source: "natural:1-level-new-suit".to_string(),
                 });
             }
@@ -234,8 +295,15 @@ impl NaturalInferenceProvider {
                             min_hcp: Some(6),
                             max_hcp: Some(10),
                             is_balanced: None,
-                            suits: [(suit, SuitInference { min_length: Some(3), max_length: None })]
-                                .into_iter().collect(),
+                            suits: [(
+                                suit,
+                                SuitInference {
+                                    min_length: Some(3),
+                                    max_length: None,
+                                },
+                            )]
+                            .into_iter()
+                            .collect(),
                             source: "natural:simple-raise".to_string(),
                         });
                     }
@@ -265,7 +333,9 @@ impl InferenceProvider for NaturalInferenceProvider {
         match &entry.call {
             Call::Pass => self.infer_from_pass(auction_before, seat),
             Call::Bid { level, strain } => {
-                let has_contract_bid = auction_before.entries.iter()
+                let has_contract_bid = auction_before
+                    .entries
+                    .iter()
                     .any(|e| matches!(e.call, Call::Bid { .. }));
 
                 if !has_contract_bid {
@@ -297,7 +367,10 @@ mod tests {
     use super::*;
 
     fn empty_auction() -> Auction {
-        Auction { entries: vec![], is_complete: false }
+        Auction {
+            entries: vec![],
+            is_complete: false,
+        }
     }
 
     fn make_entry(seat: Seat, call: Call) -> AuctionEntry {
@@ -311,8 +384,16 @@ mod tests {
     #[test]
     fn opening_1nt_15_17_balanced() {
         let p = provider();
-        let entry = make_entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::NoTrump });
-        let result = p.infer_from_bid(&entry, &empty_auction(), Seat::North).unwrap();
+        let entry = make_entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump,
+            },
+        );
+        let result = p
+            .infer_from_bid(&entry, &empty_auction(), Seat::North)
+            .unwrap();
 
         assert_eq!(result.min_hcp, Some(15));
         assert_eq!(result.max_hcp, Some(17));
@@ -323,8 +404,16 @@ mod tests {
     #[test]
     fn opening_1h_12_plus_5_hearts() {
         let p = provider();
-        let entry = make_entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Hearts });
-        let result = p.infer_from_bid(&entry, &empty_auction(), Seat::North).unwrap();
+        let entry = make_entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts,
+            },
+        );
+        let result = p
+            .infer_from_bid(&entry, &empty_auction(), Seat::North)
+            .unwrap();
 
         assert_eq!(result.min_hcp, Some(12));
         assert_eq!(result.suits[&Suit::Hearts].min_length, Some(5));
@@ -333,8 +422,16 @@ mod tests {
     #[test]
     fn opening_1s_12_plus_5_spades() {
         let p = provider();
-        let entry = make_entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Spades });
-        let result = p.infer_from_bid(&entry, &empty_auction(), Seat::North).unwrap();
+        let entry = make_entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades,
+            },
+        );
+        let result = p
+            .infer_from_bid(&entry, &empty_auction(), Seat::North)
+            .unwrap();
 
         assert_eq!(result.min_hcp, Some(12));
         assert_eq!(result.suits[&Suit::Spades].min_length, Some(5));
@@ -343,8 +440,16 @@ mod tests {
     #[test]
     fn opening_1c_12_plus_3_clubs() {
         let p = provider();
-        let entry = make_entry(Seat::South, Call::Bid { level: 1, strain: BidSuit::Clubs });
-        let result = p.infer_from_bid(&entry, &empty_auction(), Seat::South).unwrap();
+        let entry = make_entry(
+            Seat::South,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
+        );
+        let result = p
+            .infer_from_bid(&entry, &empty_auction(), Seat::South)
+            .unwrap();
 
         assert_eq!(result.min_hcp, Some(12));
         assert_eq!(result.suits[&Suit::Clubs].min_length, Some(3));
@@ -353,8 +458,16 @@ mod tests {
     #[test]
     fn opening_1d_12_plus_4_diamonds() {
         let p = provider();
-        let entry = make_entry(Seat::West, Call::Bid { level: 1, strain: BidSuit::Diamonds });
-        let result = p.infer_from_bid(&entry, &empty_auction(), Seat::West).unwrap();
+        let entry = make_entry(
+            Seat::West,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Diamonds,
+            },
+        );
+        let result = p
+            .infer_from_bid(&entry, &empty_auction(), Seat::West)
+            .unwrap();
 
         assert_eq!(result.min_hcp, Some(12));
         assert_eq!(result.suits[&Suit::Diamonds].min_length, Some(4));
@@ -363,8 +476,16 @@ mod tests {
     #[test]
     fn opening_2c_22_plus() {
         let p = provider();
-        let entry = make_entry(Seat::North, Call::Bid { level: 2, strain: BidSuit::Clubs });
-        let result = p.infer_from_bid(&entry, &empty_auction(), Seat::North).unwrap();
+        let entry = make_entry(
+            Seat::North,
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Clubs,
+            },
+        );
+        let result = p
+            .infer_from_bid(&entry, &empty_auction(), Seat::North)
+            .unwrap();
 
         assert_eq!(result.min_hcp, Some(22));
     }
@@ -372,8 +493,16 @@ mod tests {
     #[test]
     fn opening_2nt_20_21_balanced() {
         let p = provider();
-        let entry = make_entry(Seat::North, Call::Bid { level: 2, strain: BidSuit::NoTrump });
-        let result = p.infer_from_bid(&entry, &empty_auction(), Seat::North).unwrap();
+        let entry = make_entry(
+            Seat::North,
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::NoTrump,
+            },
+        );
+        let result = p
+            .infer_from_bid(&entry, &empty_auction(), Seat::North)
+            .unwrap();
 
         assert_eq!(result.min_hcp, Some(20));
         assert_eq!(result.max_hcp, Some(21));
@@ -383,8 +512,16 @@ mod tests {
     #[test]
     fn opening_2h_weak_two() {
         let p = provider();
-        let entry = make_entry(Seat::North, Call::Bid { level: 2, strain: BidSuit::Hearts });
-        let result = p.infer_from_bid(&entry, &empty_auction(), Seat::North).unwrap();
+        let entry = make_entry(
+            Seat::North,
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Hearts,
+            },
+        );
+        let result = p
+            .infer_from_bid(&entry, &empty_auction(), Seat::North)
+            .unwrap();
 
         assert_eq!(result.min_hcp, Some(5));
         assert_eq!(result.max_hcp, Some(11));
@@ -395,7 +532,9 @@ mod tests {
     fn pass_first_seat_less_than_12() {
         let p = provider();
         let entry = make_entry(Seat::North, Call::Pass);
-        let result = p.infer_from_bid(&entry, &empty_auction(), Seat::North).unwrap();
+        let result = p
+            .infer_from_bid(&entry, &empty_auction(), Seat::North)
+            .unwrap();
 
         assert_eq!(result.max_hcp, Some(11));
     }
@@ -404,11 +543,19 @@ mod tests {
     fn pass_over_opening_bid() {
         let p = provider();
         let auction_before = Auction {
-            entries: vec![make_entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Hearts })],
+            entries: vec![make_entry(
+                Seat::North,
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Hearts,
+                },
+            )],
             is_complete: false,
         };
         let entry = make_entry(Seat::East, Call::Pass);
-        let result = p.infer_from_bid(&entry, &auction_before, Seat::East).unwrap();
+        let result = p
+            .infer_from_bid(&entry, &auction_before, Seat::East)
+            .unwrap();
 
         assert_eq!(result.max_hcp, Some(11));
     }
@@ -418,13 +565,27 @@ mod tests {
         let p = provider();
         let auction_before = Auction {
             entries: vec![
-                make_entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Hearts }),
+                make_entry(
+                    Seat::North,
+                    Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Hearts,
+                    },
+                ),
                 make_entry(Seat::East, Call::Pass),
             ],
             is_complete: false,
         };
-        let entry = make_entry(Seat::South, Call::Bid { level: 1, strain: BidSuit::NoTrump });
-        let result = p.infer_from_bid(&entry, &auction_before, Seat::South).unwrap();
+        let entry = make_entry(
+            Seat::South,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump,
+            },
+        );
+        let result = p
+            .infer_from_bid(&entry, &auction_before, Seat::South)
+            .unwrap();
 
         assert_eq!(result.min_hcp, Some(6));
         assert_eq!(result.max_hcp, Some(10));
@@ -435,13 +596,27 @@ mod tests {
         let p = provider();
         let auction_before = Auction {
             entries: vec![
-                make_entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Hearts }),
+                make_entry(
+                    Seat::North,
+                    Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Hearts,
+                    },
+                ),
                 make_entry(Seat::East, Call::Pass),
             ],
             is_complete: false,
         };
-        let entry = make_entry(Seat::South, Call::Bid { level: 1, strain: BidSuit::Spades });
-        let result = p.infer_from_bid(&entry, &auction_before, Seat::South).unwrap();
+        let entry = make_entry(
+            Seat::South,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades,
+            },
+        );
+        let result = p
+            .infer_from_bid(&entry, &auction_before, Seat::South)
+            .unwrap();
 
         assert_eq!(result.min_hcp, Some(6));
         assert_eq!(result.suits[&Suit::Spades].min_length, Some(4));
@@ -452,13 +627,27 @@ mod tests {
         let p = provider();
         let auction_before = Auction {
             entries: vec![
-                make_entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Hearts }),
+                make_entry(
+                    Seat::North,
+                    Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Hearts,
+                    },
+                ),
                 make_entry(Seat::East, Call::Pass),
             ],
             is_complete: false,
         };
-        let entry = make_entry(Seat::South, Call::Bid { level: 2, strain: BidSuit::Hearts });
-        let result = p.infer_from_bid(&entry, &auction_before, Seat::South).unwrap();
+        let entry = make_entry(
+            Seat::South,
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Hearts,
+            },
+        );
+        let result = p
+            .infer_from_bid(&entry, &auction_before, Seat::South)
+            .unwrap();
 
         assert_eq!(result.min_hcp, Some(6));
         assert_eq!(result.max_hcp, Some(10));
@@ -469,13 +658,17 @@ mod tests {
     fn double_returns_none() {
         let p = provider();
         let entry = make_entry(Seat::East, Call::Double);
-        assert!(p.infer_from_bid(&entry, &empty_auction(), Seat::East).is_none());
+        assert!(p
+            .infer_from_bid(&entry, &empty_auction(), Seat::East)
+            .is_none());
     }
 
     #[test]
     fn redouble_returns_none() {
         let p = provider();
         let entry = make_entry(Seat::East, Call::Redouble);
-        assert!(p.infer_from_bid(&entry, &empty_auction(), Seat::East).is_none());
+        assert!(p
+            .infer_from_bid(&entry, &empty_auction(), Seat::East)
+            .is_none());
     }
 }

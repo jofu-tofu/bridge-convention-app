@@ -5,12 +5,8 @@ use bridge_conventions::pipeline::observation::route_matcher::match_obs;
 use bridge_conventions::types::rule_types::{ObsPattern, ObsPatternAct, PhaseRef, TurnRole};
 
 use super::super::build_viewport::format_call;
-use super::super::learning_viewport::{
-    call_key, format_module_name, EntryCondition,
-};
-use super::types::{
-    FlowTreeNode, MutableNode, NodeCounter, TaggedSurface,
-};
+use super::super::learning_viewport::{call_key, format_module_name, EntryCondition};
+use super::types::{FlowTreeNode, MutableNode, NodeCounter, TaggedSurface};
 
 // ── PhaseRef helper ─────────────────────────────────────────────────
 
@@ -167,7 +163,9 @@ pub(crate) fn obs_matches_step(obs: Option<&ObsPattern>, step: &ObsPattern) -> b
 /// Check if a surface's sourceIntent produces observations that match a transition's `on` pattern.
 pub(crate) fn surface_matches_transition(surface: &TaggedSurface, trans_on: &ObsPattern) -> bool {
     let actions = normalize_intent(&surface.source_intent);
-    actions.iter().any(|action| match_obs(trans_on, action, None))
+    actions
+        .iter()
+        .any(|action| match_obs(trans_on, action, None))
 }
 
 /// Find a node by ID (immutable).
@@ -184,7 +182,10 @@ pub(crate) fn find_node<'a>(node: &'a MutableNode, id: &str) -> Option<&'a Mutab
 }
 
 /// Find a node by ID (mutable).
-pub(crate) fn find_node_mut<'a>(node: &'a mut MutableNode, id: &str) -> Option<&'a mut MutableNode> {
+pub(crate) fn find_node_mut<'a>(
+    node: &'a mut MutableNode,
+    id: &str,
+) -> Option<&'a mut MutableNode> {
     if node.id == id {
         return Some(node);
     }

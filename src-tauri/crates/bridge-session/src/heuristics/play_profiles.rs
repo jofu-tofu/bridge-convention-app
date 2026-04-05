@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 
 use super::play::{
     CardCountingHeuristic, CoverHonorHeuristic, DiscardHeuristic, FourthHandHeuristic,
-    MidGameLeadHeuristic, OpeningLeadHeuristic, RestrictedChoiceHeuristic,
-    SecondHandLowHeuristic, ThirdHandHighHeuristic, TrumpManagementHeuristic,
+    MidGameLeadHeuristic, OpeningLeadHeuristic, RestrictedChoiceHeuristic, SecondHandLowHeuristic,
+    ThirdHandHighHeuristic, TrumpManagementHeuristic,
 };
 use super::play_types::{PlayContext, PlayHeuristic, PlayResult};
 
@@ -66,8 +66,7 @@ pub const BEGINNER_PROFILE: PlayProfile = PlayProfile {
 pub const CLUB_PLAYER_PROFILE: PlayProfile = PlayProfile {
     id: PlayProfileId::ClubPlayer,
     name: "Club Player",
-    description:
-        "Remembers the auction, counts cards, tracks voids, exploits restricted choice.",
+    description: "Remembers the auction, counts cards, tracks voids, exploits restricted choice.",
     heuristic_skip_rate: 0.0,
     skippable_heuristics: &[],
     use_inferences: true,
@@ -91,8 +90,7 @@ pub const EXPERT_PROFILE: PlayProfile = PlayProfile {
 pub const WORLD_CLASS_PROFILE: PlayProfile = PlayProfile {
     id: PlayProfileId::WorldClass,
     name: "World Class",
-    description:
-        "Monte Carlo sampling + DDS solving. Plays optimally given available information.",
+    description: "Monte Carlo sampling + DDS solving. Plays optimally given available information.",
     heuristic_skip_rate: 0.0,
     skippable_heuristics: &[],
     use_inferences: true,
@@ -122,10 +120,7 @@ pub fn suggest_play_with_profile(
     profile: &PlayProfile,
     rng: &mut impl rand::Rng,
 ) -> PlayResult {
-    assert!(
-        !ctx.legal_plays.is_empty(),
-        "No legal plays available"
-    );
+    assert!(!ctx.legal_plays.is_empty(), "No legal plays available");
 
     // Build the heuristic chain — card counting and restricted choice are
     // conditionally included based on the profile's capability flags.
@@ -148,11 +143,7 @@ pub fn suggest_play_with_profile(
 
     for h in &heuristics {
         // Beginner: randomly skip eligible heuristics
-        if profile.heuristic_skip_rate > 0.0
-            && profile
-                .skippable_heuristics
-                .contains(&h.name())
-        {
+        if profile.heuristic_skip_rate > 0.0 && profile.skippable_heuristics.contains(&h.name()) {
             let roll: f64 = rng.gen();
             if roll < profile.heuristic_skip_rate {
                 continue;
@@ -175,7 +166,10 @@ pub fn suggest_play_with_profile(
 
     // Fallback: lowest legal card
     let sorted = super::play_types::sort_by_rank_asc(&ctx.legal_plays);
-    let fallback = sorted.into_iter().next().unwrap_or_else(|| ctx.legal_plays[0].clone());
+    let fallback = sorted
+        .into_iter()
+        .next()
+        .unwrap_or_else(|| ctx.legal_plays[0].clone());
     PlayResult {
         card: fallback,
         reason: "default-lowest".to_string(),
@@ -238,9 +232,7 @@ mod tests {
         ];
         let legal = cards.clone();
         let ctx = PlayContext {
-            hand: Hand {
-                cards,
-            },
+            hand: Hand { cards },
             current_trick: vec![played(Seat::North, Suit::Diamonds, Rank::Ten)],
             previous_tricks: vec![],
             contract: nt_contract(),
@@ -267,9 +259,7 @@ mod tests {
         ];
         let legal = cards.clone();
         let ctx = PlayContext {
-            hand: Hand {
-                cards,
-            },
+            hand: Hand { cards },
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Queen)],
             previous_tricks: vec![],
             contract: nt_contract(),
@@ -294,7 +284,10 @@ mod tests {
         }
         // With 15% skip rate, we expect some non-covers
         assert!(covered > 0, "Should sometimes cover");
-        assert!(not_covered > 0, "Should sometimes skip covering (beginner error)");
+        assert!(
+            not_covered > 0,
+            "Should sometimes skip covering (beginner error)"
+        );
     }
 
     #[test]
@@ -305,9 +298,7 @@ mod tests {
         ];
         let legal = cards.clone();
         let ctx = PlayContext {
-            hand: Hand {
-                cards,
-            },
+            hand: Hand { cards },
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::Queen)],
             previous_tricks: vec![],
             contract: nt_contract(),

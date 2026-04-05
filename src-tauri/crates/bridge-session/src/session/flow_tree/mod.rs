@@ -11,16 +11,16 @@
 //! - `bundle_builder` — unified bundle flow tree construction
 //! - `module_builder` — single-module flow tree construction
 
-mod types;
-mod tree_helpers;
-mod surface_collector;
-mod tree_assembler;
 mod bundle_builder;
 mod module_builder;
+mod surface_collector;
+mod tree_assembler;
+mod tree_helpers;
+mod types;
 
-pub use types::{BundleFlowTreeViewport, FlowTreeNode, ModuleFlowTreeViewport};
 pub use bundle_builder::build_bundle_flow_tree;
 pub use module_builder::build_module_flow_tree;
+pub use types::{BundleFlowTreeViewport, FlowTreeNode, ModuleFlowTreeViewport};
 
 #[cfg(test)]
 mod tests {

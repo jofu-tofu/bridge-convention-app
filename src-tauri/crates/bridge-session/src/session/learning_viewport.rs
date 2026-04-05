@@ -5,17 +5,19 @@
 
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use bridge_conventions::registry::bundle_registry::list_bundle_inputs;
-use bridge_conventions::registry::module_registry::{get_all_modules, get_base_module_ids, get_module};
-use bridge_conventions::registry::system_configs::get_system_config;
 use bridge_conventions::pipeline::observation::normalize_intent::normalize_intent;
 use bridge_conventions::pipeline::observation::route_matcher::match_obs;
-use bridge_conventions::{
-    BaseSystemId, BidMeaning, BidMeaningClause, ConventionModule, Disclosure,
-    ExplanationEntry, FactOperator, ConstraintValue, LocalFsm, ObsPattern,
-    PhaseRef, RecommendationBand, SystemConfig,
+use bridge_conventions::registry::bundle_registry::list_bundle_inputs;
+use bridge_conventions::registry::module_registry::{
+    get_all_modules, get_base_module_ids, get_module,
 };
+use bridge_conventions::registry::system_configs::get_system_config;
 use bridge_conventions::rule_types::TurnRole;
+use bridge_conventions::{
+    BaseSystemId, BidMeaning, BidMeaningClause, ConstraintValue, ConventionModule, Disclosure,
+    ExplanationEntry, FactOperator, LocalFsm, ObsPattern, PhaseRef, RecommendationBand,
+    SystemConfig,
+};
 use bridge_engine::types::{BidSuit, Call};
 use serde::{Deserialize, Serialize};
 
@@ -463,7 +465,10 @@ fn display_name(fact_id: &str) -> String {
     for ch in name.chars() {
         if ch == '.' {
             result.push(' ');
-        } else if ch.is_uppercase() && !result.is_empty() && result.ends_with(|c: char| c.is_lowercase()) {
+        } else if ch.is_uppercase()
+            && !result.is_empty()
+            && result.ends_with(|c: char| c.is_lowercase())
+        {
             result.push(' ');
             result.extend(ch.to_lowercase());
         } else {
@@ -590,11 +595,19 @@ pub fn build_module_learning_viewport(
         teaching: LearningTeachingView {
             tradeoff: {
                 let s = teaching.tradeoff.as_str();
-                if s.is_empty() { None } else { Some(format_bid_references(s)) }
+                if s.is_empty() {
+                    None
+                } else {
+                    Some(format_bid_references(s))
+                }
             },
             principle: {
                 let s = teaching.principle.as_str();
-                if s.is_empty() { None } else { Some(format_bid_references(s)) }
+                if s.is_empty() {
+                    None
+                } else {
+                    Some(format_bid_references(s))
+                }
             },
             common_mistakes: teaching
                 .common_mistakes
@@ -851,10 +864,7 @@ fn turn_role_display(role: TurnRole) -> &'static str {
 }
 
 /// Build PhaseGroupView[] from a module's states, ordered by FSM topology.
-fn build_phase_groups(
-    module: &ConventionModule,
-    _system: BaseSystemId,
-) -> Vec<PhaseGroupView> {
+fn build_phase_groups(module: &ConventionModule, _system: BaseSystemId) -> Vec<PhaseGroupView> {
     let states = module.states.as_deref().unwrap_or(&[]);
     if states.is_empty() {
         return Vec::new();
@@ -986,8 +996,8 @@ fn build_phase_groups(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_conventions::{LocalFsm, ObsPattern, ObsPatternAct, PhaseRef, PhaseTransition};
     use bridge_conventions::BidActionType;
+    use bridge_conventions::{LocalFsm, ObsPattern, ObsPatternAct, PhaseRef, PhaseTransition};
     use bridge_engine::types::{BidSuit, Call};
 
     #[test]

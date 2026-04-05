@@ -8,27 +8,27 @@
 //! - card-counting: ClubPlayer+ (use_card_counting)
 //! - restricted-choice: Expert+ (use_inferences)
 
-mod opening_lead;
-mod mid_game_lead;
 mod card_counting;
+mod cover_honor;
+mod discard;
+mod fourth_hand;
+mod mid_game_lead;
+mod opening_lead;
 mod restricted_choice;
 mod second_hand_low;
 mod third_hand_high;
-mod fourth_hand;
-mod cover_honor;
 mod trump_management;
-mod discard;
 
-pub use opening_lead::OpeningLeadHeuristic;
-pub use mid_game_lead::MidGameLeadHeuristic;
 pub use card_counting::CardCountingHeuristic;
+pub use cover_honor::CoverHonorHeuristic;
+pub use discard::DiscardHeuristic;
+pub use fourth_hand::FourthHandHeuristic;
+pub use mid_game_lead::MidGameLeadHeuristic;
+pub use opening_lead::OpeningLeadHeuristic;
 pub use restricted_choice::RestrictedChoiceHeuristic;
 pub use second_hand_low::SecondHandLowHeuristic;
 pub use third_hand_high::ThirdHandHighHeuristic;
-pub use fourth_hand::FourthHandHeuristic;
-pub use cover_honor::CoverHonorHeuristic;
 pub use trump_management::TrumpManagementHeuristic;
-pub use discard::DiscardHeuristic;
 
 // ── Tests ───────────────────────────────────────────────────────────
 
@@ -657,5 +657,4 @@ mod tests {
         };
         assert!(h.apply(&ctx).is_none());
     }
-
 }

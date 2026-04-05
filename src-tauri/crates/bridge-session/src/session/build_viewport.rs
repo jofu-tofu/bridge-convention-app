@@ -8,8 +8,8 @@
 use std::collections::{HashMap, HashSet};
 
 use bridge_engine::types::{
-    Auction, BidSuit, Call, Card, Contract, Deal, Hand, PlayedCard, Seat, Suit,
-    SuitLength, Trick, Vulnerability, DistributionPoints,
+    Auction, BidSuit, Call, Card, Contract, Deal, DistributionPoints, Hand, PlayedCard, Seat, Suit,
+    SuitLength, Trick, Vulnerability,
 };
 use bridge_engine::{evaluate_hand_hcp, is_balanced};
 use serde::{Deserialize, Serialize};
@@ -249,10 +249,7 @@ pub fn build_auction_entries(
 }
 
 /// Filter hands through face_up_seats, returning only visible ones.
-pub fn filter_visible_hands(
-    deal: &Deal,
-    face_up_seats: &HashSet<Seat>,
-) -> HashMap<Seat, Hand> {
+pub fn filter_visible_hands(deal: &Deal, face_up_seats: &HashSet<Seat>) -> HashMap<Seat, Hand> {
     let mut visible = HashMap::new();
     for &seat in face_up_seats {
         if let Some(hand) = deal.hands.get(&seat) {
@@ -452,24 +449,63 @@ pub fn build_explanation_viewport(input: BuildExplanationViewportInput) -> Expla
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_engine::types::{AuctionEntry, Hand, Card, Suit, Rank};
+    use bridge_engine::types::{AuctionEntry, Card, Hand, Rank, Suit};
 
     fn make_hand_13() -> Hand {
         Hand {
             cards: vec![
-                Card { suit: Suit::Spades, rank: Rank::Ace },
-                Card { suit: Suit::Spades, rank: Rank::King },
-                Card { suit: Suit::Spades, rank: Rank::Queen },
-                Card { suit: Suit::Spades, rank: Rank::Jack },
-                Card { suit: Suit::Hearts, rank: Rank::Ace },
-                Card { suit: Suit::Hearts, rank: Rank::King },
-                Card { suit: Suit::Hearts, rank: Rank::Queen },
-                Card { suit: Suit::Diamonds, rank: Rank::Ace },
-                Card { suit: Suit::Diamonds, rank: Rank::King },
-                Card { suit: Suit::Diamonds, rank: Rank::Queen },
-                Card { suit: Suit::Clubs, rank: Rank::Ace },
-                Card { suit: Suit::Clubs, rank: Rank::King },
-                Card { suit: Suit::Clubs, rank: Rank::Queen },
+                Card {
+                    suit: Suit::Spades,
+                    rank: Rank::Ace,
+                },
+                Card {
+                    suit: Suit::Spades,
+                    rank: Rank::King,
+                },
+                Card {
+                    suit: Suit::Spades,
+                    rank: Rank::Queen,
+                },
+                Card {
+                    suit: Suit::Spades,
+                    rank: Rank::Jack,
+                },
+                Card {
+                    suit: Suit::Hearts,
+                    rank: Rank::Ace,
+                },
+                Card {
+                    suit: Suit::Hearts,
+                    rank: Rank::King,
+                },
+                Card {
+                    suit: Suit::Hearts,
+                    rank: Rank::Queen,
+                },
+                Card {
+                    suit: Suit::Diamonds,
+                    rank: Rank::Ace,
+                },
+                Card {
+                    suit: Suit::Diamonds,
+                    rank: Rank::King,
+                },
+                Card {
+                    suit: Suit::Diamonds,
+                    rank: Rank::Queen,
+                },
+                Card {
+                    suit: Suit::Clubs,
+                    rank: Rank::Ace,
+                },
+                Card {
+                    suit: Suit::Clubs,
+                    rank: Rank::King,
+                },
+                Card {
+                    suit: Suit::Clubs,
+                    rank: Rank::Queen,
+                },
             ],
         }
     }
@@ -507,23 +543,38 @@ mod tests {
     #[test]
     fn format_call_bids() {
         assert_eq!(
-            format_call(&Call::Bid { level: 1, strain: BidSuit::Clubs }),
+            format_call(&Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs
+            }),
             "1C"
         );
         assert_eq!(
-            format_call(&Call::Bid { level: 1, strain: BidSuit::NoTrump }),
+            format_call(&Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump
+            }),
             "1NT"
         );
         assert_eq!(
-            format_call(&Call::Bid { level: 3, strain: BidSuit::Hearts }),
+            format_call(&Call::Bid {
+                level: 3,
+                strain: BidSuit::Hearts
+            }),
             "3H"
         );
         assert_eq!(
-            format_call(&Call::Bid { level: 7, strain: BidSuit::Spades }),
+            format_call(&Call::Bid {
+                level: 7,
+                strain: BidSuit::Spades
+            }),
             "7S"
         );
         assert_eq!(
-            format_call(&Call::Bid { level: 2, strain: BidSuit::Diamonds }),
+            format_call(&Call::Bid {
+                level: 2,
+                strain: BidSuit::Diamonds
+            }),
             "2D"
         );
     }
@@ -539,7 +590,10 @@ mod tests {
         let viewport = build_bidding_viewport(BuildBiddingViewportInput {
             deal: &deal,
             user_seat: Seat::South,
-            auction: &Auction { entries: vec![], is_complete: false },
+            auction: &Auction {
+                entries: vec![],
+                is_complete: false,
+            },
             bid_history: &[],
             legal_calls: &[Call::Pass],
             face_up_seats: &face_up,
@@ -568,7 +622,10 @@ mod tests {
         let viewport = build_bidding_viewport(BuildBiddingViewportInput {
             deal: &deal,
             user_seat: Seat::South,
-            auction: &Auction { entries: vec![], is_complete: false },
+            auction: &Auction {
+                entries: vec![],
+                is_complete: false,
+            },
             bid_history: &[],
             legal_calls: &[],
             face_up_seats: &face_up,
@@ -595,7 +652,10 @@ mod tests {
         let viewport = build_explanation_viewport(BuildExplanationViewportInput {
             deal: &deal,
             user_seat: Seat::South,
-            auction: &Auction { entries: vec![], is_complete: false },
+            auction: &Auction {
+                entries: vec![],
+                is_complete: false,
+            },
             bid_history: vec![],
             contract: None,
             score: None,
@@ -666,7 +726,10 @@ mod tests {
             deal: &deal,
             user_seat: Seat::South,
             face_up_seats: &face_up,
-            auction: &Auction { entries: vec![], is_complete: false },
+            auction: &Auction {
+                entries: vec![],
+                is_complete: false,
+            },
             bid_history: &[],
             contract: Contract {
                 level: 4,
@@ -712,22 +775,32 @@ mod tests {
     fn build_auction_entries_with_history() {
         let auction = Auction {
             entries: vec![
-                AuctionEntry { seat: Seat::North, call: Call::Bid { level: 1, strain: BidSuit::NoTrump } },
-                AuctionEntry { seat: Seat::East, call: Call::Pass },
+                AuctionEntry {
+                    seat: Seat::North,
+                    call: Call::Bid {
+                        level: 1,
+                        strain: BidSuit::NoTrump,
+                    },
+                },
+                AuctionEntry {
+                    seat: Seat::East,
+                    call: Call::Pass,
+                },
             ],
             is_complete: false,
         };
-        let history = vec![
-            BidHistoryEntryView {
-                seat: Seat::North,
-                call: Call::Bid { level: 1, strain: BidSuit::NoTrump },
-                meaning: Some("15-17 HCP, balanced".to_string()),
-                is_user: false,
-                is_correct: None,
-                alert_label: Some("15-17".to_string()),
-                annotation_type: Some(AnnotationType::Announce),
+        let history = vec![BidHistoryEntryView {
+            seat: Seat::North,
+            call: Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump,
             },
-        ];
+            meaning: Some("15-17 HCP, balanced".to_string()),
+            is_user: false,
+            is_correct: None,
+            alert_label: Some("15-17".to_string()),
+            annotation_type: Some(AnnotationType::Announce),
+        }];
 
         let entries = build_auction_entries(&auction, &history);
         assert_eq!(entries.len(), 2);

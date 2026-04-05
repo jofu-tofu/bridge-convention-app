@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use bridge_session::types::{OpponentMode, PlayPreference, PracticeMode, PracticeRole};
 
 /// Opaque session identifier.
-pub type SessionHandle = String;
+pub type DrillHandle = String;
 
 /// Configuration for creating a new drill session.
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -1,9 +1,9 @@
 //! Core inference types — ported from `inference-types.ts` and `types.ts`.
 
-use std::collections::HashMap;
-use bridge_engine::types::{Auction, AuctionEntry, Call, Seat, Suit};
 use bridge_conventions::types::meaning::FactConstraint;
+use bridge_engine::types::{Auction, AuctionEntry, Call, Seat, Suit};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 // ── Hand inference (what a single bid reveals) ─────────────────────
 
@@ -156,7 +156,11 @@ pub struct InferenceExtractorInput {
 /// Stable adapter for extracting `FactConstraint[]` from convention evaluation results.
 /// Decouples public belief layer from evaluator internals.
 pub trait InferenceExtractor: Send + Sync {
-    fn extract_constraints(&self, result: &InferenceExtractorInput, seat: Seat) -> Vec<FactConstraint>;
+    fn extract_constraints(
+        &self,
+        result: &InferenceExtractorInput,
+        seat: Seat,
+    ) -> Vec<FactConstraint>;
 }
 
 /// No-op extractor -- returns empty constraints. Real inference flows through
@@ -164,7 +168,11 @@ pub trait InferenceExtractor: Send + Sync {
 pub struct NoopExtractor;
 
 impl InferenceExtractor for NoopExtractor {
-    fn extract_constraints(&self, _result: &InferenceExtractorInput, _seat: Seat) -> Vec<FactConstraint> {
+    fn extract_constraints(
+        &self,
+        _result: &InferenceExtractorInput,
+        _seat: Seat,
+    ) -> Vec<FactConstraint> {
         Vec::new()
     }
 }
@@ -192,7 +200,10 @@ mod tests {
     #[test]
     fn bid_annotation_roundtrip() {
         let ann = BidAnnotation {
-            call: Call::Bid { level: 1, strain: BidSuit::NoTrump },
+            call: Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump,
+            },
             seat: Seat::South,
             convention_id: None,
             meaning: "Natural bid".to_string(),

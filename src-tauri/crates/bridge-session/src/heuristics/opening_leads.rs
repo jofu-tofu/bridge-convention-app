@@ -6,8 +6,7 @@
 use bridge_engine::{Card, Rank, Suit};
 
 use super::play_types::{
-    group_by_suit, is_legal_play, sort_by_rank_asc, sort_by_rank_desc,
-    top_of_touching_honors,
+    group_by_suit, is_legal_play, sort_by_rank_asc, sort_by_rank_desc, top_of_touching_honors,
 };
 
 // ── Lead sub-helpers ─────────────────────────────────────────────────
@@ -51,10 +50,7 @@ pub fn lead_touching_honors(
 }
 
 /// 4th best from longest suit in the given groups.
-pub fn lead_fourth_best(
-    suit_groups: &[(Suit, Vec<Card>)],
-    legal_plays: &[Card],
-) -> Option<Card> {
+pub fn lead_fourth_best(suit_groups: &[(Suit, Vec<Card>)], legal_plays: &[Card]) -> Option<Card> {
     let mut longest_suit: Option<&(Suit, Vec<Card>)> = None;
     let mut longest_len = 0;
 
@@ -81,11 +77,7 @@ pub fn lead_fourth_best(
 }
 
 /// Suit contracts: lead a singleton in a side suit.
-pub fn lead_short_suit(
-    cards: &[Card],
-    trump_suit: Suit,
-    legal_plays: &[Card],
-) -> Option<Card> {
+pub fn lead_short_suit(cards: &[Card], trump_suit: Suit, legal_plays: &[Card]) -> Option<Card> {
     let suit_groups = group_by_suit(cards);
     for (suit, suit_cards) in &suit_groups {
         if *suit == trump_suit {
@@ -153,8 +145,7 @@ mod tests {
             card(Suit::Hearts, Rank::Five),
             card(Suit::Spades, Rank::Queen),
         ];
-        let result =
-            lead_from_ak_combination(&cards, Suit::Spades, &cards);
+        let result = lead_from_ak_combination(&cards, Suit::Spades, &cards);
         assert!(result.is_some());
         let c = result.unwrap();
         assert_eq!(c.suit, Suit::Hearts);
@@ -168,8 +159,7 @@ mod tests {
             card(Suit::Hearts, Rank::King),
         ];
         // Hearts is trump — should not lead AK
-        let result =
-            lead_from_ak_combination(&cards, Suit::Hearts, &cards);
+        let result = lead_from_ak_combination(&cards, Suit::Hearts, &cards);
         assert!(result.is_none());
     }
 

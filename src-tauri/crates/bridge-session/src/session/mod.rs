@@ -4,51 +4,53 @@
 //! Ported from TS `src/session/{session-state,drill-session,config-factory,start-drill,
 //! bidding-controller,play-controller,bid-feedback-builder}.ts`.
 
-pub mod session_state;
-pub mod drill_session;
-pub mod config_factory;
-pub mod start_drill;
-pub mod practice_focus;
-pub mod bidding_controller;
-pub mod play_controller;
 pub mod bid_feedback_builder;
+pub mod bidding_controller;
 pub mod build_viewport;
+pub mod config_factory;
+pub mod drill_session;
 pub mod flow_tree;
 pub mod format_obs_label;
 pub mod learning_viewport;
+pub mod play_controller;
+pub mod practice_focus;
+pub mod session_state;
+pub mod start_drill;
 
-pub use session_state::{SessionState, PlayState, SeatStrategy, DebugLogEntry, get_current_turn};
-pub use drill_session::get_next_bid;
-pub use config_factory::{DrillConfig, create_drill_config};
-pub use start_drill::{
-    DrillBundle, pick_vulnerability, rotate_seat_180, rotate_deal_constraints,
-    rotate_auction, start_drill,
+pub use bid_feedback_builder::{assemble_bid_feedback, call_equals, BidFeedbackDTO, BidGrade};
+pub use bidding_controller::{
+    initialize_auction, process_bid, run_initial_ai_bids, AiBidEntry, BidProcessResult,
 };
-pub use bidding_controller::{process_bid, run_initial_ai_bids, initialize_auction, BidProcessResult, AiBidEntry};
-pub use play_controller::{process_play_card, process_single_card, run_initial_ai_plays, PlayCardResult, SingleCardResult, AiPlayEntry};
-pub use bid_feedback_builder::{assemble_bid_feedback, BidFeedbackDTO, BidGrade, call_equals};
 pub use build_viewport::{
-    format_call, build_auction_entries, filter_visible_hands,
-    build_bidding_viewport, build_declarer_prompt_viewport,
-    build_playing_viewport, build_explanation_viewport,
-    HandEvaluationView, AuctionEntryView, AnnotationType, BidHistoryEntryView,
-    PlayRecommendation, BiddingViewport, BidContextView, BidRole, CallRoleEntry,
-    BiddingOptionView, DeclarerPromptViewport,
-    PlayingViewport, ExplanationViewport,
-    BuildBiddingViewportInput, BuildDeclarerPromptViewportInput,
-    BuildPlayingViewportInput, BuildExplanationViewportInput,
+    build_auction_entries, build_bidding_viewport, build_declarer_prompt_viewport,
+    build_explanation_viewport, build_playing_viewport, filter_visible_hands, format_call,
+    AnnotationType, AuctionEntryView, BidContextView, BidHistoryEntryView, BidRole,
+    BiddingOptionView, BiddingViewport, BuildBiddingViewportInput,
+    BuildDeclarerPromptViewportInput, BuildExplanationViewportInput, BuildPlayingViewportInput,
+    CallRoleEntry, DeclarerPromptViewport, ExplanationViewport, HandEvaluationView,
+    PlayRecommendation, PlayingViewport,
 };
+pub use config_factory::{create_drill_config, DrillConfig};
+pub use drill_session::get_next_bid;
 pub use flow_tree::{
-    build_bundle_flow_tree, build_module_flow_tree,
-    FlowTreeNode, BundleFlowTreeViewport, ModuleFlowTreeViewport,
+    build_bundle_flow_tree, build_module_flow_tree, BundleFlowTreeViewport, FlowTreeNode,
+    ModuleFlowTreeViewport,
 };
 pub use format_obs_label::{format_obs_action, format_transition_label};
 pub use learning_viewport::{
-    format_module_name, format_bid_references, call_key, module_surfaces,
-    build_module_catalog, build_base_module_infos, build_module_learning_viewport,
-    derive_phase_order, compute_post_fit_phases, find_explanation_text,
-    map_clauses, derive_entry_condition, derive_neutral_description,
-    ModuleCatalogEntry, ModuleLearningViewport, LearningTeachingView,
-    PhaseGroupView, SurfaceDetailView, SurfaceClauseView, ClauseSystemVariant,
-    ServiceTeachingLabel, BaseModuleInfo, EntryCondition, RelevantMetric,
+    build_base_module_infos, build_module_catalog, build_module_learning_viewport, call_key,
+    compute_post_fit_phases, derive_entry_condition, derive_neutral_description,
+    derive_phase_order, find_explanation_text, format_bid_references, format_module_name,
+    map_clauses, module_surfaces, BaseModuleInfo, ClauseSystemVariant, EntryCondition,
+    LearningTeachingView, ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView,
+    RelevantMetric, ServiceTeachingLabel, SurfaceClauseView, SurfaceDetailView,
+};
+pub use play_controller::{
+    process_play_card, process_single_card, run_initial_ai_plays, AiPlayEntry, PlayCardResult,
+    SingleCardResult,
+};
+pub use session_state::{get_current_turn, DebugLogEntry, PlayState, SeatStrategy, SessionState};
+pub use start_drill::{
+    pick_vulnerability, rotate_auction, rotate_deal_constraints, rotate_seat_180, start_drill,
+    DrillBundle,
 };

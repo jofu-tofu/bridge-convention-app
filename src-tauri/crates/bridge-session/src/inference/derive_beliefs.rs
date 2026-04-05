@@ -4,9 +4,9 @@
 //! `derive_public_beliefs()` computes `DerivedRanges` (HCP min/max, per-suit length
 //! min/max) and qualitative constraints from the raw constraint array.
 
-use std::collections::HashMap;
-use bridge_engine::types::{Seat, Suit};
 use bridge_conventions::types::meaning::{ConstraintValue, FactConstraint, FactOperator};
+use bridge_engine::types::{Seat, Suit};
+use std::collections::HashMap;
 
 use super::types::{
     DerivedRanges, HandInference, NumberRange, PublicBeliefs, QualitativeConstraint,
@@ -118,14 +118,12 @@ fn derive_ranges(constraints: &[FactConstraint]) -> DerivedRanges {
                 match c.operator {
                     FactOperator::Gte => {
                         if let Some(v) = value_as_u32(&c.value) {
-                            *suit_mins.get_mut(&suit).unwrap() =
-                                suit_mins[&suit].max(v);
+                            *suit_mins.get_mut(&suit).unwrap() = suit_mins[&suit].max(v);
                         }
                     }
                     FactOperator::Lte => {
                         if let Some(v) = value_as_u32(&c.value) {
-                            *suit_maxes.get_mut(&suit).unwrap() =
-                                suit_maxes[&suit].min(v);
+                            *suit_maxes.get_mut(&suit).unwrap() = suit_maxes[&suit].min(v);
                         }
                     }
                     _ => {}
@@ -166,7 +164,10 @@ fn derive_ranges(constraints: &[FactConstraint]) -> DerivedRanges {
     }
 
     DerivedRanges {
-        hcp: NumberRange { min: hcp_min, max: hcp_max },
+        hcp: NumberRange {
+            min: hcp_min,
+            max: hcp_max,
+        },
         suit_lengths,
         is_balanced: balanced,
     }
@@ -182,7 +183,10 @@ fn derive_qualitative(constraints: &[FactConstraint]) -> Vec<QualitativeConstrai
             if c.operator == FactOperator::Boolean {
                 if let ConstraintValue::Bool(true) = c.value {
                     // Deduplicate
-                    if !result.iter().any(|q: &QualitativeConstraint| q.fact_id == c.fact_id) {
+                    if !result
+                        .iter()
+                        .any(|q: &QualitativeConstraint| q.fact_id == c.fact_id)
+                    {
                         result.push(QualitativeConstraint {
                             fact_id: c.fact_id.clone(),
                             label: label.to_string(),
@@ -262,7 +266,10 @@ mod tests {
         assert_eq!(beliefs.ranges.hcp, NumberRange { min: 0, max: 40 });
         assert_eq!(beliefs.ranges.is_balanced, None);
         for suit in &ALL_SUITS {
-            assert_eq!(beliefs.ranges.suit_lengths[suit], NumberRange { min: 0, max: 13 });
+            assert_eq!(
+                beliefs.ranges.suit_lengths[suit],
+                NumberRange { min: 0, max: 13 }
+            );
         }
         assert!(beliefs.qualitative.is_empty());
     }
@@ -407,10 +414,13 @@ mod tests {
             is_balanced: Some(true),
             suits: {
                 let mut m = HashMap::new();
-                m.insert(Suit::Spades, super::super::types::SuitInference {
-                    min_length: Some(5),
-                    max_length: None,
-                });
+                m.insert(
+                    Suit::Spades,
+                    super::super::types::SuitInference {
+                        min_length: Some(5),
+                        max_length: None,
+                    },
+                );
                 m
             },
             source: "test".to_string(),

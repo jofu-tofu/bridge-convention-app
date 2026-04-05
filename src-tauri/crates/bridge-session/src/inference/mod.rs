@@ -8,25 +8,24 @@
 //! - `InferenceCoordinator`: coordinates NS and EW engines for a drill
 //! - Posterior: stub returning uniform distributions (full implementation deferred)
 
-pub mod types;
-pub mod derive_beliefs;
-pub mod belief_accumulator;
-pub mod natural_inference;
-pub mod inference_engine;
 pub mod annotation_producer;
+pub mod belief_accumulator;
+pub mod derive_beliefs;
 pub mod inference_coordinator;
+pub mod inference_engine;
+pub mod natural_inference;
 pub mod posterior;
 pub mod private_belief;
+pub mod types;
 
 // Re-export key types at module level
-pub use types::{
-    HandInference, SuitInference, PublicBeliefs, DerivedRanges, QualitativeConstraint,
-    BidAnnotation, PublicBeliefState, InferenceConfig, InferenceSnapshot,
-    InferenceExtractorInput,
-};
+pub use belief_accumulator::{apply_annotation, create_initial_belief_state};
 pub use derive_beliefs::{derive_public_beliefs, hand_inference_to_constraints};
-pub use belief_accumulator::{create_initial_belief_state, apply_annotation};
-pub use natural_inference::NaturalInferenceProvider;
-pub use inference_engine::InferenceEngine;
 pub use inference_coordinator::InferenceCoordinator;
-pub use posterior::{UniformPosterior, PosteriorEngine, Posterior};
+pub use inference_engine::InferenceEngine;
+pub use natural_inference::NaturalInferenceProvider;
+pub use posterior::{Posterior, PosteriorEngine, UniformPosterior};
+pub use types::{
+    BidAnnotation, DerivedRanges, HandInference, InferenceConfig, InferenceExtractorInput,
+    InferenceSnapshot, PublicBeliefState, PublicBeliefs, QualitativeConstraint, SuitInference,
+};

@@ -9,13 +9,13 @@ use bridge_engine::types::Seat;
 use bridge_session::session::{DrillConfig, SeatStrategy, SessionState};
 
 use crate::error::ServiceError;
-use crate::request_types::SessionHandle;
+use crate::request_types::DrillHandle;
 
 // ── ActiveSession ─────────────────────────────────────────────────
 
 /// A live session with its handle, state, and config.
 pub struct ActiveSession {
-    pub handle: SessionHandle,
+    pub handle: DrillHandle,
     pub state: SessionState,
     pub config: DrillConfig,
     /// Seat strategies extracted from DrillConfig for bidding controller.
@@ -48,7 +48,7 @@ impl SessionManager {
         state: SessionState,
         config: DrillConfig,
         seat_strategies: HashMap<Seat, SeatStrategy>,
-    ) -> SessionHandle {
+    ) -> DrillHandle {
         self.handle_counter += 1;
         let handle = format!("session-{}", self.handle_counter);
         self.session = Some(ActiveSession {

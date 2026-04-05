@@ -57,12 +57,12 @@ pub struct PhaseTransition {
     pub to: GamePhase,
 }
 
-// ── Prompt accept ─────────────────────────────────────────────────
+// ── Play entry ───────────────────────────────────────────────────
 
-/// Result from accepting a prompt.
+/// Result from entering or restarting the play phase.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PromptAcceptResult {
+pub struct PlayEntryResult {
     pub phase: GamePhase,
     pub ai_plays: Option<Vec<AiPlayEntryDTO>>,
 }

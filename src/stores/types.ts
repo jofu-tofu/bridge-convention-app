@@ -16,7 +16,7 @@ import type {
   DDSolution,
   Suit,
 } from "../service";
-import type { DevServicePort, SessionHandle, SessionConfig } from "../service";
+import type { DevServicePort, DrillHandle, SessionConfig } from "../service";
 import type { ServiceGamePhase, ServicePublicBeliefState, PracticeMode, PromptMode } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import type {
@@ -39,7 +39,7 @@ export interface SessionStats {
 
 export interface GameStore {
   // Session identity
-  readonly activeHandle: SessionHandle | null;
+  readonly activeHandle: DrillHandle | null;
 
   /** True when a drill has been started (deal is loaded). Prefer over `deal !== null`. */
   readonly isInitialized: boolean;
@@ -106,7 +106,7 @@ export interface GameStore {
   declinePrompt(): void;
   playThisHand(): void;
   startNewDrill(config: SessionConfig): void;
-  startDrillFromHandle(handle: SessionHandle, service?: DevServicePort): Promise<void>;
+  startDrillFromHandle(handle: DrillHandle, service?: DevServicePort): Promise<void>;
   /** Instantly auto-complete bidding and advance to target phase. */
   skipToPhase(targetPhase: "review" | "playing" | "declarer"): Promise<boolean>;
   userBid(call: Call): void;

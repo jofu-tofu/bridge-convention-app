@@ -2,8 +2,8 @@
 //!
 //! Ported from TS `src/session/format-obs-label.ts`.
 
-use bridge_conventions::{BidActionType, BidSuitName, HandFeature, ObsPatternAct, ObsSuit};
 use bridge_conventions::ObsPattern;
+use bridge_conventions::{BidActionType, BidSuitName, HandFeature, ObsPatternAct, ObsSuit};
 use bridge_engine::types::Call;
 
 use super::build_viewport::format_call;
@@ -71,7 +71,11 @@ fn feature_phrase(feature: Option<HandFeature>, suit: Option<ObsSuit>) -> String
         None => suit_phrase(suit),
         Some(HandFeature::HeldSuit) => {
             let s = suit_phrase(suit);
-            if s.is_empty() { "a suit".to_string() } else { s }
+            if s.is_empty() {
+                "a suit".to_string()
+            } else {
+                s
+            }
         }
         Some(f) => {
             let base = feature_display(f);
@@ -95,7 +99,11 @@ pub fn format_obs_action(obs: &ObsPattern) -> String {
     match &obs.act {
         ObsPatternAct::Specific(act) => match act {
             BidActionType::Open => {
-                if s.is_empty() { "opening".to_string() } else { format!("opening {}", s) }
+                if s.is_empty() {
+                    "opening".to_string()
+                } else {
+                    format!("opening {}", s)
+                }
             }
             BidActionType::Show => format!("showing {}", fp),
             BidActionType::Deny => format!("denying {}", fp),
@@ -104,20 +112,33 @@ pub fn format_obs_action(obs: &ObsPattern) -> String {
             BidActionType::Accept => format!("accepting {}", fp),
             BidActionType::Decline => format!("declining {}", fp),
             BidActionType::Raise => {
-                if s.is_empty() { "raising".to_string() } else { format!("raising {}", s) }
+                if s.is_empty() {
+                    "raising".to_string()
+                } else {
+                    format!("raising {}", s)
+                }
             }
             BidActionType::Place => {
-                if s.is_empty() { "placing the contract".to_string() }
-                else { format!("placing the contract in {}", s) }
+                if s.is_empty() {
+                    "placing the contract".to_string()
+                } else {
+                    format!("placing the contract in {}", s)
+                }
             }
             BidActionType::Signoff => {
-                if s.is_empty() { "signing off".to_string() }
-                else { format!("signing off in {}", s) }
+                if s.is_empty() {
+                    "signing off".to_string()
+                } else {
+                    format!("signing off in {}", s)
+                }
             }
             BidActionType::Force => "forcing".to_string(),
             BidActionType::Agree => {
-                if s.is_empty() { "agreeing".to_string() }
-                else { format!("agreeing on {}", s) }
+                if s.is_empty() {
+                    "agreeing".to_string()
+                } else {
+                    format!("agreeing on {}", s)
+                }
             }
             BidActionType::Relay => "relaying".to_string(),
             BidActionType::Overcall => format!("overcalling {}", fp),
@@ -160,8 +181,8 @@ pub fn format_transition_label(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_conventions::{ObsPattern, ObsPatternAct, BidActionType};
-    use bridge_engine::types::{Call, BidSuit};
+    use bridge_conventions::{BidActionType, ObsPattern, ObsPatternAct};
+    use bridge_engine::types::{BidSuit, Call};
 
     fn obs(act: BidActionType) -> ObsPattern {
         ObsPattern {
@@ -178,7 +199,10 @@ mod tests {
     fn format_obs_action_simple_actions() {
         assert_eq!(format_obs_action(&obs(BidActionType::Pass)), "passing");
         assert_eq!(format_obs_action(&obs(BidActionType::Double)), "doubling");
-        assert_eq!(format_obs_action(&obs(BidActionType::Redouble)), "redoubling");
+        assert_eq!(
+            format_obs_action(&obs(BidActionType::Redouble)),
+            "redoubling"
+        );
         assert_eq!(format_obs_action(&obs(BidActionType::Relay)), "relaying");
         assert_eq!(format_obs_action(&obs(BidActionType::Force)), "forcing");
     }
@@ -243,7 +267,10 @@ mod tests {
     #[test]
     fn format_transition_label_with_call_and_turn() {
         let o = obs(BidActionType::Show);
-        let call = Call::Bid { level: 1, strain: BidSuit::NoTrump };
+        let call = Call::Bid {
+            level: 1,
+            strain: BidSuit::NoTrump,
+        };
         let label = format_transition_label(&o, Some(&call), Some("opener"));
         assert_eq!(label, "After opener bids 1NT (showing )");
     }

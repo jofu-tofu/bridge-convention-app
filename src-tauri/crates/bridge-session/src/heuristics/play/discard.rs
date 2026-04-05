@@ -122,11 +122,7 @@ fn get_partner_short_suits(ctx: &PlayContext) -> Option<Vec<Suit>> {
 
     let short: Vec<Suit> = [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs]
         .iter()
-        .filter(|&&suit| {
-            partner_lengths
-                .get(&suit)
-                .map_or(false, |&len| len <= 2.0)
-        })
+        .filter(|&&suit| partner_lengths.get(&suit).map_or(false, |&len| len <= 2.0))
         .copied()
         .collect();
 

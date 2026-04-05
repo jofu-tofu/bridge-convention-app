@@ -13,9 +13,7 @@ use super::super::learning_viewport::{derive_entry_condition, format_module_name
 
 use super::surface_collector::collect_module_data;
 use super::tree_assembler::{attach_route_constrained, build_module_subtree};
-use super::tree_helpers::{
-    max_depth_of, mk_entry_condition_root, mk_node, to_flow_tree_node,
-};
+use super::tree_helpers::{max_depth_of, mk_entry_condition_root, mk_node, to_flow_tree_node};
 use super::types::{ModuleFlowTreeViewport, ModulePhaseState, NodeCounter, TransitionEntry};
 
 /// Build a conversation flow tree scoped to a single module.
@@ -178,7 +176,8 @@ pub fn build_module_flow_tree(
     }
 
     // Route-constrained surfaces (within same module)
-    let modules_slice: Vec<&bridge_conventions::types::module_types::ConventionModule> = vec![module];
+    let modules_slice: Vec<&bridge_conventions::types::module_types::ConventionModule> =
+        vec![module];
     attach_route_constrained(
         &mut root_node,
         &module_phase_map,

@@ -3,8 +3,8 @@
 //! Uses a seeded ChaCha8Rng for deterministic replay when given the same seed.
 
 use rand::Rng;
-use rand_chacha::ChaCha8Rng;
 use rand::SeedableRng;
+use rand_chacha::ChaCha8Rng;
 
 use super::play_types::{PlayContext, PlayResult};
 
@@ -114,7 +114,10 @@ mod tests {
             let r = s.suggest(&ctx);
             seen.insert(format!("{:?}{:?}", r.card.suit, r.card.rank));
         }
-        assert!(seen.len() > 1, "Expected different results from different seeds");
+        assert!(
+            seen.len() > 1,
+            "Expected different results from different seeds"
+        );
     }
 
     #[test]

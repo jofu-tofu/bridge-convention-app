@@ -99,12 +99,8 @@ impl TransitionDescriptor {
 
 pub fn resolve_transition(current_phase: GamePhase, event: &PhaseEvent) -> TransitionDescriptor {
     match event {
-        PhaseEvent::AuctionComplete { service_phase } => {
-            resolve_auction_complete(*service_phase)
-        }
-        PhaseEvent::PromptEntered { play_preference } => {
-            resolve_prompt_entered(*play_preference)
-        }
+        PhaseEvent::AuctionComplete { service_phase } => resolve_auction_complete(*service_phase),
+        PhaseEvent::PromptEntered { play_preference } => resolve_prompt_entered(*play_preference),
         PhaseEvent::AcceptPlay { seat } => {
             if current_phase != GamePhase::DeclarerPrompt {
                 return TransitionDescriptor::no_transition();
@@ -374,10 +370,7 @@ mod tests {
 
     #[test]
     fn accept_play_from_wrong_phase_is_no_op() {
-        let td = resolve_transition(
-            GamePhase::Bidding,
-            &PhaseEvent::AcceptPlay { seat: None },
-        );
+        let td = resolve_transition(GamePhase::Bidding, &PhaseEvent::AcceptPlay { seat: None });
         assert_eq!(td.target_phase, None);
     }
 

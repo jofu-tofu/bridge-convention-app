@@ -105,9 +105,7 @@ fn inference_guided_lead(
     let suit_groups = group_by_suit(&ctx.hand.cards);
     let candidates: Vec<(Suit, Vec<Card>)> = suit_groups
         .into_iter()
-        .filter(|(s, cards)| {
-            cards.len() >= 4 && Some(*s) != ctx.trump_suit
-        })
+        .filter(|(s, cards)| cards.len() >= 4 && Some(*s) != ctx.trump_suit)
         .collect();
 
     if candidates.is_empty() {
@@ -128,7 +126,9 @@ fn inference_guided_lead(
                 .and_then(|m| m.get(suit_b))
                 .copied()
                 .unwrap_or(3.25);
-            decl_len_a.partial_cmp(&decl_len_b).unwrap_or(std::cmp::Ordering::Equal)
+            decl_len_a
+                .partial_cmp(&decl_len_b)
+                .unwrap_or(std::cmp::Ordering::Equal)
         })
     } else {
         // Suit contracts: prefer suits where dummy has length (through-strength),
@@ -157,7 +157,9 @@ fn inference_guided_lead(
             // Score: dummy length (prefer high) minus declarer shortness penalty
             let score_a = dummy_len_a - (3.25 - decl_len_a).max(0.0);
             let score_b = dummy_len_b - (3.25 - decl_len_b).max(0.0);
-            score_a.partial_cmp(&score_b).unwrap_or(std::cmp::Ordering::Equal)
+            score_a
+                .partial_cmp(&score_b)
+                .unwrap_or(std::cmp::Ordering::Equal)
         })
     };
 

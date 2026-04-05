@@ -10,7 +10,7 @@ import { tick } from "svelte";
 
 import type { Call, Seat } from "../service";
 import { nextSeat, ViewportBidGrade } from "../service";
-import type { DevServicePort, SessionHandle } from "../service";
+import type { DevServicePort, DrillHandle } from "../service";
 import type { BiddingViewport, AuctionEntryView } from "../service";
 import type { GamePhase } from "../service";
 import type { ServicePublicBeliefState } from "../service";
@@ -28,13 +28,13 @@ interface BiddingPhaseState {
 // ── Dependency contract ─────────────────────────────────────────────
 
 export interface BiddingDeps {
-  getActiveHandle: () => SessionHandle | null;
+  getActiveHandle: () => DrillHandle | null;
   getActiveService: () => DevServicePort;
   getPhase: () => string;
   getBiddingViewport: () => BiddingViewport | null;
   setBiddingViewport: (vp: BiddingViewport) => void;
   setPublicBeliefState: (state: ServicePublicBeliefState) => void;
-  handlePostAuction: (handle: SessionHandle, phase: GamePhase) => Promise<boolean>;
+  handlePostAuction: (handle: DrillHandle, phase: GamePhase) => Promise<boolean>;
   delayFn: (ms: number) => Promise<void>;
 }
 

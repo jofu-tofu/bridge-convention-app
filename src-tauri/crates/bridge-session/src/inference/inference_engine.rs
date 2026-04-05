@@ -3,10 +3,10 @@
 //! Uses `InferenceConfig` to route bids to the appropriate `InferenceProvider`
 //! based on whether the bidder is in the observer's partnership or not.
 
-use std::collections::HashMap;
+use bridge_conventions::types::meaning::FactConstraint;
 use bridge_engine::types::{Auction, AuctionEntry, Seat};
 use bridge_engine::{partner_seat, SEATS};
-use bridge_conventions::types::meaning::FactConstraint;
+use std::collections::HashMap;
 
 use super::derive_beliefs::{derive_public_beliefs, hand_inference_to_constraints};
 use super::types::{InferenceConfig, InferenceProvider, InferenceSnapshot, PublicBeliefs};
@@ -29,10 +29,8 @@ impl InferenceEngine {
     /// Uses asymmetric providers: own partnership uses convention-aware inference,
     /// opponent partnership uses natural bidding theory.
     pub fn new(config: InferenceConfig, observer_seat: Seat) -> Self {
-        let raw_constraints: HashMap<Seat, Vec<FactConstraint>> = SEATS
-            .iter()
-            .map(|&s| (s, Vec::new()))
-            .collect();
+        let raw_constraints: HashMap<Seat, Vec<FactConstraint>> =
+            SEATS.iter().map(|&s| (s, Vec::new())).collect();
 
         Self {
             config,
@@ -45,31 +43,31 @@ impl InferenceEngine {
     /// Process a single bid and update inferences.
     pub fn process_bid(&mut self, entry: &AuctionEntry, auction_before: &Auction) {
         let bidder_seat = entry.seat;
-        let provider: &dyn InferenceProvider = if is_own_partnership(self.observer_seat, bidder_seat) {
-            self.config.own_partnership.as_ref()
-        } else {
-            self.config.opponent_partnership.as_ref()
-        };
+        let provider: &dyn InferenceProvider =
+            if is_own_partnership(self.observer_seat, bidder_seat) {
+                self.config.own_partnership.as_ref()
+            } else {
+                self.config.opponent_partnership.as_ref()
+            };
 
-        let new_constraints: Vec<FactConstraint> = match std::panic::catch_unwind(
-            std::panic::AssertUnwindSafe(|| {
+        let new_constraints: Vec<FactConstraint> =
+            match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 provider.infer_from_bid(entry, auction_before, bidder_seat)
-            }),
-        ) {
-            Ok(Some(inference)) => {
-                let constraints = hand_inference_to_constraints(&inference);
-                self.raw_constraints
-                    .get_mut(&bidder_seat)
-                    .unwrap()
-                    .extend(constraints.clone());
-                constraints
-            }
-            Ok(None) => Vec::new(),
-            Err(_) => {
-                // Inference errors are silently swallowed -- never propagated to callers
-                Vec::new()
-            }
-        };
+            })) {
+                Ok(Some(inference)) => {
+                    let constraints = hand_inference_to_constraints(&inference);
+                    self.raw_constraints
+                        .get_mut(&bidder_seat)
+                        .unwrap()
+                        .extend(constraints.clone());
+                    constraints
+                }
+                Ok(None) => Vec::new(),
+                Err(_) => {
+                    // Inference errors are silently swallowed -- never propagated to callers
+                    Vec::new()
+                }
+            };
 
         self.timeline.push(InferenceSnapshot {
             entry: entry.clone(),
@@ -110,8 +108,8 @@ impl InferenceEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_engine::types::{BidSuit, Call};
     use bridge_conventions::types::meaning::{ConstraintValue, FactOperator};
+    use bridge_engine::types::{BidSuit, Call};
 
     use crate::inference::types::HandInference;
 
@@ -131,8 +129,12 @@ mod tests {
     }
 
     impl InferenceProvider for FixedProvider {
-        fn id(&self) -> &str { "test-provider" }
-        fn name(&self) -> &str { "test-provider" }
+        fn id(&self) -> &str {
+            "test-provider"
+        }
+        fn name(&self) -> &str {
+            "test-provider"
+        }
         fn infer_from_bid(
             &self,
             entry: &AuctionEntry,
@@ -148,8 +150,12 @@ mod tests {
     struct PanickingProvider;
 
     impl InferenceProvider for PanickingProvider {
-        fn id(&self) -> &str { "panicking" }
-        fn name(&self) -> &str { "panicking" }
+        fn id(&self) -> &str {
+            "panicking"
+        }
+        fn name(&self) -> &str {
+            "panicking"
+        }
         fn infer_from_bid(
             &self,
             _entry: &AuctionEntry,
@@ -163,16 +169,25 @@ mod tests {
     fn bid_1nt() -> AuctionEntry {
         AuctionEntry {
             seat: Seat::North,
-            call: Call::Bid { level: 1, strain: BidSuit::NoTrump },
+            call: Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump,
+            },
         }
     }
 
     fn pass_entry(seat: Seat) -> AuctionEntry {
-        AuctionEntry { seat, call: Call::Pass }
+        AuctionEntry {
+            seat,
+            call: Call::Pass,
+        }
     }
 
     fn empty_auction() -> Auction {
-        Auction { entries: vec![], is_complete: false }
+        Auction {
+            entries: vec![],
+            is_complete: false,
+        }
     }
 
     /// A provider that returns a fixed result and tracks call count via shared counter.
@@ -182,15 +197,27 @@ mod tests {
     }
 
     impl CountingProvider {
-        fn new(result: Option<HandInference>) -> (Self, std::sync::Arc<std::sync::atomic::AtomicUsize>) {
+        fn new(
+            result: Option<HandInference>,
+        ) -> (Self, std::sync::Arc<std::sync::atomic::AtomicUsize>) {
             let count = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
-            (Self { result, count: count.clone() }, count)
+            (
+                Self {
+                    result,
+                    count: count.clone(),
+                },
+                count,
+            )
         }
     }
 
     impl InferenceProvider for CountingProvider {
-        fn id(&self) -> &str { "counting" }
-        fn name(&self) -> &str { "counting" }
+        fn id(&self) -> &str {
+            "counting"
+        }
+        fn name(&self) -> &str {
+            "counting"
+        }
         fn infer_from_bid(
             &self,
             _entry: &AuctionEntry,
@@ -334,7 +361,10 @@ mod tests {
         assert_eq!(timeline[0].new_constraints.len(), 1);
         assert_eq!(timeline[0].new_constraints[0].fact_id, "hand.hcp");
         assert_eq!(timeline[0].new_constraints[0].operator, FactOperator::Gte);
-        assert_eq!(timeline[0].new_constraints[0].value, ConstraintValue::int(12));
+        assert_eq!(
+            timeline[0].new_constraints[0].value,
+            ConstraintValue::int(12)
+        );
     }
 
     #[test]

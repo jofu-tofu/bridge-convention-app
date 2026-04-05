@@ -107,9 +107,9 @@ fn defender_lead(
     // Avoid suits where RHO is void: prefer any suit where RHO is NOT void
     if let Some(rho_v) = rho_voids {
         if !rho_v.is_empty() {
-            let safe_suit = suit_groups.iter().find(|(s, _)| {
-                Some(*s) != ctx.trump_suit && !rho_v.contains(s)
-            });
+            let safe_suit = suit_groups
+                .iter()
+                .find(|(s, _)| Some(*s) != ctx.trump_suit && !rho_v.contains(s));
             if let Some((_, cards)) = safe_suit {
                 return sort_by_rank_asc(cards).into_iter().next();
             }
@@ -278,7 +278,9 @@ mod tests {
     #[test]
     fn does_not_fire_on_first_trick() {
         let ctx = PlayContext {
-            hand: Hand { cards: vec![card(Suit::Spades, Rank::Ace)] },
+            hand: Hand {
+                cards: vec![card(Suit::Spades, Rank::Ace)],
+            },
             current_trick: vec![],
             previous_tricks: vec![],
             contract: nt_contract(),
@@ -306,7 +308,9 @@ mod tests {
         };
 
         let ctx = PlayContext {
-            hand: Hand { cards: vec![card(Suit::Spades, Rank::Ace)] },
+            hand: Hand {
+                cards: vec![card(Suit::Spades, Rank::Ace)],
+            },
             current_trick: vec![played(Seat::North, Suit::Spades, Rank::King)],
             previous_tricks: vec![prev],
             contract: nt_contract(),

@@ -28,8 +28,8 @@ fn make_config(convention_id: &str, seed: u64) -> SessionConfig {
 
 fn create_test_session(service: &mut ServicePortImpl, convention_id: &str, seed: u64) -> String {
     service
-        .create_session(make_config(convention_id, seed))
-        .expect("create_session should succeed")
+        .create_drill_session(make_config(convention_id, seed))
+        .expect("create_drill_session should succeed")
 }
 
 #[test]
@@ -178,12 +178,12 @@ fn submit_bid_completing_auction_returns_phase_transition() {
 
 #[test]
 #[ignore]
-fn accept_prompt_play_transitions_to_playing() {
+fn enter_play_transitions_to_playing() {
     let mut service = ServicePortImpl::new();
     // Use play_preference = always so we get a prompt
     let mut config = make_config("nt-bundle", 42);
     config.play_preference = Some(bridge_session::types::PlayPreference::Prompt);
-    let handle = service.create_session(config).expect("create_session should succeed");
+    let handle = service.create_drill_session(config).expect("create_drill_session should succeed");
     let _drill = service.start_drill(&handle).expect("start_drill should succeed");
 
     // Complete auction
@@ -197,23 +197,23 @@ fn accept_prompt_play_transitions_to_playing() {
     }
 
     let result = service
-        .accept_prompt(&handle, Some("play"), None)
-        .expect("accept_prompt(play) should succeed");
+        .enter_play(&handle, None)
+        .expect("enter_play should succeed");
 
     assert_eq!(
         result.phase,
         bridge_session::types::GamePhase::Playing,
-        "accept_prompt(play) should transition to Playing",
+        "enter_play should transition to Playing",
     );
 }
 
 #[test]
 #[ignore]
-fn accept_prompt_skip_transitions_to_explanation() {
+fn decline_play_transitions_to_explanation() {
     let mut service = ServicePortImpl::new();
     let mut config = make_config("nt-bundle", 43);
     config.play_preference = Some(bridge_session::types::PlayPreference::Prompt);
-    let handle = service.create_session(config).expect("create_session should succeed");
+    let handle = service.create_drill_session(config).expect("create_drill_session should succeed");
     let _drill = service.start_drill(&handle).expect("start_drill should succeed");
 
     // Complete auction
@@ -226,14 +226,17 @@ fn accept_prompt_skip_transitions_to_explanation() {
         }
     }
 
-    let result = service
-        .accept_prompt(&handle, Some("skip"), None)
-        .expect("accept_prompt(skip) should succeed");
+    service
+        .decline_play(&handle)
+        .expect("decline_play should succeed");
 
-    assert_eq!(
-        result.phase,
-        bridge_session::types::GamePhase::Explanation,
-        "accept_prompt(skip) should transition to Explanation",
+    let viewport = service
+        .get_explanation_viewport(&handle)
+        .expect("get_explanation_viewport should succeed");
+
+    assert!(
+        viewport.is_some(),
+        "decline_play should transition to Explanation (explanation viewport available)",
     );
 }
 
@@ -243,7 +246,7 @@ fn submit_bid_during_wrong_phase_returns_error() {
     let mut service = ServicePortImpl::new();
     let mut config = make_config("nt-bundle", 44);
     config.play_preference = Some(bridge_session::types::PlayPreference::Skip);
-    let handle = service.create_session(config).expect("create_session should succeed");
+    let handle = service.create_drill_session(config).expect("create_drill_session should succeed");
     let _drill = service.start_drill(&handle).expect("start_drill should succeed");
 
     // Complete auction (play_preference=skip auto-transitions to Explanation)

@@ -1,7 +1,7 @@
 // ── CLI play command ────────────────────────────────────────────────
 //
 // Session-based playthrough. Uses the same session API as the UI:
-// createSession → startDrill → submitBid loop. Stateless: each
+// createDrillSession → startDrill → submitBid loop. Stateless: each
 // invocation creates a fresh session (same seed = same deal).
 
 import type { DevServicePort } from "../../service";
@@ -75,7 +75,7 @@ export async function runPlay(service: DevServicePort, flags: Flags): Promise<vo
   };
 
   // Create session + start drill
-  const handle = await service.createSession(config);
+  const handle = await service.createDrillSession(config);
   const drillResult = await service.startDrill(handle);
 
   // No bids requested — return the initial viewport

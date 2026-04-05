@@ -2,7 +2,7 @@
 // ── Bridge Convention CLI ────────────────────────────────────────────
 //
 // Session-based CLI for convention evaluation. Uses the same session API
-// as the UI: createSession → startDrill → submitBid.
+// as the UI: createDrillSession → startDrill → submitBid.
 //
 // Subcommands:
 //   bundles   — list all available bundles

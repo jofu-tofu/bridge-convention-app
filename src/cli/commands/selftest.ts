@@ -100,7 +100,7 @@ async function runSingleSeed(
     playPreference: PlayPreference.Skip,
   };
 
-  const handle = await service.createSession(config);
+  const handle = await service.createDrillSession(config);
   const drill = await service.startDrill(handle);
 
   if (drill.auctionComplete) {

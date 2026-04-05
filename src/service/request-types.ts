@@ -9,10 +9,10 @@
 import type { Seat, Vulnerability } from "../engine/types";
 import type { OpponentMode, PlayPreference, PracticeMode, PracticeRole } from "./session-types";
 
-// ── Session Handle ──────────────────────────────────────────────────
+// ── Drill Handle ───────────────────────────────────────────────────
 
-/** Opaque session identifier. */
-export type SessionHandle = string;
+/** Opaque drill session identifier. */
+export type DrillHandle = string;
 
 // ── Session Config ──────────────────────────────────────────────────
 

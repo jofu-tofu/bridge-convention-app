@@ -2,7 +2,7 @@
 
 # cli — Session-Based Convention CLI
 
-Headless CLI for evaluating bridge convention correctness. Uses the same session API as the UI (`createSession` -> `startDrill` -> `submitBid`). No browser, no Svelte — pure strategy evaluation via JSON.
+Headless CLI for evaluating bridge convention correctness. Uses the same session API as the UI (`createDrillSession` -> `startDrill` -> `submitBid`). No browser, no Svelte — pure strategy evaluation via JSON.
 
 ## Commands
 
@@ -36,7 +36,7 @@ Bundle IDs are discovered at runtime via `bundles` subcommand. Do not hardcode b
 
 The CLI uses the same session API as the UI — no special evaluation code path.
 
-**Session-based playthrough (`play`):** Each invocation creates a fresh session via `createSession()` with deterministic seed. Same seed = same deal. `startDrill()` returns the first viewport. `submitBid()` grades a bid, applies it, runs AI bids, and returns the next viewport.
+**Session-based playthrough (`play`):** Each invocation creates a fresh session via `createDrillSession()` with deterministic seed. Same seed = same deal. `startDrill()` returns the first viewport. `submitBid()` grades a bid, applies it, runs AI bids, and returns the next viewport.
 
 **Stateless replay:** The `--bids=X,Y,Z` flag replays previous user bids to advance the session to the target step. The session is recreated from scratch each invocation — no handle persistence needed.
 

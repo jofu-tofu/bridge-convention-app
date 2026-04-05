@@ -28,15 +28,15 @@ impl BiddingStrategy for PassStrategy {
         })
     }
 
-    fn as_any(&self) -> &dyn std::any::Any { self }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_engine::{
-        Auction, DistributionPoints, Hand, HandEvaluation, Seat,
-    };
+    use bridge_engine::{Auction, DistributionPoints, Hand, HandEvaluation, Seat};
 
     fn dummy_context() -> BiddingContext {
         BiddingContext {

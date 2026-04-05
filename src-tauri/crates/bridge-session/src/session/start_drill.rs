@@ -3,17 +3,17 @@
 //!
 //! Ported from TS `src/session/start-drill.ts`.
 
+use bridge_engine::deal_generator::generate_deal;
 use bridge_engine::types::{
     Auction, AuctionEntry, Deal, DealConstraints, Seat, SeatConstraint, Vulnerability,
 };
-use bridge_engine::deal_generator::generate_deal;
 
 use crate::inference::inference_engine::InferenceEngine;
-use crate::inference::types::InferenceConfig;
 use crate::inference::natural_inference::NaturalInferenceProvider;
+use crate::inference::types::InferenceConfig;
 use crate::types::{
-    DrillTuning, OpponentMode, PlayPreference, PracticeFocus, PracticeMode,
-    PracticeRole, VulnerabilityDistribution,
+    DrillTuning, OpponentMode, PlayPreference, PracticeFocus, PracticeMode, PracticeRole,
+    VulnerabilityDistribution,
 };
 
 use super::practice_focus::{derive_initial_auction, derive_practice_focus};
@@ -49,10 +49,7 @@ pub fn rotate_seat_180(seat: Seat) -> Seat {
 }
 
 /// Rotate deal constraints for a new dealer, swapping seat assignments.
-pub fn rotate_deal_constraints(
-    base: &DealConstraints,
-    new_dealer: Seat,
-) -> DealConstraints {
+pub fn rotate_deal_constraints(base: &DealConstraints, new_dealer: Seat) -> DealConstraints {
     if base.dealer == Some(new_dealer) || base.dealer.is_none() {
         return base.clone();
     }
@@ -236,7 +233,10 @@ pub fn start_drill(
         if off_roll < off_rate {
             if let Some(ref off_constraints) = convention.off_convention_constraints {
                 resolved_constraints = if dealer_rotated {
-                    rotate_deal_constraints(off_constraints, resolved_constraints.dealer.unwrap_or(Seat::North))
+                    rotate_deal_constraints(
+                        off_constraints,
+                        resolved_constraints.dealer.unwrap_or(Seat::North),
+                    )
                 } else {
                     off_constraints.clone()
                 };
@@ -272,8 +272,8 @@ pub fn start_drill(
         ..resolved_constraints
     };
 
-    let deal_result = generate_deal(&constraints)
-        .map_err(|e| format!("Deal generation failed: {e}"))?;
+    let deal_result =
+        generate_deal(&constraints).map_err(|e| format!("Deal generation failed: {e}"))?;
 
     // ── Inference engines ───────────────────────────────────────
     let ns_inference_engine = Some(InferenceEngine::new(
@@ -441,7 +441,10 @@ mod tests {
     fn rotate_auction_swaps_seats() {
         let auction = Auction {
             entries: vec![
-                AuctionEntry { seat: Seat::North, call: bridge_engine::types::Call::Pass },
+                AuctionEntry {
+                    seat: Seat::North,
+                    call: bridge_engine::types::Call::Pass,
+                },
                 AuctionEntry {
                     seat: Seat::East,
                     call: bridge_engine::types::Call::Bid {
@@ -468,7 +471,10 @@ mod tests {
             theirs: 0.0,
             both: 0.0,
         };
-        assert_eq!(pick_vulnerability(&dist, Seat::South, 0.5), Vulnerability::None);
+        assert_eq!(
+            pick_vulnerability(&dist, Seat::South, 0.5),
+            Vulnerability::None
+        );
     }
 
     #[test]
@@ -480,15 +486,30 @@ mod tests {
             both: 1.0,
         };
         // roll=0.0 -> None
-        assert_eq!(pick_vulnerability(&dist, Seat::South, 0.0), Vulnerability::None);
+        assert_eq!(
+            pick_vulnerability(&dist, Seat::South, 0.0),
+            Vulnerability::None
+        );
         // roll close to 0.25 -> still None (boundary)
-        assert_eq!(pick_vulnerability(&dist, Seat::South, 0.24), Vulnerability::None);
+        assert_eq!(
+            pick_vulnerability(&dist, Seat::South, 0.24),
+            Vulnerability::None
+        );
         // roll=0.3 -> ours (NS for South)
-        assert_eq!(pick_vulnerability(&dist, Seat::South, 0.3), Vulnerability::NorthSouth);
+        assert_eq!(
+            pick_vulnerability(&dist, Seat::South, 0.3),
+            Vulnerability::NorthSouth
+        );
         // roll=0.55 -> theirs (EW for South)
-        assert_eq!(pick_vulnerability(&dist, Seat::South, 0.55), Vulnerability::EastWest);
+        assert_eq!(
+            pick_vulnerability(&dist, Seat::South, 0.55),
+            Vulnerability::EastWest
+        );
         // roll=0.9 -> both
-        assert_eq!(pick_vulnerability(&dist, Seat::South, 0.9), Vulnerability::Both);
+        assert_eq!(
+            pick_vulnerability(&dist, Seat::South, 0.9),
+            Vulnerability::Both
+        );
     }
 
     #[test]
@@ -500,7 +521,10 @@ mod tests {
             both: 0.0,
         };
         // "ours" for East user = EW
-        assert_eq!(pick_vulnerability(&dist, Seat::East, 0.5), Vulnerability::EastWest);
+        assert_eq!(
+            pick_vulnerability(&dist, Seat::East, 0.5),
+            Vulnerability::EastWest
+        );
     }
 
     #[test]
@@ -511,7 +535,10 @@ mod tests {
             theirs: 0.0,
             both: 0.0,
         };
-        assert_eq!(pick_vulnerability(&dist, Seat::South, 0.5), Vulnerability::None);
+        assert_eq!(
+            pick_vulnerability(&dist, Seat::South, 0.5),
+            Vulnerability::None
+        );
     }
 
     // ── start_drill tests ───────────────────────────────────────
@@ -541,7 +568,9 @@ mod tests {
         let mut rng = || {
             let v = rng_val;
             rng_val += 0.1;
-            if rng_val > 1.0 { rng_val = 0.0; }
+            if rng_val > 1.0 {
+                rng_val = 0.0;
+            }
             v
         };
 
@@ -593,13 +622,12 @@ mod tests {
         };
 
         let mut rng_val = 0.5_f64;
-        let bundle = start_drill(
-            &convention,
-            Seat::South,
-            config,
-            &options,
-            &mut || { let v = rng_val; rng_val += 0.1; v },
-        ).unwrap();
+        let bundle = start_drill(&convention, Seat::South, config, &options, &mut || {
+            let v = rng_val;
+            rng_val += 0.1;
+            v
+        })
+        .unwrap();
 
         // When opener, South should be the dealer (constraints rotated)
         assert_eq!(bundle.deal.dealer, Seat::South);
@@ -634,13 +662,8 @@ mod tests {
         };
 
         // rng returns 0.3 -> Opener
-        let mut bundle = start_drill(
-            &convention,
-            Seat::South,
-            config,
-            &options,
-            &mut || 0.3,
-        ).unwrap();
+        let mut bundle =
+            start_drill(&convention, Seat::South, config, &options, &mut || 0.3).unwrap();
         assert_eq!(bundle.resolved_role, PracticeRole::Opener);
 
         // rng returns 0.7 -> Responder
@@ -649,13 +672,7 @@ mod tests {
             user_seat: Seat::South,
             seat_strategies: HashMap::new(),
         };
-        bundle = start_drill(
-            &convention,
-            Seat::South,
-            config2,
-            &options,
-            &mut || 0.7,
-        ).unwrap();
+        bundle = start_drill(&convention, Seat::South, config2, &options, &mut || 0.7).unwrap();
         assert_eq!(bundle.resolved_role, PracticeRole::Responder);
     }
 
@@ -686,13 +703,7 @@ mod tests {
             ..Default::default()
         };
 
-        let bundle = start_drill(
-            &convention,
-            Seat::South,
-            config,
-            &options,
-            &mut || 0.5,
-        ).unwrap();
+        let bundle = start_drill(&convention, Seat::South, config, &options, &mut || 0.5).unwrap();
 
         // Full auction defaults to Prompt, not Skip
         assert_eq!(bundle.play_preference, PlayPreference::Prompt);
@@ -744,21 +755,28 @@ mod tests {
     fn start_drill_bergen_constraints_produce_major_opening() {
         let (convention, config, options) = bergen_like_convention(42);
         let mut rng_val = 0.5_f64;
-        let bundle = start_drill(
-            &convention,
-            Seat::South,
-            config,
-            &options,
-            &mut || { let v = rng_val; rng_val += 0.1; v },
-        ).unwrap();
+        let bundle = start_drill(&convention, Seat::South, config, &options, &mut || {
+            let v = rng_val;
+            rng_val += 0.1;
+            v
+        })
+        .unwrap();
 
         // Bergen-like constraints should always produce an initial 1H or 1S auction
-        let auction = bundle.initial_auction.expect("Bergen should have initial auction");
+        let auction = bundle
+            .initial_auction
+            .expect("Bergen should have initial auction");
         assert_eq!(auction.entries.len(), 1);
         assert_eq!(auction.entries[0].seat, Seat::North);
         match &auction.entries[0].call {
-            Call::Bid { level: 1, strain: BidSuit::Hearts }
-            | Call::Bid { level: 1, strain: BidSuit::Spades } => {}
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts,
+            }
+            | Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades,
+            } => {}
             other => panic!("Expected 1H or 1S, got {:?}", other),
         }
     }
@@ -769,23 +787,37 @@ mod tests {
         for seed in 42..52 {
             let (convention, config, options) = bergen_like_convention(seed);
             let mut rng_val = 0.5_f64;
-            let bundle = start_drill(
-                &convention,
-                Seat::South,
-                config,
-                &options,
-                &mut || { let v = rng_val; rng_val += 0.1; v },
-            ).unwrap();
+            let bundle = start_drill(&convention, Seat::South, config, &options, &mut || {
+                let v = rng_val;
+                rng_val += 0.1;
+                v
+            })
+            .unwrap();
 
             let auction = bundle.initial_auction.expect("Should have initial auction");
             let opener_hand = bundle.deal.hands.get(&Seat::North).unwrap();
-            let hearts = opener_hand.cards.iter().filter(|c| c.suit == Suit::Hearts).count();
-            let spades = opener_hand.cards.iter().filter(|c| c.suit == Suit::Spades).count();
+            let hearts = opener_hand
+                .cards
+                .iter()
+                .filter(|c| c.suit == Suit::Hearts)
+                .count();
+            let spades = opener_hand
+                .cards
+                .iter()
+                .filter(|c| c.suit == Suit::Spades)
+                .count();
 
-            let expected_strain = if spades > hearts { BidSuit::Spades } else { BidSuit::Hearts };
+            let expected_strain = if spades > hearts {
+                BidSuit::Spades
+            } else {
+                BidSuit::Hearts
+            };
             assert_eq!(
                 auction.entries[0].call,
-                Call::Bid { level: 1, strain: expected_strain },
+                Call::Bid {
+                    level: 1,
+                    strain: expected_strain
+                },
                 "seed={seed}: North has {hearts}H {spades}S, expected {:?}",
                 expected_strain,
             );
@@ -827,19 +859,23 @@ mod tests {
         };
 
         let mut rng_val = 0.5_f64;
-        let bundle = start_drill(
-            &convention,
-            Seat::South,
-            config,
-            &options,
-            &mut || { let v = rng_val; rng_val += 0.1; v },
-        ).unwrap();
+        let bundle = start_drill(&convention, Seat::South, config, &options, &mut || {
+            let v = rng_val;
+            rng_val += 0.1;
+            v
+        })
+        .unwrap();
 
-        let auction = bundle.initial_auction.expect("NT should have initial auction");
+        let auction = bundle
+            .initial_auction
+            .expect("NT should have initial auction");
         assert_eq!(auction.entries.len(), 1);
         assert_eq!(
             auction.entries[0].call,
-            Call::Bid { level: 1, strain: BidSuit::NoTrump }
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump
+            }
         );
     }
 
@@ -851,13 +887,7 @@ mod tests {
             ..options
         };
 
-        let bundle = start_drill(
-            &convention,
-            Seat::South,
-            config,
-            &options,
-            &mut || 0.5,
-        ).unwrap();
+        let bundle = start_drill(&convention, Seat::South, config, &options, &mut || 0.5).unwrap();
 
         assert!(
             bundle.initial_auction.is_none(),
@@ -892,13 +922,12 @@ mod tests {
         };
 
         let mut rng_val = 0.5_f64;
-        let bundle = start_drill(
-            &convention,
-            Seat::South,
-            config,
-            &options,
-            &mut || { let v = rng_val; rng_val += 0.1; v },
-        ).unwrap();
+        let bundle = start_drill(&convention, Seat::South, config, &options, &mut || {
+            let v = rng_val;
+            rng_val += 0.1;
+            v
+        })
+        .unwrap();
 
         assert!(bundle.initial_auction.is_none());
     }

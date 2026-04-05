@@ -1,7 +1,7 @@
 //! Config resolution — parses SessionConfig into validated session parameters.
 //!
 //! Resolves defaults, builds seat strategies, and assembles the drill inputs
-//! needed by `create_session()`.
+//! needed by `create_drill_session()`.
 
 use std::collections::HashMap;
 

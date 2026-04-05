@@ -7,26 +7,26 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+use bridge_engine::constants::{bid_suit_to_suit, next_seat, partner_seat};
 use bridge_engine::types::{
     Auction, AuctionEntry, Call, Card, Contract, Deal, PlayedCard, Seat, Suit, Trick,
 };
-use bridge_engine::constants::{bid_suit_to_suit, next_seat, partner_seat};
 
-use crate::inference::InferenceCoordinator;
 use crate::inference::types::{InferenceSnapshot, PublicBeliefState};
+use crate::inference::InferenceCoordinator;
 use crate::inference::{Posterior, PosteriorEngine, UniformPosterior};
 use bridge_engine::strategy::ChainTrace;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use bridge_conventions::adapter::strategy_evaluation::StrategyEvaluation;
 
-use crate::heuristics::{BiddingStrategy, BidResult};
-use crate::heuristics::play_profiles::{PlayProfileId, get_profile};
+use crate::heuristics::play_profiles::{get_profile, PlayProfileId};
+use crate::heuristics::{BidResult, BiddingStrategy};
 use crate::types::{GamePhase, PlayPreference, PracticeFocus, PracticeMode};
 
 use super::bid_feedback_builder::{BidFeedbackDTO, BidGrade};
-use super::build_viewport::BidHistoryEntryView;
 use super::build_viewport::AnnotationType;
+use super::build_viewport::BidHistoryEntryView;
 
 // ── Debug log ─────────────────────────────────────────────────────
 
@@ -91,7 +91,6 @@ pub struct PlayState {
     pub trump_suit: Option<Suit>,
     pub play_score: Option<i32>,
 }
-
 
 // ── SessionState ────────────────────────────────────────────────────
 
@@ -160,7 +159,10 @@ impl SessionState {
 
         Self {
             deal,
-            auction: Auction { entries: vec![], is_complete: false },
+            auction: Auction {
+                entries: vec![],
+                is_complete: false,
+            },
             phase: GamePhase::Bidding,
             contract: None,
             effective_user_seat: None,
@@ -240,8 +242,11 @@ impl SessionState {
         // Extract annotation meaning before cloning the full belief state, to
         // avoid cloning the entire PublicBeliefState (only need the meaning string).
         let annotation_meaning = {
-            let annotation = self.inference_coordinator.get_public_belief_state()
-                .annotations.last()
+            let annotation = self
+                .inference_coordinator
+                .get_public_belief_state()
+                .annotations
+                .last()
                 .expect("inference must produce exactly one annotation per process_bid call");
             annotation.meaning.clone()
         };
@@ -257,7 +262,9 @@ impl SessionState {
         // Convert bridge-engine Disclosure to bridge-conventions Disclosure for resolve_alert
         let conv_disclosure = match disclosure {
             Disclosure::Alert => bridge_conventions::types::meaning::Disclosure::Alert,
-            Disclosure::Announcement => bridge_conventions::types::meaning::Disclosure::Announcement,
+            Disclosure::Announcement => {
+                bridge_conventions::types::meaning::Disclosure::Announcement
+            }
             Disclosure::Natural => bridge_conventions::types::meaning::Disclosure::Natural,
             Disclosure::Standard => bridge_conventions::types::meaning::Disclosure::Standard,
         };
@@ -366,8 +373,12 @@ impl SessionState {
     /// Check if a seat is user-controlled during play.
     /// User controls their own seat and dummy (if user is declarer).
     pub fn is_user_controlled_play(&self, seat: Seat) -> bool {
-        let Some(ref contract) = self.contract else { return false };
-        let Some(effective) = self.effective_user_seat else { return false };
+        let Some(ref contract) = self.contract else {
+            return false;
+        };
+        let Some(effective) = self.effective_user_seat else {
+            return false;
+        };
 
         if seat == effective {
             return true;
@@ -409,10 +420,7 @@ impl SessionState {
 
     /// Get lead suit of current trick (None if no cards played yet).
     pub fn get_lead_suit(&self) -> Option<Suit> {
-        self.play
-            .current_trick
-            .first()
-            .map(|pc| pc.card.suit)
+        self.play.current_trick.first().map(|pc| pc.card.suit)
     }
 }
 
@@ -423,10 +431,7 @@ pub fn get_current_turn(auction: &Auction, dealer: Seat) -> Option<Seat> {
     if auction.entries.is_empty() {
         return Some(dealer);
     }
-    auction
-        .entries
-        .last()
-        .map(|entry| next_seat(entry.seat))
+    auction.entries.last().map(|entry| next_seat(entry.seat))
 }
 
 /// Create a string key for a card (for HashSet lookup).
@@ -491,14 +496,20 @@ mod tests {
 
     #[test]
     fn get_current_turn_empty_auction() {
-        let auction = Auction { entries: vec![], is_complete: false };
+        let auction = Auction {
+            entries: vec![],
+            is_complete: false,
+        };
         assert_eq!(get_current_turn(&auction, Seat::North), Some(Seat::North));
     }
 
     #[test]
     fn get_current_turn_after_bid() {
         let auction = Auction {
-            entries: vec![AuctionEntry { seat: Seat::North, call: Call::Pass }],
+            entries: vec![AuctionEntry {
+                seat: Seat::North,
+                call: Call::Pass,
+            }],
             is_complete: false,
         };
         assert_eq!(get_current_turn(&auction, Seat::North), Some(Seat::East));
@@ -595,15 +606,27 @@ mod tests {
     fn get_remaining_cards_filters_played() {
         let mut state = make_state();
         let cards = vec![
-            Card { suit: Suit::Spades, rank: Rank::Ace },
-            Card { suit: Suit::Spades, rank: Rank::King },
-            Card { suit: Suit::Hearts, rank: Rank::Queen },
+            Card {
+                suit: Suit::Spades,
+                rank: Rank::Ace,
+            },
+            Card {
+                suit: Suit::Spades,
+                rank: Rank::King,
+            },
+            Card {
+                suit: Suit::Hearts,
+                rank: Rank::Queen,
+            },
         ];
         state.deal.hands.insert(Seat::South, Hand { cards });
 
         // Play one card
         state.play.current_trick.push(PlayedCard {
-            card: Card { suit: Suit::Spades, rank: Rank::Ace },
+            card: Card {
+                suit: Suit::Spades,
+                rank: Rank::Ace,
+            },
             seat: Seat::South,
         });
 
@@ -623,7 +646,10 @@ mod tests {
     fn get_lead_suit_with_cards() {
         let mut state = make_state();
         state.play.current_trick.push(PlayedCard {
-            card: Card { suit: Suit::Diamonds, rank: Rank::Ten },
+            card: Card {
+                suit: Suit::Diamonds,
+                rank: Rank::Ten,
+            },
             seat: Seat::North,
         });
         assert_eq!(state.get_lead_suit(), Some(Suit::Diamonds));

@@ -13,9 +13,7 @@ use super::super::learning_viewport::derive_entry_condition;
 
 use super::surface_collector::collect_module_data;
 use super::tree_assembler::{attach_route_constrained, build_module_subtree};
-use super::tree_helpers::{
-    max_depth_of, mk_entry_condition_root, mk_node, to_flow_tree_node,
-};
+use super::tree_helpers::{max_depth_of, mk_entry_condition_root, mk_node, to_flow_tree_node};
 use super::types::{BundleFlowTreeViewport, ModulePhaseState, NodeCounter, TransitionEntry};
 
 /// Build a unified conversation flow tree for a bundle.
@@ -290,12 +288,7 @@ pub fn build_bundle_flow_tree(
     }
 
     // Second pass: route-constrained surfaces
-    attach_route_constrained(
-        &mut root_node,
-        &module_phase_map,
-        &modules,
-        &mut counter,
-    );
+    attach_route_constrained(&mut root_node, &module_phase_map, &modules, &mut counter);
 
     let max_depth = max_depth_of(&root_node);
     Some(BundleFlowTreeViewport {

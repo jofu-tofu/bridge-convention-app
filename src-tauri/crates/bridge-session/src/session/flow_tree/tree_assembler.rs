@@ -38,7 +38,8 @@ pub(crate) fn build_module_subtree(
     let transitions = module_transitions.get(mod_id);
 
     // Collect surfaces at this phase (excluding route-constrained ones)
-    let normal_states: Vec<&ModulePhaseState> = states.iter().filter(|s| s.route.is_none()).collect();
+    let normal_states: Vec<&ModulePhaseState> =
+        states.iter().filter(|s| s.route.is_none()).collect();
     let mut nodes: Vec<MutableNode> = Vec::new();
     let mut node_surfaces: Vec<&TaggedSurface> = Vec::new();
     let mut seen_ck: HashSet<String> = HashSet::new();
@@ -119,8 +120,7 @@ pub(crate) fn attach_route_constrained(
 
                 match route {
                     RouteExpr::Subseq { steps } => {
-                        let matched =
-                            walk_subseq_route(root_node, steps, state, counter);
+                        let matched = walk_subseq_route(root_node, steps, state, counter);
                         if !matched {
                             eprintln!(
                                 "[flow-tree] Route unresolved for module {} — attaching at root",

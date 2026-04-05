@@ -77,7 +77,6 @@ pub struct PracticeFocus {
     pub background_module_ids: Vec<String>,
 }
 
-
 // ── Continuation target ───────────────────────────────────────────
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -121,7 +120,6 @@ pub struct DrillTuning {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub off_convention_rate: Option<f64>,
 }
-
 
 // ── Drill settings ────────────────────────────────────────────────
 
@@ -212,10 +210,7 @@ mod tests {
     fn drill_settings_default() {
         let settings = DrillSettings::default();
         assert_eq!(settings.opponent_mode, OpponentMode::None);
-        assert_eq!(
-            settings.play_profile_id,
-            Some(PlayProfileId::WorldClass)
-        );
+        assert_eq!(settings.play_profile_id, Some(PlayProfileId::WorldClass));
     }
 
     #[test]

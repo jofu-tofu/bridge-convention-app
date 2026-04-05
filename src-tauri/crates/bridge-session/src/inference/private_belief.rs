@@ -147,22 +147,26 @@ mod tests {
         assert_eq!(conditioned[&Seat::North].suit_lengths[&Suit::Spades].max, 8);
         assert_eq!(conditioned[&Seat::East].suit_lengths[&Suit::Spades].max, 8);
         // Other suits unaffected (observer has 0 in those suits)
-        assert_eq!(conditioned[&Seat::North].suit_lengths[&Suit::Hearts].max, 13);
+        assert_eq!(
+            conditioned[&Seat::North].suit_lengths[&Suit::Hearts].max,
+            13
+        );
     }
 
     #[test]
     fn void_suit_no_op() {
         // South has 0 spades → spade cap stays at 13
-        let hand = make_hand(vec![
-            card(Suit::Hearts, Rank::Ace),
-        ]);
+        let hand = make_hand(vec![card(Suit::Hearts, Rank::Ace)]);
 
         let mut ranges = HashMap::new();
         ranges.insert(Seat::North, default_ranges());
 
         let conditioned = condition_on_own_hand(&ranges, Seat::South, &hand);
 
-        assert_eq!(conditioned[&Seat::North].suit_lengths[&Suit::Spades].max, 13);
+        assert_eq!(
+            conditioned[&Seat::North].suit_lengths[&Suit::Spades].max,
+            13
+        );
     }
 
     #[test]
@@ -170,10 +174,10 @@ mod tests {
         // North already constrained to 15-17 HCP, observer has 10 HCP
         // Remaining = 30, but existing max (17) is tighter → keep 17
         let hand = make_hand(vec![
-            card(Suit::Spades, Rank::Ace),   // 4
-            card(Suit::Hearts, Rank::King),  // 3
+            card(Suit::Spades, Rank::Ace),  // 4
+            card(Suit::Hearts, Rank::King), // 3
             card(Suit::Diamonds, Rank::Queen), // 2
-            // = 9 HCP (evaluate_hand_hcp will compute actual)
+                                            // = 9 HCP (evaluate_hand_hcp will compute actual)
         ]);
 
         let mut north_ranges = default_ranges();

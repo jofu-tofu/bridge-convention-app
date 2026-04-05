@@ -1,18 +1,18 @@
 //! Inference coordinator -- manages NS and EW inference engine lifecycle,
 //! bid processing, annotation production, and public belief accumulation.
 
-use std::collections::HashMap;
-use bridge_engine::types::{Auction, AuctionEntry, Seat};
 use bridge_conventions::types::meaning::FactConstraint;
 use bridge_conventions::types::system_config::SystemConfig;
+use bridge_engine::types::{Auction, AuctionEntry, Seat};
+use std::collections::HashMap;
 
 use super::annotation_producer::produce_annotation;
 use super::belief_accumulator::{apply_annotation, create_initial_belief_state};
 use super::inference_engine::InferenceEngine;
 use super::natural_inference::NaturalInferenceProvider;
 use super::types::{
-    InferenceExtractor, InferenceExtractorInput,
-    InferenceSnapshot, NoopExtractor, PublicBeliefState, PublicBeliefs,
+    InferenceExtractor, InferenceExtractorInput, InferenceSnapshot, NoopExtractor,
+    PublicBeliefState, PublicBeliefs,
 };
 
 /// Adapt a bid result DTO to `InferenceExtractorInput`.
@@ -108,12 +108,7 @@ impl InferenceCoordinator {
         }
 
         let extractor_input = rule_name.map(|rule| {
-            to_extractor_input(
-                rule,
-                explanation.unwrap_or("unknown"),
-                meaning,
-                constraints,
-            )
+            to_extractor_input(rule, explanation.unwrap_or("unknown"), meaning, constraints)
         });
 
         let effective_convention_id = if rule_name.is_some() {
@@ -187,7 +182,10 @@ mod tests {
     use bridge_engine::types::{BidSuit, Call};
 
     fn empty_auction() -> Auction {
-        Auction { entries: vec![], is_complete: false }
+        Auction {
+            entries: vec![],
+            is_complete: false,
+        }
     }
 
     #[test]
@@ -208,13 +206,16 @@ mod tests {
 
         let entry = AuctionEntry {
             seat: Seat::North,
-            call: Call::Bid { level: 1, strain: BidSuit::Hearts },
+            call: Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts,
+            },
         };
 
         let state = coord.process_bid(
             &entry,
             &empty_auction(),
-            None,   // no rule
+            None, // no rule
             None,
             None,
             &[],
@@ -231,17 +232,12 @@ mod tests {
     fn process_pass_produces_annotation() {
         let mut coord = InferenceCoordinator::new(None);
 
-        let entry = AuctionEntry { seat: Seat::East, call: Call::Pass };
+        let entry = AuctionEntry {
+            seat: Seat::East,
+            call: Call::Pass,
+        };
 
-        let state = coord.process_bid(
-            &entry,
-            &empty_auction(),
-            None,
-            None,
-            None,
-            &[],
-            None,
-        );
+        let state = coord.process_bid(&entry, &empty_auction(), None, None, None, &[], None);
 
         assert_eq!(state.annotations.len(), 1);
         assert!(state.annotations[0].meaning.is_empty());
@@ -259,7 +255,10 @@ mod tests {
 
         let entry = AuctionEntry {
             seat: Seat::North,
-            call: Call::Bid { level: 1, strain: BidSuit::NoTrump },
+            call: Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump,
+            },
         };
         coord.process_bid(&entry, &empty_auction(), None, None, None, &[], None);
         assert_eq!(coord.get_public_belief_state().annotations.len(), 1);

@@ -175,7 +175,9 @@ impl PosteriorEngine {
     fn check_constraints(&self, candidate: &HashMap<Seat, Vec<Card>>) -> bool {
         for (seat, cards) in candidate {
             if let Some(ranges) = self.constraints.get(seat) {
-                let hand = Hand { cards: cards.clone() };
+                let hand = Hand {
+                    cards: cards.clone(),
+                };
                 let hcp = calculate_hcp(&hand);
                 if hcp < ranges.hcp.min || hcp > ranges.hcp.max {
                     return false;
@@ -211,7 +213,9 @@ impl PosteriorEngine {
         let mut count = 0;
         for sample in &self.samples {
             if let Some(cards) = sample.hands.get(&seat) {
-                let hand = Hand { cards: cards.clone() };
+                let hand = Hand {
+                    cards: cards.clone(),
+                };
                 sum += calculate_hcp(&hand) as f64;
                 count += 1;
             }
@@ -232,7 +236,9 @@ impl PosteriorEngine {
         let mut count = 0;
         for sample in &self.samples {
             if let Some(cards) = sample.hands.get(&seat) {
-                let hand = Hand { cards: cards.clone() };
+                let hand = Hand {
+                    cards: cards.clone(),
+                };
                 let shape = get_suit_length(&hand);
                 sum += shape[idx] as f64;
                 count += 1;
@@ -339,8 +345,8 @@ impl Default for UniformPosterior {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::types::NumberRange;
+    use super::*;
     use bridge_engine::types::Rank;
 
     // ── UniformPosterior tests ────────────────────────────────────────
@@ -402,9 +408,19 @@ mod tests {
 
     fn make_13_card_hand(suit: Suit) -> Vec<Card> {
         let ranks = [
-            Rank::Two, Rank::Three, Rank::Four, Rank::Five,
-            Rank::Six, Rank::Seven, Rank::Eight, Rank::Nine,
-            Rank::Ten, Rank::Jack, Rank::Queen, Rank::King, Rank::Ace,
+            Rank::Two,
+            Rank::Three,
+            Rank::Four,
+            Rank::Five,
+            Rank::Six,
+            Rank::Seven,
+            Rank::Eight,
+            Rank::Nine,
+            Rank::Ten,
+            Rank::Jack,
+            Rank::Queen,
+            Rank::King,
+            Rank::Ace,
         ];
         ranks.iter().map(|&r| Card { suit, rank: r }).collect()
     }
@@ -420,11 +436,19 @@ mod tests {
         let engine = PosteriorEngine::new(Seat::South, known, constraints, 42);
 
         // Should get close to SAMPLE_BUDGET samples
-        assert!(engine.sample_count() > 100, "Expected many samples, got {}", engine.sample_count());
+        assert!(
+            engine.sample_count() > 100,
+            "Expected many samples, got {}",
+            engine.sample_count()
+        );
 
         // Mean HCP for unknown seats should be near 10 (±3 with 200 samples)
         let (mean_hcp, conf) = engine.marginal_hcp(Seat::North);
-        assert!(mean_hcp > 7.0 && mean_hcp < 13.0, "Expected ~10 HCP, got {}", mean_hcp);
+        assert!(
+            mean_hcp > 7.0 && mean_hcp < 13.0,
+            "Expected ~10 HCP, got {}",
+            mean_hcp
+        );
         assert!(conf > 0.5, "Expected decent confidence, got {}", conf);
     }
 
@@ -439,11 +463,14 @@ mod tests {
         for &suit in &[Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs] {
             suit_lengths.insert(suit, NumberRange { min: 0, max: 13 });
         }
-        constraints.insert(Seat::North, DerivedRanges {
-            hcp: NumberRange { min: 15, max: 17 },
-            suit_lengths,
-            is_balanced: None,
-        });
+        constraints.insert(
+            Seat::North,
+            DerivedRanges {
+                hcp: NumberRange { min: 15, max: 17 },
+                suit_lengths,
+                is_balanced: None,
+            },
+        );
 
         let engine = PosteriorEngine::new(Seat::South, known, constraints, 42);
 
@@ -451,8 +478,11 @@ mod tests {
         assert!(engine.sample_count() > 0, "Should accept some samples");
 
         let (mean_hcp, _) = engine.marginal_hcp(Seat::North);
-        assert!(mean_hcp >= 15.0 && mean_hcp <= 17.0,
-            "Constrained North HCP should be in [15,17], got {}", mean_hcp);
+        assert!(
+            mean_hcp >= 15.0 && mean_hcp <= 17.0,
+            "Constrained North HCP should be in [15,17], got {}",
+            mean_hcp
+        );
     }
 
     #[test]
@@ -466,11 +496,14 @@ mod tests {
         for &suit in &[Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs] {
             suit_lengths.insert(suit, NumberRange { min: 0, max: 13 });
         }
-        constraints.insert(Seat::North, DerivedRanges {
-            hcp: NumberRange { min: 40, max: 40 },
-            suit_lengths,
-            is_balanced: None,
-        });
+        constraints.insert(
+            Seat::North,
+            DerivedRanges {
+                hcp: NumberRange { min: 40, max: 40 },
+                suit_lengths,
+                is_balanced: None,
+            },
+        );
 
         let engine = PosteriorEngine::new(Seat::South, known, constraints, 42);
 
@@ -503,8 +536,10 @@ mod tests {
 
         // South shouldn't appear in any sampled deal
         for sample in &engine.samples {
-            assert!(!sample.hands.contains_key(&Seat::South),
-                "Observer seat should not be in sampled deals");
+            assert!(
+                !sample.hands.contains_key(&Seat::South),
+                "Observer seat should not be in sampled deals"
+            );
         }
     }
 
@@ -518,7 +553,11 @@ mod tests {
         let (length, conf) = engine.suit_length(Seat::North, Suit::Hearts);
         // With 39 non-spade cards distributed among 3 seats,
         // each suit should average ~3.25 cards per seat
-        assert!(length > 1.0 && length < 6.0, "Expected ~3.25, got {}", length);
+        assert!(
+            length > 1.0 && length < 6.0,
+            "Expected ~3.25, got {}",
+            length
+        );
         assert!(conf > 0.0);
     }
 
@@ -533,19 +572,31 @@ mod tests {
         // Simulate a completed trick
         let played = vec![
             bridge_engine::types::PlayedCard {
-                card: Card { suit: Suit::Hearts, rank: Rank::Ace },
+                card: Card {
+                    suit: Suit::Hearts,
+                    rank: Rank::Ace,
+                },
                 seat: Seat::West,
             },
             bridge_engine::types::PlayedCard {
-                card: Card { suit: Suit::Hearts, rank: Rank::King },
+                card: Card {
+                    suit: Suit::Hearts,
+                    rank: Rank::King,
+                },
                 seat: Seat::North,
             },
             bridge_engine::types::PlayedCard {
-                card: Card { suit: Suit::Hearts, rank: Rank::Two },
+                card: Card {
+                    suit: Suit::Hearts,
+                    rank: Rank::Two,
+                },
                 seat: Seat::East,
             },
             bridge_engine::types::PlayedCard {
-                card: Card { suit: Suit::Spades, rank: Rank::Three },
+                card: Card {
+                    suit: Suit::Spades,
+                    rank: Rank::Three,
+                },
                 seat: Seat::South,
             },
         ];
@@ -554,8 +605,12 @@ mod tests {
         // Should still have samples after update
         assert!(engine.sample_count() > 0);
         // Known cards for North should now include the King of Hearts
-        assert!(engine.known_cards.get(&Seat::North).unwrap()
-            .iter().any(|c| c.suit == Suit::Hearts && c.rank == Rank::King));
+        assert!(engine
+            .known_cards
+            .get(&Seat::North)
+            .unwrap()
+            .iter()
+            .any(|c| c.suit == Suit::Hearts && c.rank == Rank::King));
         let _ = initial_count; // suppress unused warning
     }
 
@@ -604,18 +659,24 @@ mod tests {
         suit_lengths.insert(Suit::Hearts, NumberRange { min: 0, max: 13 });
         suit_lengths.insert(Suit::Diamonds, NumberRange { min: 0, max: 13 });
         suit_lengths.insert(Suit::Clubs, NumberRange { min: 0, max: 13 });
-        constraints.insert(Seat::North, DerivedRanges {
-            hcp: NumberRange { min: 0, max: 40 },
-            suit_lengths,
-            is_balanced: None,
-        });
+        constraints.insert(
+            Seat::North,
+            DerivedRanges {
+                hcp: NumberRange { min: 0, max: 40 },
+                suit_lengths,
+                is_balanced: None,
+            },
+        );
 
         let engine = PosteriorEngine::new(Seat::South, known, constraints, 42);
 
         if engine.sample_count() > 0 {
             let (length, _) = engine.suit_length(Seat::North, Suit::Spades);
-            assert!((length - 5.0).abs() < 0.01,
-                "Constrained North spade length should be exactly 5, got {}", length);
+            assert!(
+                (length - 5.0).abs() < 0.01,
+                "Constrained North spade length should be exactly 5, got {}",
+                length
+            );
         }
     }
 }

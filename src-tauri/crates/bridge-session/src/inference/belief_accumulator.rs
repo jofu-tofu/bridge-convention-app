@@ -1,7 +1,7 @@
 //! Public belief state management -- create, accumulate, and derive.
 
-use std::collections::HashMap;
 use bridge_engine::types::Seat;
+use std::collections::HashMap;
 
 use super::derive_beliefs::derive_public_beliefs;
 use super::types::{BidAnnotation, PublicBeliefState, PublicBeliefs};
@@ -30,10 +30,7 @@ pub fn create_initial_belief_state() -> PublicBeliefState {
 /// Apply a bid annotation to the public belief state.
 /// Mutates the state in-place: appends the annotation's constraints to the
 /// seat's accumulated constraints and re-derives ranges + qualitative labels.
-pub fn apply_annotation(
-    state: &mut PublicBeliefState,
-    annotation: BidAnnotation,
-) {
+pub fn apply_annotation(state: &mut PublicBeliefState, annotation: BidAnnotation) {
     let seat = annotation.seat;
 
     // Accumulate constraints and re-derive
@@ -49,9 +46,9 @@ pub fn apply_annotation(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_engine::types::Suit;
     use bridge_conventions::types::meaning::{ConstraintValue, FactConstraint, FactOperator};
     use bridge_engine::types::Call;
+    use bridge_engine::types::Suit;
 
     fn make_annotation(seat: Seat, constraints: Vec<FactConstraint>) -> BidAnnotation {
         BidAnnotation {
@@ -113,7 +110,10 @@ mod tests {
     #[test]
     fn apply_annotation_narrows_hcp() {
         let mut state = create_initial_belief_state();
-        apply_annotation(&mut state, make_annotation(Seat::South, hcp_constraints(Some(15), Some(17))));
+        apply_annotation(
+            &mut state,
+            make_annotation(Seat::South, hcp_constraints(Some(15), Some(17))),
+        );
 
         assert_eq!(state.beliefs[&Seat::South].ranges.hcp.min, 15);
         assert_eq!(state.beliefs[&Seat::South].ranges.hcp.max, 17);
@@ -122,22 +122,37 @@ mod tests {
     #[test]
     fn apply_annotation_narrows_suit_length() {
         let mut state = create_initial_belief_state();
-        apply_annotation(&mut state, make_annotation(Seat::South, vec![FactConstraint {
-            fact_id: "hand.suitLength.spades".to_string(),
-            operator: FactOperator::Gte,
-            value: ConstraintValue::int(5),
-            is_public: None,
-        }]));
+        apply_annotation(
+            &mut state,
+            make_annotation(
+                Seat::South,
+                vec![FactConstraint {
+                    fact_id: "hand.suitLength.spades".to_string(),
+                    operator: FactOperator::Gte,
+                    value: ConstraintValue::int(5),
+                    is_public: None,
+                }],
+            ),
+        );
 
-        assert_eq!(state.beliefs[&Seat::South].ranges.suit_lengths[&Suit::Spades].min, 5);
+        assert_eq!(
+            state.beliefs[&Seat::South].ranges.suit_lengths[&Suit::Spades].min,
+            5
+        );
     }
 
     #[test]
     fn multiple_annotations_monotonically_constrain() {
         let mut state = create_initial_belief_state();
 
-        apply_annotation(&mut state, make_annotation(Seat::South, hcp_constraints(Some(12), None)));
-        apply_annotation(&mut state, make_annotation(Seat::South, hcp_constraints(Some(15), None)));
+        apply_annotation(
+            &mut state,
+            make_annotation(Seat::South, hcp_constraints(Some(12), None)),
+        );
+        apply_annotation(
+            &mut state,
+            make_annotation(Seat::South, hcp_constraints(Some(15), None)),
+        );
 
         // min should be 15 (tighter), not 12
         assert_eq!(state.beliefs[&Seat::South].ranges.hcp.min, 15);
@@ -156,7 +171,10 @@ mod tests {
     #[test]
     fn only_affects_annotated_seat() {
         let mut state = create_initial_belief_state();
-        apply_annotation(&mut state, make_annotation(Seat::South, hcp_constraints(Some(15), Some(17))));
+        apply_annotation(
+            &mut state,
+            make_annotation(Seat::South, hcp_constraints(Some(15), Some(17))),
+        );
 
         assert_eq!(state.beliefs[&Seat::North].ranges.hcp.min, 0);
         assert_eq!(state.beliefs[&Seat::North].ranges.hcp.max, 40);
@@ -168,8 +186,14 @@ mod tests {
     fn contradiction_clamping() {
         let mut state = create_initial_belief_state();
 
-        apply_annotation(&mut state, make_annotation(Seat::South, hcp_constraints(Some(15), None)));
-        apply_annotation(&mut state, make_annotation(Seat::South, hcp_constraints(None, Some(10))));
+        apply_annotation(
+            &mut state,
+            make_annotation(Seat::South, hcp_constraints(Some(15), None)),
+        );
+        apply_annotation(
+            &mut state,
+            make_annotation(Seat::South, hcp_constraints(None, Some(10))),
+        );
 
         // Should not crash. Clamping defined by derive_ranges.
         let hcp = state.beliefs[&Seat::South].ranges.hcp;
@@ -179,13 +203,22 @@ mod tests {
     #[test]
     fn constraints_accumulated_losslessly() {
         let mut state = create_initial_belief_state();
-        apply_annotation(&mut state, make_annotation(Seat::South, hcp_constraints(Some(12), None)));
-        apply_annotation(&mut state, make_annotation(Seat::South, vec![FactConstraint {
-            fact_id: "hand.suitLength.hearts".to_string(),
-            operator: FactOperator::Gte,
-            value: ConstraintValue::int(5),
-            is_public: None,
-        }]));
+        apply_annotation(
+            &mut state,
+            make_annotation(Seat::South, hcp_constraints(Some(12), None)),
+        );
+        apply_annotation(
+            &mut state,
+            make_annotation(
+                Seat::South,
+                vec![FactConstraint {
+                    fact_id: "hand.suitLength.hearts".to_string(),
+                    operator: FactOperator::Gte,
+                    value: ConstraintValue::int(5),
+                    is_public: None,
+                }],
+            ),
+        );
 
         assert_eq!(state.beliefs[&Seat::South].constraints.len(), 2);
     }
@@ -193,12 +226,18 @@ mod tests {
     #[test]
     fn balanced_constraint_derives_min_suit_lengths() {
         let mut state = create_initial_belief_state();
-        apply_annotation(&mut state, make_annotation(Seat::South, vec![FactConstraint {
-            fact_id: "hand.isBalanced".to_string(),
-            operator: FactOperator::Boolean,
-            value: ConstraintValue::Bool(true),
-            is_public: None,
-        }]));
+        apply_annotation(
+            &mut state,
+            make_annotation(
+                Seat::South,
+                vec![FactConstraint {
+                    fact_id: "hand.isBalanced".to_string(),
+                    operator: FactOperator::Boolean,
+                    value: ConstraintValue::Bool(true),
+                    is_public: None,
+                }],
+            ),
+        );
 
         assert_eq!(state.beliefs[&Seat::South].ranges.is_balanced, Some(true));
         for suit in &[Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs] {

@@ -127,15 +127,19 @@ pub fn create_drill_config_from_assignments(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::heuristics::{BiddingContext, BidResult};
+    use crate::heuristics::{BidResult, BiddingContext};
     use bridge_engine::types::Call;
 
     struct TestStrategy {
         label: String,
     }
     impl BiddingStrategy for TestStrategy {
-        fn id(&self) -> &str { "test-strategy" }
-        fn name(&self) -> &str { "Test Strategy" }
+        fn id(&self) -> &str {
+            "test-strategy"
+        }
+        fn name(&self) -> &str {
+            "Test Strategy"
+        }
         fn suggest_bid(&self, _ctx: &BiddingContext) -> Option<BidResult> {
             Some(BidResult {
                 call: Call::Pass,
@@ -144,14 +148,21 @@ mod tests {
                 ..Default::default()
             })
         }
-        fn as_any(&self) -> &dyn std::any::Any { self }
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
     }
 
     #[test]
     fn get_strategy_returns_none_for_user() {
         let mut strategies = HashMap::new();
         strategies.insert(Seat::South, SeatAssignment::User);
-        strategies.insert(Seat::North, SeatAssignment::Ai(Box::new(TestStrategy { label: "ns".to_string() })));
+        strategies.insert(
+            Seat::North,
+            SeatAssignment::Ai(Box::new(TestStrategy {
+                label: "ns".to_string(),
+            })),
+        );
 
         let config = DrillConfig {
             convention_id: "test".to_string(),
@@ -167,7 +178,12 @@ mod tests {
     fn is_user_seat_check() {
         let mut strategies = HashMap::new();
         strategies.insert(Seat::South, SeatAssignment::User);
-        strategies.insert(Seat::North, SeatAssignment::Ai(Box::new(TestStrategy { label: "ns".to_string() })));
+        strategies.insert(
+            Seat::North,
+            SeatAssignment::Ai(Box::new(TestStrategy {
+                label: "ns".to_string(),
+            })),
+        );
 
         let config = DrillConfig {
             convention_id: "test".to_string(),
@@ -184,15 +200,27 @@ mod tests {
     fn create_config_from_assignments() {
         let mut strategies = HashMap::new();
         strategies.insert(Seat::South, SeatAssignment::User);
-        strategies.insert(Seat::North, SeatAssignment::Ai(Box::new(TestStrategy { label: "ns".to_string() })));
-        strategies.insert(Seat::East, SeatAssignment::Ai(Box::new(TestStrategy { label: "ew".to_string() })));
-        strategies.insert(Seat::West, SeatAssignment::Ai(Box::new(TestStrategy { label: "ew".to_string() })));
-
-        let config = create_drill_config_from_assignments(
-            "nt-bundle".to_string(),
-            Seat::South,
-            strategies,
+        strategies.insert(
+            Seat::North,
+            SeatAssignment::Ai(Box::new(TestStrategy {
+                label: "ns".to_string(),
+            })),
         );
+        strategies.insert(
+            Seat::East,
+            SeatAssignment::Ai(Box::new(TestStrategy {
+                label: "ew".to_string(),
+            })),
+        );
+        strategies.insert(
+            Seat::West,
+            SeatAssignment::Ai(Box::new(TestStrategy {
+                label: "ew".to_string(),
+            })),
+        );
+
+        let config =
+            create_drill_config_from_assignments("nt-bundle".to_string(), Seat::South, strategies);
 
         assert_eq!(config.convention_id, "nt-bundle");
         assert_eq!(config.user_seat, Seat::South);

@@ -108,7 +108,9 @@ fn inference_guided_midgame(
     let best = candidates.iter().min_by(|(suit_a, _), (suit_b, _)| {
         let combined_a = opponent_combined_length(suit_lengths, declarer, dummy, *suit_a);
         let combined_b = opponent_combined_length(suit_lengths, declarer, dummy, *suit_b);
-        combined_a.partial_cmp(&combined_b).unwrap_or(std::cmp::Ordering::Equal)
+        combined_a
+            .partial_cmp(&combined_b)
+            .unwrap_or(std::cmp::Ordering::Equal)
     });
 
     let (_, cards) = *best?;
@@ -117,7 +119,10 @@ fn inference_guided_midgame(
 
 /// Sum of declarer + dummy expected suit length.
 fn opponent_combined_length(
-    suit_lengths: &std::collections::HashMap<bridge_engine::Seat, std::collections::HashMap<Suit, f64>>,
+    suit_lengths: &std::collections::HashMap<
+        bridge_engine::Seat,
+        std::collections::HashMap<Suit, f64>,
+    >,
     declarer: bridge_engine::Seat,
     dummy: bridge_engine::Seat,
     suit: Suit,

@@ -117,16 +117,15 @@ impl BiddingStrategy for StrategyChain {
         self.suggest_with_trace(context).0
     }
 
-    fn as_any(&self) -> &dyn std::any::Any { self }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_engine::{
-        Auction, BidSuit, Call, Hand, HandEvaluation,
-        DistributionPoints, Seat,
-    };
+    use bridge_engine::{Auction, BidSuit, Call, DistributionPoints, Hand, HandEvaluation, Seat};
 
     /// A strategy that always declines.
     struct AlwaysDecline;
@@ -141,7 +140,9 @@ mod tests {
         fn suggest_bid(&self, _context: &BiddingContext) -> Option<BidResult> {
             None
         }
-        fn as_any(&self) -> &dyn std::any::Any { self }
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
     }
 
     /// A strategy that always suggests 1C.
@@ -165,7 +166,9 @@ mod tests {
                 ..Default::default()
             })
         }
-        fn as_any(&self) -> &dyn std::any::Any { self }
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
     }
 
     /// A strategy that always suggests 1H.
@@ -189,7 +192,9 @@ mod tests {
                 ..Default::default()
             })
         }
-        fn as_any(&self) -> &dyn std::any::Any { self }
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
     }
 
     fn dummy_context() -> BiddingContext {
@@ -237,10 +242,7 @@ mod tests {
 
     #[test]
     fn chain_returns_none_when_all_decline() {
-        let chain = StrategyChain::new(vec![
-            Box::new(AlwaysDecline),
-            Box::new(AlwaysDecline),
-        ]);
+        let chain = StrategyChain::new(vec![Box::new(AlwaysDecline), Box::new(AlwaysDecline)]);
         let ctx = dummy_context();
         assert!(chain.suggest_bid(&ctx).is_none());
     }
@@ -283,10 +285,7 @@ mod tests {
 
     #[test]
     fn chain_id_concatenates_strategy_ids() {
-        let chain = StrategyChain::new(vec![
-            Box::new(AlwaysDecline),
-            Box::new(AlwaysBidOneClub),
-        ]);
+        let chain = StrategyChain::new(vec![Box::new(AlwaysDecline), Box::new(AlwaysBidOneClub)]);
         assert_eq!(chain.id(), "chain:always-decline+always-1C");
         assert_eq!(chain.name(), "Chain(Always Decline, Always 1C)");
     }
