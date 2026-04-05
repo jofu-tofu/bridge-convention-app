@@ -77,34 +77,16 @@ pub struct AiPlayEntry {
 /// or next user turn, return result.
 ///
 /// Synchronous — calls bridge_engine functions directly.
-pub fn process_play_card(
-    state: &mut SessionState,
-    card: Card,
-    seat: Seat,
-) -> PlayCardResult {
-    // Guard: must have an active player and contract
-    if state.play.current_player.is_none() || state.contract.is_none() {
-        return empty_play_result();
-    }
+pub fn process_play_card(state: &mut SessionState, card: Card, seat: Seat) -> PlayCardResult {
+    let legal_plays = match validate_play_request(state, seat, true) {
+        Some(legal_plays) => legal_plays,
+        None => return empty_play_result(),
+    };
 
-    // Guard: card must be from the correct seat
-    if Some(seat) != state.play.current_player {
-        return empty_play_result();
-    }
-
-    // Guard: seat must be user-controlled
-    if !state.is_user_controlled_play(seat) {
-        return empty_play_result();
-    }
-
-    // Validate the card is legal
-    let remaining = state.get_remaining_cards(seat);
-    let lead_suit = state.get_lead_suit();
-    let legal_plays = get_legal_plays(&Hand { cards: remaining }, lead_suit);
-    let is_legal = legal_plays
+    if !legal_plays
         .iter()
-        .any(|c| c.suit == card.suit && c.rank == card.rank);
-    if !is_legal {
+        .any(|c| c.suit == card.suit && c.rank == card.rank)
+    {
         return empty_play_result();
     }
 
@@ -179,7 +161,7 @@ pub fn process_play_card(
 /// If the opening leader (or subsequent players) are AI-controlled,
 /// play cards until it's a user-controlled seat's turn.
 pub fn run_initial_ai_plays(state: &mut SessionState) -> Vec<AiPlayEntry> {
-    if state.play.current_player.is_none() || state.contract.is_none() {
+    if !has_active_play(state) {
         return Vec::new();
     }
     if let Some(current) = state.play.current_player {
@@ -193,31 +175,16 @@ pub fn run_initial_ai_plays(state: &mut SessionState) -> Vec<AiPlayEntry> {
 /// Process a single card play without running the AI loop.
 /// Used by MC+DDS profiles where TS drives AI card selection.
 /// Accepts cards from ANY seat (user or AI).
-pub fn process_single_card(
-    state: &mut SessionState,
-    card: Card,
-    seat: Seat,
-) -> SingleCardResult {
-    // Guard: must have an active player and contract
-    if state.play.current_player.is_none() || state.contract.is_none() {
-        return empty_single_result();
-    }
+pub fn process_single_card(state: &mut SessionState, card: Card, seat: Seat) -> SingleCardResult {
+    let legal_plays = match validate_play_request(state, seat, false) {
+        Some(legal_plays) => legal_plays,
+        None => return empty_single_result(),
+    };
 
-    // Guard: card must be from the correct seat
-    if Some(seat) != state.play.current_player {
-        return empty_single_result();
-    }
-
-    // No is_user_controlled_play check — accepts any seat
-
-    // Validate the card is legal
-    let remaining = state.get_remaining_cards(seat);
-    let lead_suit = state.get_lead_suit();
-    let legal_plays = get_legal_plays(&Hand { cards: remaining }, lead_suit);
-    let is_legal = legal_plays
+    if !legal_plays
         .iter()
-        .any(|c| c.suit == card.suit && c.rank == card.rank);
-    if !is_legal {
+        .any(|c| c.suit == card.suit && c.rank == card.rank)
+    {
         return empty_single_result();
     }
 
@@ -277,6 +244,36 @@ fn empty_single_result() -> SingleCardResult {
         current_player: None,
         legal_plays: Vec::new(),
     }
+}
+
+fn has_active_play(state: &SessionState) -> bool {
+    state.play.current_player.is_some() && state.contract.is_some()
+}
+
+fn validate_play_request(
+    state: &SessionState,
+    seat: Seat,
+    require_user_controlled: bool,
+) -> Option<Vec<Card>> {
+    if !has_active_play(state) {
+        return None;
+    }
+
+    if Some(seat) != state.play.current_player {
+        return None;
+    }
+
+    if require_user_controlled && !state.is_user_controlled_play(seat) {
+        return None;
+    }
+
+    Some(get_legal_plays_for_seat(state, seat))
+}
+
+fn get_legal_plays_for_seat(state: &SessionState, seat: Seat) -> Vec<Card> {
+    let remaining = state.get_remaining_cards(seat);
+    let lead_suit = state.get_lead_suit();
+    get_legal_plays(&Hand { cards: remaining }, lead_suit)
 }
 
 // ── Internal helpers ───────────────────────────────────────────────
@@ -353,7 +350,10 @@ fn complete_play(state: &mut SessionState) {
 
 /// Build PlayContext for AI card selection.
 fn build_play_context(state: &SessionState, seat: Seat, legal_cards: &[Card]) -> PlayContext {
-    let contract = state.contract.as_ref().expect("build_play_context requires active contract");
+    let contract = state
+        .contract
+        .as_ref()
+        .expect("build_play_context requires active contract");
     let remaining = state.get_remaining_cards(seat);
     let dummy_visible = !state.play.tricks.is_empty() || !state.play.current_trick.is_empty();
     let dummy_seat = state.play.dummy_seat;
@@ -497,11 +497,7 @@ fn run_ai_play_loop(state: &mut SessionState) -> Vec<AiPlayEntry> {
 /// Get legal plays for the current player.
 fn get_next_legal_plays(state: &SessionState) -> Vec<Card> {
     match state.play.current_player {
-        Some(seat) => {
-            let remaining = state.get_remaining_cards(seat);
-            let lead_suit = state.get_lead_suit();
-            get_legal_plays(&Hand { cards: remaining }, lead_suit)
-        }
+        Some(seat) => get_legal_plays_for_seat(state, seat),
         None => Vec::new(),
     }
 }
@@ -518,7 +514,11 @@ fn build_result(
         accepted: true,
         trick_complete: trick_completed_before,
         play_complete,
-        score: if play_complete { state.play.play_score } else { None },
+        score: if play_complete {
+            state.play.play_score
+        } else {
+            None
+        },
         ai_plays,
         legal_plays: None,
         current_player: state.play.current_player,
@@ -540,10 +540,10 @@ fn empty_play_result() -> PlayCardResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
-    use bridge_engine::types::{BidSuit, Contract, Deal, Hand, Rank, Suit, Vulnerability};
     use crate::inference::InferenceCoordinator;
     use crate::types::{PlayPreference, PracticeFocus, PracticeMode};
+    use bridge_engine::types::{BidSuit, Contract, Deal, Hand, Rank, Suit, Vulnerability};
+    use std::collections::HashMap;
 
     fn card(suit: Suit, rank: Rank) -> Card {
         Card { suit, rank }
@@ -553,27 +553,49 @@ mod tests {
         // Give each seat 13 cards for a realistic deal
         let mut hands = HashMap::new();
         let ranks = [
-            Rank::Two, Rank::Three, Rank::Four, Rank::Five,
-            Rank::Six, Rank::Seven, Rank::Eight, Rank::Nine,
-            Rank::Ten, Rank::Jack, Rank::Queen, Rank::King, Rank::Ace,
+            Rank::Two,
+            Rank::Three,
+            Rank::Four,
+            Rank::Five,
+            Rank::Six,
+            Rank::Seven,
+            Rank::Eight,
+            Rank::Nine,
+            Rank::Ten,
+            Rank::Jack,
+            Rank::Queen,
+            Rank::King,
+            Rank::Ace,
         ];
 
         // South: all spades
-        hands.insert(Seat::South, Hand {
-            cards: ranks.iter().map(|&r| card(Suit::Spades, r)).collect(),
-        });
+        hands.insert(
+            Seat::South,
+            Hand {
+                cards: ranks.iter().map(|&r| card(Suit::Spades, r)).collect(),
+            },
+        );
         // North: all hearts
-        hands.insert(Seat::North, Hand {
-            cards: ranks.iter().map(|&r| card(Suit::Hearts, r)).collect(),
-        });
+        hands.insert(
+            Seat::North,
+            Hand {
+                cards: ranks.iter().map(|&r| card(Suit::Hearts, r)).collect(),
+            },
+        );
         // East: all diamonds
-        hands.insert(Seat::East, Hand {
-            cards: ranks.iter().map(|&r| card(Suit::Diamonds, r)).collect(),
-        });
+        hands.insert(
+            Seat::East,
+            Hand {
+                cards: ranks.iter().map(|&r| card(Suit::Diamonds, r)).collect(),
+            },
+        );
         // West: all clubs
-        hands.insert(Seat::West, Hand {
-            cards: ranks.iter().map(|&r| card(Suit::Clubs, r)).collect(),
-        });
+        hands.insert(
+            Seat::West,
+            Hand {
+                cards: ranks.iter().map(|&r| card(Suit::Clubs, r)).collect(),
+            },
+        );
 
         Deal {
             hands,
@@ -625,11 +647,7 @@ mod tests {
             crate::heuristics::play_profiles::PlayProfileId::ClubPlayer,
             0,
         );
-        let result = process_play_card(
-            &mut state,
-            card(Suit::Spades, Rank::Ace),
-            Seat::South,
-        );
+        let result = process_play_card(&mut state, card(Suit::Spades, Rank::Ace), Seat::South);
         assert!(!result.accepted);
     }
 
@@ -640,11 +658,7 @@ mod tests {
         assert_eq!(state.play.current_player, Some(Seat::West));
 
         // Try to play from South (not current player)
-        let result = process_play_card(
-            &mut state,
-            card(Suit::Spades, Rank::Ace),
-            Seat::South,
-        );
+        let result = process_play_card(&mut state, card(Suit::Spades, Rank::Ace), Seat::South);
         assert!(!result.accepted);
     }
 
@@ -698,7 +712,7 @@ mod tests {
         assert_eq!(state.play.tricks.len(), 1);
         assert!(state.play.current_trick.is_empty());
         assert_eq!(state.play.tricks[0].winner, Some(Seat::East)); // Ace wins
-        // East is a defender (not declarer South or dummy North)
+                                                                   // East is a defender (not declarer South or dummy North)
         assert_eq!(state.play.defender_tricks_won, 1);
         assert_eq!(state.play.declarer_tricks_won, 0);
         assert_eq!(state.play.current_player, Some(Seat::East));
@@ -751,11 +765,7 @@ mod tests {
         // Manually set current player to South to test user play
         state.play.current_player = Some(Seat::South);
         // South has all spades, lead suit is None (first play in trick)
-        let result = process_play_card(
-            &mut state,
-            card(Suit::Spades, Rank::Ace),
-            Seat::South,
-        );
+        let result = process_play_card(&mut state, card(Suit::Spades, Rank::Ace), Seat::South);
         assert!(result.accepted);
         assert!(!result.trick_complete);
         assert!(!result.play_complete);
@@ -803,11 +813,7 @@ mod tests {
         assert_eq!(state.play.current_player, Some(Seat::West));
 
         // West is AI-controlled but process_single_card allows it
-        let result = process_single_card(
-            &mut state,
-            card(Suit::Clubs, Rank::Ace),
-            Seat::West,
-        );
+        let result = process_single_card(&mut state, card(Suit::Clubs, Rank::Ace), Seat::West);
         assert!(result.accepted);
         assert!(!result.trick_complete);
         assert!(!result.play_complete);
@@ -822,11 +828,7 @@ mod tests {
         assert_eq!(state.play.current_player, Some(Seat::West));
 
         // Try playing from South when it's West's turn
-        let result = process_single_card(
-            &mut state,
-            card(Suit::Spades, Rank::Ace),
-            Seat::South,
-        );
+        let result = process_single_card(&mut state, card(Suit::Spades, Rank::Ace), Seat::South);
         assert!(!result.accepted);
     }
 
@@ -836,11 +838,7 @@ mod tests {
         // West leads
         assert_eq!(state.play.current_player, Some(Seat::West));
 
-        let result = process_single_card(
-            &mut state,
-            card(Suit::Clubs, Rank::Ace),
-            Seat::West,
-        );
+        let result = process_single_card(&mut state, card(Suit::Clubs, Rank::Ace), Seat::West);
         assert!(result.accepted);
         // Should advance to North only (no AI loop to skip past North/East)
         assert_eq!(result.current_player, Some(Seat::North));
@@ -859,11 +857,7 @@ mod tests {
         add_card_to_trick(&mut state, &card(Suit::Diamonds, Rank::Two), Seat::East);
         state.play.current_player = Some(Seat::South);
 
-        let result = process_single_card(
-            &mut state,
-            card(Suit::Spades, Rank::Ace),
-            Seat::South,
-        );
+        let result = process_single_card(&mut state, card(Suit::Spades, Rank::Ace), Seat::South);
         assert!(result.accepted);
         assert!(result.trick_complete);
         assert!(!result.play_complete);

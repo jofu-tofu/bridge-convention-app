@@ -103,28 +103,7 @@ const PBN_SEAT_ORDER = [
 export function dealToPBN(deal: Deal): string {
   const hands = PBN_SEAT_ORDER.map((seat) => {
     const hand = deal.hands[seat];
-    const bySuit = new Map<Suit, string[]>([
-      [Suit.Spades, []],
-      [Suit.Hearts, []],
-      [Suit.Diamonds, []],
-      [Suit.Clubs, []],
-    ]);
-
-    for (const card of hand.cards) {
-      bySuit.get(card.suit)!.push(RANK_CHARS[card.rank]);
-    }
-
-    // Sort each suit descending by rank
-    const charToRank = new Map(
-      Object.entries(RANK_CHARS).map(([r, c]) => [c, r as Rank]),
-    );
-    for (const suit of PBN_SUIT_ORDER) {
-      bySuit.get(suit)!.sort(
-        (a, b) => RANK_ORDER[charToRank.get(b)!] - RANK_ORDER[charToRank.get(a)!],
-      );
-    }
-
-    return PBN_SUIT_ORDER.map((suit) => bySuit.get(suit)!.join("")).join(".");
+    return cardsToPBNHand(hand.cards);
   });
 
   return "N:" + hands.join(" ");

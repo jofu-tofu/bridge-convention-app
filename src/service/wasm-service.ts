@@ -60,7 +60,7 @@ interface WasmServicePortBindings {
   get_bundle_flow_tree(bundleId: string): BundleFlowTreeViewport | null;
   get_module_flow_tree(moduleId: string): ModuleFlowTreeViewport | null;
   // Dev methods (available in debug builds only)
-  get_expected_bid?(handle: string): { call: Call } | null;
+  get_expected_bid?(handle: string): Call | { call: Call } | null;
   get_debug_log?(handle: string): readonly ServiceDebugLogEntry[];
   get_inference_timeline?(handle: string): readonly ServiceInferenceSnapshot[];
   get_convention_name?(handle: string): string;
@@ -200,7 +200,9 @@ export class WasmService implements DevServicePort {
 
   // ── DevServicePort ──────────────────────────────────────────────
   async getExpectedBid(handle: SessionHandle): Promise<{ call: Call } | null> {
-    return getPort().get_expected_bid?.(handle) ?? null;
+    const raw = getPort().get_expected_bid?.(handle);
+    if (!raw) return null;
+    return "call" in raw ? raw : { call: raw };
   }
 
   async getDebugLog(handle: SessionHandle): Promise<readonly ServiceDebugLogEntry[]> {

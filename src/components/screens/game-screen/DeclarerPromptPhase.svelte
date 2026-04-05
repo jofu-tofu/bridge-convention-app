@@ -2,7 +2,7 @@
   import type { DeclarerPromptViewport } from "../../../service";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";
-  import { PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../shared/layout-props";
+  import { PHASE_CONTAINER_CLASS, PANEL_FONT_STYLE, SIDE_PANEL_CLASS } from "../../shared/layout-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import DeclarerPrompt from "../../game/DeclarerPrompt.svelte";
@@ -44,7 +44,7 @@
     </BridgeTable>
   </ScaledTableArea>
 
-  <aside class="{SIDE_PANEL_CLASS}" style="font-size: var(--panel-font, 1rem);" aria-label="Auction summary">
+  <aside class={SIDE_PANEL_CLASS} style={PANEL_FONT_STYLE} aria-label="Auction summary">
     <div
       class="relative bg-bg-card rounded-[--radius-lg] p-3 border border-border-subtle shadow-md"
     >

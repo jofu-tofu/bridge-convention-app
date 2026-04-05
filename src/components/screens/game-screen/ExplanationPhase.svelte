@@ -6,7 +6,7 @@
   import { formatRuleName } from "../../../service";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore, getGameStore } from "../../../stores/context";
-  import { PHASE_CONTAINER_CLASS, REVIEW_PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../shared/layout-props";
+  import { PHASE_CONTAINER_CLASS, PANEL_FONT_STYLE, PLAYING_PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../shared/layout-props";
   import type { DDSAnalysisProps } from "./shared-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
@@ -403,9 +403,9 @@
 
 {#if hasPlayData}
   <!-- 3-column layout when play data exists -->
-  <div class={REVIEW_PHASE_CONTAINER_CLASS}>
+  <div class={PLAYING_PHASE_CONTAINER_CLASS}>
     <!-- Desktop: left panel with trick history -->
-    <aside class="hidden lg:flex lg:flex-col lg:h-full bg-bg-base p-3 min-h-0 overflow-hidden" style="font-size: var(--panel-font, 1rem);" aria-label="Play history">
+    <aside class="hidden lg:flex lg:flex-col lg:h-full bg-bg-base p-3 min-h-0 overflow-hidden" style={PANEL_FONT_STYLE} aria-label="Play history">
       <PlayHistoryPanel
         tricks={viewport.tricks}
         declarerSeat={viewport.contract?.declarer ?? null}
@@ -482,7 +482,7 @@
       </div>
     {/if}
 
-    <aside class="{SIDE_PANEL_CLASS}" style="font-size: var(--panel-font, 1rem);" aria-label="Review panel">
+    <aside class={SIDE_PANEL_CLASS} style={PANEL_FONT_STYLE} aria-label="Review panel">
       <ReviewSidePanel tabs={reviewTabs} actions={reviewActions} {dealNumber} />
     </aside>
   </div>
@@ -525,7 +525,7 @@
       </ScaledTableArea>
     {/if}
 
-    <aside class="{SIDE_PANEL_CLASS}" style="font-size: var(--panel-font, 1rem);" aria-label="Review panel">
+    <aside class={SIDE_PANEL_CLASS} style={PANEL_FONT_STYLE} aria-label="Review panel">
       <ReviewSidePanel tabs={reviewTabs} actions={reviewActions} {dealNumber} />
     </aside>
   </div>

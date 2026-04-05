@@ -64,7 +64,7 @@
     return active.map((k) => `${VULN_LABELS[k]} ${vulnPercent(dist[k], total)}%`).join(", ") + ".";
   });
 
-  const baseModules: readonly BaseModuleInfo[] = $derived(buildBaseModuleInfos(appStore.baseSystemId));
+  const baseModules: readonly BaseModuleInfo[] = $derived(buildBaseModuleInfos());
 
   const isDefaultVuln = $derived.by(() => {
     const dist = appStore.drillTuning.vulnerabilityDistribution;

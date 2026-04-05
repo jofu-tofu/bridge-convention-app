@@ -10,10 +10,10 @@ use crate::pipeline::evaluation::arbitration_helpers::{classify_into_sets, evalu
 use crate::pipeline::evaluation::provenance::{
     ApplicabilityEvidence, ArbitrationTrace, HandoffTrace,
 };
-use crate::pipeline::evaluation::types::{compare_ranking, MeaningProposal};
+use crate::pipeline::evaluation::types::{compare_ranking, MeaningClause, MeaningProposal};
 use crate::pipeline::evidence_bundle::{
-    AlternativeEvidence, AlternativeRanking, ConditionEvidence, EvidenceBundle,
-    MatchedEvidence, RejectionEvidence,
+    AlternativeEvidence, AlternativeRanking, ConditionEvidence, EvidenceBundle, MatchedEvidence,
+    RejectionEvidence,
 };
 use crate::pipeline::types::{PipelineCarrier, PipelineResult};
 
@@ -38,7 +38,8 @@ pub fn arbitrate_meanings(
     let (mut truth_set, acceptable_set) = classify_into_sets(&carriers);
 
     // Step 3: Sort truth set by ranking
-    truth_set.sort_by(|a, b| compare_ranking(&a.encoded.proposal.ranking, &b.encoded.proposal.ranking));
+    truth_set
+        .sort_by(|a, b| compare_ranking(&a.encoded.proposal.ranking, &b.encoded.proposal.ranking));
 
     // Step 4: Deduplicate by semantic class
     let deduped = deduplicate_by_semantic_class(&truth_set);
@@ -47,7 +48,10 @@ pub fn arbitrate_meanings(
     let selected = deduped.first().cloned();
 
     // Step 6: Identify eliminated carriers
-    let truth_ids: HashSet<&str> = truth_set.iter().map(|c| c.encoded.proposal.meaning_id.as_str()).collect();
+    let truth_ids: HashSet<&str> = truth_set
+        .iter()
+        .map(|c| c.encoded.proposal.meaning_id.as_str())
+        .collect();
     let eliminated: Vec<PipelineCarrier> = carriers
         .iter()
         .filter(|c| !truth_ids.contains(c.encoded.proposal.meaning_id.as_str()))
@@ -58,7 +62,9 @@ pub fn arbitrate_meanings(
     let arbitration: Vec<ArbitrationTrace> = carriers
         .iter()
         .map(|c| {
-            let outcome = if selected.as_ref().map(|s| &s.encoded.proposal.meaning_id) == Some(&c.encoded.proposal.meaning_id) {
+            let outcome = if selected.as_ref().map(|s| &s.encoded.proposal.meaning_id)
+                == Some(&c.encoded.proposal.meaning_id)
+            {
                 "selected"
             } else if truth_ids.contains(c.encoded.proposal.meaning_id.as_str()) {
                 "truth-set"
@@ -109,17 +115,12 @@ fn build_evidence_bundle(
 ) -> EvidenceBundle {
     // Matched: selected carrier's satisfied conditions
     let matched = selected.as_ref().map(|carrier| {
-        let conditions = carrier.proposal().clauses.iter()
+        let conditions = carrier
+            .proposal()
+            .clauses
+            .iter()
             .filter(|c| c.satisfied)
-            .map(|c| ConditionEvidence {
-                condition_id: c.clause_id.clone().unwrap_or_else(|| c.fact_id.clone()),
-                fact_id: Some(c.fact_id.clone()),
-                satisfied: true,
-                description: c.description.clone(),
-                observed_value: c.observed_value.clone(),
-                threshold: None,
-                params: None,
-            })
+            .map(|c| clause_to_condition_evidence(c, true))
             .collect();
         MatchedEvidence {
             meaning_id: carrier.proposal().meaning_id.clone(),
@@ -128,19 +129,15 @@ fn build_evidence_bundle(
     });
 
     // Rejected: eliminated carriers' failed conditions
-    let rejected: Vec<RejectionEvidence> = eliminated.iter()
+    let rejected: Vec<RejectionEvidence> = eliminated
+        .iter()
         .map(|carrier| {
-            let failed = carrier.proposal().clauses.iter()
+            let failed = carrier
+                .proposal()
+                .clauses
+                .iter()
                 .filter(|c| !c.satisfied)
-                .map(|c| ConditionEvidence {
-                    condition_id: c.clause_id.clone().unwrap_or_else(|| c.fact_id.clone()),
-                    fact_id: Some(c.fact_id.clone()),
-                    satisfied: false,
-                    description: c.description.clone(),
-                    observed_value: c.observed_value.clone(),
-                    threshold: None,
-                    params: None,
-                })
+                .map(|c| clause_to_condition_evidence(c, false))
                 .collect();
             RejectionEvidence {
                 meaning_id: carrier.proposal().meaning_id.clone(),
@@ -153,7 +150,8 @@ fn build_evidence_bundle(
 
     // Alternatives: truth set entries that weren't selected
     let selected_id = selected.as_ref().map(|c| c.proposal().meaning_id.as_str());
-    let alternatives: Vec<AlternativeEvidence> = truth_set.iter()
+    let alternatives: Vec<AlternativeEvidence> = truth_set
+        .iter()
         .filter(|c| Some(c.proposal().meaning_id.as_str()) != selected_id)
         .map(|carrier| {
             let p = carrier.proposal();
@@ -176,6 +174,21 @@ fn build_evidence_bundle(
         alternatives,
         exhaustive: true,
         fallback_reached: selected.is_none(),
+    }
+}
+
+fn clause_to_condition_evidence(clause: &MeaningClause, satisfied: bool) -> ConditionEvidence {
+    ConditionEvidence {
+        condition_id: clause
+            .clause_id
+            .clone()
+            .unwrap_or_else(|| clause.fact_id.clone()),
+        fact_id: Some(clause.fact_id.clone()),
+        satisfied,
+        description: clause.description.clone(),
+        observed_value: clause.observed_value.clone(),
+        threshold: None,
+        params: None,
     }
 }
 

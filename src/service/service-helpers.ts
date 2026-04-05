@@ -9,7 +9,13 @@
  */
 
 import type { BaseModuleInfo, ConventionInfo, ModuleCatalogEntry } from "./response-types";
-import type { BaseSystemId } from "./session-types";
+
+const BASE_MODULE_IDS: readonly string[] = [
+  "natural-bids",
+  "stayman",
+  "jacoby-transfers",
+  "blackwood",
+];
 
 // Access the WASM port directly for sync calls.
 // The WasmServicePort instance is initialized by initWasmService() at startup.
@@ -74,23 +80,19 @@ export function listModules(): ModuleCatalogEntry[] {
 export function getModuleLearningViewportSync(moduleId: string): { teaching: { principle: string | null; tradeoff: string | null; commonMistakes: readonly string[] } } | null {
   try {
     return getSyncPort().get_module_learning_viewport(moduleId) as { teaching: { principle: string | null; tradeoff: string | null; commonMistakes: readonly string[] } } | null;
-  } catch (e) {
-    console.warn("getModuleLearningViewportSync failed for", moduleId, e);
+  } catch {
     return null;
   }
 }
 
 /**
- * Build base module info for a given system.
- * Currently returns from module catalog filtered to base module IDs.
+ * Build base module info for the always-active base modules.
  */
-export function buildBaseModuleInfos(_baseSystemId: BaseSystemId): readonly BaseModuleInfo[] {
-  // Base modules are: natural-bids, stayman, jacoby-transfers, blackwood
-  const BASE_IDS = ["natural-bids", "stayman", "jacoby-transfers", "blackwood"];
+export function buildBaseModuleInfos(): readonly BaseModuleInfo[] {
   const allModules = listModules();
   return allModules
-    .filter(m => BASE_IDS.includes(m.moduleId))
-    .map(m => ({
+    .filter((m) => BASE_MODULE_IDS.includes(m.moduleId))
+    .map((m) => ({
       id: m.moduleId,
       displayName: m.displayName,
       description: m.description,

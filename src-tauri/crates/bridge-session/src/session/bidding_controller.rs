@@ -89,10 +89,7 @@ pub fn process_bid(
 
     // Grade-acceptance policy: Correct/Acceptable advance;
     // NearMiss/Incorrect block and require retry.
-    let should_reject = matches!(
-        feedback.grade,
-        BidGrade::NearMiss | BidGrade::Incorrect
-    );
+    let should_reject = matches!(feedback.grade, BidGrade::NearMiss | BidGrade::Incorrect);
 
     if should_reject {
         return BidProcessResult {
@@ -106,7 +103,14 @@ pub fn process_bid(
     }
 
     // Apply user's bid to auction
-    apply_bid_and_run_ai(state, current_turn, call, expected_result.as_ref(), seat_strategies, Some(feedback))
+    apply_bid_and_run_ai(
+        state,
+        current_turn,
+        call,
+        expected_result.as_ref(),
+        seat_strategies,
+        Some(feedback),
+    )
 }
 
 /// Run initial AI bids after drill start (before user's first turn).
@@ -148,7 +152,15 @@ pub fn initialize_auction(
             is_complete: false,
         };
         let convention_id = state.convention_id.clone();
-        state.process_bid(entry, &auction_before, None, &convention_id, false, None, &[]);
+        state.process_bid(
+            entry,
+            &auction_before,
+            None,
+            &convention_id,
+            false,
+            None,
+            &[],
+        );
     }
 }
 
@@ -163,7 +175,9 @@ fn capture_evaluation_snapshot(
     seat: Seat,
     seat_strategies: &HashMap<Seat, SeatStrategy>,
 ) -> Option<StrategyEvaluation> {
-    if !cfg!(debug_assertions) { return None; }
+    if !cfg!(debug_assertions) {
+        return None;
+    }
     let strategy = match seat_strategies.get(&seat) {
         Some(SeatStrategy::Ai(s)) => s,
         _ => return None,
@@ -259,7 +273,10 @@ fn apply_bid_and_run_ai(
     seat_strategies: &HashMap<Seat, SeatStrategy>,
     pre_feedback: Option<BidFeedbackDTO>,
 ) -> BidProcessResult {
-    let user_entry = AuctionEntry { seat, call: call.clone() };
+    let user_entry = AuctionEntry {
+        seat,
+        call: call.clone(),
+    };
     let auction_before = state.auction.clone();
 
     // Apply user's bid to auction
@@ -272,11 +289,18 @@ fn apply_bid_and_run_ai(
     // evaluation (computed by get_expected_bid just before this call).
     let constraints = extract_constraints(seat, seat_strategies);
     let convention_id = state.convention_id.clone();
-    let is_correct = pre_feedback.as_ref().map(|f| matches!(
-        f.grade,
-        BidGrade::Correct | BidGrade::Acceptable
-    ));
-    state.process_bid(&user_entry, &auction_before, expected_result, &convention_id, true, is_correct, &constraints);
+    let is_correct = pre_feedback
+        .as_ref()
+        .map(|f| matches!(f.grade, BidGrade::Correct | BidGrade::Acceptable));
+    state.process_bid(
+        &user_entry,
+        &auction_before,
+        expected_result,
+        &convention_id,
+        true,
+        is_correct,
+        &constraints,
+    );
 
     // Capture now — run_ai_bid_loop() will append more entries to bid_history.
     // ORDERING CONTRACT: user's process_bid() runs before AI bids, so .last()
@@ -372,10 +396,21 @@ fn run_ai_bid_loop(
         // evaluation (suggest_bid stashed the evaluation synchronously before returning).
         let constraints = extract_constraints(current_seat, seat_strategies);
         let convention_id = state.convention_id.clone();
-        state.process_bid(&entry, &auction_before, Some(&result), &convention_id, false, None, &constraints);
+        state.process_bid(
+            &entry,
+            &auction_before,
+            Some(&result),
+            &convention_id,
+            false,
+            None,
+            &constraints,
+        );
 
         // INVARIANT: process_bid always pushes exactly one entry to bid_history.
-        let history_entry = state.bid_history.last().cloned()
+        let history_entry = state
+            .bid_history
+            .last()
+            .cloned()
             .expect("process_bid must push a history entry");
 
         ai_bids.push(AiBidEntry {
@@ -449,8 +484,6 @@ fn get_ai_bid(
 
 /// Handle auction completion: extract contract, transition phase.
 fn handle_auction_complete(state: &mut SessionState) {
-    state.contract = get_contract(&state.auction).ok().flatten();
-
     let contract = get_contract(&state.auction).ok().flatten();
     state.contract = contract.clone();
 
@@ -499,18 +532,22 @@ fn empty_result() -> BidProcessResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_engine::constants::SEATS;
-    use bridge_engine::types::{BidSuit, Deal, Hand, Vulnerability};
-    use crate::heuristics::{BiddingContext, BiddingStrategy, BidResult};
+    use crate::heuristics::{BidResult, BiddingContext, BiddingStrategy};
     use crate::inference::InferenceCoordinator;
     use crate::types::{PracticeFocus, PracticeMode};
+    use bridge_engine::constants::SEATS;
+    use bridge_engine::types::{BidSuit, Deal, Hand, Vulnerability};
 
     // ── Test strategies ────────────────────────────────────────────
 
     struct AlwaysPass;
     impl BiddingStrategy for AlwaysPass {
-        fn id(&self) -> &str { "always-pass" }
-        fn name(&self) -> &str { "Always Pass" }
+        fn id(&self) -> &str {
+            "always-pass"
+        }
+        fn name(&self) -> &str {
+            "Always Pass"
+        }
         fn suggest_bid(&self, _ctx: &BiddingContext) -> Option<BidResult> {
             Some(BidResult {
                 call: Call::Pass,
@@ -519,17 +556,25 @@ mod tests {
                 ..Default::default()
             })
         }
-        fn as_any(&self) -> &dyn std::any::Any { self }
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
     }
 
     struct NeverMatches;
     impl BiddingStrategy for NeverMatches {
-        fn id(&self) -> &str { "never-matches" }
-        fn name(&self) -> &str { "Never Matches" }
+        fn id(&self) -> &str {
+            "never-matches"
+        }
+        fn name(&self) -> &str {
+            "Never Matches"
+        }
         fn suggest_bid(&self, _ctx: &BiddingContext) -> Option<BidResult> {
             None
         }
-        fn as_any(&self) -> &dyn std::any::Any { self }
+        fn as_any(&self) -> &dyn std::any::Any {
+            self
+        }
     }
 
     // ── Helpers ────────────────────────────────────────────────────
@@ -623,7 +668,10 @@ mod tests {
 
         let result = process_bid(
             &mut state,
-            Call::Bid { level: 1, strain: BidSuit::Clubs },
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
             &strategies,
         );
         assert!(result.accepted);
@@ -652,7 +700,10 @@ mod tests {
         // Strategy expects pass, user bids 1C
         let result = process_bid(
             &mut state,
-            Call::Bid { level: 1, strain: BidSuit::Clubs },
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
             &strategies,
         );
         assert!(!result.accepted);
@@ -691,8 +742,14 @@ mod tests {
         let mut state = make_state();
         let initial = Auction {
             entries: vec![
-                AuctionEntry { seat: Seat::North, call: Call::Pass },
-                AuctionEntry { seat: Seat::East, call: Call::Pass },
+                AuctionEntry {
+                    seat: Seat::North,
+                    call: Call::Pass,
+                },
+                AuctionEntry {
+                    seat: Seat::East,
+                    call: Call::Pass,
+                },
             ],
             is_complete: false,
         };
@@ -708,11 +765,7 @@ mod tests {
         state.deal.dealer = Seat::North; // Not user's turn
         let strategies = make_strategies_all_pass();
 
-        let result = process_bid(
-            &mut state,
-            Call::Pass,
-            &strategies,
-        );
+        let result = process_bid(&mut state, Call::Pass, &strategies);
         assert!(!result.accepted);
     }
 
@@ -723,10 +776,25 @@ mod tests {
         // Set up a completed auction with a contract
         state.auction = Auction {
             entries: vec![
-                AuctionEntry { seat: Seat::North, call: Call::Bid { level: 1, strain: BidSuit::Clubs } },
-                AuctionEntry { seat: Seat::East, call: Call::Pass },
-                AuctionEntry { seat: Seat::South, call: Call::Pass },
-                AuctionEntry { seat: Seat::West, call: Call::Pass },
+                AuctionEntry {
+                    seat: Seat::North,
+                    call: Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Clubs,
+                    },
+                },
+                AuctionEntry {
+                    seat: Seat::East,
+                    call: Call::Pass,
+                },
+                AuctionEntry {
+                    seat: Seat::South,
+                    call: Call::Pass,
+                },
+                AuctionEntry {
+                    seat: Seat::West,
+                    call: Call::Pass,
+                },
             ],
             is_complete: true,
         };
@@ -742,10 +810,25 @@ mod tests {
         state.play_preference = PlayPreference::Always;
         state.auction = Auction {
             entries: vec![
-                AuctionEntry { seat: Seat::North, call: Call::Bid { level: 1, strain: BidSuit::Clubs } },
-                AuctionEntry { seat: Seat::East, call: Call::Pass },
-                AuctionEntry { seat: Seat::South, call: Call::Pass },
-                AuctionEntry { seat: Seat::West, call: Call::Pass },
+                AuctionEntry {
+                    seat: Seat::North,
+                    call: Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Clubs,
+                    },
+                },
+                AuctionEntry {
+                    seat: Seat::East,
+                    call: Call::Pass,
+                },
+                AuctionEntry {
+                    seat: Seat::South,
+                    call: Call::Pass,
+                },
+                AuctionEntry {
+                    seat: Seat::West,
+                    call: Call::Pass,
+                },
             ],
             is_complete: true,
         };
@@ -760,10 +843,22 @@ mod tests {
         let mut state = make_state();
         state.auction = Auction {
             entries: vec![
-                AuctionEntry { seat: Seat::North, call: Call::Pass },
-                AuctionEntry { seat: Seat::East, call: Call::Pass },
-                AuctionEntry { seat: Seat::South, call: Call::Pass },
-                AuctionEntry { seat: Seat::West, call: Call::Pass },
+                AuctionEntry {
+                    seat: Seat::North,
+                    call: Call::Pass,
+                },
+                AuctionEntry {
+                    seat: Seat::East,
+                    call: Call::Pass,
+                },
+                AuctionEntry {
+                    seat: Seat::South,
+                    call: Call::Pass,
+                },
+                AuctionEntry {
+                    seat: Seat::West,
+                    call: Call::Pass,
+                },
             ],
             is_complete: true,
         };
@@ -787,7 +882,10 @@ mod tests {
         // Non-pass bid should be rejected — expected bid defaults to Pass
         let result = process_bid(
             &mut state,
-            Call::Bid { level: 3, strain: BidSuit::Spades },
+            Call::Bid {
+                level: 3,
+                strain: BidSuit::Spades,
+            },
             &strategies,
         );
         assert!(!result.accepted);

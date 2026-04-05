@@ -14,12 +14,12 @@ use bridge_session::session::{
     build_bidding_viewport, build_bundle_flow_tree, build_declarer_prompt_viewport,
     build_explanation_viewport, build_module_catalog, build_module_flow_tree,
     build_module_learning_viewport, build_playing_viewport, initialize_auction, process_bid,
-    process_play_card, process_single_card, run_initial_ai_bids, run_initial_ai_plays,
-    start_drill, BiddingViewport,
-    BuildBiddingViewportInput, BuildDeclarerPromptViewportInput, BuildExplanationViewportInput,
-    BuildPlayingViewportInput, BundleFlowTreeViewport, DeclarerPromptViewport, DrillConfig,
-    ExplanationViewport, ModuleCatalogEntry, ModuleFlowTreeViewport, ModuleLearningViewport,
-    PlayCardResult, PlayingViewport, SeatStrategy, SessionState, SingleCardResult,
+    process_play_card, process_single_card, run_initial_ai_bids, run_initial_ai_plays, start_drill,
+    AiPlayEntry, BiddingViewport, BuildBiddingViewportInput, BuildDeclarerPromptViewportInput,
+    BuildExplanationViewportInput, BuildPlayingViewportInput, BundleFlowTreeViewport,
+    DeclarerPromptViewport, DrillConfig, ExplanationViewport, ModuleCatalogEntry,
+    ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult, PlayingViewport, SeatStrategy,
+    SessionState, SingleCardResult,
 };
 use bridge_session::types::{GamePhase, PromptMode};
 
@@ -30,11 +30,59 @@ use crate::port::{DevServicePort, ServicePort};
 use crate::request_types::{SessionConfig, SessionHandle};
 use crate::response_types::{
     AiBidEntryDTO, AiPlayEntryDTO, BidSubmitResult, ConventionInfo, DDSolutionResult,
-    DrillStartResult, InferenceTimelineEntryDTO, PhaseTransition,
-    PromptAcceptResult, ServiceDebugLogEntryDTO, ServiceFactConstraintDTO,
-    ServicePublicBeliefState, ServicePublicBeliefsDTO,
+    DrillStartResult, InferenceTimelineEntryDTO, PhaseTransition, PromptAcceptResult,
+    ServiceDebugLogEntryDTO, ServiceFactConstraintDTO, ServicePublicBeliefState,
+    ServicePublicBeliefsDTO,
 };
 use crate::session_manager::SessionManager;
+
+fn user_face_up_seats(user_seat: Seat) -> HashSet<Seat> {
+    let mut seats = HashSet::new();
+    seats.insert(user_seat);
+    seats
+}
+
+fn ai_play_dtos(ai_plays: Vec<AiPlayEntry>) -> Option<Vec<AiPlayEntryDTO>> {
+    let dtos: Vec<AiPlayEntryDTO> = ai_plays.into_iter().map(AiPlayEntryDTO::from).collect();
+    if dtos.is_empty() {
+        None
+    } else {
+        Some(dtos)
+    }
+}
+
+fn build_bidding_viewport_for_session(
+    session: &crate::session_manager::ActiveSession,
+) -> BiddingViewport {
+    let face_up_seats = user_face_up_seats(session.state.user_seat);
+    let current_turn = bridge_session::session::get_current_turn(
+        &session.state.auction,
+        session.state.deal.dealer,
+    );
+    let current_bidder = current_turn.unwrap_or(session.state.user_seat);
+    let is_user_turn = session.state.is_user_seat(current_bidder);
+
+    build_bidding_viewport(BuildBiddingViewportInput {
+        deal: &session.state.deal,
+        user_seat: session.state.user_seat,
+        auction: &session.state.auction,
+        bid_history: &session.state.bid_history,
+        legal_calls: &session.state.legal_calls,
+        face_up_seats: &face_up_seats,
+        convention_name: session.state.convention_name.clone(),
+        is_user_turn,
+        current_bidder,
+        practice_mode: Some(session.state.practice_mode),
+        bid_context: None,
+        bidding_options: None,
+    })
+}
+
+fn initial_ai_play_dtos(
+    session: &mut crate::session_manager::ActiveSession,
+) -> Option<Vec<AiPlayEntryDTO>> {
+    ai_play_dtos(run_initial_ai_plays(&mut session.state))
+}
 
 // ── ServicePortImpl ───────────────────────────────────────────────
 
@@ -152,33 +200,7 @@ impl ServicePort for ServicePortImpl {
         // Run initial AI bids
         let ai_bids = run_initial_ai_bids(&mut session.state, &session.seat_strategies);
 
-        // Build bidding viewport
-        let face_up_seats = {
-            let mut s = HashSet::new();
-            s.insert(session.state.user_seat);
-            s
-        };
-        let current_turn = bridge_session::session::get_current_turn(
-            &session.state.auction,
-            session.state.deal.dealer,
-        );
-        let current_bidder = current_turn.unwrap_or(session.state.user_seat);
-        let is_user_turn = session.state.is_user_seat(current_bidder);
-
-        let viewport = build_bidding_viewport(BuildBiddingViewportInput {
-            deal: &session.state.deal,
-            user_seat: session.state.user_seat,
-            auction: &session.state.auction,
-            bid_history: &session.state.bid_history,
-            legal_calls: &session.state.legal_calls,
-            face_up_seats: &face_up_seats,
-            convention_name: session.state.convention_name.clone(),
-            is_user_turn,
-            current_bidder,
-            practice_mode: Some(session.state.practice_mode),
-            bid_context: None,
-            bidding_options: None,
-        });
+        let viewport = build_bidding_viewport_for_session(session);
 
         let auction_complete = session.state.auction.is_complete;
         let phase = session.state.phase;
@@ -210,32 +232,7 @@ impl ServicePort for ServicePortImpl {
 
         // Build next viewport if accepted
         let next_viewport = if result.accepted {
-            let face_up_seats = {
-                let mut s = HashSet::new();
-                s.insert(session.state.user_seat);
-                s
-            };
-            let current_turn = bridge_session::session::get_current_turn(
-                &session.state.auction,
-                session.state.deal.dealer,
-            );
-            let current_bidder = current_turn.unwrap_or(session.state.user_seat);
-            let is_user_turn = session.state.is_user_seat(current_bidder);
-
-            Some(build_bidding_viewport(BuildBiddingViewportInput {
-                deal: &session.state.deal,
-                user_seat: session.state.user_seat,
-                auction: &session.state.auction,
-                bid_history: &session.state.bid_history,
-                legal_calls: &session.state.legal_calls,
-                face_up_seats: &face_up_seats,
-                convention_name: session.state.convention_name.clone(),
-                is_user_turn,
-                current_bidder,
-                practice_mode: Some(session.state.practice_mode),
-                bid_context: None,
-                bidding_options: None,
-            }))
+            Some(build_bidding_viewport_for_session(session))
         } else {
             None
         };
@@ -305,17 +302,9 @@ impl ServicePort for ServicePortImpl {
                     session.state.initialize_play(&contract);
                     session.state.phase = GamePhase::Playing;
 
-                    let ai_plays = run_initial_ai_plays(&mut session.state);
-                    let ai_play_dtos: Vec<AiPlayEntryDTO> =
-                        ai_plays.into_iter().map(AiPlayEntryDTO::from).collect();
-
                     Ok(PromptAcceptResult {
                         phase: session.state.phase,
-                        ai_plays: if ai_play_dtos.is_empty() {
-                            None
-                        } else {
-                            Some(ai_play_dtos)
-                        },
+                        ai_plays: initial_ai_play_dtos(session),
                     })
                 } else {
                     // Passout — skip to explanation
@@ -342,17 +331,9 @@ impl ServicePort for ServicePortImpl {
                     session.state.initialize_play(&contract);
                 }
 
-                let ai_plays = run_initial_ai_plays(&mut session.state);
-                let ai_play_dtos: Vec<AiPlayEntryDTO> =
-                    ai_plays.into_iter().map(AiPlayEntryDTO::from).collect();
-
                 Ok(PromptAcceptResult {
                     phase: session.state.phase,
-                    ai_plays: if ai_play_dtos.is_empty() {
-                        None
-                    } else {
-                        Some(ai_play_dtos)
-                    },
+                    ai_plays: initial_ai_play_dtos(session),
                 })
             }
             Some(other) => Err(ServiceError::Internal(format!(
@@ -866,8 +847,12 @@ mod tests {
             opponent_mode: None,
             vulnerability: None,
         };
-        let handle = service.create_session(config).expect("create_session should succeed");
-        let result = service.start_drill(&handle).expect("start_drill should succeed");
+        let handle = service
+            .create_session(config)
+            .expect("create_session should succeed");
+        let result = service
+            .start_drill(&handle)
+            .expect("start_drill should succeed");
         (handle, result)
     }
 
@@ -883,19 +868,35 @@ mod tests {
             let has_major_opening = result.viewport.auction_entries.iter().any(|e| {
                 matches!(
                     &e.call,
-                    Call::Bid { level: 1, strain: BidSuit::Hearts }
-                    | Call::Bid { level: 1, strain: BidSuit::Spades }
+                    Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Hearts
+                    } | Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Spades
+                    }
                 )
             });
             assert!(
                 has_major_opening,
                 "seed={seed}: Bergen session should have 1H or 1S in auction, got: {:?}",
-                result.viewport.auction_entries.iter().map(|e| &e.call).collect::<Vec<_>>()
+                result
+                    .viewport
+                    .auction_entries
+                    .iter()
+                    .map(|e| &e.call)
+                    .collect::<Vec<_>>()
             );
 
             // Should NOT have a 1NT opening (the bug we're fixing)
             let has_1nt = result.viewport.auction_entries.iter().any(|e| {
-                matches!(&e.call, Call::Bid { level: 1, strain: BidSuit::NoTrump })
+                matches!(
+                    &e.call,
+                    Call::Bid {
+                        level: 1,
+                        strain: BidSuit::NoTrump
+                    }
+                )
             });
             assert!(
                 !has_1nt,
@@ -911,12 +912,23 @@ mod tests {
             let (_handle, result) = create_session_for_bundle(&mut service, "nt-bundle", seed);
 
             let has_1nt = result.viewport.auction_entries.iter().any(|e| {
-                matches!(&e.call, Call::Bid { level: 1, strain: BidSuit::NoTrump })
+                matches!(
+                    &e.call,
+                    Call::Bid {
+                        level: 1,
+                        strain: BidSuit::NoTrump
+                    }
+                )
             });
             assert!(
                 has_1nt,
                 "seed={seed}: NT session should have 1NT in auction, got: {:?}",
-                result.viewport.auction_entries.iter().map(|e| &e.call).collect::<Vec<_>>()
+                result
+                    .viewport
+                    .auction_entries
+                    .iter()
+                    .map(|e| &e.call)
+                    .collect::<Vec<_>>()
             );
         }
     }
@@ -932,12 +944,23 @@ mod tests {
 
             // The first auction entry should be the pre-filled opening
             let first_entry = &result.viewport.auction_entries[0];
-            assert_eq!(first_entry.seat, result.viewport.dealer,
-                "First bid should be from dealer");
+            assert_eq!(
+                first_entry.seat, result.viewport.dealer,
+                "First bid should be from dealer"
+            );
             match &first_entry.call {
-                Call::Bid { level: 1, strain: BidSuit::Hearts }
-                | Call::Bid { level: 1, strain: BidSuit::Spades } => {}
-                other => panic!("seed={seed}: Expected 1H or 1S as first bid, got {:?}", other),
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Hearts,
+                }
+                | Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Spades,
+                } => {}
+                other => panic!(
+                    "seed={seed}: Expected 1H or 1S as first bid, got {:?}",
+                    other
+                ),
             }
         }
     }

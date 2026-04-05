@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { bidTextToTestId, closeDebugDrawer, readDebugDrawerText } from "./helpers";
 
 /**
  * Weak Two Bids / Ogust Convention — Comprehensive E2E Tests
@@ -117,16 +118,6 @@ async function openDebugDrawer(page: Page): Promise<void> {
   await page.waitForTimeout(400);
 }
 
-/** Close the debug drawer (needed on mobile viewports where it covers bid buttons) */
-async function closeDebugDrawer(page: Page): Promise<void> {
-  try {
-    await page.locator('button[aria-label="Close debug panel"]').click({ timeout: 1000 });
-    await page.waitForTimeout(300);
-  } catch {
-    // Already closed or not interactable — ignore
-  }
-}
-
 /** Extract all 4 hands using page.evaluate() for reliable DOM access */
 async function extractAllHands(page: Page): Promise<HandInfo[]> {
   const hands: HandInfo[] = [];
@@ -227,7 +218,7 @@ async function getCorrectBidFromDebugPanel(page: Page): Promise<{
   meaningText: string;
 }> {
   // Try the "expected:" line from the at-a-glance summary in body text
-  const body = await page.locator("body").innerText();
+  const body = await readDebugDrawerText(page);
   const lines = body.split("\n");
   const idx = lines.findIndex((l) => l.trim().startsWith("expected:"));
   if (idx >= 0) {
@@ -285,24 +276,6 @@ async function extractPipelineText(page: Page): Promise<string> {
     }
     return "Pipeline section not found";
   });
-}
-
-/** Map bid text (with suit symbols) to bid-panel testid key */
-function bidTextToTestId(bidText: string): string {
-  const cleaned = bidText
-    .replace(/♣/g, "C")
-    .replace(/♦/g, "D")
-    .replace(/♥/g, "H")
-    .replace(/♠/g, "S")
-    .replace("NT", "NT")
-    .replace(/\s+/g, "")
-    .trim();
-  if (cleaned.toLowerCase() === "pass") return "bid-P";
-  if (cleaned.toLowerCase() === "double" || cleaned === "X")
-    return "bid-X";
-  if (cleaned.toLowerCase() === "redouble" || cleaned === "XX")
-    return "bid-XX";
-  return `bid-${cleaned}`;
 }
 
 /** Determine the opened suit from the auction text */

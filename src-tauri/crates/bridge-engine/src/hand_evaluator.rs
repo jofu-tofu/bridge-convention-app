@@ -35,11 +35,21 @@ pub fn is_balanced(shape: &SuitLength) -> bool {
     let mut c = shape[2];
     let mut d = shape[3];
 
-    if a < b { std::mem::swap(&mut a, &mut b); }
-    if c < d { std::mem::swap(&mut c, &mut d); }
-    if a < c { std::mem::swap(&mut a, &mut c); }
-    if b < d { std::mem::swap(&mut b, &mut d); }
-    if b < c { std::mem::swap(&mut b, &mut c); }
+    if a < b {
+        std::mem::swap(&mut a, &mut b);
+    }
+    if c < d {
+        std::mem::swap(&mut c, &mut d);
+    }
+    if a < c {
+        std::mem::swap(&mut a, &mut c);
+    }
+    if b < d {
+        std::mem::swap(&mut b, &mut d);
+    }
+    if b < c {
+        std::mem::swap(&mut b, &mut c);
+    }
 
     // a >= b >= c >= d, sum = 13
     (a == 4 && b == 3 && c == 3 && d == 3)
@@ -90,8 +100,7 @@ impl HandEvaluationStrategy for HcpStrategy {
     }
 
     fn evaluate(&self, hand: &Hand) -> HandEvaluation {
-        let hcp = calculate_hcp(hand);
-        let shape = get_suit_length(hand);
+        let (hcp, shape) = calculate_hcp_and_shape(hand);
         let distribution = calculate_distribution_points(&shape);
         HandEvaluation {
             hcp,
@@ -118,15 +127,34 @@ mod tests {
     use crate::types::{Card, Hand, Rank, Suit};
 
     fn make_hand(specs: &[(&str, &str)]) -> Hand {
-        let cards: Vec<Card> = specs.iter().map(|(s, r)| Card {
-            suit: match *s { "S" => Suit::Spades, "H" => Suit::Hearts, "D" => Suit::Diamonds, "C" => Suit::Clubs, _ => panic!() },
-            rank: match *r {
-                "2" => Rank::Two, "3" => Rank::Three, "4" => Rank::Four, "5" => Rank::Five,
-                "6" => Rank::Six, "7" => Rank::Seven, "8" => Rank::Eight, "9" => Rank::Nine,
-                "T" => Rank::Ten, "J" => Rank::Jack, "Q" => Rank::Queen, "K" => Rank::King,
-                "A" => Rank::Ace, _ => panic!()
-            },
-        }).collect();
+        let cards: Vec<Card> = specs
+            .iter()
+            .map(|(s, r)| Card {
+                suit: match *s {
+                    "S" => Suit::Spades,
+                    "H" => Suit::Hearts,
+                    "D" => Suit::Diamonds,
+                    "C" => Suit::Clubs,
+                    _ => panic!(),
+                },
+                rank: match *r {
+                    "2" => Rank::Two,
+                    "3" => Rank::Three,
+                    "4" => Rank::Four,
+                    "5" => Rank::Five,
+                    "6" => Rank::Six,
+                    "7" => Rank::Seven,
+                    "8" => Rank::Eight,
+                    "9" => Rank::Nine,
+                    "T" => Rank::Ten,
+                    "J" => Rank::Jack,
+                    "Q" => Rank::Queen,
+                    "K" => Rank::King,
+                    "A" => Rank::Ace,
+                    _ => panic!(),
+                },
+            })
+            .collect();
         Hand { cards }
     }
 
@@ -134,9 +162,19 @@ mod tests {
     fn hcp_all_aces() {
         // 4 aces + 9 spot cards = 16 HCP
         let hand = make_hand(&[
-            ("S", "A"), ("H", "A"), ("D", "A"), ("C", "A"),
-            ("S", "2"), ("S", "3"), ("S", "4"), ("H", "2"), ("H", "3"),
-            ("D", "2"), ("D", "3"), ("C", "2"), ("C", "3"),
+            ("S", "A"),
+            ("H", "A"),
+            ("D", "A"),
+            ("C", "A"),
+            ("S", "2"),
+            ("S", "3"),
+            ("S", "4"),
+            ("H", "2"),
+            ("H", "3"),
+            ("D", "2"),
+            ("D", "3"),
+            ("C", "2"),
+            ("C", "3"),
         ]);
         assert_eq!(calculate_hcp(&hand), 16);
     }
@@ -145,10 +183,19 @@ mod tests {
     fn hcp_yarborough() {
         // No face cards = 0 HCP
         let hand = make_hand(&[
-            ("S", "2"), ("S", "3"), ("S", "4"), ("S", "5"),
-            ("H", "2"), ("H", "3"), ("H", "4"),
-            ("D", "2"), ("D", "3"), ("D", "4"),
-            ("C", "2"), ("C", "3"), ("C", "4"),
+            ("S", "2"),
+            ("S", "3"),
+            ("S", "4"),
+            ("S", "5"),
+            ("H", "2"),
+            ("H", "3"),
+            ("H", "4"),
+            ("D", "2"),
+            ("D", "3"),
+            ("D", "4"),
+            ("C", "2"),
+            ("C", "3"),
+            ("C", "4"),
         ]);
         assert_eq!(calculate_hcp(&hand), 0);
     }
@@ -157,10 +204,19 @@ mod tests {
     fn hcp_all_honors() {
         // AKQJ in every suit = 40 HCP... wait, that's 16 cards. Use 3 suits + partial
         let hand = make_hand(&[
-            ("S", "A"), ("S", "K"), ("S", "Q"), ("S", "J"),
-            ("H", "A"), ("H", "K"), ("H", "Q"),
-            ("D", "A"), ("D", "K"), ("D", "Q"),
-            ("C", "A"), ("C", "K"), ("C", "Q"),
+            ("S", "A"),
+            ("S", "K"),
+            ("S", "Q"),
+            ("S", "J"),
+            ("H", "A"),
+            ("H", "K"),
+            ("H", "Q"),
+            ("D", "A"),
+            ("D", "K"),
+            ("D", "Q"),
+            ("C", "A"),
+            ("C", "K"),
+            ("C", "Q"),
         ]);
         assert_eq!(calculate_hcp(&hand), 37);
     }
@@ -168,10 +224,19 @@ mod tests {
     #[test]
     fn suit_length_4333() {
         let hand = make_hand(&[
-            ("S", "A"), ("S", "K"), ("S", "Q"), ("S", "J"),
-            ("H", "A"), ("H", "K"), ("H", "Q"),
-            ("D", "A"), ("D", "K"), ("D", "Q"),
-            ("C", "A"), ("C", "K"), ("C", "Q"),
+            ("S", "A"),
+            ("S", "K"),
+            ("S", "Q"),
+            ("S", "J"),
+            ("H", "A"),
+            ("H", "K"),
+            ("H", "Q"),
+            ("D", "A"),
+            ("D", "K"),
+            ("D", "Q"),
+            ("C", "A"),
+            ("C", "K"),
+            ("C", "Q"),
         ]);
         let shape = get_suit_length(&hand);
         assert_eq!(shape, [4, 3, 3, 3]); // S=4, H=3, D=3, C=3
@@ -253,10 +318,19 @@ mod tests {
     #[test]
     fn evaluate_hand_hcp_strategy() {
         let hand = make_hand(&[
-            ("S", "A"), ("S", "K"), ("S", "Q"), ("S", "J"),
-            ("H", "A"), ("H", "K"), ("H", "Q"),
-            ("D", "A"), ("D", "K"), ("D", "Q"),
-            ("C", "A"), ("C", "K"), ("C", "Q"),
+            ("S", "A"),
+            ("S", "K"),
+            ("S", "Q"),
+            ("S", "J"),
+            ("H", "A"),
+            ("H", "K"),
+            ("H", "Q"),
+            ("D", "A"),
+            ("D", "K"),
+            ("D", "Q"),
+            ("C", "A"),
+            ("C", "K"),
+            ("C", "Q"),
         ]);
         let eval = evaluate_hand_hcp(&hand);
         assert_eq!(eval.hcp, 37);
@@ -269,10 +343,19 @@ mod tests {
     #[test]
     fn calculate_hcp_and_shape_matches_separate() {
         let hand = make_hand(&[
-            ("S", "A"), ("S", "K"), ("S", "2"), ("S", "3"), ("S", "4"),
-            ("H", "Q"), ("H", "J"), ("H", "T"),
-            ("D", "A"), ("D", "5"), ("D", "6"),
-            ("C", "K"), ("C", "7"),
+            ("S", "A"),
+            ("S", "K"),
+            ("S", "2"),
+            ("S", "3"),
+            ("S", "4"),
+            ("H", "Q"),
+            ("H", "J"),
+            ("H", "T"),
+            ("D", "A"),
+            ("D", "5"),
+            ("D", "6"),
+            ("C", "K"),
+            ("C", "7"),
         ]);
         let (hcp, shape) = calculate_hcp_and_shape(&hand);
         assert_eq!(hcp, calculate_hcp(&hand));

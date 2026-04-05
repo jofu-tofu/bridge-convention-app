@@ -1,30 +1,30 @@
 import { describe, it, expect } from "vitest";
-import { Seat } from "../../../engine/types";
-import type { Hand } from "../../../engine/types";
+import { BidSuit, Seat } from "../../../engine/types";
 import { computeVisibleSeats } from "../../game/AuctionStepPanel";
 import type { BidHistoryEntry } from "../../../service";
+import type { Hand } from "../../../engine/types";
 
-function makeHand(_label: string): Hand {
-  return { cards: [], hcp: 0 } as unknown as Hand;
+function makeHand(): Hand {
+  return { cards: [] };
 }
 
 const allHands: Record<Seat, Hand> = {
-  [Seat.North]: makeHand("N"),
-  [Seat.East]: makeHand("E"),
-  [Seat.South]: makeHand("S"),
-  [Seat.West]: makeHand("W"),
+  [Seat.North]: makeHand(),
+  [Seat.East]: makeHand(),
+  [Seat.South]: makeHand(),
+  [Seat.West]: makeHand(),
 };
 
 const bidHistory: readonly BidHistoryEntry[] = [
-  { seat: Seat.North, call: { type: "bid", level: 1, strain: "C" }, isUser: false },
+  { seat: Seat.North, call: { type: "bid", level: 1, strain: BidSuit.Clubs }, isUser: false },
   { seat: Seat.East, call: { type: "pass" }, isUser: false },
-  { seat: Seat.South, call: { type: "bid", level: 1, strain: "H" }, isUser: true },
+  { seat: Seat.South, call: { type: "bid", level: 1, strain: BidSuit.Hearts }, isUser: true },
   { seat: Seat.West, call: { type: "pass" }, isUser: false },
-  { seat: Seat.North, call: { type: "bid", level: 2, strain: "H" }, isUser: false },
+  { seat: Seat.North, call: { type: "bid", level: 2, strain: BidSuit.Hearts }, isUser: false },
   { seat: Seat.East, call: { type: "pass" }, isUser: false },
   { seat: Seat.South, call: { type: "pass" }, isUser: true },
   { seat: Seat.West, call: { type: "pass" }, isUser: false },
-] as unknown as BidHistoryEntry[];
+] satisfies readonly BidHistoryEntry[];
 
 describe("computeVisibleSeats", () => {
   it("returns only user seat when step is null and no dummy", () => {

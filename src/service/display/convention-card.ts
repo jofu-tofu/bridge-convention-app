@@ -1,8 +1,19 @@
-import type { SystemConfig, BaseSystemId } from "../session-types";
+import type { SystemConfig } from "../session-types";
 import {
   ConventionCardSectionId,
+  type ConventionCardPanelView,
+  type ConventionCardSection,
+  type ConventionCardLineItem,
+  type ConventionCardModuleDetail,
+  type AcblCardPanelView,
+  type AcblCardSection,
 } from "../response-types";
-import { listModules, listConventions, buildBaseModuleInfos, getModuleLearningViewportSync } from "../service-helpers";
+import {
+  listModules,
+  listConventions,
+  buildBaseModuleInfos,
+  getModuleLearningViewportSync,
+} from "../service-helpers";
 import { formatRuleName } from "./format";
 
 // ── Convention catalog functions (delegating to Rust/WASM) ──────────
@@ -13,7 +24,7 @@ interface ModuleInfo {
   readonly teaching: { readonly principle?: string; readonly tradeoff?: string; readonly commonMistakes: readonly string[] };
 }
 
-function getModule(moduleId: string, _sys: SystemConfig): ModuleInfo | undefined {
+function getModule(moduleId: string): ModuleInfo | undefined {
   try {
     const catalog = listModules();
     const entry = catalog.find(m => m.moduleId === moduleId);
@@ -33,32 +44,24 @@ function getModule(moduleId: string, _sys: SystemConfig): ModuleInfo | undefined
   }
 }
 
-function getBaseModuleIds(systemId: BaseSystemId): readonly string[] {
+function getBaseModuleIds(): readonly string[] {
   try {
-    return buildBaseModuleInfos(systemId).map(m => m.id);
+    return buildBaseModuleInfos().map((m) => m.id);
   } catch {
     return [];
   }
 }
 
-function getBundleInput(id: string): { memberIds: readonly string[] } | undefined {
+function getBundleModuleIds(id: string): readonly string[] | undefined {
   try {
     const all = listConventions();
     const bundle = all.find(c => c.id === id);
     if (!bundle) return undefined;
-    return { memberIds: bundle.moduleIds ?? [] };
+    return bundle.moduleIds ?? [];
   } catch {
     return undefined;
   }
 }
-import type {
-  ConventionCardPanelView,
-  ConventionCardSection,
-  ConventionCardLineItem,
-  ConventionCardModuleDetail,
-  AcblCardPanelView,
-  AcblCardSection,
-} from "../response-types";
 
 // ── Shared helpers ─────────────────────────────────────────────
 
@@ -160,8 +163,8 @@ const SECTION_DEFS: readonly SectionDef[] = [
   },
 ];
 
-function buildModuleDetail(moduleId: string, sys: SystemConfig): ConventionCardModuleDetail | undefined {
-  const mod = getModule(moduleId, sys);
+function buildModuleDetail(moduleId: string): ConventionCardModuleDetail | undefined {
+  const mod = getModule(moduleId);
   if (!mod) return undefined;
   return {
     moduleId: mod.moduleId,
@@ -170,9 +173,16 @@ function buildModuleDetail(moduleId: string, sys: SystemConfig): ConventionCardM
     principle: mod.teaching.principle || undefined,
     tradeoff: mod.teaching.tradeoff || undefined,
     commonMistakes: mod.teaching.commonMistakes.length > 0
-      ? mod.teaching.commonMistakes.map((m) => String(m))
+      ? mod.teaching.commonMistakes
       : undefined,
   };
+}
+
+function getActiveModuleIds(conventionId?: string): ReadonlySet<string> {
+  return new Set([
+    ...getBaseModuleIds(),
+    ...(conventionId ? (getBundleModuleIds(conventionId) ?? []) : []),
+  ]);
 }
 
 /** Build a full convention card panel view with structured sections. */
@@ -180,11 +190,7 @@ export function buildConventionCardPanel(
   systemConfig: SystemConfig,
   conventionId?: string,
 ): ConventionCardPanelView {
-  // Collect active module IDs from base system + optional bundle
-  const activeModuleIds = new Set<string>([
-    ...getBaseModuleIds(systemConfig.systemId),
-    ...(conventionId ? (getBundleInput(conventionId)?.memberIds ?? []) : []),
-  ]);
+  const activeModuleIds = getActiveModuleIds(conventionId);
 
   const sections: ConventionCardSection[] = [];
 
@@ -194,7 +200,7 @@ export function buildConventionCardPanel(
 
     for (const mid of def.moduleIds) {
       if (!activeModuleIds.has(mid)) continue;
-      const detail = buildModuleDetail(mid, systemConfig);
+      const detail = buildModuleDetail(mid);
       if (detail) modules.push(detail);
     }
 
@@ -341,10 +347,7 @@ export function buildAcblCardPanel(
   systemConfig: SystemConfig,
   conventionId?: string,
 ): AcblCardPanelView {
-  const activeModuleIds = new Set<string>([
-    ...getBaseModuleIds(systemConfig.systemId),
-    ...(conventionId ? (getBundleInput(conventionId)?.memberIds ?? []) : []),
-  ]);
+  const activeModuleIds = getActiveModuleIds(conventionId);
 
   const sections: AcblCardSection[] = ACBL_SECTION_DEFS.map((def) => {
     const hasActiveModule = def.moduleIds.some((mid) => activeModuleIds.has(mid));
@@ -356,7 +359,7 @@ export function buildAcblCardPanel(
     if (available) {
       for (const mid of def.moduleIds) {
         if (!activeModuleIds.has(mid)) continue;
-        const detail = buildModuleDetail(mid, systemConfig);
+        const detail = buildModuleDetail(mid);
         if (detail) modules.push(detail);
       }
     }

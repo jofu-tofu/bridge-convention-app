@@ -17,7 +17,7 @@ import type {
   Suit,
 } from "../service";
 import type { DevServicePort, SessionHandle, SessionConfig } from "../service";
-import type { ServicePublicBeliefs, ServiceGamePhase, ServicePublicBeliefState, PracticeMode, PromptMode } from "../service";
+import type { ServiceGamePhase, ServicePublicBeliefState, PracticeMode, PromptMode } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import type {
   BidFeedback,
@@ -49,7 +49,6 @@ export interface GameStore {
   readonly phase: `${ServiceGamePhase}`;
   readonly contract: Contract | null;
   readonly practiceMode: PracticeMode;
-  readonly playUserSeat: Seat;
 
   // Bidding state
   readonly auction: Auction;
@@ -71,9 +70,6 @@ export interface GameStore {
   readonly dummySeat: Seat | null;
   readonly score: number | null;
   readonly trumpSuit: Suit | undefined;
-  readonly legalPlaysForCurrentPlayer: readonly Card[];
-  readonly userControlledSeats: readonly Seat[];
-  readonly remainingCardsPerSeat: Partial<Record<Seat, readonly Card[]>>;
 
   // DDS state
   readonly ddsSolution: DDSolution | null;
@@ -81,8 +77,6 @@ export interface GameStore {
   readonly ddsError: string | null;
 
   // Prompt state
-  readonly isDefenderPrompt: boolean;
-  readonly isSouthDeclarerPrompt: boolean;
   readonly promptMode: PromptMode | null;
   readonly faceUpSeats: ReadonlySet<Seat>;
 
@@ -103,31 +97,6 @@ export interface GameStore {
   // Debug observability
   readonly debugLog: DebugLogEntry[];
   readonly playLog: PlayLogEntry[];
-  readonly playInferences: Record<Seat, ServicePublicBeliefs> | null;
-  // Namespaced sub-store accessors (backward compat)
-  readonly bidding: {
-    readonly auction: Auction;
-    readonly bidHistory: BidHistoryEntry[];
-    readonly bidFeedback: BidFeedback | null;
-    readonly legalCalls: Call[];
-    readonly currentTurn: Seat | null;
-    readonly isUserTurn: boolean;
-  };
-  readonly play: {
-    readonly tricks: readonly Trick[];
-    readonly currentTrick: readonly PlayedCard[];
-    readonly currentPlayer: Seat | null;
-    readonly declarerTricksWon: number;
-    readonly defenderTricksWon: number;
-    readonly dummySeat: Seat | null;
-    readonly score: number | null;
-    readonly trumpSuit: Suit | undefined;
-  };
-  readonly dds: {
-    readonly solution: DDSolution | null;
-    readonly solving: boolean;
-    readonly error: string | null;
-  };
 
   // Methods
   userPlayCard(card: Card, seat: Seat): void;

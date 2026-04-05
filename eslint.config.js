@@ -138,6 +138,7 @@ export default tseslint.config(
             "tests/e2e/flow-test.spec.ts",
             "tests/e2e/game-lifecycle.spec.ts",
             "tests/e2e/my-review.spec.ts",
+            "tests/e2e/helpers.ts",
             "tests/e2e/play-phase.spec.ts",
             "tests/e2e/stayman-bidding.spec.ts",
             "tests/e2e/test-1nt-full.spec.ts",

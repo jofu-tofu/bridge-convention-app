@@ -23,22 +23,9 @@
  */
 import { test, expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { bidTextToTestId, closeDebugDrawer, readDebugDrawerText } from "./helpers";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-/** Map a canonical bid name to its button data-testid */
-function bidToTestId(bid: string): string {
-  const map: Record<string, string> = {
-    "Pass": "bid-P",
-    "X": "bid-X",
-    "XX": "bid-XX",
-    "2♣": "bid-2C",
-    "2♦": "bid-2D",
-    "2♥": "bid-2H",
-    "2♠": "bid-2S",
-  };
-  return map[bid] ?? `bid-${bid}`;
-}
 
 /** Map display format (from formatCall: "Dbl", "Rdbl") back to canonical bid name */
 function displayBidToCanonical(displayed: string): string {
@@ -121,20 +108,6 @@ async function openDebugDrawer(page: Page): Promise<void> {
 }
 
 /**
- * Close the debug drawer if it's open.
- * Critical for mobile viewports (e.g. iPhone 14 = 390×844) where the drawer
- * covers the full screen width, making bid panel buttons unreachable.
- */
-async function closeDebugDrawer(page: Page): Promise<void> {
-  try {
-    await page.locator('button[aria-label="Close debug panel"]').click({ timeout: 1000 });
-    await page.waitForTimeout(300);
-  } catch {
-    // Already closed or not interactable — ignore
-  }
-}
-
-/**
  * Make a probe bid (7NT — always wrong for DONT) to trigger pipeline evaluation,
  * then extract the expected bid and hand shape from the now-populated debug data.
  *
@@ -165,16 +138,7 @@ async function probeAndExtract(page: Page): Promise<{
   await page.waitForTimeout(500);
 
   // Read debug data directly from the drawer element (bypasses viewport/inert issues)
-  const body = await page.evaluate(() => {
-    const drawer = document.querySelector('aside[aria-label="Debug drawer"]');
-    if (drawer && !drawer.hasAttribute("inert")) {
-      drawer.querySelectorAll("details").forEach((d) => {
-        (d).open = true;
-      });
-      return drawer.innerText + "\n" + (document.querySelector("main")?.innerText ?? "");
-    }
-    return document.body.innerText;
-  });
+  const body = await readDebugDrawerText(page);
 
   // Extract expected bid from at-a-glance "expected: <bid> <meaning>"
   const expectedMatch = body.match(/expected:\s*(\S+)/);
@@ -239,7 +203,7 @@ test.describe("DONT Convention — Correctness verification (seeds 1-5)", () => 
       // 6. Retry and make the correct bid
       await retryAfterBid(page);
 
-      const bidTestId = bidToTestId(expectedBid);
+      const bidTestId = bidTextToTestId(expectedBid);
       await page.getByTestId(bidTestId).click();
 
       // 7. After correct bid, verify game processes it (may show feedback, advance auction, or transition phase)
@@ -283,7 +247,7 @@ test.describe("DONT Convention — Wrong bid gives feedback with retry", () => {
     await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
 
     // Now bid correctly
-    await page.getByTestId(bidToTestId(expectedBid)).click();
+    await page.getByTestId(bidTextToTestId(expectedBid)).click();
 
     // After correct bid, verify game advances
     await page.waitForTimeout(2_000);

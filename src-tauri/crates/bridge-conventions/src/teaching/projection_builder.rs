@@ -4,11 +4,15 @@
 
 use std::collections::HashMap;
 
+use crate::pipeline::evaluation::types::MeaningClause;
 use crate::pipeline::types::{PipelineCarrier, PipelineResult};
 use crate::teaching::teaching_types::*;
 
 /// Build a TeachingProjection from a PipelineResult.
-pub fn project_teaching(result: &PipelineResult, surface_groups: Option<&[SurfaceGroup]>) -> TeachingProjection {
+pub fn project_teaching(
+    result: &PipelineResult,
+    surface_groups: Option<&[SurfaceGroup]>,
+) -> TeachingProjection {
     let call_views = build_call_views(result);
     let meaning_views = build_meaning_views(result);
     let primary_explanation = build_primary_explanation(result);
@@ -56,7 +60,9 @@ fn build_call_views(result: &PipelineResult) -> Vec<CallProjection> {
             primary_meaning: None,
             projection_kind: ProjectionKind::SingleRationale,
         });
-        entry.supporting_meanings.push(carrier.proposal().meaning_id.clone());
+        entry
+            .supporting_meanings
+            .push(carrier.proposal().meaning_id.clone());
     }
 
     // Set primary meaning
@@ -128,30 +134,26 @@ fn build_primary_explanation(result: &PipelineResult) -> Vec<ExplanationNode> {
         });
 
         for clause in &selected.proposal().clauses {
-            nodes.push(ExplanationNode {
-                kind: ExplanationKind::Condition,
-                content: clause
-                    .description
-                    .clone()
-                    .unwrap_or_else(|| clause.fact_id.clone()),
-                passed: Some(clause.satisfied),
-                explanation_id: clause.clause_id.clone(),
-                template_key: None,
-            });
+            nodes.push(clause_to_explanation_node(clause, Some(clause.satisfied)));
         }
     }
 
     nodes
 }
 
-fn build_why_not(result: &PipelineResult, surface_groups: Option<&[SurfaceGroup]>) -> Vec<WhyNotEntry> {
+fn build_why_not(
+    result: &PipelineResult,
+    surface_groups: Option<&[SurfaceGroup]>,
+) -> Vec<WhyNotEntry> {
     let mut entries = Vec::new();
 
     // Find the surface group containing the selected meaning (if any)
     let selected_group = result.selected.as_ref().and_then(|selected| {
         let selected_id = &selected.proposal().meaning_id;
         surface_groups.and_then(|groups| {
-            groups.iter().find(|g| g.members.iter().any(|m| m == selected_id.as_str()))
+            groups
+                .iter()
+                .find(|g| g.members.iter().any(|m| m == selected_id.as_str()))
         })
     });
 
@@ -165,20 +167,18 @@ fn build_why_not(result: &PipelineResult, surface_groups: Option<&[SurfaceGroup]
 
         let explanation: Vec<ExplanationNode> = failed_clauses
             .iter()
-            .map(|c| ExplanationNode {
-                kind: ExplanationKind::Condition,
-                content: c.description.clone().unwrap_or_else(|| c.fact_id.clone()),
-                passed: Some(false),
-                explanation_id: c.clause_id.clone(),
-                template_key: None,
-            })
+            .map(|c| clause_to_explanation_node(c, Some(false)))
             .collect();
 
         if !explanation.is_empty() {
             // Near miss: in the same surface group as selected, with at most 1 failed clause
             let grade = if failed_clauses.len() <= 1 {
                 if let Some(group) = selected_group {
-                    if group.members.iter().any(|m| m == &carrier.proposal().meaning_id) {
+                    if group
+                        .members
+                        .iter()
+                        .any(|m| m == &carrier.proposal().meaning_id)
+                    {
                         WhyNotGrade::NearMiss
                     } else {
                         WhyNotGrade::Wrong
@@ -205,6 +205,19 @@ fn build_why_not(result: &PipelineResult, surface_groups: Option<&[SurfaceGroup]
     }
 
     entries
+}
+
+fn clause_to_explanation_node(clause: &MeaningClause, passed: Option<bool>) -> ExplanationNode {
+    ExplanationNode {
+        kind: ExplanationKind::Condition,
+        content: clause
+            .description
+            .clone()
+            .unwrap_or_else(|| clause.fact_id.clone()),
+        passed,
+        explanation_id: clause.clause_id.clone(),
+        template_key: None,
+    }
 }
 
 fn build_conventions_applied(result: &PipelineResult) -> Vec<ConventionContribution> {

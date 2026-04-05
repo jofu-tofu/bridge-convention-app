@@ -23,17 +23,37 @@ fn fisher_yates_shuffle<R: Rng + ?Sized>(cards: &[Card], rng: &mut R) -> Vec<Car
     buf
 }
 
-fn deal_from_shuffled(
-    cards: &[Card],
-    dealer: Seat,
-    vulnerability: Vulnerability,
-) -> Deal {
+fn deal_from_shuffled(cards: &[Card], dealer: Seat, vulnerability: Vulnerability) -> Deal {
     let mut hands = HashMap::new();
-    hands.insert(Seat::North, Hand { cards: cards[0..13].to_vec() });
-    hands.insert(Seat::East, Hand { cards: cards[13..26].to_vec() });
-    hands.insert(Seat::South, Hand { cards: cards[26..39].to_vec() });
-    hands.insert(Seat::West, Hand { cards: cards[39..52].to_vec() });
-    Deal { hands, dealer, vulnerability }
+    hands.insert(
+        Seat::North,
+        Hand {
+            cards: cards[0..13].to_vec(),
+        },
+    );
+    hands.insert(
+        Seat::East,
+        Hand {
+            cards: cards[13..26].to_vec(),
+        },
+    );
+    hands.insert(
+        Seat::South,
+        Hand {
+            cards: cards[26..39].to_vec(),
+        },
+    );
+    hands.insert(
+        Seat::West,
+        Hand {
+            cards: cards[39..52].to_vec(),
+        },
+    );
+    Deal {
+        hands,
+        dealer,
+        vulnerability,
+    }
 }
 
 fn check_shape_constraint(shape: &SuitLength, constraint: &SeatConstraint) -> bool {
@@ -81,6 +101,22 @@ fn check_shape_constraint(shape: &SuitLength, constraint: &SeatConstraint) -> bo
     true
 }
 
+fn check_hcp_constraint(hcp: u32, constraint: &SeatConstraint) -> bool {
+    if let Some(min) = constraint.min_hcp {
+        if hcp < min {
+            return false;
+        }
+    }
+
+    if let Some(max) = constraint.max_hcp {
+        if hcp > max {
+            return false;
+        }
+    }
+
+    true
+}
+
 fn check_seat_constraint(hand: &Hand, constraint: &SeatConstraint) -> bool {
     let needs_hcp = constraint.min_hcp.is_some() || constraint.max_hcp.is_some();
     let needs_shape = constraint.balanced.is_some()
@@ -90,24 +126,22 @@ fn check_seat_constraint(hand: &Hand, constraint: &SeatConstraint) -> bool {
 
     if needs_hcp && needs_shape {
         let (hcp, shape) = calculate_hcp_and_shape(hand);
-        if let Some(min) = constraint.min_hcp {
-            if hcp < min { return false; }
+        if !check_hcp_constraint(hcp, constraint) {
+            return false;
         }
-        if let Some(max) = constraint.max_hcp {
-            if hcp > max { return false; }
+        if !check_shape_constraint(&shape, constraint) {
+            return false;
         }
-        if !check_shape_constraint(&shape, constraint) { return false; }
     } else if needs_hcp {
         let hcp = calculate_hcp(hand);
-        if let Some(min) = constraint.min_hcp {
-            if hcp < min { return false; }
-        }
-        if let Some(max) = constraint.max_hcp {
-            if hcp > max { return false; }
+        if !check_hcp_constraint(hcp, constraint) {
+            return false;
         }
     } else if needs_shape {
         let shape = get_suit_length(hand);
-        if !check_shape_constraint(&shape, constraint) { return false; }
+        if !check_shape_constraint(&shape, constraint) {
+            return false;
+        }
     }
 
     true
@@ -187,22 +221,39 @@ mod tests {
         };
         let r1 = generate_deal(&constraints).unwrap();
         let r2 = generate_deal(&constraints).unwrap();
-        assert_eq!(r1.deal.hands[&Seat::North].cards, r2.deal.hands[&Seat::North].cards);
-        assert_eq!(r1.deal.hands[&Seat::South].cards, r2.deal.hands[&Seat::South].cards);
+        assert_eq!(
+            r1.deal.hands[&Seat::North].cards,
+            r2.deal.hands[&Seat::North].cards
+        );
+        assert_eq!(
+            r1.deal.hands[&Seat::South].cards,
+            r2.deal.hands[&Seat::South].cards
+        );
     }
 
     #[test]
     fn different_seeds_produce_different_deals() {
         let c1 = DealConstraints {
-            seats: vec![], vulnerability: None, dealer: None, max_attempts: None, seed: Some(1),
+            seats: vec![],
+            vulnerability: None,
+            dealer: None,
+            max_attempts: None,
+            seed: Some(1),
         };
         let c2 = DealConstraints {
-            seats: vec![], vulnerability: None, dealer: None, max_attempts: None, seed: Some(2),
+            seats: vec![],
+            vulnerability: None,
+            dealer: None,
+            max_attempts: None,
+            seed: Some(2),
         };
         let r1 = generate_deal(&c1).unwrap();
         let r2 = generate_deal(&c2).unwrap();
         // Extremely unlikely to be equal
-        assert_ne!(r1.deal.hands[&Seat::North].cards, r2.deal.hands[&Seat::North].cards);
+        assert_ne!(
+            r1.deal.hands[&Seat::North].cards,
+            r2.deal.hands[&Seat::North].cards
+        );
     }
 
     #[test]
@@ -340,7 +391,10 @@ mod tests {
             seed: Some(42),
         };
         let result = generate_deal(&constraints).unwrap();
-        let mut all_cards: Vec<_> = result.deal.hands.values()
+        let mut all_cards: Vec<_> = result
+            .deal
+            .hands
+            .values()
             .flat_map(|h| h.cards.iter())
             .map(|c| format!("{:?}{:?}", c.suit, c.rank))
             .collect();

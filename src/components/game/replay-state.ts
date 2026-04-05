@@ -74,7 +74,7 @@ export function visibleTricksAtPosition(pos: ReplayPosition): ReplayVisibility {
 }
 
 /** Check if the current position is a decision point (user's suboptimal play). */
-export function isDecisionPoint(
+function isDecisionPoint(
   pos: ReplayPosition,
   recs: readonly PlayRecommendation[],
   userSeat: Seat,

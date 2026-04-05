@@ -87,15 +87,29 @@ export function isBalanced(shape: SuitLength): boolean {
   return false;
 }
 
-/** Single-pass HCP + suit length calculation — avoids double iteration over hand.cards */
+/** Single-pass HCP + suit length calculation — avoids double iteration over hand.cards. */
 export function calculateHcpAndShape(hand: Hand): {
   hcp: number;
   shape: SuitLength;
 } {
+  const shape = [0, 0, 0, 0] as [number, number, number, number];
   let hcp = 0;
-  const shape = countSuits(hand.cards);
   for (const card of hand.cards) {
     hcp += HCP_VALUES[card.rank];
+    switch (card.suit) {
+      case Suit.Spades:
+        shape[0]++;
+        break;
+      case Suit.Hearts:
+        shape[1]++;
+        break;
+      case Suit.Diamonds:
+        shape[2]++;
+        break;
+      case Suit.Clubs:
+        shape[3]++;
+        break;
+    }
   }
   return { hcp, shape };
 }

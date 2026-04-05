@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { bidTextToTestId, closeDebugDrawer } from "./helpers";
 
 /**
  * Bergen Raises E2E Test Suite — Seeds 1-15
@@ -22,21 +23,6 @@ import { test, expect, type Page } from "@playwright/test";
  */
 
 /* ---------- helpers ---------- */
-
-/** Convert formatted bid (e.g. "3\u2663") to data-testid (e.g. "bid-3C") */
-function bidToTestId(formatted: string): string {
-  if (formatted === "Pass") return "bid-P";
-  if (formatted === "X") return "bid-X";
-  if (formatted === "XX") return "bid-XX";
-  return (
-    "bid-" +
-    formatted
-      .replace("\u2663", "C")
-      .replace("\u2666", "D")
-      .replace("\u2665", "H")
-      .replace("\u2660", "S")
-  );
-}
 
 /** Parse a seat block from the All Hands debug panel text.
  *  The app uses abbreviated seat names: N, E, S, W
@@ -122,16 +108,6 @@ async function expandDetailsInDrawer(page: Page, summaryText: string | RegExp) {
     }
   }, { pattern, isRegex });
   await page.waitForTimeout(200);
-}
-
-/** Close the debug drawer (needed on mobile viewports where it covers bid buttons) */
-async function closeDebugDrawer(page: Page): Promise<void> {
-  try {
-    await page.locator('button[aria-label="Close debug panel"]').click({ timeout: 1000 });
-    await page.waitForTimeout(300);
-  } catch {
-    // Already closed or not interactable — ignore
-  }
 }
 
 /** Read innerText of a <details> section in the debug drawer. */
@@ -435,7 +411,7 @@ test.describe("Bergen Raises Convention - Seeds 1 to 5", () => {
       await closeDebugDrawer(page);
 
       // -- 12. Make the correct bid & verify feedback --
-      const testId = bidToTestId(correctBid);
+      const testId = bidTextToTestId(correctBid);
       const bidButton = page.getByTestId(testId);
       await expect(bidButton).toBeVisible({ timeout: 3_000 });
       await bidButton.click();

@@ -7,7 +7,6 @@ Shared test factories used across module boundaries (stores, components).
 | File             | Exports                                                                                          |
 | ---------------- | ------------------------------------------------------------------------------------------------ |
 | `fixtures.ts`    | `makeSimpleTestDeal` — pure engine-type factory |
-| `vitest-setup.ts` | Vitest global setup (referenced by vitest.config.ts) |
 
 ## Conventions
 

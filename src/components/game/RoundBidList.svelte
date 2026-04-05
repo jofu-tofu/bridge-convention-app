@@ -70,54 +70,94 @@
       {#each round.entries as entry, entryIdx (entry.seat + "-" + round.roundNumber)}
         {@const dimmed = isDimmed(round.roundNumber, entryIdx)}
         {@const highlighted = isHighlighted(round.roundNumber, entryIdx)}
-        <div
-          class="flex flex-col gap-0.5 pl-2 rounded-[--radius-sm] transition-opacity
-            {dimmed ? 'opacity-30' : ''}
-            {highlighted ? 'bg-accent-primary-subtle ring-1 ring-accent-primary/40' : ''}
-            {onBidClick ? 'cursor-pointer hover:bg-bg-elevated' : ''}"
-          role={onBidClick ? "button" : undefined}
-          tabindex={onBidClick ? 0 : undefined}
-          onclick={onBidClick ? () => onBidClick(globalIndex(round.roundNumber, entryIdx)) : undefined}
-          onkeydown={onBidClick ? (e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onBidClick(globalIndex(round.roundNumber, entryIdx)); } } : undefined}
-        >
-          <!-- Bid line -->
-          <div class="flex min-w-0 items-center gap-2">
-            <span class="text-text-muted w-4 shrink-0 font-mono text-[--text-label]">{entry.seat}:</span>
-            <span class="font-mono text-[--text-detail] font-bold {callColorClass(entry.call)}">
-              {formatCall(entry.call)}
-            </span>
-            {#if entry.isCorrect === true}
-              <span
-                class="text-accent-success text-[--text-label]"
-                data-testid={testIdPrefix ? "bid-correct" : undefined}
-                aria-label="Correct bid">&#10003;</span>
-            {:else if entry.isCorrect === false}
-              <span
-                class="text-accent-danger text-[--text-label]"
-                data-testid={testIdPrefix ? "bid-incorrect" : undefined}
-                aria-label="Incorrect bid">&#10007;</span>
-            {/if}
-          </div>
-
-          <!-- Wrong bid: show expected -->
-          {#if showExpectedResult && entry.isUser && entry.isCorrect === false && entry.expectedResult}
-            <div class="pl-6 text-[--text-label] flex items-center gap-1.5">
-              <span class="text-fb-incorrect-text/70">Expected:</span>
-              <span class="font-mono font-bold text-fb-incorrect-bright">{formatCall(entry.expectedResult.call)}</span>
-              {#if entry.expectedResult.meaning}
-                <span class="text-fb-incorrect-dim/60">— {entry.expectedResult.meaning}</span>
+        {@const rowClass = `flex flex-col gap-0.5 pl-2 rounded-[--radius-sm] transition-opacity ${
+          dimmed ? "opacity-30 " : ""
+        }${highlighted ? "bg-accent-primary-subtle ring-1 ring-accent-primary/40 " : ""}${
+          onBidClick ? "cursor-pointer hover:bg-bg-elevated " : ""
+        }`.trim()}
+        {#if onBidClick}
+          <button
+            type="button"
+            class={rowClass}
+            onclick={() => onBidClick(globalIndex(round.roundNumber, entryIdx))}
+          >
+            <!-- Bid line -->
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="text-text-muted w-4 shrink-0 font-mono text-[--text-label]">{entry.seat}:</span>
+              <span class="font-mono text-[--text-detail] font-bold {callColorClass(entry.call)}">
+                {formatCall(entry.call)}
+              </span>
+              {#if entry.isCorrect === true}
+                <span
+                  class="text-accent-success text-[--text-label]"
+                  data-testid={testIdPrefix ? "bid-correct" : undefined}
+                  aria-label="Correct bid">&#10003;</span>
+              {:else if entry.isCorrect === false}
+                <span
+                  class="text-accent-danger text-[--text-label]"
+                  data-testid={testIdPrefix ? "bid-incorrect" : undefined}
+                  aria-label="Incorrect bid">&#10007;</span>
               {/if}
             </div>
-          {/if}
 
-          <!-- N/S meaning -->
-          {#if isNS(entry.seat) && entry.meaning}
-            <div class="pl-6 text-[--text-label] text-text-secondary">
-              {entry.meaning}
+            <!-- Wrong bid: show expected -->
+            {#if showExpectedResult && entry.isUser && entry.isCorrect === false && entry.expectedResult}
+              <div class="pl-6 text-[--text-label] flex items-center gap-1.5">
+                <span class="text-fb-incorrect-text/70">Expected:</span>
+                <span class="font-mono font-bold text-fb-incorrect-bright">{formatCall(entry.expectedResult.call)}</span>
+                {#if entry.expectedResult.meaning}
+                  <span class="text-fb-incorrect-dim/60">— {entry.expectedResult.meaning}</span>
+                {/if}
+              </div>
+            {/if}
+
+            <!-- N/S meaning -->
+            {#if isNS(entry.seat) && entry.meaning}
+              <div class="pl-6 text-[--text-label] text-text-secondary">
+                {entry.meaning}
+              </div>
+            {/if}
+          </button>
+        {:else}
+          <div class={rowClass}>
+            <!-- Bid line -->
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="text-text-muted w-4 shrink-0 font-mono text-[--text-label]">{entry.seat}:</span>
+              <span class="font-mono text-[--text-detail] font-bold {callColorClass(entry.call)}">
+                {formatCall(entry.call)}
+              </span>
+              {#if entry.isCorrect === true}
+                <span
+                  class="text-accent-success text-[--text-label]"
+                  data-testid={testIdPrefix ? "bid-correct" : undefined}
+                  aria-label="Correct bid">&#10003;</span>
+              {:else if entry.isCorrect === false}
+                <span
+                  class="text-accent-danger text-[--text-label]"
+                  data-testid={testIdPrefix ? "bid-incorrect" : undefined}
+                  aria-label="Incorrect bid">&#10007;</span>
+              {/if}
             </div>
-          {/if}
 
-        </div>
+            <!-- Wrong bid: show expected -->
+            {#if showExpectedResult && entry.isUser && entry.isCorrect === false && entry.expectedResult}
+              <div class="pl-6 text-[--text-label] flex items-center gap-1.5">
+                <span class="text-fb-incorrect-text/70">Expected:</span>
+                <span class="font-mono font-bold text-fb-incorrect-bright">{formatCall(entry.expectedResult.call)}</span>
+                {#if entry.expectedResult.meaning}
+                  <span class="text-fb-incorrect-dim/60">— {entry.expectedResult.meaning}</span>
+                {/if}
+              </div>
+            {/if}
+
+            <!-- N/S meaning -->
+            {#if isNS(entry.seat) && entry.meaning}
+              <div class="pl-6 text-[--text-label] text-text-secondary">
+                {entry.meaning}
+              </div>
+            {/if}
+          </div>
+        {/if}
       {/each}
     </div>
   {/each}

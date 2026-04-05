@@ -26,6 +26,7 @@ Playwright end-to-end smoke tests for user-facing behavior.
 | File                                   | Role                                                               |
 | -------------------------------------- | ------------------------------------------------------------------ |
 | `e2e/smoke.spec.ts`                    | Primary smoke tests: home, navigation, bidding, settings, all conventions |
+| `e2e/helpers.ts`                      | Shared Playwright helpers for debug-drawer cleanup, drawer text reads, and bid test IDs |
 | `e2e/responsive-layout.spec.ts`       | Responsive mobile/tablet layout behavior (only file run on all 3 device projects) |
 | `e2e/flow-multi-convention.spec.ts`   | Multi-convention switching flow                                    |
 | `e2e/play-phase.spec.ts`              | Autoplay reaches review; review content renders                    |

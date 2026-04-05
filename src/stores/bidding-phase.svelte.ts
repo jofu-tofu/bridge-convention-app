@@ -13,8 +13,7 @@ import { nextSeat, ViewportBidGrade } from "../service";
 import type { DevServicePort, SessionHandle } from "../service";
 import type { BiddingViewport, AuctionEntryView } from "../service";
 import type { GamePhase } from "../service";
-import type { ServicePublicBeliefState, ServicePublicBeliefs } from "../service";
-import { formatError } from "../service/util/format-error";
+import type { ServicePublicBeliefState } from "../service";
 
 // Type-only import — no runtime circular dependency.
 import type { BidFeedback, DebugLogEntry } from "./game.svelte";
@@ -23,7 +22,6 @@ import type { BidFeedback, DebugLogEntry } from "./game.svelte";
 
 interface BiddingPhaseState {
   processing: boolean;
-  error: string | null;
   debugLog: DebugLogEntry[];
 }
 
@@ -36,7 +34,7 @@ export interface BiddingDeps {
   getBiddingViewport: () => BiddingViewport | null;
   setBiddingViewport: (vp: BiddingViewport) => void;
   setPublicBeliefState: (state: ServicePublicBeliefState) => void;
-  handlePostAuction: (handle: SessionHandle, phase: GamePhase, options?: { playInferences?: Record<Seat, ServicePublicBeliefs> | null }) => Promise<boolean>;
+  handlePostAuction: (handle: SessionHandle, phase: GamePhase) => Promise<boolean>;
   delayFn: (ms: number) => Promise<void>;
 }
 
@@ -45,7 +43,7 @@ export interface BiddingDeps {
 export function createBiddingPhase(deps: BiddingDeps) {
   // ── State ───────────────────────────────────────────────────────
   let bidFeedback = $state<BidFeedback | null>(null);
-  let bidding = $state<BiddingPhaseState>({ processing: false, error: null, debugLog: [] });
+  let bidding = $state<BiddingPhaseState>({ processing: false, debugLog: [] });
   let sessionStats = $state({ correct: 0, incorrect: 0, streak: 0 });
   let isRetryAttempt = false;
   let biddingAnim = $state<{ totalAiBids: number; revealed: number } | null>(null);
@@ -190,13 +188,13 @@ export function createBiddingPhase(deps: BiddingDeps) {
 
       // Handle phase transition (auction complete — phaseTransition is always set when auction ends)
       if (result.phaseTransition) {
-        const ok = await deps.handlePostAuction(handle, result.phaseTransition.to, { playInferences: result.playInferences });
+        const ok = await deps.handlePostAuction(handle, result.phaseTransition.to);
         if (!ok || deps.getActiveHandle() !== handle) return;
         await tick();
         return;
       }
-    } catch (e) {
-      bidding.error = formatError(e);
+    } catch {
+      return;
     } finally {
       bidding.processing = false;
       await tick();
@@ -240,7 +238,7 @@ export function createBiddingPhase(deps: BiddingDeps) {
     // Lifecycle
     reset() {
       bidFeedback = null;
-      bidding = { processing: false, error: null, debugLog: [] };
+      bidding = { processing: false, debugLog: [] };
       sessionStats = { correct: 0, incorrect: 0, streak: 0 };
       isRetryAttempt = false;
       biddingAnim = null;

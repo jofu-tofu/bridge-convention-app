@@ -1,5 +1,6 @@
 <script lang="ts">
   import BiddingSettingsPanel from "./BiddingSettingsPanel.svelte";
+  import { PANEL_FONT_STYLE } from "../../shared/layout-props";
 
   interface Props {
     readonly?: boolean;
@@ -15,7 +16,7 @@
 <dialog
   bind:this={dialogRef}
   class="bg-bg-card border border-border-subtle rounded-[--radius-lg] shadow-xl p-0 w-[calc(100%-2rem)] max-w-sm"
-  style="font-size: var(--panel-font, 1rem);"
+  style={PANEL_FONT_STYLE}
   onclick={(e) => { if (e.target === e.currentTarget) close(); }}
   data-testid="settings-dialog"
 >

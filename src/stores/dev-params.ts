@@ -59,11 +59,14 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     }
   }
 
+  const conventionParam = params.get("convention");
+
   // ── Practice mode/role (must be set BEFORE selectConvention) ──
-  // When ?phase= is specified, default to decision-drill to bypass the practice picker
+  // Deep links should land in the game screen. When a convention or phase is
+  // specified without an explicit practiceMode, default to decision-drill.
   const phaseParam = params.get("phase");
   const practiceModeParam = params.get("practiceMode")
-    ?? (phaseParam ? PracticeMode.DecisionDrill : null);
+    ?? ((phaseParam || conventionParam) ? PracticeMode.DecisionDrill : null);
   if (practiceModeParam === PracticeMode.DecisionDrill || practiceModeParam === PracticeMode.FullAuction || practiceModeParam === PracticeMode.ContinuationDrill) {
     store.setPracticeMode(practiceModeParam);
   }
@@ -74,7 +77,6 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   }
 
   // ── Convention / Learn deep links ──────────────────────────
-  const conventionParam = params.get("convention");
   const learnParam = params.get("learn");
 
   if (learnParam) {
@@ -85,13 +87,17 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     // Resolve from catalog for proper display name; fall back to stub for unknown IDs
     const conventions = listConventions();
     const catalogMatch: ConventionInfo | undefined = conventions.find(c => c.id === conventionParam);
-    const config = catalogMatch ?? {
-      id: conventionParam,
-      name: conventionParam,
-      description: "",
-      category: ConventionCategory.Asking,
-    };
-    store.selectConvention(config);
+    if (catalogMatch) {
+      store.selectConvention(catalogMatch);
+    } else {
+      const fallbackConvention: ConventionInfo = {
+        id: conventionParam,
+        name: conventionParam,
+        description: "",
+        category: ConventionCategory.Asking,
+      };
+      store.selectConvention(fallbackConvention);
+    }
   }
 
   // ── Coverage targeting ─────────────────────────────────────

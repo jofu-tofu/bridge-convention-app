@@ -20,9 +20,6 @@ pub enum EngineError {
     #[error("Failed to generate deal after {0} attempts")]
     MaxAttemptsExceeded(u32),
 
-    #[error("{0}")]
-    NotImplemented(String),
-
     #[cfg(feature = "dds")]
     #[error("DDS error: {0}")]
     DdsError(String),

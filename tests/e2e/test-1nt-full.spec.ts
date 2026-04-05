@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { bidTextToTestId, closeDebugDrawer, readDebugDrawerText } from "./helpers";
 
 // ============================================================
 // 1NT Responses — Full Convention E2E Test Suite
@@ -65,18 +66,6 @@ function fmtCards(cards: ParsedCard[]): string {
   return Object.entries(bySuit)
     .map(([s, r]) => s + " " + (r.join(" ") || "\u2014"))
     .join("  ");
-}
-
-/** Convert display bid text ("2\u2663") to data-testid value ("bid-2C") */
-function bidToTestId(display: string): string {
-  const d = display.trim();
-  if (/^pass$/i.test(d) || d.includes("No convention bid")) return "bid-P";
-  if (d === "X" || d === "Dbl") return "bid-X";
-  if (d === "XX" || d === "Rdbl") return "bid-XX";
-  return (
-    "bid-" +
-    d.replace("\u2663", "C").replace("\u2666", "D").replace("\u2665", "H").replace("\u2660", "S")
-  );
 }
 
 /** Pick a bid guaranteed to be wrong */
@@ -206,16 +195,7 @@ async function probeAndReadAllDebug(page: Page): Promise<string> {
   await page.waitForTimeout(500);
 
   // Read debug data via page.evaluate with inert check
-  const body = await page.evaluate(() => {
-    const drawer = document.querySelector('aside[aria-label="Debug drawer"]');
-    if (drawer && !drawer.hasAttribute("inert")) {
-      drawer.querySelectorAll("details").forEach((d) => {
-        (d).open = true;
-      });
-      return drawer.innerText + "\n" + (document.querySelector("main")?.innerText ?? "");
-    }
-    return document.body.innerText;
-  });
+  const body = await readDebugDrawerText(page);
 
   // Close drawer and retry to restore bid panel
   await closeDebugDrawer(page);
@@ -226,15 +206,6 @@ async function probeAndReadAllDebug(page: Page): Promise<string> {
   }
 
   return body;
-}
-
-async function closeDebugDrawer(page: Page): Promise<void> {
-  try {
-    await page.locator('button[aria-label="Close debug panel"]').click({ timeout: 1000 });
-    await page.waitForTimeout(300);
-  } catch {
-    // Already closed or not interactable — ignore
-  }
 }
 
 /** Extract a named section from debug drawer text (up to 60 lines) */
@@ -351,7 +322,7 @@ test.describe("1NT Responses Full Convention (seeds 1-5)", () => {
     expect(report.appBid).not.toBe("unknown");
 
     // -- WRONG BID --
-    const correctTestId = bidToTestId(report.appBid);
+    const correctTestId = bidTextToTestId(report.appBid);
     const wrongTestId = pickWrongBidTestId(correctTestId);
 
     console.log("\n--- WRONG BID TEST (seed 1) ---");

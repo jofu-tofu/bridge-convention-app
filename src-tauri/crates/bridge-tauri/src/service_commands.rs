@@ -6,6 +6,7 @@
 use std::sync::Mutex;
 
 use bridge_engine::types::{Call, Card, Seat};
+use bridge_service::error::ServiceError;
 use bridge_service::response_types::*;
 use bridge_service::{DevServicePort, ServicePort, ServicePortImpl, SessionConfig};
 use bridge_session::session::{
@@ -17,6 +18,22 @@ use bridge_session::session::{
 /// Managed state type alias.
 pub type ServiceState = Mutex<ServicePortImpl>;
 
+fn with_service<T>(
+    state: tauri::State<'_, ServiceState>,
+    f: impl FnOnce(&ServicePortImpl) -> Result<T, ServiceError>,
+) -> Result<T, String> {
+    let service = state.lock().map_err(|e| e.to_string())?;
+    f(&service).map_err(|e| e.to_string())
+}
+
+fn with_service_mut<T>(
+    state: tauri::State<'_, ServiceState>,
+    f: impl FnOnce(&mut ServicePortImpl) -> Result<T, ServiceError>,
+) -> Result<T, String> {
+    let mut service = state.lock().map_err(|e| e.to_string())?;
+    f(&mut service).map_err(|e| e.to_string())
+}
+
 // ── Session lifecycle ─────────────────────────────────────────────
 
 #[tauri::command]
@@ -24,8 +41,7 @@ pub fn create_session(
     state: tauri::State<ServiceState>,
     config: SessionConfig,
 ) -> Result<String, String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service.create_session(config).map_err(|e| e.to_string())
+    with_service_mut(state, |service| service.create_session(config))
 }
 
 #[tauri::command]
@@ -33,8 +49,7 @@ pub fn start_drill(
     state: tauri::State<ServiceState>,
     handle: String,
 ) -> Result<DrillStartResult, String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service.start_drill(&handle).map_err(|e| e.to_string())
+    with_service_mut(state, |service| service.start_drill(&handle))
 }
 
 // ── Bidding ───────────────────────────────────────────────────────
@@ -45,8 +60,7 @@ pub fn submit_bid(
     handle: String,
     call: Call,
 ) -> Result<BidSubmitResult, String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service.submit_bid(&handle, call).map_err(|e| e.to_string())
+    with_service_mut(state, |service| service.submit_bid(&handle, call))
 }
 
 // ── Phase transitions ─────────────────────────────────────────────
@@ -58,10 +72,9 @@ pub fn accept_prompt(
     mode: Option<String>,
     seat_override: Option<Seat>,
 ) -> Result<PromptAcceptResult, String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .accept_prompt(&handle, mode.as_deref(), seat_override)
-        .map_err(|e| e.to_string())
+    with_service_mut(state, |service| {
+        service.accept_prompt(&handle, mode.as_deref(), seat_override)
+    })
 }
 
 // ── Play ──────────────────────────────────────────────────────────
@@ -73,10 +86,7 @@ pub fn play_card(
     card: Card,
     seat: Seat,
 ) -> Result<PlayCardResult, String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .play_card(&handle, card, seat)
-        .map_err(|e| e.to_string())
+    with_service_mut(state, |service| service.play_card(&handle, card, seat))
 }
 
 #[tauri::command]
@@ -86,16 +96,14 @@ pub fn play_single_card(
     card: Card,
     seat: Seat,
 ) -> Result<SingleCardResult, String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .play_single_card(&handle, card, seat)
-        .map_err(|e| e.to_string())
+    with_service_mut(state, |service| {
+        service.play_single_card(&handle, card, seat)
+    })
 }
 
 #[tauri::command]
 pub fn skip_to_review(state: tauri::State<ServiceState>, handle: String) -> Result<(), String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service.skip_to_review(&handle).map_err(|e| e.to_string())
+    with_service_mut(state, |service| service.skip_to_review(&handle))
 }
 
 #[tauri::command]
@@ -104,10 +112,9 @@ pub fn update_play_profile(
     handle: String,
     profile_id: String,
 ) -> Result<(), String> {
-    let mut service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .update_play_profile(&handle, &profile_id)
-        .map_err(|e| e.to_string())
+    with_service_mut(state, |service| {
+        service.update_play_profile(&handle, &profile_id)
+    })
 }
 
 // ── Query (viewport getters) ──────────────────────────────────────
@@ -117,10 +124,7 @@ pub fn get_bidding_viewport(
     state: tauri::State<ServiceState>,
     handle: String,
 ) -> Result<Option<BiddingViewport>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_bidding_viewport(&handle)
-        .map_err(|e| e.to_string())
+    with_service(state, |service| service.get_bidding_viewport(&handle))
 }
 
 #[tauri::command]
@@ -128,10 +132,9 @@ pub fn get_declarer_prompt_viewport(
     state: tauri::State<ServiceState>,
     handle: String,
 ) -> Result<Option<DeclarerPromptViewport>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_declarer_prompt_viewport(&handle)
-        .map_err(|e| e.to_string())
+    with_service(state, |service| {
+        service.get_declarer_prompt_viewport(&handle)
+    })
 }
 
 #[tauri::command]
@@ -139,10 +142,7 @@ pub fn get_playing_viewport(
     state: tauri::State<ServiceState>,
     handle: String,
 ) -> Result<Option<PlayingViewport>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_playing_viewport(&handle)
-        .map_err(|e| e.to_string())
+    with_service(state, |service| service.get_playing_viewport(&handle))
 }
 
 #[tauri::command]
@@ -150,10 +150,7 @@ pub fn get_explanation_viewport(
     state: tauri::State<ServiceState>,
     handle: String,
 ) -> Result<Option<ExplanationViewport>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_explanation_viewport(&handle)
-        .map_err(|e| e.to_string())
+    with_service(state, |service| service.get_explanation_viewport(&handle))
 }
 
 // ── Inference ─────────────────────────────────────────────────────
@@ -163,10 +160,7 @@ pub fn get_public_belief_state(
     state: tauri::State<ServiceState>,
     handle: String,
 ) -> Result<ServicePublicBeliefState, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_public_belief_state(&handle)
-        .map_err(|e| e.to_string())
+    with_service(state, |service| service.get_public_belief_state(&handle))
 }
 
 // ── DDS ───────────────────────────────────────────────────────────
@@ -176,28 +170,24 @@ pub fn get_dds_solution(
     state: tauri::State<ServiceState>,
     handle: String,
 ) -> Result<DDSolutionResult, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service.get_dds_solution(&handle).map_err(|e| e.to_string())
+    with_service(state, |service| service.get_dds_solution(&handle))
 }
 
 #[tauri::command]
 pub fn get_deal_pbn(state: tauri::State<ServiceState>, handle: String) -> Result<String, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service.get_deal_pbn(&handle).map_err(|e| e.to_string())
+    with_service(state, |service| service.get_deal_pbn(&handle))
 }
 
 // ── Catalog ───────────────────────────────────────────────────────
 
 #[tauri::command]
 pub fn list_conventions(state: tauri::State<ServiceState>) -> Result<Vec<ConventionInfo>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    Ok(service.list_conventions())
+    with_service(state, |service| Ok(service.list_conventions()))
 }
 
 #[tauri::command]
 pub fn list_modules(state: tauri::State<ServiceState>) -> Result<Vec<ModuleCatalogEntry>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    Ok(service.list_modules())
+    with_service(state, |service| Ok(service.list_modules()))
 }
 
 // ── Learning ──────────────────────────────────────────────────────
@@ -207,8 +197,9 @@ pub fn get_module_learning_viewport(
     state: tauri::State<ServiceState>,
     module_id: String,
 ) -> Result<Option<ModuleLearningViewport>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    Ok(service.get_module_learning_viewport(&module_id))
+    with_service(state, |service| {
+        Ok(service.get_module_learning_viewport(&module_id))
+    })
 }
 
 #[tauri::command]
@@ -216,8 +207,10 @@ pub fn get_bundle_flow_tree(
     state: tauri::State<ServiceState>,
     bundle_id: String,
 ) -> Result<Option<BundleFlowTreeViewport>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    Ok(service.get_bundle_flow_tree(&bundle_id))
+    with_service(
+        state,
+        |service| Ok(service.get_bundle_flow_tree(&bundle_id)),
+    )
 }
 
 #[tauri::command]
@@ -225,9 +218,12 @@ pub fn get_module_flow_tree(
     state: tauri::State<ServiceState>,
     module_id: String,
 ) -> Result<Option<ModuleFlowTreeViewport>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    Ok(service.get_module_flow_tree(&module_id))
+    with_service(
+        state,
+        |service| Ok(service.get_module_flow_tree(&module_id)),
+    )
 }
+
 // ── Dev/debug ─────────────────────────────────────────────────────
 
 #[tauri::command]
@@ -235,28 +231,23 @@ pub fn get_expected_bid(
     state: tauri::State<ServiceState>,
     handle: String,
 ) -> Result<Option<Call>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service.get_expected_bid(&handle).map_err(|e| e.to_string())
+    with_service(state, |service| service.get_expected_bid(&handle))
 }
 
 #[tauri::command]
 pub fn get_debug_log(
     state: tauri::State<ServiceState>,
     handle: String,
-) -> Result<Vec<serde_json::Value>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service.get_debug_log(&handle).map_err(|e| e.to_string())
+) -> Result<Vec<ServiceDebugLogEntryDTO>, String> {
+    with_service(state, |service| service.get_debug_log(&handle))
 }
 
 #[tauri::command]
 pub fn get_inference_timeline(
     state: tauri::State<ServiceState>,
     handle: String,
-) -> Result<Vec<serde_json::Value>, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_inference_timeline(&handle)
-        .map_err(|e| e.to_string())
+) -> Result<Vec<InferenceTimelineEntryDTO>, String> {
+    with_service(state, |service| service.get_inference_timeline(&handle))
 }
 
 #[tauri::command]
@@ -264,8 +255,5 @@ pub fn get_convention_name(
     state: tauri::State<ServiceState>,
     handle: String,
 ) -> Result<String, String> {
-    let service = state.lock().map_err(|e| e.to_string())?;
-    service
-        .get_convention_name(&handle)
-        .map_err(|e| e.to_string())
+    with_service(state, |service| service.get_convention_name(&handle))
 }

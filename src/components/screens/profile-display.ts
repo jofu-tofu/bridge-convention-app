@@ -1,6 +1,6 @@
 /**
  * Pure display logic for the System Profiles screen.
- * Categories, field accessors, value formatting, comparison helpers.
+ * Categories, value formatting, comparison helpers.
  */
 import type { SystemConfig, TotalPointEquivalent } from "../../service";
 
@@ -21,7 +21,6 @@ export type FieldFormat =
 
 export interface ProfileField {
   label: string;
-  accessor: (c: SystemConfig) => unknown;
   format: FieldFormat;
 }
 
@@ -37,11 +36,9 @@ export function formatFieldValue(config: SystemConfig, field: ProfileField): str
   const fmt = field.format;
   switch (fmt.type) {
     case "range":
-      return `${fmt.min(config)}\u2013${fmt.max(config)} HCP`;
     case "rangeWithTp":
       return `${fmt.min(config)}\u2013${fmt.max(config)} HCP`;
     case "threshold":
-      return `${fmt.value(config)}+ HCP`;
     case "thresholdWithTp":
       return `${fmt.value(config)}+ HCP`;
     case "enum":
@@ -53,48 +50,53 @@ export function formatFieldValue(config: SystemConfig, field: ProfileField): str
   }
 }
 
-/** Format the trump total-point value for a field. Returns "" for non-TP fields. */
-export function formatTrumpTpValue(config: SystemConfig, field: ProfileField): string {
+function formatTotalPointValue(
+  config: SystemConfig,
+  field: ProfileField,
+  pointKind: "trump" | "nt",
+): string {
   const fmt = field.format;
   if (fmt.type === "rangeWithTp") {
-    return `${fmt.minTp(config).trump}\u2013${fmt.maxTp(config).trump} TP`;
+    return `${fmt.minTp(config)[pointKind]}\u2013${fmt.maxTp(config)[pointKind]} TP`;
   }
   if (fmt.type === "thresholdWithTp") {
-    return `${fmt.tp(config).trump}+ TP`;
+    return `${fmt.tp(config)[pointKind]}+ TP`;
   }
   return "";
+}
+
+/** Format the trump total-point value for a field. Returns "" for non-TP fields. */
+export function formatTrumpTpValue(config: SystemConfig, field: ProfileField): string {
+  return formatTotalPointValue(config, field, "trump");
 }
 
 /** Format the NT total-point value for a field. Returns "" for non-TP fields. */
 export function formatNtTpValue(config: SystemConfig, field: ProfileField): string {
-  const fmt = field.format;
-  if (fmt.type === "rangeWithTp") {
-    return `${fmt.minTp(config).nt}\u2013${fmt.maxTp(config).nt} TP`;
-  }
-  if (fmt.type === "thresholdWithTp") {
-    return `${fmt.tp(config).nt}+ TP`;
-  }
-  return "";
+  return formatTotalPointValue(config, field, "nt");
 }
 
 // ─── Comparison ───────────────────────────────────────────────
 
-export function valuesMatch(configs: SystemConfig[], field: ProfileField): boolean {
+function valuesMatchFormatted(
+  configs: SystemConfig[],
+  field: ProfileField,
+  formatter: (config: SystemConfig, field: ProfileField) => string,
+): boolean {
   if (configs.length <= 1) return true;
-  const first = formatFieldValue(configs[0]!, field);
-  return configs.every((c) => formatFieldValue(c, field) === first);
+  const first = formatter(configs[0]!, field);
+  return configs.every((c) => formatter(c, field) === first);
+}
+
+export function valuesMatch(configs: SystemConfig[], field: ProfileField): boolean {
+  return valuesMatchFormatted(configs, field, formatFieldValue);
 }
 
 export function valuesMatchTrumpTp(configs: SystemConfig[], field: ProfileField): boolean {
-  if (configs.length <= 1) return true;
-  const first = formatTrumpTpValue(configs[0]!, field);
-  return configs.every((c) => formatTrumpTpValue(c, field) === first);
+  return valuesMatchFormatted(configs, field, formatTrumpTpValue);
 }
 
 export function valuesMatchNtTp(configs: SystemConfig[], field: ProfileField): boolean {
-  if (configs.length <= 1) return true;
-  const first = formatNtTpValue(configs[0]!, field);
-  return configs.every((c) => formatNtTpValue(c, field) === first);
+  return valuesMatchFormatted(configs, field, formatNtTpValue);
 }
 
 // ─── Category definitions ─────────────────────────────────────
@@ -105,7 +107,6 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
     fields: [
       {
         label: "HCP Range",
-        accessor: (c) => c.ntOpening,
         format: { type: "range", min: (c) => c.ntOpening.minHcp, max: (c) => c.ntOpening.maxHcp },
       },
     ],
@@ -116,7 +117,6 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
     fields: [
       {
         label: "Invite Range",
-        accessor: (c) => c.responderThresholds,
         format: {
           type: "rangeWithTp",
           min: (c) => c.responderThresholds.inviteMin,
@@ -127,7 +127,6 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
       },
       {
         label: "Game Minimum",
-        accessor: (c) => c.responderThresholds.gameMin,
         format: {
           type: "thresholdWithTp",
           value: (c) => c.responderThresholds.gameMin,
@@ -136,7 +135,6 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
       },
       {
         label: "Slam Explore",
-        accessor: (c) => c.responderThresholds.slamMin,
         format: {
           type: "thresholdWithTp",
           value: (c) => c.responderThresholds.slamMin,
@@ -151,7 +149,6 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
     fields: [
       {
         label: "Not Minimum",
-        accessor: (c) => c.openerRebid.notMinimum,
         format: {
           type: "thresholdWithTp",
           value: (c) => c.openerRebid.notMinimum,
@@ -165,12 +162,10 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
     fields: [
       {
         label: "2-Level Minimum",
-        accessor: (c) => c.suitResponse.twoLevelMin,
         format: { type: "threshold", value: (c) => c.suitResponse.twoLevelMin },
       },
       {
         label: "Forcing Duration",
-        accessor: (c) => c.suitResponse.twoLevelForcingDuration,
         format: {
           type: "enum",
           value: (c) => c.suitResponse.twoLevelForcingDuration,
@@ -184,7 +179,6 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
     fields: [
       {
         label: "Forcing Status",
-        accessor: (c) => c.oneNtResponseAfterMajor.forcing,
         format: {
           type: "enum",
           value: (c) => c.oneNtResponseAfterMajor.forcing,
@@ -193,7 +187,6 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
       },
       {
         label: "HCP Range",
-        accessor: (c) => c.oneNtResponseAfterMajor,
         format: { type: "range", min: (c) => c.oneNtResponseAfterMajor.minHcp, max: (c) => c.oneNtResponseAfterMajor.maxHcp },
       },
     ],
@@ -203,7 +196,6 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
     fields: [
       {
         label: "Major Suit Length",
-        accessor: (c) => c.openingRequirements.majorSuitMinLength,
         format: { type: "majorLength", value: (c) => c.openingRequirements.majorSuitMinLength },
       },
     ],
@@ -213,7 +205,6 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
     fields: [
       {
         label: "Redouble Minimum",
-        accessor: (c) => c.interference.redoubleMin,
         format: { type: "threshold", value: (c) => c.interference.redoubleMin },
       },
     ],
@@ -223,7 +214,6 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
     fields: [
       {
         label: "HCP Range",
-        accessor: (c) => c.dontOvercall,
         format: { type: "range", min: (c) => c.dontOvercall.minHcp, max: (c) => c.dontOvercall.maxHcp },
       },
     ],

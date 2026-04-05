@@ -21,11 +21,10 @@ describe("PROFILE_CATEGORIES", () => {
     expect(new Set(labels).size).toBe(labels.length);
   });
 
-  it("every field has a label and accessor", () => {
+  it("every field has a label", () => {
     for (const cat of PROFILE_CATEGORIES) {
       for (const field of cat.fields) {
         expect(field.label).toBeTruthy();
-        expect(typeof field.accessor).toBe("function");
       }
     }
   });

@@ -6,6 +6,7 @@
 
 import type { DevServicePort } from "../../service";
 import { ViewportBidGrade } from "../../service/response-types";
+import type { BiddingViewport } from "../../service/response-types";
 import type { SessionConfig } from "../../service/request-types";
 import { PlayPreference } from "../../service/session-types";
 import type { Flags } from "../shared";
@@ -13,7 +14,27 @@ import {
   requireArg, optionalNumericArg, parseCallString,
   parseVulnerability, parseOpponentMode, parseBaseSystem,
   parsePracticeMode, parsePracticeRole,
+  printJson,
 } from "../shared";
+
+type ViewportSummarySource = Pick<
+  BiddingViewport,
+  "seat" | "hand" | "handEvaluation" | "handSummary" | "auctionEntries" | "legalCalls" | "conventionName" | "isUserTurn" | "bidContext"
+>;
+
+function summarizeViewport(viewport: ViewportSummarySource) {
+  return {
+    seat: viewport.seat,
+    hand: viewport.hand,
+    hcp: viewport.handEvaluation?.hcp ?? null,
+    handSummary: viewport.handSummary,
+    auction: viewport.auctionEntries,
+    legalCalls: viewport.legalCalls,
+    conventionName: viewport.conventionName,
+    isUserTurn: viewport.isUserTurn,
+    bidContext: viewport.bidContext,
+  };
+}
 
 export async function runPlay(service: DevServicePort, flags: Flags): Promise<void> {
   const bundleId = requireArg(flags, "bundle");
@@ -60,18 +81,10 @@ export async function runPlay(service: DevServicePort, flags: Flags): Promise<vo
   // No bids requested — return the initial viewport
   if (userBids.length === 0) {
     const vp = drillResult.viewport;
-    console.log(JSON.stringify({
-      seat: vp.seat,
-      hand: vp.hand,
-      hcp: vp.handEvaluation?.hcp ?? null,
-      handSummary: vp.handSummary,
-      auction: vp.auctionEntries,
-      legalCalls: vp.legalCalls,
-      conventionName: vp.conventionName,
-      isUserTurn: vp.isUserTurn,
-      bidContext: vp.bidContext,
+    printJson({
+      ...summarizeViewport(vp),
       auctionComplete: drillResult.auctionComplete,
-    }, null, 2));
+    });
     return;
   }
 
@@ -113,7 +126,7 @@ export async function runPlay(service: DevServicePort, flags: Flags): Promise<vo
         }));
       }
 
-      console.log(JSON.stringify(output, null, 2));
+      printJson(output);
 
       // Exit code based on grade
       const isCorrect = result.grade === ViewportBidGrade.Correct || result.grade === ViewportBidGrade.Acceptable;

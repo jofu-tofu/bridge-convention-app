@@ -16,6 +16,31 @@ export { Vulnerability };
 
 export type Flags = Record<string, string | true>;
 
+function fail(message: string): never {
+  console.error(message);
+  process.exit(2);
+}
+
+export function printJson(value: unknown): void {
+  console.log(JSON.stringify(value, null, 2));
+}
+
+function parseMappedArg<T>(
+  args: Flags,
+  name: string,
+  map: Record<string, T>,
+  expected: string,
+  defaultValue?: T,
+): T | undefined {
+  const val = args[name];
+  if (val === undefined || val === true) return defaultValue;
+  const mapped = map[val.toLowerCase()];
+  if (mapped === undefined) {
+    fail(`Invalid --${name} value: "${val}" (expected: ${expected})`);
+  }
+  return mapped;
+}
+
 // ── Argument parsing ────────────────────────────────────────────────
 
 export function parseArgs(argv: string[]): Flags {
@@ -36,8 +61,7 @@ export function parseArgs(argv: string[]): Flags {
 export function requireArg(args: Flags, name: string): string {
   const val = args[name];
   if (val === undefined || val === true) {
-    console.error(`Missing required argument: --${name}`);
-    process.exit(2);
+    fail(`Missing required argument: --${name}`);
   }
   return val;
 }
@@ -47,8 +71,7 @@ export function optionalNumericArg(args: Flags, name: string): number | undefine
   if (val === undefined || val === true) return undefined;
   const n = Number(val);
   if (isNaN(n)) {
-    console.error(`Invalid numeric argument: --${name}=${val}`);
-    process.exit(2);
+    fail(`Invalid numeric argument: --${name}=${val}`);
   }
   return n;
 }
@@ -63,42 +86,30 @@ const VULN_MAP: Record<string, Vulnerability> = {
 };
 
 export function parseVulnerability(args: Flags): Vulnerability {
-  const val = args["vuln"];
-  if (val === undefined || val === true) return Vulnerability.None;
-  const mapped = VULN_MAP[val.toLowerCase()];
-  if (mapped === undefined) {
-    console.error(`Invalid --vuln value: "${val}" (expected: none, ns, ew, both)`);
-    process.exit(2);
-  }
-  return mapped;
+  return parseMappedArg(args, "vuln", VULN_MAP, "none, ns, ew, both", Vulnerability.None) ?? Vulnerability.None;
 }
 
-const BASE_SYSTEM_SAYC: BaseSystemId = "sayc";
-const BASE_SYSTEM_ACOL: BaseSystemId = "acol";
-
 const SYSTEM_MAP: Record<string, BaseSystemId> = {
-  sayc: BASE_SYSTEM_SAYC,
+  sayc: "sayc",
   "two-over-one": "two-over-one",
-  acol: BASE_SYSTEM_ACOL,
+  acol: "acol",
 };
 
 export function parseBaseSystem(args: Flags): BaseSystemId {
-  const val = args["system"];
-  if (val === undefined || val === true) return BASE_SYSTEM_SAYC;
-  const mapped = SYSTEM_MAP[val.toLowerCase()];
-  if (mapped === undefined) {
-    console.error(`Invalid --system value: "${val}" (expected: sayc, two-over-one, acol)`);
-    process.exit(2);
-  }
-  return mapped;
+  return parseMappedArg(args, "system", SYSTEM_MAP, "sayc, two-over-one, acol", "sayc") ?? "sayc";
 }
 
 export function parseOpponentMode(args: Flags): OpponentMode {
-  const val = args["opponents"];
-  if (val === undefined || val === true) return OpponentMode.Natural;
-  if (val === (OpponentMode.Natural as string) || val === (OpponentMode.None as string)) return val as OpponentMode;
-  console.error(`Invalid --opponents value: "${val}" (expected: natural, none)`);
-  process.exit(2);
+  return parseMappedArg(
+    args,
+    "opponents",
+    {
+      natural: OpponentMode.Natural,
+      none: OpponentMode.None,
+    },
+    "natural, none",
+    OpponentMode.Natural,
+  ) ?? OpponentMode.Natural;
 }
 
 // ── Call parsing ────────────────────────────────────────────────────
@@ -113,8 +124,7 @@ export function parseCallString(s: string): Call {
   if (upper === "XX" || upper === "RDBL" || upper === "REDOUBLE") return { type: "redouble" };
   const match = upper.match(/^([1-7])(C|D|H|S|NT|N)$/);
   if (!match) {
-    console.error(`Invalid bid: "${s}" (expected: P, X, XX, or 1C..7NT)`);
-    process.exit(2);
+    fail(`Invalid bid: "${s}" (expected: P, X, XX, or 1C..7NT)`);
   }
   const level = Number(match[1]) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
   const strain = STRAIN_MAP[match[2]!]!;
@@ -130,14 +140,7 @@ const PRACTICE_MODE_MAP: Record<string, PracticeMode> = {
 };
 
 export function parsePracticeMode(args: Flags): PracticeMode | undefined {
-  const val = args["mode"];
-  if (val === undefined || val === true) return undefined;
-  const mapped = PRACTICE_MODE_MAP[val.toLowerCase()];
-  if (mapped === undefined) {
-    console.error(`Invalid --mode value: "${val}" (expected: decision-drill, full-auction, continuation-drill)`);
-    process.exit(2);
-  }
-  return mapped;
+  return parseMappedArg(args, "mode", PRACTICE_MODE_MAP, "decision-drill, full-auction, continuation-drill");
 }
 
 const PRACTICE_ROLE_MAP: Record<string, PracticeRole> = {
@@ -147,12 +150,5 @@ const PRACTICE_ROLE_MAP: Record<string, PracticeRole> = {
 };
 
 export function parsePracticeRole(args: Flags): PracticeRole | undefined {
-  const val = args["role"];
-  if (val === undefined || val === true) return undefined;
-  const mapped = PRACTICE_ROLE_MAP[val.toLowerCase()];
-  if (mapped === undefined) {
-    console.error(`Invalid --role value: "${val}" (expected: opener, responder, both)`);
-    process.exit(2);
-  }
-  return mapped;
+  return parseMappedArg(args, "role", PRACTICE_ROLE_MAP, "opener, responder, both");
 }

@@ -28,35 +28,7 @@ function makeWrongTeaching(): TeachingDetail {
 describe("BidFeedbackPanel", () => {
   const noop = () => {};
 
-  test("shows answer panel when answer is revealed", async () => {
-    const feedback = makeWrongViewportFeedback();
-    const { container } = render(BidFeedbackPanel, {
-      props: { feedback, teaching: makeWrongTeaching(), onRetry: noop },
-    });
-
-    // Click the show answer button
-    const showBtn = screen.getByLabelText("Show answer");
-    await fireEvent.click(showBtn);
-
-    // No fork point conditions since no decisionTrace
-    const conditionList = container.querySelector("[aria-label='Bid conditions']");
-    expect(conditionList).toBeNull();
-  });
-
-  test("does not show fork point conditions when decisionTrace is undefined", async () => {
-    const feedback = makeWrongViewportFeedback();
-    const { container } = render(BidFeedbackPanel, {
-      props: { feedback, teaching: makeWrongTeaching(), onRetry: noop },
-    });
-
-    const showBtn = screen.getByLabelText("Show answer");
-    await fireEvent.click(showBtn);
-
-    const conditionList = container.querySelector("[aria-label='Bid conditions']");
-    expect(conditionList).toBeNull();
-  });
-
-  test("does not show fork point conditions when forkPoint is undefined", async () => {
+  test("shows answer panel without fork point conditions when revealed", async () => {
     const feedback = makeWrongViewportFeedback();
     const { container } = render(BidFeedbackPanel, {
       props: { feedback, teaching: makeWrongTeaching(), onRetry: noop },

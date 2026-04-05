@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { closeDebugDrawer, readDebugDrawerText } from "./helpers";
 
 /**
  * Multi-convention flow tests across different seeds.
@@ -27,16 +28,6 @@ interface GameData {
   alertMarkers: string[];
   dealerIndicator: string;
   vulnerabilityIndicator: string;
-}
-
-/** Close the debug drawer (needed on mobile viewports where it covers bid buttons) */
-async function closeDebugDrawer(page: Page): Promise<void> {
-  try {
-    await page.locator('button[aria-label="Close debug panel"]').click({ timeout: 1000 });
-    await page.waitForTimeout(300);
-  } catch {
-    // Already closed or not interactable — ignore
-  }
 }
 
 async function extractGameData(
@@ -116,16 +107,7 @@ async function extractGameData(
   await page.waitForTimeout(500);
 
   // Read full text via page.evaluate with inert check
-  const fullText = await page.evaluate(() => {
-    const drawer = document.querySelector('aside[aria-label="Debug drawer"]');
-    if (drawer && !drawer.hasAttribute("inert")) {
-      drawer.querySelectorAll("details").forEach((d) => {
-        (d).open = true;
-      });
-      return drawer.innerText + "\n" + (document.querySelector("main")?.innerText ?? "");
-    }
-    return document.body.innerText;
-  });
+  const fullText = await readDebugDrawerText(page);
 
   // Extract correctBidBlock from the populated text
   const correctBidBlock = (() => {

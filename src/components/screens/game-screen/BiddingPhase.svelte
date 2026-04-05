@@ -2,7 +2,7 @@
   import type { BiddingViewport } from "../../../service";
   import { getGameStore, getLayoutConfig } from "../../../stores/context";
   import { getAppStore } from "../../../stores/context";
-  import { PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../shared/layout-props";
+  import { PHASE_CONTAINER_CLASS, PANEL_FONT_STYLE, SIDE_PANEL_CLASS } from "../../shared/layout-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
@@ -51,7 +51,7 @@
     </BridgeTable>
   </ScaledTableArea>
 
-  <aside class="{SIDE_PANEL_CLASS}" style="font-size: var(--panel-font, 1rem);" aria-label="Bidding controls">
+  <aside class={SIDE_PANEL_CLASS} style={PANEL_FONT_STYLE} aria-label="Bidding controls">
     <BiddingSidePanel
       {onNewDeal}
       lifecycleDisabled={gameStore.isTransitioning}

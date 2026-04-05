@@ -14,6 +14,7 @@ import type { Flags } from "../shared";
 import {
   requireArg, optionalNumericArg,
   parseBaseSystem, parseVulnerability, parseOpponentMode,
+  printJson,
 } from "../shared";
 
 interface SeedResult {
@@ -73,9 +74,9 @@ export async function runSelftest(service: DevServicePort, flags: Flags): Promis
   }
 
   if (allResults.length === 1) {
-    console.log(JSON.stringify(allResults[0], null, 2));
+    printJson(allResults[0]);
   } else {
-    console.log(JSON.stringify(allResults, null, 2));
+    printJson(allResults);
   }
 
   const anyFail = allResults.some((r) => (r.fail as number) > 0);
@@ -165,4 +166,3 @@ async function runSingleSeed(
     }
   }
 }
-

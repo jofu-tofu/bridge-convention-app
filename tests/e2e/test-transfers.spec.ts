@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { bidTextToTestId, closeDebugDrawer, readDebugDrawerText } from "./helpers";
 
 // ============================================================================
 // Jacoby Transfers — Comprehensive E2E Test Suite
@@ -129,25 +130,10 @@ function getCorrectBid(body: string) {
   return null;
 }
 
-/** Convert a bid symbol like "2♦" to a test ID like "bid-2D". */
-function bidToTestId(bid: string): string {
-  return `bid-${bid.replace("♣", "C").replace("♦", "D").replace("♥", "H").replace("♠", "S")}`;
-}
-
 /** Read South's HCP as a number. */
 async function getHcp(page: Page): Promise<number> {
   const txt = await page.getByTestId("south-hcp").textContent();
   return parseInt(txt?.match(/(\d+)/)?.[1] ?? "-1", 10);
-}
-
-/** Close the debug drawer if it's open (needed on mobile viewports where drawer covers bid panel). */
-async function closeDebugDrawer(page: Page): Promise<void> {
-  try {
-    await page.locator('button[aria-label="Close debug panel"]').click({ timeout: 1000 });
-    await page.waitForTimeout(300);
-  } catch {
-    // Already closed or not interactable — ignore
-  }
 }
 
 // ============================================================================
@@ -176,14 +162,7 @@ test.describe("Jacoby Transfers — R1 bid verification (seeds 1–5)", () => {
       await page.waitForTimeout(500);
 
       const hcp = await getHcp(page);
-      const body = await page.evaluate(() => {
-        const drawer = document.querySelector('aside[aria-label="Debug drawer"]');
-        if (drawer && !drawer.hasAttribute("inert")) {
-          drawer.querySelectorAll("details").forEach((d) => { (d).open = true; });
-          return drawer.innerText + "\n" + (document.querySelector("main")?.innerText ?? "");
-        }
-        return document.body.innerText;
-      });
+      const body = await readDebugDrawerText(page);
       await closeDebugDrawer(page);
 
       const shape = parseHandShape(body);
@@ -248,7 +227,7 @@ test.describe("Jacoby Transfers — Correct bid feedback", () => {
     const correctBid = getCorrectBid(body);
     expect(correctBid).not.toBeNull();
 
-    const testId = bidToTestId(correctBid!.bid);
+    const testId = bidTextToTestId(correctBid!.bid);
     await page.getByTestId(testId).click();
 
     await page.waitForTimeout(2_000);
@@ -301,16 +280,7 @@ test.describe("Jacoby Transfers — Incorrect bid feedback", () => {
     await page.waitForTimeout(500);
 
     // Read debug data via page.evaluate with inert check (mobile-safe)
-    const body = await page.evaluate(() => {
-      const drawer = document.querySelector('aside[aria-label="Debug drawer"]');
-      if (drawer && !drawer.hasAttribute("inert")) {
-        drawer.querySelectorAll("details").forEach((d) => {
-          (d).open = true;
-        });
-        return drawer.innerText + "\n" + (document.querySelector("main")?.innerText ?? "");
-      }
-      return document.body.innerText;
-    });
+    const body = await readDebugDrawerText(page);
     await closeDebugDrawer(page);
 
     const correctBid = getCorrectBid(body);
@@ -321,7 +291,7 @@ test.describe("Jacoby Transfers — Incorrect bid feedback", () => {
     await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
 
     // Second: bid correct
-    const testId = bidToTestId(correctBid!.bid);
+    const testId = bidTextToTestId(correctBid!.bid);
     await page.getByTestId(testId).click();
     // After correct bid, game may show feedback or auto-advance
     await page.waitForTimeout(2_000);
@@ -351,7 +321,7 @@ test.describe("Jacoby Transfers — Multi-round auction", () => {
     const acceptBid = isHeartsTransfer ? "2♥" : "2♠";
 
     // R1: Transfer bid
-    await page.getByTestId(bidToTestId(correctBid!.bid)).click();
+    await page.getByTestId(bidTextToTestId(correctBid!.bid)).click();
 
     // Wait for auction to auto-advance to R3 (opponents + opener bid)
     await expect(page.getByTestId("bid-P")).toBeEnabled({
@@ -377,4 +347,3 @@ test.describe("Jacoby Transfers — Multi-round auction", () => {
   });
 
 });
-
