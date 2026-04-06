@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { buildContextSummary } from "../game-screen/context-banner";
 import { Seat, BidSuit, PracticeMode } from "../../../service";
-import type { BiddingViewport, AuctionEntryView, Call } from "../../../service";
+import type { AuctionEntryView, Call } from "../../../service";
+import { makeBiddingViewport } from "../../../test-support/response-factories";
 
 function makeEntry(seat: Seat, callDisplay: string, type: "pass" | "bid" = "bid", alertLabel?: string): AuctionEntryView {
   const call: Call = type === "pass"
@@ -10,25 +11,9 @@ function makeEntry(seat: Seat, callDisplay: string, type: "pass" | "bid" = "bid"
   return { seat, call, callDisplay, alertLabel, meaning: undefined };
 }
 
-function makeViewport(overrides: Partial<BiddingViewport> & { auctionEntries: readonly AuctionEntryView[] }): BiddingViewport {
-  return {
-    seat: Seat.South,
-    conventionName: "Test",
-    dealer: Seat.North,
-    vulnerability: { ns: false, ew: false },
-    isUserTurn: true,
-    currentBidder: Seat.South,
-    legalCalls: [],
-    biddingOptions: [],
-    visibleHands: {},
-    practiceMode: PracticeMode.DecisionDrill,
-    ...overrides,
-  } as BiddingViewport;
-}
-
 describe("buildContextSummary", () => {
   it("returns null for full-auction mode", () => {
-    const vp = makeViewport({
+    const vp = makeBiddingViewport({
       auctionEntries: [makeEntry(Seat.North, "1NT")],
       practiceMode: PracticeMode.FullAuction,
     });
@@ -36,19 +21,20 @@ describe("buildContextSummary", () => {
   });
 
   it("returns null for empty auction", () => {
-    const vp = makeViewport({ auctionEntries: [] });
+    const vp = makeBiddingViewport({ auctionEntries: [] });
     expect(buildContextSummary(vp)).toBeNull();
   });
 
   it("returns null when user bids first (no pre-filled entries)", () => {
-    const vp = makeViewport({
+    const vp = makeBiddingViewport({
       auctionEntries: [makeEntry(Seat.South, "1NT")],
     });
     expect(buildContextSummary(vp)).toBeNull();
   });
 
   it("summarizes partner opened 1NT with RHO pass", () => {
-    const vp = makeViewport({
+    const vp = makeBiddingViewport({
+      practiceMode: PracticeMode.DecisionDrill,
       auctionEntries: [
         makeEntry(Seat.North, "1NT", "bid", "15-17 HCP balanced"),
         makeEntry(Seat.East, "Pass", "pass"),
@@ -59,7 +45,8 @@ describe("buildContextSummary", () => {
   });
 
   it("summarizes RHO opening without partner bid", () => {
-    const vp = makeViewport({
+    const vp = makeBiddingViewport({
+      practiceMode: PracticeMode.DecisionDrill,
       auctionEntries: [
         makeEntry(Seat.East, "1NT", "bid"),
       ],
@@ -69,7 +56,8 @@ describe("buildContextSummary", () => {
   });
 
   it("collapses consecutive passes", () => {
-    const vp = makeViewport({
+    const vp = makeBiddingViewport({
+      practiceMode: PracticeMode.DecisionDrill,
       auctionEntries: [
         makeEntry(Seat.North, "1♥", "bid"),
         makeEntry(Seat.East, "Pass", "pass"),
@@ -81,7 +69,8 @@ describe("buildContextSummary", () => {
   });
 
   it("handles LHO + partner + RHO sequence", () => {
-    const vp = makeViewport({
+    const vp = makeBiddingViewport({
+      practiceMode: PracticeMode.DecisionDrill,
       auctionEntries: [
         makeEntry(Seat.West, "1♣", "bid"),
         makeEntry(Seat.North, "Pass", "pass"),
