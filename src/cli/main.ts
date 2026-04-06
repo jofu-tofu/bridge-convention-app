@@ -11,7 +11,7 @@
 //   play      — session-based playthrough (viewport, bid grading)
 //   selftest  — strategy self-consistency check
 
-import { WasmService } from "../service";
+import { BridgeService } from "../service";
 import { parseArgs } from "./shared";
 import { runBundles, runModules, runDescribe } from "./commands/info";
 import { runPlay } from "./commands/play";
@@ -37,7 +37,7 @@ if (flags["help"] === true || flags["h"] === true) {
 
 // ── Service instance (requires WASM) ──────────────────────────────
 async function main(): Promise<void> {
-  const service = new WasmService();
+  const service = new BridgeService();
   await service.init();
 
   switch (subcommand) {

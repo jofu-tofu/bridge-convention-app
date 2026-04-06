@@ -114,12 +114,12 @@ Multi-system support (SAYC, 2/1, Acol). Modules are system-agnostic — differen
 components/ → stores/ → service/ (WASM proxy) → [Rust: bridge-service → bridge-session → {bridge-engine, bridge-conventions}]
 cli/commands/ → service/
 ```
-UI layers (`components/`, `stores/`) import ONLY from `service/`. `service/` is a thin WASM proxy: `ServicePort` interface, `WasmService` impl, barrel, `display/`, `util/`, `session-types.ts`. Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
+UI layers (`components/`, `stores/`) import ONLY from `service/`. `service/` is a thin WASM proxy: `ServicePort` interface, `BridgeService` impl, barrel, `display/`, `util/`, `session-types.ts`. Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`.
 
 ```
 src/
   engine/          Pure TS engine types + DDS browser support (types, auction, scoring, play, dds-client, dds-worker)
-  service/         WASM proxy: ServicePort, WasmService, barrel, session-types, display/, util/
+  service/         WASM proxy: ServicePort, BridgeService, barrel, session-types, display/, util/
     display/       Call/contract/card formatting, hand summary, convention card builder
     util/          Pure utilities: delay
   cli/             Session-based convention evaluation CLI (main.ts + shared.ts + commands/)

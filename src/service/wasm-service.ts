@@ -1,5 +1,5 @@
 /**
- * WasmService — thin proxy delegating ServicePort methods to Rust via WASM.
+ * BridgeService — thin proxy delegating ServicePort methods to Rust via WASM.
  *
  * Replaces LocalService. Each method: call WasmServicePort.method(), return result.
  * All methods are async (wrap sync WASM calls in Promise.resolve()).
@@ -150,12 +150,12 @@ function wireDdsSolver(): void {
 }
 
 function getPort(): WasmServicePortBindings {
-  if (!wasmPort) throw new Error("WASM service not initialized — call init() first");
+  if (!wasmPort) throw new Error("Service not initialized — call init() first");
   return wasmPort;
 }
 
-/** WasmService implements DevServicePort by delegating to Rust WASM. */
-export class WasmService implements DevServicePort {
+/** BridgeService implements DevServicePort by delegating to Rust via WASM. */
+export class BridgeService implements DevServicePort {
   // ── Init ────────────────────────────────────────────────────────
   async init(): Promise<void> {
     if (wasmPort) return; // idempotent

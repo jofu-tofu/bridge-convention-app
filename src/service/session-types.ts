@@ -609,10 +609,10 @@ export interface BidResult {
 
 // ── Convention catalog type aliases ───────────────────────────────
 // Re-exported so dev-params.ts can resolve convention/module IDs for URL params.
-// All implementations delegate to WasmService catalog methods.
+// All implementations delegate to BridgeService catalog methods.
 
-/** Type alias for getConvention — delegates to WasmService catalog. */
+/** Type alias for getConvention — delegates to BridgeService catalog. */
 export type GetConventionFn = (id: string) => ConventionConfig;
 
-/** Type alias for getModule — delegates to WasmService catalog. */
+/** Type alias for getModule — delegates to BridgeService catalog. */
 export type GetModuleFn = (id: string) => unknown;

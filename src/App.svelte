@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { DevServicePort } from "./service";
-  import { WasmService } from "./service";
+  import { BridgeService } from "./service";
   import { applyDevParams } from "./stores/dev-params";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
@@ -15,7 +15,7 @@
   function init(): void {
     engineReady = false;
     initError = null;
-    const svc = new WasmService();
+    const svc = new BridgeService();
     svc.init()
       .then(() => {
         resolvedService = svc;

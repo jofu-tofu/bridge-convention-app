@@ -18,18 +18,18 @@ const BASE_MODULE_IDS: readonly string[] = [
 ];
 
 // Access the WASM port directly for sync calls.
-// The WasmServicePort instance is initialized by WasmService.init() at startup.
+// The WasmServicePort instance is initialized by BridgeService.init() at startup.
 // We import it lazily from the wasm module.
 let wasmModule: Record<string, unknown> | null = null;
 
 function getWasm(): Record<string, unknown> {
   if (!wasmModule) {
-    throw new Error("WASM service not initialized — call init() first");
+    throw new Error("Service not initialized — call init() first");
   }
   return wasmModule;
 }
 
-/** Called by WasmService.init() to share the module reference and port instance. */
+/** Called by BridgeService.init() to share the module reference and port instance. */
 export function setWasmModule(mod: Record<string, unknown>, port?: { list_conventions(): unknown[]; list_modules(): unknown[]; get_module_learning_viewport(id: string): unknown; get_bundle_flow_tree(id: string): unknown; get_module_flow_tree(id: string): unknown }): void {
   wasmModule = mod;
   if (port) cachedPort = port;

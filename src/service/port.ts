@@ -103,6 +103,6 @@ export interface DevServicePort extends ServicePort {
   getConventionName(handle: DrillHandle): Promise<string>;
 
   /** Create a session from a pre-built DrillBundle (for tests using stub engines).
-   *  @deprecated Only available in LocalService (TS backend). Not supported in WasmService. */
+   *  @deprecated Only available in LocalService (TS backend). Not supported in BridgeService. */
   createDrillSessionFromBundle(bundle: unknown): Promise<DrillHandle>;
 }

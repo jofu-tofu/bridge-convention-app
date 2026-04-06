@@ -1,4 +1,4 @@
-<!-- context-layer: cli | version: 2 | last-audited: 2026-04-01 -->
+<!-- context-layer: cli | version: 3 | last-audited: 2026-04-05 -->
 
 # cli — Session-Based Convention CLI
 

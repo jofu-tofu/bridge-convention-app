@@ -1,10 +1,11 @@
-<!-- context-layer: service | version: 7 | last-audited: 2026-03-29 -->
+<!-- context-layer: service | version: 8 | last-audited: 2026-04-05 -->
 
 # Service
 
-WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend (22 methods). The client holds an opaque `DrillHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never raw domain types. All game logic (conventions, inference, session) runs in Rust via `bridge-service`. TS `service/` is a thin serialize/call/deserialize proxy. DDS solver is injected at init via `wireDdsSolver()` — the WASM layer routes Expert/WorldClass profiles through async DDS play internally.
+WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend (23 methods). The client holds an opaque `DrillHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never raw domain types. All game logic (conventions, inference, session) runs in Rust via `bridge-service`. TS `service/` is a thin serialize/call/deserialize proxy. DDS solver is wired automatically during `init()` — the WASM layer routes Expert/WorldClass profiles through async DDS play internally.
 
-**ServicePort methods (22):**
+**ServicePort methods (23):**
+- **Lifecycle:** `init` (must be called once before any other method; idempotent; DDS wiring is fire-and-forget in browser)
 - **Session:** `createDrillSession`, `startDrill`
 - **Bidding:** `submitBid`
 - **Transitions:** `enterPlay`, `declinePlay`, `returnToPrompt`, `restartPlay`
@@ -25,7 +26,7 @@ WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend 
 | `response-types.ts` | Response DTOs: DrillStartResult, BidSubmitResult, PlayCardResult, viewports, ModuleCatalogEntry, ModuleLearningViewport, FlowTreeNode, etc. |
 | `session-types.ts` | Stub type definitions matching Rust JSON schema — TS interfaces for types that cross the WASM boundary |
 | `port.ts` | ServicePort + DevServicePort interfaces |
-| `wasm-service.ts` | `WasmService` — thin proxy implementing ServicePort via `wasm-bindgen` calls to Rust `WasmServicePort` |
+| `wasm-service.ts` | `BridgeService` — thin proxy implementing ServicePort via `wasm-bindgen` calls to Rust `WasmServicePort`. `init()` handles WASM module loading + DDS solver wiring. |
 | `service-helpers.ts` | Sync WASM wrappers for UI components: `listConventions()`, `listModules()`, `buildBaseModuleInfos()`, `getModuleLearningViewportSync()` |
 | `display/` | Call/contract/card formatting, convention card builders (`convention-card.ts` — `buildConventionCardPanel` for App format, `buildAcblCardPanel` for ACBL format, wired to WASM via service-helpers) |
 | `util/delay.ts` | Pure delay utility |
@@ -35,7 +36,7 @@ WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend 
 - **Callers own types.** Service defines its own viewport/response types.
 - **All UI imports go through service.** Components and stores must import from `service/index.ts` only.
 - **Test: "does this work if service runs remotely?"** If a change requires the UI to import a backend type directly, it's wrong.
-- **WASM proxy contract.** `WasmService` methods serialize args to JSON, call the WASM function, and deserialize the result. No domain logic in TS.
+- **WASM proxy contract.** `BridgeService` methods serialize args to JSON, call the WASM function, and deserialize the result. No domain logic in TS.
 
 ## Conventions
 

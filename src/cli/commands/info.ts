@@ -1,6 +1,6 @@
 // ── CLI info commands ───────────────────────────────────────────────
 //
-// bundles, modules, describe — discovery commands using WasmService catalog.
+// bundles, modules, describe — discovery commands using BridgeService catalog.
 
 import type { DevServicePort } from "../../service";
 import type { Flags } from "../shared";
