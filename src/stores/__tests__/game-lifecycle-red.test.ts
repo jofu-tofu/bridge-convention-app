@@ -9,104 +9,20 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { DevServicePort } from "../../service/port";
-import type { BiddingViewport } from "../../service/response-types";
 import { Seat, Suit, Rank, BidSuit } from "../../engine/types";
+import type { AiBidEntry } from "../../service/response-types";
+import { ServiceGamePhase, ViewportBidGrade } from "../../service/response-types";
+import { PlayPreference } from "../../service/session-types";
 import { createGameStore } from "../game.svelte";
-
-// ── Minimal mock viewport ────────────────────────────────────────
-// Partial mock — only fields the tests access need to be accurate.
-// Cast via `as unknown` to avoid exhaustive interface checks.
-const MOCK_BIDDING_VP = {
-  hand: {
-    cards: Array.from({ length: 13 }, (_, i) => ({
-      suit: [Suit.Spades, Suit.Hearts, Suit.Diamonds, Suit.Clubs][
-        Math.floor(i / 4)
-      ] as Suit,
-      rank: Rank.Two,
-    })),
-  },
-  handEvaluation: {
-    hcp: 10,
-    shape: [4, 3, 3, 3],
-    isBalanced: true,
-    distributionPoints: { shortness: 0, length: 0 },
-  },
-  handSummary: "4♠ 3♥ 3♦ 3♣, 10 HCP",
-  auctionEntries: [],
-  legalCalls: [{ type: "pass" as const }],
-  seat: Seat.South,
-  conventionName: "NT Bundle",
-  visibleHands: {},
-  biddingOptions: [],
-  isUserTurn: true,
-  currentBidder: Seat.South,
-} as unknown as BiddingViewport;
-
-// ── Mock service factory ─────────────────────────────────────────
-function createMockService(): DevServicePort {
-  return {
-    createDrillSession: vi.fn().mockResolvedValue("session-1"),
-    startDrill: vi.fn().mockResolvedValue({
-      viewport: MOCK_BIDDING_VP,
-      isOffConvention: false,
-      aiBids: [],
-      auctionComplete: false,
-      phase: "BIDDING",
-      practiceMode: "decision-drill",
-      playPreference: "prompt",
-    }),
-    submitBid: vi.fn().mockResolvedValue({
-      accepted: true,
-      grade: "correct",
-      feedback: null,
-      teaching: null,
-      aiBids: [],
-      nextViewport: MOCK_BIDDING_VP,
-      phaseTransition: null,
-      userHistoryEntry: null,
-    }),
-    enterPlay: vi
-      .fn()
-      .mockResolvedValue({ phase: "PLAYING", aiPlays: null }),
-    declinePlay: vi.fn().mockResolvedValue(undefined),
-    returnToPrompt: vi.fn().mockResolvedValue(undefined),
-    restartPlay: vi
-      .fn()
-      .mockResolvedValue({ phase: "PLAYING", aiPlays: null }),
-    playCard: vi.fn().mockResolvedValue({
-      accepted: true,
-      trickComplete: false,
-      playComplete: false,
-      score: null,
-      aiPlays: [],
-      legalPlays: [],
-      currentPlayer: Seat.South,
-    }),
-    skipToReview: vi.fn().mockResolvedValue(undefined),
-    updatePlayProfile: vi.fn().mockResolvedValue(undefined),
-    getBiddingViewport: vi.fn().mockResolvedValue(MOCK_BIDDING_VP),
-    getDeclarerPromptViewport: vi.fn().mockResolvedValue(null),
-    getPlayingViewport: vi.fn().mockResolvedValue(null),
-    getExplanationViewport: vi.fn().mockResolvedValue(null),
-    getPublicBeliefState: vi
-      .fn()
-      .mockResolvedValue({ beliefs: {}, annotations: [] }),
-    getDDSSolution: vi
-      .fn()
-      .mockRejectedValue(new Error("not available")),
-    listConventions: vi.fn().mockResolvedValue([]),
-    listModules: vi.fn().mockResolvedValue([]),
-    getModuleLearningViewport: vi.fn().mockResolvedValue(null),
-    getBundleFlowTree: vi.fn().mockResolvedValue(null),
-    getModuleFlowTree: vi.fn().mockResolvedValue(null),
-    // DevServicePort methods
-    getExpectedBid: vi.fn().mockResolvedValue(null),
-    getDebugLog: vi.fn().mockResolvedValue([]),
-    getInferenceTimeline: vi.fn().mockResolvedValue([]),
-    getConventionName: vi.fn().mockResolvedValue("Test Convention"),
-    createDrillSessionFromBundle: vi.fn().mockRejectedValue(new Error("stub")),
-  } as unknown as DevServicePort;
-}
+import { createMockService } from "../../test-support/service-mocks";
+import {
+  makeDrillStartResult,
+  makeBidSubmitResult,
+  makePlayEntryResult,
+  makePlayingViewport,
+  makeDeclarerPromptViewport,
+  makeExplanationViewport,
+} from "../../test-support/response-factories";
 
 describe("game store lifecycle (RED tests)", () => {
   let mockService: DevServicePort;
@@ -138,21 +54,14 @@ describe("game store lifecycle (RED tests)", () => {
   });
 
   it("RED: userBid with correct bid updates viewport and animates AI bids", async () => {
-    const aiBids = [
-      { seat: Seat.West, call: { type: "pass" as const } },
-      { seat: Seat.North, call: { type: "bid" as const, level: 2, strain: BidSuit.Clubs } },
+    const aiBids: AiBidEntry[] = [
+      { seat: Seat.West, call: { type: "pass" as const }, historyEntry: { seat: Seat.West, call: { type: "pass" as const }, isUser: false } },
+      { seat: Seat.North, call: { type: "bid" as const, level: 2, strain: BidSuit.Clubs }, historyEntry: { seat: Seat.North, call: { type: "bid" as const, level: 2, strain: BidSuit.Clubs }, isUser: false } },
     ];
 
-    (mockService.submitBid as ReturnType<typeof vi.fn>).mockResolvedValue({
-      accepted: true,
-      grade: "correct",
-      feedback: null,
-      teaching: null,
-      aiBids,
-      nextViewport: MOCK_BIDDING_VP,
-      phaseTransition: null,
-      userHistoryEntry: null,
-    });
+    vi.mocked(mockService.submitBid).mockResolvedValue(
+      makeBidSubmitResult({ aiBids }),
+    );
 
     const store = createGameStore(mockService, {
       delayFn: () => Promise.resolve(),
@@ -168,21 +77,25 @@ describe("game store lifecycle (RED tests)", () => {
   });
 
   it("RED: userBid with wrong bid shows feedback, does NOT advance", async () => {
-    (mockService.submitBid as ReturnType<typeof vi.fn>).mockResolvedValue({
-      accepted: false,
-      grade: "incorrect",
-      feedback: {
-        grade: "incorrect",
-        userCall: { type: "pass" },
-        expectedCall: { type: "bid", level: 2, strain: BidSuit.Clubs },
-        explanation: "Stayman is the correct response",
-      },
-      teaching: null,
-      aiBids: [],
-      nextViewport: null,
-      phaseTransition: null,
-      userHistoryEntry: null,
-    });
+    vi.mocked(mockService.submitBid).mockResolvedValue(
+      makeBidSubmitResult({
+        accepted: false,
+        grade: ViewportBidGrade.Incorrect,
+        feedback: {
+          grade: ViewportBidGrade.Incorrect,
+          userCall: { type: "pass" },
+          userCallDisplay: "Pass",
+          correctCall: { type: "bid", level: 2, strain: BidSuit.Clubs },
+          correctCallDisplay: "2♣",
+          requiresRetry: true,
+        },
+        teaching: null,
+        aiBids: [],
+        nextViewport: null,
+        phaseTransition: null,
+        userHistoryEntry: null,
+      }),
+    );
 
     const store = createGameStore(mockService, {
       delayFn: () => Promise.resolve(),
@@ -198,22 +111,15 @@ describe("game store lifecycle (RED tests)", () => {
   });
 
   it("RED: phaseTransition in submitBid triggers post-auction orchestration", async () => {
-    (mockService.submitBid as ReturnType<typeof vi.fn>).mockResolvedValue({
-      accepted: true,
-      grade: "correct",
-      feedback: null,
-      teaching: null,
-      aiBids: [],
-      nextViewport: MOCK_BIDDING_VP,
-      phaseTransition: { from: "BIDDING", to: "DECLARER_PROMPT" },
-      userHistoryEntry: null,
-    });
+    vi.mocked(mockService.submitBid).mockResolvedValue(
+      makeBidSubmitResult({
+        phaseTransition: { from: ServiceGamePhase.Bidding, to: ServiceGamePhase.DeclarerPrompt },
+      }),
+    );
 
-    (mockService.getDeclarerPromptViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
-      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
-      declarerSeat: Seat.North,
-      userSeat: Seat.South,
-    });
+    vi.mocked(mockService.getDeclarerPromptViewport).mockResolvedValue(
+      makeDeclarerPromptViewport(),
+    );
 
     const store = createGameStore(mockService, {
       delayFn: () => Promise.resolve(),
@@ -229,32 +135,19 @@ describe("game store lifecycle (RED tests)", () => {
   });
 
   it("RED: auto-prompt with playPreference=skip transitions to EXPLANATION", async () => {
-    (mockService.startDrill as ReturnType<typeof vi.fn>).mockResolvedValue({
-      viewport: MOCK_BIDDING_VP,
-      isOffConvention: false,
-      aiBids: [],
-      auctionComplete: false,
-      phase: "BIDDING",
-      practiceMode: "decision-drill",
-      playPreference: "skip",
-    });
+    vi.mocked(mockService.startDrill).mockResolvedValue(
+      makeDrillStartResult({ playPreference: PlayPreference.Skip }),
+    );
 
-    (mockService.submitBid as ReturnType<typeof vi.fn>).mockResolvedValue({
-      accepted: true,
-      grade: "correct",
-      feedback: null,
-      teaching: null,
-      aiBids: [],
-      nextViewport: MOCK_BIDDING_VP,
-      phaseTransition: { from: "BIDDING", to: "DECLARER_PROMPT" },
-      userHistoryEntry: null,
-    });
+    vi.mocked(mockService.submitBid).mockResolvedValue(
+      makeBidSubmitResult({
+        phaseTransition: { from: ServiceGamePhase.Bidding, to: ServiceGamePhase.DeclarerPrompt },
+      }),
+    );
 
-    (mockService.getExplanationViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
-      contract: null,
-      bidHistory: [],
-      explanationEntries: [],
-    });
+    vi.mocked(mockService.getExplanationViewport).mockResolvedValue(
+      makeExplanationViewport(),
+    );
 
     const store = createGameStore(mockService, {
       delayFn: () => Promise.resolve(),
@@ -269,37 +162,19 @@ describe("game store lifecycle (RED tests)", () => {
   });
 
   it("RED: auto-prompt with playPreference=always transitions to PLAYING", async () => {
-    (mockService.startDrill as ReturnType<typeof vi.fn>).mockResolvedValue({
-      viewport: MOCK_BIDDING_VP,
-      isOffConvention: false,
-      aiBids: [],
-      auctionComplete: false,
-      phase: "BIDDING",
-      practiceMode: "decision-drill",
-      playPreference: "always",
-    });
+    vi.mocked(mockService.startDrill).mockResolvedValue(
+      makeDrillStartResult({ playPreference: PlayPreference.Always }),
+    );
 
-    (mockService.submitBid as ReturnType<typeof vi.fn>).mockResolvedValue({
-      accepted: true,
-      grade: "correct",
-      feedback: null,
-      teaching: null,
-      aiBids: [],
-      nextViewport: MOCK_BIDDING_VP,
-      phaseTransition: { from: "BIDDING", to: "PLAYING" },
-      userHistoryEntry: null,
-    });
+    vi.mocked(mockService.submitBid).mockResolvedValue(
+      makeBidSubmitResult({
+        phaseTransition: { from: ServiceGamePhase.Bidding, to: ServiceGamePhase.Playing },
+      }),
+    );
 
-    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
-      tricks: [],
-      currentTrick: [],
-      currentPlayer: Seat.West,
-      declarerTricksWon: 0,
-      defenderTricksWon: 0,
-      dummySeat: Seat.North,
-      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.South, doubled: false, redoubled: false },
-      trumpSuit: undefined,
-    });
+    vi.mocked(mockService.getPlayingViewport).mockResolvedValue(
+      makePlayingViewport(),
+    );
 
     const store = createGameStore(mockService, {
       delayFn: () => Promise.resolve(),
@@ -351,16 +226,14 @@ describe("game store lifecycle (RED tests)", () => {
   // ── Executor transition tests ──────────────────────────────────
 
   async function drillToDeclarerPrompt(store: ReturnType<typeof createGameStore>, svc: DevServicePort) {
-    (svc.submitBid as ReturnType<typeof vi.fn>).mockResolvedValue({
-      accepted: true, grade: "correct", feedback: null, teaching: null,
-      aiBids: [], nextViewport: MOCK_BIDDING_VP,
-      phaseTransition: { from: "BIDDING", to: "DECLARER_PROMPT" },
-      userHistoryEntry: null,
-    });
-    (svc.getDeclarerPromptViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
-      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
-      declarerSeat: Seat.North, userSeat: Seat.South,
-    });
+    vi.mocked(svc.submitBid).mockResolvedValue(
+      makeBidSubmitResult({
+        phaseTransition: { from: ServiceGamePhase.Bidding, to: ServiceGamePhase.DeclarerPrompt },
+      }),
+    );
+    vi.mocked(svc.getDeclarerPromptViewport).mockResolvedValue(
+      makeDeclarerPromptViewport(),
+    );
     await store.startDrillFromHandle("session-1");
     store.userBid({ type: "pass" });
     await vi.waitFor(() => { expect(store.phase).toBe("DECLARER_PROMPT"); });
@@ -370,13 +243,8 @@ describe("game store lifecycle (RED tests)", () => {
     const store = createGameStore(mockService, { delayFn: () => Promise.resolve() });
     await drillToDeclarerPrompt(store, mockService);
 
-    (mockService.enterPlay as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
-    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
-      tricks: [], currentTrick: [], currentPlayer: Seat.West,
-      declarerTricksWon: 0, defenderTricksWon: 0,
-      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
-      legalPlays: [], userControlledSeats: [Seat.South], remainingCards: {},
-    });
+    vi.mocked(mockService.enterPlay).mockResolvedValue(makePlayEntryResult({ aiPlays: [] }));
+    vi.mocked(mockService.getPlayingViewport).mockResolvedValue(makePlayingViewport());
 
     store.acceptPrompt();
     await vi.waitFor(() => {
@@ -390,9 +258,9 @@ describe("game store lifecycle (RED tests)", () => {
     const store = createGameStore(mockService, { delayFn: () => Promise.resolve() });
     await drillToDeclarerPrompt(store, mockService);
 
-    (mockService.getExplanationViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
-      contract: null, bidHistory: [], explanationEntries: [],
-    });
+    vi.mocked(mockService.getExplanationViewport).mockResolvedValue(
+      makeExplanationViewport(),
+    );
 
     store.declinePrompt();
     await vi.waitFor(() => {
@@ -407,19 +275,14 @@ describe("game store lifecycle (RED tests)", () => {
     await drillToDeclarerPrompt(store, mockService);
 
     // First get to PLAYING
-    (mockService.enterPlay as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
-    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
-      tricks: [], currentTrick: [], currentPlayer: Seat.West,
-      declarerTricksWon: 0, defenderTricksWon: 0,
-      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
-      legalPlays: [], userControlledSeats: [Seat.South], remainingCards: {},
-    });
+    vi.mocked(mockService.enterPlay).mockResolvedValue(makePlayEntryResult({ aiPlays: [] }));
+    vi.mocked(mockService.getPlayingViewport).mockResolvedValue(makePlayingViewport());
     store.acceptPrompt();
     await vi.waitFor(() => { expect(store.phase).toBe("PLAYING"); });
 
-    (mockService.getExplanationViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
-      contract: null, bidHistory: [], explanationEntries: [],
-    });
+    vi.mocked(mockService.getExplanationViewport).mockResolvedValue(
+      makeExplanationViewport(),
+    );
 
     store.skipToReview();
     await vi.waitFor(() => {
@@ -433,26 +296,16 @@ describe("game store lifecycle (RED tests)", () => {
     await drillToDeclarerPrompt(store, mockService);
 
     // Get to PLAYING first
-    (mockService.enterPlay as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
-    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
-      tricks: [], currentTrick: [], currentPlayer: Seat.West,
-      declarerTricksWon: 0, defenderTricksWon: 0,
-      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
-      legalPlays: [], userControlledSeats: [Seat.South], remainingCards: {},
-    });
+    vi.mocked(mockService.enterPlay).mockResolvedValue(makePlayEntryResult({ aiPlays: [] }));
+    vi.mocked(mockService.getPlayingViewport).mockResolvedValue(makePlayingViewport());
     store.acceptPrompt();
     await vi.waitFor(() => { expect(store.phase).toBe("PLAYING"); });
 
     // Reset mocks to track restart calls
-    (mockService.restartPlay as ReturnType<typeof vi.fn>).mockClear();
-    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockClear();
-    (mockService.restartPlay as ReturnType<typeof vi.fn>).mockResolvedValue({ phase: "PLAYING", aiPlays: [] });
-    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
-      tricks: [], currentTrick: [], currentPlayer: Seat.West,
-      declarerTricksWon: 0, defenderTricksWon: 0,
-      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
-      legalPlays: [], userControlledSeats: [Seat.South], remainingCards: {},
-    });
+    vi.mocked(mockService.restartPlay).mockClear();
+    vi.mocked(mockService.getPlayingViewport).mockClear();
+    vi.mocked(mockService.restartPlay).mockResolvedValue(makePlayEntryResult({ aiPlays: [] }));
+    vi.mocked(mockService.getPlayingViewport).mockResolvedValue(makePlayingViewport());
 
     store.restartPlay();
     await vi.waitFor(() => {
@@ -468,16 +321,14 @@ describe("game store lifecycle (RED tests)", () => {
     const store = createGameStore(mockService, { delayFn: controlledDelay });
     await drillToDeclarerPrompt(store, mockService);
 
-    (mockService.enterPlay as ReturnType<typeof vi.fn>).mockResolvedValue({
-      phase: "PLAYING",
-      aiPlays: [{ seat: Seat.West, card: { suit: Suit.Spades, rank: Rank.Ace }, reason: "test" }],
-    });
-    (mockService.getPlayingViewport as ReturnType<typeof vi.fn>).mockResolvedValue({
-      tricks: [], currentTrick: [], currentPlayer: Seat.South,
-      declarerTricksWon: 0, defenderTricksWon: 0,
-      contract: { level: 3, strain: BidSuit.NoTrump, declarer: Seat.North, doubled: false, redoubled: false },
-      legalPlays: [], userControlledSeats: [Seat.South], remainingCards: {},
-    });
+    vi.mocked(mockService.enterPlay).mockResolvedValue(
+      makePlayEntryResult({
+        aiPlays: [{ seat: Seat.West, card: { suit: Suit.Spades, rank: Rank.Ace }, reason: "test" }],
+      }),
+    );
+    vi.mocked(mockService.getPlayingViewport).mockResolvedValue(
+      makePlayingViewport({ currentPlayer: Seat.South }),
+    );
 
     store.acceptPrompt();
     // Wait for the service calls to complete (controlled delay hasn't been hit yet by service calls)

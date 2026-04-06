@@ -4,9 +4,11 @@ Shared test factories used across module boundaries (stores, components).
 
 ## Exports
 
-| File             | Exports                                                                                          |
-| ---------------- | ------------------------------------------------------------------------------------------------ |
-| `fixtures.ts`    | `makeSimpleTestDeal` — pure engine-type factory |
+| File                      | Exports                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------ |
+| `fixtures.ts`             | `makeSimpleTestDeal` — pure engine-type factory |
+| `response-factories.ts`   | `makeBiddingViewport`, `makeDrillStartResult`, `makeBidSubmitResult`, `makePlayEntryResult`, `makePlayCardResult`, `makePlayingViewport`, `makeDeclarerPromptViewport`, `makeExplanationViewport` — viewport/response factories for store tests (no vitest dependency) |
+| `service-mocks.ts`        | `createMockService` — type-safe mock `DevServicePort` factory with `satisfies` constraint ensuring compile-time drift detection |
 
 ## Conventions
 
@@ -19,4 +21,4 @@ Shared test factories used across module boundaries (stores, components).
 
 ---
 
-**Staleness anchor:** This file assumes `fixtures.ts` exists. If it doesn't, this file is stale.
+**Staleness anchor:** This file assumes `fixtures.ts`, `response-factories.ts`, and `service-mocks.ts` exist. If they don't, this file is stale.

@@ -1,8 +1,6 @@
 <script lang="ts">
   import type { DevServicePort } from "./service";
-  import { initWasmService, WasmService } from "./service";
-  import { wireDdsSolver } from "./service/wasm-service";
-  import { initDDS } from "./engine/dds-client";
+  import { WasmService } from "./service";
   import { applyDevParams } from "./stores/dev-params";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
@@ -17,18 +15,15 @@
   function init(): void {
     engineReady = false;
     initError = null;
-    initWasmService()
+    const svc = new WasmService();
+    svc.init()
       .then(() => {
-        const svc = new WasmService();
         resolvedService = svc;
         const store = createAppStore();
         appStore = store;
         resolvedGameStore = createGameStore(svc);
         applyDevParams(store);
         engineReady = true;
-        // Fire-and-forget: DDS is non-essential. If worker fails, isDDSAvailable() stays false.
-        // Once DDS is ready, wire the solver into the WASM service for MC+DDS play.
-        void initDDS().then(() => { wireDdsSolver(); }).catch(() => {});
       })
       .catch((err: unknown) => {
         initError = `Failed to load engine: ${err instanceof Error ? err.message : String(err)}`;

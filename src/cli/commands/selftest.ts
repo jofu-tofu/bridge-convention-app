@@ -4,12 +4,8 @@
 // strategy's recommended bid via getExpectedBid(), submits it, and
 // verifies it grades as correct. Requires a dev WASM build.
 
-import type { DevServicePort } from "../../service";
-import type { Call } from "../../engine/types";
-import { callKey } from "../../engine/call-helpers";
-import { ViewportBidGrade } from "../../service/response-types";
-import type { SessionConfig } from "../../service/request-types";
-import { PlayPreference } from "../../service/session-types";
+import type { DevServicePort, Call, SessionConfig } from "../../service";
+import { callKey, ViewportBidGrade, PlayPreference } from "../../service";
 import type { Flags } from "../shared";
 import {
   requireArg, optionalNumericArg,

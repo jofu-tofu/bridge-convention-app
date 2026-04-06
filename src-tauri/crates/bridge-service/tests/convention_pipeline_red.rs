@@ -4,7 +4,7 @@
 //! builds a ConventionStrategyAdapter, and asserts that suggest_bid() returns the
 //! expected call for each scenario.
 //!
-//! Run: `cargo test -p bridge-service -- --ignored convention_pipeline`
+//! Run: `cargo test -p bridge-service --test convention_pipeline_red`
 
 use std::collections::HashMap;
 
@@ -177,37 +177,31 @@ fn run_bundle_tests(bundle_id: &str) {
 }
 
 #[test]
-#[ignore]
 fn nt_bundle_adapter_produces_correct_bids() {
     run_bundle_tests("nt-bundle");
 }
 
 #[test]
-#[ignore]
 fn nt_stayman_adapter_produces_correct_bids() {
     run_bundle_tests("nt-stayman");
 }
 
 #[test]
-#[ignore]
 fn nt_transfers_adapter_produces_correct_bids() {
     run_bundle_tests("nt-transfers");
 }
 
 #[test]
-#[ignore]
 fn bergen_bundle_adapter_produces_correct_bids() {
     run_bundle_tests("bergen-bundle");
 }
 
 #[test]
-#[ignore]
 fn weak_twos_adapter_produces_correct_bids() {
     run_bundle_tests("weak-twos-bundle");
 }
 
 #[test]
-#[ignore]
 fn dont_bundle_adapter_produces_correct_bids() {
     run_bundle_tests("dont-bundle");
 }
@@ -251,7 +245,6 @@ fn make_hand(cards_str: &str) -> Hand {
 }
 
 #[test]
-#[ignore]
 fn grading_wiring_truth_set_populated() {
     // Hand with both Stayman (4 spades) and transfer (5 hearts) options
     // after partner opens 1NT. If the pipeline selects one, the other
@@ -301,7 +294,6 @@ fn grading_wiring_truth_set_populated() {
 }
 
 #[test]
-#[ignore]
 fn observation_log_tracks_fit_through_transfer_acceptance() {
     // Replay 1NT → 2♦ (transfer to hearts) → 2♥ (accept) and verify
     // that kernel advancement produces fit_agreed = Hearts/Final on the

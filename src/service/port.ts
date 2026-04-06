@@ -36,6 +36,10 @@ import type {
 
 /** Production service interface — all methods return Promise<T>. */
 interface ServicePort {
+  /** Bootstrap the service. Transport-specific wiring (WASM load, DDS, etc.) happens here.
+   *  Must be called once before any other method. Idempotent. */
+  init(): Promise<void>;
+
   // ── Session lifecycle ───────────────────────────────────────────
   createDrillSession(config: SessionConfig): Promise<DrillHandle>;
 

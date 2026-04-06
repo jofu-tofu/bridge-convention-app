@@ -18,20 +18,21 @@ const BASE_MODULE_IDS: readonly string[] = [
 ];
 
 // Access the WASM port directly for sync calls.
-// The WasmServicePort instance is initialized by initWasmService() at startup.
+// The WasmServicePort instance is initialized by WasmService.init() at startup.
 // We import it lazily from the wasm module.
 let wasmModule: Record<string, unknown> | null = null;
 
 function getWasm(): Record<string, unknown> {
   if (!wasmModule) {
-    throw new Error("WASM service not initialized — call initWasmService() first");
+    throw new Error("WASM service not initialized — call init() first");
   }
   return wasmModule;
 }
 
-/** Called by initWasmService to share the module reference. */
-export function setWasmModule(mod: Record<string, unknown>): void {
+/** Called by WasmService.init() to share the module reference and port instance. */
+export function setWasmModule(mod: Record<string, unknown>, port?: { list_conventions(): unknown[]; list_modules(): unknown[]; get_module_learning_viewport(id: string): unknown; get_bundle_flow_tree(id: string): unknown; get_module_flow_tree(id: string): unknown }): void {
   wasmModule = mod;
+  if (port) cachedPort = port;
 }
 
 // Cached singleton port — created once after WASM init.

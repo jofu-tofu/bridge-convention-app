@@ -4,11 +4,8 @@
 // createDrillSession → startDrill → submitBid loop. Stateless: each
 // invocation creates a fresh session (same seed = same deal).
 
-import type { DevServicePort } from "../../service";
-import { ViewportBidGrade } from "../../service/response-types";
-import type { BiddingViewport } from "../../service/response-types";
-import type { SessionConfig } from "../../service/request-types";
-import { PlayPreference } from "../../service/session-types";
+import type { DevServicePort, BiddingViewport, SessionConfig } from "../../service";
+import { ViewportBidGrade, PlayPreference } from "../../service";
 import type { Flags } from "../shared";
 import {
   requireArg, optionalNumericArg, parseCallString,

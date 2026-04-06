@@ -36,7 +36,7 @@ import type {
 import type { ServiceDebugLogEntry } from "./debug-types";
 import type { PlayProfileId } from "./session-types";
 import { setWasmModule } from "./service-helpers";
-import { isDDSAvailable, solveBoardWasm, solveDealFromPBN } from "../engine/dds-client";
+import { initDDS, isDDSAvailable, solveBoardWasm, solveDealFromPBN } from "../engine/dds-client";
 
 // The WASM module exposes WasmServicePort as a class.
 // Type declarations for the WASM bindings:
@@ -111,8 +111,7 @@ function buildDdsSolverCallback(): (trump: number, first: number, trickSuit: num
 
 let wasmPort: WasmServicePortBindings | null = null;
 
-/** Initialize the WASM service. Must be called once at startup. */
-export async function initWasmService(): Promise<void> {
+async function initWasmModule(): Promise<void> {
   const isNode = typeof globalThis.process !== "undefined" && globalThis.process.versions?.node;
 
   if (isNode) {
@@ -126,16 +125,16 @@ export async function initWasmService(): Promise<void> {
     const wasmBytes = nodeFs.readFileSync(wasmPath);
     const initSync = raw.initSync as (input: { module: WebAssembly.Module }) => void;
     initSync({ module: new WebAssembly.Module(wasmBytes) });
-    setWasmModule(raw);
     const WasmServicePort = raw.WasmServicePort as new () => WasmServicePortBindings;
     wasmPort = new WasmServicePort();
+    setWasmModule(raw, wasmPort);
   } else {
     const wasmModule = await import("bridge-wasm");
     await wasmModule.default();
     const raw = wasmModule as unknown as Record<string, unknown>;
-    setWasmModule(raw);
     const WasmServicePort = raw.WasmServicePort as new () => WasmServicePortBindings;
     wasmPort = new WasmServicePort();
+    setWasmModule(raw, wasmPort);
   }
 }
 
@@ -143,7 +142,7 @@ export async function initWasmService(): Promise<void> {
  * Wire both DDS solvers into the WASM service.
  * Called after both WASM init and DDS init complete.
  */
-export function wireDdsSolver(): void {
+function wireDdsSolver(): void {
   if (!wasmPort) return;
   if (!isDDSAvailable()) return;
   wasmPort.set_dds_solver(buildDdsSolverCallback());
@@ -151,12 +150,23 @@ export function wireDdsSolver(): void {
 }
 
 function getPort(): WasmServicePortBindings {
-  if (!wasmPort) throw new Error("WASM service not initialized — call initWasmService() first");
+  if (!wasmPort) throw new Error("WASM service not initialized — call init() first");
   return wasmPort;
 }
 
 /** WasmService implements DevServicePort by delegating to Rust WASM. */
 export class WasmService implements DevServicePort {
+  // ── Init ────────────────────────────────────────────────────────
+  async init(): Promise<void> {
+    if (wasmPort) return; // idempotent
+    await initWasmModule();
+
+    // DDS: browser-only, fire-and-forget, non-essential
+    if (typeof Worker !== "undefined") {
+      void initDDS().then(() => { wireDdsSolver(); }).catch(() => {});
+    }
+  }
+
   // ── Session lifecycle ───────────────────────────────────────────
   async createDrillSession(config: SessionConfig): Promise<DrillHandle> {
     return getPort().create_drill_session(config);

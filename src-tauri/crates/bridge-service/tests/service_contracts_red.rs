@@ -3,7 +3,7 @@
 //! Tests the full session lifecycle: creation → drill start → bid submission →
 //! phase transitions → viewport queries → error handling.
 //!
-//! Run: `cargo test -p bridge-service -- --ignored service_contracts`
+//! Run: `cargo test -p bridge-service --test service_contracts_red`
 
 use bridge_engine::types::{Call, BidSuit, Seat};
 use bridge_service::port::{DevServicePort, ServicePort};
@@ -32,8 +32,22 @@ fn create_test_session(service: &mut ServicePortImpl, convention_id: &str, seed:
         .expect("create_drill_session should succeed")
 }
 
+/// Drive the auction to completion by submitting expected bids.
+/// Returns the BidSubmitResult that triggered the phase transition,
+/// or panics if the auction didn't complete within 50 iterations.
+fn complete_auction(service: &mut ServicePortImpl, handle: &str) -> bridge_service::response_types::BidSubmitResult {
+    for _ in 0..50 {
+        let expected = service.get_expected_bid(handle).ok().flatten();
+        let call = expected.unwrap_or(Call::Pass);
+        let result = service.submit_bid(handle, call).expect("submit_bid should succeed");
+        if result.phase_transition.is_some() {
+            return result;
+        }
+    }
+    panic!("Auction did not complete within 50 iterations");
+}
+
 #[test]
-#[ignore]
 fn session_creation_succeeds_with_nt_bundle() {
     let mut service = ServicePortImpl::new();
     let handle = create_test_session(&mut service, "nt-bundle", 42);
@@ -41,7 +55,6 @@ fn session_creation_succeeds_with_nt_bundle() {
 }
 
 #[test]
-#[ignore]
 fn start_drill_returns_valid_bidding_viewport() {
     let mut service = ServicePortImpl::new();
     let handle = create_test_session(&mut service, "nt-bundle", 42);
@@ -65,7 +78,6 @@ fn start_drill_returns_valid_bidding_viewport() {
 }
 
 #[test]
-#[ignore]
 fn start_drill_ai_bids_run_until_user_turn() {
     let mut service = ServicePortImpl::new();
     let handle = create_test_session(&mut service, "nt-bundle", 42);
@@ -80,7 +92,6 @@ fn start_drill_ai_bids_run_until_user_turn() {
 }
 
 #[test]
-#[ignore]
 fn submit_correct_bid_accepted_with_grade() {
     let mut service = ServicePortImpl::new();
     let handle = create_test_session(&mut service, "nt-bundle", 42);
@@ -105,7 +116,6 @@ fn submit_correct_bid_accepted_with_grade() {
 }
 
 #[test]
-#[ignore]
 fn submit_wrong_bid_rejected() {
     let mut service = ServicePortImpl::new();
     let handle = create_test_session(&mut service, "nt-bundle", 42);
@@ -136,48 +146,20 @@ fn submit_wrong_bid_rejected() {
 }
 
 #[test]
-#[ignore]
 fn submit_bid_completing_auction_returns_phase_transition() {
     let mut service = ServicePortImpl::new();
     let handle = create_test_session(&mut service, "nt-bundle", 42);
     let _drill = service.start_drill(&handle).expect("start_drill should succeed");
 
-    // Loop: get expected bid → submit until phase transition
-    let mut iterations = 0;
-    let max_iterations = 50; // safety limit
-
-    loop {
-        iterations += 1;
-        assert!(
-            iterations <= max_iterations,
-            "Auction did not complete within {} iterations",
-            max_iterations,
-        );
-
-        let expected = service
-            .get_expected_bid(&handle)
-            .expect("get_expected_bid should succeed");
-
-        let call = match expected {
-            Some(c) => c,
-            None => Call::Pass, // fallback if no convention bid
-        };
-
-        let result = service.submit_bid(&handle, call).expect("submit_bid should succeed");
-
-        if let Some(ref transition) = result.phase_transition {
-            assert_eq!(
-                transition.from,
-                bridge_session::types::GamePhase::Bidding,
-                "Transition should be from Bidding phase",
-            );
-            return; // success
-        }
-    }
+    let result = complete_auction(&mut service, &handle);
+    assert_eq!(
+        result.phase_transition.as_ref().unwrap().from,
+        bridge_session::types::GamePhase::Bidding,
+        "Transition should be from Bidding phase",
+    );
 }
 
 #[test]
-#[ignore]
 fn enter_play_transitions_to_playing() {
     let mut service = ServicePortImpl::new();
     // Use play_preference = always so we get a prompt
@@ -186,15 +168,7 @@ fn enter_play_transitions_to_playing() {
     let handle = service.create_drill_session(config).expect("create_drill_session should succeed");
     let _drill = service.start_drill(&handle).expect("start_drill should succeed");
 
-    // Complete auction
-    for _ in 0..50 {
-        let expected = service.get_expected_bid(&handle).ok().flatten();
-        let call = expected.unwrap_or(Call::Pass);
-        let result = service.submit_bid(&handle, call).expect("submit_bid should succeed");
-        if result.phase_transition.is_some() {
-            break;
-        }
-    }
+    complete_auction(&mut service, &handle);
 
     let result = service
         .enter_play(&handle, None)
@@ -208,7 +182,6 @@ fn enter_play_transitions_to_playing() {
 }
 
 #[test]
-#[ignore]
 fn decline_play_transitions_to_explanation() {
     let mut service = ServicePortImpl::new();
     let mut config = make_config("nt-bundle", 43);
@@ -216,15 +189,7 @@ fn decline_play_transitions_to_explanation() {
     let handle = service.create_drill_session(config).expect("create_drill_session should succeed");
     let _drill = service.start_drill(&handle).expect("start_drill should succeed");
 
-    // Complete auction
-    for _ in 0..50 {
-        let expected = service.get_expected_bid(&handle).ok().flatten();
-        let call = expected.unwrap_or(Call::Pass);
-        let result = service.submit_bid(&handle, call).expect("submit_bid should succeed");
-        if result.phase_transition.is_some() {
-            break;
-        }
-    }
+    complete_auction(&mut service, &handle);
 
     service
         .decline_play(&handle)
@@ -241,7 +206,6 @@ fn decline_play_transitions_to_explanation() {
 }
 
 #[test]
-#[ignore]
 fn submit_bid_during_wrong_phase_returns_error() {
     let mut service = ServicePortImpl::new();
     let mut config = make_config("nt-bundle", 44);
@@ -250,14 +214,7 @@ fn submit_bid_during_wrong_phase_returns_error() {
     let _drill = service.start_drill(&handle).expect("start_drill should succeed");
 
     // Complete auction (play_preference=skip auto-transitions to Explanation)
-    for _ in 0..50 {
-        let expected = service.get_expected_bid(&handle).ok().flatten();
-        let call = expected.unwrap_or(Call::Pass);
-        let result = service.submit_bid(&handle, call).expect("submit_bid should succeed");
-        if result.phase_transition.is_some() {
-            break;
-        }
-    }
+    complete_auction(&mut service, &handle);
 
     // Now in Explanation phase — submitting a bid should fail
     let result = service.submit_bid(&handle, Call::Pass);
@@ -268,7 +225,6 @@ fn submit_bid_during_wrong_phase_returns_error() {
 }
 
 #[test]
-#[ignore]
 fn viewport_getters_return_none_for_wrong_phase() {
     let mut service = ServicePortImpl::new();
     let handle = create_test_session(&mut service, "nt-bundle", 45);

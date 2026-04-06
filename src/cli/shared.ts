@@ -3,10 +3,10 @@
 // Pure functions shared across CLI subcommands: argument parsing,
 // settings resolution, call parsing.
 
-import { Vulnerability, BidSuit } from "../engine/types";
-import type { Call } from "../engine/types";
-import { OpponentMode, PracticeMode, PracticeRole } from "../service/session-types";
-import type { BaseSystemId } from "../service/session-types";
+import { Vulnerability, BidSuit } from "../service";
+import type { Call } from "../service";
+import { OpponentMode, PracticeMode, PracticeRole } from "../service";
+import type { BaseSystemId } from "../service";
 
 // ── Re-exports for convenience ──────────────────────────────────────
 
