@@ -3,204 +3,21 @@
 //! This is the SINGLE module that enforces the information boundary. Both the UI
 //! (via WASM) and CLI harness call these same functions.
 //!
+//! Type definitions live in `viewport_types.rs`. This file contains only the
+//! builder functions and shared helpers.
+//!
 //! Ported from TS `src/session/build-viewport.ts`.
 
 use std::collections::{HashMap, HashSet};
 
-use bridge_engine::types::{
-    Auction, BidSuit, Call, Card, Contract, Deal, DistributionPoints, Hand, PlayedCard, Seat, Suit,
-    SuitLength, Trick, Vulnerability,
-};
+use bridge_engine::types::{Auction, BidSuit, Call, Deal, Hand, Seat};
 use bridge_engine::{evaluate_hand_hcp, is_balanced};
-use serde::{Deserialize, Serialize};
 
-use crate::types::{PracticeMode, PromptMode};
-
-// ── Viewport DTOs ─────────────────────────────────────────────────
-
-/// Hand evaluation for display.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct HandEvaluationView {
-    pub hcp: u32,
-    pub shape: SuitLength,
-    pub is_balanced: bool,
-    pub distribution_points: DistributionPoints,
-}
-
-/// Single auction entry for display.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AuctionEntryView {
-    pub seat: Seat,
-    pub call: Call,
-    pub call_display: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub alert_label: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub annotation_type: Option<AnnotationType>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub meaning: Option<String>,
-}
-
-/// ACBL annotation type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum AnnotationType {
-    Alert,
-    Announce,
-    Educational,
-}
-
-/// Viewport-safe bid history entry (subset of full BidHistoryEntry).
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BidHistoryEntryView {
-    pub seat: Seat,
-    pub call: Call,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub meaning: Option<String>,
-    pub is_user: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_correct: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub alert_label: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub annotation_type: Option<AnnotationType>,
-}
-
-/// Play recommendation for review.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PlayRecommendation {
-    pub trick_index: u32,
-    pub play_index: u32,
-    pub seat: Seat,
-    pub card_played: Card,
-    pub recommended_card: Card,
-    pub reason: String,
-    pub is_optimal: bool,
-}
-
-// ── Bid context ──────────────────────────────────────────────────
-
-/// Classification of a legal call relative to the practice focus.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum BidRole {
-    Target,
-    Prerequisite,
-    FollowUp,
-    OffConvention,
-}
-
-/// Bid context view — classifies legal calls by their relation to the focus.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BidContextView {
-    pub call_roles: Vec<CallRoleEntry>,
-}
-
-/// Role classification for a single call.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CallRoleEntry {
-    pub call: Call,
-    pub role: BidRole,
-}
-
-/// A bidding option — an active meaning surface shown during bidding.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BiddingOptionView {
-    pub call: Call,
-    pub surface_name: String,
-    pub summary: String,
-}
-
-// ── Bidding Viewport ──────────────────────────────────────────────
-
-/// Bidding viewport — what the player sees during bidding.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BiddingViewport {
-    pub seat: Seat,
-    pub convention_name: String,
-    pub hand: Hand,
-    pub hand_evaluation: HandEvaluationView,
-    pub hand_summary: String,
-    pub visible_hands: HashMap<Seat, Hand>,
-    pub auction_entries: Vec<AuctionEntryView>,
-    pub dealer: Seat,
-    pub vulnerability: Vulnerability,
-    pub legal_calls: Vec<Call>,
-    pub is_user_turn: bool,
-    pub current_bidder: Seat,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub practice_mode: Option<PracticeMode>,
-    /// Bid context — classifies legal calls by their relation to practice focus.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub bid_context: Option<BidContextView>,
-    /// Active bidding options from convention surfaces at this turn.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub bidding_options: Option<Vec<BiddingOptionView>>,
-}
-
-/// Declarer prompt viewport.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DeclarerPromptViewport {
-    pub user_seat: Seat,
-    pub visible_hands: HashMap<Seat, Hand>,
-    pub dealer: Seat,
-    pub vulnerability: Vulnerability,
-    pub auction_entries: Vec<AuctionEntryView>,
-    pub contract: Contract,
-    pub prompt_mode: PromptMode,
-}
-
-/// Playing viewport — what the player sees during play.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PlayingViewport {
-    pub user_seat: Seat,
-    pub rotated: bool,
-    pub visible_hands: HashMap<Seat, Hand>,
-    pub dealer: Seat,
-    pub vulnerability: Vulnerability,
-    pub contract: Option<Contract>,
-    pub current_player: Option<Seat>,
-    pub current_trick: Vec<PlayedCard>,
-    pub trump_suit: Option<Suit>,
-    pub legal_plays: Vec<Card>,
-    pub user_controlled_seats: Vec<Seat>,
-    pub remaining_cards: HashMap<Seat, Vec<Card>>,
-    pub tricks: Vec<Trick>,
-    pub declarer_tricks_won: u32,
-    pub defender_tricks_won: u32,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub auction_entries: Option<Vec<AuctionEntryView>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub bid_history: Option<Vec<BidHistoryEntryView>>,
-}
-
-/// Explanation viewport — review screen with all hands visible.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ExplanationViewport {
-    pub user_seat: Seat,
-    pub all_hands: HashMap<Seat, Hand>,
-    pub dealer: Seat,
-    pub vulnerability: Vulnerability,
-    pub auction_entries: Vec<AuctionEntryView>,
-    pub contract: Option<Contract>,
-    pub score: Option<i32>,
-    pub declarer_tricks_won: u32,
-    pub defender_tricks_won: u32,
-    pub bid_history: Vec<BidHistoryEntryView>,
-    pub tricks: Vec<Trick>,
-    pub play_recommendations: Vec<PlayRecommendation>,
-}
+use super::viewport_types::{
+    AuctionEntryView, BidHistoryEntryView, BiddingViewport, BuildBiddingViewportInput,
+    BuildDeclarerPromptViewportInput, BuildExplanationViewportInput, BuildPlayingViewportInput,
+    DeclarerPromptViewport, ExplanationViewport, HandEvaluationView, PlayingViewport,
+};
 
 // ── Format helpers ────────────────────────────────────────────────
 
@@ -257,69 +74,6 @@ pub fn filter_visible_hands(deal: &Deal, face_up_seats: &HashSet<Seat>) -> HashM
         }
     }
     visible
-}
-
-// ── Builder Input types ───────────────────────────────────────────
-
-/// Input for building a BiddingViewport.
-pub struct BuildBiddingViewportInput<'a> {
-    pub deal: &'a Deal,
-    pub user_seat: Seat,
-    pub auction: &'a Auction,
-    pub bid_history: &'a [BidHistoryEntryView],
-    pub legal_calls: &'a [Call],
-    pub face_up_seats: &'a HashSet<Seat>,
-    pub convention_name: String,
-    pub is_user_turn: bool,
-    pub current_bidder: Seat,
-    pub practice_mode: Option<PracticeMode>,
-    pub bid_context: Option<BidContextView>,
-    pub bidding_options: Option<Vec<BiddingOptionView>>,
-}
-
-/// Input for building a DeclarerPromptViewport.
-pub struct BuildDeclarerPromptViewportInput<'a> {
-    pub deal: &'a Deal,
-    pub user_seat: Seat,
-    pub face_up_seats: &'a HashSet<Seat>,
-    pub auction: &'a Auction,
-    pub bid_history: &'a [BidHistoryEntryView],
-    pub contract: Contract,
-    pub prompt_mode: PromptMode,
-}
-
-/// Input for building a PlayingViewport.
-pub struct BuildPlayingViewportInput<'a> {
-    pub deal: &'a Deal,
-    pub user_seat: Seat,
-    pub face_up_seats: &'a HashSet<Seat>,
-    pub auction: Option<&'a Auction>,
-    pub bid_history: Option<&'a [BidHistoryEntryView]>,
-    pub rotated: bool,
-    pub contract: Option<Contract>,
-    pub current_player: Option<Seat>,
-    pub current_trick: Vec<PlayedCard>,
-    pub trump_suit: Option<Suit>,
-    pub legal_plays: Vec<Card>,
-    pub user_controlled_seats: Vec<Seat>,
-    pub remaining_cards: HashMap<Seat, Vec<Card>>,
-    pub tricks: Vec<Trick>,
-    pub declarer_tricks_won: u32,
-    pub defender_tricks_won: u32,
-}
-
-/// Input for building an ExplanationViewport.
-pub struct BuildExplanationViewportInput<'a> {
-    pub deal: &'a Deal,
-    pub user_seat: Seat,
-    pub auction: &'a Auction,
-    pub bid_history: Vec<BidHistoryEntryView>,
-    pub contract: Option<Contract>,
-    pub score: Option<i32>,
-    pub declarer_tricks_won: u32,
-    pub defender_tricks_won: u32,
-    pub tricks: Vec<Trick>,
-    pub play_recommendations: Vec<PlayRecommendation>,
 }
 
 // ── Builder functions ─────────────────────────────────────────────
@@ -448,8 +202,10 @@ pub fn build_explanation_viewport(input: BuildExplanationViewportInput) -> Expla
 
 #[cfg(test)]
 mod tests {
+    use super::super::viewport_types::AnnotationType;
     use super::*;
-    use bridge_engine::types::{AuctionEntry, Card, Hand, Rank, Suit};
+    use bridge_engine::types::{AuctionEntry, Card, Contract, Hand, Rank, Suit, Vulnerability};
+    use crate::types::PromptMode;
 
     fn make_hand_13() -> Hand {
         Hand {
@@ -798,6 +554,9 @@ mod tests {
             meaning: Some("15-17 HCP, balanced".to_string()),
             is_user: false,
             is_correct: None,
+            grade: None,
+            prior_attempts: None,
+            arc_label: None,
             alert_label: Some("15-17".to_string()),
             annotation_type: Some(AnnotationType::Announce),
         }];

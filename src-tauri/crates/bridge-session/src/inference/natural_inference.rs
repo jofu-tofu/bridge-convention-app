@@ -56,150 +56,158 @@ impl NaturalInferenceProvider {
 
     /// Infer from an opening bid (no prior contract bids).
     fn infer_from_opening(&self, level: u8, strain: BidSuit, seat: Seat) -> Option<HandInference> {
-        if level == 1 {
-            match strain {
-                BidSuit::Clubs => Some(HandInference {
-                    seat,
-                    min_hcp: Some(12),
-                    max_hcp: None,
-                    is_balanced: None,
-                    suits: [(
-                        Suit::Clubs,
-                        SuitInference {
-                            min_length: Some(3),
-                            max_length: None,
-                        },
-                    )]
-                    .into_iter()
-                    .collect(),
-                    source: "natural:1C-opening".to_string(),
-                }),
-                BidSuit::Diamonds => Some(HandInference {
-                    seat,
-                    min_hcp: Some(12),
-                    max_hcp: None,
-                    is_balanced: None,
-                    suits: [(
-                        Suit::Diamonds,
-                        SuitInference {
-                            min_length: Some(4),
-                            max_length: None,
-                        },
-                    )]
-                    .into_iter()
-                    .collect(),
-                    source: "natural:1D-opening".to_string(),
-                }),
-                BidSuit::Hearts => Some(HandInference {
-                    seat,
-                    min_hcp: Some(12),
-                    max_hcp: None,
-                    is_balanced: None,
-                    suits: [(
-                        Suit::Hearts,
-                        SuitInference {
-                            min_length: Some(5),
-                            max_length: None,
-                        },
-                    )]
-                    .into_iter()
-                    .collect(),
-                    source: "natural:1H-opening".to_string(),
-                }),
-                BidSuit::Spades => Some(HandInference {
-                    seat,
-                    min_hcp: Some(12),
-                    max_hcp: None,
-                    is_balanced: None,
-                    suits: [(
-                        Suit::Spades,
-                        SuitInference {
-                            min_length: Some(5),
-                            max_length: None,
-                        },
-                    )]
-                    .into_iter()
-                    .collect(),
-                    source: "natural:1S-opening".to_string(),
-                }),
-                BidSuit::NoTrump => Some(HandInference {
-                    seat,
-                    min_hcp: Some(self.nt_opening_min),
-                    max_hcp: Some(self.nt_opening_max),
-                    is_balanced: Some(true),
-                    suits: HashMap::new(),
-                    source: "natural:1NT-opening".to_string(),
-                }),
-            }
-        } else if level == 2 {
-            match strain {
-                BidSuit::Clubs => Some(HandInference {
-                    seat,
-                    min_hcp: Some(22),
-                    max_hcp: None,
-                    is_balanced: None,
-                    suits: HashMap::new(),
-                    source: "natural:2C-opening".to_string(),
-                }),
-                BidSuit::Hearts => Some(HandInference {
-                    seat,
-                    min_hcp: Some(5),
-                    max_hcp: Some(11),
-                    is_balanced: None,
-                    suits: [(
-                        Suit::Hearts,
-                        SuitInference {
-                            min_length: Some(6),
-                            max_length: None,
-                        },
-                    )]
-                    .into_iter()
-                    .collect(),
-                    source: "natural:2H-opening".to_string(),
-                }),
-                BidSuit::Spades => Some(HandInference {
-                    seat,
-                    min_hcp: Some(5),
-                    max_hcp: Some(11),
-                    is_balanced: None,
-                    suits: [(
-                        Suit::Spades,
-                        SuitInference {
-                            min_length: Some(6),
-                            max_length: None,
-                        },
-                    )]
-                    .into_iter()
-                    .collect(),
-                    source: "natural:2S-opening".to_string(),
-                }),
-                BidSuit::Diamonds => Some(HandInference {
-                    seat,
-                    min_hcp: Some(5),
-                    max_hcp: Some(11),
-                    is_balanced: None,
-                    suits: [(
-                        Suit::Diamonds,
-                        SuitInference {
-                            min_length: Some(6),
-                            max_length: None,
-                        },
-                    )]
-                    .into_iter()
-                    .collect(),
-                    source: "natural:weak-2D-opening".to_string(),
-                }),
-                BidSuit::NoTrump => Some(HandInference {
-                    seat,
-                    min_hcp: Some(20),
-                    max_hcp: Some(21),
-                    is_balanced: Some(true),
-                    suits: HashMap::new(),
-                    source: "natural:2NT-opening".to_string(),
-                }),
-            }
-        } else {
-            None
+        match level {
+            1 => self.infer_one_level_opening(strain, seat),
+            2 => self.infer_two_level_opening(strain, seat),
+            _ => None,
+        }
+    }
+
+    /// Infer from a 1-level opening bid.
+    fn infer_one_level_opening(&self, strain: BidSuit, seat: Seat) -> Option<HandInference> {
+        match strain {
+            BidSuit::Clubs => Some(HandInference {
+                seat,
+                min_hcp: Some(12),
+                max_hcp: None,
+                is_balanced: None,
+                suits: [(
+                    Suit::Clubs,
+                    SuitInference {
+                        min_length: Some(3),
+                        max_length: None,
+                    },
+                )]
+                .into_iter()
+                .collect(),
+                source: "natural:1C-opening".to_string(),
+            }),
+            BidSuit::Diamonds => Some(HandInference {
+                seat,
+                min_hcp: Some(12),
+                max_hcp: None,
+                is_balanced: None,
+                suits: [(
+                    Suit::Diamonds,
+                    SuitInference {
+                        min_length: Some(4),
+                        max_length: None,
+                    },
+                )]
+                .into_iter()
+                .collect(),
+                source: "natural:1D-opening".to_string(),
+            }),
+            BidSuit::Hearts => Some(HandInference {
+                seat,
+                min_hcp: Some(12),
+                max_hcp: None,
+                is_balanced: None,
+                suits: [(
+                    Suit::Hearts,
+                    SuitInference {
+                        min_length: Some(5),
+                        max_length: None,
+                    },
+                )]
+                .into_iter()
+                .collect(),
+                source: "natural:1H-opening".to_string(),
+            }),
+            BidSuit::Spades => Some(HandInference {
+                seat,
+                min_hcp: Some(12),
+                max_hcp: None,
+                is_balanced: None,
+                suits: [(
+                    Suit::Spades,
+                    SuitInference {
+                        min_length: Some(5),
+                        max_length: None,
+                    },
+                )]
+                .into_iter()
+                .collect(),
+                source: "natural:1S-opening".to_string(),
+            }),
+            BidSuit::NoTrump => Some(HandInference {
+                seat,
+                min_hcp: Some(self.nt_opening_min),
+                max_hcp: Some(self.nt_opening_max),
+                is_balanced: Some(true),
+                suits: HashMap::new(),
+                source: "natural:1NT-opening".to_string(),
+            }),
+        }
+    }
+
+    /// Infer from a 2-level opening bid.
+    fn infer_two_level_opening(&self, strain: BidSuit, seat: Seat) -> Option<HandInference> {
+        match strain {
+            BidSuit::Clubs => Some(HandInference {
+                seat,
+                min_hcp: Some(22),
+                max_hcp: None,
+                is_balanced: None,
+                suits: HashMap::new(),
+                source: "natural:2C-opening".to_string(),
+            }),
+            BidSuit::Hearts => Some(HandInference {
+                seat,
+                min_hcp: Some(5),
+                max_hcp: Some(11),
+                is_balanced: None,
+                suits: [(
+                    Suit::Hearts,
+                    SuitInference {
+                        min_length: Some(6),
+                        max_length: None,
+                    },
+                )]
+                .into_iter()
+                .collect(),
+                source: "natural:2H-opening".to_string(),
+            }),
+            BidSuit::Spades => Some(HandInference {
+                seat,
+                min_hcp: Some(5),
+                max_hcp: Some(11),
+                is_balanced: None,
+                suits: [(
+                    Suit::Spades,
+                    SuitInference {
+                        min_length: Some(6),
+                        max_length: None,
+                    },
+                )]
+                .into_iter()
+                .collect(),
+                source: "natural:2S-opening".to_string(),
+            }),
+            BidSuit::Diamonds => Some(HandInference {
+                seat,
+                min_hcp: Some(5),
+                max_hcp: Some(11),
+                is_balanced: None,
+                suits: [(
+                    Suit::Diamonds,
+                    SuitInference {
+                        min_length: Some(6),
+                        max_length: None,
+                    },
+                )]
+                .into_iter()
+                .collect(),
+                source: "natural:weak-2D-opening".to_string(),
+            }),
+            BidSuit::NoTrump => Some(HandInference {
+                seat,
+                min_hcp: Some(20),
+                max_hcp: Some(21),
+                is_balanced: Some(true),
+                suits: HashMap::new(),
+                source: "natural:2NT-opening".to_string(),
+            }),
         }
     }
 

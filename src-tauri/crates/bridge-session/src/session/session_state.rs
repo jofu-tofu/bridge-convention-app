@@ -25,8 +25,8 @@ use crate::heuristics::{BidResult, BiddingStrategy};
 use crate::types::{GamePhase, PlayPreference, PracticeFocus, PracticeMode};
 
 use super::bid_feedback_builder::{BidFeedbackDTO, BidGrade};
-use super::build_viewport::AnnotationType;
-use super::build_viewport::BidHistoryEntryView;
+use super::viewport_types::{AnnotationType, BidAttemptRecord, BidHistoryEntryView};
+use super::build_viewport::format_call;
 
 // ── Debug log ─────────────────────────────────────────────────────
 
@@ -122,12 +122,13 @@ pub struct SessionState {
 
     // Bid history (accumulated from inference annotations)
     pub bid_history: Vec<BidHistoryEntryView>,
+    pub pending_attempts: Vec<BidAttemptRecord>,
 
     // Debug log (accumulated per-deal, cleared on new deal)
     pub debug_log: Vec<DebugLogEntry>,
 
     // Play recommendations (accumulated during play, cleared per deal)
-    pub play_recommendations: Vec<super::build_viewport::PlayRecommendation>,
+    pub play_recommendations: Vec<super::viewport_types::PlayRecommendation>,
 
     // Play state (separated for partial borrows)
     pub play: PlayState,
@@ -180,6 +181,7 @@ impl SessionState {
             public_belief_state,
 
             bid_history: Vec::new(),
+            pending_attempts: Vec::new(),
             debug_log: Vec::new(),
             play_recommendations: Vec::new(),
 
@@ -294,6 +296,15 @@ impl SessionState {
             meaning: meaning_opt,
             is_user,
             is_correct,
+            grade: None,
+            prior_attempts: None,
+            arc_label: derive_arc_label(
+                entry.seat,
+                self.user_seat,
+                &entry.call,
+                meaning,
+                self.bid_history.len(),
+            ),
             alert_label,
             annotation_type,
         });
@@ -435,6 +446,67 @@ pub fn get_current_turn(auction: &Auction, dealer: Seat) -> Option<Seat> {
 }
 
 /// Create a string key for a card (for HashSet lookup).
+
+/// Derive a human-readable arc label for the convention story.
+/// Only N/S (partnership) bids get labels; E/W bids return None.
+fn derive_arc_label(
+    seat: Seat,
+    user_seat: Seat,
+    call: &Call,
+    meaning: Option<&str>,
+    bid_index: usize,
+) -> Option<String> {
+    let actor = if seat == user_seat {
+        "You"
+    } else if seat == partner_seat(user_seat) {
+        "Partner"
+    } else {
+        return None;
+    };
+
+    let clean_meaning = meaning.and_then(|value| {
+        let trimmed = value.trim();
+        (!trimmed.is_empty()).then_some(trimmed)
+    });
+
+    match call {
+        Call::Pass | Call::Double | Call::Redouble => None,
+        Call::Bid { .. } => {
+            let call_display = format_call(call);
+            if bid_index == 0 {
+                return Some(match clean_meaning {
+                    Some(text) => format!("{actor} opened {call_display} ({text})"),
+                    None => format!("{actor} opened {call_display}"),
+                });
+            }
+
+            if is_game_bid(call) {
+                return Some(format!("{actor} raised to game ({call_display})"));
+            }
+
+            let verb = if bid_index <= 2 {
+                "responded"
+            } else {
+                "continued with"
+            };
+            Some(match clean_meaning {
+                Some(text) => format!("{actor} {verb} {call_display} ({text})"),
+                None => format!("{actor} {verb} {call_display}"),
+            })
+        }
+    }
+}
+
+fn is_game_bid(call: &Call) -> bool {
+    matches!(
+        call,
+        Call::Bid { level: 3, strain: bridge_engine::types::BidSuit::NoTrump }
+            | Call::Bid { level: 4, strain: bridge_engine::types::BidSuit::Hearts }
+            | Call::Bid { level: 4, strain: bridge_engine::types::BidSuit::Spades }
+            | Call::Bid { level: 5, strain: bridge_engine::types::BidSuit::Clubs }
+            | Call::Bid { level: 5, strain: bridge_engine::types::BidSuit::Diamonds }
+    )
+}
 fn card_key(card: &Card) -> (Suit, bridge_engine::types::Rank) {
     (card.suit, card.rank)
 }
@@ -485,6 +557,7 @@ mod tests {
         assert!(state.contract.is_none());
         assert_eq!(state.user_seat, Seat::South);
         assert_eq!(state.convention_name, "test-convention");
+        assert!(state.pending_attempts.is_empty());
     }
 
     #[test]
@@ -659,6 +732,7 @@ mod tests {
     fn convention_name_defaults_to_id() {
         let state = make_state();
         assert_eq!(state.convention_name, "test-convention");
+        assert!(state.pending_attempts.is_empty());
     }
 
     #[test]

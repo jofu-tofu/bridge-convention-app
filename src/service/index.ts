@@ -36,6 +36,8 @@ export type {
   FlowTreeNode,
   ClauseSystemVariant,
   ServiceBidHistoryEntry as BidHistoryEntry,
+  BidAttemptRecord,
+  ReviewCondition,
   BaseModuleInfo,
   ConventionInfo,
   ServiceExplanationNode,

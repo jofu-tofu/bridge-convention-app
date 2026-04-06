@@ -1,10 +1,8 @@
 <script lang="ts">
-  import type { BidHistoryEntry } from "../../service";
-  import { groupBidsByRound } from "./RoundBidList";
-  import { formatCall } from "../../service";
+  import type { BidHistoryEntry, BidSuit, Call, HandEvaluationView } from "../../service";
+  import { formatCall, Seat } from "../../service";
   import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";
-  import type { BidSuit, Call } from "../../service";
-  import { Seat } from "../../service";
+  import { gradeBadgeConfig, groupBidsByRound } from "./RoundBidList";
 
   interface Props {
     bidHistory: readonly BidHistoryEntry[];
@@ -18,6 +16,8 @@
     highlightIndex?: number | null;
     /** Click callback with global bid index. Makes bid entries clickable. */
     onBidClick?: (globalIndex: number) => void;
+    /** User hand evaluation for condition text enrichment in review detail. */
+    handEvaluation?: HandEvaluationView;
   }
 
   let {
@@ -27,6 +27,7 @@
     visibleUpTo = null,
     highlightIndex = null,
     onBidClick,
+    handEvaluation: _handEvaluation,
   }: Props = $props();
 
   const rounds = $derived(groupBidsByRound(bidHistory));
@@ -70,6 +71,7 @@
       {#each round.entries as entry, entryIdx (entry.seat + "-" + round.roundNumber)}
         {@const dimmed = isDimmed(round.roundNumber, entryIdx)}
         {@const highlighted = isHighlighted(round.roundNumber, entryIdx)}
+        {@const badge = gradeBadgeConfig(entry.grade)}
         {@const rowClass = `flex flex-col gap-0.5 pl-2 rounded-[--radius-sm] transition-opacity ${
           dimmed ? "opacity-30 " : ""
         }${highlighted ? "bg-accent-primary-subtle ring-1 ring-accent-primary/40 " : ""}${
@@ -87,7 +89,13 @@
               <span class="font-mono text-[--text-detail] font-bold {callColorClass(entry.call)}">
                 {formatCall(entry.call)}
               </span>
-              {#if entry.isCorrect === true}
+              {#if badge}
+                <span
+                  class="inline-flex items-center rounded-full px-2 py-0.5 font-semibold tracking-wide text-[--text-annotation] uppercase {badge.colorClass}"
+                >
+                  {badge.label}
+                </span>
+              {:else if entry.isCorrect === true}
                 <span
                   class="text-accent-success text-[--text-label]"
                   data-testid={testIdPrefix ? "bid-correct" : undefined}
@@ -126,7 +134,13 @@
               <span class="font-mono text-[--text-detail] font-bold {callColorClass(entry.call)}">
                 {formatCall(entry.call)}
               </span>
-              {#if entry.isCorrect === true}
+              {#if badge}
+                <span
+                  class="inline-flex items-center rounded-full px-2 py-0.5 font-semibold tracking-wide text-[--text-annotation] uppercase {badge.colorClass}"
+                >
+                  {badge.label}
+                </span>
+              {:else if entry.isCorrect === true}
                 <span
                   class="text-accent-success text-[--text-label]"
                   data-testid={testIdPrefix ? "bid-correct" : undefined}

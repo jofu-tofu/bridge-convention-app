@@ -192,6 +192,16 @@
   });
   const showConventionSummary = $derived(conventionSummary.length > 1);
 
+  const conventionStory = $derived(
+    viewport.bidHistory
+      .filter(
+        (entry) =>
+          (entry.seat === Seat.North || entry.seat === Seat.South) &&
+          entry.arcLabel,
+      )
+      .map((entry) => entry.arcLabel as string),
+  );
+
   // Build tab definitions for ReviewSidePanel
   const reviewTabs = $derived.by(() => {
     const tabs: { id: string; label: string; content: typeof biddingTab }[] = [
@@ -298,6 +308,21 @@
     <p class="text-[--text-annotation] text-text-muted">
       Mode: {practiceMode === PracticeMode.FullAuction ? "Full Auction" : "Continuation"}
     </p>
+  {/if}
+
+  {#if conventionStory.length > 0}
+    <div
+      class="bg-bg-card border-border-subtle rounded-[--radius-md] border p-3"
+    >
+      <p class="text-text-muted mb-2 font-medium text-[--text-label]">
+        Convention Story
+      </p>
+      <ol class="text-text-secondary space-y-1 pl-5 text-[--text-label]">
+        {#each conventionStory as story, storyIdx (story + "-" + storyIdx)}
+          <li class="list-decimal leading-snug">{story}</li>
+        {/each}
+      </ol>
+    </div>
   {/if}
 
   {#if hasPlayData}

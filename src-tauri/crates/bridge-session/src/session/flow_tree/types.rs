@@ -6,7 +6,7 @@ use bridge_conventions::types::rule_types::{ObsPattern, RouteExpr};
 use bridge_engine::types::Call;
 use serde::{Deserialize, Serialize};
 
-use super::super::learning_viewport::SurfaceClauseView;
+use super::super::learning_types::SurfaceClauseView;
 
 // ── Exported Types ──────────────────────────────────────────────────
 

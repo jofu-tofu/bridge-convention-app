@@ -185,6 +185,25 @@ interface ServiceParseTreeView {
 
 // ── Service-owned viewport-safe bid history ─────────────────────────
 
+/** Review condition for bid attempt detail display. */
+export interface ReviewCondition {
+  readonly description: string;
+  readonly passed: boolean;
+  readonly observedValue?: string;
+  readonly explanationId?: string;
+}
+
+/** A single failed bid attempt record for review-phase display. */
+export interface BidAttemptRecord {
+  readonly userCall: Call;
+  readonly grade: ViewportBidGrade;
+  readonly wrongBidMeaning?: string;
+  readonly conditions: readonly ReviewCondition[];
+  readonly expectedCall?: Call;
+  readonly expectedExplanation?: string;
+  readonly correctBidLabel?: string;
+}
+
 /** Bid history entry — viewport-safe subset of conventions/core BidHistoryEntry.
  *  Omits deep backend types (BidResult, TeachingProjection) that must not cross
  *  the service boundary. Structurally compatible in both directions because the
@@ -195,6 +214,9 @@ export interface ServiceBidHistoryEntry {
   readonly meaning?: string;
   readonly isUser: boolean;
   readonly isCorrect?: boolean;
+  readonly grade?: ViewportBidGrade;
+  readonly priorAttempts?: readonly BidAttemptRecord[];
+  readonly arcLabel?: string;
   readonly expectedResult?: {
     readonly call: Call;
     readonly meaning?: string;

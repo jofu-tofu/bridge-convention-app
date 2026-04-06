@@ -8,19 +8,20 @@
 use std::collections::HashMap;
 
 use bridge_conventions::adapter::strategy_evaluation::StrategyEvaluation;
+use bridge_conventions::teaching::teaching_types::{ExplanationKind, MeaningStatus};
 use bridge_conventions::types::meaning::FactConstraint;
 use bridge_engine::auction::{add_call, get_contract, get_legal_calls, is_auction_complete};
 use bridge_engine::constants::next_seat;
 use bridge_engine::hand_evaluator::evaluate_hand_hcp;
-use bridge_engine::types::{Auction, AuctionEntry, Call, Seat};
+use bridge_engine::types::{Auction, AuctionEntry, Call, Hand, Seat};
 
 use crate::heuristics::{BidResult, BiddingContext};
 use crate::phase_machine::is_valid_transition;
 use crate::types::{GamePhase, PlayPreference};
 
 use super::bid_feedback_builder::{assemble_bid_feedback, BidFeedbackDTO, BidGrade};
-use super::build_viewport::BidHistoryEntryView;
 use super::session_state::{get_current_turn, DebugLogEntry, SeatStrategy, SessionState};
+use super::viewport_types::{BidAttemptRecord, BidHistoryEntryView, ReviewCondition};
 
 // ── Result types ───────────────────────────────────────────────────
 
@@ -92,6 +93,14 @@ pub fn process_bid(
     let should_reject = matches!(feedback.grade, BidGrade::NearMiss | BidGrade::Incorrect);
 
     if should_reject {
+        // Capture the wrong bid attempt for review screen
+        state.pending_attempts.push(extract_attempt_record(
+            &feedback,
+            expected_result.as_ref(),
+            current_turn,
+            state.deal.hands.get(&current_turn),
+            seat_strategies,
+        ));
         return BidProcessResult {
             accepted: false,
             feedback: Some(feedback),
@@ -233,6 +242,66 @@ fn extract_constraints(
         .collect()
 }
 
+/// Clone the StrategyEvaluation from a seat's stashed evaluation (release-safe).
+fn clone_strategy_evaluation(
+    seat: Seat,
+    seat_strategies: &HashMap<Seat, SeatStrategy>,
+) -> Option<StrategyEvaluation> {
+    let strategy = match seat_strategies.get(&seat) {
+        Some(SeatStrategy::Ai(s)) => s,
+        _ => return None,
+    };
+    let boxed = strategy.stashed_evaluation()?;
+    boxed.downcast_ref::<StrategyEvaluation>().cloned()
+}
+
+/// Build a BidAttemptRecord from feedback + strategy evaluation for review.
+fn extract_attempt_record(
+    feedback: &BidFeedbackDTO,
+    expected_result: Option<&BidResult>,
+    seat: Seat,
+    hand: Option<&Hand>,
+    seat_strategies: &HashMap<Seat, SeatStrategy>,
+) -> BidAttemptRecord {
+    let evaluation = clone_strategy_evaluation(seat, seat_strategies);
+    let tp = evaluation.as_ref().and_then(|e| e.teaching_projection.as_ref());
+    let wrong_bid_meaning = tp.and_then(|p| {
+        p.call_views.iter().find(|cv| cv.call == feedback.user_call).and_then(|cv| cv.primary_meaning.clone())
+    });
+    let conditions = tp.map(|p| {
+        p.primary_explanation.iter()
+            .filter(|n| n.kind == ExplanationKind::Condition)
+            .map(|n| ReviewCondition {
+                description: n.content.clone(),
+                passed: n.passed.unwrap_or(false),
+                observed_value: hand.and_then(|h| n.explanation_id.as_deref().and_then(|id| observed_value_for_condition(id, h))),
+                explanation_id: n.explanation_id.clone(),
+            }).collect()
+    }).unwrap_or_default();
+    let correct_bid_label = tp.and_then(|p| {
+        p.meaning_views.iter().find(|mv| mv.status == MeaningStatus::Live).map(|mv| mv.display_label.clone())
+    });
+    BidAttemptRecord {
+        user_call: feedback.user_call.clone(), grade: feedback.grade, wrong_bid_meaning, conditions,
+        expected_call: feedback.expected_call.clone(),
+        expected_explanation: expected_result.map(|r| r.explanation.clone()),
+        correct_bid_label,
+    }
+}
+
+fn observed_value_for_condition(explanation_id: &str, hand: &Hand) -> Option<String> {
+    let fact_id = explanation_id.split(':').next()?;
+    let ev = evaluate_hand_hcp(hand);
+    match fact_id {
+        "hand.hcp" => Some(ev.hcp.to_string()),
+        "hand.suitLength.spades" => Some(ev.shape[0].to_string()),
+        "hand.suitLength.hearts" => Some(ev.shape[1].to_string()),
+        "hand.suitLength.diamonds" => Some(ev.shape[2].to_string()),
+        "hand.suitLength.clubs" => Some(ev.shape[3].to_string()),
+        _ => None,
+    }
+}
+
 /// Get expected bid from strategy for grading.
 fn get_expected_bid(
     state: &SessionState,
@@ -301,6 +370,20 @@ fn apply_bid_and_run_ai(
         is_correct,
         &constraints,
     );
+
+    // Attach grade and prior attempts to the user's bid history entry.
+    // pending_attempts accumulated during reject→retry cycles; drain them now.
+    let prior_attempts = if state.pending_attempts.is_empty() {
+        None
+    } else {
+        Some(std::mem::take(&mut state.pending_attempts))
+    };
+    if let (Some(last_entry), Some(feedback)) =
+        (state.bid_history.last_mut(), pre_feedback.as_ref())
+    {
+        last_entry.grade = Some(feedback.grade);
+        last_entry.prior_attempts = prior_attempts;
+    }
 
     // Capture now — run_ai_bid_loop() will append more entries to bid_history.
     // ORDERING CONTRACT: user's process_bid() runs before AI bids, so .last()

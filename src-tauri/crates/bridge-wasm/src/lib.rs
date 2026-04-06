@@ -28,7 +28,11 @@ fn service_error(err: bridge_service::ServiceError) -> JsError {
 /// JS signature: (trump, first, trickSuit, trickRank, pbn) => Promise<{cards: [{suit, rank, score}]}>
 fn make_js_solver(
     js_fn: js_sys::Function,
-) -> impl FnMut(SolveBoardRequest) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<SolveBoardResponse, DdsError>>>> {
+) -> impl FnMut(
+    SolveBoardRequest,
+) -> std::pin::Pin<
+    Box<dyn std::future::Future<Output = Result<SolveBoardResponse, DdsError>>>,
+> {
     move |req: SolveBoardRequest| {
         let this = JsValue::NULL;
         let trump = JsValue::from(req.trump);
@@ -49,16 +53,17 @@ fn make_js_solver(
             .expect("DDS solver call failed");
 
         Box::pin(async move {
-            let js_result =
-                wasm_bindgen_futures::JsFuture::from(js_sys::Promise::from(promise))
-                    .await
-                    .map_err(|e| DdsError::SolveFailed(format!("{:?}", e)))?;
+            let js_result = wasm_bindgen_futures::JsFuture::from(js_sys::Promise::from(promise))
+                .await
+                .map_err(|e| DdsError::SolveFailed(format!("{:?}", e)))?;
             let response: SolveBoardResponse = serde_wasm_bindgen::from_value(js_result)
                 .map_err(|e| DdsError::SolveFailed(e.to_string()))?;
             Ok(response)
         })
     }
 }
+
+use bridge_session::session::AiPlayEntry;
 
 // ── WasmServicePort ───────────────────────────────────────────────
 
@@ -128,11 +133,7 @@ impl WasmServicePort {
 
     // ── Phase transitions ─────────────────────────────────────────
 
-    pub fn enter_play(
-        &mut self,
-        handle: &str,
-        seat_override: JsValue,
-    ) -> Result<JsValue, JsError> {
+    pub fn enter_play(&mut self, handle: &str, seat_override: JsValue) -> Result<JsValue, JsError> {
         let seat_override: Option<Seat> = from_js(seat_override)?;
         self.with_service_mut(|service| service.enter_play(handle, seat_override))
             .and_then(to_js)
@@ -175,53 +176,28 @@ impl WasmServicePort {
         self.inner.needs_dds_play(handle).map_err(service_error)
     }
 
-    /// Async DDS play path — Expert/WorldClass profiles.
-    /// Plays the user's card, then runs MC+DDS AI loop until user's turn.
-    pub async fn play_card_dds(
+    /// Validate and apply the user's card. Returns the raw SingleCardResult
+    /// so the caller can branch on accepted/play_complete.
+    fn apply_user_card(
         &mut self,
         handle: &str,
-        card: JsValue,
-        seat: JsValue,
-    ) -> Result<JsValue, JsError> {
-        let card: Card = from_js(card)?;
-        let seat: Seat = from_js(seat)?;
-
-        let js_fn = self
-            .dds_solver
-            .clone()
-            .ok_or_else(|| JsError::new("DDS solver not set"))?;
-
-        // 1. Play the user's card (no AI loop)
-        let user_result = self
-            .inner
+        card: Card,
+        seat: Seat,
+    ) -> Result<bridge_session::session::SingleCardResult, JsError> {
+        self.inner
             .apply_single_card(handle, card, seat)
-            .map_err(service_error)?;
-        if !user_result.accepted {
-            return to_js(bridge_session::session::PlayCardResult {
-                accepted: false,
-                trick_complete: false,
-                play_complete: false,
-                score: None,
-                ai_plays: Vec::new(),
-                legal_plays: None,
-                current_player: None,
-            });
-        }
+            .map_err(service_error)
+    }
 
-        if user_result.play_complete {
-            return to_js(bridge_session::session::PlayCardResult {
-                accepted: true,
-                trick_complete: user_result.trick_complete,
-                play_complete: true,
-                score: user_result.score,
-                ai_plays: Vec::new(),
-                legal_plays: None,
-                current_player: None,
-            });
-        }
-
-        // 2. Loop AI plays using MC+DDS
+    /// Run MC+DDS AI plays until it's the user's turn or play completes.
+    /// Returns (ai_plays, Some(score)) if play finished, (ai_plays, None) otherwise.
+    async fn run_ai_play_loop(
+        &mut self,
+        handle: &str,
+        js_fn: &js_sys::Function,
+    ) -> Result<(Vec<AiPlayEntry>, Option<Option<i32>>), JsError> {
         let mut ai_plays = Vec::new();
+
         loop {
             let ctx = self
                 .inner
@@ -249,10 +225,7 @@ impl WasmServicePort {
 
             let (ai_card, reason) = match mc_result {
                 Some(result) => (result.best_card, result.reason),
-                None => {
-                    // MC+DDS fallback: first legal play
-                    (params.legal_plays[0].clone(), "mc-dds:fallback".to_string())
-                }
+                None => (params.legal_plays[0].clone(), "mc-dds:fallback".to_string()),
             };
 
             let ai_seat = ctx.current_player;
@@ -261,7 +234,7 @@ impl WasmServicePort {
                 .apply_single_card(handle, ai_card.clone(), ai_seat)
                 .map_err(service_error)?;
 
-            ai_plays.push(bridge_session::session::AiPlayEntry {
+            ai_plays.push(AiPlayEntry {
                 seat: ai_seat,
                 card: ai_card,
                 reason,
@@ -269,19 +242,69 @@ impl WasmServicePort {
             });
 
             if result.play_complete {
-                return to_js(bridge_session::session::PlayCardResult {
-                    accepted: true,
-                    trick_complete: user_result.trick_complete,
-                    play_complete: true,
-                    score: result.score,
-                    ai_plays,
-                    legal_plays: None,
-                    current_player: None,
-                });
+                return Ok((ai_plays, Some(result.score)));
             }
         }
 
-        // Return result with AI plays
+        Ok((ai_plays, None))
+    }
+
+    /// Async DDS play path — Expert/WorldClass profiles.
+    /// Plays the user's card, then runs MC+DDS AI loop until user's turn.
+    pub async fn play_card_dds(
+        &mut self,
+        handle: &str,
+        card: JsValue,
+        seat: JsValue,
+    ) -> Result<JsValue, JsError> {
+        let card: Card = from_js(card)?;
+        let seat: Seat = from_js(seat)?;
+
+        let js_fn = self
+            .dds_solver
+            .clone()
+            .ok_or_else(|| JsError::new("DDS solver not set"))?;
+
+        // 1. Play the user's card
+        let user_result = self.apply_user_card(handle, card, seat)?;
+        if !user_result.accepted {
+            return to_js(bridge_session::session::PlayCardResult {
+                accepted: false,
+                trick_complete: false,
+                play_complete: false,
+                score: None,
+                ai_plays: Vec::new(),
+                legal_plays: None,
+                current_player: None,
+            });
+        }
+        if user_result.play_complete {
+            return to_js(bridge_session::session::PlayCardResult {
+                accepted: true,
+                trick_complete: user_result.trick_complete,
+                play_complete: true,
+                score: user_result.score,
+                ai_plays: Vec::new(),
+                legal_plays: None,
+                current_player: None,
+            });
+        }
+
+        // 2. Run AI plays using MC+DDS until user's turn or play ends
+        let (ai_plays, final_score) = self.run_ai_play_loop(handle, &js_fn).await?;
+
+        if let Some(score) = final_score {
+            return to_js(bridge_session::session::PlayCardResult {
+                accepted: true,
+                trick_complete: user_result.trick_complete,
+                play_complete: true,
+                score,
+                ai_plays,
+                legal_plays: None,
+                current_player: None,
+            });
+        }
+
         let current_player = self
             .inner
             .get_dds_play_context(handle)
@@ -360,10 +383,7 @@ impl WasmServicePort {
         };
 
         // Get PBN from Rust state (no boundary crossing)
-        let pbn = self
-            .inner
-            .get_deal_pbn(handle)
-            .map_err(service_error)?;
+        let pbn = self.inner.get_deal_pbn(handle).map_err(service_error)?;
 
         // Call JS table solver: (pbn) => Promise<DDSolution>
         let this = JsValue::NULL;

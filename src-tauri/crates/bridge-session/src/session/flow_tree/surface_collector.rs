@@ -6,10 +6,11 @@ use std::collections::HashMap;
 use bridge_conventions::types::module_types::ConventionModule;
 use bridge_conventions::types::system_config::BaseSystemId;
 
-use super::super::learning_viewport::{
-    call_key, compute_post_fit_phases, find_explanation_text, format_bid_references, map_clauses,
-    RelevantMetric,
+use super::super::learning_formatters::{
+    call_key, find_explanation_text, format_bid_references, map_clauses,
 };
+use super::super::learning_types::RelevantMetric;
+use super::super::learning_viewport::compute_post_fit_phases;
 use super::tree_helpers::{phase_ref_to_vec, turn_role_str};
 use super::types::{ModulePhaseState, TaggedSurface, TransitionEntry};
 

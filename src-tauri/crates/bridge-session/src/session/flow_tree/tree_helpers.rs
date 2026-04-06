@@ -5,7 +5,8 @@ use bridge_conventions::pipeline::observation::route_matcher::match_obs;
 use bridge_conventions::types::rule_types::{ObsPattern, ObsPatternAct, PhaseRef, TurnRole};
 
 use super::super::build_viewport::format_call;
-use super::super::learning_viewport::{call_key, format_module_name, EntryCondition};
+use super::super::learning_formatters::{call_key, format_module_name};
+use super::super::learning_types::EntryCondition;
 use super::types::{FlowTreeNode, MutableNode, NodeCounter, TaggedSurface};
 
 // ── PhaseRef helper ─────────────────────────────────────────────────

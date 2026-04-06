@@ -9,7 +9,8 @@ use bridge_conventions::registry::get_module;
 use bridge_conventions::types::meaning::SourceIntent;
 use bridge_conventions::types::system_config::BaseSystemId;
 
-use super::super::learning_viewport::{derive_entry_condition, format_module_name};
+use super::super::learning_formatters::format_module_name;
+use super::super::learning_viewport::derive_entry_condition;
 
 use super::surface_collector::collect_module_data;
 use super::tree_assembler::{attach_route_constrained, build_module_subtree};
