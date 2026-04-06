@@ -59,10 +59,16 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "max-w-4xl centered container, single-column grid",
   },
   {
-    path: "ProfilesScreen.svelte",
+    path: "WorkshopScreen.svelte",
     mobileStrategy: "centered",
     minWidth: 320,
-    mobileNotes: "Read-only system profiles with detail and compare views",
+    mobileNotes: "System management with preset cards, custom system list, and editor",
+  },
+  {
+    path: "SystemEditor.svelte",
+    mobileStrategy: "centered",
+    minWidth: 320,
+    mobileNotes: "Custom system editor with card-section form controls",
   },
   {
     path: "SystemDetailView.svelte",

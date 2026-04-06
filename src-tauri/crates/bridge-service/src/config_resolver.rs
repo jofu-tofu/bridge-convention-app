@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use bridge_conventions::BaseSystemId;
+use bridge_conventions::types::system_config::SystemConfig;
 use bridge_engine::constants::{next_seat, partner_seat};
 use bridge_engine::types::Seat;
 use bridge_session::session::start_drill::StartDrillOptions;
@@ -18,29 +18,18 @@ use crate::request_types::SessionConfig;
 
 /// Validated and defaulted session parameters extracted from `SessionConfig`.
 pub(crate) struct ResolvedConfig {
-    pub system: BaseSystemId,
+    pub system_config: SystemConfig,
+    pub base_module_ids: Vec<String>,
     pub user_seat: Seat,
     pub opponent_mode: OpponentMode,
     pub drill_config: DrillConfig,
     pub options: StartDrillOptions,
 }
 
-// ── System resolution ────────────────────────────────────────────
-
-/// Parse a base system ID string, defaulting to SAYC.
-pub(crate) fn resolve_system(base_system: Option<&str>) -> BaseSystemId {
-    match base_system {
-        Some("two-over-one") => BaseSystemId::TwoOverOne,
-        Some("acol") => BaseSystemId::Acol,
-        _ => BaseSystemId::Sayc,
-    }
-}
-
 // ── Full config resolution ───────────────────────────────────────
 
 /// Resolve a `SessionConfig` into validated defaults and drill parameters.
 pub(crate) fn resolve_config(config: &SessionConfig) -> ResolvedConfig {
-    let system = resolve_system(config.base_system_id.as_deref());
     let user_seat = config.user_seat.unwrap_or(Seat::South);
     let practice_mode = config.practice_mode.unwrap_or(PracticeMode::DecisionDrill);
     let practice_role = config.practice_role.unwrap_or(PracticeRole::Responder);
@@ -62,7 +51,8 @@ pub(crate) fn resolve_config(config: &SessionConfig) -> ResolvedConfig {
     };
 
     ResolvedConfig {
-        system,
+        system_config: config.system_config.clone(),
+        base_module_ids: config.base_module_ids.clone(),
         user_seat,
         opponent_mode,
         drill_config,

@@ -14,6 +14,7 @@ use crate::bundle_resolver;
 use crate::config_resolver;
 use crate::error::ServiceError;
 use crate::request_types::SessionConfig;
+use crate::validation;
 
 /// Fully resolved drill context ready for session creation.
 pub(crate) struct DrillSetupResult {
@@ -31,26 +32,33 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
     // 1. Resolve config defaults
     let resolved = config_resolver::resolve_config(config);
 
-    // 2. Look up bundle metadata
+    // 2. Validate injected system config
+    validation::validate_system_config(&resolved.system_config)?;
+    validation::validate_base_module_ids(&resolved.base_module_ids)?;
+
+    // 3. Look up bundle metadata
     let bundle_input = bundle_resolver::get_bundle_input(&config.convention_id)?;
 
-    // 3. Build convention spec for strategy wiring
+    let system = resolved.system_config.system_id;
+
+    // 4. Build convention spec for strategy wiring
     let spec = bridge_conventions::registry::spec_builder::spec_from_bundle(
         &config.convention_id,
-        resolved.system,
+        &resolved.system_config,
+        &resolved.base_module_ids,
     );
 
-    // 4. Resolve surface groups and convention config from bundle
+    // 5. Resolve surface groups and convention config from bundle
     let surface_groups =
-        bundle_resolver::resolve_surface_groups(&config.convention_id, resolved.system);
+        bundle_resolver::resolve_surface_groups(&config.convention_id, system);
     let convention_config = bundle_resolver::build_convention_config(
         &config.convention_id,
-        resolved.system,
+        system,
         config.vulnerability,
         config.seed,
     );
 
-    // 5. Generate deal via start_drill
+    // 6. Generate deal via start_drill
     let seed = config.seed.unwrap_or(0);
     use rand::Rng;
     use rand::SeedableRng;
@@ -66,7 +74,7 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
     )
     .map_err(ServiceError::Internal)?;
 
-    // 6. Build inference coordinator + session state
+    // 7. Build inference coordinator + session state
     let coordinator = InferenceCoordinator::new(None);
 
     let mut state = SessionState::new(
@@ -88,7 +96,7 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
         initialize_auction(&mut state, initial_auction, &HashMap::new());
     }
 
-    // 7. Build seat strategies
+    // 8. Build seat strategies
     let seat_strategies = config_resolver::build_seat_strategies(
         resolved.user_seat,
         resolved.opponent_mode,

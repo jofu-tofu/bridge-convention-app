@@ -4,8 +4,8 @@
 // strategy's recommended bid via getExpectedBid(), submits it, and
 // verifies it grades as correct. Requires a dev WASM build.
 
-import type { DevServicePort, Call, SessionConfig } from "../../service";
-import { callKey, ViewportBidGrade, PlayPreference } from "../../service";
+import type { DevServicePort, Call, SessionConfig, BaseSystemId } from "../../service";
+import { callKey, ViewportBidGrade, PlayPreference, getSystemConfig, DEFAULT_BASE_MODULE_IDS } from "../../service";
 import type { Flags } from "../shared";
 import {
   requireArg, optionalNumericArg,
@@ -83,14 +83,15 @@ async function runSingleSeed(
   service: DevServicePort,
   bundleId: string,
   seed: number,
-  system: string,
+  system: BaseSystemId,
   vuln: unknown,
   opponents: unknown,
 ): Promise<SeedResult> {
   const config: SessionConfig = {
     conventionId: bundleId,
     seed,
-    baseSystemId: system,
+    systemConfig: getSystemConfig(system),
+    baseModuleIds: [...DEFAULT_BASE_MODULE_IDS],
     vulnerability: vuln as SessionConfig["vulnerability"],
     opponentMode: opponents as SessionConfig["opponentMode"],
     playPreference: PlayPreference.Skip,

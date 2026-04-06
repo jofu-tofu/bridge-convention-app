@@ -75,11 +75,14 @@ export {
   resolveTransition,
   DEFAULT_PRACTICE_PREFERENCES,
   DEFAULT_DISPLAY_PREFERENCES,
+  DEFAULT_BASE_MODULE_IDS,
 } from "./session-types";
 export type {
   ConventionConfig,
   ConventionTeaching,
   BaseSystemId,
+  SystemSelectionId,
+  CustomSystem,
   SystemConfig,
   PointFormulaId,
   PointConfig,

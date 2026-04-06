@@ -1,96 +1,17 @@
 <script lang="ts">
   import { getAppStore } from "../../stores/context";
-  import { createLearnSubItems } from "./learn-sub-items";
-  import NavFlyout from "./NavFlyout.svelte";
 
   const appStore = getAppStore();
 
-  const RAIL_WIDTH = 80;
-
   const isHomeActive = $derived(appStore.screen === "conventions" || appStore.screen === "game");
-
-  const isLearnActive = $derived(
-    appStore.screen === "learning" ||
-    appStore.screen === "profiles" ||
-    appStore.screen === "coverage"
-  );
-
+  const isLearnActive = $derived(appStore.screen === "learning" || appStore.screen === "coverage");
+  const isWorkshopActive = $derived(appStore.screen === "workshop" || appStore.screen === "profiles");
   const isSettingsActive = $derived(appStore.screen === "settings");
-
-  let flyoutOpen = $state(false);
-  let learnButtonEl = $state<HTMLButtonElement | null>(null);
-  let closeTimer = $state<ReturnType<typeof setTimeout> | null>(null);
-
-  /** Pixel position for the flyout, anchored to the button. */
-  let flyoutTop = $state(0);
-  let flyoutLeft = $state(0);
-
-  function scheduleClose() {
-    closeTimer = setTimeout(() => { flyoutOpen = false; }, 150);
-  }
-
-  function cancelClose() {
-    if (closeTimer) {
-      clearTimeout(closeTimer);
-      closeTimer = null;
-    }
-  }
-
-  function openFlyout() {
-    cancelClose();
-    if (learnButtonEl) {
-      const rect = learnButtonEl.getBoundingClientRect();
-      flyoutTop = rect.top;
-      flyoutLeft = RAIL_WIDTH;
-    }
-    flyoutOpen = true;
-  }
-
-  function handleZoneEnter() {
-    openFlyout();
-  }
-
-  function handleZoneLeave() {
-    scheduleClose();
-  }
-
-  function handleFlyoutEnter() {
-    cancelClose();
-  }
-
-  function handleFlyoutLeave() {
-    scheduleClose();
-  }
-
-  function handleLearnClick() {
-    appStore.navigateToLearningHome();
-    flyoutOpen = false;
-  }
-
-  function handleLearnKeydown(e: KeyboardEvent) {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      if (!flyoutOpen) {
-        openFlyout();
-      } else {
-        handleLearnClick();
-      }
-    } else if (e.key === "Escape") {
-      flyoutOpen = false;
-    }
-  }
-
-  const flyoutItems = $derived(
-    createLearnSubItems(appStore.screen, {
-      toConventions: () => { appStore.navigateToLearningHome(); flyoutOpen = false; },
-      toProfiles: () => { appStore.navigateToProfiles(); flyoutOpen = false; },
-    }),
-  );
 </script>
 
 <nav
   class="h-full bg-bg-base border-r border-border-subtle flex flex-col items-center py-4 gap-1 shrink-0"
-  style="width: {RAIL_WIDTH}px;"
+  style="width: 80px;"
   aria-label="Main navigation"
 >
   <!-- Home -->
@@ -107,27 +28,33 @@
     <span class="text-[10px] font-medium leading-none">Home</span>
   </button>
 
-  <!-- Learn — hover zone covers full rail width so there's no dead gap -->
-  <div
-    class="w-full"
-    onpointerenter={handleZoneEnter}
-    onpointerleave={handleZoneLeave}
+  <!-- Learn — direct navigation, no flyout -->
+  <button
+    class="flex flex-col items-center gap-0.5 py-2 w-full transition-colors cursor-pointer
+      {isLearnActive
+        ? 'text-accent-primary'
+        : 'text-text-muted hover:text-text-primary'}"
+    aria-label="Learn"
+    aria-current={isLearnActive ? "page" : undefined}
+    onclick={() => appStore.navigateToLearningHome()}
   >
-    <button
-      bind:this={learnButtonEl}
-      class="flex flex-col items-center gap-0.5 py-2 w-full transition-colors cursor-pointer
-        {isLearnActive
-          ? 'text-accent-primary'
-          : 'text-text-muted hover:text-text-primary'}"
-      aria-label="Learn"
-      aria-current={isLearnActive ? "page" : undefined}
-      onclick={handleLearnClick}
-      onkeydown={handleLearnKeydown}
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
-      <span class="text-[10px] font-medium leading-none">Learn</span>
-    </button>
-  </div>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+    <span class="text-[10px] font-medium leading-none">Learn</span>
+  </button>
+
+  <!-- Workshop -->
+  <button
+    class="flex flex-col items-center gap-0.5 py-2 w-full transition-colors cursor-pointer
+      {isWorkshopActive
+        ? 'text-accent-primary'
+        : 'text-text-muted hover:text-text-primary'}"
+    aria-label="Workshop"
+    aria-current={isWorkshopActive ? "page" : undefined}
+    onclick={() => appStore.navigateToWorkshop()}
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    <span class="text-[10px] font-medium leading-none">Workshop</span>
+  </button>
 
   <!-- Settings -->
   <button
@@ -143,15 +70,3 @@
     <span class="text-[10px] font-medium leading-none">Settings</span>
   </button>
 </nav>
-
-<!-- Flyout rendered fixed, outside the nav's stacking context -->
-{#if flyoutOpen}
-  <div
-    class="fixed z-50"
-    style="top: {flyoutTop}px; left: {flyoutLeft}px;"
-    onpointerenter={handleFlyoutEnter}
-    onpointerleave={handleFlyoutLeave}
-  >
-    <NavFlyout items={flyoutItems} />
-  </div>
-{/if}

@@ -46,7 +46,29 @@ export interface ConventionConfig {
 
 // ── Base system types ──────────────────────────────────────────────
 
-export type BaseSystemId = "sayc" | "two-over-one" | "acol";
+export type BaseSystemId = "sayc" | "two-over-one" | "acol" | "custom";
+
+/** Identifies a system selection in the TS layer. Never sent to Rust. */
+export type SystemSelectionId = BaseSystemId | `custom:${string}`;
+
+/** Default base module IDs merged into every spec. */
+export const DEFAULT_BASE_MODULE_IDS: readonly string[] = [
+  "natural-bids", "stayman", "jacoby-transfers", "blackwood",
+] as const;
+
+/**
+ * Custom system stored in localStorage. Full config snapshot, not deltas.
+ * Changing preset defaults does NOT propagate to existing custom systems.
+ */
+export interface CustomSystem {
+  readonly id: `custom:${string}`;
+  readonly name: string;
+  readonly basedOn: BaseSystemId;
+  readonly config: SystemConfig;
+  readonly baseModuleIds: string[];
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
 
 /** Point formula identifiers for composing total-point values. */
 export type PointFormulaId = "hcp-only" | "hcp-plus-shortage" | "hcp-plus-all-distribution";
@@ -489,7 +511,7 @@ export const DEFAULT_DISPLAY_PREFERENCES: DisplayPreferences = {
 };
 
 export interface PracticePreferences {
-  readonly baseSystemId: BaseSystemId;
+  readonly baseSystemId: SystemSelectionId;
   readonly drill: DrillSettings;
   readonly display: DisplayPreferences;
 }

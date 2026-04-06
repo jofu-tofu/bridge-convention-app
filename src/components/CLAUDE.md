@@ -30,7 +30,8 @@ components/
     MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible card, recursive snippet, tap-to-expand accordion for detail (recommendation/disclosure/explanation/clauses)
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
-    ProfilesScreen.svelte            Read-only base system profiles (SAYC/2-1/Acol) with detail + compare views and compact NT/HCP vs Suit/TP legend pills
+    WorkshopScreen.svelte            System management — preset cards, custom system list, create/edit/delete. Hosts SystemEditor inline.
+    SystemEditor.svelte              Custom system editor — card-section form (all SystemConfig fields + base module checkboxes). Inline validation, save/cancel.
     SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards. TP-enabled categories render 3-column mini-table (NT / HCP, Suit / TP).
     SystemCompareView.svelte         Side-by-side comparison table with diff highlighting. TP-enabled fields render 2 sub-rows (NT / HCP, Suit / TP) with independent diff highlighting per metric.
     profile-display.ts               Pure display logic: category definitions, value formatting (formatFieldValue, formatTrumpTpValue), comparison helpers. FieldFormat includes rangeWithTp/thresholdWithTp variants for TP-enabled categories.
@@ -90,11 +91,8 @@ components/
       DebugPlayLog.svelte            Card play history by trick
       debug-helpers.ts               Formatting utilities (formatCall re-export, formatSuitCards, fmtFactValue, truncate)
   navigation/
-    NavRail.svelte                   Thin left rail (~80px) — Home/Learn (hover flyout)/Settings icons. Desktop only. Uses shared learn-sub-items.
-    NavFlyout.svelte                 Hover flyout menu for NavRail — positioned right of rail icon, keyboard accessible.
-    BottomTabBar.svelte              Mobile bottom tab bar — Home + Learn + Settings tabs. Mobile only.
-    LearnSubNav.svelte               Mobile segmented control — Conventions/Systems tabs shown when Learn section is active. Mobile only.
-    learn-sub-items.ts               Shared factory for learn sub-navigation items (used by NavRail flyout and LearnSubNav).
+    NavRail.svelte                   Thin left rail (~80px) — Home/Learn/Workshop/Settings icons. Desktop only. Learn is direct navigation (no flyout).
+    BottomTabBar.svelte              Mobile bottom tab bar — Home + Learn + Workshop + Settings tabs. Mobile only.
   shared/
     Button.svelte                    Primary/secondary/ghost variants
     Card.svelte                      70x98 visual playing card
@@ -111,7 +109,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** AppShell owns the full app layout — context setup + nav chrome + screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Learn/Settings icons + hover flyout for Learn sub-items. Mobile: bottom tab bar (BottomTabBar) + segmented control (LearnSubNav) when Learn section is active. Both use shared `learn-sub-items.ts` for Conventions/Systems sub-navigation.
+**Screen flow:** AppShell owns the full app layout — context setup + nav chrome + screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop/Settings icons. Learn navigates directly to Learning screen. Mobile: bottom tab bar (BottomTabBar) with 4 tabs. Workshop tab is the home for system configuration (custom system management). `?screen=profiles` redirects to Workshop.
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 

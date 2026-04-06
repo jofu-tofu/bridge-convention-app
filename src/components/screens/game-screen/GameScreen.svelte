@@ -2,8 +2,9 @@
   import { onMount, onDestroy } from "svelte";
   import { Seat, PracticeMode, PromptMode } from "../../../service";
   import type { Call } from "../../../service";
-  import { getSystemConfig, buildConventionCardPanel, buildAcblCardPanel } from "../../../service";
-  import { getGameStore, getAppStore, setLayoutConfig, getService } from "../../../stores/context";
+  import { buildConventionCardPanel, buildAcblCardPanel } from "../../../service";
+  import { getGameStore, getAppStore, setLayoutConfig, getService, getCustomSystemsStore } from "../../../stores/context";
+  import { resolveSystemForSession } from "../../../stores/custom-systems.svelte";
   import type { SessionConfig } from "../../../service";
 
   import { computeTableScale } from "../../shared/table-scale";
@@ -101,11 +102,17 @@
     const practiceMode = appStore.devPracticeMode ?? appStore.userPracticeMode;
     const practiceRole = appStore.devPracticeRole ?? appStore.userPracticeRole;
     const drill = appStore.drillSettings;
+    const customSystemsStore = getCustomSystemsStore();
+    const { systemConfig, baseModuleIds } = resolveSystemForSession(
+      appStore.baseSystemId,
+      customSystemsStore.systems,
+    );
     const config: SessionConfig = {
       conventionId: baseConvention.id,
       userSeat,
       seed: devSeed,
-      baseSystemId: appStore.baseSystemId,
+      systemConfig,
+      baseModuleIds,
       opponentMode: drill.opponentMode,
       ...(drill.playPreference ? { playPreference: drill.playPreference } : {}),
       ...(practiceMode ? { practiceMode } : {}),
@@ -270,9 +277,12 @@
   });
 
   // Convention card panel — structured sections from system config + active modules
-  const systemConfig = $derived(getSystemConfig(appStore.baseSystemId));
-  const ccPanelView = $derived(buildConventionCardPanel(systemConfig, appStore.selectedConvention?.id));
-  const acblPanelView = $derived(buildAcblCardPanel(systemConfig, appStore.selectedConvention?.id));
+  const resolvedSystem = $derived(resolveSystemForSession(
+    appStore.baseSystemId,
+    getCustomSystemsStore().systems,
+  ));
+  const ccPanelView = $derived(buildConventionCardPanel(resolvedSystem.systemConfig, appStore.selectedConvention?.id));
+  const acblPanelView = $derived(buildAcblCardPanel(resolvedSystem.systemConfig, appStore.selectedConvention?.id));
   let ccPanelOpen = $state(false);
 
   function handleBackToMenu() {

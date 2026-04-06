@@ -1,27 +1,31 @@
 //! Spec builder — construct ConventionSpec from bundles + base modules.
 //!
-//! Mirrors TS `specFromBundle()` in system-registry.ts.
-//! Merges a bundle's member modules with the base system modules
-//! (natural-bids, stayman, jacoby-transfers, blackwood) using Set
-//! deduplication, producing a ConventionSpec for the strategy layer.
+//! Merges a bundle's member modules with the provided base module IDs
+//! using Set deduplication, producing a ConventionSpec for the strategy layer.
 
 use std::collections::HashSet;
 
 use crate::types::spec_types::ConventionSpec;
-use crate::types::system_config::BaseSystemId;
+use crate::types::system_config::{BaseSystemId, SystemConfig};
 
 use super::bundle_registry::get_bundle_input;
-use super::module_registry::{get_base_module_ids, get_module};
-use super::system_configs::get_system_config;
+use super::module_registry::get_module;
 
-/// Build a ConventionSpec from a bundle + base system modules.
+/// Build a ConventionSpec from a bundle + provided base modules + system config.
 ///
-/// Merges the bundle's `member_ids` with the system's base module IDs
+/// Merges the bundle's `member_ids` with the provided `base_module_ids`
 /// (deduplicating), then looks up each module from the registry.
 /// Returns None if the bundle ID is unknown or no modules could be resolved.
-pub fn spec_from_bundle(bundle_id: &str, system: BaseSystemId) -> Option<ConventionSpec> {
+///
+/// The caller always provides the full config — same path for presets and
+/// custom systems. The `system_id` from the config is used for module lookup.
+pub fn spec_from_bundle(
+    bundle_id: &str,
+    system_config: &SystemConfig,
+    base_module_ids: &[String],
+) -> Option<ConventionSpec> {
     let input = get_bundle_input(bundle_id)?;
-    let base_ids = get_base_module_ids(system);
+    let system = system_config.system_id;
 
     // Merge member IDs + base IDs with deduplication (preserving order)
     let mut seen = HashSet::new();
@@ -32,16 +36,22 @@ pub fn spec_from_bundle(bundle_id: &str, system: BaseSystemId) -> Option<Convent
             all_ids.push(id.as_str());
         }
     }
-    for &id in base_ids {
-        if seen.insert(id) {
-            all_ids.push(id);
+    for id in base_module_ids {
+        if seen.insert(id.as_str()) {
+            all_ids.push(id.as_str());
         }
     }
+
+    // Custom systems use SAYC modules (multi-system module variants deferred)
+    let lookup_system = match system {
+        BaseSystemId::Custom => BaseSystemId::Sayc,
+        other => other,
+    };
 
     // Look up each module
     let modules: Vec<_> = all_ids
         .iter()
-        .filter_map(|&id| get_module(id, system).cloned())
+        .filter_map(|&id| get_module(id, lookup_system).cloned())
         .collect();
 
     if modules.is_empty() {
@@ -52,17 +62,29 @@ pub fn spec_from_bundle(bundle_id: &str, system: BaseSystemId) -> Option<Convent
         id: input.id.clone(),
         name: input.name.clone(),
         modules,
-        system_config: Some(get_system_config(system)),
+        system_config: Some(system_config.clone()),
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::registry::module_registry::BASE_MODULE_IDS;
+    use crate::registry::system_configs::get_system_config;
+
+    fn default_base_module_ids() -> Vec<String> {
+        BASE_MODULE_IDS.iter().map(|s| s.to_string()).collect()
+    }
+
+    fn sayc_config() -> SystemConfig {
+        get_system_config(BaseSystemId::Sayc)
+    }
 
     #[test]
     fn spec_from_bundle_nt_bundle() {
-        let spec = spec_from_bundle("nt-bundle", BaseSystemId::Sayc);
+        let config = sayc_config();
+        let base = default_base_module_ids();
+        let spec = spec_from_bundle("nt-bundle", &config, &base);
         assert!(spec.is_some());
         let s = spec.unwrap();
         assert_eq!(s.id, "nt-bundle");
@@ -82,9 +104,9 @@ mod tests {
 
     #[test]
     fn spec_from_bundle_includes_base_modules() {
-        // Bergen bundle has memberIds: ["bergen"]
-        // Spec should also include the 4 base modules
-        let spec = spec_from_bundle("bergen-bundle", BaseSystemId::Sayc);
+        let config = sayc_config();
+        let base = default_base_module_ids();
+        let spec = spec_from_bundle("bergen-bundle", &config, &base);
         assert!(spec.is_some());
         let s = spec.unwrap();
 
@@ -99,9 +121,9 @@ mod tests {
 
     #[test]
     fn spec_from_bundle_deduplicates() {
-        // nt-stayman has memberIds: ["stayman"]
-        // Base modules also include "stayman" — should appear only once
-        let spec = spec_from_bundle("nt-stayman", BaseSystemId::Sayc);
+        let config = sayc_config();
+        let base = default_base_module_ids();
+        let spec = spec_from_bundle("nt-stayman", &config, &base);
         assert!(spec.is_some());
         let s = spec.unwrap();
 
@@ -115,21 +137,26 @@ mod tests {
 
     #[test]
     fn spec_from_bundle_has_system_config() {
-        let spec = spec_from_bundle("nt-bundle", BaseSystemId::Sayc).unwrap();
+        let config = sayc_config();
+        let base = default_base_module_ids();
+        let spec = spec_from_bundle("nt-bundle", &config, &base).unwrap();
         assert!(spec.system_config.is_some());
-        let config = spec.system_config.unwrap();
-        assert_eq!(config.system_id, BaseSystemId::Sayc);
+        let sc = spec.system_config.unwrap();
+        assert_eq!(sc.system_id, BaseSystemId::Sayc);
     }
 
     #[test]
     fn spec_from_bundle_unknown_returns_none() {
-        assert!(spec_from_bundle("nonexistent", BaseSystemId::Sayc).is_none());
+        let config = sayc_config();
+        let base = default_base_module_ids();
+        assert!(spec_from_bundle("nonexistent", &config, &base).is_none());
     }
 
     #[test]
     fn spec_from_bundle_member_order_preserved() {
-        // Members come first, then base modules not already present
-        let spec = spec_from_bundle("nt-bundle", BaseSystemId::Sayc).unwrap();
+        let config = sayc_config();
+        let base = default_base_module_ids();
+        let spec = spec_from_bundle("nt-bundle", &config, &base).unwrap();
         let module_ids: Vec<&str> = spec.modules.iter().map(|m| m.module_id.as_str()).collect();
 
         // Bundle members first: stayman, jacoby-transfers, smolen
@@ -137,8 +164,48 @@ mod tests {
         assert_eq!(module_ids[1], "jacoby-transfers");
         assert_eq!(module_ids[2], "smolen");
         // Then remaining base: natural-bids, blackwood
-        // (stayman and jacoby-transfers already included from members)
         assert_eq!(module_ids[3], "natural-bids");
         assert_eq!(module_ids[4], "blackwood");
+    }
+
+    #[test]
+    fn spec_from_bundle_custom_base_modules() {
+        let config = sayc_config();
+        let custom_base = vec!["natural-bids".to_string(), "blackwood".to_string()];
+        let spec = spec_from_bundle("bergen-bundle", &config, &custom_base).unwrap();
+
+        let module_ids: Vec<&str> = spec.modules.iter().map(|m| m.module_id.as_str()).collect();
+        // Bundle member: bergen
+        // Custom base: natural-bids, blackwood
+        assert_eq!(module_ids.len(), 3);
+        assert!(module_ids.contains(&"bergen"));
+        assert!(module_ids.contains(&"natural-bids"));
+        assert!(module_ids.contains(&"blackwood"));
+    }
+
+    #[test]
+    fn spec_from_bundle_uses_injected_config() {
+        let mut config = sayc_config();
+        config.nt_opening.min_hcp = 16;
+        config.nt_opening.max_hcp = 18;
+        let base = default_base_module_ids();
+        let spec = spec_from_bundle("nt-bundle", &config, &base).unwrap();
+
+        let sc = spec.system_config.unwrap();
+        assert_eq!(sc.nt_opening.min_hcp, 16);
+        assert_eq!(sc.nt_opening.max_hcp, 18);
+    }
+
+    #[test]
+    fn spec_from_bundle_custom_system_id() {
+        let mut config = sayc_config();
+        config.system_id = BaseSystemId::Custom;
+        let base = default_base_module_ids();
+        let spec = spec_from_bundle("nt-bundle", &config, &base).unwrap();
+
+        // Custom systems still resolve modules (via SAYC lookup)
+        assert!(!spec.modules.is_empty());
+        let sc = spec.system_config.unwrap();
+        assert_eq!(sc.system_id, BaseSystemId::Custom);
     }
 }

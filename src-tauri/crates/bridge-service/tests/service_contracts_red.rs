@@ -5,6 +5,9 @@
 //!
 //! Run: `cargo test -p bridge-service --test service_contracts_red`
 
+use bridge_conventions::registry::module_registry::BASE_MODULE_IDS;
+use bridge_conventions::registry::system_configs::get_system_config;
+use bridge_conventions::types::system_config::BaseSystemId;
 use bridge_engine::types::{Call, BidSuit, Seat};
 use bridge_service::port::{DevServicePort, ServicePort};
 use bridge_service::request_types::SessionConfig;
@@ -15,7 +18,8 @@ fn make_config(convention_id: &str, seed: u64) -> SessionConfig {
         convention_id: convention_id.to_string(),
         user_seat: Some(Seat::South),
         seed: Some(seed),
-        base_system_id: None,
+        system_config: get_system_config(BaseSystemId::Sayc),
+        base_module_ids: BASE_MODULE_IDS.iter().map(|s| s.to_string()).collect(),
         practice_mode: None,
         target_module_id: None,
         practice_role: None,

@@ -1,7 +1,7 @@
-import type { ConventionInfo, BaseSystemId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
+import type { ConventionInfo, SystemSelectionId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
 import { OpponentMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 
-export type Screen = "conventions" | "practice-picker" | "game" | "learning" | "settings" | "coverage" | "profiles";
+export type Screen = "conventions" | "practice-picker" | "game" | "learning" | "settings" | "coverage" | "profiles" | "workshop";
 
 // ─── Persistence ────────────────────────────────────────────
 
@@ -42,11 +42,15 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
     typeof vd.none === "number" && typeof vd.ours === "number" &&
     typeof vd.theirs === "number" && typeof vd.both === "number";
 
-  // Validate baseSystemId
-  const baseSystemId =
-    (baseSystemIdRaw && AVAILABLE_BASE_SYSTEMS.some((s) => s.id === baseSystemIdRaw))
-      ? baseSystemIdRaw as BaseSystemId
-      : DEFAULT_PRACTICE_PREFERENCES.baseSystemId;
+  // Validate baseSystemId — presets or custom:* format
+  let baseSystemId: SystemSelectionId;
+  if (typeof baseSystemIdRaw === "string" && baseSystemIdRaw.startsWith("custom:")) {
+    baseSystemId = baseSystemIdRaw as SystemSelectionId;
+  } else if (baseSystemIdRaw && AVAILABLE_BASE_SYSTEMS.some((s) => s.id === baseSystemIdRaw)) {
+    baseSystemId = baseSystemIdRaw as SystemSelectionId;
+  } else {
+    baseSystemId = DEFAULT_PRACTICE_PREFERENCES.baseSystemId;
+  }
 
   return {
     baseSystemId,
@@ -221,8 +225,12 @@ export function createAppStore() {
       currentScreen = "coverage";
     },
 
+    navigateToWorkshop() {
+      currentScreen = "workshop";
+    },
+
     navigateToProfiles() {
-      currentScreen = "profiles";
+      currentScreen = "workshop";
     },
 
     setDevSeed(seed: number | null) {
@@ -322,7 +330,7 @@ export function createAppStore() {
       return prefs.baseSystemId;
     },
 
-    setBaseSystemId(id: BaseSystemId) {
+    setBaseSystemId(id: SystemSelectionId) {
       prefs = { ...prefs, baseSystemId: id };
       savePreferences(prefs);
     },

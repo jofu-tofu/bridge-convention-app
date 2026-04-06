@@ -6,6 +6,7 @@
 pub(crate) mod bundle_resolver;
 pub(crate) mod config_resolver;
 pub mod convention_adapter;
+pub(crate) mod drill_setup;
 pub mod error;
 pub mod feedback_assembler;
 pub mod port;
@@ -13,6 +14,7 @@ pub mod request_types;
 pub mod response_types;
 pub mod service_impl;
 pub mod session_manager;
+pub(crate) mod validation;
 
 pub use error::ServiceError;
 pub use port::{DevServicePort, ServicePort};

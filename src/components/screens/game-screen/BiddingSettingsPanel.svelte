@@ -32,7 +32,7 @@
       <ToggleGroup
         items={AVAILABLE_BASE_SYSTEMS.map(sys => ({ id: sys.id, label: sys.shortLabel, title: sys.label, testId: `settings-system-${sys.id}` }))}
         active={appStore.baseSystemId}
-        onSelect={(id) => appStore.setBaseSystemId(id as import("../../../service").BaseSystemId)}
+        onSelect={(id) => appStore.setBaseSystemId(id as import("../../../service").SystemSelectionId)}
         ariaLabel="Base bidding system"
         compact
         disabled={isReadonly}

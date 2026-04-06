@@ -41,8 +41,8 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     store.navigateToCoverage();
     return;
   }
-  if (screenParam === "profiles") {
-    store.navigateToProfiles();
+  if (screenParam === "profiles" || screenParam === "workshop") {
+    store.navigateToWorkshop();
     return;
   }
   if (screenParam === "settings") {

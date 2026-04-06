@@ -101,11 +101,13 @@ See `docs/design-philosophy.md` for the full set of 13 design principles and sub
 
 ## System Parameterization
 
-Multi-system support (SAYC, 2/1, Acol). Modules are system-agnostic — differences flow through `SystemConfig` → system facts → surface clause evaluation. `SystemConfig` and system fact vocabulary live in Rust (`bridge-conventions`).
+Multi-system support (SAYC, 2/1, Acol, Custom). Modules are system-agnostic — differences flow through `SystemConfig` → system facts → surface clause evaluation. `SystemConfig` and system fact vocabulary live in Rust (`bridge-conventions`).
+
+**SessionConfig always carries a full `SystemConfig` + `baseModuleIds`** — same path for presets and custom systems. Rust never looks up configs by ID. The TS layer resolves the selected system via `resolveSystemForSession()` in `src/stores/custom-systems.svelte.ts`. Custom systems stored in localStorage (`bridge-app:custom-systems`). `SystemSelectionId` (`BaseSystemId | \`custom:${string}\``) is TS-only; it never crosses the WASM boundary.
 
 **Point formulas:** `PointConfig` on `SystemConfig` defines point formulas per contract type (NT vs trump). The engine computes raw components (HCP, shortage, length); the fact DSL composes them via `compute_total_points()` in `fact_dsl/point_helpers.rs`. UI shows HCP only — formula-composed totals are for decision logic, not display.
 
-**Base modules:** Each base system has 4 always-active modules: `["natural-bids", "stayman", "jacoby-transfers", "blackwood"]`. These are merged into every `specFromBundle()` call (strategy layer) but NOT into `resolveBundle()` (deal generation/teaching). Base modules affect bidding strategy only — inert modules (e.g., Stayman during Bergen practice) never activate because their FSM triggers never fire.
+**Base modules:** Presets use 4 always-active modules: `["natural-bids", "stayman", "jacoby-transfers", "blackwood"]`. Custom systems may use any subset (with `natural-bids` required). Base modules are merged into every `spec_from_bundle()` call (strategy layer) but NOT into `resolve_bundle()` (deal generation/teaching). Base modules affect bidding strategy only — inert modules never activate because their FSM triggers never fire.
 
 ## Architecture
 
@@ -124,9 +126,9 @@ src/
     util/          Pure utilities: delay
   cli/             Session-based convention evaluation CLI (main.ts + shared.ts + commands/)
   test-support/    Shared test factories (engine stub, deal/session fixtures)
-  stores/          Svelte stores (app, game coordinator + bidding/play/dds sub-stores, context DI, dev-params)
+  stores/          Svelte stores (app, game coordinator, custom-systems, context DI, dev-params)
   components/      Svelte UI components
-    navigation/    NavRail (desktop left rail), NavFlyout (hover menu), BottomTabBar (mobile)
+    navigation/    NavRail (desktop left rail), BottomTabBar (mobile)
     screens/       Screen-level components (ConventionSelectScreen, LearningScreen, game-screen/GameScreen)
     game/          Game components + co-located .ts companions (DecisionTree.ts, RoundBidList.ts, BidFeedbackPanel.ts)
     shared/        Reusable components (Card, Button, ConventionCallout) + display utilities (tokens, sort-cards, seat-mapping, table-scale, breakpoints, vulnerability-labels, layout-props)

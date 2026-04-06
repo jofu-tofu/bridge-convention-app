@@ -35,9 +35,19 @@ test.describe("session modes", () => {
     await waitForPhase(page, "Review", 30_000);
 
     await expect(page.getByRole("heading", { name: "Bidding Review" })).toBeVisible();
+
+    // Capture the current deal counter text before clicking Next Deal
+    const dealInfo = page.getByText(/Deal #\d+/);
+    const initialText = await dealInfo.textContent();
+
     await page.getByTestId("next-deal").click();
 
-    await waitForPhase(page, "Bidding", 10_000);
+    // With autoplay, the next deal's bidding may complete instantly.
+    // Verify the deal advanced by checking the deal counter changed,
+    // then confirm we're in a valid game phase (Bidding or Review).
+    await expect(dealInfo).not.toHaveText(initialText!, { timeout: 15_000 });
+    const phaseText = await page.getByTestId("game-phase").textContent();
+    expect(["Bidding", "Review"]).toContain(phaseText);
   });
 
   test("review analysis tab renders after autoplay", async ({ page }) => {

@@ -44,6 +44,8 @@ pub enum BaseSystemId {
     TwoOverOne,
     #[serde(rename = "acol")]
     Acol,
+    #[serde(rename = "custom")]
+    Custom,
 }
 
 /// Suit total-point equivalents for a threshold.
@@ -173,6 +175,10 @@ mod tests {
         assert_eq!(
             serde_json::to_string(&BaseSystemId::Acol).unwrap(),
             "\"acol\""
+        );
+        assert_eq!(
+            serde_json::to_string(&BaseSystemId::Custom).unwrap(),
+            "\"custom\""
         );
     }
 

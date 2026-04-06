@@ -151,11 +151,13 @@ pub fn acol_system_config() -> SystemConfig {
 }
 
 /// Look up SystemConfig by base system ID.
+/// Custom systems are caller-provided; falls back to SAYC for the `Custom` variant.
 pub fn get_system_config(system_id: BaseSystemId) -> SystemConfig {
     match system_id {
         BaseSystemId::Sayc => sayc_system_config(),
         BaseSystemId::TwoOverOne => two_over_one_system_config(),
         BaseSystemId::Acol => acol_system_config(),
+        BaseSystemId::Custom => sayc_system_config(),
     }
 }
 

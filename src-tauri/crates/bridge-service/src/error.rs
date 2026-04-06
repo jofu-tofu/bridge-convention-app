@@ -32,6 +32,9 @@ pub enum ServiceError {
     #[error("Playthrough step {0} out of range")]
     StepOutOfRange(usize),
 
+    #[error("Invalid system config: {0}")]
+    InvalidConfig(String),
+
     #[error("Internal error: {0}")]
     Internal(String),
 }

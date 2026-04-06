@@ -71,6 +71,7 @@ function systemShortLabel(config: SystemConfig): string {
     case "sayc": return "SAYC";
     case "two-over-one": return "2/1";
     case "acol": return "Acol";
+    case "custom": return config.displayName || "Custom";
   }
 }
 

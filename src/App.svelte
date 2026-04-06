@@ -4,6 +4,7 @@
   import { applyDevParams } from "./stores/dev-params";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
+  import { createCustomSystemsStore } from "./stores/custom-systems.svelte";
   import AppShell from "./AppShell.svelte";
 
   let engineReady = $state(false);
@@ -11,6 +12,7 @@
   let resolvedService = $state<DevServicePort | null>(null);
   let resolvedGameStore = $state<ReturnType<typeof createGameStore> | null>(null);
   let appStore = $state<ReturnType<typeof createAppStore> | null>(null);
+  let customSystemsStore = $state<ReturnType<typeof createCustomSystemsStore> | null>(null);
 
   function init(): void {
     engineReady = false;
@@ -21,6 +23,11 @@
         resolvedService = svc;
         const store = createAppStore();
         appStore = store;
+        customSystemsStore = createCustomSystemsStore();
+        // Validate stored custom system selection still exists
+        if (!customSystemsStore.isValidSelection(store.baseSystemId)) {
+          store.setBaseSystemId("sayc");
+        }
         resolvedGameStore = createGameStore(svc);
         applyDevParams(store);
         engineReady = true;
@@ -41,10 +48,10 @@
       onclick={() => init()}
     >Retry</button>
   </div>
-{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore}
+{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore || !customSystemsStore}
   <div class="bg-bg-deepest text-text-primary flex h-screen items-center justify-center">
     Loading engine...
   </div>
 {:else}
-  <AppShell service={resolvedService} gameStore={resolvedGameStore} {appStore} />
+  <AppShell service={resolvedService} gameStore={resolvedGameStore} {appStore} {customSystemsStore} />
 {/if}

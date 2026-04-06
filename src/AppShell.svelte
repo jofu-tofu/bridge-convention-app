@@ -2,23 +2,24 @@
   import type { DevServicePort } from "./service";
   import type { createGameStore } from "./stores/game.svelte";
   import type { createAppStore } from "./stores/app.svelte";
-  import { setGameStore, setAppStore, setService } from "./stores/context";
+  import type { createCustomSystemsStore } from "./stores/custom-systems.svelte";
+  import { setGameStore, setAppStore, setService, setCustomSystemsStore } from "./stores/context";
   import { DESKTOP_MIN } from "./components/shared/breakpoints.svelte";
   import NavRail from "./components/navigation/NavRail.svelte";
   import BottomTabBar from "./components/navigation/BottomTabBar.svelte";
-  import LearnSubNav from "./components/navigation/LearnSubNav.svelte";
   import ConventionSelectScreen from "./components/screens/ConventionSelectScreen.svelte";
   import GameScreen from "./components/screens/game-screen/GameScreen.svelte";
   import LearningScreen from "./components/screens/LearningScreen.svelte";
   import SettingsScreen from "./components/screens/SettingsScreen.svelte";
   import CoverageScreen from "./components/screens/CoverageScreen.svelte";
-  import ProfilesScreen from "./components/screens/ProfilesScreen.svelte";
+  import WorkshopScreen from "./components/screens/WorkshopScreen.svelte";
   import PracticeModePicker from "./components/screens/PracticeModePicker.svelte";
 
   interface Props {
     service: DevServicePort;
     gameStore: ReturnType<typeof createGameStore>;
     appStore: ReturnType<typeof createAppStore>;
+    customSystemsStore: ReturnType<typeof createCustomSystemsStore>;
   }
 
   const props: Props = $props();
@@ -26,13 +27,10 @@
   setService(props.service);
   setGameStore(props.gameStore);
   setAppStore(props.appStore);
+  setCustomSystemsStore(props.customSystemsStore);
 
   let innerW = $state(1024);
   const isDesktop = $derived(innerW >= DESKTOP_MIN);
-  const showLearnSubNav = $derived(
-    !isDesktop &&
-    (props.appStore.screen === "learning" || props.appStore.screen === "profiles"),
-  );
 </script>
 
 {#snippet screenRouter()}
@@ -55,8 +53,8 @@
     <SettingsScreen />
   {:else if props.appStore.screen === "coverage"}
     <CoverageScreen />
-  {:else if props.appStore.screen === "profiles"}
-    <ProfilesScreen />
+  {:else if props.appStore.screen === "workshop" || props.appStore.screen === "profiles"}
+    <WorkshopScreen />
   {:else}
     <div class="flex h-full items-center justify-center text-red-400">
       <p>Unknown screen: {props.appStore.screen}</p>
@@ -76,9 +74,6 @@
     </div>
   {:else}
     <div class="flex flex-col h-full">
-      {#if showLearnSubNav}
-        <LearnSubNav />
-      {/if}
       <div class="flex-1 min-w-0 min-h-0 overflow-hidden">
         {@render screenRouter()}
       </div>

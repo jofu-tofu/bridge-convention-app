@@ -5,7 +5,7 @@
 // invocation creates a fresh session (same seed = same deal).
 
 import type { DevServicePort, BiddingViewport, SessionConfig } from "../../service";
-import { ViewportBidGrade, PlayPreference } from "../../service";
+import { ViewportBidGrade, PlayPreference, getSystemConfig, DEFAULT_BASE_MODULE_IDS } from "../../service";
 import type { Flags } from "../shared";
 import {
   requireArg, optionalNumericArg, parseCallString,
@@ -62,7 +62,8 @@ export async function runPlay(service: DevServicePort, flags: Flags): Promise<vo
   const config: SessionConfig = {
     conventionId: bundleId,
     seed,
-    baseSystemId: system,
+    systemConfig: getSystemConfig(system),
+    baseModuleIds: [...DEFAULT_BASE_MODULE_IDS],
     vulnerability: vuln,
     opponentMode: opponents,
     practiceMode: mode,

@@ -1,13 +1,14 @@
 <script lang="ts">
   import { OpponentMode } from "../../service";
-  import type { PlayProfileId, VulnerabilityDistribution, BaseModuleInfo } from "../../service";
+  import type { PlayProfileId, VulnerabilityDistribution, BaseModuleInfo, SystemSelectionId } from "../../service";
   import { AVAILABLE_BASE_SYSTEMS, DEFAULT_DRILL_TUNING, PLAY_PROFILES, buildBaseModuleInfos } from "../../service";
   import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../shared/vulnerability-labels";
   import type { VulnKey } from "../shared/vulnerability-labels";
-  import { getAppStore } from "../../stores/context";
+  import { getAppStore, getCustomSystemsStore } from "../../stores/context";
   import ToggleGroup from "../shared/ToggleGroup.svelte";
 
   const appStore = getAppStore();
+  const customSystems = getCustomSystemsStore();
 
   const PROFILE_ENTRIES: { id: PlayProfileId; label: string }[] = [
     { id: "beginner", label: "Beginner" },
@@ -90,9 +91,33 @@
       <ToggleGroup
         items={AVAILABLE_BASE_SYSTEMS.map(sys => ({ id: sys.id, label: sys.shortLabel, title: sys.label, testId: `settings-system-${sys.id}` }))}
         active={appStore.baseSystemId}
-        onSelect={(id) => appStore.setBaseSystemId(id as import("../../service").BaseSystemId)}
+        onSelect={(id) => appStore.setBaseSystemId(id as SystemSelectionId)}
         ariaLabel="Base bidding system"
       />
+
+      {#if customSystems.systems.length > 0}
+        <div class="mt-3 max-h-32 overflow-y-auto space-y-1">
+          {#each customSystems.systems as sys (sys.id)}
+            <button
+              class="w-full text-left px-3 py-2 rounded-[--radius-md] text-sm transition-colors cursor-pointer
+                {appStore.baseSystemId === sys.id
+                  ? 'bg-accent-primary text-text-on-accent font-semibold'
+                  : 'bg-bg-base border border-border-subtle text-text-primary hover:border-border-prominent'}"
+              onclick={() => appStore.setBaseSystemId(sys.id)}
+              data-testid="settings-system-{sys.id}"
+            >
+              {sys.name}
+            </button>
+          {/each}
+        </div>
+      {/if}
+
+      <button
+        class="mt-2 text-xs text-accent-primary hover:underline cursor-pointer"
+        onclick={() => appStore.navigateToWorkshop()}
+      >
+        + Create custom system
+      </button>
     </section>
 
     <!-- Base Conventions -->

@@ -12,7 +12,7 @@ import type { DevServicePort } from "../../service/port";
 import { Seat, Suit, Rank, BidSuit } from "../../engine/types";
 import type { AiBidEntry } from "../../service/response-types";
 import { ServiceGamePhase, ViewportBidGrade } from "../../service/response-types";
-import { PlayPreference } from "../../service/session-types";
+import { PlayPreference, SAYC_SYSTEM_CONFIG, DEFAULT_BASE_MODULE_IDS } from "../../service/session-types";
 import { createGameStore } from "../game.svelte";
 import { createMockService } from "../../test-support/service-mocks";
 import {
@@ -40,6 +40,8 @@ describe("game store lifecycle (RED tests)", () => {
       conventionId: "nt-bundle",
       userSeat: Seat.South,
       seed: 42,
+      systemConfig: SAYC_SYSTEM_CONFIG,
+      baseModuleIds: [...DEFAULT_BASE_MODULE_IDS],
     });
 
     // Allow async operations to settle
@@ -194,10 +196,10 @@ describe("game store lifecycle (RED tests)", () => {
     });
 
     // Start first drill
-    store.startNewDrill({ conventionId: "nt-bundle", seed: 1 });
+    store.startNewDrill({ conventionId: "nt-bundle", seed: 1, systemConfig: SAYC_SYSTEM_CONFIG, baseModuleIds: [...DEFAULT_BASE_MODULE_IDS] });
 
     // Immediately start another before first settles
-    store.startNewDrill({ conventionId: "nt-bundle", seed: 2 });
+    store.startNewDrill({ conventionId: "nt-bundle", seed: 2, systemConfig: SAYC_SYSTEM_CONFIG, baseModuleIds: [...DEFAULT_BASE_MODULE_IDS] });
 
     await vi.waitFor(() => {
       // Second drill should win — createDrillSession called twice
