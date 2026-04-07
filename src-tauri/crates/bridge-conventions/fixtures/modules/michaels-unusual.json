@@ -1,0 +1,2502 @@
+{
+  "moduleId": "michaels-unusual",
+  "description": "Michaels Cue Bids and Unusual 2NT: compete over opponent's suit opening with two-suited hands (5-5+)",
+  "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
+  "teaching": {
+    "tradeoff": "Michaels/Unusual 2NT sacrifices the natural meaning of the cue bid and 2NT in exchange for immediately showing a two-suited competitive hand.",
+    "principle": "Against a suit opening, showing two suits at once lets partner judge fit quickly. The specific cue bid varies by opening suit to encode which suits you hold.",
+    "commonMistakes": [
+      "A cue bid of opponent's minor shows BOTH MAJORS, not a strong hand \u2014 don't confuse with a Western Cue Bid",
+      "After Michaels over a major, 2NT asks partner to show the minor \u2014 it's a relay, not a natural bid",
+      "You need 5-5 shape (or better) \u2014 5-4 is not enough for Michaels"
+    ]
+  },
+  "explanationEntries": [
+    {
+      "explanationId": "michaels.inOvercallRange",
+      "factId": "module.michaels.inOvercallRange",
+      "templateKey": "michaels.inOvercallRange.supporting",
+      "displayText": "HCP in overcall range (vulnerability-dependent)",
+      "contrastiveTemplateKey": "michaels.inOvercallRange.whyNot",
+      "contrastiveDisplayText": "HCP not in overcall range",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.bothMajorsFiveFive",
+      "factId": "module.michaels.bothMajorsFiveFive",
+      "templateKey": "michaels.bothMajorsFiveFive.supporting",
+      "displayText": "5+ cards in both majors",
+      "contrastiveTemplateKey": "michaels.bothMajorsFiveFive.whyNot",
+      "contrastiveDisplayText": "Does not hold 5+ cards in both majors",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.bothMinorsFiveFive",
+      "factId": "module.michaels.bothMinorsFiveFive",
+      "templateKey": "michaels.bothMinorsFiveFive.supporting",
+      "displayText": "5+ cards in both minors",
+      "contrastiveTemplateKey": "michaels.bothMinorsFiveFive.whyNot",
+      "contrastiveDisplayText": "Does not hold 5+ cards in both minors",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.spadesAndMinor",
+      "factId": "module.michaels.spadesAndMinor",
+      "templateKey": "michaels.spadesAndMinor.supporting",
+      "displayText": "5+ spades and 5+ in a minor",
+      "contrastiveTemplateKey": "michaels.spadesAndMinor.whyNot",
+      "contrastiveDisplayText": "Does not hold 5+ spades with a 5+ minor",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.heartsAndMinor",
+      "factId": "module.michaels.heartsAndMinor",
+      "templateKey": "michaels.heartsAndMinor.supporting",
+      "displayText": "5+ hearts and 5+ in a minor",
+      "contrastiveTemplateKey": "michaels.heartsAndMinor.whyNot",
+      "contrastiveDisplayText": "Does not hold 5+ hearts with a 5+ minor",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.minorIsClubs",
+      "factId": "module.michaels.minorIsClubs",
+      "templateKey": "michaels.minorIsClubs.supporting",
+      "displayText": "The minor suit is clubs",
+      "contrastiveTemplateKey": "michaels.minorIsClubs.whyNot",
+      "contrastiveDisplayText": "The minor suit is not clubs",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.minorIsDiamonds",
+      "factId": "module.michaels.minorIsDiamonds",
+      "templateKey": "michaels.minorIsDiamonds.supporting",
+      "displayText": "The minor suit is diamonds",
+      "contrastiveTemplateKey": "michaels.minorIsDiamonds.whyNot",
+      "contrastiveDisplayText": "The minor suit is not diamonds",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.hasHeartSupport",
+      "factId": "module.michaels.hasHeartSupport",
+      "templateKey": "michaels.hasHeartSupport.supporting",
+      "displayText": "3+ hearts to support partner",
+      "contrastiveTemplateKey": "michaels.hasHeartSupport.whyNot",
+      "contrastiveDisplayText": "Fewer than 3 hearts to support partner",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.hasSpadeSupport",
+      "factId": "module.michaels.hasSpadeSupport",
+      "templateKey": "michaels.hasSpadeSupport.supporting",
+      "displayText": "3+ spades to support partner",
+      "contrastiveTemplateKey": "michaels.hasSpadeSupport.whyNot",
+      "contrastiveDisplayText": "Fewer than 3 spades to support partner",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.hasClubSupport",
+      "factId": "module.michaels.hasClubSupport",
+      "templateKey": "michaels.hasClubSupport.supporting",
+      "displayText": "3+ clubs to support partner",
+      "contrastiveTemplateKey": "michaels.hasClubSupport.whyNot",
+      "contrastiveDisplayText": "Fewer than 3 clubs to support partner",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.hasDiamondSupport",
+      "factId": "module.michaels.hasDiamondSupport",
+      "templateKey": "michaels.hasDiamondSupport.supporting",
+      "displayText": "3+ diamonds to support partner",
+      "contrastiveTemplateKey": "michaels.hasDiamondSupport.whyNot",
+      "contrastiveDisplayText": "Fewer than 3 diamonds to support partner",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.advancerGameValues",
+      "factId": "module.michaels.advancerGameValues",
+      "templateKey": "michaels.advancerGameValues.supporting",
+      "displayText": "10+ HCP (game-forcing values)",
+      "contrastiveTemplateKey": "michaels.advancerGameValues.whyNot",
+      "contrastiveDisplayText": "Fewer than 10 HCP",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.advancerInviteValues",
+      "factId": "module.michaels.advancerInviteValues",
+      "templateKey": "michaels.advancerInviteValues.supporting",
+      "displayText": "8-9 HCP (invitational values)",
+      "contrastiveTemplateKey": "michaels.advancerInviteValues.whyNot",
+      "contrastiveDisplayText": "HCP not in invitational range (8-9)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.advancerWeak",
+      "factId": "module.michaels.advancerWeak",
+      "templateKey": "michaels.advancerWeak.supporting",
+      "displayText": "0-7 HCP (weak hand)",
+      "contrastiveTemplateKey": "michaels.advancerWeak.whyNot",
+      "contrastiveDisplayText": "More than 7 HCP",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.stub.opponent1c",
+      "meaningId": "michaels:opponent-1c",
+      "templateKey": "michaels.stub.opponent1c.semantic",
+      "displayText": "internal",
+      "preferredLevel": "mechanical",
+      "roles": []
+    },
+    {
+      "explanationId": "michaels.stub.opponent1d",
+      "meaningId": "michaels:opponent-1d",
+      "templateKey": "michaels.stub.opponent1d.semantic",
+      "displayText": "internal",
+      "preferredLevel": "mechanical",
+      "roles": []
+    },
+    {
+      "explanationId": "michaels.stub.opponent1h",
+      "meaningId": "michaels:opponent-1h",
+      "templateKey": "michaels.stub.opponent1h.semantic",
+      "displayText": "internal",
+      "preferredLevel": "mechanical",
+      "roles": []
+    },
+    {
+      "explanationId": "michaels.stub.opponent1s",
+      "meaningId": "michaels:opponent-1s",
+      "templateKey": "michaels.stub.opponent1s.semantic",
+      "displayText": "internal",
+      "preferredLevel": "mechanical",
+      "roles": []
+    },
+    {
+      "explanationId": "michaels.r1.cueBid1c",
+      "meaningId": "michaels:cue-bid-1c-2c",
+      "templateKey": "michaels.r1.cueBid1c.semantic",
+      "displayText": "2C: Both majors over 1C opening",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.r1.cueBid1d",
+      "meaningId": "michaels:cue-bid-1d-2d",
+      "templateKey": "michaels.r1.cueBid1d.semantic",
+      "displayText": "2D: Both majors over 1D opening",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.r1.cueBid1h",
+      "meaningId": "michaels:cue-bid-1h-2h",
+      "templateKey": "michaels.r1.cueBid1h.semantic",
+      "displayText": "2H: Spades + a minor over 1H opening",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.r1.cueBid1s",
+      "meaningId": "michaels:cue-bid-1s-2s",
+      "templateKey": "michaels.r1.cueBid1s.semantic",
+      "displayText": "2S: Hearts + a minor over 1S opening",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.r1.unusual2nt1c",
+      "meaningId": "michaels:unusual-2nt-1c",
+      "templateKey": "michaels.r1.unusual2nt1c.semantic",
+      "displayText": "2NT: Both minors over 1C opening",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.r1.unusual2nt1d",
+      "meaningId": "michaels:unusual-2nt-1d",
+      "templateKey": "michaels.r1.unusual2nt1d.semantic",
+      "displayText": "2NT: Both minors over 1D opening",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.r1.unusual2nt1h",
+      "meaningId": "michaels:unusual-2nt-1h",
+      "templateKey": "michaels.r1.unusual2nt1h.semantic",
+      "displayText": "2NT: Both minors over 1H opening",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.r1.unusual2nt1s",
+      "meaningId": "michaels:unusual-2nt-1s",
+      "templateKey": "michaels.r1.unusual2nt1s.semantic",
+      "displayText": "2NT: Both minors over 1S opening",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.r1.pass1c",
+      "meaningId": "michaels:pass-1c",
+      "templateKey": "michaels.r1.pass1c.semantic",
+      "displayText": "Pass: No Michaels/Unusual action over 1C",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.r1.pass1d",
+      "meaningId": "michaels:pass-1d",
+      "templateKey": "michaels.r1.pass1d.semantic",
+      "displayText": "Pass: No Michaels/Unusual action over 1D",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.r1.pass1h",
+      "meaningId": "michaels:pass-1h",
+      "templateKey": "michaels.r1.pass1h.semantic",
+      "displayText": "Pass: No Michaels/Unusual action over 1H",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.r1.pass1s",
+      "meaningId": "michaels:pass-1s",
+      "templateKey": "michaels.r1.pass1s.semantic",
+      "displayText": "Pass: No Michaels/Unusual action over 1S",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.preferHearts2h",
+      "meaningId": "michaels:adv-prefer-hearts-2h",
+      "templateKey": "michaels.adv.preferHearts2h.semantic",
+      "displayText": "2H: Prefer hearts (weak hand)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.preferSpades2s",
+      "meaningId": "michaels:adv-prefer-spades-2s",
+      "templateKey": "michaels.adv.preferSpades2s.semantic",
+      "displayText": "2S: Prefer spades (weak hand)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.inviteHearts3h",
+      "meaningId": "michaels:adv-invite-hearts-3h",
+      "templateKey": "michaels.adv.inviteHearts3h.semantic",
+      "displayText": "3H: Invitational raise in hearts",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.inviteSpades3s",
+      "meaningId": "michaels:adv-invite-spades-3s",
+      "templateKey": "michaels.adv.inviteSpades3s.semantic",
+      "displayText": "3S: Invitational raise in spades",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.gameHearts4h",
+      "meaningId": "michaels:adv-game-hearts-4h",
+      "templateKey": "michaels.adv.gameHearts4h.semantic",
+      "displayText": "4H: Game in hearts",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.gameSpades4s",
+      "meaningId": "michaels:adv-game-spades-4s",
+      "templateKey": "michaels.adv.gameSpades4s.semantic",
+      "displayText": "4S: Game in spades",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.passMinor",
+      "meaningId": "michaels:adv-pass-minor",
+      "templateKey": "michaels.adv.passMinor.semantic",
+      "displayText": "Pass: No preference for either major",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.acceptSpades2s",
+      "meaningId": "michaels:adv-accept-spades-2s",
+      "templateKey": "michaels.adv.acceptSpades2s.semantic",
+      "displayText": "2S: Accept spades (weak hand)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.relay2nt1h",
+      "meaningId": "michaels:adv-relay-2nt-1h",
+      "templateKey": "michaels.adv.relay2nt1h.semantic",
+      "displayText": "2NT: Ask partner to show the minor",
+      "preferredLevel": "mechanical",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.inviteSpades3s1h",
+      "meaningId": "michaels:adv-invite-spades-3s-1h",
+      "templateKey": "michaels.adv.inviteSpades3s1h.semantic",
+      "displayText": "3S: Invitational raise in spades (over 1H Michaels)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.gameSpades4s1h",
+      "meaningId": "michaels:adv-game-spades-4s-1h",
+      "templateKey": "michaels.adv.gameSpades4s1h.semantic",
+      "displayText": "4S: Game in spades (over 1H Michaels)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.pass1h",
+      "meaningId": "michaels:adv-pass-1h",
+      "templateKey": "michaels.adv.pass1h.semantic",
+      "displayText": "Pass: Decline Michaels (over 1H)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.acceptHearts3h",
+      "meaningId": "michaels:adv-accept-hearts-3h",
+      "templateKey": "michaels.adv.acceptHearts3h.semantic",
+      "displayText": "3H: Accept hearts (weak hand, over 1S Michaels)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.relay2nt1s",
+      "meaningId": "michaels:adv-relay-2nt-1s",
+      "templateKey": "michaels.adv.relay2nt1s.semantic",
+      "displayText": "2NT: Ask partner to show the minor (over 1S Michaels)",
+      "preferredLevel": "mechanical",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.gameHearts4h1s",
+      "meaningId": "michaels:adv-game-hearts-4h-1s",
+      "templateKey": "michaels.adv.gameHearts4h1s.semantic",
+      "displayText": "4H: Game in hearts (over 1S Michaels)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.pass1s",
+      "meaningId": "michaels:adv-pass-1s",
+      "templateKey": "michaels.adv.pass1s.semantic",
+      "displayText": "Pass: Decline Michaels (over 1S)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.preferClubs3c",
+      "meaningId": "michaels:adv-prefer-clubs-3c",
+      "templateKey": "michaels.adv.preferClubs3c.semantic",
+      "displayText": "3C: Prefer clubs (Unusual 2NT response)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.preferDiamonds3d",
+      "meaningId": "michaels:adv-prefer-diamonds-3d",
+      "templateKey": "michaels.adv.preferDiamonds3d.semantic",
+      "displayText": "3D: Prefer diamonds (Unusual 2NT response)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.game5c",
+      "meaningId": "michaels:adv-game-5c",
+      "templateKey": "michaels.adv.game5c.semantic",
+      "displayText": "5C: Game in clubs",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.game5d",
+      "meaningId": "michaels:adv-game-5d",
+      "templateKey": "michaels.adv.game5d.semantic",
+      "displayText": "5D: Game in diamonds",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.passUnusual",
+      "meaningId": "michaels:adv-pass-unusual",
+      "templateKey": "michaels.adv.passUnusual.semantic",
+      "displayText": "Pass: Decline Unusual 2NT",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.reveal.clubs",
+      "meaningId": "michaels:reveal-clubs-3c",
+      "templateKey": "michaels.reveal.clubs.semantic",
+      "displayText": "3C: The minor is clubs",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.reveal.diamonds",
+      "meaningId": "michaels:reveal-diamonds-3d",
+      "templateKey": "michaels.reveal.diamonds.semantic",
+      "displayText": "3D: The minor is diamonds",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    }
+  ],
+  "local": {
+    "initial": "idle",
+    "transitions": [
+      {
+        "from": "idle",
+        "to": "r1-after-1c",
+        "on": {
+          "act": "open",
+          "strain": "clubs"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "r1-after-1d",
+        "on": {
+          "act": "open",
+          "strain": "diamonds"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "r1-after-1h",
+        "on": {
+          "act": "open",
+          "strain": "hearts"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "r1-after-1s",
+        "on": {
+          "act": "open",
+          "strain": "spades"
+        }
+      },
+      {
+        "from": "r1-after-1c",
+        "to": "after-michaels-minor",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit"
+        }
+      },
+      {
+        "from": "r1-after-1c",
+        "to": "after-unusual-2nt",
+        "on": {
+          "act": "show",
+          "feature": "twoSuited"
+        }
+      },
+      {
+        "from": "r1-after-1c",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "r1-after-1d",
+        "to": "after-michaels-minor",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit"
+        }
+      },
+      {
+        "from": "r1-after-1d",
+        "to": "after-unusual-2nt",
+        "on": {
+          "act": "show",
+          "feature": "twoSuited"
+        }
+      },
+      {
+        "from": "r1-after-1d",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "r1-after-1h",
+        "to": "after-michaels-1h",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit"
+        }
+      },
+      {
+        "from": "r1-after-1h",
+        "to": "after-unusual-2nt",
+        "on": {
+          "act": "show",
+          "feature": "twoSuited"
+        }
+      },
+      {
+        "from": "r1-after-1h",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "r1-after-1s",
+        "to": "after-michaels-1s",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit"
+        }
+      },
+      {
+        "from": "r1-after-1s",
+        "to": "after-unusual-2nt",
+        "on": {
+          "act": "show",
+          "feature": "twoSuited"
+        }
+      },
+      {
+        "from": "r1-after-1s",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "after-michaels-minor",
+        "to": "done",
+        "on": {
+          "act": "accept"
+        }
+      },
+      {
+        "from": "after-michaels-minor",
+        "to": "done",
+        "on": {
+          "act": "raise"
+        }
+      },
+      {
+        "from": "after-michaels-minor",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "after-michaels-1h",
+        "to": "done",
+        "on": {
+          "act": "accept"
+        }
+      },
+      {
+        "from": "after-michaels-1h",
+        "to": "done",
+        "on": {
+          "act": "raise"
+        }
+      },
+      {
+        "from": "after-michaels-1h",
+        "to": "ask-minor",
+        "on": {
+          "act": "inquire",
+          "feature": "heldSuit"
+        }
+      },
+      {
+        "from": "after-michaels-1h",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "after-michaels-1s",
+        "to": "done",
+        "on": {
+          "act": "accept"
+        }
+      },
+      {
+        "from": "after-michaels-1s",
+        "to": "done",
+        "on": {
+          "act": "raise"
+        }
+      },
+      {
+        "from": "after-michaels-1s",
+        "to": "ask-minor",
+        "on": {
+          "act": "inquire",
+          "feature": "heldSuit"
+        }
+      },
+      {
+        "from": "after-michaels-1s",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "after-unusual-2nt",
+        "to": "done",
+        "on": {
+          "act": "accept"
+        }
+      },
+      {
+        "from": "after-unusual-2nt",
+        "to": "done",
+        "on": {
+          "act": "raise"
+        }
+      },
+      {
+        "from": "after-unusual-2nt",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "ask-minor",
+        "to": "done",
+        "on": {
+          "act": "show"
+        }
+      }
+    ]
+  },
+  "states": [
+    {
+      "phase": "idle",
+      "surfaces": [
+        {
+          "meaningId": "michaels:opponent-1c",
+          "semanticClassId": "michaels:opponent-open",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "C"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SuitOpening",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent's 1C",
+            "summary": "Opponent opens 1C, triggering the Michaels/Unusual 2NT convention"
+          }
+        },
+        {
+          "meaningId": "michaels:opponent-1d",
+          "semanticClassId": "michaels:opponent-open",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "D"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SuitOpening",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent's 1D",
+            "summary": "Opponent opens 1D, triggering the Michaels/Unusual 2NT convention"
+          }
+        },
+        {
+          "meaningId": "michaels:opponent-1h",
+          "semanticClassId": "michaels:opponent-open",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "SuitOpening",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent's 1H",
+            "summary": "Opponent opens 1H, triggering the Michaels/Unusual 2NT convention"
+          }
+        },
+        {
+          "meaningId": "michaels:opponent-1s",
+          "semanticClassId": "michaels:opponent-open",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "SuitOpening",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent's 1S",
+            "summary": "Opponent opens 1S, triggering the Michaels/Unusual 2NT convention"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "r1-after-1c",
+      "surfaces": [
+        {
+          "meaningId": "michaels:cue-bid-1c-2c",
+          "semanticClassId": "michaels:cue-bid-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.inOvercallRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.inOvercallRange:boolean:true",
+              "description": "HCP in overcall range (vulnerability-dependent)",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.bothMajorsFiveFive",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.bothMajorsFiveFive:boolean:true",
+              "description": "5+ cards in both majors",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "MichaelsCueBidBothMajors",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2C \u2014 both majors over 1C",
+            "summary": "Cue bid opponent's 1C to show 5-5 or better in both majors"
+          }
+        },
+        {
+          "meaningId": "michaels:unusual-2nt-1c",
+          "semanticClassId": "michaels:unusual-2nt",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.inOvercallRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.inOvercallRange:boolean:true",
+              "description": "HCP in overcall range (vulnerability-dependent)",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.bothMinorsFiveFive",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.bothMinorsFiveFive:boolean:true",
+              "description": "5+ cards in both minors",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "UnusualBothMinors",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT \u2014 both minors over 1C",
+            "summary": "Unusual 2NT to show 5-5 or better in both minors"
+          }
+        },
+        {
+          "meaningId": "michaels:pass-1c",
+          "semanticClassId": "michaels:overcaller-pass",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "avoid",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "MichaelsPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass (no action over 1C)",
+            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "r1-after-1d",
+      "surfaces": [
+        {
+          "meaningId": "michaels:cue-bid-1d-2d",
+          "semanticClassId": "michaels:cue-bid-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.inOvercallRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.inOvercallRange:boolean:true",
+              "description": "HCP in overcall range (vulnerability-dependent)",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.bothMajorsFiveFive",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.bothMajorsFiveFive:boolean:true",
+              "description": "5+ cards in both majors",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "MichaelsCueBidBothMajors",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2D \u2014 both majors over 1D",
+            "summary": "Cue bid opponent's 1D to show 5-5 or better in both majors"
+          }
+        },
+        {
+          "meaningId": "michaels:unusual-2nt-1d",
+          "semanticClassId": "michaels:unusual-2nt",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.inOvercallRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.inOvercallRange:boolean:true",
+              "description": "HCP in overcall range (vulnerability-dependent)",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.bothMinorsFiveFive",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.bothMinorsFiveFive:boolean:true",
+              "description": "5+ cards in both minors",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "UnusualBothMinors",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT \u2014 both minors over 1D",
+            "summary": "Unusual 2NT to show 5-5 or better in both minors"
+          }
+        },
+        {
+          "meaningId": "michaels:pass-1d",
+          "semanticClassId": "michaels:overcaller-pass",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "avoid",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "MichaelsPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass (no action over 1D)",
+            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "r1-after-1h",
+      "surfaces": [
+        {
+          "meaningId": "michaels:cue-bid-1h-2h",
+          "semanticClassId": "michaels:cue-bid-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.inOvercallRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.inOvercallRange:boolean:true",
+              "description": "HCP in overcall range (vulnerability-dependent)",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.spadesAndMinor",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.spadesAndMinor:boolean:true",
+              "description": "5+ spades and 5+ in a minor",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "MichaelsCueBidSpadesMinor",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2H \u2014 spades + a minor over 1H",
+            "summary": "Cue bid opponent's 1H to show 5+ spades and 5+ in an unspecified minor"
+          }
+        },
+        {
+          "meaningId": "michaels:unusual-2nt-1h",
+          "semanticClassId": "michaels:unusual-2nt",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.inOvercallRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.inOvercallRange:boolean:true",
+              "description": "HCP in overcall range (vulnerability-dependent)",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.bothMinorsFiveFive",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.bothMinorsFiveFive:boolean:true",
+              "description": "5+ cards in both minors",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "UnusualBothMinors",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT \u2014 both minors over 1H",
+            "summary": "Unusual 2NT to show 5-5 or better in both minors"
+          }
+        },
+        {
+          "meaningId": "michaels:pass-1h",
+          "semanticClassId": "michaels:overcaller-pass",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "avoid",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "MichaelsPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass (no action over 1H)",
+            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "r1-after-1s",
+      "surfaces": [
+        {
+          "meaningId": "michaels:cue-bid-1s-2s",
+          "semanticClassId": "michaels:cue-bid-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.inOvercallRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.inOvercallRange:boolean:true",
+              "description": "HCP in overcall range (vulnerability-dependent)",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.heartsAndMinor",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.heartsAndMinor:boolean:true",
+              "description": "5+ hearts and 5+ in a minor",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "MichaelsCueBidHeartsMinor",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2S \u2014 hearts + a minor over 1S",
+            "summary": "Cue bid opponent's 1S to show 5+ hearts and 5+ in an unspecified minor"
+          }
+        },
+        {
+          "meaningId": "michaels:unusual-2nt-1s",
+          "semanticClassId": "michaels:unusual-2nt",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.inOvercallRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.inOvercallRange:boolean:true",
+              "description": "HCP in overcall range (vulnerability-dependent)",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.bothMinorsFiveFive",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.bothMinorsFiveFive:boolean:true",
+              "description": "5+ cards in both minors",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "UnusualBothMinors",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT \u2014 both minors over 1S",
+            "summary": "Unusual 2NT to show 5-5 or better in both minors"
+          }
+        },
+        {
+          "meaningId": "michaels:pass-1s",
+          "semanticClassId": "michaels:overcaller-pass",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "avoid",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "MichaelsPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass (no action over 1S)",
+            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-michaels-minor",
+      "surfaces": [
+        {
+          "meaningId": "michaels:adv-prefer-hearts-2h",
+          "semanticClassId": "michaels:adv-prefer-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
+              "description": "3+ hearts to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerPreferHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2H \u2014 prefer hearts (weak)",
+            "summary": "Choose hearts as trump with a weak hand and 3+ heart support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-prefer-spades-2s",
+          "semanticClassId": "michaels:adv-prefer-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasSpadeSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
+              "description": "3+ spades to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerPreferSpades",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2S \u2014 prefer spades (weak)",
+            "summary": "Choose spades as trump with a weak hand and 3+ spade support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-invite-hearts-3h",
+          "semanticClassId": "michaels:adv-invite-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
+              "description": "3+ hearts to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerInviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerInviteValues:boolean:true",
+              "description": "8-9 HCP (invitational values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerInviteHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H \u2014 invitational hearts",
+            "summary": "Invite game in hearts with 8-9 HCP and 3+ heart support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-invite-spades-3s",
+          "semanticClassId": "michaels:adv-invite-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasSpadeSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
+              "description": "3+ spades to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerInviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerInviteValues:boolean:true",
+              "description": "8-9 HCP (invitational values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerInviteSpades",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3S \u2014 invitational spades",
+            "summary": "Invite game in spades with 8-9 HCP and 3+ spade support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-game-hearts-4h",
+          "semanticClassId": "michaels:adv-game-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
+              "description": "3+ hearts to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerGameHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4H \u2014 game in hearts",
+            "summary": "Bid game in hearts with 10+ HCP and 3+ heart support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-game-spades-4s",
+          "semanticClassId": "michaels:adv-game-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasSpadeSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
+              "description": "3+ spades to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerGameSpades",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4S \u2014 game in spades",
+            "summary": "Bid game in spades with 10+ HCP and 3+ spade support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-pass-minor",
+          "semanticClassId": "michaels:adv-pass",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass (no major preference)",
+            "summary": "Pass with a weak hand and no clear preference between the majors"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-michaels-1h",
+      "surfaces": [
+        {
+          "meaningId": "michaels:adv-accept-spades-2s",
+          "semanticClassId": "michaels:adv-accept-known",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasSpadeSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
+              "description": "3+ spades to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerAcceptSpades",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2S \u2014 accept spades (weak)",
+            "summary": "Accept the known spade suit with a weak hand"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-relay-2nt-1h",
+          "semanticClassId": "michaels:adv-relay-2nt",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerAskMinor",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT \u2014 ask for minor",
+            "summary": "Relay bid asking partner to reveal the unknown minor suit"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-invite-spades-3s-1h",
+          "semanticClassId": "michaels:adv-invite-known",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasSpadeSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
+              "description": "3+ spades to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerInviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerInviteValues:boolean:true",
+              "description": "8-9 HCP (invitational values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerInviteSpades",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3S \u2014 invitational spades",
+            "summary": "Invite game in spades with 8-9 HCP and 3+ spade support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-game-spades-4s-1h",
+          "semanticClassId": "michaels:adv-game-known",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasSpadeSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
+              "description": "3+ spades to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerGameSpades",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4S \u2014 game in spades",
+            "summary": "Bid game in spades with 10+ HCP and 3+ spade support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-pass-1h",
+          "semanticClassId": "michaels:adv-pass",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass (decline Michaels over 1H)",
+            "summary": "Pass with a weak hand \u2014 no fit for spades and no interest in the minor"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-michaels-1s",
+      "surfaces": [
+        {
+          "meaningId": "michaels:adv-accept-hearts-3h",
+          "semanticClassId": "michaels:adv-accept-known",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
+              "description": "3+ hearts to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerAcceptHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H \u2014 accept hearts (weak)",
+            "summary": "Accept the known heart suit with a weak hand (3H needed since 2S was the cue bid)"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-relay-2nt-1s",
+          "semanticClassId": "michaels:adv-relay-2nt",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerAskMinor",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT \u2014 ask for minor",
+            "summary": "Relay bid asking partner to reveal the unknown minor suit"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-game-hearts-4h-1s",
+          "semanticClassId": "michaels:adv-game-known",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
+              "description": "3+ hearts to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerGameHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4H \u2014 game in hearts",
+            "summary": "Bid game in hearts with 10+ HCP and 3+ heart support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-pass-1s",
+          "semanticClassId": "michaels:adv-pass",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass (decline Michaels over 1S)",
+            "summary": "Pass with a weak hand \u2014 no fit for hearts and no interest in the minor"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-unusual-2nt",
+      "surfaces": [
+        {
+          "meaningId": "michaels:adv-prefer-clubs-3c",
+          "semanticClassId": "michaels:adv-prefer-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasClubSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasClubSupport:boolean:true",
+              "description": "3+ clubs to support partner",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerPreferClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3C \u2014 prefer clubs",
+            "summary": "Choose clubs as trump after partner's Unusual 2NT"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-prefer-diamonds-3d",
+          "semanticClassId": "michaels:adv-prefer-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasDiamondSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasDiamondSupport:boolean:true",
+              "description": "3+ diamonds to support partner",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerPreferDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3D \u2014 prefer diamonds",
+            "summary": "Choose diamonds as trump after partner's Unusual 2NT"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-game-5c",
+          "semanticClassId": "michaels:adv-game-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasClubSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasClubSupport:boolean:true",
+              "description": "3+ clubs to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerGameClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "5C \u2014 game in clubs",
+            "summary": "Bid game in clubs with 10+ HCP and 3+ club support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-game-5d",
+          "semanticClassId": "michaels:adv-game-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasDiamondSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasDiamondSupport:boolean:true",
+              "description": "3+ diamonds to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerGameDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "5D \u2014 game in diamonds",
+            "summary": "Bid game in diamonds with 10+ HCP and 3+ diamond support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-pass-unusual",
+          "semanticClassId": "michaels:adv-pass",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass (decline Unusual 2NT)",
+            "summary": "Pass with a weak hand and no clear minor preference"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "ask-minor",
+      "surfaces": [
+        {
+          "meaningId": "michaels:reveal-clubs-3c",
+          "semanticClassId": "michaels:reveal-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.minorIsClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.minorIsClubs:boolean:true",
+              "description": "The minor suit is clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "MichaelsRevealClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3C \u2014 minor is clubs",
+            "summary": "Reveal the unknown minor as clubs in response to partner's 2NT relay"
+          }
+        },
+        {
+          "meaningId": "michaels:reveal-diamonds-3d",
+          "semanticClassId": "michaels:reveal-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.minorIsDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.minorIsDiamonds:boolean:true",
+              "description": "The minor suit is diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "MichaelsRevealDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3D \u2014 minor is diamonds",
+            "summary": "Reveal the unknown minor as diamonds in response to partner's 2NT relay"
+          }
+        }
+      ]
+    }
+  ],
+  "facts": {
+    "definitions": [
+      {
+        "id": "module.michaels.bothMajorsFiveFive",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "5+ hearts and 5+ spades",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.michaels.bothMinorsFiveFive",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "5+ clubs and 5+ diamonds",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.michaels.spadesAndMinor",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "5+ spades and 5+ in a minor",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.michaels.heartsAndMinor",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "5+ hearts and 5+ in a minor",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.michaels.minorIsClubs",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "The minor suit is clubs (clubs >= diamonds)",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength",
+          "suitRelation"
+        ]
+      },
+      {
+        "id": "module.michaels.minorIsDiamonds",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "The minor suit is diamonds (diamonds > clubs)",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength",
+          "suitRelation"
+        ]
+      },
+      {
+        "id": "module.michaels.inOvercallRange",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "HCP in overcall range (NV: 6-15, Vul: 8-15)",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "pointRange"
+        ]
+      },
+      {
+        "id": "module.michaels.hasHeartSupport",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "3+ hearts to support partner",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.michaels.hasSpadeSupport",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "3+ spades to support partner",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.michaels.hasClubSupport",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "3+ clubs to support partner",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.michaels.hasDiamondSupport",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "3+ diamonds to support partner",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength"
+        ]
+      },
+      {
+        "id": "module.michaels.advancerGameValues",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "10+ HCP (game values as advancer)",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "pointRange"
+        ]
+      },
+      {
+        "id": "module.michaels.advancerInviteValues",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "8-9 HCP (invite values as advancer)",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "pointRange"
+        ]
+      },
+      {
+        "id": "module.michaels.advancerWeak",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "0-7 HCP (weak as advancer)",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "pointRange"
+        ]
+      }
+    ]
+  }
+}

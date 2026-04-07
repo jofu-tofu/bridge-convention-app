@@ -19,6 +19,8 @@ const MODULE_IDS: &[&str] = &[
     "dont",
     "weak-twos",
     "blackwood",
+    "michaels-unusual",
+    "strong-2c",
 ];
 
 /// Base module IDs merged into every spec (strategy layer).
@@ -47,6 +49,10 @@ const WEAK_TWOS_JSON: &str =
     include_str!("../../fixtures/modules/weak-twos.json");
 const BLACKWOOD_JSON: &str =
     include_str!("../../fixtures/modules/blackwood.json");
+const MICHAELS_UNUSUAL_JSON: &str =
+    include_str!("../../fixtures/modules/michaels-unusual.json");
+const STRONG_2C_JSON: &str =
+    include_str!("../../fixtures/modules/strong-2c.json");
 
 fn json_for_module(id: &str) -> Option<&'static str> {
     match id {
@@ -58,6 +64,8 @@ fn json_for_module(id: &str) -> Option<&'static str> {
         "dont" => Some(DONT_JSON),
         "weak-twos" => Some(WEAK_TWOS_JSON),
         "blackwood" => Some(BLACKWOOD_JSON),
+        "michaels-unusual" => Some(MICHAELS_UNUSUAL_JSON),
+        "strong-2c" => Some(STRONG_2C_JSON),
         _ => None,
     }
 }
@@ -136,9 +144,9 @@ mod tests {
     }
 
     #[test]
-    fn get_all_modules_returns_8() {
+    fn get_all_modules_returns_10() {
         let modules = get_all_modules(BaseSystemId::Sayc);
-        assert_eq!(modules.len(), 8);
+        assert_eq!(modules.len(), 10);
     }
 
     #[test]

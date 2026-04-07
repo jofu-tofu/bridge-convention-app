@@ -40,6 +40,12 @@ pub fn build_rust_compositions() -> HashMap<String, FactComposition> {
     // --- Weak Twos module ---
     add_weak_two_compositions(&mut map);
 
+    // --- Michaels / Unusual 2NT module ---
+    add_michaels_unusual_compositions(&mut map);
+
+    // --- Strong 2C module ---
+    add_strong_2c_compositions(&mut map);
+
     map
 }
 
@@ -655,6 +661,247 @@ fn add_weak_two_compositions(map: &mut HashMap<String, FactComposition>) {
             },
         );
     }
+}
+
+// ============================================================
+// Michaels / Unusual 2NT
+// ============================================================
+
+fn add_michaels_unusual_compositions(map: &mut HashMap<String, FactComposition>) {
+    // module.michaels.bothMajorsFiveFive: H>=5 AND S>=5
+    map.insert(
+        "module.michaels.bothMajorsFiveFive".to_string(),
+        FactComposition::And {
+            operands: vec![
+                suit_gte("hand.suitLength.hearts", 5),
+                suit_gte("hand.suitLength.spades", 5),
+            ],
+        },
+    );
+
+    // module.michaels.bothMinorsFiveFive: C>=5 AND D>=5
+    map.insert(
+        "module.michaels.bothMinorsFiveFive".to_string(),
+        FactComposition::And {
+            operands: vec![
+                suit_gte("hand.suitLength.clubs", 5),
+                suit_gte("hand.suitLength.diamonds", 5),
+            ],
+        },
+    );
+
+    // module.michaels.spadesAndMinor: S>=5 AND (C>=5 OR D>=5)
+    map.insert(
+        "module.michaels.spadesAndMinor".to_string(),
+        FactComposition::And {
+            operands: vec![
+                suit_gte("hand.suitLength.spades", 5),
+                FactComposition::Or {
+                    operands: vec![
+                        suit_gte("hand.suitLength.clubs", 5),
+                        suit_gte("hand.suitLength.diamonds", 5),
+                    ],
+                },
+            ],
+        },
+    );
+
+    // module.michaels.heartsAndMinor: H>=5 AND (C>=5 OR D>=5)
+    map.insert(
+        "module.michaels.heartsAndMinor".to_string(),
+        FactComposition::And {
+            operands: vec![
+                suit_gte("hand.suitLength.hearts", 5),
+                FactComposition::Or {
+                    operands: vec![
+                        suit_gte("hand.suitLength.clubs", 5),
+                        suit_gte("hand.suitLength.diamonds", 5),
+                    ],
+                },
+            ],
+        },
+    );
+
+    // module.michaels.minorIsClubs: C>=5 AND C >= D (SuitCompare)
+    map.insert(
+        "module.michaels.minorIsClubs".to_string(),
+        FactComposition::And {
+            operands: vec![
+                suit_gte("hand.suitLength.clubs", 5),
+                FactComposition::Extended {
+                    clause: ExtendedClause::SuitCompare {
+                        a: Suit::Clubs,
+                        op: CompareOp::Gte,
+                        b: Suit::Diamonds,
+                    },
+                },
+            ],
+        },
+    );
+
+    // module.michaels.minorIsDiamonds: D>=5 AND D > C (SuitCompare)
+    map.insert(
+        "module.michaels.minorIsDiamonds".to_string(),
+        FactComposition::And {
+            operands: vec![
+                suit_gte("hand.suitLength.diamonds", 5),
+                FactComposition::Extended {
+                    clause: ExtendedClause::SuitCompare {
+                        a: Suit::Diamonds,
+                        op: CompareOp::Gt,
+                        b: Suit::Clubs,
+                    },
+                },
+            ],
+        },
+    );
+
+    // module.michaels.inOvercallRange: vulnerability-gated (NV: 6-15, Vul: 8-15)
+    map.insert(
+        "module.michaels.inOvercallRange".to_string(),
+        FactComposition::Or {
+            operands: vec![
+                FactComposition::And {
+                    operands: vec![
+                        FactComposition::Extended {
+                            clause: ExtendedClause::VulnerabilityIs { vulnerable: false },
+                        },
+                        hcp_range(6, 15),
+                    ],
+                },
+                FactComposition::And {
+                    operands: vec![
+                        FactComposition::Extended {
+                            clause: ExtendedClause::VulnerabilityIs { vulnerable: true },
+                        },
+                        hcp_range(8, 15),
+                    ],
+                },
+            ],
+        },
+    );
+
+    // Advancer support facts
+    map.insert(
+        "module.michaels.hasHeartSupport".to_string(),
+        suit_gte("hand.suitLength.hearts", 3),
+    );
+    map.insert(
+        "module.michaels.hasSpadeSupport".to_string(),
+        suit_gte("hand.suitLength.spades", 3),
+    );
+    map.insert(
+        "module.michaels.hasClubSupport".to_string(),
+        suit_gte("hand.suitLength.clubs", 3),
+    );
+    map.insert(
+        "module.michaels.hasDiamondSupport".to_string(),
+        suit_gte("hand.suitLength.diamonds", 3),
+    );
+
+    // Advancer strength facts
+    map.insert(
+        "module.michaels.advancerGameValues".to_string(),
+        hcp_gte(10),
+    );
+    map.insert(
+        "module.michaels.advancerInviteValues".to_string(),
+        hcp_range(8, 9),
+    );
+    map.insert(
+        "module.michaels.advancerWeak".to_string(),
+        hcp_lte(7),
+    );
+}
+
+// ============================================================
+// Strong 2C
+// ============================================================
+
+fn add_strong_2c_compositions(map: &mut HashMap<String, FactComposition>) {
+    // module.strong2c.qualifiesForOpen: hcp >= 22
+    map.insert(
+        "module.strong2c.qualifiesForOpen".to_string(),
+        hcp_gte(22),
+    );
+
+    // module.strong2c.isWaitingResponse: hcp <= 7
+    map.insert(
+        "module.strong2c.isWaitingResponse".to_string(),
+        hcp_lte(7),
+    );
+
+    // module.strong2c.isPositiveResponse: hcp >= 8
+    map.insert(
+        "module.strong2c.isPositiveResponse".to_string(),
+        hcp_gte(8),
+    );
+
+    // module.strong2c.positiveBalanced: hcp >= 8 AND balanced AND no 5-card suit
+    map.insert(
+        "module.strong2c.positiveBalanced".to_string(),
+        FactComposition::And {
+            operands: vec![
+                hcp_gte(8),
+                extended_bool("bridge.isBalanced", true),
+                extended_bool("bridge.hasFiveCardMajor", false),
+                suit_lte("hand.suitLength.clubs", 4),
+                suit_lte("hand.suitLength.diamonds", 4),
+            ],
+        },
+    );
+
+    // module.strong2c.balanced22to24: 22-24 HCP AND balanced
+    map.insert(
+        "module.strong2c.balanced22to24".to_string(),
+        FactComposition::And {
+            operands: vec![
+                hcp_range(22, 24),
+                extended_bool("bridge.isBalanced", true),
+            ],
+        },
+    );
+
+    // module.strong2c.balanced25to27: 25-27 HCP AND balanced
+    map.insert(
+        "module.strong2c.balanced25to27".to_string(),
+        FactComposition::And {
+            operands: vec![
+                hcp_range(25, 27),
+                extended_bool("bridge.isBalanced", true),
+            ],
+        },
+    );
+
+    // module.strong2c.responderGameValues: 3-7 HCP (game opposite 22-24 balanced)
+    map.insert(
+        "module.strong2c.responderGameValues".to_string(),
+        hcp_range(3, 7),
+    );
+
+    // module.strong2c.responderSlamValues: 8+ HCP
+    map.insert(
+        "module.strong2c.responderSlamValues".to_string(),
+        hcp_gte(8),
+    );
+
+    // Support facts per suit
+    map.insert(
+        "module.strong2c.hasHeartSupport".to_string(),
+        suit_gte("hand.suitLength.hearts", 3),
+    );
+    map.insert(
+        "module.strong2c.hasSpadeSupport".to_string(),
+        suit_gte("hand.suitLength.spades", 3),
+    );
+    map.insert(
+        "module.strong2c.hasClubSupport".to_string(),
+        suit_gte("hand.suitLength.clubs", 3),
+    );
+    map.insert(
+        "module.strong2c.hasDiamondSupport".to_string(),
+        suit_gte("hand.suitLength.diamonds", 3),
+    );
 }
 
 // ============================================================

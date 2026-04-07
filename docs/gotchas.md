@@ -77,6 +77,16 @@ The learning screen should render meaning surfaces as multiple synchronized view
 
 **Current status:** LearningScreen shell exists with sidebar + about card. Surface→display adapter, guided flow, quiz mode, and skill-adaptive presentation are not yet started. The research strongly supports one source of truth (meaning surfaces + fact catalog) → multiple rendered views.
 
+## Multi-Trigger Conventions (FSM Phase Pattern)
+
+When a convention module responds to multiple opponent openings with different cue bid encodings, use **separate FSM phases per trigger** — not one shared phase. Each r1 phase contains only the surfaces with the correct encoding for that trigger.
+
+**Example:** Michaels uses 4 separate r1 phases (`r1-after-1c`, `r1-after-1d`, `r1-after-1h`, `r1-after-1s`) because the cue bid is 2C over 1C but 2D over 1D. DONT avoids this because all its overcalls occur after a single trigger (1NT).
+
+## Game-Forcing Surface Discipline
+
+Game-forcing behavior (e.g., Strong 2C after 2D waiting) is enforced by **omitting pass/signoff surfaces** from the relevant FSM phases. There is no runtime FSM guard. Authors must not add pass surfaces to game-forcing phases. If a pass IS legal (e.g., after 2NT rebid with 0-2 HCP), include it explicitly — the absence of pass is what creates the forcing effect.
+
 ## Total Points & System Facts
 
 ### System configs store suit TP only

@@ -11,7 +11,7 @@ use crate::types::system_config::BaseSystemId;
 
 use super::module_registry::get_module;
 
-// Embedded bundle-input manifest (all 6 bundles)
+// Embedded bundle-input manifest (all 8 bundles)
 const BUNDLE_MANIFESTS_JSON: &str =
     include_str!("../../fixtures/bundle-manifests.json");
 
@@ -28,6 +28,10 @@ const WEAK_TWOS_BUNDLE_JSON: &str =
     include_str!("../../fixtures/weak-twos-bundle.json");
 const DONT_BUNDLE_JSON: &str =
     include_str!("../../fixtures/dont-bundle.json");
+const MICHAELS_UNUSUAL_BUNDLE_JSON: &str =
+    include_str!("../../fixtures/michaels-unusual-bundle.json");
+const STRONG_2C_BUNDLE_JSON: &str =
+    include_str!("../../fixtures/strong-2c-bundle.json");
 
 fn json_for_bundle(id: &str) -> Option<&'static str> {
     match id {
@@ -37,6 +41,8 @@ fn json_for_bundle(id: &str) -> Option<&'static str> {
         "bergen-bundle" => Some(BERGEN_BUNDLE_JSON),
         "weak-twos-bundle" => Some(WEAK_TWOS_BUNDLE_JSON),
         "dont-bundle" => Some(DONT_BUNDLE_JSON),
+        "michaels-unusual-bundle" => Some(MICHAELS_UNUSUAL_BUNDLE_JSON),
+        "strong-2c-bundle" => Some(STRONG_2C_BUNDLE_JSON),
         _ => None,
     }
 }
@@ -49,6 +55,8 @@ const BUNDLE_IDS: &[&str] = &[
     "bergen-bundle",
     "dont-bundle",
     "weak-twos-bundle",
+    "michaels-unusual-bundle",
+    "strong-2c-bundle",
 ];
 
 // ── Bundle input manifest cache ────────────────────────────────────
@@ -127,9 +135,9 @@ mod tests {
     use crate::types::bundle_types::ConventionCategory;
 
     #[test]
-    fn list_bundle_inputs_returns_6() {
+    fn list_bundle_inputs_returns_8() {
         let inputs = list_bundle_inputs();
-        assert_eq!(inputs.len(), 6);
+        assert_eq!(inputs.len(), 8);
     }
 
     #[test]

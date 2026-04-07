@@ -1,0 +1,159 @@
+{
+  "id": "michaels-unusual-bundle",
+  "name": "Michaels / Unusual 2NT (Bundle)",
+  "description": "Michaels Cue Bids and Unusual 2NT: compete over opponent's suit opening with two-suited hands (5-5+)",
+  "category": "Defensive",
+  "systemProfile": {
+    "profileId": "michaels-unusual-sayc",
+    "baseSystem": "sayc",
+    "systemConfig": {
+      "systemId": "sayc",
+      "displayName": "Standard American Yellow Card",
+      "ntOpening": {
+        "minHcp": 15,
+        "maxHcp": 17
+      },
+      "responderThresholds": {
+        "inviteMin": 8,
+        "inviteMax": 9,
+        "gameMin": 10,
+        "slamMin": 15,
+        "inviteMinTp": {
+          "trump": 8
+        },
+        "inviteMaxTp": {
+          "trump": 10
+        },
+        "gameMinTp": {
+          "trump": 10
+        },
+        "slamMinTp": {
+          "trump": 16
+        }
+      },
+      "openerRebid": {
+        "notMinimum": 16,
+        "notMinimumTp": {
+          "trump": 16
+        }
+      },
+      "interference": {
+        "redoubleMin": 10
+      },
+      "suitResponse": {
+        "twoLevelMin": 10,
+        "twoLevelForcingDuration": "one-round"
+      },
+      "oneNtResponseAfterMajor": {
+        "forcing": "non-forcing",
+        "maxHcp": 10,
+        "minHcp": 6
+      },
+      "openingRequirements": {
+        "majorSuitMinLength": 5
+      },
+      "dontOvercall": {
+        "minHcp": 8,
+        "maxHcp": 15
+      }
+    },
+    "modules": [
+      {
+        "moduleId": "michaels-unusual",
+        "kind": "add-on",
+        "attachments": [
+          {
+            "whenAuction": {
+              "kind": "sequence",
+              "calls": [
+                "1C"
+              ]
+            }
+          },
+          {
+            "whenAuction": {
+              "kind": "sequence",
+              "calls": [
+                "1D"
+              ]
+            }
+          },
+          {
+            "whenAuction": {
+              "kind": "sequence",
+              "calls": [
+                "1H"
+              ]
+            }
+          },
+          {
+            "whenAuction": {
+              "kind": "sequence",
+              "calls": [
+                "1S"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "memberIds": [
+    "michaels-unusual"
+  ],
+  "declaredCapabilities": {
+    "opponent.suit": "active"
+  },
+  "teaching": {
+    "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
+    "whenToUse": "After opponent opens 1C/1D/1H/1S: cue-bid their suit to show a two-suited hand, or bid 2NT to show both minors. Over a minor opening, the cue bid shows both majors. Over a major, it shows the other major plus an unspecified minor.",
+    "whenNotToUse": [
+      "With only 5-4 shape — need 5-5 or better",
+      "With a strong balanced hand — don't confuse with a Western Cue Bid",
+      "Against 1NT — use DONT instead"
+    ],
+    "tradeoff": "Michaels sacrifices the natural/strong meaning of the cue bid and 2NT in exchange for immediately showing a two-suited competitive hand",
+    "principle": "Showing two suits simultaneously lets partner judge fit quickly. The vulnerability-gated HCP range (looser NV, tighter Vul) reflects the risk/reward of competing.",
+    "roles": "Overcaller describes shape; advancer evaluates fit and chooses the best strain and level"
+  },
+  "dealConstraints": {
+    "seats": [
+      {
+        "seat": "E",
+        "minHcp": 12,
+        "maxHcp": 21
+      },
+      {
+        "seat": "S",
+        "minHcp": 6,
+        "maxHcp": 15,
+        "minLengthAny": {
+          "H": 5,
+          "S": 5,
+          "D": 5,
+          "C": 5
+        }
+      }
+    ],
+    "dealer": "E"
+  },
+  "offConventionConstraints": {
+    "seats": [
+      {
+        "seat": "E",
+        "minHcp": 12,
+        "maxHcp": 21
+      },
+      {
+        "seat": "S"
+      }
+    ],
+    "dealer": "E"
+  },
+  "allowedDealers": [
+    "E"
+  ],
+  "derivedTeaching": {
+    "surfaceGroups": []
+  }
+}

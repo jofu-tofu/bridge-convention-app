@@ -178,6 +178,23 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 - Hearts priority > Spades > Diamonds
 - Responder 10-13 HCP gap (no action in this range without fit)
 
+### Michaels / Unusual 2NT
+- Cue bid over minor opening = both majors (5-5+); cue bid over major = other major + unknown minor (5-5+)
+- Unusual 2NT = both minors (5-5+)
+- Vulnerability-gated HCP: NV 6-15, Vul 8-15
+- Multi-trigger convention: 4 separate FSM phases per opponent opening (r1-after-1c/1d/1h/1s) because cue bid encoding differs per opening suit
+- After Michaels over major: 2NT relay asks for the minor; overcaller reveals
+- Advancer responses: simple preference (weak), invite, game jump
+- Game-forcing sequences: none (all levels are invitational at most)
+
+### Strong 2C Opening
+- Artificial game-forcing 2C opening with 22+ HCP
+- 2D = waiting/negative (0-7 HCP), positive = 8+ HCP with suit or balanced 2NT
+- After 2D waiting: opener rebids suit (5+), 2NT (22-24 balanced), or 3NT (25-27 balanced)
+- Game-forcing discipline: no pass surfaces in after-suit-rebid, after-positive, after-2nt-positive phases
+- Exception: pass IS legal after 2NT rebid (responder with 0-2 HCP opposite 22-24)
+- Multi-phase opener: the FSM has 8 phases to cover different response paths
+
 ### Lebensohl (Lite)
 - Only handles overcalls in D/H/S — no 2C overcall
 - "Slow shows" implemented, "fast denies" not
