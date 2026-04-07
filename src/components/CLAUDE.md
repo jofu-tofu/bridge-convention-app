@@ -31,8 +31,8 @@ components/
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     WorkshopScreen.svelte            System management — preset cards, custom system list, create/edit/delete. Hosts SystemEditor inline.
-    SystemEditor.svelte              Custom system editor — accordion sections (Opening & Responses, Hand Evaluation, Competitive Bidding, Base Conventions) with NumberStepper/RangeStepper inputs, point formula toggles, sticky save bar. Inline validation, save/cancel.
-    EditorSection.svelte             Collapsible accordion section with chevron toggle and CSS grid transition. Used by SystemEditor.
+    SystemEditor.svelte              Custom system editor — two-panel layout: left live viz (SystemProfileViz, desktop only), right tabbed field groups (Openings/Strength/Compete/Modules). Header with name input, preset select, error badge, save/cancel. ToggleGroups replace dropdowns. No page scroll.
+    SystemProfileViz.svelte          Live-updating system profile visualization — 1NT badge, strength ladder (HCP/TP), formula pills, response summary, competitive & module dots. Props-only, read-only display. Embedded in SystemEditor left panel.
     SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards. TP-enabled categories render 3-column mini-table (NT / HCP, Suit / TP).
     SystemCompareView.svelte         Side-by-side comparison table with diff highlighting. TP-enabled fields render 2 sub-rows (NT / HCP, Suit / TP) with independent diff highlighting per metric.
     profile-display.ts               Pure display logic: category definitions, value formatting (formatFieldValue, formatTrumpTpValue), comparison helpers. FieldFormat includes rangeWithTp/thresholdWithTp variants for TP-enabled categories.

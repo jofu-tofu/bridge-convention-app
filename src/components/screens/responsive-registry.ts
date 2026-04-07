@@ -68,13 +68,13 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     path: "SystemEditor.svelte",
     mobileStrategy: "centered",
     minWidth: 320,
-    mobileNotes: "Custom system editor with accordion sections and sticky save bar",
+    mobileNotes: "Two-panel editor: viz hidden below 1024px, tabbed fields full-width, overflow-y on tab content",
   },
   {
-    path: "EditorSection.svelte",
+    path: "SystemProfileViz.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,
-    mobileNotes: "Collapsible accordion section, used as child of SystemEditor",
+    mobileNotes: "Live system profile visualization; embedded in SystemEditor left panel, hidden on mobile via lg:flex",
   },
   {
     path: "SystemDetailView.svelte",
