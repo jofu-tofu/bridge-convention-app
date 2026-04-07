@@ -2,32 +2,80 @@
 //!
 //! Mirrors TS types from `conventions/definitions/system-config.ts`.
 
-use serde::{Deserialize, Serialize};
+use serde::de::{self, MapAccess, Visitor};
+use serde::{Deserialize, Deserializer, Serialize};
 
-/// Point formula identifiers for composing total-point values.
+/// Point formula — toggleable components for total-point computation.
 ///
-/// The engine computes raw components (HCP, shortage, length).
-/// The fact DSL composes them using these formula IDs via `compute_total_points()`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum PointFormulaId {
-    HcpOnly,
-    HcpPlusShortage,
-    HcpPlusAllDistribution,
+/// HCP is always included. Shortage and length are independently toggleable.
+/// Custom `Deserialize` accepts both the new object format and legacy string
+/// format (`"hcp-only"`, `"hcp-plus-shortage"`, `"hcp-plus-all-distribution"`)
+/// for backwards compat with existing localStorage data.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PointFormula {
+    pub include_shortage: bool,
+    pub include_length: bool,
+}
+
+impl<'de> Deserialize<'de> for PointFormula {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct PointFormulaVisitor;
+
+        impl<'de> Visitor<'de> for PointFormulaVisitor {
+            type Value = PointFormula;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a PointFormula object or legacy string (\"hcp-only\", \"hcp-plus-shortage\", \"hcp-plus-all-distribution\")")
+            }
+
+            fn visit_str<E: de::Error>(self, value: &str) -> Result<PointFormula, E> {
+                match value {
+                    "hcp-only" => Ok(PointFormula { include_shortage: false, include_length: false }),
+                    "hcp-plus-shortage" => Ok(PointFormula { include_shortage: true, include_length: false }),
+                    "hcp-plus-all-distribution" => Ok(PointFormula { include_shortage: true, include_length: true }),
+                    _ => Err(de::Error::unknown_variant(value, &["hcp-only", "hcp-plus-shortage", "hcp-plus-all-distribution"])),
+                }
+            }
+
+            fn visit_map<M: MapAccess<'de>>(self, mut map: M) -> Result<PointFormula, M::Error> {
+                let mut include_shortage = None;
+                let mut include_length = None;
+
+                while let Some(key) = map.next_key::<String>()? {
+                    match key.as_str() {
+                        "includeShortage" => include_shortage = Some(map.next_value()?),
+                        "includeLength" => include_length = Some(map.next_value()?),
+                        _ => { let _ = map.next_value::<de::IgnoredAny>()?; }
+                    }
+                }
+
+                Ok(PointFormula {
+                    include_shortage: include_shortage.unwrap_or(false),
+                    include_length: include_length.unwrap_or(false),
+                })
+            }
+        }
+
+        deserializer.deserialize_any(PointFormulaVisitor)
+    }
 }
 
 /// Point formula configuration per contract type (NT vs trump).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PointConfig {
-    pub nt_formula: PointFormulaId,
-    pub trump_formula: PointFormulaId,
+    pub nt_formula: PointFormula,
+    pub trump_formula: PointFormula,
 }
 
 fn default_point_config() -> PointConfig {
     PointConfig {
-        nt_formula: PointFormulaId::HcpOnly,
-        trump_formula: PointFormulaId::HcpPlusShortage,
+        nt_formula: PointFormula { include_shortage: false, include_length: false },
+        trump_formula: PointFormula { include_shortage: true, include_length: false },
     }
 }
 
@@ -247,8 +295,8 @@ mod tests {
                 max_hcp: 15,
             },
             point_config: PointConfig {
-                nt_formula: PointFormulaId::HcpOnly,
-                trump_formula: PointFormulaId::HcpPlusShortage,
+                nt_formula: PointFormula { include_shortage: false, include_length: false },
+                trump_formula: PointFormula { include_shortage: true, include_length: false },
             },
         };
         let json = serde_json::to_string(&config).unwrap();
@@ -257,19 +305,24 @@ mod tests {
     }
 
     #[test]
-    fn point_formula_id_serde() {
-        assert_eq!(
-            serde_json::to_string(&PointFormulaId::HcpOnly).unwrap(),
-            "\"hcp-only\""
-        );
-        assert_eq!(
-            serde_json::to_string(&PointFormulaId::HcpPlusShortage).unwrap(),
-            "\"hcp-plus-shortage\""
-        );
-        assert_eq!(
-            serde_json::to_string(&PointFormulaId::HcpPlusAllDistribution).unwrap(),
-            "\"hcp-plus-all-distribution\""
-        );
+    fn point_formula_serde_roundtrip() {
+        let formula = PointFormula { include_shortage: true, include_length: false };
+        let json = serde_json::to_string(&formula).unwrap();
+        assert_eq!(json, r#"{"includeShortage":true,"includeLength":false}"#);
+        let back: PointFormula = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, formula);
+    }
+
+    #[test]
+    fn point_formula_legacy_string_deserialization() {
+        let hcp_only: PointFormula = serde_json::from_str(r#""hcp-only""#).unwrap();
+        assert_eq!(hcp_only, PointFormula { include_shortage: false, include_length: false });
+
+        let hcp_shortage: PointFormula = serde_json::from_str(r#""hcp-plus-shortage""#).unwrap();
+        assert_eq!(hcp_shortage, PointFormula { include_shortage: true, include_length: false });
+
+        let all_dist: PointFormula = serde_json::from_str(r#""hcp-plus-all-distribution""#).unwrap();
+        assert_eq!(all_dist, PointFormula { include_shortage: true, include_length: true });
     }
 
     #[test]
@@ -277,7 +330,16 @@ mod tests {
         // Ensure SystemConfig without pointConfig deserializes with default
         let json = r#"{"systemId":"sayc","displayName":"test","ntOpening":{"minHcp":15,"maxHcp":17},"responderThresholds":{"inviteMin":8,"inviteMax":9,"gameMin":10,"slamMin":15,"inviteMinTp":{"trump":8},"inviteMaxTp":{"trump":10},"gameMinTp":{"trump":10},"slamMinTp":{"trump":16}},"openerRebid":{"notMinimum":16,"notMinimumTp":{"trump":16}},"interference":{"redoubleMin":10},"suitResponse":{"twoLevelMin":10,"twoLevelForcingDuration":"one-round"},"oneNtResponseAfterMajor":{"forcing":"non-forcing","maxHcp":10,"minHcp":6},"openingRequirements":{"majorSuitMinLength":5},"dontOvercall":{"minHcp":8,"maxHcp":15}}"#;
         let config: SystemConfig = serde_json::from_str(json).unwrap();
-        assert_eq!(config.point_config.nt_formula, PointFormulaId::HcpOnly);
-        assert_eq!(config.point_config.trump_formula, PointFormulaId::HcpPlusShortage);
+        assert_eq!(config.point_config.nt_formula, PointFormula { include_shortage: false, include_length: false });
+        assert_eq!(config.point_config.trump_formula, PointFormula { include_shortage: true, include_length: false });
+    }
+
+    #[test]
+    fn point_config_legacy_string_in_system_config() {
+        // Old localStorage format: pointConfig with string formula values
+        let json = r#"{"systemId":"sayc","displayName":"test","ntOpening":{"minHcp":15,"maxHcp":17},"responderThresholds":{"inviteMin":8,"inviteMax":9,"gameMin":10,"slamMin":15,"inviteMinTp":{"trump":8},"inviteMaxTp":{"trump":10},"gameMinTp":{"trump":10},"slamMinTp":{"trump":16}},"openerRebid":{"notMinimum":16,"notMinimumTp":{"trump":16}},"interference":{"redoubleMin":10},"suitResponse":{"twoLevelMin":10,"twoLevelForcingDuration":"one-round"},"oneNtResponseAfterMajor":{"forcing":"non-forcing","maxHcp":10,"minHcp":6},"openingRequirements":{"majorSuitMinLength":5},"dontOvercall":{"minHcp":8,"maxHcp":15},"pointConfig":{"ntFormula":"hcp-only","trumpFormula":"hcp-plus-shortage"}}"#;
+        let config: SystemConfig = serde_json::from_str(json).unwrap();
+        assert_eq!(config.point_config.nt_formula, PointFormula { include_shortage: false, include_length: false });
+        assert_eq!(config.point_config.trump_formula, PointFormula { include_shortage: true, include_length: false });
     }
 }

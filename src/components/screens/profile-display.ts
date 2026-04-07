@@ -2,7 +2,7 @@
  * Pure display logic for the System Profiles screen.
  * Categories, value formatting, comparison helpers.
  */
-import type { SystemConfig, TotalPointEquivalent } from "../../service";
+import type { SystemConfig, TotalPointEquivalent, PointFormula } from "../../service";
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -17,7 +17,8 @@ export type FieldFormat =
       value: (c: SystemConfig) => number;
       tp: (c: SystemConfig) => TotalPointEquivalent }
   | { type: "enum"; value: (c: SystemConfig) => string; labels: Record<string, string> }
-  | { type: "majorLength"; value: (c: SystemConfig) => 4 | 5 };
+  | { type: "majorLength"; value: (c: SystemConfig) => 4 | 5 }
+  | { type: "pointFormula"; value: (c: SystemConfig) => PointFormula | undefined };
 
 export interface ProfileField {
   label: string;
@@ -31,6 +32,15 @@ export interface ProfileCategory {
 }
 
 // ─── Formatting ───────────────────────────────────────────────
+
+/** Format a PointFormula as human-readable text. */
+export function formatPointFormula(formula: PointFormula | undefined): string {
+  if (!formula) return "HCP Only";
+  const parts = ["HCP"];
+  if (formula.includeShortage) parts.push("Shortage");
+  if (formula.includeLength) parts.push("Length");
+  return parts.join(" + ");
+}
 
 export function formatFieldValue(config: SystemConfig, field: ProfileField): string {
   const fmt = field.format;
@@ -47,6 +57,8 @@ export function formatFieldValue(config: SystemConfig, field: ProfileField): str
       const len = fmt.value(config);
       return len === 4 ? "4-card majors" : "5-card majors";
     }
+    case "pointFormula":
+      return formatPointFormula(fmt.value(config));
   }
 }
 
@@ -184,6 +196,19 @@ export const PROFILE_CATEGORIES: ProfileCategory[] = [
       {
         label: "Major Suit Length",
         format: { type: "majorLength", value: (c) => c.openingRequirements.majorSuitMinLength },
+      },
+    ],
+  },
+  {
+    label: "Point Formulas",
+    fields: [
+      {
+        label: "NT Formula",
+        format: { type: "pointFormula", value: (c) => c.pointConfig?.ntFormula },
+      },
+      {
+        label: "Trump Formula",
+        format: { type: "pointFormula", value: (c) => c.pointConfig?.trumpFormula },
       },
     ],
   },

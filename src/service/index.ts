@@ -76,6 +76,7 @@ export {
   DEFAULT_PRACTICE_PREFERENCES,
   DEFAULT_DISPLAY_PREFERENCES,
   DEFAULT_BASE_MODULE_IDS,
+  normalizePointFormula,
 } from "./session-types";
 export type {
   ConventionConfig,
@@ -84,7 +85,7 @@ export type {
   SystemSelectionId,
   CustomSystem,
   SystemConfig,
-  PointFormulaId,
+  PointFormula,
   PointConfig,
   TotalPointEquivalent,
   VulnerabilityDistribution,

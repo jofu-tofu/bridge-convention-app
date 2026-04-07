@@ -5,7 +5,7 @@
 use crate::types::system_config::{
     BaseSystemId, DontOvercallConfig, InterferenceThresholds, NtOpeningConfig,
     OneNtForcingStatus, OneNtResponseAfterMajorConfig, OpeningRequirements,
-    OpenerRebidThresholds, PointConfig, PointFormulaId, ResponderThresholds,
+    OpenerRebidThresholds, PointConfig, PointFormula, ResponderThresholds,
     SuitResponseConfig, SuitResponseForcingDuration, SystemConfig, TotalPointEquivalent,
 };
 
@@ -50,8 +50,8 @@ pub fn sayc_system_config() -> SystemConfig {
             max_hcp: 15,
         },
         point_config: PointConfig {
-            nt_formula: PointFormulaId::HcpOnly,
-            trump_formula: PointFormulaId::HcpPlusShortage,
+            nt_formula: PointFormula { include_shortage: false, include_length: false },
+            trump_formula: PointFormula { include_shortage: true, include_length: false },
         },
     }
 }
@@ -97,8 +97,8 @@ pub fn two_over_one_system_config() -> SystemConfig {
             max_hcp: 15,
         },
         point_config: PointConfig {
-            nt_formula: PointFormulaId::HcpOnly,
-            trump_formula: PointFormulaId::HcpPlusShortage,
+            nt_formula: PointFormula { include_shortage: false, include_length: false },
+            trump_formula: PointFormula { include_shortage: true, include_length: false },
         },
     }
 }
@@ -144,8 +144,8 @@ pub fn acol_system_config() -> SystemConfig {
             max_hcp: 15,
         },
         point_config: PointConfig {
-            nt_formula: PointFormulaId::HcpOnly,
-            trump_formula: PointFormulaId::HcpPlusShortage,
+            nt_formula: PointFormula { include_shortage: false, include_length: false },
+            trump_formula: PointFormula { include_shortage: true, include_length: false },
         },
     }
 }

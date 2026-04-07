@@ -70,13 +70,33 @@ export interface CustomSystem {
   readonly updatedAt: string;
 }
 
-/** Point formula identifiers for composing total-point values. */
-export type PointFormulaId = "hcp-only" | "hcp-plus-shortage" | "hcp-plus-all-distribution";
+/** Point formula — toggleable components for total-point computation. */
+export interface PointFormula {
+  readonly includeShortage: boolean;
+  readonly includeLength: boolean;
+}
 
 /** Point formula configuration per contract type (NT vs trump). */
 export interface PointConfig {
-  readonly ntFormula: PointFormulaId;
-  readonly trumpFormula: PointFormulaId;
+  readonly ntFormula: PointFormula;
+  readonly trumpFormula: PointFormula;
+}
+
+/** Normalize a PointFormula from either new object or legacy string format. */
+export function normalizePointFormula(
+  raw: PointFormula | string | undefined,
+  fallback: PointFormula,
+): PointFormula {
+  if (raw === undefined || raw === null) return fallback;
+  if (typeof raw === "object" && "includeShortage" in raw) return raw;
+  if (typeof raw === "string") {
+    switch (raw) {
+      case "hcp-only": return { includeShortage: false, includeLength: false };
+      case "hcp-plus-shortage": return { includeShortage: true, includeLength: false };
+      case "hcp-plus-all-distribution": return { includeShortage: true, includeLength: true };
+    }
+  }
+  return fallback;
 }
 
 /** Suit total-point equivalents for a threshold. */
@@ -160,7 +180,10 @@ export const SAYC_SYSTEM_CONFIG: SystemConfig = {
   oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 10, minHcp: 6 },
   openingRequirements: { majorSuitMinLength: 5 },
   dontOvercall: { minHcp: 8, maxHcp: 15 },
-  pointConfig: { ntFormula: "hcp-only", trumpFormula: "hcp-plus-shortage" },
+  pointConfig: {
+    ntFormula: { includeShortage: false, includeLength: false },
+    trumpFormula: { includeShortage: true, includeLength: false },
+  },
 };
 
 export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
@@ -178,7 +201,10 @@ export const TWO_OVER_ONE_SYSTEM_CONFIG: SystemConfig = {
   oneNtResponseAfterMajor: { forcing: "semi-forcing", maxHcp: 12, minHcp: 6 },
   openingRequirements: { majorSuitMinLength: 5 },
   dontOvercall: { minHcp: 8, maxHcp: 15 },
-  pointConfig: { ntFormula: "hcp-only", trumpFormula: "hcp-plus-shortage" },
+  pointConfig: {
+    ntFormula: { includeShortage: false, includeLength: false },
+    trumpFormula: { includeShortage: true, includeLength: false },
+  },
 };
 
 export const ACOL_SYSTEM_CONFIG: SystemConfig = {
@@ -196,7 +222,10 @@ export const ACOL_SYSTEM_CONFIG: SystemConfig = {
   oneNtResponseAfterMajor: { forcing: "non-forcing", maxHcp: 9, minHcp: 6 },
   openingRequirements: { majorSuitMinLength: 4 },
   dontOvercall: { minHcp: 8, maxHcp: 15 },
-  pointConfig: { ntFormula: "hcp-only", trumpFormula: "hcp-plus-shortage" },
+  pointConfig: {
+    ntFormula: { includeShortage: false, includeLength: false },
+    trumpFormula: { includeShortage: true, includeLength: false },
+  },
 };
 
 interface BaseSystemMeta {

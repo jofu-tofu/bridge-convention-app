@@ -12,8 +12,8 @@ const TWO_OVER_ONE = getSystemConfig("two-over-one");
 const ACOL = getSystemConfig("acol");
 
 describe("PROFILE_CATEGORIES", () => {
-  it("has 8 categories", () => {
-    expect(PROFILE_CATEGORIES).toHaveLength(8);
+  it("has 9 categories", () => {
+    expect(PROFILE_CATEGORIES).toHaveLength(9);
   });
 
   it("categories have unique labels", () => {
@@ -67,7 +67,7 @@ describe("valuesMatch", () => {
 
   it("returns true when all systems have the same value", () => {
     // DONT overcall HCP range is 8-15 for all three
-    const dontField = PROFILE_CATEGORIES[7]!.fields[0]!;
+    const dontField = PROFILE_CATEGORIES[8]!.fields[0]!;
     expect(valuesMatch(allConfigs, dontField)).toBe(true);
   });
 

@@ -2,11 +2,11 @@
 //!
 //! All callers that need formula-driven point totals use `compute_total_points()`.
 //! The engine computes raw components (HCP, shortage, length); this module
-//! composes them according to a `PointFormulaId`.
+//! composes them according to a `PointFormula`.
 
 use std::collections::HashMap;
 
-use crate::types::system_config::PointFormulaId;
+use crate::types::system_config::PointFormula;
 
 use super::primitives::{suit_name_to_index, SUIT_LENGTH_FACT_IDS};
 use super::types::{get_num, FactValue};
@@ -41,26 +41,23 @@ pub fn compute_shortage_excluding(
 /// calculation. Pass `None` for all-suit shortage (raw `hand.shortagePoints`).
 pub fn compute_total_points(
     facts: &HashMap<String, FactValue>,
-    formula: PointFormulaId,
+    formula: PointFormula,
     excluded_suit: Option<&str>,
 ) -> f64 {
-    let hcp = get_num(facts, "hand.hcp");
-    match formula {
-        PointFormulaId::HcpOnly => hcp,
-        PointFormulaId::HcpPlusShortage => {
-            let shortage = match excluded_suit {
-                Some(suit) => compute_shortage_excluding(facts, suit),
-                None => get_num(facts, "hand.shortagePoints"),
-            };
-            hcp + shortage
-        }
-        PointFormulaId::HcpPlusAllDistribution => {
-            let shortage = match excluded_suit {
-                Some(suit) => compute_shortage_excluding(facts, suit),
-                None => get_num(facts, "hand.shortagePoints"),
-            };
-            // Length points are suit-independent (always count 5+ card suits)
-            hcp + shortage + get_num(facts, "hand.lengthPoints")
-        }
+    let mut total = get_num(facts, "hand.hcp");
+
+    if formula.include_shortage {
+        let shortage = match excluded_suit {
+            Some(suit) => compute_shortage_excluding(facts, suit),
+            None => get_num(facts, "hand.shortagePoints"),
+        };
+        total += shortage;
     }
+
+    if formula.include_length {
+        // Length points are suit-independent (always count 5+ card suits)
+        total += get_num(facts, "hand.lengthPoints");
+    }
+
+    total
 }

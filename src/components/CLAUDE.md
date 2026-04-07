@@ -31,7 +31,8 @@ components/
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     WorkshopScreen.svelte            System management — preset cards, custom system list, create/edit/delete. Hosts SystemEditor inline.
-    SystemEditor.svelte              Custom system editor — card-section form (all SystemConfig fields + base module checkboxes). Inline validation, save/cancel.
+    SystemEditor.svelte              Custom system editor — accordion sections (Opening & Responses, Hand Evaluation, Competitive Bidding, Base Conventions) with NumberStepper/RangeStepper inputs, point formula toggles, sticky save bar. Inline validation, save/cancel.
+    EditorSection.svelte             Collapsible accordion section with chevron toggle and CSS grid transition. Used by SystemEditor.
     SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards. TP-enabled categories render 3-column mini-table (NT / HCP, Suit / TP).
     SystemCompareView.svelte         Side-by-side comparison table with diff highlighting. TP-enabled fields render 2 sub-rows (NT / HCP, Suit / TP) with independent diff highlighting per metric.
     profile-display.ts               Pure display logic: category definitions, value formatting (formatFieldValue, formatTrumpTpValue), comparison helpers. FieldFormat includes rangeWithTp/thresholdWithTp variants for TP-enabled categories.
@@ -101,6 +102,9 @@ components/
     SettingsButton.svelte            Full-width settings gear button
     BidFeedbackShell.svelte          Variant-colored alert container for bid feedback
     ToggleGroup.svelte               Mutually-exclusive button group (outline/filled variants)
+    NumberStepper.svelte             Horizontal [-] N [+] input with auto-repeat long-press, clamp, keyboard arrows
+    NumberStepper.ts                 Pure helpers: clamp(), createAutoRepeat() for NumberStepper testability
+    RangeStepper.svelte              Composes two NumberStepper instances with "to" separator and shared suffix
   __tests__/
     ButtonTestWrapper.svelte         Snippet wrapper for Button tests
     BridgeTableTestWrapper.svelte    Snippet wrapper for BridgeTable tests

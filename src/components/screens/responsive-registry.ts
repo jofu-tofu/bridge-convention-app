@@ -68,7 +68,13 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     path: "SystemEditor.svelte",
     mobileStrategy: "centered",
     minWidth: 320,
-    mobileNotes: "Custom system editor with card-section form controls",
+    mobileNotes: "Custom system editor with accordion sections and sticky save bar",
+  },
+  {
+    path: "EditorSection.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Collapsible accordion section, used as child of SystemEditor",
   },
   {
     path: "SystemDetailView.svelte",

@@ -6,8 +6,8 @@
  * for a session. All session-creating callers MUST use this.
  */
 
-import type { SystemSelectionId, CustomSystem, SystemConfig, BaseSystemId } from "../service";
-import { getSystemConfig, AVAILABLE_BASE_SYSTEMS, DEFAULT_BASE_MODULE_IDS } from "../service";
+import type { SystemSelectionId, CustomSystem, SystemConfig, BaseSystemId, PointFormula } from "../service";
+import { getSystemConfig, AVAILABLE_BASE_SYSTEMS, DEFAULT_BASE_MODULE_IDS, normalizePointFormula } from "../service";
 import { listModules } from "../service/service-helpers";
 
 // ── Constants ──────────────────────────────────────────────────────
@@ -54,7 +54,19 @@ function validateStoredSystem(system: unknown): system is CustomSystem {
 function healSystem(system: CustomSystem): CustomSystem {
   const presetId = isPresetId(system.basedOn) ? system.basedOn : "sayc";
   const preset = getSystemConfig(presetId);
-  const config = { ...preset, ...system.config } as SystemConfig;
+  // any: legacy localStorage may have string point formula values needing migration
+  const rawConfig = system.config as unknown as Record<string, unknown>;
+  const rawPointConfig = rawConfig.pointConfig as Record<string, unknown> | undefined;
+
+  // Migrate legacy string point formulas to new object format
+  const defaultNt: PointFormula = { includeShortage: false, includeLength: false };
+  const defaultTrump: PointFormula = { includeShortage: true, includeLength: false };
+  const pointConfig = rawPointConfig ? {
+    ntFormula: normalizePointFormula(rawPointConfig.ntFormula as PointFormula | string | undefined, defaultNt),
+    trumpFormula: normalizePointFormula(rawPointConfig.trumpFormula as PointFormula | string | undefined, defaultTrump),
+  } : preset.pointConfig;
+
+  const config = { ...preset, ...system.config, pointConfig } as SystemConfig;
 
   // Filter invalid module IDs and ensure natural-bids is present
   let moduleIds = [...system.baseModuleIds];

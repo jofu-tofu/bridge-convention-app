@@ -5,6 +5,9 @@
   import { listModules } from "../../service/service-helpers";
   import { getCustomSystemsStore } from "../../stores/context";
   import ToggleGroup from "../shared/ToggleGroup.svelte";
+  import NumberStepper from "../shared/NumberStepper.svelte";
+  import RangeStepper from "../shared/RangeStepper.svelte";
+  import EditorSection from "./EditorSection.svelte";
 
   interface Props {
     system: CustomSystem | null;
@@ -55,8 +58,12 @@
   let dontMinHcp = $state(sourceConfig.dontOvercall.minHcp);
   let dontMaxHcp = $state(sourceConfig.dontOvercall.maxHcp);
 
-  let ntFormula = $state(sourceConfig.pointConfig?.ntFormula ?? "hcp-only");
-  let trumpFormula = $state(sourceConfig.pointConfig?.trumpFormula ?? "hcp-plus-shortage");
+  const defaultNtFormula = { includeShortage: false, includeLength: false };
+  const defaultTrumpFormula = { includeShortage: true, includeLength: false };
+  let ntShortage = $state(sourceConfig.pointConfig?.ntFormula.includeShortage ?? false);
+  let ntLength = $state(sourceConfig.pointConfig?.ntFormula.includeLength ?? false);
+  let trumpShortage = $state(sourceConfig.pointConfig?.trumpFormula.includeShortage ?? true);
+  let trumpLength = $state(sourceConfig.pointConfig?.trumpFormula.includeLength ?? false);
 
   let selectedModules = new SvelteSet<string>(system?.baseModuleIds ?? [...DEFAULT_BASE_MODULE_IDS]);
 
@@ -68,10 +75,14 @@
   const dontRangeError = $derived(dontMinHcp > dontMaxHcp ? "Min must be ≤ Max" : null);
   const oneNtRangeError = $derived(oneNtMinHcp > oneNtMaxHcp ? "Min must be ≤ Max" : null);
 
-  const hasErrors = $derived(
-    !!nameError || !!ntRangeError || !!inviteRangeError ||
-    !!thresholdOrderError || !!dontRangeError || !!oneNtRangeError
-  );
+  const inviteTpRangeError = $derived(inviteMinTp > inviteMaxTp ? "Min must be ≤ Max" : null);
+  const tpThresholdOrderError = $derived(gameMinTp > slamMinTp ? "Game min must be ≤ Slam min" : null);
+
+  const allErrors = $derived([
+    nameError, ntRangeError, inviteRangeError, thresholdOrderError,
+    dontRangeError, oneNtRangeError, inviteTpRangeError, tpThresholdOrderError,
+  ].filter(Boolean));
+  const hasErrors = $derived(allErrors.length > 0);
 
   function resetToPreset(id: BaseSystemId) {
     const preset = getSystemConfig(id);
@@ -97,6 +108,10 @@
     redoubleMin = preset.interference.redoubleMin;
     dontMinHcp = preset.dontOvercall.minHcp;
     dontMaxHcp = preset.dontOvercall.maxHcp;
+    ntShortage = preset.pointConfig?.ntFormula.includeShortage ?? defaultNtFormula.includeShortage;
+    ntLength = preset.pointConfig?.ntFormula.includeLength ?? defaultNtFormula.includeLength;
+    trumpShortage = preset.pointConfig?.trumpFormula.includeShortage ?? defaultTrumpFormula.includeShortage;
+    trumpLength = preset.pointConfig?.trumpFormula.includeLength ?? defaultTrumpFormula.includeLength;
   }
 
   function buildConfig(): SystemConfig {
@@ -115,7 +130,10 @@
       oneNtResponseAfterMajor: { forcing: oneNtForcing, maxHcp: oneNtMaxHcp, minHcp: oneNtMinHcp },
       openingRequirements: { majorSuitMinLength: majorMinLength },
       dontOvercall: { minHcp: dontMinHcp, maxHcp: dontMaxHcp },
-      pointConfig: { ntFormula, trumpFormula },
+      pointConfig: {
+        ntFormula: { includeShortage: ntShortage, includeLength: ntLength },
+        trumpFormula: { includeShortage: trumpShortage, includeLength: trumpLength },
+      },
     };
   }
 
@@ -143,218 +161,71 @@
     }
   }
 
-  // Generate HCP options 0-40
-  const hcpOptions = Array.from({ length: 41 }, (_, i) => i);
-
   const selectClass = "bg-bg-base border border-border-subtle rounded-[--radius-md] px-3 py-2 text-sm text-text-primary cursor-pointer";
 </script>
 
 <main class="max-w-3xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="System Editor">
-  <div class="shrink-0 flex items-center justify-between mb-6">
+  <!-- Back link (scrolls with content) -->
+  <div class="shrink-0 mb-4">
     <button
       class="text-sm text-text-muted hover:text-text-primary transition-colors cursor-pointer"
       onclick={onCancel}
     >
       &larr; Workshop
     </button>
-    <div class="flex gap-2">
-      <button
-        class="px-4 py-2 rounded-[--radius-md] text-sm font-medium text-text-muted hover:text-text-primary border border-border-subtle transition-colors cursor-pointer"
-        onclick={onCancel}
-      >Cancel</button>
-      <button
-        class="px-4 py-2 rounded-[--radius-md] text-sm font-semibold transition-colors cursor-pointer
-          {hasErrors
-            ? 'bg-bg-elevated text-text-muted cursor-not-allowed'
-            : 'bg-accent-primary text-text-on-accent hover:bg-accent-primary/90'}"
-        disabled={hasErrors}
-        onclick={handleSave}
-        data-testid="editor-save"
-      >Save</button>
-    </div>
   </div>
 
-  <div class="flex-1 overflow-y-auto pb-6 space-y-5">
-    <!-- System Name -->
+  <div class="flex-1 overflow-y-auto pb-20 space-y-4">
+    <!-- Fixed header: System Name + Starting From -->
     <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
-      <label class="block text-sm font-semibold text-text-primary mb-2">System Name</label>
+      <label class="block text-sm font-semibold text-text-primary mb-2">System Name
       <input
         type="text"
-        class="w-full {selectClass}"
+        class="w-full bg-bg-base border border-border-subtle rounded-[--radius-md] px-3 py-2 text-sm text-text-primary font-normal"
         bind:value={name}
         placeholder="My Custom System"
         data-testid="editor-name"
       />
+      </label>
       {#if nameError}
         <p class="text-xs text-red-400 mt-1">{nameError}</p>
       {/if}
 
       {#if !system}
-        <label class="block text-xs text-text-muted mt-3 mb-1">Starting from:</label>
+        <label class="block text-xs text-text-muted mt-3 mb-1">Starting from:
         <select class={selectClass} bind:value={startingFrom} onchange={() => resetToPreset(startingFrom)}>
           {#each AVAILABLE_BASE_SYSTEMS as sys (sys.id)}
             <option value={sys.id}>{sys.label}</option>
           {/each}
         </select>
+        </label>
       {/if}
     </div>
 
-    <!-- 1NT Opening -->
-    <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
-      <h3 class="text-sm font-semibold text-text-primary mb-3">1NT Opening</h3>
-      <div class="flex items-center gap-2">
-        <label class="text-xs text-text-muted">HCP Range</label>
-        <select class={selectClass} bind:value={ntMinHcp}>
-          {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-        </select>
-        <span class="text-text-muted text-sm">to</span>
-        <select class={selectClass} bind:value={ntMaxHcp}>
-          {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-        </select>
-        <span class="text-xs text-text-muted">HCP</span>
+    <!-- 1. Opening & Responses -->
+    <EditorSection title="Opening & Responses" defaultOpen={true}>
+      <!-- 1NT Opening HCP Range -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">1NT Opening HCP Range</p>
+        <RangeStepper
+          minValue={ntMinHcp}
+          maxValue={ntMaxHcp}
+          suffix="HCP"
+          onMinChange={(v) => { ntMinHcp = v; }}
+          onMaxChange={(v) => { ntMaxHcp = v; }}
+          testId="editor-nt-range"
+        >
+          {#snippet error()}
+            {#if ntRangeError}
+              <p class="text-xs text-red-400 mt-1">{ntRangeError}</p>
+            {/if}
+          {/snippet}
+        </RangeStepper>
       </div>
-      {#if ntRangeError}
-        <p class="text-xs text-red-400 mt-1">{ntRangeError}</p>
-      {/if}
-    </div>
 
-    <!-- Responder Thresholds -->
-    <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
-      <h3 class="text-sm font-semibold text-text-primary mb-3">Responder Thresholds</h3>
-
-      <div class="space-y-3">
-        <div>
-          <label class="text-xs text-text-muted">Invite Range</label>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="text-xs text-text-muted w-8">HCP:</span>
-            <select class={selectClass} bind:value={inviteMin}>
-              {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-            </select>
-            <span class="text-text-muted text-xs">to</span>
-            <select class={selectClass} bind:value={inviteMax}>
-              {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-            </select>
-            <span class="text-xs text-text-muted ml-4 w-10">Suit TP:</span>
-            <select class={selectClass} bind:value={inviteMinTp}>
-              {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-            </select>
-            <span class="text-text-muted text-xs">to</span>
-            <select class={selectClass} bind:value={inviteMaxTp}>
-              {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-            </select>
-          </div>
-          {#if inviteRangeError}
-            <p class="text-xs text-red-400 mt-1">{inviteRangeError}</p>
-          {/if}
-        </div>
-
-        <div class="flex items-center gap-4">
-          <div>
-            <label class="text-xs text-text-muted">Game Minimum</label>
-            <div class="flex items-center gap-2 mt-1">
-              <span class="text-xs text-text-muted w-8">HCP:</span>
-              <select class={selectClass} bind:value={gameMin}>
-                {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-              </select>
-              <span class="text-xs text-text-muted ml-4 w-10">Suit TP:</span>
-              <select class={selectClass} bind:value={gameMinTp}>
-                {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-4">
-          <div>
-            <label class="text-xs text-text-muted">Slam Explore</label>
-            <div class="flex items-center gap-2 mt-1">
-              <span class="text-xs text-text-muted w-8">HCP:</span>
-              <select class={selectClass} bind:value={slamMin}>
-                {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-              </select>
-              <span class="text-xs text-text-muted ml-4 w-10">Suit TP:</span>
-              <select class={selectClass} bind:value={slamMinTp}>
-                {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-              </select>
-            </div>
-          </div>
-        </div>
-        {#if thresholdOrderError}
-          <p class="text-xs text-red-400 mt-1">{thresholdOrderError}</p>
-        {/if}
-      </div>
-    </div>
-
-    <!-- Opener Rebid -->
-    <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
-      <h3 class="text-sm font-semibold text-text-primary mb-3">Opener Rebid</h3>
-      <div class="flex items-center gap-2">
-        <label class="text-xs text-text-muted">Not Minimum</label>
-        <span class="text-xs text-text-muted w-8">HCP:</span>
-        <select class={selectClass} bind:value={openerNotMin}>
-          {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-        </select>
-        <span class="text-xs text-text-muted ml-4 w-10">Suit TP:</span>
-        <select class={selectClass} bind:value={openerNotMinTp}>
-          {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-        </select>
-      </div>
-    </div>
-
-    <!-- Suit Responses -->
-    <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
-      <h3 class="text-sm font-semibold text-text-primary mb-3">Suit Responses</h3>
-      <div class="flex items-center gap-4 flex-wrap">
-        <div class="flex items-center gap-2">
-          <label class="text-xs text-text-muted">2-Level Minimum</label>
-          <select class={selectClass} bind:value={twoLevelMin}>
-            {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-          </select>
-          <span class="text-xs text-text-muted">HCP</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <label class="text-xs text-text-muted">Forcing Duration</label>
-          <select class="{selectClass} max-w-[10rem]" bind:value={forcingDuration}>
-            <option value="one-round">One Round</option>
-            <option value="game">Game Forcing</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- 1NT Response to 1M -->
-    <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
-      <h3 class="text-sm font-semibold text-text-primary mb-3">1NT Response to 1M</h3>
-      <div class="flex items-center gap-4 flex-wrap">
-        <div class="flex items-center gap-2">
-          <label class="text-xs text-text-muted">Forcing Status</label>
-          <select class="{selectClass} max-w-[10rem]" bind:value={oneNtForcing}>
-            <option value="non-forcing">Non-Forcing</option>
-            <option value="semi-forcing">Semi-Forcing</option>
-            <option value="forcing">Forcing</option>
-          </select>
-        </div>
-        <div class="flex items-center gap-2">
-          <label class="text-xs text-text-muted">HCP Range</label>
-          <select class={selectClass} bind:value={oneNtMinHcp}>
-            {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-          </select>
-          <span class="text-text-muted text-xs">to</span>
-          <select class={selectClass} bind:value={oneNtMaxHcp}>
-            {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-          </select>
-        </div>
-      </div>
-      {#if oneNtRangeError}
-        <p class="text-xs text-red-400 mt-1">{oneNtRangeError}</p>
-      {/if}
-    </div>
-
-    <!-- Opening Requirements -->
-    <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
-      <h3 class="text-sm font-semibold text-text-primary mb-3">Opening Requirements</h3>
-      <div class="flex items-center gap-2">
-        <label class="text-xs text-text-muted">Major Suit Minimum Length</label>
+      <!-- Major Suit Min Length -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">Major Suit Minimum Length</p>
         <ToggleGroup
           items={[
             { id: "4", label: "4-card", testId: "editor-major-4" },
@@ -363,67 +234,242 @@
           active={String(majorMinLength)}
           onSelect={(id) => { majorMinLength = Number(id) as 4 | 5; }}
           ariaLabel="Major suit minimum length"
+          compact
         />
       </div>
-    </div>
 
-    <!-- Interference -->
-    <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
-      <h3 class="text-sm font-semibold text-text-primary mb-3">Interference</h3>
-      <div class="flex items-center gap-2">
-        <label class="text-xs text-text-muted">Redouble Minimum</label>
-        <select class={selectClass} bind:value={redoubleMin}>
-          {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-        </select>
-        <span class="text-xs text-text-muted">HCP</span>
+      <!-- 2-Level New Suit Minimum -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">2-Level New Suit Minimum</p>
+        <NumberStepper
+          value={twoLevelMin}
+          suffix="HCP"
+          onchange={(v) => { twoLevelMin = v; }}
+          testId="editor-two-level-min"
+        />
       </div>
-    </div>
 
-    <!-- DONT Overcalls -->
-    <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
-      <h3 class="text-sm font-semibold text-text-primary mb-3">DONT Overcalls</h3>
-      <div class="flex items-center gap-2">
-        <label class="text-xs text-text-muted">HCP Range</label>
-        <select class={selectClass} bind:value={dontMinHcp}>
-          {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
-        </select>
-        <span class="text-text-muted text-xs">to</span>
-        <select class={selectClass} bind:value={dontMaxHcp}>
-          {#each hcpOptions as v (v)}<option value={v}>{v}</option>{/each}
+      <!-- 2-Level Forcing Duration -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">2-Level Forcing Duration</p>
+        <select class="{selectClass} max-w-[10rem]" bind:value={forcingDuration}>
+          <option value="one-round">One Round</option>
+          <option value="game">Game Forcing</option>
         </select>
       </div>
-      {#if dontRangeError}
-        <p class="text-xs text-red-400 mt-1">{dontRangeError}</p>
-      {/if}
-    </div>
 
-    <!-- Point Formulas -->
-    <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
-      <h3 class="text-sm font-semibold text-text-primary mb-3">Point Formulas</h3>
-      <div class="flex items-center gap-4 flex-wrap">
-        <div class="flex items-center gap-2">
-          <label class="text-xs text-text-muted">NT Hands</label>
-          <select class="{selectClass} max-w-[14rem]" bind:value={ntFormula}>
-            <option value="hcp-only">HCP Only</option>
-            <option value="hcp-plus-shortage">HCP + Shortage</option>
-            <option value="hcp-plus-all-distribution">HCP + All Distribution</option>
-          </select>
+      <!-- 1NT Response Forcing Status -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">1NT Response Forcing Status</p>
+        <select class="{selectClass} max-w-[10rem]" bind:value={oneNtForcing}>
+          <option value="non-forcing">Non-Forcing</option>
+          <option value="semi-forcing">Semi-Forcing</option>
+          <option value="forcing">Forcing</option>
+        </select>
+      </div>
+
+      <!-- 1NT Response HCP Range -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">1NT Response HCP Range</p>
+        <RangeStepper
+          minValue={oneNtMinHcp}
+          maxValue={oneNtMaxHcp}
+          suffix="HCP"
+          onMinChange={(v) => { oneNtMinHcp = v; }}
+          onMaxChange={(v) => { oneNtMaxHcp = v; }}
+          testId="editor-one-nt-range"
+        >
+          {#snippet error()}
+            {#if oneNtRangeError}
+              <p class="text-xs text-red-400 mt-1">{oneNtRangeError}</p>
+            {/if}
+          {/snippet}
+        </RangeStepper>
+      </div>
+    </EditorSection>
+
+    <!-- 2. Hand Evaluation -->
+    <EditorSection title="Hand Evaluation" defaultOpen={true}>
+      <!-- Point Formulas -->
+      <div>
+        <p class="text-xs text-text-muted mb-2">Point Formulas</p>
+        <div class="grid grid-cols-2 gap-3">
+          <!-- NT panel -->
+          <div class="bg-bg-base border border-border-subtle rounded-[--radius-md] p-3">
+            <p class="text-xs font-semibold text-text-primary mb-2">NT Hands</p>
+            <div class="space-y-1.5">
+              <label class="flex items-center gap-2">
+                <input type="checkbox" checked disabled class="accent-accent-primary opacity-50" />
+                <span class="text-xs text-text-muted">HCP</span>
+                <span class="text-xs text-text-muted/60 ml-auto">always on</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" bind:checked={ntShortage} class="accent-accent-primary" />
+                <span class="text-xs text-text-primary">Shortage Points</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" bind:checked={ntLength} class="accent-accent-primary" />
+                <span class="text-xs text-text-primary">Length Points</span>
+              </label>
+            </div>
+          </div>
+          <!-- Trump panel -->
+          <div class="bg-bg-base border border-border-subtle rounded-[--radius-md] p-3">
+            <p class="text-xs font-semibold text-text-primary mb-2">Trump Hands</p>
+            <div class="space-y-1.5">
+              <label class="flex items-center gap-2">
+                <input type="checkbox" checked disabled class="accent-accent-primary opacity-50" />
+                <span class="text-xs text-text-muted">HCP</span>
+                <span class="text-xs text-text-muted/60 ml-auto">always on</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" bind:checked={trumpShortage} class="accent-accent-primary" />
+                <span class="text-xs text-text-primary">Shortage Points</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" bind:checked={trumpLength} class="accent-accent-primary" />
+                <span class="text-xs text-text-primary">Length Points</span>
+              </label>
+            </div>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <label class="text-xs text-text-muted">Trump Hands</label>
-          <select class="{selectClass} max-w-[14rem]" bind:value={trumpFormula}>
-            <option value="hcp-only">HCP Only</option>
-            <option value="hcp-plus-shortage">HCP + Shortage</option>
-            <option value="hcp-plus-all-distribution">HCP + All Distribution</option>
-          </select>
+      </div>
+
+      <!-- Responder Invite Range -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">Responder Invite Range</p>
+        <div class="flex items-center gap-4 flex-wrap">
+          <RangeStepper
+            minValue={inviteMin}
+            maxValue={inviteMax}
+            suffix="HCP"
+            onMinChange={(v) => { inviteMin = v; }}
+            onMaxChange={(v) => { inviteMax = v; }}
+            testId="editor-invite-hcp"
+          >
+            {#snippet error()}
+              {#if inviteRangeError}
+                <p class="text-xs text-red-400 mt-1">{inviteRangeError}</p>
+              {/if}
+            {/snippet}
+          </RangeStepper>
+          <RangeStepper
+            minValue={inviteMinTp}
+            maxValue={inviteMaxTp}
+            suffix="TP"
+            onMinChange={(v) => { inviteMinTp = v; }}
+            onMaxChange={(v) => { inviteMaxTp = v; }}
+            testId="editor-invite-tp"
+          >
+            {#snippet error()}
+              {#if inviteTpRangeError}
+                <p class="text-xs text-red-400 mt-1">{inviteTpRangeError}</p>
+              {/if}
+            {/snippet}
+          </RangeStepper>
         </div>
       </div>
-    </div>
 
-    <!-- Base Conventions -->
-    <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-5">
-      <h3 class="text-sm font-semibold text-text-primary mb-2">Base Conventions</h3>
-      <p class="text-xs text-text-muted mb-3">Always active during practice.</p>
+      <!-- Responder Game Minimum -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">Responder Game Minimum</p>
+        <div class="flex items-center gap-4 flex-wrap">
+          <NumberStepper
+            value={gameMin}
+            suffix="HCP"
+            onchange={(v) => { gameMin = v; }}
+            testId="editor-game-min"
+          />
+          <NumberStepper
+            value={gameMinTp}
+            suffix="TP"
+            onchange={(v) => { gameMinTp = v; }}
+            testId="editor-game-min-tp"
+          />
+        </div>
+      </div>
+
+      <!-- Responder Slam Explore -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">Responder Slam Explore</p>
+        <div class="flex items-center gap-4 flex-wrap">
+          <NumberStepper
+            value={slamMin}
+            suffix="HCP"
+            onchange={(v) => { slamMin = v; }}
+            testId="editor-slam-min"
+          />
+          <NumberStepper
+            value={slamMinTp}
+            suffix="TP"
+            onchange={(v) => { slamMinTp = v; }}
+            testId="editor-slam-min-tp"
+          />
+        </div>
+        {#if thresholdOrderError}
+          <p class="text-xs text-red-400 mt-1">{thresholdOrderError}</p>
+        {/if}
+        {#if tpThresholdOrderError}
+          <p class="text-xs text-red-400 mt-1">{tpThresholdOrderError}</p>
+        {/if}
+      </div>
+
+      <!-- Opener Not Minimum -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">Opener Not Minimum</p>
+        <div class="flex items-center gap-4 flex-wrap">
+          <NumberStepper
+            value={openerNotMin}
+            suffix="HCP"
+            onchange={(v) => { openerNotMin = v; }}
+            testId="editor-opener-not-min"
+          />
+          <NumberStepper
+            value={openerNotMinTp}
+            suffix="TP"
+            onchange={(v) => { openerNotMinTp = v; }}
+            testId="editor-opener-not-min-tp"
+          />
+        </div>
+      </div>
+    </EditorSection>
+
+    <!-- 3. Competitive Bidding -->
+    <EditorSection title="Competitive Bidding">
+      <!-- Redouble Minimum -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">Redouble Minimum</p>
+        <NumberStepper
+          value={redoubleMin}
+          suffix="HCP"
+          onchange={(v) => { redoubleMin = v; }}
+          testId="editor-redouble-min"
+        />
+      </div>
+
+      <!-- DONT Overcall HCP Range -->
+      <div>
+        <p class="text-xs text-text-muted mb-1.5">DONT Overcall HCP Range</p>
+        <RangeStepper
+          minValue={dontMinHcp}
+          maxValue={dontMaxHcp}
+          suffix="HCP"
+          onMinChange={(v) => { dontMinHcp = v; }}
+          onMaxChange={(v) => { dontMaxHcp = v; }}
+          testId="editor-dont-range"
+        >
+          {#snippet error()}
+            {#if dontRangeError}
+              <p class="text-xs text-red-400 mt-1">{dontRangeError}</p>
+            {/if}
+          {/snippet}
+        </RangeStepper>
+      </div>
+    </EditorSection>
+
+    <!-- 4. Base Conventions -->
+    <EditorSection title="Base Conventions">
+      <p class="text-xs text-text-muted mb-2">Always active during practice.</p>
       <div class="space-y-2">
         {#each allModules as mod (mod.moduleId)}
           <label class="flex items-center gap-3 cursor-pointer">
@@ -443,10 +489,17 @@
           </label>
         {/each}
       </div>
-    </div>
+    </EditorSection>
+  </div>
 
-    <!-- Bottom save/cancel buttons -->
-    <div class="flex justify-end gap-2 pt-2 pb-4">
+  <!-- Sticky save bar -->
+  <div class="sticky bottom-0 z-10 bg-bg-base/90 backdrop-blur-sm border-t border-border-subtle px-5 py-3 flex items-center justify-between -mx-6">
+    <div>
+      {#if allErrors.length > 0}
+        <span class="text-xs text-red-400">{allErrors.length} {allErrors.length === 1 ? 'issue' : 'issues'}</span>
+      {/if}
+    </div>
+    <div class="flex gap-2">
       <button
         class="px-4 py-2 rounded-[--radius-md] text-sm font-medium text-text-muted hover:text-text-primary border border-border-subtle transition-colors cursor-pointer"
         onclick={onCancel}
@@ -458,6 +511,7 @@
             : 'bg-accent-primary text-text-on-accent hover:bg-accent-primary/90'}"
         disabled={hasErrors}
         onclick={handleSave}
+        data-testid="editor-save"
       >Save</button>
     </div>
   </div>

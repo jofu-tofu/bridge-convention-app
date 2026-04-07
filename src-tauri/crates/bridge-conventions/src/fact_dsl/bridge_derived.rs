@@ -12,7 +12,7 @@ use crate::types::{
     PrimitiveClause, PrimitiveClauseOperator, PrimitiveClauseValue,
 };
 
-use crate::types::system_config::PointFormulaId;
+use crate::types::system_config::PointFormula;
 
 use super::composition::evaluate_composition;
 use super::point_helpers::compute_total_points;
@@ -202,9 +202,12 @@ pub fn evaluate_bridge_relational(
         fv_bool("bridge.shortageInSuit", shortage),
     );
 
-    // bridge.totalPointsForRaise — HCP + shortage points excluding bound suit
+    // bridge.totalPointsForRaise — HCP + shortage points excluding bound suit.
+    // Intentionally hardcoded: raise evaluation always uses HCP+shortage regardless
+    // of the user's PointConfig. This is a convention-level concept, not user-configurable.
+    const RAISE_FORMULA: PointFormula = PointFormula { include_shortage: true, include_length: false };
     let tp = if let Some(suit_name) = bound_suit_name {
-        compute_total_points(facts, PointFormulaId::HcpPlusShortage, Some(suit_name))
+        compute_total_points(facts, RAISE_FORMULA, Some(suit_name))
     } else {
         get_num(facts, "hand.hcp")
     };
