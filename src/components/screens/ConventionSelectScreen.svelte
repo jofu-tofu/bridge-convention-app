@@ -29,6 +29,13 @@
     appStore.navigateToLearning(config);
   }
 
+  const lastPracticedConvention = $derived(
+    allConventions.find((c) => c.id === appStore.lastPracticedId) ?? null,
+  );
+
+  const RECOMMENDED_IDS = new Set(["nt-bundle"]);
+  const showRecommended = $derived(!appStore.lastPracticedId);
+
   function toggleCategory(cat: ConventionCategory) {
     activeCategory = activeCategory === cat ? null : cat;
   }
@@ -109,23 +116,25 @@
               transition-all hover:shadow-md"
             data-testid="convention-{convention.id}"
           >
-            <h2 class="text-lg font-semibold text-text-primary leading-tight">
-              {displayName(convention.name)}
-            </h2>
-            <p class="text-sm text-text-secondary mt-1.5 leading-relaxed line-clamp-2">
+            <div class="flex items-start justify-between gap-2">
+              <h2 class="text-lg font-semibold text-text-primary leading-tight">
+                {displayName(convention.name)}
+              </h2>
+              <div class="flex items-center gap-1.5 shrink-0">
+                {#if convention.variesBySystem}
+                  <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
+                    Varies by system
+                  </span>
+                {/if}
+                <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
+                  {convention.category}
+                </span>
+              </div>
+            </div>
+            <p class="text-sm text-text-secondary mt-1 leading-relaxed line-clamp-2">
               {convention.description}
             </p>
-            <div class="flex items-center gap-1.5 flex-wrap mt-2">
-              {#if convention.variesBySystem}
-                <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2.5 py-1">
-                  Varies by system
-                </span>
-              {/if}
-              <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2.5 py-1">
-                {convention.category}
-              </span>
-            </div>
-            <div class="flex items-center justify-end gap-1.5 mt-auto pt-3">
+            <div class="flex items-center justify-end gap-1.5 mt-2">
               <button
                 class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
                   text-text-secondary bg-bg-elevated hover:text-accent-primary hover:bg-accent-primary/10
