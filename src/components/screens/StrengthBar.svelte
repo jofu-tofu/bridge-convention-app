@@ -17,13 +17,11 @@
 </script>
 
 <div class="space-y-1.5">
-  <p class="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Responder Strength</p>
-
   <!-- Bar -->
   <div class="flex h-7 rounded-[--radius-md] overflow-hidden border border-border-subtle">
     {#if weakPct > 0}
       <div
-        class="flex items-center justify-center text-[10px] font-medium transition-all duration-200 {ZONE_BG.weak} {ZONE_TEXT.weak} border-r {ZONE_BORDER.weak}"
+        class="flex items-center justify-center text-xs font-medium transition-all duration-200 {ZONE_BG.weak} {ZONE_TEXT.weak} border-r {ZONE_BORDER.weak}"
         style="width: {weakPct}%"
       >
         {#if weakPct > 12}Weak{/if}
@@ -31,7 +29,7 @@
     {/if}
     {#if invitePct > 0}
       <div
-        class="flex items-center justify-center text-[10px] font-medium transition-all duration-200 {ZONE_BG.invite} {ZONE_TEXT.invite} border-r {ZONE_BORDER.invite}"
+        class="flex items-center justify-center text-xs font-medium transition-all duration-200 {ZONE_BG.invite} {ZONE_TEXT.invite} border-r {ZONE_BORDER.invite}"
         style="width: {invitePct}%"
       >
         {#if invitePct > 12}Invite{/if}
@@ -39,7 +37,7 @@
     {/if}
     {#if gamePct > 0}
       <div
-        class="flex items-center justify-center text-[10px] font-medium transition-all duration-200 {ZONE_BG.game} {ZONE_TEXT.game} border-r {ZONE_BORDER.game}"
+        class="flex items-center justify-center text-xs font-medium transition-all duration-200 {ZONE_BG.game} {ZONE_TEXT.game} border-r {ZONE_BORDER.game}"
         style="width: {gamePct}%"
       >
         {#if gamePct > 12}Game{/if}
@@ -47,7 +45,7 @@
     {/if}
     {#if slamPct > 0}
       <div
-        class="flex items-center justify-center text-[10px] font-medium transition-all duration-200 {ZONE_BG.slam} {ZONE_TEXT.slam}"
+        class="flex items-center justify-center text-xs font-medium transition-all duration-200 {ZONE_BG.slam} {ZONE_TEXT.slam}"
         style="width: {slamPct}%"
       >
         {#if slamPct > 12}Slam{/if}
@@ -58,15 +56,15 @@
   <!-- Threshold labels -->
   <div class="relative h-4">
     <span
-      class="absolute text-[10px] transition-all duration-200 {ZONE_TEXT.invite}"
+      class="absolute text-xs transition-all duration-200 {ZONE_TEXT.invite}"
       style="left: {thresholdPct(inviteMin)}%; transform: translateX(-50%);"
     >{inviteMin}</span>
     <span
-      class="absolute text-[10px] transition-all duration-200 {ZONE_TEXT.game}"
+      class="absolute text-xs transition-all duration-200 {ZONE_TEXT.game}"
       style="left: {thresholdPct(gameMin)}%; transform: translateX(-50%);"
     >{gameMin}</span>
     <span
-      class="absolute text-[10px] transition-all duration-200 {ZONE_TEXT.slam}"
+      class="absolute text-xs transition-all duration-200 {ZONE_TEXT.slam}"
       style="left: {thresholdPct(slamMin)}%; transform: translateX(-50%);"
     >{slamMin}</span>
   </div>

@@ -345,20 +345,15 @@
 
   <!-- Body: all settings visible at once -->
   <div class="flex-1 min-h-0 p-5 overflow-y-auto">
-    <!-- Strength bar — full width -->
-    <div class="mb-5">
-      <StrengthBar {inviteMin} {gameMin} {slamMin} />
-    </div>
-
     <!-- 3-column grid on desktop, single column on mobile -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-5 items-start">
 
-      <!-- Column 1: Opening -->
+      <!-- Column 1: Bidding Structure -->
       <div class="space-y-3">
-        <p class="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Opening &amp; Responses</p>
+        <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Bidding Structure</p>
 
         <div>
-          <p class="text-xs text-text-muted mb-1">1NT Opening</p>
+          <p class="text-xs text-text-secondary mb-1">1NT Opening Range</p>
           <RangeStepper
             minValue={ntMinHcp}
             maxValue={ntMaxHcp}
@@ -376,7 +371,7 @@
         </div>
 
         <div>
-          <p class="text-xs text-text-muted mb-1">Majors</p>
+          <p class="text-xs text-text-secondary mb-1">Major Suit Opening Length</p>
           <ToggleGroup
             items={[
               { id: "4", label: "4-card", testId: "editor-major-4" },
@@ -390,7 +385,7 @@
         </div>
 
         <div>
-          <p class="text-xs text-text-muted mb-1">1NT Response</p>
+          <p class="text-xs text-text-secondary mb-1">1NT Response to 1&#9829;/1&#9824;</p>
           <div class="flex items-center gap-2 flex-wrap">
             <ToggleGroup
               items={[
@@ -421,7 +416,7 @@
         </div>
 
         <div>
-          <p class="text-xs text-text-muted mb-1">2-Level New Suit</p>
+          <p class="text-xs text-text-secondary mb-1">New Suit at 2-Level</p>
           <div class="flex items-center gap-2 flex-wrap">
             <NumberStepper
               value={twoLevelMin}
@@ -445,41 +440,44 @@
 
       <!-- Column 2: Strength -->
       <div class="space-y-3">
-        <p class="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Strength</p>
+        <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Strength</p>
+
+        <!-- Strength bar -->
+        <StrengthBar {inviteMin} {gameMin} {slamMin} />
 
         <!-- Point Formulas — compact inline -->
         <div class="grid grid-cols-2 gap-2">
           <div class="bg-bg-base border border-border-subtle rounded-[--radius-md] p-2">
-            <p class="text-[10px] font-semibold text-text-primary mb-1">NT</p>
+            <p class="text-xs font-semibold text-text-primary mb-1">NT Formula</p>
             <div class="space-y-0.5">
               <label class="flex items-center gap-1.5">
-                <input type="checkbox" checked disabled class="accent-accent-primary opacity-50 scale-90" />
-                <span class="text-[11px] text-text-muted">HCP</span>
+                <input type="checkbox" checked disabled class="accent-accent-primary opacity-50" />
+                <span class="text-xs text-text-muted">HCP</span>
               </label>
               <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" bind:checked={ntShortage} class="accent-accent-primary scale-90" />
-                <span class="text-[11px] text-text-primary">Shortage</span>
+                <input type="checkbox" bind:checked={ntShortage} class="accent-accent-primary" />
+                <span class="text-xs text-text-primary">Shortage</span>
               </label>
               <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" bind:checked={ntLength} class="accent-accent-primary scale-90" />
-                <span class="text-[11px] text-text-primary">Length</span>
+                <input type="checkbox" bind:checked={ntLength} class="accent-accent-primary" />
+                <span class="text-xs text-text-primary">Length</span>
               </label>
             </div>
           </div>
           <div class="bg-bg-base border border-border-subtle rounded-[--radius-md] p-2">
-            <p class="text-[10px] font-semibold text-text-primary mb-1">Trump</p>
+            <p class="text-xs font-semibold text-text-primary mb-1">Trump Formula</p>
             <div class="space-y-0.5">
               <label class="flex items-center gap-1.5">
-                <input type="checkbox" checked disabled class="accent-accent-primary opacity-50 scale-90" />
-                <span class="text-[11px] text-text-muted">HCP</span>
+                <input type="checkbox" checked disabled class="accent-accent-primary opacity-50" />
+                <span class="text-xs text-text-muted">HCP</span>
               </label>
               <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" bind:checked={trumpShortage} class="accent-accent-primary scale-90" />
-                <span class="text-[11px] text-text-primary">Shortage</span>
+                <input type="checkbox" bind:checked={trumpShortage} class="accent-accent-primary" />
+                <span class="text-xs text-text-primary">Shortage</span>
               </label>
               <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" bind:checked={trumpLength} class="accent-accent-primary scale-90" />
-                <span class="text-[11px] text-text-primary">Length</span>
+                <input type="checkbox" bind:checked={trumpLength} class="accent-accent-primary" />
+                <span class="text-xs text-text-primary">Length</span>
               </label>
             </div>
           </div>
@@ -487,14 +485,14 @@
 
         <!-- Thresholds -->
         <div class="space-y-2">
-          <div class="grid grid-cols-[auto_1fr_1fr] gap-x-2 items-center text-[10px] text-text-muted">
+          <div class="grid grid-cols-[auto_1fr_1fr] gap-x-2 items-center text-xs text-text-muted">
             <span></span>
             <span class="text-center font-medium">NT ({ntFormulaShort})</span>
             <span class="text-center font-medium">Trump ({trumpFormulaShort})</span>
           </div>
 
           <div>
-            <p class="text-xs text-text-muted mb-1">Invite Range</p>
+            <p class="text-xs text-text-secondary mb-1">Invite Range</p>
             <div class="flex items-center gap-2 flex-wrap">
               <RangeStepper
                 minValue={inviteMin}
@@ -528,7 +526,7 @@
           </div>
 
           <div>
-            <p class="text-xs text-text-muted mb-1">Game Minimum</p>
+            <p class="text-xs text-text-secondary mb-1">Game Minimum</p>
             <div class="flex items-center gap-2 flex-wrap">
               <NumberStepper value={gameMin} suffix={ntFormulaShort} onchange={(v) => { gameMin = v; }} testId="editor-game-min" />
               <NumberStepper value={gameMinTp} suffix={trumpFormulaShort} onchange={(v) => { gameMinTp = v; }} testId="editor-game-min-tp" />
@@ -536,7 +534,7 @@
           </div>
 
           <div>
-            <p class="text-xs text-text-muted mb-1">Slam Explore</p>
+            <p class="text-xs text-text-secondary mb-1">Slam Explore</p>
             <div class="flex items-center gap-2 flex-wrap">
               <NumberStepper value={slamMin} suffix={ntFormulaShort} onchange={(v) => { slamMin = v; }} testId="editor-slam-min" />
               <NumberStepper value={slamMinTp} suffix={trumpFormulaShort} onchange={(v) => { slamMinTp = v; }} testId="editor-slam-min-tp" />
@@ -550,7 +548,7 @@
           </div>
 
           <div>
-            <p class="text-xs text-text-muted mb-1">Opener Not Minimum</p>
+            <p class="text-xs text-text-secondary mb-1">Opener Not Minimum</p>
             <div class="flex items-center gap-2 flex-wrap">
               <NumberStepper value={openerNotMin} suffix={ntFormulaShort} onchange={(v) => { openerNotMin = v; }} testId="editor-opener-not-min" />
               <NumberStepper value={openerNotMinTp} suffix={trumpFormulaShort} onchange={(v) => { openerNotMinTp = v; }} testId="editor-opener-not-min-tp" />
@@ -561,10 +559,10 @@
 
       <!-- Column 3: Competitive + Modules -->
       <div class="space-y-3">
-        <p class="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Competitive</p>
+        <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Competitive</p>
 
         <div>
-          <p class="text-xs text-text-muted mb-1">Redouble Minimum</p>
+          <p class="text-xs text-text-secondary mb-1">Redouble Minimum</p>
           <NumberStepper
             value={redoubleMin}
             suffix="HCP"
@@ -574,7 +572,7 @@
         </div>
 
         <div>
-          <p class="text-xs text-text-muted mb-1">DONT Overcall</p>
+          <p class="text-xs text-text-secondary mb-1">DONT Overcall Range</p>
           <RangeStepper
             minValue={dontMinHcp}
             maxValue={dontMaxHcp}
@@ -593,7 +591,7 @@
 
         <!-- Modules -->
         <div class="mt-2">
-          <p class="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1">
+          <p class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">
             Modules
             <span class="font-normal">({activeModuleCount}/{totalModuleCount})</span>
           </p>
@@ -601,20 +599,20 @@
           {#each unavailableModuleIds as uid (uid)}
             <div class="flex items-center justify-between bg-red-500/10 border border-red-500/30 rounded-[--radius-md] px-2 py-1 mb-1.5">
               <div class="flex items-center gap-1.5">
-                <span class="px-1 py-0.5 text-[9px] font-medium rounded-full bg-red-500/20 text-red-400">unavailable</span>
-                <span class="text-[11px] text-text-muted">{uid}</span>
+                <span class="px-1 py-0.5 text-[10px] font-medium rounded-full bg-red-500/20 text-red-400">unavailable</span>
+                <span class="text-xs text-text-muted">{uid}</span>
               </div>
               <button
-                class="text-[11px] text-red-400 hover:text-red-300 cursor-pointer"
+                class="text-xs text-red-400 hover:text-red-300 cursor-pointer"
                 onclick={() => removeUnavailable(uid)}
               >Remove</button>
             </div>
           {/each}
 
-          <div class="space-y-1">
+          <div class="space-y-1.5">
             {#each [...groupedEditorModules] as [category, mods] (category)}
               <div>
-                <p class="text-[9px] font-semibold text-text-muted/70 uppercase tracking-wider mb-0.5">{category}</p>
+                <p class="text-[10px] font-semibold text-text-muted/70 uppercase tracking-wider mb-0.5">{category}</p>
                 <div class="grid grid-cols-2 gap-x-2 gap-y-0.5">
                   {#each mods as mod (mod.moduleId)}
                     <label class="flex items-center gap-1.5 cursor-pointer">
@@ -623,19 +621,19 @@
                         checked={selectedModules.has(mod.moduleId)}
                         disabled={mod.moduleId === "natural-bids"}
                         onchange={() => toggleModule(mod.moduleId)}
-                        class="accent-accent-primary scale-90"
+                        class="accent-accent-primary"
                       />
-                      <span class="text-[11px] text-text-primary truncate">
+                      <span class="text-xs text-text-primary truncate">
                         {mod.displayName}
                         {#if mod.moduleId === "natural-bids"}
                           <span class="text-text-muted">(req)</span>
                         {/if}
                       </span>
                       {#if mod.isCustom}
-                        <span class="px-1 py-0.5 text-[8px] font-medium rounded-full bg-accent-primary/15 text-accent-primary shrink-0">custom</span>
+                        <span class="px-1 py-0.5 text-[10px] font-medium rounded-full bg-accent-primary/15 text-accent-primary shrink-0">custom</span>
                       {/if}
                       {#if isOutdated(mod)}
-                        <span class="px-1 py-0.5 text-[8px] font-medium rounded-full bg-amber-500/15 text-amber-400 shrink-0">old</span>
+                        <span class="px-1 py-0.5 text-[10px] font-medium rounded-full bg-amber-500/15 text-amber-400 shrink-0">old</span>
                       {/if}
                     </label>
                   {/each}
@@ -646,7 +644,7 @@
 
           {#if onNavigateConventions}
             <button
-              class="text-[11px] text-accent-primary hover:underline mt-2 cursor-pointer"
+              class="text-xs text-accent-primary hover:underline mt-2 cursor-pointer"
               onclick={onNavigateConventions}
             >
               Browse &amp; edit conventions &rarr;
