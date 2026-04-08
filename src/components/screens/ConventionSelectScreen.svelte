@@ -3,6 +3,7 @@
   import type { ConventionInfo } from "../../service";
   import { getAppStore } from "../../stores/context";
   import { filterConventions } from "./filter-conventions";
+  import ItemCard from "../shared/ItemCard.svelte";
 
   const appStore = getAppStore();
 
@@ -145,12 +146,7 @@
     {#if filteredConventions.length > 0}
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {#each filteredConventions as convention (convention.id)}
-          <div
-            class="group flex flex-col p-4 rounded-[--radius-lg] bg-bg-card
-              border border-border-subtle hover:border-border-default
-              transition-all hover:shadow-md"
-            data-testid="convention-{convention.id}"
-          >
+          <ItemCard testId="convention-{convention.id}" interactive={false}>
             <div class="flex items-start justify-between gap-2">
               <h2 class="text-lg font-semibold text-text-primary leading-tight">
                 {displayName(convention.name)}
@@ -193,7 +189,7 @@
                 Practice
               </button>
             </div>
-          </div>
+          </ItemCard>
         {/each}
       </div>
     {:else}

@@ -6,6 +6,9 @@
   import type { VulnKey } from "../shared/vulnerability-labels";
   import { getAppStore, getCustomSystemsStore, getAuthStore } from "../../stores/context";
   import ToggleGroup from "../shared/ToggleGroup.svelte";
+  import CardSurface from "../shared/CardSurface.svelte";
+
+  type SettingsTab = "gameplay" | "account";
 
   const appStore = getAppStore();
   const customSystems = getCustomSystemsStore();
@@ -17,6 +20,9 @@
     { id: "expert", label: "Expert" },
     { id: "world-class", label: "World Class" },
   ];
+
+  let activeTab = $state<SettingsTab>("gameplay");
+  let showAlwaysOn = $state(false);
 
   function isVulnEnabled(key: VulnKey): boolean {
     return appStore.drillTuning.vulnerabilityDistribution[key] > 0;
@@ -79,12 +85,26 @@
 
 <main class="max-w-2xl mx-auto h-full flex flex-col p-4 sm:p-6 pb-0" aria-label="Settings">
   <div class="shrink-0">
-    <h1 class="text-2xl font-bold text-text-primary mb-4">Practice Settings</h1>
+    <h1 class="text-2xl font-bold text-text-primary mb-1">Settings</h1>
+    <p class="text-text-secondary text-sm mb-4">Configure your practice experience.</p>
+    <div class="mb-4">
+      <ToggleGroup
+        items={[
+          { id: "gameplay", label: "Gameplay", testId: "settings-tab-gameplay" },
+          { id: "account", label: "Account", testId: "settings-tab-account" },
+        ]}
+        active={activeTab}
+        onSelect={(id) => { activeTab = id as SettingsTab; }}
+        ariaLabel="Settings section"
+        compact
+      />
+    </div>
   </div>
 
+  {#if activeTab === "gameplay"}
   <div class="flex-1 overflow-y-auto pb-6 space-y-3">
     <!-- Base System -->
-    <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-4">
+    <CardSurface as="section" class="p-4">
       <h2 class="text-sm font-semibold text-text-primary mb-2">Base System</h2>
       <ToggleGroup
         items={AVAILABLE_BASE_SYSTEMS.map(sys => ({ id: sys.id, label: sys.shortLabel, title: sys.label, testId: `settings-system-${sys.id}` }))}
@@ -119,11 +139,30 @@
       </button>
 
       {#if baseModules.length > 0}
-        <div class="border-t border-border-subtle mt-3 pt-3">
-          <p class="text-xs text-text-muted mb-2">
-            Base conventions — always active regardless of which convention you practice.
-          </p>
-          <ul class="space-y-1">
+        <button
+          class="mt-3 pt-2 border-t border-border-subtle w-full flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
+          onclick={() => showAlwaysOn = !showAlwaysOn}
+          aria-expanded={showAlwaysOn}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="transition-transform duration-200 {showAlwaysOn ? 'rotate-90' : ''}"
+            aria-hidden="true"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+          {baseModules.length} always-on convention{baseModules.length !== 1 ? "s" : ""}
+        </button>
+        {#if showAlwaysOn}
+          <ul class="space-y-1 mt-2">
             {#each baseModules as mod (mod.id)}
               <li class="flex flex-col px-2.5 py-1.5 rounded-[--radius-md] bg-bg-base border border-border-subtle">
                 <span class="text-sm text-text-primary">{mod.displayName}</span>
@@ -131,13 +170,13 @@
               </li>
             {/each}
           </ul>
-        </div>
+        {/if}
       {/if}
-    </section>
+    </CardSurface>
 
     <!-- Opponents + Play Skill: side-by-side on desktop -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-4">
+      <CardSurface as="section" class="p-4">
         <h2 class="text-sm font-semibold text-text-primary mb-2">Opponents</h2>
         <ToggleGroup
           items={[
@@ -154,9 +193,9 @@
             ? "Opponents compete when worth bidding."
             : "Opponents always pass."}
         </p>
-      </section>
+      </CardSurface>
 
-      <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-4">
+      <CardSurface as="section" class="p-4">
         <h2 class="text-sm font-semibold text-text-primary mb-2">Play Skill</h2>
         <ToggleGroup
           items={PROFILE_ENTRIES.map(entry => ({ id: entry.id, label: entry.label, title: PLAY_PROFILES[entry.id].description, testId: `settings-play-${entry.id}` }))}
@@ -168,11 +207,11 @@
         <p class="text-xs text-text-muted mt-1.5">
           {PLAY_PROFILES[appStore.playProfileId ?? "world-class"].description}
         </p>
-      </section>
+      </CardSurface>
     </div>
 
     <!-- Deal Tuning: vulnerability + off-convention grouped -->
-    <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-4">
+    <CardSurface as="section" class="p-4">
       <h2 class="text-sm font-semibold text-text-primary mb-3">Deal Tuning</h2>
 
       <!-- Vulnerability: compact pill chips -->
@@ -243,10 +282,13 @@
           </div>
         {/if}
       </div>
-    </section>
+    </CardSurface>
+  </div>
 
-    <!-- Account: compact -->
-    <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-4" data-testid="account-section">
+  {:else if activeTab === "account"}
+  <div class="flex-1 overflow-y-auto pb-6 space-y-3">
+    <CardSurface as="section" class="p-4" testId="account-section">
+      <h2 class="text-sm font-semibold text-text-primary mb-3">Account</h2>
       {#if auth.loading}
         <p class="text-sm text-text-muted">Checking login status...</p>
       {:else if auth.isLoggedIn && auth.user}
@@ -277,8 +319,8 @@
           </button>
         </div>
       {:else}
-        <div class="flex items-center justify-between gap-4 flex-wrap">
-          <p class="text-sm text-text-secondary">Sign in to sync progress</p>
+        <div class="space-y-3">
+          <p class="text-sm text-text-secondary">Sign in to sync your progress across devices.</p>
           <div class="flex gap-2">
             <button
               class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] border border-border-subtle bg-bg-base text-xs text-text-primary hover:border-border-prominent cursor-pointer transition-colors"
@@ -299,6 +341,7 @@
           </div>
         </div>
       {/if}
-    </section>
+    </CardSurface>
   </div>
+  {/if}
 </main>

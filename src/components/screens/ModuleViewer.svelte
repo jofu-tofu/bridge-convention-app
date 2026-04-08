@@ -5,6 +5,7 @@
   import { getModuleLearningViewportSync, getModuleFlowTreeSync, getModuleConfigSchemaSync } from "../../service/service-helpers";
   import ConversationFlowTree from "./ConversationFlowTree.svelte";
   import ParameterPanel from "./ParameterPanel.svelte";
+  import CardSurface from "../shared/CardSurface.svelte";
 
   interface Props {
     moduleId: string;
@@ -221,19 +222,19 @@
     {#if vp.teaching.principle || vp.teaching.tradeoff || vp.teaching.commonMistakes.length > 0}
       <div class="space-y-3">
         {#if vp.teaching.principle}
-          <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
+          <CardSurface class="p-4">
             <h3 class="text-xs font-semibold text-accent-primary mb-1">Principle</h3>
             <p class="text-sm text-text-primary leading-relaxed">{vp.teaching.principle}</p>
-          </div>
+          </CardSurface>
         {/if}
         {#if vp.teaching.tradeoff}
-          <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
+          <CardSurface class="p-4">
             <h3 class="text-xs font-semibold text-text-secondary mb-1">Tradeoff</h3>
             <p class="text-sm text-text-primary leading-relaxed">{vp.teaching.tradeoff}</p>
-          </div>
+          </CardSurface>
         {/if}
         {#if vp.teaching.commonMistakes.length > 0}
-          <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
+          <CardSurface class="p-4">
             <h3 class="text-xs font-semibold text-accent-danger mb-1">Common Mistakes</h3>
             <ul class="space-y-1.5">
               {#each vp.teaching.commonMistakes as mistake, i (i)}
@@ -243,7 +244,7 @@
                 </li>
               {/each}
             </ul>
-          </div>
+          </CardSurface>
         {/if}
       </div>
     {/if}
@@ -267,9 +268,9 @@
     {#if ft}
       <div>
         <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Conversation Flow</h3>
-        <div class="overflow-x-auto bg-bg-card rounded-[--radius-lg] border border-border-subtle">
+        <CardSurface class="overflow-x-auto">
           <ConversationFlowTree tree={ft} />
-        </div>
+        </CardSurface>
       </div>
     {/if}
   </div>

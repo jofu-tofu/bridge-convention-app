@@ -33,6 +33,6 @@ test.describe("responsive layout", () => {
     await page.goto("/");
     await page.getByRole("button", { name: "Settings" }).first().click();
 
-    await expect(page.locator("h1")).toHaveText("Practice Settings", { timeout: 5_000 });
+    await expect(page.locator("h1")).toHaveText("Settings", { timeout: 5_000 });
   });
 });

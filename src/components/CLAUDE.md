@@ -102,6 +102,9 @@ components/
   shared/
     Button.svelte                    Primary/secondary/ghost variants
     Card.svelte                      70x98 visual playing card
+    CardSurface.svelte               Base visual card surface — centralizes bg/border/radius/transition tokens for all card-like elements. Props: as (div/section), radius (md/lg), class, testId. Re-theme all cards by changing this one file.
+    ItemCard.svelte                  Interactive card wrapper for list items — button (onclick) or div, with selected/interactive states. Shares token pattern with CardSurface. Used by WorkshopScreen, ConventionSelectScreen.
+    ScreenSection.svelte             Section wrapper with standardized h2 header + optional helper text + content snippet. Used by WorkshopScreen.
     Spinner.svelte                   Inline loading spinner (sm/md sizes)
     SectionHeader.svelte             Uppercase muted section heading (h2/h3)
     SettingsButton.svelte            Full-width settings gear button

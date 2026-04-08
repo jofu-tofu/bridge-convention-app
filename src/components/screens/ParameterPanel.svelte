@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ConfigurableSurfaceView } from "../../service";
   import NumberStepper from "../shared/NumberStepper.svelte";
+  import CardSurface from "../shared/CardSurface.svelte";
 
   interface Props {
     surfaces: readonly ConfigurableSurfaceView[];
@@ -21,7 +22,7 @@
 <div class="space-y-4">
   {#each surfaces as surface, si (surface.meaningId + ':' + si)}
     {#if surface.parameters.length > 0}
-      <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
+      <CardSurface class="p-4">
         <div class="mb-3">
           <div class="flex items-center gap-2">
             <span class="text-sm font-semibold text-text-primary">{surface.name}</span>
@@ -66,7 +67,7 @@
             </div>
           {/each}
         </div>
-      </div>
+      </CardSurface>
     {/if}
   {/each}
 

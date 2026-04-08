@@ -7,6 +7,7 @@
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
   import ConversationFlowTree from "./ConversationFlowTree.svelte";
   import MobileFlowTree from "./MobileFlowTree.svelte";
+  import CardSurface from "../shared/CardSurface.svelte";
 
   const appStore = getAppStore();
   const service = getService();
@@ -307,19 +308,19 @@
                 <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Key Concepts</h2>
                 <div class="space-y-3">
                   {#if viewport.teaching.principle}
-                    <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
+                    <CardSurface class="p-4">
                       <h3 class="text-xs font-semibold text-accent-primary mb-1">Principle</h3>
                       <p class="text-sm text-text-primary leading-relaxed">{viewport.teaching.principle}</p>
-                    </div>
+                    </CardSurface>
                   {/if}
                   {#if viewport.teaching.tradeoff}
-                    <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
+                    <CardSurface class="p-4">
                       <h3 class="text-xs font-semibold text-text-secondary mb-1">Tradeoff</h3>
                       <p class="text-sm text-text-primary leading-relaxed">{viewport.teaching.tradeoff}</p>
-                    </div>
+                    </CardSurface>
                   {/if}
                   {#if viewport.teaching.commonMistakes.length > 0}
-                    <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
+                    <CardSurface class="p-4">
                       <h3 class="text-xs font-semibold text-accent-danger mb-1">Common Mistakes</h3>
                       <ul class="space-y-1.5">
                         {#each viewport.teaching.commonMistakes as mistake, i (i)}
@@ -329,7 +330,7 @@
                           </li>
                         {/each}
                       </ul>
-                    </div>
+                    </CardSurface>
                   {/if}
                 </div>
               </section>
@@ -340,7 +341,7 @@
               <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Bidding Conversation</h2>
               <div class="space-y-4">
                 {#each viewport.phases as phase (phase.phase)}
-                  <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle overflow-hidden">
+                  <CardSurface class="overflow-hidden">
                     <!-- Phase header -->
                     <div class="px-4 py-3 border-b border-border-subtle bg-bg-elevated/50">
                       <h3 class="text-sm font-semibold text-text-primary">{phase.phaseDisplay}</h3>
@@ -404,7 +405,7 @@
                         </div>
                       {/each}
                     </div>
-                  </div>
+                  </CardSurface>
                 {/each}
               </div>
             </section>

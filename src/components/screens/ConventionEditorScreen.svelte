@@ -3,6 +3,7 @@
   import { getAppStore, getUserModuleStore } from "../../stores/context";
   import { getModuleConfigSchemaSync } from "../../service/service-helpers";
   import ParameterPanel from "./ParameterPanel.svelte";
+  import CardSurface from "../shared/CardSurface.svelte";
 
   const appStore = getAppStore();
   const userModules = getUserModuleStore();
@@ -191,9 +192,9 @@
         </section>
       {:else}
         <section>
-          <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-4">
+          <CardSurface class="p-4">
             <p class="text-sm text-text-muted">This convention has no configurable parameters.</p>
-          </div>
+          </CardSurface>
         </section>
       {/if}
 
