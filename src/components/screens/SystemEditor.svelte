@@ -204,6 +204,8 @@
     selectedModules.delete(moduleId);
   }
 
+  let activeEditorTab = $state<"parameters" | "modules">("parameters");
+
   const selectClass = "bg-bg-base border border-border-subtle rounded-[--radius-md] px-3 py-2 text-sm text-text-primary cursor-pointer";
 </script>
 
@@ -260,12 +262,26 @@
     </div>
   </div>
 
-  <!-- Body: all settings visible at once -->
-  <div class="flex-1 min-h-0 p-5 overflow-y-auto">
-    <!-- 3-column grid on desktop, single column on mobile -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-6 gap-y-5 items-start">
+  <!-- Tab bar -->
+  <div class="shrink-0 px-5 pt-2 border-b border-border-subtle bg-bg-card">
+    <ToggleGroup
+      items={[
+        { id: "parameters", label: "Parameters" },
+        { id: "modules", label: `Modules (${activeModuleCount})` },
+      ]}
+      active={activeEditorTab}
+      onSelect={(id) => { activeEditorTab = id as typeof activeEditorTab; }}
+      ariaLabel="Editor section"
+      compact
+    />
+  </div>
 
-      <!-- Column 1: Bidding Structure -->
+  {#if activeEditorTab === "parameters"}
+  <!-- Parameters tab -->
+  <div class="flex-1 min-h-0 p-5 overflow-y-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5 items-start">
+
+      <!-- Column 1: Bidding Structure + Competitive -->
       <div class="space-y-3">
         <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Bidding Structure</p>
 
@@ -353,6 +369,37 @@
             />
           </div>
         </div>
+
+        <!-- Competitive -->
+        <p class="text-xs font-semibold text-text-muted uppercase tracking-wider pt-2">Competitive</p>
+
+        <div>
+          <p class="text-xs text-text-secondary mb-1">Redouble Minimum</p>
+          <NumberStepper
+            value={redoubleMin}
+            suffix="HCP"
+            onchange={(v) => { redoubleMin = v; }}
+            testId="editor-redouble-min"
+          />
+        </div>
+
+        <div>
+          <p class="text-xs text-text-secondary mb-1">DONT Overcall Range</p>
+          <RangeStepper
+            minValue={dontMinHcp}
+            maxValue={dontMaxHcp}
+            suffix="HCP"
+            onMinChange={(v) => { dontMinHcp = v; }}
+            onMaxChange={(v) => { dontMaxHcp = v; }}
+            testId="editor-dont-range"
+          >
+            {#snippet error()}
+              {#if dontRangeError}
+                <p class="text-xs text-red-400 mt-1">{dontRangeError}</p>
+              {/if}
+            {/snippet}
+          </RangeStepper>
+        </div>
       </div>
 
       <!-- Column 2: Strength -->
@@ -360,7 +407,7 @@
         <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Strength</p>
 
         <!-- Strength bar -->
-        <StrengthBar {inviteMin} {gameMin} {slamMin} />
+        <StrengthBar {inviteMin} {gameMin} {slamMin} {inviteMinTp} {gameMinTp} {slamMinTp} ntLabel={ntFormulaShort} trumpLabel={trumpFormulaShort} />
 
         <!-- Point Formulas — compact inline -->
         <div class="grid grid-cols-2 gap-2">
@@ -473,78 +520,47 @@
           </div>
         </div>
       </div>
-
-      <!-- Column 3: Competitive + Modules -->
-      <div class="space-y-3">
-        <p class="text-xs font-semibold text-text-muted uppercase tracking-wider">Competitive</p>
-
-        <div>
-          <p class="text-xs text-text-secondary mb-1">Redouble Minimum</p>
-          <NumberStepper
-            value={redoubleMin}
-            suffix="HCP"
-            onchange={(v) => { redoubleMin = v; }}
-            testId="editor-redouble-min"
-          />
-        </div>
-
-        <div>
-          <p class="text-xs text-text-secondary mb-1">DONT Overcall Range</p>
-          <RangeStepper
-            minValue={dontMinHcp}
-            maxValue={dontMaxHcp}
-            suffix="HCP"
-            onMinChange={(v) => { dontMinHcp = v; }}
-            onMaxChange={(v) => { dontMaxHcp = v; }}
-            testId="editor-dont-range"
-          >
-            {#snippet error()}
-              {#if dontRangeError}
-                <p class="text-xs text-red-400 mt-1">{dontRangeError}</p>
-              {/if}
-            {/snippet}
-          </RangeStepper>
-        </div>
-
-        <!-- Modules -->
-        <div class="mt-2">
-          <p class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">
-            Modules
-            <span class="font-normal">({activeModuleCount}/{totalModuleCount})</span>
-          </p>
-
-          {#each unavailableModuleIds as uid (uid)}
-            <div class="flex items-center justify-between bg-red-500/10 border border-red-500/30 rounded-[--radius-md] px-2 py-1 mb-1.5">
-              <div class="flex items-center gap-1.5">
-                <span class="px-1 py-0.5 text-[10px] font-medium rounded-full bg-red-500/20 text-red-400">unavailable</span>
-                <span class="text-xs text-text-muted">{uid}</span>
-              </div>
-              <button
-                class="text-xs text-red-400 hover:text-red-300 cursor-pointer"
-                onclick={() => removeUnavailable(uid)}
-              >Remove</button>
-            </div>
-          {/each}
-
-          <ModuleChecklist
-            modules={catalogModules}
-            isSelected={(id) => selectedModules.has(id)}
-            onToggle={toggleModule}
-            disabledIds={["natural-bids"]}
-            hasUserFork={(id) => userModuleStore.listModules().some((um) => um.metadata.forkedFrom?.moduleId === id)}
-            compact
-          />
-
-          {#if onNavigateConventions}
-            <button
-              class="text-xs text-accent-primary hover:underline mt-2 cursor-pointer"
-              onclick={onNavigateConventions}
-            >
-              Browse &amp; edit conventions &rarr;
-            </button>
-          {/if}
-        </div>
-      </div>
     </div>
   </div>
+
+  {:else if activeEditorTab === "modules"}
+  <!-- Modules tab -->
+  <div class="flex-1 min-h-0 p-5 overflow-y-auto">
+    <div class="max-w-3xl">
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-sm text-text-secondary">{activeModuleCount} of {totalModuleCount} selected</p>
+      </div>
+
+      {#each unavailableModuleIds as uid (uid)}
+        <div class="flex items-center justify-between bg-red-500/10 border border-red-500/30 rounded-[--radius-md] px-2 py-1 mb-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="px-1 py-0.5 text-[10px] font-medium rounded-full bg-red-500/20 text-red-400">unavailable</span>
+            <span class="text-xs text-text-muted">{uid}</span>
+          </div>
+          <button
+            class="text-xs text-red-400 hover:text-red-300 cursor-pointer"
+            onclick={() => removeUnavailable(uid)}
+          >Remove</button>
+        </div>
+      {/each}
+
+      <ModuleChecklist
+        modules={catalogModules}
+        isSelected={(id) => selectedModules.has(id)}
+        onToggle={toggleModule}
+        disabledIds={["natural-bids"]}
+        hasUserFork={(id) => userModuleStore.listModules().some((um) => um.metadata.forkedFrom?.moduleId === id)}
+      />
+
+      {#if onNavigateConventions}
+        <button
+          class="text-xs text-accent-primary hover:underline mt-3 cursor-pointer"
+          onclick={onNavigateConventions}
+        >
+          Browse &amp; edit conventions &rarr;
+        </button>
+      {/if}
+    </div>
+  </div>
+  {/if}
 </main>

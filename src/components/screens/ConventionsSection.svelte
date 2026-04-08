@@ -9,7 +9,6 @@
   const userModules = getUserModuleStore();
 
   let selectedModuleId = $state<string | null>(null);
-  let filter = $state<"all" | "system" | "custom">("all");
 
   const isSelectedUserModule = $derived(
     selectedModuleId ? userModules.hasModule(selectedModuleId) : false,
@@ -31,8 +30,6 @@
       modules={systemModules}
       selectedId={selectedModuleId}
       onSelect={(id) => { selectedModuleId = id; }}
-      {filter}
-      onFilterChange={(f) => { filter = f; }}
     />
   </div>
 

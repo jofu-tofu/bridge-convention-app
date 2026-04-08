@@ -19,7 +19,7 @@
 </script>
 
 <div class="space-y-4">
-  {#each surfaces as surface (surface.meaningId)}
+  {#each surfaces as surface, si (surface.meaningId + ':' + si)}
     {#if surface.parameters.length > 0}
       <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
         <div class="mb-3">

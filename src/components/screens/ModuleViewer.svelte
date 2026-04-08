@@ -20,14 +20,20 @@
   const appStore = getAppStore();
 
   let forking = $state(false);
+  let forkError = $state<string | null>(null);
 
   async function handleFork() {
     if (forking) return;
     forking = true;
+    forkError = null;
     try {
       const content = await service.forkModule(moduleId);
       const contentObj = content as Record<string, unknown>;
       const forkedModuleId = contentObj.moduleId as string;
+      if (!forkedModuleId) {
+        forkError = "Fork returned invalid module data.";
+        return;
+      }
       const now = new Date().toISOString();
       const userModule: UserModule = {
         metadata: {
@@ -46,6 +52,8 @@
       userModules.saveModule(userModule);
       onFork?.(forkedModuleId);
       appStore.navigateToConventionEditor(forkedModuleId);
+    } catch {
+      forkError = "Failed to customize this convention. Please try again.";
     } finally {
       forking = false;
     }
@@ -173,9 +181,6 @@
         <div>
           <h2 class="text-xl font-bold text-text-primary">
             {vp.displayName}
-            {#if isUserModule}
-              <span class="ml-2 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-accent-primary/15 text-accent-primary align-middle">yours</span>
-            {/if}
           </h2>
           <p class="text-sm text-text-secondary mt-1">{vp.description}</p>
           {#if vp.purpose}
@@ -207,6 +212,9 @@
           {/if}
         </div>
       </div>
+      {#if forkError}
+        <p class="text-xs text-accent-danger mt-2">{forkError}</p>
+      {/if}
     </div>
 
     <!-- Teaching -->
