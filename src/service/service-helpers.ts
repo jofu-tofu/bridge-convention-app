@@ -115,12 +115,15 @@ export function getModuleConfigSchemaSync(moduleId: string, userModulesJson?: st
 }
 
 /**
- * Build base module info for the always-active base modules.
+ * Build base module info for always-active base modules.
+ * When moduleIds is provided, returns info for those specific modules
+ * (used by custom systems with non-default base modules).
  */
-export function buildBaseModuleInfos(): readonly BaseModuleInfo[] {
+export function buildBaseModuleInfos(moduleIds?: readonly string[]): readonly BaseModuleInfo[] {
+  const ids = moduleIds ?? BASE_MODULE_IDS;
   const allModules = listModules();
   return allModules
-    .filter((m) => BASE_MODULE_IDS.includes(m.moduleId))
+    .filter((m) => ids.includes(m.moduleId))
     .map((m) => ({
       id: m.moduleId,
       displayName: m.displayName,

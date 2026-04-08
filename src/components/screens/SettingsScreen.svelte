@@ -18,8 +18,6 @@
     { id: "world-class", label: "World Class" },
   ];
 
-  let showConventions = $state(false);
-
   function isVulnEnabled(key: VulnKey): boolean {
     return appStore.drillTuning.vulnerabilityDistribution[key] > 0;
   }
@@ -63,7 +61,14 @@
     return active.map((k) => `${VULN_LABELS[k]} ${vulnPercent(dist[k], total)}%`).join(", ") + ".";
   });
 
-  const baseModules: readonly BaseModuleInfo[] = $derived(buildBaseModuleInfos());
+  const baseModules: readonly BaseModuleInfo[] = $derived.by(() => {
+    const id = appStore.baseSystemId;
+    if (typeof id === "string" && id.startsWith("custom:")) {
+      const system = customSystems.getSystem(id);
+      if (system) return buildBaseModuleInfos(system.baseModuleIds);
+    }
+    return buildBaseModuleInfos();
+  });
 
   const isDefaultVuln = $derived.by(() => {
     const dist = appStore.drillTuning.vulnerabilityDistribution;
@@ -112,6 +117,22 @@
       >
         + Create custom system
       </button>
+
+      {#if baseModules.length > 0}
+        <div class="border-t border-border-subtle mt-3 pt-3">
+          <p class="text-xs text-text-muted mb-2">
+            Base conventions — always active regardless of which convention you practice.
+          </p>
+          <ul class="space-y-1">
+            {#each baseModules as mod (mod.id)}
+              <li class="flex flex-col px-2.5 py-1.5 rounded-[--radius-md] bg-bg-base border border-border-subtle">
+                <span class="text-sm text-text-primary">{mod.displayName}</span>
+                <span class="text-xs text-text-muted">{mod.description}</span>
+              </li>
+            {/each}
+          </ul>
+        </div>
+      {/if}
     </section>
 
     <!-- Opponents + Play Skill: side-by-side on desktop -->
@@ -222,50 +243,6 @@
           </div>
         {/if}
       </div>
-    </section>
-
-    <!-- Base Conventions: collapsible -->
-    <section class="bg-bg-card border border-border-subtle rounded-[--radius-lg]" data-testid="base-conventions">
-      <button
-        class="w-full p-4 flex items-center justify-between cursor-pointer text-left"
-        onclick={() => showConventions = !showConventions}
-        aria-expanded={showConventions}
-      >
-        <h2 class="text-sm font-semibold text-text-primary">
-          Base Conventions
-          <span class="font-normal text-text-muted ml-1">({baseModules.length})</span>
-        </h2>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="text-text-muted transition-transform duration-200 {showConventions ? 'rotate-180' : ''}"
-          aria-hidden="true"
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-      </button>
-      {#if showConventions}
-        <div class="px-4 pb-4 -mt-1">
-          <p class="text-xs text-text-muted mb-2">
-            Always active regardless of which convention you practice.
-          </p>
-          <ul class="space-y-1">
-            {#each baseModules as mod (mod.id)}
-              <li class="flex flex-col px-2.5 py-1.5 rounded-[--radius-md] bg-bg-base border border-border-subtle">
-                <span class="text-sm text-text-primary">{mod.displayName}</span>
-                <span class="text-xs text-text-muted">{mod.description}</span>
-              </li>
-            {/each}
-          </ul>
-        </div>
-      {/if}
     </section>
 
     <!-- Account: compact -->
