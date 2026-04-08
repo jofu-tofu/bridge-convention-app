@@ -1,3 +1,0 @@
-[workspace]
-resolver = "2"
-members = ["crates/bridge-engine", "crates/bridge-conventions", "crates/bridge-session", "crates/bridge-service", "crates/bridge-tauri", "crates/bridge-wasm", "crates/bridge-api"]

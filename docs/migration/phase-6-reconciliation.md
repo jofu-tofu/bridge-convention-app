@@ -122,7 +122,7 @@ Post-migration audit reconciling behavioral differences between the deleted TS b
 
 **Fixed:** `src/engine/mc-dds-play.ts` implements deal sampling (Fisher-Yates with constraint filtering), batched DDS evaluation (15 deals/batch, up to 2 batches), early termination when top-2 cards diverge ≥0.5 avg tricks, and close-call extension. `mcDdsSuggest()` is wired into `play-phase.svelte.ts`: profile dispatch checks `deps.useMcDds()` (Expert/WorldClass + DDS available), calls `mcDdsSuggest()` with belief-constrained remaining-card sampling, then executes the suggestion via `playSingleCard()` → `process_single_card()` in Rust. Expert samples randomly (no beliefs); WorldClass adds belief-constraint filtering via `PlayProfile.use_posterior`. Beginner/ClubPlayer profiles continue using the synchronous Rust heuristic chain via `playCard()`.
 
-**Files:** `src/engine/mc-dds-play.ts`, `src/stores/play-phase.svelte.ts`, `src-tauri/crates/bridge-session/src/session/play_controller.rs` (`process_single_card`)
+**Files:** `src/engine/mc-dds-play.ts`, `src/stores/play-phase.svelte.ts`, `crates/bridge-session/src/session/play_controller.rs` (`process_single_card`)
 
 ### 5.2 ~~Inference-aware play missing~~ (P1) ✅ COMPLETE
 

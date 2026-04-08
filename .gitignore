@@ -16,10 +16,10 @@ mockups
 dist/
 
 # Rust build artifacts
-src-tauri/target/
+target/
 
 # WASM build output
-src-tauri/crates/bridge-wasm/pkg/
+crates/bridge-wasm/pkg/
 
 # Playwright artifacts
 test-results/

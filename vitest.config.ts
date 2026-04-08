@@ -9,7 +9,7 @@ export default defineConfig({
     alias: {
       "bridge-wasm": path.resolve(
         __dirname,
-        "src-tauri/crates/bridge-wasm/pkg",
+        "crates/bridge-wasm/pkg",
       ),
     },
   },

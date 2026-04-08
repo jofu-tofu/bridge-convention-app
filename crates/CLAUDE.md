@@ -1,12 +1,12 @@
-# Rust Backend (src-tauri/)
+# Rust Workspace (crates/)
 
-Cargo workspace with seven crates implementing the bridge engine, convention data model, session logic, service layer, and API server in Rust.
+Cargo workspace with six crates implementing the bridge engine, convention data model, session logic, service layer, and API server in Rust.
 
 ## Commands
 
 | Command                       | Purpose                                                     |
 | ----------------------------- | ----------------------------------------------------------- |
-| `cargo build --workspace`     | Build all crates (run from `src-tauri/`)                    |
+| `cargo build --workspace`     | Build all crates                                            |
 | `cargo test --workspace`      | Run all Rust tests                                          |
 | `cargo test -p bridge-engine` | Test engine crate only                                      |
 | `cargo test -p bridge-conventions` | Test conventions crate (includes golden-master fixture tests) |
@@ -64,9 +64,6 @@ crates/
   bridge-service/      Service layer — ServicePort trait + ServicePortImpl wrapping SessionManager.
                        Thin hexagonal port between UI/WASM/CLI and game logic. Depends on
                        bridge-engine, bridge-conventions, bridge-session.
-  bridge-tauri/        Tauri v2 app — #[tauri::command] handlers wrapping ServicePortImpl
-                       (Mutex-managed state). service_commands.rs has all 19 ServicePort + 5
-                       DevServicePort commands.
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
                        for browser deployment. All 20 ServicePort methods + async DDS play
                        methods (play_card_dds, needs_dds_play, set_dds_solver) +
@@ -80,9 +77,9 @@ crates/
 ## Conventions
 
 - **Debug log carries evaluation snapshots.** `DebugLogEntry` in `bridge-session` stores `Option<StrategyEvaluation>` captured from `stashed_evaluation()` at each bid. Gated by `cfg!(debug_assertions)` — release builds store `None`. The service DTO serializes this to JSON (`serde_json::Value`) at the transport boundary, injecting an `expectedBid` field to match the TS `DebugSnapshotBase` shape. This log is the single source of truth for the debug drawer and future review-phase analysis panel.
-- **bridge-engine purity:** Zero platform deps (no tauri, axum, tokio). Only serde, rand, thiserror. No convention awareness — `BidResult` carries no `FactConstraint`. Convention constraints flow through `SessionState::process_bid()` as a separate parameter. `BiddingStrategy::stashed_evaluation()` returns `Box<dyn Any>` so `bridge-session` can downcast to `StrategyEvaluation` without `bridge-engine` importing convention types.
+- **bridge-engine purity:** Zero platform deps (no axum, tokio). Only serde, rand, thiserror. No convention awareness — `BidResult` carries no `FactConstraint`. Convention constraints flow through `SessionState::process_bid()` as a separate parameter. `BiddingStrategy::stashed_evaluation()` returns `Box<dyn Any>` so `bridge-session` can downcast to `StrategyEvaluation` without `bridge-engine` importing convention types.
 - **Free functions, not a trait:** Engine functions called directly. Transport crates are the abstraction.
-- **Error boundary:** `EngineError` for domain logic. Tauri returns `Result<T, String>`. WASM returns `Result<JsValue, JsError>`.
+- **Error boundary:** `EngineError` for domain logic. WASM returns `Result<JsValue, JsError>`.
 - **RNG:** ChaCha8Rng with `seed: Option<u64>`. Same seed = deterministic Rust output. NOT cross-engine portable with TS (different PRNG algorithms).
 - **Serde contract:**
   - Enums: `#[serde(rename = "C")]` etc. to match TS string values
@@ -98,8 +95,7 @@ crates/
 1. Add the method to `ServicePort` trait in `bridge-service/src/port.rs`
 2. Implement it in `ServicePortImpl` in `bridge-service/src/service_impl.rs`
 3. Add `#[wasm_bindgen]` wrapper in `bridge-wasm/src/lib.rs` (JsValue in/out via serde_wasm_bindgen)
-4. Add `#[tauri::command]` handler in `bridge-tauri/src/service_commands.rs`, wire in `lib.rs`
-5. Add tests in service and transport crates
+4. Add tests in service and transport crates
 
 ## DDS Integration
 
@@ -116,11 +112,10 @@ Rules for all Rust types crossing the WASM boundary:
 ## Gotchas
 
 - `Cargo.lock` is auto-generated — commit it for reproducible builds
-- Tauri `generate_context!()` requires RGBA PNG icons in `bridge-tauri/icons/`
 - `HashMap<Seat, Hand>` serde works because `Seat` has `Ord` derive and single-char renames
 - `DealConstraints` has no `customCheck`/`rng` fields (TS-only). Uses `seed: Option<u64>` instead.
-- `generate_deal` Tauri/WASM returns `Deal` (not `DealGeneratorResult`)
-- **Never build bridge-wasm via `cargo build --workspace`**; always use `wasm-pack` to prevent `getrandom/js` feature from bleeding into native builds
+- `generate_deal` WASM returns `Deal` (not `DealGeneratorResult`)
+- WASM must be built via `wasm-pack` (not `cargo build`), because `wasm-pack` handles `--target web`, `.wasm` packaging, and JS glue generation
 
 ---
 

@@ -120,13 +120,13 @@ async function initWasmModule(): Promise<void> {
   const isNode = typeof globalThis.process !== "undefined" && globalThis.process.versions?.node;
 
   if (isNode) {
-    const wasmModule = await import("../../src-tauri/crates/bridge-wasm/pkg/bridge_wasm.js");
+    const wasmModule = await import("../../crates/bridge-wasm/pkg/bridge_wasm.js");
     const raw = wasmModule as unknown as Record<string, unknown>;
     const nodeFs = await import("node:fs");
     const nodePath = await import("node:path");
     const nodeUrl = await import("node:url");
     const projectRoot = nodePath.resolve(nodePath.dirname(nodeUrl.fileURLToPath(import.meta.url)), "../..");
-    const wasmPath = nodePath.resolve(projectRoot, "src-tauri/crates/bridge-wasm/pkg/bridge_wasm_bg.wasm");
+    const wasmPath = nodePath.resolve(projectRoot, "crates/bridge-wasm/pkg/bridge_wasm_bg.wasm");
     const wasmBytes = nodeFs.readFileSync(wasmPath);
     const initSync = raw.initSync as (input: { module: WebAssembly.Module }) => void;
     initSync({ module: new WebAssembly.Module(wasmBytes) });

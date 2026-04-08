@@ -39,7 +39,7 @@ Complete game sessions run entirely in Rust. Create → bid through auction → 
 ## New Crate
 
 ```
-src-tauri/crates/bridge-session/
+crates/bridge-session/
   Cargo.toml
   src/
     lib.rs                          # Crate root, re-exports

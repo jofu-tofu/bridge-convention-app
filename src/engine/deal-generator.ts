@@ -59,7 +59,7 @@ function dealFromShuffled(
  * Single point of constraint validation for deal generation.
  *
  * INVARIANT: All deal generation must route through this function (via generateDeal)
- * so that customCheck is evaluated. The WASM/Tauri engines strip customCheck during
+ * so that customCheck is evaluated. The WASM engine strip customCheck during
  * serialization (cleanConstraints) — callers needing customCheck must use the TS
  * generator directly, not engine.generateDeal().
  */

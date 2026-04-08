@@ -1,6 +1,6 @@
 # Bridge Practice App
 
-Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). Tauri 2 desktop + WASM browser (VPS via Docker/Caddy). Svelte 5 (runes) + TypeScript strict. Uses meaning-centric pipeline exclusively (old tree/protocol/overlay pipeline removed).
+Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). WASM browser (VPS via Docker/Caddy). Svelte 5 (runes) + TypeScript strict. Uses meaning-centric pipeline exclusively (old tree/protocol/overlay pipeline removed).
 
 ## Commands
 
@@ -24,8 +24,8 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). T
 | `npx tsx src/cli/main.ts selftest --bundle=<id>` | Strategy self-consistency check                          |
 | `npm run format`                                 | Prettier format all files                                |
 | `npm run format:check`                           | Prettier check (CI)                                      |
-| `cargo test --workspace`                         | Run all Rust tests (from src-tauri/)                     |
-| `cargo build --workspace`                        | Build all Rust crates (from src-tauri/)                  |
+| `cargo test --workspace`                         | Run all Rust tests                                       |
+| `cargo build --workspace`                        | Build all Rust crates                                    |
 
 ## Deployment
 
@@ -82,7 +82,7 @@ Backward compat aliases: `?coverage=true` → `?screen=coverage`, `?profiles=tru
 
 ## Conventions
 
-- **Pure engine.** `src/engine/` has zero imports from svelte, tauri, DOM APIs.
+- **Pure engine.** `src/engine/` has zero imports from svelte, DOM APIs.
 - **Service is the sole interface for UI and CLI.** All UI components (`components/`, `stores/`) and CLI commands (`cli/`) must import exclusively from `service/` — never directly from `engine/`. Backend logic (conventions, inference, session) lives entirely in Rust. When adding new functionality the UI needs, expose it through `ServicePort` in Rust, then add the WASM binding and TS proxy method.
 - **Svelte 5 runes.** Use `$state`, `$derived`, `$effect` — no legacy `$:` reactive statements
 - **Named exports only.** No `export default` — for greppability
@@ -139,15 +139,13 @@ src/
     screens/       Screen-level components (ConventionSelectScreen, LearningScreen, game-screen/GameScreen)
     game/          Game components + co-located .ts companions (DecisionTree.ts, RoundBidList.ts, BidFeedbackPanel.ts)
     shared/        Reusable components (Card, Button, ConventionCallout) + display utilities (tokens, sort-cards, seat-mapping, table-scale, breakpoints, vulnerability-labels, layout-props)
-src-tauri/         Cargo workspace with seven crates
-  crates/
-    bridge-engine/       Pure Rust game logic (types, hand eval, deal gen, auction, scoring, play)
-    bridge-conventions/  Convention types, fact DSL, pipeline, teaching, adapter
-    bridge-session/      Session state, controllers, heuristics, inference
-    bridge-service/      ServicePort impl, viewport builders
-    bridge-tauri/        Tauri app with #[tauri::command] handlers wrapping ServicePortImpl
-    bridge-wasm/         WASM bindings via wasm-bindgen for browser deployment (full ServicePort)
-    bridge-api/          Axum API server — auth, user data (DataPort). Independent of game crates.
+crates/            Rust workspace with six crates
+  bridge-engine/       Pure Rust game logic (types, hand eval, deal gen, auction, scoring, play)
+  bridge-conventions/  Convention types, fact DSL, pipeline, teaching, adapter
+  bridge-session/      Session state, controllers, heuristics, inference
+  bridge-service/      ServicePort impl, viewport builders
+  bridge-wasm/         WASM bindings via wasm-bindgen for browser deployment (full ServicePort)
+  bridge-api/          Axum API server — auth, user data (DataPort). Independent of game crates.
 tests/
   e2e/             Playwright E2E tests
 ```
@@ -157,16 +155,16 @@ tests/
 | Subsystem          | Entry                                  | Summary                                                 |
 | ------------------ | -------------------------------------- | ------------------------------------------------------- |
 | Engine (TS)        | `src/engine/types.ts`                  | TS engine types + DDS browser support                   |
-| Engine (Rust)      | `src-tauri/crates/bridge-engine/`      | Pure Rust game logic                                    |
-| Conventions (Rust) | `src-tauri/crates/bridge-conventions/` | Convention types, fact DSL, pipeline, teaching, adapter |
-| Session (Rust)     | `src-tauri/crates/bridge-session/`     | Session state, controllers, heuristics, inference       |
-| Service (Rust)     | `src-tauri/crates/bridge-service/`     | ServicePort impl, viewport builders                     |
+| Engine (Rust)      | `crates/bridge-engine/`      | Pure Rust game logic                                    |
+| Conventions (Rust) | `crates/bridge-conventions/` | Convention types, fact DSL, pipeline, teaching, adapter |
+| Session (Rust)     | `crates/bridge-session/`     | Session state, controllers, heuristics, inference       |
+| Service (Rust)     | `crates/bridge-service/`     | ServicePort impl, viewport builders                     |
 | Service (TS)       | `src/service/index.ts`                 | WASM proxy + barrel + session-types + display/ + util/  |
 | CLI                | `src/cli/main.ts`                      | Session-based convention evaluation CLI                 |
 | Test Support       | `src/test-support/engine-stub.ts`      | Shared test factories                                   |
 | Stores             | `src/stores/app.svelte.ts`             | Svelte stores + game coordinator                        |
 | Components         | —                                      | Svelte UI (screens/game/shared)                         |
-| API (Rust)         | `src-tauri/crates/bridge-api/`         | Axum API server — auth, user data (DataPort)            |
+| API (Rust)         | `crates/bridge-api/`         | Axum API server — auth, user data (DataPort)            |
 | Tests              | `tests/e2e/`                           | Vitest + Playwright                                     |
 
 **Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION. User always bids as South. `playPreference` (from practice mode) controls BIDDING exit: `skip` → EXPLANATION, `always` → PLAYING, `prompt` → DECLARER_PROMPT.
@@ -183,7 +181,7 @@ See `docs/migration/index.md` for the phase tracker and architectural decisions.
 - `npm run dev` builds WASM if `pkg/` missing, then starts Vite with HMR — the dev server stays running and reflects file changes instantly. Do NOT restart the server or browser after editing source files; just save and the page updates automatically
 - WASM must build before Vite (`npm run dev` handles this automatically via `wasm:ensure`)
 - **WASM required for browser.** All game logic runs in Rust via WASM. If WASM init fails, the app shows an error screen — no fallback. See `docs/gotchas.md` for details.
-- Never build bridge-wasm via `cargo build --workspace`; always use `wasm-pack` to isolate feature resolution and prevent `getrandom/js` from bleeding into native builds
+- WASM must be built via `wasm-pack` (not `cargo build`), because `wasm-pack` handles `--target web`, `.wasm` packaging, and JS glue generation
 - Read a subsystem's CLAUDE.md before working in that directory
 - Full testing playbook is in **TESTING.md**, not here
 - Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before svelte() in `vite.config.ts`
@@ -197,7 +195,7 @@ See `docs/migration/index.md` for the phase tracker and architectural decisions.
 
 - `src/engine/CLAUDE.md` — engine types, DDS browser support, module graph
 - `src/service/CLAUDE.md` — WASM proxy, display/, util/, session-types
-- `src-tauri/CLAUDE.md` — Rust workspace: 7 crates, serde contract, commands
+- `crates/CLAUDE.md` — Rust workspace: 6 crates, serde contract, commands
 - `src/cli/CLAUDE.md` — headless coverage test runner
 - `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns
 - `src/stores/CLAUDE.md` — factory DI pattern, game store methods, race condition handling

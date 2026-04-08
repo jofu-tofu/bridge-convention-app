@@ -100,7 +100,7 @@ export default tseslint.config(
   {
     ignores: [
       "node_modules/",
-      "src-tauri/",
+      "crates/",
       "dist/",
       "build/",
       "coverage/",
@@ -400,7 +400,6 @@ export default tseslint.config(
     ignores: [
       "src/engine/__tests__/**",
       "src/engine/**/*.test.ts",
-      "src/engine/tauri-ipc-engine.ts",
       "src/engine/wasm-engine.ts",
       "src/engine/dds-client.ts",
       "src/engine/dds-worker.ts",

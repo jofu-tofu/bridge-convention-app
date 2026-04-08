@@ -4,8 +4,8 @@
   "description": "Bridge convention practice app — drill Stayman, Gerber, DONT, Bergen Raises",
   "type": "module",
   "scripts": {
-    "wasm:build": "wasm-pack build src-tauri/crates/bridge-wasm --target web --out-dir pkg",
-    "wasm:dev": "wasm-pack build src-tauri/crates/bridge-wasm --target web --out-dir pkg --dev",
+    "wasm:build": "wasm-pack build crates/bridge-wasm --target web --out-dir pkg",
+    "wasm:dev": "wasm-pack build crates/bridge-wasm --target web --out-dir pkg --dev",
     "wasm:ensure": "bash scripts/ensure-wasm.sh",
     "dds:build": "bash scripts/build-dds-wasm.sh",
     "dds:ensure": "bash scripts/ensure-dds.sh",
@@ -14,9 +14,6 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
-    "tauri": "tauri",
-    "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
     "pretest": "npm run wasm:ensure",
     "test": "vitest",
     "pretest:run": "npm run wasm:ensure",
@@ -34,14 +31,10 @@
     "format:check": "prettier --check ."
   },
   "license": "MIT",
-  "dependencies": {
-    "@tauri-apps/api": "^2"
-  },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "@tailwindcss/vite": "^4.2.0",
-    "@tauri-apps/cli": "^2",
     "@testing-library/svelte": "^5.2.0",
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^3.0.0",

@@ -4,11 +4,11 @@ Pure TypeScript game logic. Zero platform dependencies.
 
 ## Conventions
 
-- Pure engine logic modules (`auction.ts`, `scoring.ts`, `play.ts`, `deal-generator.ts`, etc.) never import from `svelte`, `@tauri-apps/*`, `window`, `document`, or `localStorage`. DDS modules (`dds-client.ts`, `dds-worker.ts`) are the explicit exceptions (DDS uses Worker API).
+- Pure engine logic modules (`auction.ts`, `scoring.ts`, `play.ts`, `deal-generator.ts`, etc.) never import from `svelte`, `window`, `document`, or `localStorage`. DDS modules (`dds-client.ts`, `dds-worker.ts`) are the explicit exceptions (DDS uses Worker API).
 - Engine is a leaf module — it does not import from `strategy/`, `conventions/`, `inference/`, `stores/`, `components/`, or other higher-level modules. Cross-boundary types that engine needs are defined locally in `engine/` or passed in by callers.
 - `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only
 - Utility functions (`calculateHcp`, `getSuitLength`, `isBalanced`) exported separately for reuse by deal-generator
-- All bidding/scoring/play methods implemented. DDS works via native Tauri (desktop) or DDS Web Worker (browser). `suggestPlay` throws in all builds — not yet implemented.
+- All bidding/scoring/play methods implemented. DDS works via DDS Web Worker (browser). `suggestPlay` throws in all builds — not yet implemented.
 
 ## Architecture
 
@@ -57,7 +57,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 
 - **Engine called from Rust directly.** The Rust `bridge-engine` crate is the primary engine. TS engine modules (`deal-generator.ts`, `auction.ts`, `scoring.ts`, `play.ts`) exist as reference implementations but are not used at runtime — all game logic flows through `bridge-service` → `bridge-session` → `bridge-engine` in Rust.
 - **RNG:** Rust uses ChaCha8Rng. TS uses mulberry32. Same seed produces different deals — seeds are not cross-engine portable.
-- **DDS browser support:** DDS works via DDS Web Worker (Emscripten-compiled C++ DDS in browser) or native `dds-bridge` FFI (Tauri desktop). `initDDS()` fires in background; `isDDSAvailable()` gates calls. Par is always null in browser (mode=-1). `solveBoardWasm()` exposes per-card optimal play via `SolveBoardPBN`.
+- **DDS browser support:** DDS works via DDS Web Worker (Emscripten-compiled C++ DDS in browser). `initDDS()` fires in background; `isDDSAvailable()` gates calls. Par is always null (mode=-1). `solveBoardWasm()` exposes per-card optimal play via `SolveBoardPBN`.
 
 ---
 

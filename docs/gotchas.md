@@ -5,20 +5,18 @@ Detailed technical notes, historical context, and non-obvious decisions. Read wh
 ## Engine & WASM
 
 ### WASM Required for Browser
-All game logic runs in Rust via WASM (`WasmService`); desktop uses Tauri IPC. If WASM init fails, the app shows an error screen — there is no fallback. TS engine modules (`deal-generator.ts`, `auction.ts`, etc.) exist as reference implementations but are not used at runtime. Vercel deploys install Rust + wasm-pack via `scripts/vercel-build.sh` and produce a real WASM build. Stub files (`scripts/ensure-wasm-stubs.sh`) are retained as a fallback if the WASM toolchain is unavailable.
+All game logic runs in Rust via WASM (`WasmService`). If WASM init fails, the app shows an error screen — there is no fallback. TS engine modules (`deal-generator.ts`, `auction.ts`, etc.) exist as reference implementations but are not used at runtime. Vercel deploys install Rust + wasm-pack via `scripts/vercel-build.sh` and produce a real WASM build. Stub files (`scripts/ensure-wasm-stubs.sh`) are retained as a fallback if the WASM toolchain is unavailable.
 
 ### DDS Browser Implementation
-DDS table analysis works in browser via Emscripten-compiled C++ DDS in a Web Worker (`dds-client.ts`). The deal is extracted from the Rust service as a PBN string (`getDealPBN`), then sent to the worker for solving. `initDDS()` fires at app startup (fire-and-forget); `isDDSAvailable()` gates calls. Par is always null in browser (mode=-1). `suggestPlay()` remains desktop-only. DDS WASM artifacts (`static/dds/`) are committed; rebuild with `npm run dds:build` (requires Emscripten).
+DDS table analysis works via Emscripten-compiled C++ DDS in a Web Worker (`dds-client.ts`). The deal is extracted from the Rust service as a PBN string (`getDealPBN`), then sent to the worker for solving. `initDDS()` fires at app startup (fire-and-forget); `isDDSAvailable()` gates calls. Par is always null (mode=-1). DDS WASM artifacts (`static/dds/`) are committed; rebuild with `npm run dds:build` (requires Emscripten).
 
 ### vendor/dds
-`vendor/dds/` is an upstream DDS C++ source checkout and `vendor/dds-patches/` holds local Emscripten/build patches for producing the browser double-dummy WASM bundle (`static/dds/`); app-level bridge logic in `src/` and `src-tauri/` remains clean-room.
+`vendor/dds/` is an upstream DDS C++ source checkout and `vendor/dds-patches/` holds local Emscripten/build patches for producing the browser double-dummy WASM bundle (`static/dds/`); app-level bridge logic in `src/` and `crates/` remains clean-room.
 
 ## DDS Architecture (Post-Migration)
 
-- `dds-bridge` C++ FFI can't compile to wasm32
-- Two-path design: Tauri = native DDS via bridge-engine, WASM = JS worker fallback via PBN extraction
-- `src/service/dds-bridge.ts` handles platform dispatch with callback injection (must not import wasm-service.ts directly — circular import)
-- `getDealPBN(handle)` extracts deal as PBN string from Rust service for browser DDS worker
+- DDS runs via Emscripten C++ Web Worker in browser only
+- `getDealPBN(handle)` extracts deal as PBN string from Rust service for DDS worker
 
 ## Convention System
 
@@ -60,8 +58,7 @@ ConventionSelect → GameScreen (Bidding) → GameScreen (Playing) → Explanati
 ```
 
 ### V1 → V2 Migration Path
-- **Storage:** V2 replaces localStorage with SQLite via `tauri-plugin-sql` for stats/progress tracking
-- **Mobile:** If Tauri 2.0 mobile insufficient, frontend lifts into Capacitor shell. Engine has zero Tauri imports.
+- **Storage:** V2 replaces localStorage with SQLite via bridge-api for stats/progress tracking
 
 ## Learning Screen Vision
 

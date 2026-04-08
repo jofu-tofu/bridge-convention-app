@@ -73,7 +73,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 ## Gotchas
 
-- `EnginePort` methods are async. Rust backends (TauriIpcEngine, WasmEngine) wrap sync calls in Promises.
+- `EnginePort` methods are async. Rust backend (WasmEngine) wraps sync calls in Promises.
 - `BiddingContext` constructed via `createBiddingContext()` factory from `conventions/core/context-factory.ts` (includes optional `vulnerability`/`dealer` with safe defaults)
 - `context.ts` provides Svelte context DI helpers (`setGameStore`, `setAppStore`, `setService`, `setCustomSystemsStore`, `setUserModuleStore` + matching getters) — used by `AppShell.svelte` and components
 - `BidHistoryEntry` maps directly from `BidResult` fields (`call`, `ruleName`, `explanation`, `meaning`) + `seat` and `isUser`

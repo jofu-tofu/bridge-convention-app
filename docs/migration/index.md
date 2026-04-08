@@ -20,14 +20,13 @@ Backend modules (`conventions/`, `inference/`, `session/`, `service/`) have been
 ### Crate Structure
 
 ```
-src-tauri/crates/
+crates/
   bridge-engine/        Pure Rust game logic
   bridge-conventions/   Convention types, fact DSL, pipeline, teaching, adapter
   bridge-session/       Session state, controllers, heuristics, inference
   bridge-service/       ServicePort impl, viewport builders
   bridge-wasm/          WASM bindings for full ServicePort (23 + 6 debug methods)
-  bridge-tauri/         Tauri commands for full ServicePort
-```
+  ```
 
 ### Data Flow
 

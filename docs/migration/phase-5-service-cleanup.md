@@ -25,7 +25,7 @@ The entire backend runs in Rust/WASM. TS `service/` is a ~100 LOC proxy that ser
 ## New Crate
 
 ```
-src-tauri/crates/bridge-service/
+crates/bridge-service/
   Cargo.toml
   src/
     lib.rs
@@ -51,7 +51,7 @@ src-tauri/crates/bridge-service/
 3. **Port display/ utilities** (call formatting, convention cards, hand summary)
 4. **Port evaluation/ logic** (atom evaluator, playthrough evaluator)
 5. **Extend `bridge-wasm`** with full ServicePort via `wasm-bindgen`
-6. **Extend `bridge-tauri`** with full ServicePort via Tauri commands
+6. ~~**Extend `bridge-tauri`** with full ServicePort via Tauri commands~~ (removed — desktop path dropped)
 7. **Rewrite TS `service/`** as thin WASM proxy (~100 LOC)
 8. **Delete TS backend** (`conventions/`, `inference/`, `session/`)
 
@@ -90,7 +90,7 @@ export class WasmService implements ServicePort {
 - [ ] Display utilities ported
 - [ ] Evaluation logic ported
 - [ ] `bridge-wasm` extended with full ServicePort
-- [ ] `bridge-tauri` extended with full ServicePort
+- [x] ~~`bridge-tauri` extended with full ServicePort~~ (removed — desktop path dropped)
 - [ ] TS `service/` rewritten as thin proxy
 - [ ] TS `conventions/` deleted
 - [ ] TS `inference/` deleted

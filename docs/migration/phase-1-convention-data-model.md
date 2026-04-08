@@ -14,7 +14,7 @@ All TS convention types deserialize correctly in Rust. No evaluation logic yet �
 ## New Crate
 
 ```
-src-tauri/crates/bridge-conventions/
+crates/bridge-conventions/
   Cargo.toml
   src/
     lib.rs
@@ -71,6 +71,6 @@ This produces the golden-master fixture for round-trip testing.
 - [x] Build script exports all 6 bundles to JSON fixtures (bundle JSON no longer embeds modules — modules are runtime-derived from module registry)
 - [x] Round-trip tests pass for all bundles
 - [x] `Cargo.toml` workspace member added
-- [x] Update `src-tauri/CLAUDE.md` (if it exists) with new crate
+- [x] Update `crates/CLAUDE.md` (if it exists) with new crate
 - [x] Update `src/conventions/CLAUDE.md` — note Rust type mirror exists
 - [x] Update `docs/migration/index.md` phase tracker status

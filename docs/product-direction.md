@@ -92,7 +92,7 @@ Browser ──fetch──► Caddy ──/api/*──► Axum (bridge-api :3001)
 
 **Cookie-based CSRF:** OAuth `state` parameter stored in short-lived httpOnly cookie (10-min TTL), verified on callback.
 
-**Crate:** `src-tauri/crates/bridge-api/` — standalone binary, independent of game crates (no bridge-engine/conventions/session/service deps). See `Dockerfile.api` for container build.
+**Crate:** `crates/bridge-api/` — standalone binary, independent of game crates (no bridge-engine/conventions/session/service deps). See `Dockerfile.api` for container build.
 
 **Frontend:** `src/service/auth.ts` (AuthClient) → `src/stores/auth.svelte.ts` (auth store via DI) → components. Same service boundary pattern as ServicePort.
 
@@ -115,7 +115,6 @@ Browser ──fetch──► Caddy ──/api/*──► Axum (bridge-api :3001)
 
 - IP protection (opaque binary vs readable JS)
 - Client-side compute (no server cost per user)
-- Tauri alignment (same Rust crate for desktop native + browser WASM)
 - Forced architecture improvement during port
 - Learning opportunity (user is learning Rust — phases are designed as achievable milestones)
 

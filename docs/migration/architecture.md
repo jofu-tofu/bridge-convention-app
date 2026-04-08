@@ -5,7 +5,7 @@ Detailed architectural decisions and Rust type sketches for the Rust/WASM migrat
 ## Target Crate Structure
 
 ```
-src-tauri/crates/
+crates/
   bridge-engine/         # (exists) Game primitives: types, hand eval, deal gen, auction, scoring
   bridge-conventions/    # (new) Convention system — all of conventions/ ported
     src/
@@ -32,7 +32,7 @@ src-tauri/crates/
       display/           # Call/card formatting, hand summary
       evaluation/        # Atom evaluator, playthrough evaluator
   bridge-wasm/           # (exists, extended) Full ServicePort via wasm-bindgen
-  bridge-tauri/          # (exists, extended) Full ServicePort via Tauri commands
+  # bridge-tauri/ removed — desktop path dropped, browser-only via WASM
 ```
 
 ## Declarative Fact DSL

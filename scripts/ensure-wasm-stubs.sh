@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-PKG_DIR="src-tauri/crates/bridge-wasm/pkg"
+PKG_DIR="crates/bridge-wasm/pkg"
 
 if [ -f "$PKG_DIR/bridge_wasm.js" ] && [ -f "$PKG_DIR/index.js" ]; then
   echo "[wasm-stubs] WASM build or stubs already exist, skipping."
@@ -110,7 +110,7 @@ import type {
   SuitLength,
   Trick,
   Vulnerability,
-} from "../../../../src/engine/types";
+} from "../../../src/engine/types";
 
 declare function init(input?: unknown): Promise<void>;
 export { init as default };

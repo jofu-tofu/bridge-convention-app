@@ -23,8 +23,8 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            src-tauri/target
-          key: cargo-wasm-${{ hashFiles('src-tauri/Cargo.lock') }}-${{ steps.rust-toolchain.outputs.cachekey }}
+            target
+          key: cargo-wasm-${{ hashFiles('Cargo.lock') }}-${{ steps.rust-toolchain.outputs.cachekey }}
 
       - name: Install wasm-pack
         uses: jetli/wasm-pack-action@v0.4.0
