@@ -31,11 +31,11 @@ components/
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     WorkshopScreen.svelte            System/convention/practice pack management — three-tab toggle (Systems, Conventions, Practice Packs). Hosts SystemEditor inline. Practice Packs tab: custom pack list with Edit/Delete, new pack creation (blank or fork from built-in bundle), built-in pack cards with Fork.
     ConventionEditorScreen.svelte    Convention parameter editor — rename + threshold editing for user-owned conventions. Navigated to from ModuleViewer "Customize"/"Edit" buttons.
-    PracticePackEditorScreen.svelte  Practice pack builder — name/description + convention checklist with reorder. Supports create blank, fork from bundle, and edit modes.
+    PracticePackEditorScreen.svelte  Practice pack builder — name/description + convention selection via ModuleChecklist with reorder. Supports create blank, fork from bundle, and edit modes.
     ConventionsSection.svelte        Convention browser: sidebar (ModuleSidebar) + main content (ModuleViewer). Fork flow wired: fork button creates user module, navigates to editor.
     ModuleSidebar.svelte             Two-section module list: "My Conventions" (user modules with source attribution) at top, separated from system modules grouped by category. "customized" badge on system modules with user forks. Search across both sections.
     ModuleViewer.svelte              Module detail view: header, teaching content, conversation flow tree. "Customize" button for system modules forks (with error handling) and navigates to ConventionEditorScreen. "Edit" button for user modules navigates directly to editor.
-    SystemEditor.svelte              Custom system editor — single-panel layout with strength bar + 3-column grid (Opening | Strength | Competitive+Modules). No tabs, no scrolling on desktop. Merged system + user modules with mutual exclusion, badges, compact 2-col checklist. Header with name input, preset select, error badge, save/cancel.
+    SystemEditor.svelte              Custom system editor — single-panel layout with strength bar + 3-column grid (Opening | Strength | Competitive+Modules). No tabs, no scrolling on desktop. Module listing delegated to ModuleChecklist with mutual exclusion in toggleModule(). Header with name input, preset select, error badge, save/cancel.
     StrengthBar.svelte               Horizontal bar showing weak/invite/game/slam zones with threshold labels. Reactive to threshold prop changes.
     strength-bar.ts                  Companion: zone types, color constants, thresholdPct() pure function.
     SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards. TP-enabled categories render 3-column mini-table (NT / HCP, Suit / TP).
@@ -110,6 +110,8 @@ components/
     NumberStepper.svelte             Horizontal [-] N [+] input with auto-repeat long-press, clamp, keyboard arrows
     NumberStepper.ts                 Pure helpers: clamp(), createAutoRepeat() for NumberStepper testability
     RangeStepper.svelte              Composes two NumberStepper instances with "to" separator and shared suffix
+    module-catalog.ts                Single source of truth for module categorization: MODULE_CATEGORIES, CATEGORY_DISPLAY, CatalogModule, mergeModules(), groupByCategory(), filterModules(). Pure functions — no store/Svelte imports. All screens import from here.
+    ModuleChecklist.svelte           Shared collapsible checkbox grid for module selection: search, collapsible category sections, count badges, provenance badges (custom/customized). Used by SystemEditor and PracticePackEditorScreen.
   __tests__/
     ButtonTestWrapper.svelte         Snippet wrapper for Button tests
     BridgeTableTestWrapper.svelte    Snippet wrapper for BridgeTable tests

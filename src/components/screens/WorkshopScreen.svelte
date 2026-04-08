@@ -18,6 +18,8 @@
   let compareMode = $state(false);
   let editingSystem = $state<CustomSystem | null>(null);
   let creatingFrom = $state<BaseSystemId | null>(null);
+  let forkFromBundle = $state("");
+  let showNewSystemMenu = $state(false);
 
   const presetConfig = $derived(viewingPreset ? getSystemConfig(viewingPreset) : null);
   const builtInBundles: ConventionInfo[] = listConventions();
@@ -228,29 +230,40 @@
         <div class="bg-bg-card border border-border-subtle border-dashed rounded-[--radius-lg] p-4 mt-2">
           <p class="text-sm font-medium text-text-primary mb-2">New Practice Pack</p>
           <p class="text-xs text-text-muted mb-3">Create a blank pack or start from an existing one:</p>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap items-center gap-2">
             <button
               class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium bg-accent-primary text-text-on-accent hover:bg-accent-primary/90 transition-colors cursor-pointer"
               onclick={() => appStore.navigateToPackEditor(null)}
             >
               Blank
             </button>
-            {#each builtInBundles as bundle (bundle.id)}
-              <button
-                class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-accent-primary transition-colors cursor-pointer"
-                onclick={() => appStore.navigateToPackEditor(null, bundle.id)}
-                data-testid="workshop-fork-bundle-{bundle.id}"
-              >
-                {bundle.name}
-              </button>
-            {/each}
+            <span class="text-xs text-text-muted">or start from:</span>
+            <select
+              class="bg-bg-base border border-border-subtle rounded-[--radius-md] px-3 py-1.5 text-xs text-text-primary cursor-pointer"
+              bind:value={forkFromBundle}
+              data-testid="workshop-fork-bundle-select"
+            >
+              <option value="">Choose a practice pack...</option>
+              {#each builtInBundles as bundle (bundle.id)}
+                <option value={bundle.id}>{bundle.name}</option>
+              {/each}
+            </select>
+            <button
+              class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-accent-primary transition-colors cursor-pointer
+                {!forkFromBundle ? 'opacity-50 cursor-not-allowed' : ''}"
+              disabled={!forkFromBundle}
+              onclick={() => { if (forkFromBundle) appStore.navigateToPackEditor(null, forkFromBundle); }}
+              data-testid="workshop-fork-bundle-button"
+            >
+              Copy
+            </button>
           </div>
         </div>
       </section>
 
-      <!-- Built-in Practice Packs -->
+      <!-- Built-in practice packs -->
       <section>
-        <h2 class="text-lg font-semibold text-text-primary mb-3">Built-in Practice Packs</h2>
+        <h2 class="text-lg font-semibold text-text-primary mb-3">Built-in Packs</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {#each builtInBundles as bundle (bundle.id)}
             {@const moduleCount = bundle.moduleDescriptions?.size ?? 0}
@@ -271,7 +284,7 @@
                 class="mt-3 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-accent-primary transition-colors cursor-pointer self-start"
                 onclick={() => appStore.navigateToPackEditor(null, bundle.id)}
               >
-                Fork
+                Copy &amp; Customize
               </button>
             </div>
           {/each}

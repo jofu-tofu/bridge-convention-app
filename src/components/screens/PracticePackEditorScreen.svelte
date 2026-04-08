@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { ModuleCatalogEntry } from "../../service";
-  import { SvelteMap } from "svelte/reactivity";
   import { getAppStore, getPracticePacksStore, getUserModuleStore } from "../../stores/context";
   import { listModules, listConventions } from "../../service/service-helpers";
+  import { type CatalogModule, mergeModules } from "../shared/module-catalog";
+  import ModuleChecklist from "../shared/ModuleChecklist.svelte";
 
   const appStore = getAppStore();
   const packsStore = getPracticePacksStore();
@@ -12,66 +12,10 @@
   const basedOn = appStore.editingPackBasedOn;
 
   // All available modules (system + user)
-  const systemModules: ModuleCatalogEntry[] = listModules();
+  const systemModules = listModules();
   const builtInBundles = listConventions();
 
-  interface AvailableConvention {
-    id: string;
-    name: string;
-    isCustom: boolean;
-    category: string;
-  }
-
-  const MODULE_CATEGORIES: Record<string, string> = {
-    "natural-bids": "Opening Bids",
-    "strong-2c": "Opening Bids",
-    "stayman": "Notrump Responses",
-    "stayman-garbage": "Notrump Responses",
-    "jacoby-transfers": "Notrump Responses",
-    "jacoby-4way": "Notrump Responses",
-    "smolen": "Notrump Responses",
-    "bergen": "Major Raises",
-    "weak-twos": "Weak Bids",
-    "dont": "Competitive",
-    "michaels-unusual": "Competitive",
-    "blackwood": "Slam",
-  };
-
-  const allConventions = $derived.by((): AvailableConvention[] => {
-    const result: AvailableConvention[] = [];
-    for (const mod of systemModules) {
-      result.push({
-        id: mod.moduleId,
-        name: mod.displayName,
-        isCustom: false,
-        category: MODULE_CATEGORIES[mod.moduleId] ?? "Other",
-      });
-    }
-    for (const um of userModuleStore.listModules()) {
-      const sourceId = um.metadata.forkedFrom?.moduleId;
-      result.push({
-        id: um.metadata.moduleId,
-        name: um.metadata.displayName,
-        isCustom: true,
-        category: sourceId ? (MODULE_CATEGORIES[sourceId] ?? "Other") : "Other",
-      });
-    }
-    return result;
-  });
-
-  // Group conventions by category for the available list
-  const groupedConventions = $derived.by(() => {
-    const groups = new SvelteMap<string, AvailableConvention[]>();
-    for (const conv of allConventions) {
-      const list = groups.get(conv.category);
-      if (list) {
-        list.push(conv);
-      } else {
-        groups.set(conv.category, [conv]);
-      }
-    }
-    return groups;
-  });
+  const allConventions: CatalogModule[] = $derived(mergeModules(systemModules, userModuleStore.listModules()));
 
   // Local editable state
   let editName = $state("");
@@ -136,12 +80,12 @@
   }
 
   function getConventionName(id: string): string {
-    const conv = allConventions.find((c) => c.id === id);
-    return conv?.name ?? id;
+    const conv = allConventions.find((c) => c.moduleId === id);
+    return conv?.displayName ?? id;
   }
 
   function isCustomConvention(id: string): boolean {
-    return allConventions.find((c) => c.id === id)?.isCustom ?? false;
+    return allConventions.find((c) => c.moduleId === id)?.isCustom ?? false;
   }
 
   function handleSave(): void {
@@ -295,28 +239,12 @@
     <!-- Available conventions (grouped checklist) -->
     <section>
       <h2 class="text-sm font-semibold text-text-primary mb-3">Available Conventions</h2>
-      <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-4 space-y-4">
-        {#each [...groupedConventions] as [category, convs] (category)}
-          <div>
-            <p class="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-2">{category}</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">
-              {#each convs as conv (conv.id)}
-                <label class="flex items-center gap-2 px-2 py-1.5 rounded-[--radius-sm] hover:bg-bg-deepest transition-colors cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isSelected.has(conv.id)}
-                    onchange={() => toggleConvention(conv.id)}
-                    class="accent-accent-primary"
-                  />
-                  <span class="text-sm text-text-primary">{conv.name}</span>
-                  {#if conv.isCustom}
-                    <span class="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-accent-primary/15 text-accent-primary">yours</span>
-                  {/if}
-                </label>
-              {/each}
-            </div>
-          </div>
-        {/each}
+      <div class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-4">
+        <ModuleChecklist
+          modules={allConventions}
+          isSelected={(id) => isSelected.has(id)}
+          onToggle={toggleConvention}
+        />
       </div>
     </section>
 

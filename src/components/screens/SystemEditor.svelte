@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SvelteSet, SvelteMap } from "svelte/reactivity";
+  import { SvelteSet } from "svelte/reactivity";
   import type { BaseSystemId, SystemConfig, CustomSystem } from "../../service";
   import { AVAILABLE_BASE_SYSTEMS, getSystemConfig, DEFAULT_BASE_MODULE_IDS } from "../../service";
   import { listModules } from "../../service/service-helpers";
@@ -9,6 +9,8 @@
   import RangeStepper from "../shared/RangeStepper.svelte";
   import { formatPointFormula } from "./profile-display";
   import StrengthBar from "./StrengthBar.svelte";
+  import { type CatalogModule, mergeModules } from "../shared/module-catalog";
+  import ModuleChecklist from "../shared/ModuleChecklist.svelte";
 
   interface Props {
     system: CustomSystem | null;
@@ -184,95 +186,10 @@
     }
   }
 
-  const MODULE_CATEGORIES: Record<string, string> = {
-    "natural-bids": "Opening Bids",
-    "strong-2c": "Opening Bids",
-    "stayman": "Notrump Responses",
-    "stayman-garbage": "Notrump Responses",
-    "jacoby-transfers": "Notrump Responses",
-    "jacoby-4way": "Notrump Responses",
-    "smolen": "Notrump Responses",
-    "bergen": "Major Raises",
-    "weak-twos": "Weak Bids",
-    "dont": "Competitive",
-    "michaels-unusual": "Competitive",
-    "blackwood": "Slam",
-  };
-
-  /** Map ModuleCategory to display name. */
-  const CATEGORY_DISPLAY: Record<string, string> = {
-    "opening-bids": "Opening Bids",
-    "notrump-responses": "Notrump Responses",
-    "major-raises": "Major Raises",
-    "weak-bids": "Weak Bids",
-    "competitive": "Competitive",
-    "slam": "Slam",
-    "custom": "Custom",
-  };
-
-  interface EditorModule {
-    moduleId: string;
-    displayName: string;
-    isCustom: boolean;
-    forkedFromId: string | null;
-    forkedFromVersion: number | null;
-  }
-
-  /** Merge system + user modules into a unified list for the editor. */
-  const mergedEditorModules = $derived.by(() => {
-    const result: EditorModule[] = [];
-    for (const mod of allModules) {
-      result.push({
-        moduleId: mod.moduleId,
-        displayName: mod.displayName,
-        isCustom: false,
-        forkedFromId: null,
-        forkedFromVersion: null,
-      });
-    }
-    for (const um of userModuleStore.listModules()) {
-      result.push({
-        moduleId: um.metadata.moduleId,
-        displayName: um.metadata.displayName,
-        isCustom: true,
-        forkedFromId: um.metadata.forkedFrom?.moduleId ?? null,
-        forkedFromVersion: um.metadata.forkedFrom?.fixtureVersion ?? null,
-      });
-    }
-    return result;
-  });
-
-  const groupedEditorModules = $derived.by(() => {
-    const groups = new SvelteMap<string, EditorModule[]>();
-    for (const mod of mergedEditorModules) {
-      let cat: string;
-      if (mod.isCustom) {
-        const um = userModuleStore.getModule(mod.moduleId);
-        cat = um ? (CATEGORY_DISPLAY[um.metadata.category] ?? "Custom") : "Custom";
-      } else {
-        cat = MODULE_CATEGORIES[mod.moduleId] ?? "Other";
-      }
-      const list = groups.get(cat);
-      if (list) {
-        list.push(mod);
-      } else {
-        groups.set(cat, [mod]);
-      }
-    }
-    return groups;
-  });
+  const catalogModules: CatalogModule[] = $derived(mergeModules(allModules, userModuleStore.listModules()));
 
   const activeModuleCount = $derived(selectedModules.size);
-  const totalModuleCount = $derived(mergedEditorModules.length);
-
-  /** Check staleness: user module's forkedFrom version vs current fixture version. */
-  function isOutdated(mod: EditorModule): boolean {
-    if (!mod.isCustom || !mod.forkedFromId || mod.forkedFromVersion === null) return false;
-    const sourceModule = allModules.find((m) => m.moduleId === mod.forkedFromId);
-    if (!sourceModule) return false;
-    // TODO: when fixtureVersion is exposed on ModuleCatalogEntry, compare properly
-    return false;
-  }
+  const totalModuleCount = $derived(catalogModules.length);
 
   /** Check if a user module ID in selectedModules is unavailable. */
   function isUnavailable(moduleId: string): boolean {
@@ -609,38 +526,14 @@
             </div>
           {/each}
 
-          <div class="space-y-1.5">
-            {#each [...groupedEditorModules] as [category, mods] (category)}
-              <div>
-                <p class="text-[10px] font-semibold text-text-muted/70 uppercase tracking-wider mb-0.5">{category}</p>
-                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5">
-                  {#each mods as mod (mod.moduleId)}
-                    <label class="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedModules.has(mod.moduleId)}
-                        disabled={mod.moduleId === "natural-bids"}
-                        onchange={() => toggleModule(mod.moduleId)}
-                        class="accent-accent-primary"
-                      />
-                      <span class="text-xs text-text-primary truncate">
-                        {mod.displayName}
-                        {#if mod.moduleId === "natural-bids"}
-                          <span class="text-text-muted">(req)</span>
-                        {/if}
-                      </span>
-                      {#if mod.isCustom}
-                        <span class="px-1 py-0.5 text-[10px] font-medium rounded-full bg-accent-primary/15 text-accent-primary shrink-0">custom</span>
-                      {/if}
-                      {#if isOutdated(mod)}
-                        <span class="px-1 py-0.5 text-[10px] font-medium rounded-full bg-amber-500/15 text-amber-400 shrink-0">old</span>
-                      {/if}
-                    </label>
-                  {/each}
-                </div>
-              </div>
-            {/each}
-          </div>
+          <ModuleChecklist
+            modules={catalogModules}
+            isSelected={(id) => selectedModules.has(id)}
+            onToggle={toggleModule}
+            disabledIds={["natural-bids"]}
+            hasUserFork={(id) => userModuleStore.listModules().some((um) => um.metadata.forkedFrom?.moduleId === id)}
+            compact
+          />
 
           {#if onNavigateConventions}
             <button

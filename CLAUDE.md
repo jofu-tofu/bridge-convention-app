@@ -138,7 +138,7 @@ src/
     navigation/    NavRail (desktop left rail), BottomTabBar (mobile)
     screens/       Screen-level components (ConventionSelectScreen, LearningScreen, game-screen/GameScreen)
     game/          Game components + co-located .ts companions (DecisionTree.ts, RoundBidList.ts, BidFeedbackPanel.ts)
-    shared/        Reusable components (Card, Button, ConventionCallout) + display utilities (tokens, sort-cards, seat-mapping, table-scale, breakpoints, vulnerability-labels, layout-props)
+    shared/        Reusable components (Card, Button, ConventionCallout, ModuleChecklist) + display utilities (tokens, sort-cards, seat-mapping, table-scale, breakpoints, vulnerability-labels, layout-props) + module categorization (module-catalog.ts — single source for MODULE_CATEGORIES, all screens import from here)
 crates/            Rust workspace with six crates
   bridge-engine/       Pure Rust game logic (types, hand eval, deal gen, auction, scoring, play)
   bridge-conventions/  Convention types, fact DSL, pipeline, teaching, adapter
