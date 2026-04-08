@@ -54,12 +54,15 @@ export class DataPortClient implements DataPort {
 }
 
 /**
- * Dev-only DataPort that bypasses auth and delegates everything else to the
+ * Dev-only DataPort that bypasses OAuth and delegates everything else to the
  * real DataPortClient. Only the authentication entry point is faked — all
  * business logic (entitlements, progress, sync) flows through the real server
  * when bridge-api is running, so dev behavior matches production.
  *
- * Gated by import.meta.env.DEV at the call site — never instantiated in production.
+ * Two-layer gating ensures this never runs in production:
+ *   TS side:   import.meta.env.DEV — Vite strips DevDataPort from the prod bundle entirely.
+ *   Rust side: #[cfg(feature = "dev-tools")] — the /api/dev/login-as endpoint won't be
+ *              compiled into the production binary, so the route doesn't exist to probe.
  */
 export class DevDataPort implements DataPort {
   private readonly inner = new DataPortClient();
@@ -67,8 +70,9 @@ export class DevDataPort implements DataPort {
   constructor(private readonly tier: SubscriptionTier) {}
 
   fetchCurrentUser(): Promise<AuthUser> {
-    // TODO: When bridge-api runs locally, replace with
-    // POST /api/dev/login-as to get a real session, then delegate to inner.
+    // TODO: When bridge-api runs locally, call POST /api/dev/login-as
+    // (Rust: #[cfg(feature = "dev-tools")] only) to get a real session,
+    // then delegate to this.inner for all subsequent calls.
     return Promise.resolve({
       id: "dev-user",
       display_name: "Dev User",
