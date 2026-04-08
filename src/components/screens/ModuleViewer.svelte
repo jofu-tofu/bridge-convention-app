@@ -9,10 +9,11 @@
   interface Props {
     moduleId: string;
     onFork?: (newModuleId: string) => void;
+    onDelete?: () => void;
     isUserModule?: boolean;
   }
 
-  let { moduleId, onFork, isUserModule = false }: Props = $props();
+  let { moduleId, onFork, onDelete, isUserModule = false }: Props = $props();
 
   const service = getService();
   const userModules = getUserModuleStore();
@@ -48,30 +49,20 @@
     }
   }
 
-  let _configSchema = $state<ModuleConfigSchemaView | null>(null);
-  let editableSurfaces = $state<ConfigurableSurfaceView[]>([]);
+  // Track parameter edits locally — overrides from configSurfaces
+  let parameterOverrides = $state<Record<string, number | boolean>>({});
 
-  /** Load config schema for a module using the sync WASM port. */
-  function loadConfigSchema(id: string): void {
-    let userModulesJson: string | null = null;
-    if (id.startsWith("user:")) {
-      const um = userModules.getModule(id);
-      if (um) {
-        userModulesJson = JSON.stringify([um.content]);
-      }
-    }
-    const schema = getModuleConfigSchemaSync(id, userModulesJson) as ModuleConfigSchemaView | null;
-    if (schema && schema.surfaces) {
-      _configSchema = schema;
-      editableSurfaces = schema.surfaces.map((s: ConfigurableSurfaceView) => ({
-        ...s,
-        parameters: s.parameters.map(p => ({ ...p })),
-      }));
-    } else {
-      _configSchema = null;
-      editableSurfaces = [];
-    }
-  }
+  /** Build the effective surfaces list with any local overrides applied. */
+  const effectiveSurfaces = $derived.by((): ConfigurableSurfaceView[] => {
+    return configSurfaces.map(s => ({
+      ...s,
+      parameters: s.parameters.map(p => {
+        const key = `${s.meaningId}:${p.clauseIndex}`;
+        const override = parameterOverrides[key];
+        return override !== undefined ? { ...p, currentValue: override } : p;
+      }),
+    }));
+  });
 
   /** Apply a parameter change to the user module content in localStorage. */
   function handleParameterChange(meaningId: string, clauseIndex: number, newValue: number | boolean): void {
@@ -80,38 +71,41 @@
     const um = userModules.getModule(moduleId);
     if (!um) return;
 
+    // Update localStorage content
     const content = JSON.parse(JSON.stringify(um.content)) as Record<string, unknown>;
     const states = content.states as Array<Record<string, unknown>> | undefined;
-    if (!states) return;
-
-    for (const state of states) {
-      const surfaces = state.surfaces as Array<Record<string, unknown>> | undefined;
-      if (!surfaces) continue;
-      for (const surface of surfaces) {
-        if ((surface.meaningId as string) !== meaningId) continue;
-        const clauses = surface.clauses as Array<Record<string, unknown>> | undefined;
-        if (!clauses || clauseIndex >= clauses.length) continue;
-        const clause = clauses[clauseIndex] as Record<string, unknown> | undefined;
-        if (!clause) continue;
-        clause.value = newValue;
+    if (states) {
+      for (const state of states) {
+        const surfaces = state.surfaces as Array<Record<string, unknown>> | undefined;
+        if (!surfaces) continue;
+        for (const surface of surfaces) {
+          if ((surface.meaningId as string) !== meaningId) continue;
+          const clauses = surface.clauses as Array<Record<string, unknown>> | undefined;
+          if (!clauses || clauseIndex >= clauses.length) continue;
+          const clause = clauses[clauseIndex] as Record<string, unknown> | undefined;
+          if (!clause) continue;
+          clause.value = newValue;
+        }
       }
     }
 
-    const updated: UserModule = {
+    userModules.saveModule({
       metadata: { ...um.metadata, updatedAt: new Date().toISOString() },
       content,
-    };
-    userModules.saveModule(updated);
-
-    editableSurfaces = editableSurfaces.map(s => {
-      if (s.meaningId !== meaningId) return s;
-      return {
-        ...s,
-        parameters: s.parameters.map(p =>
-          p.clauseIndex !== clauseIndex ? p : { ...p, currentValue: newValue },
-        ),
-      };
     });
+
+    // Apply override locally for immediate UI update
+    parameterOverrides = {
+      ...parameterOverrides,
+      [`${meaningId}:${clauseIndex}`]: newValue,
+    };
+  }
+
+  /** Delete the current user module. */
+  function handleDelete(): void {
+    if (!isUserModule) return;
+    userModules.deleteModule(moduleId);
+    onDelete?.();
   }
 
   // Derive viewport data from moduleId — sync for system modules, localStorage for user
@@ -144,9 +138,26 @@
     return vp ? { viewport: vp, flowTree: tree } : null;
   });
 
-  // Load config schema as a side effect (non-blocking)
-  $effect(() => {
-    loadConfigSchema(moduleId);
+  // Derive config schema synchronously alongside viewport data
+  const configSurfaces = $derived.by((): ConfigurableSurfaceView[] => {
+    const id = moduleId;
+    try {
+      let userModulesJson: string | null = null;
+      if (id.startsWith("user:")) {
+        const um = userModules.getModule(id);
+        if (um) userModulesJson = JSON.stringify([um.content]);
+      }
+      const schema = getModuleConfigSchemaSync(id, userModulesJson) as ModuleConfigSchemaView | null;
+      if (schema?.surfaces) {
+        return schema.surfaces.map((s: ConfigurableSurfaceView) => ({
+          ...s,
+          parameters: [...s.parameters],
+        }));
+      }
+    } catch {
+      // Config schema unavailable
+    }
+    return [];
   });
 </script>
 
@@ -161,7 +172,7 @@
           <h2 class="text-xl font-bold text-text-primary">
             {vp.displayName}
             {#if isUserModule}
-              <span class="ml-2 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-accent-primary/15 text-accent-primary align-middle">custom</span>
+              <span class="ml-2 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-accent-primary/15 text-accent-primary align-middle">yours</span>
             {/if}
           </h2>
           <p class="text-sm text-text-secondary mt-1">{vp.description}</p>
@@ -169,15 +180,24 @@
             <p class="text-xs text-text-muted mt-2 italic">{vp.purpose}</p>
           {/if}
         </div>
-        {#if !isUserModule}
-          <button
-            class="shrink-0 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-accent-primary transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            onclick={handleFork}
-            disabled={forking}
-          >
-            {forking ? "Forking..." : "Fork to customize"}
-          </button>
-        {/if}
+        <div class="flex gap-2 shrink-0">
+          {#if !isUserModule}
+            <button
+              class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium bg-accent-primary text-text-on-accent hover:bg-accent-primary/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              onclick={handleFork}
+              disabled={forking}
+            >
+              {forking ? "Creating..." : "Customize"}
+            </button>
+          {:else}
+            <button
+              class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-red-400 hover:text-red-300 border border-border-subtle hover:border-red-400/50 transition-colors cursor-pointer"
+              onclick={handleDelete}
+            >
+              Delete
+            </button>
+          {/if}
+        </div>
       </div>
     </div>
 
@@ -213,16 +233,16 @@
     {/if}
 
     <!-- Configurable Parameters (editable for user modules, read-only view for system) -->
-    {#if editableSurfaces.length > 0}
+    {#if effectiveSurfaces.length > 0}
       <div>
         <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">
-          {isUserModule ? "Configure Parameters" : "Parameters"}
+          {isUserModule ? "Adjust Thresholds" : "Thresholds"}
         </h3>
         {#if isUserModule}
-          <ParameterPanel surfaces={editableSurfaces} onParameterChange={handleParameterChange} />
+          <ParameterPanel surfaces={effectiveSurfaces} onParameterChange={handleParameterChange} />
         {:else}
-          <ParameterPanel surfaces={editableSurfaces} onParameterChange={() => {}} />
-          <p class="text-xs text-text-muted mt-2 italic">Fork this module to edit parameters.</p>
+          <ParameterPanel surfaces={effectiveSurfaces} onParameterChange={() => {}} />
+          <p class="text-xs text-text-muted mt-2 italic">Click "Customize" to create your own version with adjustable thresholds.</p>
         {/if}
       </div>
     {/if}

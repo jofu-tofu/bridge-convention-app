@@ -157,9 +157,9 @@
             >
               <span class="font-medium">{mod.displayName}</span>
               {#if mod.isCustom}
-                <span class="ml-1.5 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-accent-primary/15 text-accent-primary">custom</span>
+                <span class="ml-1.5 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-accent-primary/15 text-accent-primary">yours</span>
               {:else if hasUserFork(mod.moduleId)}
-                <span class="ml-1.5 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-amber-500/15 text-amber-400">modified</span>
+                <span class="ml-1.5 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-amber-500/15 text-amber-400">customized</span>
               {/if}
             </button>
           {/each}

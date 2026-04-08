@@ -18,6 +18,10 @@
   function handleFork(newModuleId: string) {
     selectedModuleId = newModuleId;
   }
+
+  function handleDelete() {
+    selectedModuleId = null;
+  }
 </script>
 
 <div class="flex h-full gap-4">
@@ -38,6 +42,7 @@
       <ModuleViewer
         moduleId={selectedModuleId}
         onFork={handleFork}
+        onDelete={handleDelete}
         isUserModule={isSelectedUserModule}
       />
     {:else}
