@@ -13,7 +13,9 @@ use crate::types::system_config::BaseSystemId;
 const MODULE_IDS: &[&str] = &[
     "natural-bids",
     "stayman",
+    "stayman-garbage",
     "jacoby-transfers",
+    "jacoby-4way",
     "smolen",
     "bergen",
     "dont",
@@ -51,6 +53,10 @@ const BLACKWOOD_JSON: &str =
     include_str!("../../fixtures/modules/blackwood.json");
 const MICHAELS_UNUSUAL_JSON: &str =
     include_str!("../../fixtures/modules/michaels-unusual.json");
+const STAYMAN_GARBAGE_JSON: &str =
+    include_str!("../../fixtures/modules/stayman-garbage.json");
+const JACOBY_4WAY_JSON: &str =
+    include_str!("../../fixtures/modules/jacoby-4way.json");
 const STRONG_2C_JSON: &str =
     include_str!("../../fixtures/modules/strong-2c.json");
 
@@ -58,7 +64,9 @@ fn json_for_module(id: &str) -> Option<&'static str> {
     match id {
         "natural-bids" => Some(NATURAL_BIDS_JSON),
         "stayman" => Some(STAYMAN_JSON),
+        "stayman-garbage" => Some(STAYMAN_GARBAGE_JSON),
         "jacoby-transfers" => Some(JACOBY_TRANSFERS_JSON),
+        "jacoby-4way" => Some(JACOBY_4WAY_JSON),
         "smolen" => Some(SMOLEN_JSON),
         "bergen" => Some(BERGEN_JSON),
         "dont" => Some(DONT_JSON),
@@ -144,9 +152,9 @@ mod tests {
     }
 
     #[test]
-    fn get_all_modules_returns_10() {
+    fn get_all_modules_returns_12() {
         let modules = get_all_modules(BaseSystemId::Sayc);
-        assert_eq!(modules.len(), 10);
+        assert_eq!(modules.len(), 12);
     }
 
     #[test]

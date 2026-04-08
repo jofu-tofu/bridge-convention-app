@@ -1,16 +1,17 @@
 {
-  "moduleId": "stayman",
-  "displayName": "Stayman",
+  "moduleId": "stayman-garbage",
+  "displayName": "Garbage Stayman",
   "category": "notrump-responses",
   "fixtureVersion": 1,
-  "description": "Bid 2C over 1NT to find a 4-4 major-suit fit",
-  "purpose": "Discover whether opener holds a 4-card major so the partnership can play in an 8-card major fit instead of notrump",
+  "variantOf": "stayman",
+  "description": "Bid 2C over 1NT as Garbage Stayman — escape to a major with a weak hand",
+  "purpose": "Use Stayman as an escape mechanism with weak hands containing both majors, planning to pass any response",
   "teaching": {
-    "tradeoff": "Using 2C as Stayman means you can't play in a natural 2C contract.",
-    "principle": "Always check for a 4-4 major fit before settling in notrump — majors score better and play easier with a trump suit.",
+    "tradeoff": "Garbage Stayman sacrifices the standard HCP requirement for Stayman to allow weak hands to escape 1NT.",
+    "principle": "With a weak hand and both majors, bid 2C planning to pass any response — you will land in a better contract than 1NT.",
     "commonMistakes": [
-      "Don't use Stayman with 4-3-3-3 shape — prefer a quantitative raise since you have no ruffing value",
-      "With 5-4 in the majors, start with Stayman to find the 4-4 fit — after a 2D denial, bid your 5-card major at the 2-level (invitational, non-forcing)"
+      "Don't use Garbage Stayman without at least 4-4 in both majors — you need to be happy passing any 2-level response",
+      "Remember that partner may jump to game if maximum — be prepared for this possibility even with a weak hand"
     ]
   },
   "explanationEntries": [
@@ -455,10 +456,10 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP (for Stayman)",
-              "rationale": "for Stayman",
+              "value": 0,
+              "clauseId": "hand.hcp:gte:0",
+              "description": "0+ HCP (Garbage Stayman — no HCP requirement)",
+              "rationale": "for Garbage Stayman",
               "isPublic": true
             },
             {

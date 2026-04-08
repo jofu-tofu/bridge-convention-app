@@ -434,6 +434,29 @@ impl WasmServicePort {
         self.with_service(|service| Ok(service.get_module_flow_tree(module_id)))
             .and_then(to_js)
     }
+
+    // ── Workshop ─────────────────────────────────────────────────
+
+    pub fn fork_module(&self, source_module_id: &str) -> Result<JsValue, JsError> {
+        let json_str = self.inner.fork_module(source_module_id).map_err(service_error)?;
+        // Parse JSON string back to JsValue so it arrives as an object in JS
+        let value: serde_json::Value = serde_json::from_str(&json_str)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        to_js(value)
+    }
+
+    pub fn get_module_config_schema(&self, module_id: String, user_modules_json: JsValue) -> Result<JsValue, JsError> {
+        let user_json: Option<String> = from_js(user_modules_json)?;
+        let result = self.inner.get_module_config_schema(&module_id, user_json.as_deref())
+            .map_err(service_error)?;
+        to_js(result)
+    }
+
+    pub fn validate_module(&self, module_json: JsValue) -> Result<JsValue, JsError> {
+        let json: String = from_js(module_json)?;
+        let result = self.inner.validate_module(&json).map_err(service_error)?;
+        to_js(result)
+    }
 }
 
 // ── DevServicePort methods (debug builds only) ────────────────────

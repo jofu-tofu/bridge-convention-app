@@ -1,5 +1,8 @@
 {
   "moduleId": "weak-twos",
+  "displayName": "Weak Twos",
+  "category": "weak-bids",
+  "fixtureVersion": 1,
   "description": "Open 2D/2H/2S with 6+ cards and 5-11 HCP, responses include Ogust",
   "purpose": "Preempt opponents with a descriptive opening while giving partner enough information to judge game prospects via Ogust",
   "teaching": {

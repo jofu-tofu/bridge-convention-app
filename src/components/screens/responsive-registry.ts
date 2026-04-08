@@ -89,6 +89,24 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "Side-by-side comparison table, horizontally scrollable on mobile",
   },
   {
+    path: "ConventionsSection.svelte",
+    mobileStrategy: "sidebar-overlay",
+    minWidth: 320,
+    mobileNotes: "Convention browser; sidebar becomes overlay on mobile, module viewer full-width",
+  },
+  {
+    path: "ModuleSidebar.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Embedded module list; becomes overlay or dropdown on mobile",
+  },
+  {
+    path: "ModuleViewer.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Module detail view with flow tree; full-width on mobile",
+  },
+  {
     path: "PracticeModePicker.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,

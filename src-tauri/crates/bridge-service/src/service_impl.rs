@@ -6,13 +6,15 @@
 
 use std::collections::{HashMap, HashSet};
 
+use bridge_conventions::types::meaning::{ConstraintValue, FactOperator};
+use bridge_conventions::types::module_types::ConventionModule;
 use bridge_conventions::BaseSystemId;
 use bridge_engine::constants::{partner_seat, SEATS};
 use bridge_engine::types::{Call, Card, Seat};
 use bridge_session::session::{
     build_bidding_viewport, build_bundle_flow_tree, build_declarer_prompt_viewport,
     build_explanation_viewport, build_module_catalog, build_module_flow_tree,
-    build_module_learning_viewport, build_playing_viewport, process_bid,
+    build_module_learning_viewport, build_playing_viewport, format_call, process_bid,
     process_play_card, run_initial_ai_bids, run_initial_ai_plays,
     AiPlayEntry, BiddingViewport, BuildBiddingViewportInput, BuildDeclarerPromptViewportInput,
     BuildExplanationViewportInput, BuildPlayingViewportInput, BundleFlowTreeViewport,
@@ -100,6 +102,251 @@ fn initialize_play_phase(
             ai_plays: None,
         }
     }
+}
+
+// ── Config schema helpers ─────────────────────────────────────────
+
+/// Resolve a module by ID, supporting both system and user modules.
+fn resolve_module_for_schema(
+    module_id: &str,
+    user_modules_json: Option<&str>,
+) -> Result<
+    (
+        ConventionModule,
+        crate::config_schema_types::ModuleOwnership,
+    ),
+    ServiceError,
+> {
+    use crate::config_schema_types::ModuleOwnership;
+
+    if module_id.starts_with("user:") {
+        let json = user_modules_json.ok_or_else(|| {
+            ServiceError::ModuleNotFound(format!(
+                "User module '{}' requires user_modules_json",
+                module_id
+            ))
+        })?;
+        // user_modules_json is a JSON array of modules; find the one with matching ID
+        let modules: Vec<ConventionModule> = serde_json::from_str(json)
+            .map_err(|e| ServiceError::Internal(format!("Failed to parse user modules: {}", e)))?;
+        let module = modules
+            .into_iter()
+            .find(|m| m.module_id == module_id)
+            .ok_or_else(|| {
+                ServiceError::ModuleNotFound(format!("User module '{}' not found", module_id))
+            })?;
+        Ok((module, ModuleOwnership::User))
+    } else {
+        use bridge_conventions::registry::module_registry::get_module;
+        let module = get_module(module_id, BaseSystemId::Sayc)
+            .ok_or_else(|| {
+                ServiceError::ModuleNotFound(format!("Module '{}' not found", module_id))
+            })?;
+        Ok((module.clone(), ModuleOwnership::System))
+    }
+}
+
+/// Infer a valid range from a fact_id.
+fn infer_valid_range(fact_id: &str) -> Option<crate::config_schema_types::ValidRange> {
+    if fact_id.contains("hcp") || fact_id.contains("points") || fact_id.contains("tp") {
+        Some(crate::config_schema_types::ValidRange { min: 0, max: 40 })
+    } else if fact_id.contains("length") || fact_id.contains("count") {
+        Some(crate::config_schema_types::ValidRange { min: 0, max: 13 })
+    } else {
+        None
+    }
+}
+
+/// Extract an i32 from a ConstraintValue::Number if possible.
+fn constraint_value_as_i32(value: &ConstraintValue) -> Option<i32> {
+    match value {
+        ConstraintValue::Number(n) => n.as_i64().map(|v| v as i32),
+        _ => None,
+    }
+}
+
+/// Convert a ConstraintValue to a ParameterValue.
+fn to_parameter_value(
+    value: &ConstraintValue,
+) -> Option<(
+    crate::config_schema_types::ParameterValue,
+    crate::config_schema_types::ParameterType,
+)> {
+    use crate::config_schema_types::{ParameterType, ParameterValue};
+    match value {
+        ConstraintValue::Number(n) => {
+            let i = n.as_i64().map(|v| v as i32)?;
+            Some((ParameterValue::Integer(i), ParameterType::Integer))
+        }
+        ConstraintValue::Bool(b) => Some((ParameterValue::Boolean(*b), ParameterType::Boolean)),
+        _ => None,
+    }
+}
+
+/// Build configurable surfaces from a module's states.
+fn build_configurable_surfaces(
+    module: &ConventionModule,
+) -> Vec<crate::config_schema_types::ConfigurableSurfaceView> {
+    let states = match &module.states {
+        Some(s) => s,
+        None => return Vec::new(),
+    };
+
+    let mut surfaces = Vec::new();
+
+    for state in states {
+        for surface in &state.surfaces {
+            let mut parameters = Vec::new();
+
+            for (idx, clause) in surface.clauses.iter().enumerate() {
+                // Skip system-controlled clauses
+                if clause.fact_id.starts_with("system.") {
+                    continue;
+                }
+
+                let (current_value, value_type) = match to_parameter_value(&clause.value) {
+                    Some(pair) => pair,
+                    None => continue, // Skip non-configurable value types (Range, List, String)
+                };
+
+                let description = clause
+                    .description
+                    .clone()
+                    .unwrap_or_else(|| format!("{} {:?}", clause.fact_id, clause.operator));
+
+                let valid_range = infer_valid_range(&clause.fact_id);
+
+                parameters.push(crate::config_schema_types::ConfigurableParameter {
+                    clause_index: idx,
+                    fact_id: clause.fact_id.clone(),
+                    description,
+                    current_value,
+                    default_value: None,
+                    value_type,
+                    valid_range,
+                });
+            }
+
+            let disclosure_str = serde_json::to_value(&surface.disclosure)
+                .ok()
+                .and_then(|v| v.as_str().map(String::from))
+                .unwrap_or_else(|| "natural".to_string());
+
+            surfaces.push(crate::config_schema_types::ConfigurableSurfaceView {
+                meaning_id: surface.meaning_id.clone(),
+                name: surface.teaching_label.name.as_str().to_string(),
+                summary: surface.teaching_label.summary.as_str().to_string(),
+                call_display: format_call(&surface.encoding.default_call),
+                disclosure: disclosure_str,
+                parameters,
+            });
+        }
+    }
+
+    surfaces
+}
+
+/// Validate a module's content, returning any errors.
+fn validate_module_content(module: &ConventionModule) -> Vec<crate::config_schema_types::ValidationError> {
+    use crate::config_schema_types::ValidationError;
+
+    let mut errors = Vec::new();
+
+    // Display name must be non-empty
+    if module.display_name.trim().is_empty() {
+        errors.push(ValidationError {
+            field: "displayName".to_string(),
+            message: "Display name must not be empty".to_string(),
+        });
+    }
+
+    // Must have at least one surface
+    let has_surfaces = module
+        .states
+        .as_ref()
+        .is_some_and(|states| states.iter().any(|s| !s.surfaces.is_empty()));
+
+    if !has_surfaces {
+        errors.push(ValidationError {
+            field: "states".to_string(),
+            message: "Module must have at least one surface".to_string(),
+        });
+    }
+
+    // Validate clause values
+    if let Some(states) = &module.states {
+        for (si, state) in states.iter().enumerate() {
+            for (surf_i, surface) in state.surfaces.iter().enumerate() {
+                let path_prefix = format!("states[{}].surfaces[{}]", si, surf_i);
+
+                // Collect gte/lte pairs per fact_id for range consistency
+                let mut gte_values: HashMap<String, (usize, i32)> = HashMap::new();
+                let mut lte_values: HashMap<String, (usize, i32)> = HashMap::new();
+
+                for (ci, clause) in surface.clauses.iter().enumerate() {
+                    let clause_path = format!("{}.clauses[{}]", path_prefix, ci);
+
+                    // Validate numeric ranges
+                    if let Some(val) = constraint_value_as_i32(&clause.value) {
+                        let fact = &clause.fact_id;
+
+                        if fact.contains("hcp")
+                            || fact.contains("points")
+                            || fact.contains("tp")
+                        {
+                            if !(0..=40).contains(&val) {
+                                errors.push(ValidationError {
+                                    field: clause_path.clone(),
+                                    message: format!(
+                                        "Value {} for '{}' outside valid range 0-40",
+                                        val, fact
+                                    ),
+                                });
+                            }
+                        } else if fact.contains("length") || fact.contains("count") {
+                            if !(0..=13).contains(&val) {
+                                errors.push(ValidationError {
+                                    field: clause_path.clone(),
+                                    message: format!(
+                                        "Value {} for '{}' outside valid range 0-13",
+                                        val, fact
+                                    ),
+                                });
+                            }
+                        }
+
+                        // Track gte/lte for consistency check
+                        match clause.operator {
+                            FactOperator::Gte => {
+                                gte_values.insert(fact.clone(), (ci, val));
+                            }
+                            FactOperator::Lte => {
+                                lte_values.insert(fact.clone(), (ci, val));
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+
+                // Check gte <= lte for same fact
+                for (fact_id, (_gte_idx, gte_val)) in &gte_values {
+                    if let Some((_lte_idx, lte_val)) = lte_values.get(fact_id) {
+                        if gte_val > lte_val {
+                            errors.push(ValidationError {
+                                field: format!("{}.clauses", path_prefix),
+                                message: format!(
+                                    "Range error for '{}': gte ({}) > lte ({})",
+                                    fact_id, gte_val, lte_val
+                                ),
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    errors
 }
 
 // ── ServicePortImpl ───────────────────────────────────────────────
@@ -523,6 +770,61 @@ impl ServicePort for ServicePortImpl {
 
     fn get_module_flow_tree(&self, module_id: &str) -> Option<ModuleFlowTreeViewport> {
         build_module_flow_tree(module_id, BaseSystemId::Sayc)
+    }
+
+    // ── Workshop ──────────────────────────────────────────────────
+
+    fn fork_module(&self, source_module_id: &str) -> Result<String, ServiceError> {
+        use bridge_conventions::registry::module_registry::get_module;
+
+        let source = get_module(source_module_id, BaseSystemId::Sayc)
+            .ok_or_else(|| {
+                ServiceError::ModuleNotFound(format!("Module '{}' not found", source_module_id))
+            })?;
+
+        let mut forked = source.clone();
+        let uuid = uuid::Uuid::new_v4();
+        forked.module_id = format!("user:{}", uuid);
+        forked.display_name = format!("My {}", source.display_name);
+        forked.variant_of = Some(source_module_id.to_string());
+
+        serde_json::to_string(&forked).map_err(|e| ServiceError::Internal(e.to_string()))
+    }
+
+    fn get_module_config_schema(
+        &self,
+        module_id: &str,
+        user_modules_json: Option<&str>,
+    ) -> Result<crate::config_schema_types::ModuleConfigSchemaView, ServiceError> {
+        let (module, ownership) = resolve_module_for_schema(module_id, user_modules_json)?;
+        let forked_from = module.variant_of.clone();
+
+        let surfaces = build_configurable_surfaces(&module);
+
+        Ok(crate::config_schema_types::ModuleConfigSchemaView {
+            module_id: module.module_id.clone(),
+            display_name: module.display_name.clone(),
+            category: module.category,
+            ownership,
+            forked_from,
+            surfaces,
+        })
+    }
+
+    fn validate_module(
+        &self,
+        module_json: &str,
+    ) -> Result<crate::config_schema_types::ValidationResult, ServiceError> {
+        let module: ConventionModule =
+            serde_json::from_str(module_json).map_err(|e| {
+                ServiceError::Internal(format!("Failed to parse module JSON: {}", e))
+            })?;
+
+        let errors = validate_module_content(&module);
+        Ok(crate::config_schema_types::ValidationResult {
+            valid: errors.is_empty(),
+            errors,
+        })
     }
 }
 

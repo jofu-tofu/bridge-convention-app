@@ -49,7 +49,7 @@ fn build_adapter(bundle_id: &str) -> ConventionStrategyAdapter {
     let system_config = bridge_conventions::registry::system_configs::get_system_config(BaseSystemId::Sayc);
     let base_module_ids: Vec<String> = bridge_conventions::registry::module_registry::BASE_MODULE_IDS
         .iter().map(|s| s.to_string()).collect();
-    let spec = spec_from_bundle(bundle_id, &system_config, &base_module_ids)
+    let spec = spec_from_bundle(bundle_id, &system_config, &base_module_ids, &std::collections::HashMap::new())
         .unwrap_or_else(|| panic!("spec_from_bundle failed for {}", bundle_id));
 
     let resolved = resolve_bundle(bundle_id, BaseSystemId::Sayc)

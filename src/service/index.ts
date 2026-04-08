@@ -44,6 +44,11 @@ export type {
   BiddingOptionView,
   AcblCardSection,
   AcblCardPanelView,
+  ModuleConfigSchemaView,
+  ConfigurableSurfaceView,
+  ConfigurableParameter,
+  ValidationResult,
+  ValidationError,
 } from "./response-types";
 
 // ── 3. Game Vocabulary (engine primitives) ───────────────────────────
@@ -108,6 +113,10 @@ export type {
   PosteriorSummary,
   PosteriorFactValue,
   TeachingProjection,
+  UserModule,
+  UserModuleMetadata,
+  UserModuleContent,
+  ModuleCategory,
 } from "./session-types";
 
 // ── 5. Sync Service Helpers (for UI components) ─────────────────────

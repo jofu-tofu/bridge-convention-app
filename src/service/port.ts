@@ -7,7 +7,7 @@
  */
 
 import type { Call, Card, Seat } from "../engine/types";
-import type { PlayProfileId } from "./session-types";
+import type { PlayProfileId, UserModuleContent } from "./session-types";
 import type {
   DrillHandle,
   SessionConfig,
@@ -29,6 +29,8 @@ import type {
   ModuleFlowTreeViewport,
   ServiceInferenceSnapshot,
   ServicePublicBeliefState,
+  ModuleConfigSchemaView,
+  ValidationResult,
 } from "./response-types";
 import type {
   ServiceDebugLogEntry,
@@ -89,6 +91,16 @@ interface ServicePort {
 
   /** Build a conversation flow tree scoped to a single module. */
   getModuleFlowTree(moduleId: string): Promise<ModuleFlowTreeViewport | null>;
+
+  // ── Module forking ───────────────────────────────────────────────
+  /** Fork a system module into a user-owned copy with lineage. */
+  forkModule(sourceModuleId: string): Promise<UserModuleContent>;
+
+  // ── Module config schema ────────────────────────────────────────
+  /** Get the configuration schema for a module (derived from its content). */
+  getModuleConfigSchema(moduleId: string, userModulesJson?: string): Promise<ModuleConfigSchemaView>;
+  /** Validate a user module's content. */
+  validateModule(moduleJson: string): Promise<ValidationResult>;
 }
 
 /** Extends ServicePort with dev/debug methods.

@@ -17,7 +17,8 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 | -------------------- | -------------------------------------------------------------------------------------------------- |
 | `app.svelte.ts`      | `createAppStore()` — screen navigation, selected convention, learning state, coverage state, dev seed, dev flags (`autoplay`, `debugExpanded`, `autoDismissFeedback`, `skipToPhase`), drill tuning (persisted to localStorage) |
 | `game.svelte.ts`     | `createGameStore(service)` — coordinator/facade, phase machine, drill lifecycle, thin reactive cache over service viewports |
-| `custom-systems.svelte.ts` | `createCustomSystemsStore()` — CRUD for custom systems, localStorage persistence. `resolveSystemForSession()` maps `SystemSelectionId` to `{systemConfig, baseModuleIds}` for session creation |
+| `custom-systems.svelte.ts` | `createCustomSystemsStore()` — CRUD for custom systems, localStorage persistence. `resolveSystemForSession()` maps `SystemSelectionId` to `{systemConfig, baseModuleIds}` for session creation. Healing allows `user:*` module IDs through without validation. |
+| `user-modules.svelte.ts` | `createUserModuleStore()` — CRUD for user-owned convention modules (forked/created), localStorage persistence (`bridge-app:user-modules`). Full-copy fork model, no deltas. |
 | `dev-params.ts`      | `applyDevParams()` — consolidated URL param API (9 params: `?convention=`, `?learn=`, `?seed=`, `?screen=`, `?phase=`, `?dev=`, `?practiceMode=`, `?practiceRole=`, `?targetState=/targetSurface=`). Convention deep links default to `decision-drill` unless `practiceMode` is explicit, so `?convention=` lands directly in-game. Backward compat aliases for legacy params. `?screen=workshop` loads Workshop; `?screen=profiles` redirects to Workshop. Called from `App.svelte` at startup |
 | `types.ts`           | `GameStore` interface — explicit facade interface for context DI consumers |
 
@@ -74,7 +75,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 - `EnginePort` methods are async. Rust backends (TauriIpcEngine, WasmEngine) wrap sync calls in Promises.
 - `BiddingContext` constructed via `createBiddingContext()` factory from `conventions/core/context-factory.ts` (includes optional `vulnerability`/`dealer` with safe defaults)
-- `context.ts` provides Svelte context DI helpers (`setEngine`, `setGameStore`, `setAppStore`, `getEngine`, `getGameStore`, `getAppStore`) — used by `App.svelte` and components
+- `context.ts` provides Svelte context DI helpers (`setGameStore`, `setAppStore`, `setService`, `setCustomSystemsStore`, `setUserModuleStore` + matching getters) — used by `AppShell.svelte` and components
 - `BidHistoryEntry` maps directly from `BidResult` fields (`call`, `ruleName`, `explanation`, `meaning`) + `seat` and `isUser`
 - Default auction entries get generic explanations (e.g., "Opening 1NT bid") — richer explanations deferred to V2
 - `isUserTurn` — derived from `!biddingProcessing && !biddingAnim && phase === "BIDDING" && cachedBiddingViewport?.isUserTurn`. Bidding animation keeps `biddingProcessing` true, so buttons are disabled throughout.

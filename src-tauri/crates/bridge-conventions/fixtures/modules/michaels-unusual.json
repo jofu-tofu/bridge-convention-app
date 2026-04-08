@@ -1,5 +1,8 @@
 {
   "moduleId": "michaels-unusual",
+  "displayName": "Michaels / Unusual 2NT",
+  "category": "competitive",
+  "fixtureVersion": 1,
   "description": "Michaels Cue Bids and Unusual 2NT: compete over opponent's suit opening with two-suited hands (5-5+)",
   "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
   "teaching": {

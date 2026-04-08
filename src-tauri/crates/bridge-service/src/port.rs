@@ -10,6 +10,7 @@ use bridge_session::session::{
     PlayingViewport,
 };
 
+use crate::config_schema_types::{ModuleConfigSchemaView, ValidationResult};
 use crate::error::ServiceError;
 use crate::request_types::{DrillHandle, SessionConfig};
 use crate::response_types::{
@@ -100,6 +101,22 @@ pub trait ServicePort {
     fn get_module_learning_viewport(&self, module_id: &str) -> Option<ModuleLearningViewport>;
     fn get_bundle_flow_tree(&self, bundle_id: &str) -> Option<BundleFlowTreeViewport>;
     fn get_module_flow_tree(&self, module_id: &str) -> Option<ModuleFlowTreeViewport>;
+
+    // ── Workshop ──────────────────────────────────────────────────
+
+    /// Fork a system module into a user module (deep copy with new ID + lineage).
+    /// Returns the forked module as serialized JSON.
+    fn fork_module(&self, source_module_id: &str) -> Result<String, ServiceError>;
+
+    /// Get the configuration schema for a module (derived from its content).
+    fn get_module_config_schema(
+        &self,
+        module_id: &str,
+        user_modules_json: Option<&str>,
+    ) -> Result<ModuleConfigSchemaView, ServiceError>;
+
+    /// Validate a user module's content.
+    fn validate_module(&self, module_json: &str) -> Result<ValidationResult, ServiceError>;
 }
 
 /// Debug service methods — separate trait for feature-gating.

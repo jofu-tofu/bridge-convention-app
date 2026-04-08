@@ -1,5 +1,8 @@
 {
   "moduleId": "natural-bids",
+  "displayName": "Natural Bids",
+  "category": "opening-bids",
+  "fixtureVersion": 1,
   "description": "Standard natural bids: opening bids, natural notrump raises, and other common non-convention sequences",
   "purpose": "Learn the standard natural bids you use when no special convention applies",
   "teaching": {

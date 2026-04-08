@@ -1,5 +1,8 @@
 {
   "moduleId": "dont",
+  "displayName": "DONT",
+  "category": "competitive",
+  "fixtureVersion": 1,
   "description": "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns",
   "purpose": "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
   "teaching": {

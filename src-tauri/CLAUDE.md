@@ -68,7 +68,7 @@ crates/
                        (Mutex-managed state). service_commands.rs has all 19 ServicePort + 5
                        DevServicePort commands.
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
-                       for browser deployment. All 18 ServicePort methods + async DDS play
+                       for browser deployment. All 20 ServicePort methods + async DDS play
                        methods (play_card_dds, needs_dds_play, set_dds_solver) +
                        5 DevServicePort methods (debug_assertions gated).
 ```
@@ -139,4 +139,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-05 | version=5 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:40 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-07 | version=6 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:41 -->

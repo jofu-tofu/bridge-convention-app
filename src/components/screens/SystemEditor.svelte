@@ -1,10 +1,10 @@
 <script lang="ts">
   import { fly } from "svelte/transition";
-  import { SvelteSet } from "svelte/reactivity";
+  import { SvelteSet, SvelteMap } from "svelte/reactivity";
   import type { BaseSystemId, SystemConfig, CustomSystem } from "../../service";
   import { AVAILABLE_BASE_SYSTEMS, getSystemConfig, DEFAULT_BASE_MODULE_IDS } from "../../service";
   import { listModules } from "../../service/service-helpers";
-  import { getCustomSystemsStore } from "../../stores/context";
+  import { getCustomSystemsStore, getUserModuleStore } from "../../stores/context";
   import ToggleGroup from "../shared/ToggleGroup.svelte";
   import NumberStepper from "../shared/NumberStepper.svelte";
   import RangeStepper from "../shared/RangeStepper.svelte";
@@ -15,11 +15,13 @@
     basedOn: BaseSystemId | null;
     onSave: (system: CustomSystem) => void;
     onCancel: () => void;
+    onNavigateConventions?: () => void;
   }
 
-  const { system, basedOn, onSave, onCancel }: Props = $props();
+  const { system, basedOn, onSave, onCancel, onNavigateConventions }: Props = $props();
 
   const customSystems = getCustomSystemsStore();
+  const userModuleStore = getUserModuleStore();
   const allModules = listModules();
 
   // Initialize state from existing system or preset
@@ -155,11 +157,134 @@
 
   function toggleModule(id: string) {
     if (id === "natural-bids") return;
+
+    // Mutual exclusion: user module vs its forked source
+    const userMod = userModuleStore.getModule(id);
+    if (userMod?.metadata.forkedFrom) {
+      selectedModules.delete(userMod.metadata.forkedFrom.moduleId);
+    }
+
+    // If toggling on a system module, uncheck any user forks of it
+    if (!userMod) {
+      for (const um of userModuleStore.listModules()) {
+        if (um.metadata.forkedFrom?.moduleId === id && selectedModules.has(um.metadata.moduleId)) {
+          selectedModules.delete(um.metadata.moduleId);
+        }
+      }
+    }
+
     if (selectedModules.has(id)) {
       selectedModules.delete(id);
     } else {
       selectedModules.add(id);
     }
+  }
+
+  const MODULE_CATEGORIES: Record<string, string> = {
+    "natural-bids": "Opening Bids",
+    "strong-2c": "Opening Bids",
+    "stayman": "Notrump Responses",
+    "stayman-garbage": "Notrump Responses",
+    "jacoby-transfers": "Notrump Responses",
+    "jacoby-4way": "Notrump Responses",
+    "smolen": "Notrump Responses",
+    "bergen": "Major Raises",
+    "weak-twos": "Weak Bids",
+    "dont": "Competitive",
+    "michaels-unusual": "Competitive",
+    "blackwood": "Slam",
+  };
+
+  /** Map ModuleCategory to display name. */
+  const CATEGORY_DISPLAY: Record<string, string> = {
+    "opening-bids": "Opening Bids",
+    "notrump-responses": "Notrump Responses",
+    "major-raises": "Major Raises",
+    "weak-bids": "Weak Bids",
+    "competitive": "Competitive",
+    "slam": "Slam",
+    "custom": "Custom",
+  };
+
+  interface EditorModule {
+    moduleId: string;
+    displayName: string;
+    isCustom: boolean;
+    forkedFromId: string | null;
+    forkedFromVersion: number | null;
+  }
+
+  /** Merge system + user modules into a unified list for the editor. */
+  const mergedEditorModules = $derived.by(() => {
+    const result: EditorModule[] = [];
+    for (const mod of allModules) {
+      result.push({
+        moduleId: mod.moduleId,
+        displayName: mod.displayName,
+        isCustom: false,
+        forkedFromId: null,
+        forkedFromVersion: null,
+      });
+    }
+    for (const um of userModuleStore.listModules()) {
+      result.push({
+        moduleId: um.metadata.moduleId,
+        displayName: um.metadata.displayName,
+        isCustom: true,
+        forkedFromId: um.metadata.forkedFrom?.moduleId ?? null,
+        forkedFromVersion: um.metadata.forkedFrom?.fixtureVersion ?? null,
+      });
+    }
+    return result;
+  });
+
+  const groupedEditorModules = $derived.by(() => {
+    const groups = new SvelteMap<string, EditorModule[]>();
+    for (const mod of mergedEditorModules) {
+      let cat: string;
+      if (mod.isCustom) {
+        const um = userModuleStore.getModule(mod.moduleId);
+        cat = um ? (CATEGORY_DISPLAY[um.metadata.category] ?? "Custom") : "Custom";
+      } else {
+        cat = MODULE_CATEGORIES[mod.moduleId] ?? "Other";
+      }
+      const list = groups.get(cat);
+      if (list) {
+        list.push(mod);
+      } else {
+        groups.set(cat, [mod]);
+      }
+    }
+    return groups;
+  });
+
+  const activeModuleCount = $derived(selectedModules.size);
+  const totalModuleCount = $derived(mergedEditorModules.length);
+
+  /** Check staleness: user module's forkedFrom version vs current fixture version. */
+  function isOutdated(mod: EditorModule): boolean {
+    if (!mod.isCustom || !mod.forkedFromId || mod.forkedFromVersion === null) return false;
+    const sourceModule = allModules.find((m) => m.moduleId === mod.forkedFromId);
+    // If source not found, can't determine staleness
+    if (!sourceModule) return false;
+    // For now fixture versions are all 1, but the infrastructure is here
+    // We compare against the source module — but ModuleCatalogEntry doesn't have fixtureVersion.
+    // TODO: when fixtureVersion is exposed on ModuleCatalogEntry, compare properly
+    return false;
+  }
+
+  /** Check if a user module ID in selectedModules is unavailable. */
+  function isUnavailable(moduleId: string): boolean {
+    return moduleId.startsWith("user:") && !userModuleStore.hasModule(moduleId);
+  }
+
+  /** Get unavailable module IDs from selectedModules. */
+  const unavailableModuleIds = $derived(
+    [...selectedModules].filter(isUnavailable),
+  );
+
+  function removeUnavailable(moduleId: string) {
+    selectedModules.delete(moduleId);
   }
 
   let activeTab = $state<"openings" | "strength" | "competitive" | "modules">("openings");
@@ -547,26 +672,64 @@
               </div>
 
             {:else if activeTab === "modules"}
-              <p class="text-xs text-text-muted mb-2">Always active during practice.</p>
-              <div class="space-y-2">
-                {#each allModules as mod (mod.moduleId)}
-                  <label class="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedModules.has(mod.moduleId)}
-                      disabled={mod.moduleId === "natural-bids"}
-                      onchange={() => toggleModule(mod.moduleId)}
-                      class="accent-accent-primary"
-                    />
-                    <div>
-                      <span class="text-sm text-text-primary">{mod.displayName}</span>
-                      {#if mod.moduleId === "natural-bids"}
-                        <span class="text-xs text-text-muted ml-1">(required)</span>
-                      {/if}
+              <p class="text-xs text-text-muted mb-1">Always active during practice.</p>
+              <p class="text-xs text-text-secondary mb-3">{activeModuleCount} of {totalModuleCount} modules active</p>
+
+              <!-- Unavailable module warnings -->
+              {#each unavailableModuleIds as uid (uid)}
+                <div class="flex items-center justify-between bg-red-500/10 border border-red-500/30 rounded-[--radius-md] px-3 py-2 mb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-red-500/20 text-red-400">unavailable</span>
+                    <span class="text-xs text-text-muted">{uid}</span>
+                  </div>
+                  <button
+                    class="text-xs text-red-400 hover:text-red-300 cursor-pointer"
+                    onclick={() => removeUnavailable(uid)}
+                  >Remove</button>
+                </div>
+              {/each}
+
+              <div class="space-y-3">
+                {#each [...groupedEditorModules] as [category, mods] (category)}
+                  <div>
+                    <p class="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1">{category}</p>
+                    <div class="space-y-1.5">
+                      {#each mods as mod (mod.moduleId)}
+                        <label class="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedModules.has(mod.moduleId)}
+                            disabled={mod.moduleId === "natural-bids"}
+                            onchange={() => toggleModule(mod.moduleId)}
+                            class="accent-accent-primary"
+                          />
+                          <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="text-sm text-text-primary">{mod.displayName}</span>
+                            {#if mod.moduleId === "natural-bids"}
+                              <span class="text-xs text-text-muted">(required)</span>
+                            {/if}
+                            {#if mod.isCustom}
+                              <span class="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-accent-primary/15 text-accent-primary">custom</span>
+                            {/if}
+                            {#if isOutdated(mod)}
+                              <span class="px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-amber-500/15 text-amber-400">outdated</span>
+                            {/if}
+                          </div>
+                        </label>
+                      {/each}
                     </div>
-                  </label>
+                  </div>
                 {/each}
               </div>
+
+              {#if onNavigateConventions}
+                <button
+                  class="text-xs text-accent-primary hover:underline mt-3 cursor-pointer"
+                  onclick={onNavigateConventions}
+                >
+                  Browse &amp; edit conventions &rarr;
+                </button>
+              {/if}
             {/if}
           </div>
         {/key}

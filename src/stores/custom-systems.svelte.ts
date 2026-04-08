@@ -72,7 +72,7 @@ function healSystem(system: CustomSystem): CustomSystem {
   let moduleIds = [...system.baseModuleIds];
   const knownModules = getKnownModuleIds();
   if (knownModules.size > 0) {
-    moduleIds = moduleIds.filter((id) => knownModules.has(id));
+    moduleIds = moduleIds.filter((id) => id.startsWith("user:") || knownModules.has(id));
   }
   if (!moduleIds.includes("natural-bids")) {
     moduleIds.unshift("natural-bids");

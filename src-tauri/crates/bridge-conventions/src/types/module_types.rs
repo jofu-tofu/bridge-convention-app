@@ -66,6 +66,19 @@ pub enum ExplanationEntry {
     Meaning(MeaningExplanationEntry),
 }
 
+/// Category for UI grouping of convention modules.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum ModuleCategory {
+    OpeningBids,
+    NotrumpResponses,
+    MajorRaises,
+    WeakBids,
+    Competitive,
+    Slam,
+    Custom,
+}
+
 /// Teaching content orthogonal to module structure.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -81,6 +94,12 @@ pub struct ModuleTeaching {
 #[serde(rename_all = "camelCase")]
 pub struct ConventionModule {
     pub module_id: String,
+    pub display_name: String,
+    pub category: ModuleCategory,
+    #[serde(default)]
+    pub fixture_version: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub variant_of: Option<String>,
     pub description: ModuleDescription,
     pub purpose: ModulePurpose,
     pub teaching: ModuleTeaching,

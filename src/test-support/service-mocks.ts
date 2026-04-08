@@ -50,6 +50,11 @@ export function createMockService(
     getModuleLearningViewport: vi.fn().mockResolvedValue(null),
     getBundleFlowTree: vi.fn().mockResolvedValue(null),
     getModuleFlowTree: vi.fn().mockResolvedValue(null),
+    // Module forking
+    forkModule: vi.fn().mockResolvedValue({}),
+    // Module config schema
+    getModuleConfigSchema: vi.fn().mockResolvedValue({ moduleId: "", displayName: "", category: "custom", ownership: "system", forkedFrom: null, surfaces: [] }),
+    validateModule: vi.fn().mockResolvedValue({ valid: true, errors: [] }),
     // DevServicePort
     getExpectedBid: vi.fn().mockResolvedValue(null),
     getDebugLog: vi.fn().mockResolvedValue([]),

@@ -1,5 +1,8 @@
 {
   "moduleId": "bergen",
+  "displayName": "Bergen Raises",
+  "category": "major-raises",
+  "fixtureVersion": 1,
   "description": "Use 3C/3D as artificial raises after 1M to show different strength levels",
   "purpose": "Distinguish between weak, constructive, limit, and game-forcing raises of partner's major so opener can judge the right level",
   "teaching": {

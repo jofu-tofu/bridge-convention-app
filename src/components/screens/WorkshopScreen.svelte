@@ -2,13 +2,16 @@
   import type { BaseSystemId, CustomSystem } from "../../service";
   import { AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../../service";
   import { getAppStore, getCustomSystemsStore } from "../../stores/context";
+  import ToggleGroup from "../shared/ToggleGroup.svelte";
   import SystemDetailView from "./SystemDetailView.svelte";
   import SystemCompareView from "./SystemCompareView.svelte";
   import SystemEditor from "./SystemEditor.svelte";
+  import ConventionsSection from "./ConventionsSection.svelte";
 
   const appStore = getAppStore();
   const customSystems = getCustomSystemsStore();
 
+  let activeSection = $state<"systems" | "conventions">("systems");
   let viewingPreset = $state<BaseSystemId | null>(null);
   let compareMode = $state(false);
   let editingSystem = $state<CustomSystem | null>(null);
@@ -53,14 +56,27 @@
     basedOn={creatingFrom}
     onSave={handleEditorSave}
     onCancel={handleEditorCancel}
+    onNavigateConventions={() => { editingSystem = null; creatingFrom = null; activeSection = "conventions"; }}
   />
 {:else}
   <main class="max-w-3xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Workshop">
     <div class="shrink-0">
       <h1 class="text-3xl font-bold tracking-tight text-text-primary mb-1">Workshop</h1>
-      <p class="text-text-secondary mb-6">Manage bidding systems and customize thresholds.</p>
+      <p class="text-text-secondary mb-4">Manage bidding systems and customize thresholds.</p>
+      <div class="mb-4">
+        <ToggleGroup
+          items={[
+            { id: "systems", label: "Systems" },
+            { id: "conventions", label: "Conventions" },
+          ]}
+          active={activeSection}
+          onSelect={(id) => { activeSection = id as typeof activeSection; }}
+          ariaLabel="Workshop section"
+        />
+      </div>
     </div>
 
+    {#if activeSection === "systems"}
     <div class="flex-1 overflow-y-auto pb-6 space-y-8">
       <!-- Preset Systems -->
       <section>
@@ -159,5 +175,10 @@
         </div>
       </section>
     </div>
+    {:else if activeSection === "conventions"}
+    <div class="flex-1 min-h-0">
+      <ConventionsSection />
+    </div>
+    {/if}
   </main>
 {/if}

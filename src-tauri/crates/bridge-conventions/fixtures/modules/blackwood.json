@@ -1,5 +1,8 @@
 {
   "moduleId": "blackwood",
+  "displayName": "Blackwood",
+  "category": "slam",
+  "fixtureVersion": 1,
   "description": "Use 4NT to ask for aces when considering slam",
   "purpose": "Determine whether the partnership has enough aces to bid slam safely",
   "teaching": {

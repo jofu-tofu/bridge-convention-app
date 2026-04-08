@@ -32,9 +32,11 @@ import type {
   ModuleFlowTreeViewport,
   ServicePublicBeliefState,
   ServiceInferenceSnapshot,
+  ModuleConfigSchemaView,
+  ValidationResult,
 } from "./response-types";
 import type { ServiceDebugLogEntry } from "./debug-types";
-import type { PlayProfileId } from "./session-types";
+import type { PlayProfileId, UserModuleContent } from "./session-types";
 import { setWasmModule } from "./service-helpers";
 import { initDDS, isDDSAvailable, solveBoardWasm, solveDealFromPBN } from "../engine/dds-client";
 
@@ -68,6 +70,9 @@ interface WasmServicePortBindings {
   get_module_learning_viewport(moduleId: string): ModuleLearningViewport | null;
   get_bundle_flow_tree(bundleId: string): BundleFlowTreeViewport | null;
   get_module_flow_tree(moduleId: string): ModuleFlowTreeViewport | null;
+  fork_module(source_module_id: string): unknown;
+  get_module_config_schema(module_id: string, user_modules_json: string | undefined): ModuleConfigSchemaView;
+  validate_module(module_json: string): ValidationResult;
   // Dev methods (available in debug builds only)
   get_expected_bid?(handle: string): Call | { call: Call } | null;
   get_debug_log?(handle: string): readonly ServiceDebugLogEntry[];
@@ -268,6 +273,20 @@ export class BridgeService implements DevServicePort {
 
   async getModuleFlowTree(moduleId: string): Promise<ModuleFlowTreeViewport | null> {
     return getPort().get_module_flow_tree(moduleId);
+  }
+
+  // ── Module forking ─────────────────────────────────────────────
+  async forkModule(sourceModuleId: string): Promise<UserModuleContent> {
+    return getPort().fork_module(sourceModuleId) as UserModuleContent;
+  }
+
+  // ── Module config schema ──────────────────────────────────────
+  async getModuleConfigSchema(moduleId: string, userModulesJson?: string): Promise<ModuleConfigSchemaView> {
+    return getPort().get_module_config_schema(moduleId, userModulesJson);
+  }
+
+  async validateModule(moduleJson: string): Promise<ValidationResult> {
+    return getPort().validate_module(moduleJson);
   }
 
   // ── DevServicePort ──────────────────────────────────────────────

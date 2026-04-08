@@ -5,6 +5,7 @@
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
   import { createCustomSystemsStore } from "./stores/custom-systems.svelte";
+  import { createUserModuleStore } from "./stores/user-modules.svelte";
   import AppShell from "./AppShell.svelte";
 
   let engineReady = $state(false);
@@ -13,6 +14,7 @@
   let resolvedGameStore = $state<ReturnType<typeof createGameStore> | null>(null);
   let appStore = $state<ReturnType<typeof createAppStore> | null>(null);
   let customSystemsStore = $state<ReturnType<typeof createCustomSystemsStore> | null>(null);
+  let userModuleStore = $state<ReturnType<typeof createUserModuleStore> | null>(null);
 
   function init(): void {
     engineReady = false;
@@ -24,6 +26,7 @@
         const store = createAppStore();
         appStore = store;
         customSystemsStore = createCustomSystemsStore();
+        userModuleStore = createUserModuleStore();
         // Validate stored custom system selection still exists
         if (!customSystemsStore.isValidSelection(store.baseSystemId)) {
           store.setBaseSystemId("sayc");
@@ -48,10 +51,10 @@
       onclick={() => init()}
     >Retry</button>
   </div>
-{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore || !customSystemsStore}
+{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore || !customSystemsStore || !userModuleStore}
   <div class="bg-bg-deepest text-text-primary flex h-screen items-center justify-center">
     Loading engine...
   </div>
 {:else}
-  <AppShell service={resolvedService} gameStore={resolvedGameStore} {appStore} {customSystemsStore} />
+  <AppShell service={resolvedService} gameStore={resolvedGameStore} {appStore} {customSystemsStore} {userModuleStore} />
 {/if}

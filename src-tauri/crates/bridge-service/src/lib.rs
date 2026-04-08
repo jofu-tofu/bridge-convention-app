@@ -5,6 +5,7 @@
 
 pub(crate) mod bundle_resolver;
 pub(crate) mod config_resolver;
+pub mod config_schema_types;
 pub mod convention_adapter;
 pub(crate) mod drill_setup;
 pub mod error;

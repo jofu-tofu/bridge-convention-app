@@ -2,17 +2,20 @@ import { setContext, getContext } from "svelte";
 import type { GameStore } from "./types";
 import type { createAppStore } from "../stores/app.svelte";
 import type { createCustomSystemsStore } from "../stores/custom-systems.svelte";
+import type { createUserModuleStore } from "../stores/user-modules.svelte";
 import type { LayoutProps } from "../components/shared/layout-props";
 import type { DevServicePort } from "../service";
 
 type AppStore = ReturnType<typeof createAppStore>;
 type CustomSystemsStore = ReturnType<typeof createCustomSystemsStore>;
+type UserModuleStore = ReturnType<typeof createUserModuleStore>;
 
 const GAME_STORE_KEY = Symbol("game-store");
 const APP_STORE_KEY = Symbol("app-store");
 const SERVICE_KEY = Symbol("service");
 const LAYOUT_KEY = Symbol("layout");
 const CUSTOM_SYSTEMS_KEY = Symbol("custom-systems");
+const USER_MODULES_KEY = Symbol("user-modules");
 
 // Game store context
 export function setGameStore(store: GameStore): void {
@@ -57,4 +60,13 @@ export function setCustomSystemsStore(store: CustomSystemsStore): void {
 
 export function getCustomSystemsStore(): CustomSystemsStore {
   return getContext<CustomSystemsStore>(CUSTOM_SYSTEMS_KEY);
+}
+
+// User module store context
+export function setUserModuleStore(store: UserModuleStore): void {
+  setContext(USER_MODULES_KEY, store);
+}
+
+export function getUserModuleStore(): UserModuleStore {
+  return getContext<UserModuleStore>(USER_MODULES_KEY);
 }

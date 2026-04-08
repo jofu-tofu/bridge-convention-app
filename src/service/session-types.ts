@@ -70,6 +70,45 @@ export interface CustomSystem {
   readonly updatedAt: string;
 }
 
+// ── Module categories ─────────────────────────────────────────────
+
+export type ModuleCategory =
+  | "opening-bids"
+  | "notrump-responses"
+  | "major-raises"
+  | "weak-bids"
+  | "competitive"
+  | "slam"
+  | "custom";
+
+// ── User module types ─────────────────────────────────────────────
+
+/** Metadata for a user-owned forked/created module. */
+export interface UserModuleMetadata {
+  readonly moduleId: string;              // "user:<uuid>"
+  readonly displayName: string;
+  readonly category: ModuleCategory;
+  readonly forkedFrom: {
+    readonly moduleId: string;            // source module ID
+    readonly fixtureVersion: number;      // version at time of fork
+  } | null;
+  readonly createdAt: string;             // ISO timestamp
+  readonly updatedAt: string;
+}
+
+/** Full user module: metadata + content (same shape as fixture JSON). */
+export interface UserModule {
+  readonly metadata: UserModuleMetadata;
+  readonly content: UserModuleContent;
+}
+
+/**
+ * Convention module content — mirrors the Rust ConventionModule struct.
+ * This is the full JSON shape of a module fixture file.
+ * User modules store complete copies, not deltas.
+ */
+export type UserModuleContent = Record<string, unknown>;
+
 /** Point formula — toggleable components for total-point computation. */
 export interface PointFormula {
   readonly includeShortage: boolean;

@@ -46,6 +46,7 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
         &config.convention_id,
         &resolved.system_config,
         &resolved.base_module_ids,
+        &HashMap::new(),
     );
 
     // 5. Resolve surface groups and convention config from bundle

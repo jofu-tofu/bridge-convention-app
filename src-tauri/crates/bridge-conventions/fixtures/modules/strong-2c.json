@@ -1,5 +1,8 @@
 {
   "moduleId": "strong-2c",
+  "displayName": "Strong 2♣",
+  "category": "opening-bids",
+  "fixtureVersion": 1,
   "description": "Open 2C with 22+ HCP (game-forcing), responder bids 2D waiting or shows a positive suit",
   "purpose": "Reserve the 2C opening for very strong hands, establishing a game-forcing auction where opener describes their hand after the initial relay or positive response",
   "teaching": {

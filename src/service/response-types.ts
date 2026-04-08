@@ -939,3 +939,63 @@ export interface BaseModuleInfo {
   readonly displayName: string;
   readonly description: string;
 }
+
+// ── Module Config Schema ────────────────────────────────────────
+
+/** Ownership of a module — system-provided or user-created. */
+export type ModuleOwnership = "system" | "user";
+
+/** Type of a configurable parameter. */
+export type ParameterType = "integer" | "boolean";
+
+/** Value of a configurable parameter. */
+export type ParameterValue = number | boolean;
+
+/** Valid range for a numeric parameter. */
+export interface ValidRange {
+  readonly min: number;
+  readonly max: number;
+}
+
+/** A single configurable parameter derived from a clause. */
+export interface ConfigurableParameter {
+  readonly clauseIndex: number;
+  readonly factId: string;
+  readonly description: string;
+  readonly currentValue: ParameterValue;
+  readonly defaultValue: ParameterValue | null;
+  readonly valueType: ParameterType;
+  readonly validRange: ValidRange | null;
+}
+
+/** A configurable surface within a module. */
+export interface ConfigurableSurfaceView {
+  readonly meaningId: string;
+  readonly name: string;
+  readonly summary: string;
+  readonly callDisplay: string;
+  readonly disclosure: string;
+  readonly parameters: readonly ConfigurableParameter[];
+}
+
+/** Full configuration schema for a module. */
+export interface ModuleConfigSchemaView {
+  readonly moduleId: string;
+  readonly displayName: string;
+  readonly category: string;
+  readonly ownership: ModuleOwnership;
+  readonly forkedFrom: string | null;
+  readonly surfaces: readonly ConfigurableSurfaceView[];
+}
+
+/** A single validation error. */
+export interface ValidationError {
+  readonly field: string;
+  readonly message: string;
+}
+
+/** Result of validating a user module. */
+export interface ValidationResult {
+  readonly valid: boolean;
+  readonly errors: readonly ValidationError[];
+}
