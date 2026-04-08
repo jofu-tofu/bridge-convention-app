@@ -783,8 +783,12 @@ impl ServicePort for ServicePortImpl {
             })?;
 
         let mut forked = source.clone();
-        let uuid = uuid::Uuid::new_v4();
-        forked.module_id = format!("user:{}", uuid);
+        // Generate a random hex ID (16 bytes = 32 hex chars) using the existing rand crate
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+        let id_bytes: [u8; 16] = rng.gen();
+        let hex_id: String = id_bytes.iter().map(|b| format!("{:02x}", b)).collect();
+        forked.module_id = format!("user:{}", hex_id);
         forked.display_name = format!("My {}", source.display_name);
         forked.variant_of = Some(source_module_id.to_string());
 

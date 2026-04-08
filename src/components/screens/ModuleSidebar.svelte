@@ -98,7 +98,13 @@
   const groupedModules = $derived.by(() => {
     const groups = new SvelteMap<string, SidebarModule[]>();
     for (const mod of filteredModules) {
-      const cat = MODULE_CATEGORIES[mod.moduleId] ?? UNCATEGORIZED;
+      // User modules: look up category from forkedFrom source, or use their stored category
+      let cat: string;
+      if (mod.isCustom && mod.forkedFromId) {
+        cat = MODULE_CATEGORIES[mod.forkedFromId] ?? UNCATEGORIZED;
+      } else {
+        cat = MODULE_CATEGORIES[mod.moduleId] ?? UNCATEGORIZED;
+      }
       const list = groups.get(cat);
       if (list) {
         list.push(mod);

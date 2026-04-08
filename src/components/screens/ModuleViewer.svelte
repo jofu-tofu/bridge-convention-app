@@ -56,14 +56,38 @@
     flowTree = null;
     viewport = null;
 
-    Promise.all([
-      service.getModuleFlowTree(id),
-      service.getModuleLearningViewport(id),
-    ]).then(([tree, vp]) => {
-      flowTree = tree;
-      viewport = vp;
+    if (id.startsWith("user:")) {
+      // User modules are in localStorage only — show from stored content
+      const um = userModules.getModule(id);
+      if (um) {
+        const content = um.content as Record<string, unknown>;
+        viewport = {
+          moduleId: um.metadata.moduleId,
+          displayName: um.metadata.displayName,
+          description: (content.description as string) ?? "",
+          purpose: (content.purpose as string) ?? "",
+          teaching: {
+            principle: ((content.teaching as Record<string, unknown>)?.principle as string) ?? "",
+            tradeoff: ((content.teaching as Record<string, unknown>)?.tradeoff as string) ?? "",
+            commonMistakes: ((content.teaching as Record<string, unknown>)?.commonMistakes as string[]) ?? [],
+          },
+          phases: [],
+          bundleIds: [],
+        };
+        // Flow tree not available for user modules (not in Rust registry)
+        flowTree = null;
+      }
       loading = false;
-    });
+    } else {
+      Promise.all([
+        service.getModuleFlowTree(id),
+        service.getModuleLearningViewport(id),
+      ]).then(([tree, vp]) => {
+        flowTree = tree;
+        viewport = vp;
+        loading = false;
+      });
+    }
   });
 </script>
 
