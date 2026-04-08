@@ -145,7 +145,7 @@
       <!-- Connector lines -->
       {#each connectors as d (d)}
         <div
-          class="absolute top-0 bottom-0 w-px bg-[#475569]"
+          class="absolute top-0 bottom-0 w-px bg-slate-400/50"
           style:left="{7 + d * 24}px"
         ></div>
       {/each}

@@ -217,41 +217,56 @@
     padding: calc(3px * var(--ft-scale, 1)) 0;
   }
 
-  /* ── Connector lines ─────────────────────────────────────── */
+  /* ── Connector lines (rounded L-connectors) ──────────────── */
 
-  /* Horizontal stub from vertical bar → child node */
+  /* Horizontal stub from vertical trunk → child node */
   .ft-child::before {
     content: "";
     position: absolute;
     left: calc(-22px * var(--ft-scale, 1));
     top: 50%;
     width: calc(22px * var(--ft-scale, 1));
-    border-top: calc(1.5px * var(--ft-scale, 1)) solid var(--color-border-subtle);
-    opacity: 0.4;
+    border-top: calc(1.5px * var(--ft-scale, 1)) solid var(--color-border-default);
+    opacity: 0.7;
   }
 
-  /* Vertical bar segment (each child draws its portion) */
+  /* Vertical trunk segment (each child draws its portion) */
   .ft-child::after {
     content: "";
     position: absolute;
     left: calc(-22px * var(--ft-scale, 1));
     top: 0;
     bottom: 0;
-    border-left: calc(1.5px * var(--ft-scale, 1)) solid var(--color-border-subtle);
-    opacity: 0.4;
+    border-left: calc(1.5px * var(--ft-scale, 1)) solid var(--color-border-default);
+    opacity: 0.7;
   }
 
-  /* First child: vertical starts at midpoint */
+  /* First child: rounded L-connector (top corner) */
+  .ft-child:first-child::before {
+    display: none;
+  }
   .ft-child:first-child::after {
     top: 50%;
+    width: calc(22px * var(--ft-scale, 1));
+    border-top: calc(1.5px * var(--ft-scale, 1)) solid var(--color-border-default);
+    border-top-left-radius: calc(6px * var(--ft-scale, 1));
   }
 
-  /* Last child: vertical ends at midpoint */
+  /* Last child: rounded L-connector (bottom corner) */
+  .ft-child:last-child::before {
+    display: none;
+  }
   .ft-child:last-child::after {
     bottom: 50%;
+    width: calc(22px * var(--ft-scale, 1));
+    border-bottom: calc(1.5px * var(--ft-scale, 1)) solid var(--color-border-default);
+    border-bottom-left-radius: calc(6px * var(--ft-scale, 1));
   }
 
-  /* Only child: no vertical segment needed */
+  /* Only child: just horizontal stub, no vertical */
+  .ft-child:only-child::before {
+    display: block;
+  }
   .ft-child:only-child::after {
     display: none;
   }
