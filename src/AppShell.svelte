@@ -4,8 +4,9 @@
   import type { createAppStore } from "./stores/app.svelte";
   import type { createCustomSystemsStore } from "./stores/custom-systems.svelte";
   import type { createUserModuleStore } from "./stores/user-modules.svelte";
+  import type { createPracticePacksStore } from "./stores/practice-packs.svelte";
   import type { createAuthStore } from "./stores/auth.svelte";
-  import { setGameStore, setAppStore, setService, setCustomSystemsStore, setUserModuleStore, setAuthStore } from "./stores/context";
+  import { setGameStore, setAppStore, setService, setCustomSystemsStore, setUserModuleStore, setPracticePacksStore, setAuthStore } from "./stores/context";
   import { DESKTOP_MIN } from "./components/shared/breakpoints.svelte";
   import NavRail from "./components/navigation/NavRail.svelte";
   import BottomTabBar from "./components/navigation/BottomTabBar.svelte";
@@ -15,6 +16,8 @@
   import SettingsScreen from "./components/screens/SettingsScreen.svelte";
   import CoverageScreen from "./components/screens/CoverageScreen.svelte";
   import WorkshopScreen from "./components/screens/WorkshopScreen.svelte";
+  import ConventionEditorScreen from "./components/screens/ConventionEditorScreen.svelte";
+  import PracticePackEditorScreen from "./components/screens/PracticePackEditorScreen.svelte";
   import PracticeModePicker from "./components/screens/PracticeModePicker.svelte";
 
   interface Props {
@@ -23,6 +26,7 @@
     appStore: ReturnType<typeof createAppStore>;
     customSystemsStore: ReturnType<typeof createCustomSystemsStore>;
     userModuleStore: ReturnType<typeof createUserModuleStore>;
+    practicePacksStore: ReturnType<typeof createPracticePacksStore>;
     authStore: ReturnType<typeof createAuthStore>;
   }
 
@@ -33,6 +37,7 @@
   setAppStore(props.appStore);
   setCustomSystemsStore(props.customSystemsStore);
   setUserModuleStore(props.userModuleStore);
+  setPracticePacksStore(props.practicePacksStore);
   setAuthStore(props.authStore);
 
   let innerW = $state(1024);
@@ -61,6 +66,10 @@
     <CoverageScreen />
   {:else if props.appStore.screen === "workshop" || props.appStore.screen === "profiles"}
     <WorkshopScreen />
+  {:else if props.appStore.screen === "convention-editor"}
+    <ConventionEditorScreen />
+  {:else if props.appStore.screen === "practice-pack-editor"}
+    <PracticePackEditorScreen />
   {:else}
     <div class="flex h-full items-center justify-center text-red-400">
       <p>Unknown screen: {props.appStore.screen}</p>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { ModuleFlowTreeViewport, ModuleLearningViewport, ModuleCategory, ModuleConfigSchemaView, ConfigurableSurfaceView } from "../../service";
   import type { UserModule } from "../../service/session-types";
-  import { getService, getUserModuleStore } from "../../stores/context";
+  import { getService, getUserModuleStore, getAppStore } from "../../stores/context";
   import { getModuleLearningViewportSync, getModuleFlowTreeSync, getModuleConfigSchemaSync } from "../../service/service-helpers";
   import ConversationFlowTree from "./ConversationFlowTree.svelte";
   import ParameterPanel from "./ParameterPanel.svelte";
@@ -17,6 +17,7 @@
 
   const service = getService();
   const userModules = getUserModuleStore();
+  const appStore = getAppStore();
 
   let forking = $state(false);
 
@@ -44,6 +45,7 @@
       };
       userModules.saveModule(userModule);
       onFork?.(forkedModuleId);
+      appStore.navigateToConventionEditor(forkedModuleId);
     } finally {
       forking = false;
     }
@@ -190,6 +192,12 @@
               {forking ? "Creating..." : "Customize"}
             </button>
           {:else}
+            <button
+              class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-border-prominent transition-colors cursor-pointer"
+              onclick={() => appStore.navigateToConventionEditor(moduleId)}
+            >
+              Edit
+            </button>
             <button
               class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-red-400 hover:text-red-300 border border-border-subtle hover:border-red-400/50 transition-colors cursor-pointer"
               onclick={handleDelete}

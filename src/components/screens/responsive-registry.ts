@@ -83,6 +83,18 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "Side-by-side comparison table, horizontally scrollable on mobile",
   },
   {
+    path: "ConventionEditorScreen.svelte",
+    mobileStrategy: "centered",
+    minWidth: 320,
+    mobileNotes: "max-w-3xl centered container; parameter editing with steppers adapts naturally",
+  },
+  {
+    path: "PracticePackEditorScreen.svelte",
+    mobileStrategy: "centered",
+    minWidth: 320,
+    mobileNotes: "max-w-3xl centered container; convention checklist and reorder list stack vertically",
+  },
+  {
     path: "ConventionsSection.svelte",
     mobileStrategy: "sidebar-overlay",
     minWidth: 320,

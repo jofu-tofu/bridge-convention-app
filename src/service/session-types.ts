@@ -70,6 +70,19 @@ export interface CustomSystem {
   readonly updatedAt: string;
 }
 
+// ── Practice pack types ───────────────────────────────────────────
+
+/** Custom practice pack stored in localStorage. */
+export interface CustomPracticePack {
+  readonly id: `practice-pack:${string}`;
+  readonly name: string;
+  readonly description: string;
+  readonly basedOn: string | null;              // source bundle ID if forked
+  readonly conventionIds: readonly string[];    // ordered module IDs
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
 // ── Module categories ─────────────────────────────────────────────
 
 export type ModuleCategory =

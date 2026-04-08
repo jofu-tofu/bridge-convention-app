@@ -1,7 +1,7 @@
 import type { ConventionInfo, SystemSelectionId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
 import { OpponentMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 
-export type Screen = "conventions" | "practice-picker" | "game" | "learning" | "settings" | "coverage" | "profiles" | "workshop";
+export type Screen = "conventions" | "practice-picker" | "game" | "learning" | "settings" | "coverage" | "profiles" | "workshop" | "convention-editor" | "practice-pack-editor";
 
 // ─── Persistence ────────────────────────────────────────────
 
@@ -90,6 +90,9 @@ export function createAppStore() {
   let targetState = $state<string | null>(null);
   let targetSurface = $state<string | null>(null);
   let coverageBundle = $state<string | null>(null);
+  let editingModuleId = $state<string | null>(null);
+  let editingPackId = $state<string | null>(null);
+  let editingPackBasedOn = $state<string | null>(null);
 
   // Dev flags parsed from ?dev= comma-separated param
   let debugExpanded = $state(false);
@@ -214,6 +217,9 @@ export function createAppStore() {
       learningModuleId = null;
       learningBundleFilter = null;
       learningBundleFilterName = null;
+      editingModuleId = null;
+      editingPackId = null;
+      editingPackBasedOn = null;
       currentScreen = "conventions";
     },
 
@@ -226,11 +232,37 @@ export function createAppStore() {
     },
 
     navigateToWorkshop() {
+      editingModuleId = null;
+      editingPackId = null;
+      editingPackBasedOn = null;
       currentScreen = "workshop";
     },
 
     navigateToProfiles() {
       currentScreen = "workshop";
+    },
+
+    get editingModuleId() {
+      return editingModuleId;
+    },
+
+    navigateToConventionEditor(moduleId: string | null) {
+      editingModuleId = moduleId;
+      currentScreen = "convention-editor";
+    },
+
+    get editingPackId() {
+      return editingPackId;
+    },
+
+    get editingPackBasedOn() {
+      return editingPackBasedOn;
+    },
+
+    navigateToPackEditor(packId: string | null, basedOn?: string | null) {
+      editingPackId = packId;
+      editingPackBasedOn = basedOn ?? null;
+      currentScreen = "practice-pack-editor";
     },
 
     setDevSeed(seed: number | null) {

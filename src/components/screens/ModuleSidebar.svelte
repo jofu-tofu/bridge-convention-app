@@ -141,7 +141,7 @@
   {/if}
 
   <!-- Grouped module list -->
-  <nav class="space-y-3" aria-label="Convention modules">
+  <nav class="space-y-3" aria-label="Conventions">
     {#each [...groupedModules] as [category, mods] (category)}
       <div>
         <p class="text-[10px] font-semibold text-text-muted uppercase tracking-wider px-3 mb-1">{category}</p>

@@ -1,7 +1,8 @@
 <script lang="ts">
-  import type { BaseSystemId, CustomSystem } from "../../service";
+  import type { BaseSystemId, CustomSystem, ConventionInfo } from "../../service";
   import { AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../../service";
-  import { getAppStore, getCustomSystemsStore } from "../../stores/context";
+  import { getAppStore, getCustomSystemsStore, getPracticePacksStore } from "../../stores/context";
+  import { listConventions } from "../../service/service-helpers";
   import ToggleGroup from "../shared/ToggleGroup.svelte";
   import SystemDetailView from "./SystemDetailView.svelte";
   import SystemCompareView from "./SystemCompareView.svelte";
@@ -10,14 +11,16 @@
 
   const appStore = getAppStore();
   const customSystems = getCustomSystemsStore();
+  const practicePacksStore = getPracticePacksStore();
 
-  let activeSection = $state<"systems" | "conventions">("systems");
+  let activeSection = $state<"systems" | "conventions" | "practice-packs">("systems");
   let viewingPreset = $state<BaseSystemId | null>(null);
   let compareMode = $state(false);
   let editingSystem = $state<CustomSystem | null>(null);
   let creatingFrom = $state<BaseSystemId | null>(null);
 
   const presetConfig = $derived(viewingPreset ? getSystemConfig(viewingPreset) : null);
+  const builtInBundles: ConventionInfo[] = listConventions();
 
   function handleViewPreset(id: BaseSystemId) {
     viewingPreset = viewingPreset === id ? null : id;
@@ -62,12 +65,13 @@
   <main class="max-w-3xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Workshop">
     <div class="shrink-0">
       <h1 class="text-3xl font-bold tracking-tight text-text-primary mb-1">Workshop</h1>
-      <p class="text-text-secondary mb-4">Manage bidding systems and customize thresholds.</p>
+      <p class="text-text-secondary mb-4">Manage bidding systems, conventions, and practice packs.</p>
       <div class="mb-4">
         <ToggleGroup
           items={[
             { id: "systems", label: "Systems" },
             { id: "conventions", label: "Conventions" },
+            { id: "practice-packs", label: "Practice Packs" },
           ]}
           active={activeSection}
           onSelect={(id) => { activeSection = id as typeof activeSection; }}
@@ -178,6 +182,101 @@
     {:else if activeSection === "conventions"}
     <div class="flex-1 min-h-0">
       <ConventionsSection />
+    </div>
+    {:else if activeSection === "practice-packs"}
+    <div class="flex-1 overflow-y-auto pb-6 space-y-8">
+      <!-- My Practice Packs -->
+      <section>
+        <h2 class="text-lg font-semibold text-text-primary mb-3">My Practice Packs</h2>
+
+        {#if practicePacksStore.packs.length > 0}
+          <div class="space-y-2">
+            {#each practicePacksStore.packs as pack (pack.id)}
+              {@const basedOnBundle = pack.basedOn ? builtInBundles.find((b) => b.id === pack.basedOn) : null}
+              <div
+                class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-4 flex items-center justify-between"
+                data-testid="workshop-pack-{pack.id}"
+              >
+                <div>
+                  <p class="font-semibold text-text-primary text-sm">{pack.name}</p>
+                  <p class="text-xs text-text-muted mt-0.5">
+                    {pack.conventionIds.length} convention{pack.conventionIds.length !== 1 ? "s" : ""}
+                    {#if basedOnBundle}
+                      &middot; Based on {basedOnBundle.name}
+                    {/if}
+                  </p>
+                  {#if pack.description}
+                    <p class="text-xs text-text-secondary mt-1">{pack.description}</p>
+                  {/if}
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-border-prominent transition-colors cursor-pointer"
+                    onclick={() => appStore.navigateToPackEditor(pack.id)}
+                  >Edit</button>
+                  <button
+                    class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-red-400 hover:text-red-300 border border-border-subtle hover:border-red-400/50 transition-colors cursor-pointer"
+                    onclick={() => practicePacksStore.deletePack(pack.id)}
+                  >Delete</button>
+                </div>
+              </div>
+            {/each}
+          </div>
+        {/if}
+
+        <!-- New practice pack creation -->
+        <div class="bg-bg-card border border-border-subtle border-dashed rounded-[--radius-lg] p-4 mt-2">
+          <p class="text-sm font-medium text-text-primary mb-2">New Practice Pack</p>
+          <p class="text-xs text-text-muted mb-3">Create a blank pack or start from an existing one:</p>
+          <div class="flex flex-wrap gap-2">
+            <button
+              class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium bg-accent-primary text-text-on-accent hover:bg-accent-primary/90 transition-colors cursor-pointer"
+              onclick={() => appStore.navigateToPackEditor(null)}
+            >
+              Blank
+            </button>
+            {#each builtInBundles as bundle (bundle.id)}
+              <button
+                class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-accent-primary transition-colors cursor-pointer"
+                onclick={() => appStore.navigateToPackEditor(null, bundle.id)}
+                data-testid="workshop-fork-bundle-{bundle.id}"
+              >
+                {bundle.name}
+              </button>
+            {/each}
+          </div>
+        </div>
+      </section>
+
+      <!-- Built-in Practice Packs -->
+      <section>
+        <h2 class="text-lg font-semibold text-text-primary mb-3">Built-in Practice Packs</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {#each builtInBundles as bundle (bundle.id)}
+            {@const moduleCount = bundle.moduleDescriptions?.size ?? 0}
+            <div
+              class="bg-bg-card border border-border-subtle rounded-[--radius-lg] p-4 flex flex-col justify-between"
+              data-testid="workshop-builtin-{bundle.id}"
+            >
+              <div>
+                <p class="font-semibold text-text-primary text-sm">{bundle.name}</p>
+                <p class="text-xs text-text-muted mt-1">
+                  {moduleCount} convention{moduleCount !== 1 ? "s" : ""}
+                </p>
+                {#if bundle.description}
+                  <p class="text-xs text-text-secondary mt-1 line-clamp-2">{bundle.description}</p>
+                {/if}
+              </div>
+              <button
+                class="mt-3 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-accent-primary transition-colors cursor-pointer self-start"
+                onclick={() => appStore.navigateToPackEditor(null, bundle.id)}
+              >
+                Fork
+              </button>
+            </div>
+          {/each}
+        </div>
+      </section>
     </div>
     {/if}
   </main>

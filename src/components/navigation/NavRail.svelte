@@ -5,7 +5,10 @@
 
   const isHomeActive = $derived(appStore.screen === "conventions" || appStore.screen === "game");
   const isLearnActive = $derived(appStore.screen === "learning" || appStore.screen === "coverage");
-  const isWorkshopActive = $derived(appStore.screen === "workshop" || appStore.screen === "profiles");
+  const isWorkshopActive = $derived(
+    appStore.screen === "workshop" || appStore.screen === "profiles" ||
+    appStore.screen === "convention-editor" || appStore.screen === "practice-pack-editor"
+  );
   const isSettingsActive = $derived(appStore.screen === "settings");
 </script>
 
