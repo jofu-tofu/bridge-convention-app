@@ -549,7 +549,6 @@
         isSelected={(id) => selectedModules.has(id)}
         onToggle={toggleModule}
         disabledIds={["natural-bids"]}
-        hasUserFork={(id) => userModuleStore.listModules().some((um) => um.metadata.forkedFrom?.moduleId === id)}
       />
 
       {#if onNavigateConventions}

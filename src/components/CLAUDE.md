@@ -35,7 +35,7 @@ components/
     ConventionsSection.svelte        Convention browser: sidebar (ModuleSidebar) + main content (ModuleViewer). Fork flow wired: fork button creates user module, navigates to editor.
     ModuleSidebar.svelte             Two-section module list: "My Conventions" (user modules with source attribution) at top, separated from system modules grouped by category. "customized" badge on system modules with user forks. Search across both sections.
     ModuleViewer.svelte              Module detail view: header, teaching content, conversation flow tree. "Customize" button for system modules forks (with error handling) and navigates to ConventionEditorScreen. "Edit" button for user modules navigates directly to editor.
-    SystemEditor.svelte              Custom system editor — two-tab layout (Settings | Modules). Settings tab: 2-column grid (Bidding Structure+Competitive | Strength) with strength bars, point formulas, thresholds. Modules tab: full-width ModuleChecklist with search, category grouping, mutual exclusion in toggleModule(). Header with name input, preset select, error badge, save/cancel. Tab badge shows active module count.
+    SystemEditor.svelte              Custom system editor — two-tab layout (Parameters | Modules). Parameters tab: 2-column grid (Bidding Structure+Competitive | Strength) with strength bars, point formulas, thresholds. Modules tab: full-width ModuleChecklist with search, category grouping, mutual exclusion in toggleModule(). Header with name input, preset select, error badge, save/cancel. Tab badge shows active module count.
     StrengthBar.svelte               Side-by-side NT/Trump strength bars showing weak/invite/game/slam zones with threshold labels and formula suffixes. Reactive to threshold prop changes.
     strength-bar.ts                  Companion: zone types, color constants, thresholdPct() pure function.
     SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards. TP-enabled categories render 3-column mini-table (NT / HCP, Suit / TP).
@@ -111,7 +111,7 @@ components/
     NumberStepper.ts                 Pure helpers: clamp(), createAutoRepeat() for NumberStepper testability
     RangeStepper.svelte              Composes two NumberStepper instances with "to" separator and shared suffix
     module-catalog.ts                Single source of truth for module categorization: MODULE_CATEGORIES, CATEGORY_DISPLAY, CatalogModule, mergeModules(), groupByCategory(), filterModules(). Pure functions — no store/Svelte imports. All screens import from here.
-    ModuleChecklist.svelte           Shared collapsible checkbox grid for module selection: search, collapsible category sections, count badges, provenance badges (custom/customized). Used by SystemEditor and PracticePackEditorScreen.
+    ModuleChecklist.svelte           Shared collapsible checkbox grid for module selection: search, collapsible category sections, count badges. User modules shown under "My Conventions" section separated from system modules. Used by SystemEditor and PracticePackEditorScreen.
   __tests__/
     ButtonTestWrapper.svelte         Snippet wrapper for Button tests
     BridgeTableTestWrapper.svelte    Snippet wrapper for BridgeTable tests
