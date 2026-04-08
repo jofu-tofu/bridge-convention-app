@@ -1,11 +1,12 @@
 import type { ConventionInfo, SystemSelectionId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
 import { OpponentMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 
-export type Screen = "conventions" | "practice-picker" | "game" | "learning" | "settings" | "coverage" | "profiles" | "workshop" | "convention-editor" | "practice-pack-editor";
+export type Screen = "conventions" | "game" | "learning" | "settings" | "coverage" | "profiles" | "workshop" | "convention-editor" | "practice-pack-editor";
 
 // ─── Persistence ────────────────────────────────────────────
 
 const SETTINGS_KEY = "bridge-app:practice-preferences";
+const LAST_CONVENTION_KEY = "bridge-app:last-convention";
 
 function loadPreferences(): PracticePreferences {
   try {
@@ -52,11 +53,21 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
     baseSystemId = DEFAULT_PRACTICE_PREFERENCES.baseSystemId;
   }
 
+  // Validate practiceMode
+  const VALID_PRACTICE_MODES = new Set<string>(["decision-drill", "full-auction", "continuation-drill"]);
+  const practiceMode = drill?.practiceMode && VALID_PRACTICE_MODES.has(drill.practiceMode) ? drill.practiceMode : undefined;
+
+  // Validate practiceRole
+  const VALID_PRACTICE_ROLES = new Set<string>(["responder", "opener", "both"]);
+  const practiceRole = drill?.practiceRole && VALID_PRACTICE_ROLES.has(drill.practiceRole) ? drill.practiceRole : undefined;
+
   return {
     baseSystemId,
     drill: {
       opponentMode,
       ...(playProfileId ? { playProfileId } : {}),
+      ...(practiceMode ? { practiceMode } : {}),
+      ...(practiceRole ? { practiceRole } : {}),
       tuning: {
         ...DEFAULT_DRILL_TUNING,
         ...tuningRaw,
@@ -79,6 +90,16 @@ function savePreferences(prefs: PracticePreferences) {
 export function createAppStore() {
   let currentScreen = $state<Screen>("conventions");
   let selectedConvention = $state<ConventionInfo | null>(null);
+  let lastPracticedId = $state<string | null>(loadLastConvention());
+
+  function loadLastConvention(): string | null {
+    try { return localStorage.getItem(LAST_CONVENTION_KEY); } catch { return null; }
+  }
+
+  function saveLastConvention(id: string) {
+    lastPracticedId = id;
+    try { localStorage.setItem(LAST_CONVENTION_KEY, id); } catch { /* ignore */ }
+  }
   let devSeed = $state<number | null>(null);
   let devDealCount = $state(0);
   let debugPanelOpen = $state(false);
@@ -101,12 +122,8 @@ export function createAppStore() {
   let skipToPhase = $state<"review" | "playing" | "declarer" | null>(null);
   /** Dev-override practice mode from URL param (?practiceMode=). */
   let devPracticeMode = $state<PracticeMode | null>(null);
-  /** User-selected practice mode from PracticeModePicker. */
-  let userPracticeMode = $state<PracticeMode | null>(null);
   /** Dev-override practice role from URL param (?practiceRole=). */
   let devPracticeRole = $state<PracticeRole | null>(null);
-  /** User-selected practice role from PracticeModePicker. */
-  let userPracticeRole = $state<PracticeRole | null>(null);
 
   // All persisted practice preferences — single blob
   let prefs = $state<PracticePreferences>(loadPreferences());
@@ -140,6 +157,10 @@ export function createAppStore() {
     get learningBundleFilterName() {
       return learningBundleFilterName;
     },
+    get lastPracticedId() {
+      return lastPracticedId;
+    },
+
     get devSeed() {
       return devSeed;
     },
@@ -149,27 +170,9 @@ export function createAppStore() {
 
     selectConvention(config: ConventionInfo) {
       selectedConvention = config;
+      saveLastConvention(config.id);
       learningConvention = null;
-      userPracticeMode = null;
-      userPracticeRole = null;
-      if (devPracticeMode) {
-        currentScreen = "game";
-      } else {
-        currentScreen = "practice-picker";
-      }
-    },
-
-    confirmPracticeMode(mode: PracticeMode, role?: PracticeRole) {
-      userPracticeMode = mode;
-      if (role) userPracticeRole = role;
       currentScreen = "game";
-    },
-
-    cancelPracticeMode() {
-      selectedConvention = null;
-      userPracticeMode = null;
-      userPracticeRole = null;
-      currentScreen = "conventions";
     },
 
     navigateToLearning(config: ConventionInfo) {
@@ -314,8 +317,12 @@ export function createAppStore() {
       return devPracticeMode;
     },
 
-    get userPracticeMode() {
-      return userPracticeMode;
+    get userPracticeMode(): PracticeMode | undefined {
+      return prefs.drill.practiceMode;
+    },
+
+    setUserPracticeMode(mode: PracticeMode) {
+      updateDrill({ practiceMode: mode });
     },
 
     setPracticeMode(mode: PracticeMode | null) {
@@ -326,8 +333,12 @@ export function createAppStore() {
       return devPracticeRole;
     },
 
-    get userPracticeRole() {
-      return userPracticeRole;
+    get userPracticeRole(): PracticeRole | undefined {
+      return prefs.drill.practiceRole;
+    },
+
+    setUserPracticeRole(role: PracticeRole) {
+      updateDrill({ practiceRole: role });
     },
 
     setDevPracticeRole(role: PracticeRole | null) {

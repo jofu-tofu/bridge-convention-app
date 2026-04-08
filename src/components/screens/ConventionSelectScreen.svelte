@@ -33,9 +33,6 @@
     allConventions.find((c) => c.id === appStore.lastPracticedId) ?? null,
   );
 
-  const RECOMMENDED_IDS = new Set(["nt-bundle"]);
-  const showRecommended = $derived(!appStore.lastPracticedId);
-
   function toggleCategory(cat: ConventionCategory) {
     activeCategory = activeCategory === cat ? null : cat;
   }
@@ -107,6 +104,44 @@
 
   <!-- Scrollable convention grid -->
   <div class="min-h-0 flex-1 overflow-y-auto pb-6">
+    {#if lastPracticedConvention && !searchQuery && !activeCategory}
+      <!-- Continue Practicing card -->
+      <div
+        class="flex items-center justify-between gap-4 p-4 mb-4 rounded-[--radius-lg]
+          bg-accent-primary/8 border border-accent-primary/20"
+        data-testid="continue-practicing"
+      >
+        <div class="min-w-0">
+          <p class="text-xs font-medium text-accent-primary uppercase tracking-wide mb-0.5">Continue Practicing</p>
+          <p class="text-base font-semibold text-text-primary truncate">
+            {displayName(lastPracticedConvention.name)}
+          </p>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
+              text-text-secondary bg-bg-elevated hover:text-accent-primary hover:bg-accent-primary/10
+              transition-all cursor-pointer border border-transparent hover:border-accent-primary/20"
+            aria-label="Learn {displayName(lastPracticedConvention.name)}"
+            onclick={() => handleLearn(lastPracticedConvention)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+            Learn
+          </button>
+          <button
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
+              text-text-on-accent bg-accent-primary hover:bg-accent-primary-hover
+              transition-all cursor-pointer shadow-sm"
+            aria-label="Practice {displayName(lastPracticedConvention.name)}"
+            onclick={() => handleSelect(lastPracticedConvention)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+            Practice
+          </button>
+        </div>
+      </div>
+    {/if}
+
     {#if filteredConventions.length > 0}
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {#each filteredConventions as convention (convention.id)}

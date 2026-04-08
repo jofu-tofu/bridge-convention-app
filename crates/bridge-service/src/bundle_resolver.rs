@@ -115,7 +115,7 @@ pub(crate) fn list_conventions() -> Vec<ConventionInfo> {
                 id: b.id.clone(),
                 name: b.name.clone(),
                 description: b.description.clone(),
-                category: format!("{:?}", b.category).to_lowercase(),
+                category: format!("{:?}", b.category),
                 module_ids: b.member_ids.clone(),
                 module_descriptions,
                 teaching: b.teaching.clone(),
