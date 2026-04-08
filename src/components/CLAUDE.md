@@ -24,7 +24,7 @@ Game components MUST use `--text-*` tokens (ESLint enforced) and `--color-*` tok
 App.svelte                           Root — creates engine/stores, sets context, routes screens
 components/
   screens/
-    ConventionSelectScreen.svelte    Convention picker with search + category filter + learn buttons
+    ConventionSelectScreen.svelte    Convention picker with search + category filter + 2-column responsive card grid
     LearningScreen.svelte            Module-centric learning screen: sidebar lists modules (filterable by bundle), main content shows conversation flow tree (desktop) + module teaching (principle/tradeoff/mistakes) + surfaces grouped by conversation phase
     PracticeModePicker.svelte        Practice mode selection panel: Decision Drill vs Full Auction cards with start buttons
     MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible card, recursive snippet, tap-to-expand accordion for detail (recommendation/disclosure/explanation/clauses)
