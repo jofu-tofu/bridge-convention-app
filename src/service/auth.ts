@@ -54,13 +54,21 @@ export class DataPortClient implements DataPort {
 }
 
 /**
- * Dev-only DataPort that returns a fake user with a given subscription tier.
+ * Dev-only DataPort that bypasses auth and delegates everything else to the
+ * real DataPortClient. Only the authentication entry point is faked — all
+ * business logic (entitlements, progress, sync) flows through the real server
+ * when bridge-api is running, so dev behavior matches production.
+ *
  * Gated by import.meta.env.DEV at the call site — never instantiated in production.
  */
 export class DevDataPort implements DataPort {
+  private readonly inner = new DataPortClient();
+
   constructor(private readonly tier: SubscriptionTier) {}
 
   fetchCurrentUser(): Promise<AuthUser> {
+    // TODO: When bridge-api runs locally, replace with
+    // POST /api/dev/login-as to get a real session, then delegate to inner.
     return Promise.resolve({
       id: "dev-user",
       display_name: "Dev User",
@@ -70,11 +78,11 @@ export class DevDataPort implements DataPort {
     });
   }
 
-  getLoginUrl(_provider: "google" | "github"): string {
-    return "#";
+  getLoginUrl(provider: "google" | "github"): string {
+    return this.inner.getLoginUrl(provider);
   }
 
   async logout(): Promise<void> {
-    // no-op in dev
+    await this.inner.logout();
   }
 }
