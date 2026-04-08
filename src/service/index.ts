@@ -131,8 +131,8 @@ export { buildConventionCardPanel, buildAcblCardPanel } from "./display/conventi
 export { delay } from "./util/delay";
 
 // ── 8. Auth (DataPort) ─────────────────────────────────────────────
-export { AuthClient } from "./auth";
-export type { AuthUser } from "./auth";
+export { DataPortClient, DevDataPort, SubscriptionTier } from "./auth";
+export type { DataPort, AuthUser } from "./auth";
 
 // ── Debug-only types — import from service/debug-types instead ──
 // StrategyEvaluation, BidFeedbackDTO, EvaluatedFacts, PipelineResult, MachineDebugSnapshot

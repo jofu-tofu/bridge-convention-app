@@ -32,7 +32,7 @@ WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend 
 | `service-helpers.ts` | Sync WASM wrappers for UI components: `listConventions()`, `listModules()`, `buildBaseModuleInfos()`, `getModuleLearningViewportSync()` |
 | `display/` | Call/contract/card formatting, convention card builders (`convention-card.ts` — `buildConventionCardPanel` for App format, `buildAcblCardPanel` for ACBL format, wired to WASM via service-helpers) |
 | `util/delay.ts` | Pure delay utility |
-| `auth.ts` | AuthClient — DataPort boundary for `/api/auth/*` calls (fetchCurrentUser, getLoginUrl, logout). Exports `AuthUser` type. |
+| `auth.ts` | DataPort boundary for `/api/*` calls. `DataPort` interface (auth today; entitlements, sync later), `DataPortClient` (production HTTP), `DevDataPort` (dev-only fake with `SubscriptionTier`). Exports `AuthUser`, `SubscriptionTier`. |
 
 ## Hexagonal Boundary Rules
 

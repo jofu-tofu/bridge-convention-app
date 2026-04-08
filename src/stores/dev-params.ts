@@ -1,5 +1,5 @@
 import type { createAppStore } from "./app.svelte";
-import { ConventionCategory, PracticeMode, PracticeRole } from "../service";
+import { ConventionCategory, PracticeMode, PracticeRole, SubscriptionTier } from "../service";
 import type { ConventionInfo } from "../service";
 import { listConventions } from "../service/service-helpers";
 
@@ -140,4 +140,29 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   if (devFlags.has("autoDismiss")) {
     store.setAutoDismissFeedback(true);
   }
+}
+
+/**
+ * Parse dev auth override from URL params. Returns null in production builds
+ * or when no auth override is specified.
+ *
+ * Usage: ?dev=auth:free | ?dev=auth:premium | ?dev=auth:expired
+ */
+export function getDevAuthOverride(): SubscriptionTier | null {
+  if (!import.meta.env.DEV) return null;
+
+  const params = new URLSearchParams(window.location.search);
+  const devParam = params.get("dev");
+  if (!devParam) return null;
+
+  const flags = devParam.split(",").map(f => f.trim());
+  const authFlag = flags.find(f => f.startsWith("auth:"));
+  if (!authFlag) return null;
+
+  const tier = authFlag.slice(5);
+  const validTiers: string[] = Object.values(SubscriptionTier);
+  if (validTiers.includes(tier)) {
+    return tier as SubscriptionTier;
+  }
+  return null;
 }
