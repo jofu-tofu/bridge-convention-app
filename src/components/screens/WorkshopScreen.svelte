@@ -132,6 +132,46 @@
       <section>
         <h2 class="text-lg font-semibold text-text-primary mb-3">My Systems</h2>
 
+        <!-- New system button with slide-out options -->
+        <div class="flex items-center gap-2 mb-3">
+          <button
+            class="flex items-center gap-2 px-4 py-2 rounded-[--radius-md] text-sm font-medium bg-accent-primary text-text-on-accent hover:bg-accent-primary/90 transition-colors cursor-pointer"
+            onclick={() => { showNewSystemMenu = !showNewSystemMenu; }}
+            data-testid="workshop-new-system-btn"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+              class="transition-transform duration-200 {showNewSystemMenu ? 'rotate-45' : ''}"
+            ><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            New System
+          </button>
+
+          {#if showNewSystemMenu}
+            <!-- Backdrop to close menu -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div class="fixed inset-0 z-10" onclick={() => { showNewSystemMenu = false; }} onkeydown={() => {}}></div>
+            <div class="flex items-center gap-1.5 z-20 animate-slide-in">
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="text-border-subtle shrink-0" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+              {#each AVAILABLE_BASE_SYSTEMS as sys (sys.id)}
+                <button
+                  class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium bg-bg-card border border-border-subtle hover:border-accent-primary hover:text-accent-primary text-text-primary transition-all cursor-pointer whitespace-nowrap"
+                  onclick={() => { showNewSystemMenu = false; handleCreateSystem(sys.id); }}
+                  data-testid="workshop-create-from-{sys.id}"
+                >
+                  {sys.shortLabel}
+                </button>
+              {/each}
+              <span class="text-border-subtle mx-0.5">|</span>
+              <button
+                class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-accent-primary border border-dashed border-border-subtle hover:border-accent-primary transition-all cursor-pointer whitespace-nowrap"
+                onclick={() => { showNewSystemMenu = false; handleCreateSystem("sayc"); }}
+                data-testid="workshop-create-blank"
+              >
+                Start from scratch
+              </button>
+            </div>
+          {/if}
+        </div>
+
         {#if customSystems.systems.length > 0}
           <div class="space-y-2">
             {#each customSystems.systems as system (system.id)}
@@ -162,23 +202,6 @@
             {/each}
           </div>
         {/if}
-
-        <!-- New system creation -->
-        <div class="bg-bg-card border border-border-subtle border-dashed rounded-[--radius-lg] p-4 mt-2">
-          <p class="text-sm font-medium text-text-primary mb-2">New System</p>
-          <p class="text-xs text-text-muted mb-3">Start from a preset and customize:</p>
-          <div class="flex gap-2">
-            {#each AVAILABLE_BASE_SYSTEMS as sys (sys.id)}
-              <button
-                class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-accent-primary transition-colors cursor-pointer"
-                onclick={() => handleCreateSystem(sys.id)}
-                data-testid="workshop-create-from-{sys.id}"
-              >
-                {sys.shortLabel}
-              </button>
-            {/each}
-          </div>
-        </div>
       </section>
     </div>
     {:else if activeSection === "conventions"}
