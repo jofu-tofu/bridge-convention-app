@@ -26,16 +26,15 @@ components/
   screens/
     ConventionSelectScreen.svelte    Convention picker with search + category filter + 2-column responsive card grid
     LearningScreen.svelte            Module-centric learning screen: sidebar lists modules (filterable by bundle), main content shows conversation flow tree (desktop) + module teaching (principle/tradeoff/mistakes) + surfaces grouped by conversation phase
-    PracticeModePicker.svelte        Practice mode selection panel: Decision Drill vs Full Auction cards with start buttons
     MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible card, recursive snippet, tap-to-expand accordion for detail (recommendation/disclosure/explanation/clauses)
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     WorkshopScreen.svelte            System/convention/practice pack management — three-tab toggle (Systems, Conventions, Practice Packs). Hosts SystemEditor inline. Practice Packs tab: custom pack list with Edit/Delete, new pack creation (blank or fork from built-in bundle), built-in pack cards with Fork.
     ConventionEditorScreen.svelte    Convention parameter editor — rename + threshold editing for user-owned conventions. Navigated to from ModuleViewer "Customize"/"Edit" buttons.
     PracticePackEditorScreen.svelte  Practice pack builder — name/description + convention checklist with reorder. Supports create blank, fork from bundle, and edit modes.
-    ConventionsSection.svelte        Convention browser: sidebar (ModuleSidebar) + main content (ModuleViewer). Merges system + user modules. Filter toggle (All/System/My Conventions). Fork flow wired: fork button creates user module, navigates to editor.
-    ModuleSidebar.svelte             Grouped module list with search + filter toggle. Shows "custom" badge on user modules, "modified" badge on system modules with user forks. Category grouping via hardcoded map.
-    ModuleViewer.svelte              Module detail view: header, teaching content, conversation flow tree. "Customize" button for system modules forks and navigates to ConventionEditorScreen. "Edit" button for user modules navigates directly to editor.
+    ConventionsSection.svelte        Convention browser: sidebar (ModuleSidebar) + main content (ModuleViewer). Fork flow wired: fork button creates user module, navigates to editor.
+    ModuleSidebar.svelte             Two-section module list: "My Conventions" (user modules with source attribution) at top, separated from system modules grouped by category. "customized" badge on system modules with user forks. Search across both sections.
+    ModuleViewer.svelte              Module detail view: header, teaching content, conversation flow tree. "Customize" button for system modules forks (with error handling) and navigates to ConventionEditorScreen. "Edit" button for user modules navigates directly to editor.
     SystemEditor.svelte              Custom system editor — single-panel layout with strength bar + 3-column grid (Opening | Strength | Competitive+Modules). No tabs, no scrolling on desktop. Merged system + user modules with mutual exclusion, badges, compact 2-col checklist. Header with name input, preset select, error badge, save/cancel.
     StrengthBar.svelte               Horizontal bar showing weak/invite/game/slam zones with threshold labels. Reactive to threshold prop changes.
     strength-bar.ts                  Companion: zone types, color constants, thresholdPct() pure function.

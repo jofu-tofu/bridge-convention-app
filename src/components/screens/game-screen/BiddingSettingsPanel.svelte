@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { OpponentMode } from "../../../service";
+  import { OpponentMode, PracticeMode, PracticeRole } from "../../../service";
   import type { PlayProfileId } from "../../../service";
   import { PLAY_PROFILES, AVAILABLE_BASE_SYSTEMS } from "../../../service";
   import { getAppStore } from "../../../stores/context";
@@ -26,6 +26,46 @@
     {#if isReadonly}
       <p class="text-[--text-annotation] text-text-muted mb-2 px-1">Settings locked for this deal</p>
     {/if}
+    <!-- Practice Mode -->
+    <div class={isReadonly ? 'opacity-50' : ''}>
+      <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">Practice Mode</h3>
+      <ToggleGroup
+        items={[
+          { id: PracticeMode.DecisionDrill, label: "Key Bid", testId: "settings-mode-decision" },
+          { id: PracticeMode.FullAuction, label: "Full Auction", testId: "settings-mode-full" },
+        ]}
+        active={appStore.userPracticeMode ?? PracticeMode.DecisionDrill}
+        onSelect={(id) => appStore.setUserPracticeMode(id as PracticeMode)}
+        ariaLabel="Practice mode"
+        compact
+        disabled={isReadonly}
+      />
+      <p class="text-[--text-annotation] text-text-muted mt-1 px-1">
+        {(appStore.userPracticeMode ?? PracticeMode.DecisionDrill) === PracticeMode.DecisionDrill
+          ? "Jump to the key decision point"
+          : "Bid the complete auction from the opening"}
+      </p>
+    </div>
+
+    <!-- Practice Role -->
+    {#if appStore.selectedConvention?.supportsRoleSelection}
+      <div class={isReadonly ? 'opacity-50' : ''}>
+        <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">Practice As</h3>
+        <ToggleGroup
+          items={[
+            { id: PracticeRole.Responder, label: "Responder", testId: "settings-role-responder" },
+            { id: PracticeRole.Opener, label: "Opener", testId: "settings-role-opener" },
+            { id: PracticeRole.Both, label: "Both", testId: "settings-role-both" },
+          ]}
+          active={appStore.userPracticeRole ?? PracticeRole.Responder}
+          onSelect={(id) => appStore.setUserPracticeRole(id as PracticeRole)}
+          ariaLabel="Practice role"
+          compact
+          disabled={isReadonly}
+        />
+      </div>
+    {/if}
+
     <!-- Base System -->
     <div class={isReadonly ? 'opacity-50' : ''}>
       <h3 class="text-[--text-detail] font-medium text-text-secondary mb-1 px-1">System</h3>

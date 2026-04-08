@@ -125,12 +125,6 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "Embedded parameter editor; steppers and toggles adapt naturally to width",
   },
   {
-    path: "PracticeModePicker.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Embedded mode selection panel; cards stack vertically on mobile",
-  },
-  {
     path: "ConversationFlowTree.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,
