@@ -1,8 +1,10 @@
 <script lang="ts">
-  import type { ModuleFlowTreeViewport, ModuleLearningViewport, ModuleCategory } from "../../service";
+  import type { ModuleFlowTreeViewport, ModuleLearningViewport, ModuleCategory, ModuleConfigSchemaView, ConfigurableSurfaceView } from "../../service";
   import type { UserModule } from "../../service/session-types";
   import { getService, getUserModuleStore } from "../../stores/context";
+  import { getModuleLearningViewportSync, getModuleFlowTreeSync } from "../../service/service-helpers";
   import ConversationFlowTree from "./ConversationFlowTree.svelte";
+  import ParameterPanel from "./ParameterPanel.svelte";
 
   interface Props {
     moduleId: string;
@@ -48,16 +50,81 @@
 
   let flowTree = $state<ModuleFlowTreeViewport | null>(null);
   let viewport = $state<ModuleLearningViewport | null>(null);
-  let loading = $state(true);
+  let _configSchema = $state<ModuleConfigSchemaView | null>(null);
+  let editableSurfaces = $state<ConfigurableSurfaceView[]>([]);
+
+  /** Load config schema for a module (works for both system and user modules). */
+  async function loadConfigSchema(id: string): Promise<void> {
+    try {
+      let userModulesJson: string | undefined;
+      if (id.startsWith("user:")) {
+        const um = userModules.getModule(id);
+        if (um) {
+          userModulesJson = JSON.stringify([um.content]);
+        }
+      }
+      const schema = await service.getModuleConfigSchema(id, userModulesJson);
+      _configSchema = schema;
+      editableSurfaces = schema.surfaces.map(s => ({
+        ...s,
+        parameters: s.parameters.map(p => ({ ...p })),
+      }));
+    } catch {
+      _configSchema = null;
+      editableSurfaces = [];
+    }
+  }
+
+  /** Apply a parameter change to the user module content in localStorage. */
+  function handleParameterChange(meaningId: string, clauseIndex: number, newValue: number | boolean): void {
+    if (!isUserModule) return;
+
+    const um = userModules.getModule(moduleId);
+    if (!um) return;
+
+    const content = JSON.parse(JSON.stringify(um.content)) as Record<string, unknown>;
+    const states = content.states as Array<Record<string, unknown>> | undefined;
+    if (!states) return;
+
+    for (const state of states) {
+      const surfaces = state.surfaces as Array<Record<string, unknown>> | undefined;
+      if (!surfaces) continue;
+      for (const surface of surfaces) {
+        if ((surface.meaningId as string) !== meaningId) continue;
+        const clauses = surface.clauses as Array<Record<string, unknown>> | undefined;
+        if (!clauses || clauseIndex >= clauses.length) continue;
+        const clause = clauses[clauseIndex] as Record<string, unknown> | undefined;
+        if (!clause) continue;
+        clause.value = newValue;
+      }
+    }
+
+    const updated: UserModule = {
+      metadata: { ...um.metadata, updatedAt: new Date().toISOString() },
+      content,
+    };
+    userModules.saveModule(updated);
+
+    editableSurfaces = editableSurfaces.map(s => {
+      if (s.meaningId !== meaningId) return s;
+      return {
+        ...s,
+        parameters: s.parameters.map(p =>
+          p.clauseIndex !== clauseIndex ? p : { ...p, currentValue: newValue },
+        ),
+      };
+    });
+  }
 
   $effect(() => {
     const id = moduleId;
-    loading = true;
     flowTree = null;
     viewport = null;
+    _configSchema = null;
+    editableSurfaces = [];
 
     if (id.startsWith("user:")) {
-      // User modules are in localStorage only — show from stored content
+      // User modules: load from localStorage
       const um = userModules.getModule(id);
       if (um) {
         const content = um.content as Record<string, unknown>;
@@ -74,28 +141,18 @@
           phases: [],
           bundleIds: [],
         };
-        // Flow tree not available for user modules (not in Rust registry)
-        flowTree = null;
       }
-      loading = false;
+      void loadConfigSchema(id);
     } else {
-      Promise.all([
-        service.getModuleFlowTree(id),
-        service.getModuleLearningViewport(id),
-      ]).then(([tree, vp]) => {
-        flowTree = tree;
-        viewport = vp;
-        loading = false;
-      });
+      // System modules: use sync WASM helpers (same pattern as listModules/listConventions)
+      viewport = getModuleLearningViewportSync(id) as ModuleLearningViewport | null;
+      flowTree = getModuleFlowTreeSync(id) as ModuleFlowTreeViewport | null;
+      void loadConfigSchema(id);
     }
   });
 </script>
 
-{#if loading}
-  <div class="flex items-center justify-center h-32">
-    <p class="text-text-muted text-sm">Loading...</p>
-  </div>
-{:else if viewport}
+{#if viewport}
   <div class="space-y-6">
     <!-- Header -->
     <div>
@@ -151,6 +208,21 @@
               {/each}
             </ul>
           </div>
+        {/if}
+      </div>
+    {/if}
+
+    <!-- Configurable Parameters (editable for user modules, read-only view for system) -->
+    {#if editableSurfaces.length > 0}
+      <div>
+        <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">
+          {isUserModule ? "Configure Parameters" : "Parameters"}
+        </h3>
+        {#if isUserModule}
+          <ParameterPanel surfaces={editableSurfaces} onParameterChange={handleParameterChange} />
+        {:else}
+          <ParameterPanel surfaces={editableSurfaces} onParameterChange={() => {}} />
+          <p class="text-xs text-text-muted mt-2 italic">Fork this module to edit parameters.</p>
         {/if}
       </div>
     {/if}

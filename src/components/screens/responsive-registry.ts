@@ -71,12 +71,6 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "Two-panel editor: viz hidden below 1024px, tabbed fields full-width, overflow-y on tab content",
   },
   {
-    path: "SystemProfileViz.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Live system profile visualization; embedded in SystemEditor left panel, hidden on mobile via lg:flex",
-  },
-  {
     path: "SystemDetailView.svelte",
     mobileStrategy: "centered",
     minWidth: 320,
@@ -105,6 +99,30 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileStrategy: "embedded",
     minWidth: 280,
     mobileNotes: "Module detail view with flow tree; full-width on mobile",
+  },
+  {
+    path: "HandExamples.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Embedded hand example display within SystemEditor",
+  },
+  {
+    path: "SystemCardSummary.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Embedded system card summary within Workshop",
+  },
+  {
+    path: "SystemOverviewPanel.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Embedded system overview panel within SystemEditor",
+  },
+  {
+    path: "ParameterPanel.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Embedded parameter editor; steppers and toggles adapt naturally to width",
   },
   {
     path: "PracticeModePicker.svelte",
