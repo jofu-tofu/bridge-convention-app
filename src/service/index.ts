@@ -129,6 +129,10 @@ export { buildConventionCardPanel, buildAcblCardPanel } from "./display/conventi
 // ── 7. Cross-cutting ────────────────────────────────────────────────
 export { delay } from "./util/delay";
 
+// ── 8. Auth (DataPort) ─────────────────────────────────────────────
+export { AuthClient } from "./auth";
+export type { AuthUser } from "./auth";
+
 // ── Debug-only types — import from service/debug-types instead ──
 // StrategyEvaluation, BidFeedbackDTO, EvaluatedFacts, PipelineResult, MachineDebugSnapshot
 // are routed through debug-types.ts (not this barrel) to keep the production API surface clean.

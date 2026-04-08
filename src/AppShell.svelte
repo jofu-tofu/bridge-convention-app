@@ -4,7 +4,8 @@
   import type { createAppStore } from "./stores/app.svelte";
   import type { createCustomSystemsStore } from "./stores/custom-systems.svelte";
   import type { createUserModuleStore } from "./stores/user-modules.svelte";
-  import { setGameStore, setAppStore, setService, setCustomSystemsStore, setUserModuleStore } from "./stores/context";
+  import type { createAuthStore } from "./stores/auth.svelte";
+  import { setGameStore, setAppStore, setService, setCustomSystemsStore, setUserModuleStore, setAuthStore } from "./stores/context";
   import { DESKTOP_MIN } from "./components/shared/breakpoints.svelte";
   import NavRail from "./components/navigation/NavRail.svelte";
   import BottomTabBar from "./components/navigation/BottomTabBar.svelte";
@@ -22,6 +23,7 @@
     appStore: ReturnType<typeof createAppStore>;
     customSystemsStore: ReturnType<typeof createCustomSystemsStore>;
     userModuleStore: ReturnType<typeof createUserModuleStore>;
+    authStore: ReturnType<typeof createAuthStore>;
   }
 
   const props: Props = $props();
@@ -31,6 +33,7 @@
   setAppStore(props.appStore);
   setCustomSystemsStore(props.customSystemsStore);
   setUserModuleStore(props.userModuleStore);
+  setAuthStore(props.authStore);
 
   let innerW = $state(1024);
   const isDesktop = $derived(innerW >= DESKTOP_MIN);

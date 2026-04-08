@@ -1,6 +1,6 @@
 # Rust Backend (src-tauri/)
 
-Cargo workspace with six crates implementing the bridge engine, convention data model, session logic, and service layer in Rust.
+Cargo workspace with seven crates implementing the bridge engine, convention data model, session logic, service layer, and API server in Rust.
 
 ## Commands
 
@@ -71,6 +71,10 @@ crates/
                        for browser deployment. All 20 ServicePort methods + async DDS play
                        methods (play_card_dds, needs_dds_play, set_dds_solver) +
                        5 DevServicePort methods (debug_assertions gated).
+  bridge-api/          Axum API server — auth, user data (DataPort). Standalone binary
+                       (:3001). Independent of game crates (no bridge-engine/conventions/
+                       session/service deps). SQLite via sqlx, OAuth (Google + GitHub),
+                       server-side sessions. See Dockerfile.api for container build.
 ```
 
 ## Conventions

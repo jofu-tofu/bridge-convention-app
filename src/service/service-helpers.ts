@@ -99,6 +99,22 @@ export function getModuleFlowTreeSync(moduleId: string): unknown {
 }
 
 /**
+ * Get a module config schema synchronously.
+ * Returns null if module not found or WASM not ready.
+ */
+export function getModuleConfigSchemaSync(moduleId: string, userModulesJson?: string | null): unknown {
+  try {
+    // any: cachedPort type doesn't include get_module_config_schema
+    const port = getSyncPort() as Record<string, unknown>;
+    const fn = port.get_module_config_schema as ((id: string, json: string | null) => unknown) | undefined;
+    if (!fn) return null;
+    return fn.call(port, moduleId, userModulesJson ?? null);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Build base module info for the always-active base modules.
  */
 export function buildBaseModuleInfos(): readonly BaseModuleInfo[] {

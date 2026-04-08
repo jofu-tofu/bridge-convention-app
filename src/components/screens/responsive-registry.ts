@@ -101,22 +101,10 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "Module detail view with flow tree; full-width on mobile",
   },
   {
-    path: "HandExamples.svelte",
+    path: "StrengthBar.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,
-    mobileNotes: "Embedded hand example display within SystemEditor",
-  },
-  {
-    path: "SystemCardSummary.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Embedded system card summary within Workshop",
-  },
-  {
-    path: "SystemOverviewPanel.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Embedded system overview panel within SystemEditor",
+    mobileNotes: "Embedded strength visualization bar within SystemEditor",
   },
   {
     path: "ParameterPanel.svelte",

@@ -69,8 +69,32 @@ Stable product decisions and rationale. Reference this for "why" questions about
 ```
 
 - **ServicePort** — WASM in browser, handles all game logic. Stateless per-request. No network needed after initial load.
-- **DataPort** — remote server API. Auth, entitlements, progress, sync. Future addition.
+- **DataPort** — remote server API. Auth, entitlements, progress, sync. Implemented as `bridge-api`.
 - They don't mix. WASM never touches DB. Server never runs convention logic.
+
+## DataPort Implementation
+
+```
+Browser ──fetch──► Caddy ──/api/*──► Axum (bridge-api :3001) ──► SQLite
+                    │
+                    └── static files (WASM app)
+```
+
+**Stack:** Axum (Rust), SQLite via sqlx, server-side sessions (not JWT).
+
+**Why server-side sessions over JWT:** Simpler, revocable (delete row = logged out), no refresh-token rotation. Single indexed SQLite query per auth check is fine at this scale. JWT would add complexity with no benefit for a single-server app.
+
+**Auth is optional:** App works without login (free tier). No auth gate blocks the UI — components check auth state and adapt. This preserves the existing anonymous UX.
+
+**OAuth providers:** Google + GitHub. Server-side authorization code flow — Axum holds client secrets, exchanges code, issues session cookie. Browser never sees OAuth client secret.
+
+**Auto-merge by email:** When a new OAuth provider returns an email matching an existing user, the identity is linked to that user. Null/missing emails are never used for matching.
+
+**Cookie-based CSRF:** OAuth `state` parameter stored in short-lived httpOnly cookie (10-min TTL), verified on callback.
+
+**Crate:** `src-tauri/crates/bridge-api/` — standalone binary, independent of game crates (no bridge-engine/conventions/session/service deps). See `Dockerfile.api` for container build.
+
+**Frontend:** `src/service/auth.ts` (AuthClient) → `src/stores/auth.svelte.ts` (auth store via DI) → components. Same service boundary pattern as ServicePort.
 
 ## App Startup Flow
 

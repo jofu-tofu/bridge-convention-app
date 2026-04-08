@@ -7,7 +7,23 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  api:
+    image: ghcr.io/jofu-tofu/bridge-convention-app-api:latest
+    env_file: .env
+    volumes:
+      - api_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
     restart: unless-stopped
 
 volumes:
   caddy_data:
+  api_data:

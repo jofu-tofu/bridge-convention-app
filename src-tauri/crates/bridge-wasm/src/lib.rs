@@ -446,7 +446,11 @@ impl WasmServicePort {
     }
 
     pub fn get_module_config_schema(&self, module_id: String, user_modules_json: JsValue) -> Result<JsValue, JsError> {
-        let user_json: Option<String> = from_js(user_modules_json)?;
+        let user_json: Option<String> = if user_modules_json.is_null() || user_modules_json.is_undefined() {
+            None
+        } else {
+            Some(from_js(user_modules_json)?)
+        };
         let result = self.inner.get_module_config_schema(&module_id, user_json.as_deref())
             .map_err(service_error)?;
         to_js(result)

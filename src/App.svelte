@@ -1,11 +1,12 @@
 <script lang="ts">
   import type { DevServicePort } from "./service";
-  import { BridgeService } from "./service";
+  import { BridgeService, AuthClient } from "./service";
   import { applyDevParams } from "./stores/dev-params";
   import { createGameStore } from "./stores/game.svelte";
   import { createAppStore } from "./stores/app.svelte";
   import { createCustomSystemsStore } from "./stores/custom-systems.svelte";
   import { createUserModuleStore } from "./stores/user-modules.svelte";
+  import { createAuthStore } from "./stores/auth.svelte";
   import AppShell from "./AppShell.svelte";
 
   let engineReady = $state(false);
@@ -15,11 +16,16 @@
   let appStore = $state<ReturnType<typeof createAppStore> | null>(null);
   let customSystemsStore = $state<ReturnType<typeof createCustomSystemsStore> | null>(null);
   let userModuleStore = $state<ReturnType<typeof createUserModuleStore> | null>(null);
+  let authStore = $state<ReturnType<typeof createAuthStore> | null>(null);
 
   function init(): void {
     engineReady = false;
     initError = null;
     const svc = new BridgeService();
+
+    // Auth store created immediately (non-blocking, parallel with WASM init)
+    authStore = createAuthStore(new AuthClient());
+
     svc.init()
       .then(() => {
         resolvedService = svc;
@@ -51,10 +57,10 @@
       onclick={() => init()}
     >Retry</button>
   </div>
-{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore || !customSystemsStore || !userModuleStore}
+{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore || !customSystemsStore || !userModuleStore || !authStore}
   <div class="bg-bg-deepest text-text-primary flex h-screen items-center justify-center">
     Loading engine...
   </div>
 {:else}
-  <AppShell service={resolvedService} gameStore={resolvedGameStore} {appStore} {customSystemsStore} {userModuleStore} />
+  <AppShell service={resolvedService} gameStore={resolvedGameStore} {appStore} {customSystemsStore} {userModuleStore} {authStore} />
 {/if}

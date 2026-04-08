@@ -71,7 +71,7 @@ interface WasmServicePortBindings {
   get_bundle_flow_tree(bundleId: string): BundleFlowTreeViewport | null;
   get_module_flow_tree(moduleId: string): ModuleFlowTreeViewport | null;
   fork_module(source_module_id: string): unknown;
-  get_module_config_schema(module_id: string, user_modules_json: string | undefined): ModuleConfigSchemaView;
+  get_module_config_schema(module_id: string, user_modules_json: string | null): ModuleConfigSchemaView;
   validate_module(module_json: string): ValidationResult;
   // Dev methods (available in debug builds only)
   get_expected_bid?(handle: string): Call | { call: Call } | null;
@@ -282,7 +282,7 @@ export class BridgeService implements DevServicePort {
 
   // ── Module config schema ──────────────────────────────────────
   async getModuleConfigSchema(moduleId: string, userModulesJson?: string): Promise<ModuleConfigSchemaView> {
-    return getPort().get_module_config_schema(moduleId, userModulesJson);
+    return getPort().get_module_config_schema(moduleId, userModulesJson ?? null);
   }
 
   async validateModule(moduleJson: string): Promise<ValidationResult> {

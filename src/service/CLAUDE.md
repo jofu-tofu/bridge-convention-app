@@ -32,6 +32,7 @@ WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend 
 | `service-helpers.ts` | Sync WASM wrappers for UI components: `listConventions()`, `listModules()`, `buildBaseModuleInfos()`, `getModuleLearningViewportSync()` |
 | `display/` | Call/contract/card formatting, convention card builders (`convention-card.ts` — `buildConventionCardPanel` for App format, `buildAcblCardPanel` for ACBL format, wired to WASM via service-helpers) |
 | `util/delay.ts` | Pure delay utility |
+| `auth.ts` | AuthClient — DataPort boundary for `/api/auth/*` calls (fetchCurrentUser, getLoginUrl, logout). Exports `AuthUser` type. |
 
 ## Hexagonal Boundary Rules
 
@@ -66,7 +67,7 @@ Nothing imports from `service/` except `stores/`, `components/`, and `cli/comman
 ## Two-Port Model
 
 - **ServicePort** (compute, WASM, client-side) — all game logic runs locally after initial load
-- **DataPort** (auth/entitlements/progress, server) — future addition
+- **DataPort** (auth/entitlements/progress, server) — implemented as `bridge-api` (Axum :3001, SQLite). `auth.ts` is the TS client.
 
 They don't mix. See `docs/product-direction.md`.
 

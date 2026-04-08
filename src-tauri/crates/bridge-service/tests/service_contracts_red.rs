@@ -229,6 +229,25 @@ fn submit_bid_during_wrong_phase_returns_error() {
 }
 
 #[test]
+fn get_module_config_schema_works_for_system_module() {
+    let service = ServicePortImpl::new();
+    let result = service.get_module_config_schema("stayman", None);
+    match &result {
+        Ok(schema) => {
+            eprintln!("Schema: {} surfaces", schema.surfaces.len());
+            for s in &schema.surfaces {
+                eprintln!("  Surface: {} ({}) - {} params", s.name, s.call_display, s.parameters.len());
+            }
+        }
+        Err(e) => eprintln!("Error: {}", e),
+    }
+    assert!(result.is_ok(), "get_module_config_schema failed: {:?}", result.err());
+    let schema = result.unwrap();
+    assert_eq!(schema.module_id, "stayman");
+    assert!(!schema.surfaces.is_empty(), "Stayman should have configurable surfaces");
+}
+
+#[test]
 fn viewport_getters_return_none_for_wrong_phase() {
     let mut service = ServicePortImpl::new();
     let handle = create_test_session(&mut service, "nt-bundle", 45);

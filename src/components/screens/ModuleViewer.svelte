@@ -2,7 +2,7 @@
   import type { ModuleFlowTreeViewport, ModuleLearningViewport, ModuleCategory, ModuleConfigSchemaView, ConfigurableSurfaceView } from "../../service";
   import type { UserModule } from "../../service/session-types";
   import { getService, getUserModuleStore } from "../../stores/context";
-  import { getModuleLearningViewportSync, getModuleFlowTreeSync } from "../../service/service-helpers";
+  import { getModuleLearningViewportSync, getModuleFlowTreeSync, getModuleConfigSchemaSync } from "../../service/service-helpers";
   import ConversationFlowTree from "./ConversationFlowTree.svelte";
   import ParameterPanel from "./ParameterPanel.svelte";
 
@@ -48,28 +48,26 @@
     }
   }
 
-  let flowTree = $state<ModuleFlowTreeViewport | null>(null);
-  let viewport = $state<ModuleLearningViewport | null>(null);
   let _configSchema = $state<ModuleConfigSchemaView | null>(null);
   let editableSurfaces = $state<ConfigurableSurfaceView[]>([]);
 
-  /** Load config schema for a module (works for both system and user modules). */
-  async function loadConfigSchema(id: string): Promise<void> {
-    try {
-      let userModulesJson: string | undefined;
-      if (id.startsWith("user:")) {
-        const um = userModules.getModule(id);
-        if (um) {
-          userModulesJson = JSON.stringify([um.content]);
-        }
+  /** Load config schema for a module using the sync WASM port. */
+  function loadConfigSchema(id: string): void {
+    let userModulesJson: string | null = null;
+    if (id.startsWith("user:")) {
+      const um = userModules.getModule(id);
+      if (um) {
+        userModulesJson = JSON.stringify([um.content]);
       }
-      const schema = await service.getModuleConfigSchema(id, userModulesJson);
+    }
+    const schema = getModuleConfigSchemaSync(id, userModulesJson) as ModuleConfigSchemaView | null;
+    if (schema && schema.surfaces) {
       _configSchema = schema;
-      editableSurfaces = schema.surfaces.map(s => ({
+      editableSurfaces = schema.surfaces.map((s: ConfigurableSurfaceView) => ({
         ...s,
         parameters: s.parameters.map(p => ({ ...p })),
       }));
-    } catch {
+    } else {
       _configSchema = null;
       editableSurfaces = [];
     }
@@ -116,19 +114,15 @@
     });
   }
 
-  $effect(() => {
+  // Derive viewport data from moduleId — sync for system modules, localStorage for user
+  const moduleData = $derived.by(() => {
     const id = moduleId;
-    flowTree = null;
-    viewport = null;
-    _configSchema = null;
-    editableSurfaces = [];
-
     if (id.startsWith("user:")) {
-      // User modules: load from localStorage
       const um = userModules.getModule(id);
-      if (um) {
-        const content = um.content as Record<string, unknown>;
-        viewport = {
+      if (!um) return null;
+      const content = um.content as Record<string, unknown>;
+      return {
+        viewport: {
           moduleId: um.metadata.moduleId,
           displayName: um.metadata.displayName,
           description: (content.description as string) ?? "",
@@ -140,33 +134,39 @@
           },
           phases: [],
           bundleIds: [],
-        };
-      }
-      void loadConfigSchema(id);
-    } else {
-      // System modules: use sync WASM helpers (same pattern as listModules/listConventions)
-      viewport = getModuleLearningViewportSync(id) as ModuleLearningViewport | null;
-      flowTree = getModuleFlowTreeSync(id) as ModuleFlowTreeViewport | null;
-      void loadConfigSchema(id);
+        } as ModuleLearningViewport,
+        flowTree: null as ModuleFlowTreeViewport | null,
+      };
     }
+    // System modules: use sync WASM helpers
+    const vp = getModuleLearningViewportSync(id) as ModuleLearningViewport | null;
+    const tree = getModuleFlowTreeSync(id) as ModuleFlowTreeViewport | null;
+    return vp ? { viewport: vp, flowTree: tree } : null;
+  });
+
+  // Load config schema as a side effect (non-blocking)
+  $effect(() => {
+    loadConfigSchema(moduleId);
   });
 </script>
 
-{#if viewport}
+{#if moduleData}
+  {@const vp = moduleData.viewport}
+  {@const ft = moduleData.flowTree}
   <div class="space-y-6">
     <!-- Header -->
     <div>
       <div class="flex items-start justify-between gap-3">
         <div>
           <h2 class="text-xl font-bold text-text-primary">
-            {viewport.displayName}
+            {vp.displayName}
             {#if isUserModule}
               <span class="ml-2 px-1.5 py-0.5 text-[10px] font-medium rounded-full bg-accent-primary/15 text-accent-primary align-middle">custom</span>
             {/if}
           </h2>
-          <p class="text-sm text-text-secondary mt-1">{viewport.description}</p>
-          {#if viewport.purpose}
-            <p class="text-xs text-text-muted mt-2 italic">{viewport.purpose}</p>
+          <p class="text-sm text-text-secondary mt-1">{vp.description}</p>
+          {#if vp.purpose}
+            <p class="text-xs text-text-muted mt-2 italic">{vp.purpose}</p>
           {/if}
         </div>
         {#if !isUserModule}
@@ -182,25 +182,25 @@
     </div>
 
     <!-- Teaching -->
-    {#if viewport.teaching.principle || viewport.teaching.tradeoff || viewport.teaching.commonMistakes.length > 0}
+    {#if vp.teaching.principle || vp.teaching.tradeoff || vp.teaching.commonMistakes.length > 0}
       <div class="space-y-3">
-        {#if viewport.teaching.principle}
+        {#if vp.teaching.principle}
           <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
             <h3 class="text-xs font-semibold text-accent-primary mb-1">Principle</h3>
-            <p class="text-sm text-text-primary leading-relaxed">{viewport.teaching.principle}</p>
+            <p class="text-sm text-text-primary leading-relaxed">{vp.teaching.principle}</p>
           </div>
         {/if}
-        {#if viewport.teaching.tradeoff}
+        {#if vp.teaching.tradeoff}
           <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
             <h3 class="text-xs font-semibold text-text-secondary mb-1">Tradeoff</h3>
-            <p class="text-sm text-text-primary leading-relaxed">{viewport.teaching.tradeoff}</p>
+            <p class="text-sm text-text-primary leading-relaxed">{vp.teaching.tradeoff}</p>
           </div>
         {/if}
-        {#if viewport.teaching.commonMistakes.length > 0}
+        {#if vp.teaching.commonMistakes.length > 0}
           <div class="bg-bg-card rounded-[--radius-lg] border border-border-subtle p-4">
             <h3 class="text-xs font-semibold text-accent-danger mb-1">Common Mistakes</h3>
             <ul class="space-y-1.5">
-              {#each viewport.teaching.commonMistakes as mistake, i (i)}
+              {#each vp.teaching.commonMistakes as mistake, i (i)}
                 <li class="text-sm text-text-primary leading-relaxed flex gap-2">
                   <span class="shrink-0 text-text-muted">-</span>
                   <span>{mistake}</span>
@@ -228,11 +228,11 @@
     {/if}
 
     <!-- Flow Tree -->
-    {#if flowTree}
+    {#if ft}
       <div>
         <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Conversation Flow</h3>
         <div class="overflow-x-auto bg-bg-card rounded-[--radius-lg] border border-border-subtle">
-          <ConversationFlowTree tree={flowTree} />
+          <ConversationFlowTree tree={ft} />
         </div>
       </div>
     {/if}

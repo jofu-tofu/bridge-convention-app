@@ -3,12 +3,14 @@ import type { GameStore } from "./types";
 import type { createAppStore } from "../stores/app.svelte";
 import type { createCustomSystemsStore } from "../stores/custom-systems.svelte";
 import type { createUserModuleStore } from "../stores/user-modules.svelte";
+import type { createAuthStore } from "../stores/auth.svelte";
 import type { LayoutProps } from "../components/shared/layout-props";
 import type { DevServicePort } from "../service";
 
 type AppStore = ReturnType<typeof createAppStore>;
 type CustomSystemsStore = ReturnType<typeof createCustomSystemsStore>;
 type UserModuleStore = ReturnType<typeof createUserModuleStore>;
+type AuthStore = ReturnType<typeof createAuthStore>;
 
 const GAME_STORE_KEY = Symbol("game-store");
 const APP_STORE_KEY = Symbol("app-store");
@@ -16,6 +18,7 @@ const SERVICE_KEY = Symbol("service");
 const LAYOUT_KEY = Symbol("layout");
 const CUSTOM_SYSTEMS_KEY = Symbol("custom-systems");
 const USER_MODULES_KEY = Symbol("user-modules");
+const AUTH_STORE_KEY = Symbol("auth-store");
 
 // Game store context
 export function setGameStore(store: GameStore): void {
@@ -69,4 +72,13 @@ export function setUserModuleStore(store: UserModuleStore): void {
 
 export function getUserModuleStore(): UserModuleStore {
   return getContext<UserModuleStore>(USER_MODULES_KEY);
+}
+
+// Auth store context
+export function setAuthStore(store: AuthStore): void {
+  setContext(AUTH_STORE_KEY, store);
+}
+
+export function getAuthStore(): AuthStore {
+  return getContext<AuthStore>(AUTH_STORE_KEY);
 }
