@@ -20,6 +20,8 @@ export const MODULE_CATEGORIES: Record<string, string> = {
   "dont": "Competitive",
   "michaels-unusual": "Competitive",
   "blackwood": "Slam",
+  "negative-doubles": "Competitive",
+  "new-minor-forcing": "Responder Rebids",
 };
 
 /** Maps ModuleCategory enum values to display names. */
@@ -31,6 +33,7 @@ export const CATEGORY_DISPLAY: Record<string, string> = {
   "competitive": "Competitive",
   "slam": "Slam",
   "custom": "Custom",
+  "responder-rebids": "Responder Rebids",
 };
 
 export interface CatalogModule {

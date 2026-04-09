@@ -75,6 +75,7 @@ pub enum ModuleCategory {
     MajorRaises,
     WeakBids,
     Competitive,
+    Constructive,
     Slam,
     Custom,
 }

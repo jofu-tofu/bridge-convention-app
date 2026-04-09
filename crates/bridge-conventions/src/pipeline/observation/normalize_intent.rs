@@ -183,6 +183,31 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
         "DONTEscape3DAfter2S" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Diamonds), quality: None, strength: None }],
         "DONTEscape3HAfter2S" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Hearts), quality: None, strength: None }],
 
+        // ── Negative Doubles ─────────────────────────────────────
+        "NegDblOpponentOvercall" => vec![BidAction::Overcall { feature: HandFeature::HeldSuit, suit: param_suit(p) }],
+        "NegativeDouble" => vec![BidAction::Double { feature: HandFeature::HeldSuit }],
+        "NegDblResponderPass" => vec![BidAction::Pass],
+        "NegDblResponderNewSuit" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
+        "NegDblOpenerRaise" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Constructive }],
+        "NegDblOpenerJumpRaise" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Game }],
+        "NegDblOpenerRebid" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
+        "NegDblOpenerNT" => vec![BidAction::Place { strain: BidSuitName::Notrump }],
+        "NegDblOpenerNewSuit" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
+        "NegDblOpenerPass" => vec![BidAction::Pass],
+
+        // ── New Minor Forcing ────────────────────────────────────
+        "NMFAsk" => vec![BidAction::Inquire { feature: HandFeature::MajorSuit, suit: None }],
+        "NMFResponderSignoff" => vec![BidAction::Signoff { strain: param_strain(p) }],
+        "NMFResponderNTInvite" => vec![BidAction::Raise { strain: BidSuitName::Notrump, strength: HandStrength::Invitational }],
+        "NMFResponderNTGame" => vec![BidAction::Place { strain: BidSuitName::Notrump }],
+        "NMFResponderPass" => vec![BidAction::Pass],
+        "NMFOpenerShowSupport" => vec![BidAction::Show { feature: HandFeature::Fit, suit: param_suit(p), quality: None, strength: None }],
+        "NMFOpenerShowOtherMajor" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
+        "NMFOpenerNTMin" => vec![BidAction::Place { strain: BidSuitName::Notrump }],
+        "NMFOpenerNTMax" => vec![BidAction::Raise { strain: BidSuitName::Notrump, strength: HandStrength::Game }],
+        "OpenerRebid1NT" => vec![BidAction::Show { feature: HandFeature::Balanced, suit: None, quality: None, strength: None }],
+        "ResponderShowMajor" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
+
         // ── Blackwood ──────────────────────────────────────────────
         "BlackwoodAsk" => {
             let feature_str = p.get("feature").and_then(|v| v.as_str()).unwrap_or("keyCards");

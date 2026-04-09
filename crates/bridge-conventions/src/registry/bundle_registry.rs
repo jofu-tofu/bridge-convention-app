@@ -32,6 +32,10 @@ const MICHAELS_UNUSUAL_BUNDLE_JSON: &str =
     include_str!("../../fixtures/michaels-unusual-bundle.json");
 const STRONG_2C_BUNDLE_JSON: &str =
     include_str!("../../fixtures/strong-2c-bundle.json");
+const NEGATIVE_DOUBLES_BUNDLE_JSON: &str =
+    include_str!("../../fixtures/negative-doubles-bundle.json");
+const NMF_BUNDLE_JSON: &str =
+    include_str!("../../fixtures/nmf-bundle.json");
 
 fn json_for_bundle(id: &str) -> Option<&'static str> {
     match id {
@@ -43,6 +47,8 @@ fn json_for_bundle(id: &str) -> Option<&'static str> {
         "dont-bundle" => Some(DONT_BUNDLE_JSON),
         "michaels-unusual-bundle" => Some(MICHAELS_UNUSUAL_BUNDLE_JSON),
         "strong-2c-bundle" => Some(STRONG_2C_BUNDLE_JSON),
+        "negative-doubles-bundle" => Some(NEGATIVE_DOUBLES_BUNDLE_JSON),
+        "nmf-bundle" => Some(NMF_BUNDLE_JSON),
         _ => None,
     }
 }
@@ -57,6 +63,8 @@ const BUNDLE_IDS: &[&str] = &[
     "weak-twos-bundle",
     "michaels-unusual-bundle",
     "strong-2c-bundle",
+    "negative-doubles-bundle",
+    "nmf-bundle",
 ];
 
 // ── Bundle input manifest cache ────────────────────────────────────
@@ -135,9 +143,9 @@ mod tests {
     use crate::types::bundle_types::ConventionCategory;
 
     #[test]
-    fn list_bundle_inputs_returns_8() {
+    fn list_bundle_inputs_returns_10() {
         let inputs = list_bundle_inputs();
-        assert_eq!(inputs.len(), 8);
+        assert_eq!(inputs.len(), 10);
     }
 
     #[test]
@@ -182,7 +190,7 @@ mod tests {
     }
 
     #[test]
-    fn resolve_bundle_all_6() {
+    fn resolve_bundle_all_10() {
         for &id in BUNDLE_IDS {
             let bundle = resolve_bundle(id, BaseSystemId::Sayc);
             assert!(

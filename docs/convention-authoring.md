@@ -206,4 +206,14 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 - 5-card majors in all seats, strong 1NT (15-17)
 - Transfer priority over Stayman with 5+ major AND 4-card major
 - Opening priority: strong 2C > 2NT > 1NT > majors > minors > preempts > weak twos
-- Known gaps: no minor raises, no responder rebids, limited opener rebid coverage
+- Known gaps: no minor raises, limited opener rebid coverage
+
+### Negative Doubles
+- **Opponent overcall observations:** The module includes its own surfaces for opponent overcalls (5+ card suit, 8-16 HCP) to produce committed observations that advance the FSM. These are real surfaces with clauses, not stubs.
+- **Per-opening phase pattern:** Each opening suit gets its own `r1-after-1x` → `after-oc-1x` phase pair. The meaning of a negative double depends on which suits are unbid, so encoding the opening suit in the phase name makes surfaces self-contained. Route matching within the `after-oc-1x` phase further distinguishes by overcall suit.
+- **Level-dependent HCP thresholds:** 1-level negative doubles require 6+ HCP; 2-level require 8+ HCP. Surfaces use direct `hand.hcp` clauses, not module-derived facts, since the threshold depends on the specific overcall level.
+
+### New Minor Forcing (NMF)
+- **3-round auction prefix:** NMF fires after 1m - 1M - 1NT, which is 3 bids before the convention's main decision point. The FSM tracks this with idle → after-1m-open → after-1m-1M → after-1nt-rebid progression.
+- **Route-dependent NMF minor:** The NMF bid itself depends on which minor was opened — 2D after 1C opening, 2C after 1D opening. Route matching on `{"act": "open", "strain": "clubs"}` vs `"diamonds"` selects the correct encoding.
+- **Inquire reuse:** Both NMF and Stayman produce `Inquire { feature: MajorSuit }`. This is safe because they occupy different FSM phases — Stayman is in `idle` (after 1NT opening), NMF is in `after-1nt-rebid` (after 1m-1M-1NT). Modules sharing the same `BidAction` shape are safe as long as they occupy different FSM phases.

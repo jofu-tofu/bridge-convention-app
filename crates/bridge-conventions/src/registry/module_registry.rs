@@ -23,6 +23,8 @@ const MODULE_IDS: &[&str] = &[
     "blackwood",
     "michaels-unusual",
     "strong-2c",
+    "negative-doubles",
+    "new-minor-forcing",
 ];
 
 /// Base module IDs merged into every spec (strategy layer).
@@ -59,6 +61,10 @@ const JACOBY_4WAY_JSON: &str =
     include_str!("../../fixtures/modules/jacoby-4way.json");
 const STRONG_2C_JSON: &str =
     include_str!("../../fixtures/modules/strong-2c.json");
+const NEGATIVE_DOUBLES_JSON: &str =
+    include_str!("../../fixtures/modules/negative-doubles.json");
+const NEW_MINOR_FORCING_JSON: &str =
+    include_str!("../../fixtures/modules/new-minor-forcing.json");
 
 fn json_for_module(id: &str) -> Option<&'static str> {
     match id {
@@ -74,6 +80,8 @@ fn json_for_module(id: &str) -> Option<&'static str> {
         "blackwood" => Some(BLACKWOOD_JSON),
         "michaels-unusual" => Some(MICHAELS_UNUSUAL_JSON),
         "strong-2c" => Some(STRONG_2C_JSON),
+        "negative-doubles" => Some(NEGATIVE_DOUBLES_JSON),
+        "new-minor-forcing" => Some(NEW_MINOR_FORCING_JSON),
         _ => None,
     }
 }
@@ -152,9 +160,9 @@ mod tests {
     }
 
     #[test]
-    fn get_all_modules_returns_12() {
+    fn get_all_modules_returns_14() {
         let modules = get_all_modules(BaseSystemId::Sayc);
-        assert_eq!(modules.len(), 12);
+        assert_eq!(modules.len(), 14);
     }
 
     #[test]

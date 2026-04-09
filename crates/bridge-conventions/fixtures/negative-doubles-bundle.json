@@ -1,0 +1,138 @@
+{
+  "id": "negative-doubles-bundle",
+  "name": "Negative Doubles (Bundle)",
+  "description": "Negative doubles after partner opens 1-of-a-suit and opponent overcalls — shows unbid suits and competitive values",
+  "category": "Competitive",
+  "systemProfile": {
+    "profileId": "negative-doubles-sayc",
+    "baseSystem": "sayc",
+    "systemConfig": {
+      "systemId": "sayc",
+      "displayName": "Standard American Yellow Card",
+      "ntOpening": {
+        "minHcp": 15,
+        "maxHcp": 17
+      },
+      "responderThresholds": {
+        "inviteMin": 8,
+        "inviteMax": 9,
+        "gameMin": 10,
+        "slamMin": 15,
+        "inviteMinTp": { "trump": 8 },
+        "inviteMaxTp": { "trump": 10 },
+        "gameMinTp": { "trump": 10 },
+        "slamMinTp": { "trump": 16 }
+      },
+      "openerRebid": {
+        "notMinimum": 16,
+        "notMinimumTp": { "trump": 16 }
+      },
+      "interference": {
+        "redoubleMin": 10
+      },
+      "suitResponse": {
+        "twoLevelMin": 10,
+        "twoLevelForcingDuration": "one-round"
+      },
+      "oneNtResponseAfterMajor": {
+        "forcing": "non-forcing",
+        "maxHcp": 10,
+        "minHcp": 6
+      },
+      "openingRequirements": {
+        "majorSuitMinLength": 5
+      },
+      "dontOvercall": {
+        "minHcp": 8,
+        "maxHcp": 15
+      }
+    },
+    "modules": [
+      {
+        "moduleId": "negative-doubles",
+        "kind": "add-on",
+        "attachments": [
+          { "whenAuction": { "kind": "sequence", "calls": ["1C"] } },
+          { "whenAuction": { "kind": "sequence", "calls": ["1D"] } },
+          { "whenAuction": { "kind": "sequence", "calls": ["1H"] } },
+          { "whenAuction": { "kind": "sequence", "calls": ["1S"] } }
+        ]
+      }
+    ]
+  },
+  "memberIds": [
+    "negative-doubles"
+  ],
+  "declaredCapabilities": {
+    "competitive.negative-doubles": "active"
+  },
+  "teaching": {
+    "purpose": "When opponents overcall partner's opening bid, use a conventional double to show the unbid suits (especially majors) and competitive values instead of passing or overbidding",
+    "whenToUse": "Partner opens 1C/1D/1H/1S and RHO overcalls. You have 6+ HCP (at 1-level) or 8+ HCP (at 2-level) and length in the unbid suits.",
+    "whenNotToUse": [
+      "You have a natural bid available (5+ card suit you can bid at the appropriate level)",
+      "You want to penalize the overcaller — pass and hope partner reopens with a double",
+      "The overcall is at the 3-level or higher — negative doubles typically apply through 2S only"
+    ],
+    "tradeoff": "Negative doubles give up the penalty double of the overcall at low levels in exchange for showing the unbid suits efficiently",
+    "principle": "After an overcall, double shows the unbid suits (especially unbid majors) with competitive values. The specific suits shown depend on which suits are already bid.",
+    "roles": "Responder describes shape via double; opener evaluates fit and rebids accordingly"
+  },
+  "dealConstraints": {
+    "seats": [
+      {
+        "seat": "S",
+        "minHcp": 12,
+        "maxHcp": 21,
+        "minLengthAny": {
+          "C": 5,
+          "D": 5,
+          "H": 5,
+          "S": 5
+        }
+      },
+      {
+        "seat": "W",
+        "minHcp": 8,
+        "maxHcp": 16,
+        "minLengthAny": {
+          "C": 5,
+          "D": 5,
+          "H": 5,
+          "S": 5
+        }
+      },
+      {
+        "seat": "N",
+        "minHcp": 6,
+        "maxHcp": 15
+      }
+    ],
+    "dealer": "S"
+  },
+  "offConventionConstraints": {
+    "seats": [
+      {
+        "seat": "S",
+        "minHcp": 12,
+        "maxHcp": 21
+      },
+      {
+        "seat": "W",
+        "minHcp": 8,
+        "maxHcp": 16
+      },
+      {
+        "seat": "N"
+      }
+    ],
+    "dealer": "S"
+  },
+  "allowedDealers": [
+    "S"
+  ],
+  "derivedTeaching": {
+    "surfaceGroups": []
+  },
+  "supportsRoleSelection": true
+}

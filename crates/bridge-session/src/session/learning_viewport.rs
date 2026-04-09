@@ -465,9 +465,9 @@ mod tests {
     use bridge_conventions::{BidActionType, LocalFsm, ObsPatternAct, PhaseTransition};
 
     #[test]
-    fn build_module_catalog_returns_12() {
+    fn build_module_catalog_returns_14() {
         let catalog = build_module_catalog(BaseSystemId::Sayc);
-        assert_eq!(catalog.len(), 12);
+        assert_eq!(catalog.len(), 14);
     }
 
     #[test]
