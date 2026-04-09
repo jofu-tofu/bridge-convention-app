@@ -1,13 +1,24 @@
 <script lang="ts">
+  import { tick } from "svelte";
   import type { ModuleFlowTreeViewport, FlowTreeNode, Call } from "../../service";
   import { BidSuit } from "../../service";
   import { BID_SUIT_COLOR_CLASS } from "../shared/tokens";
 
+  // Interactive mode is a prop rather than a separate component because the only
+  // behavioral difference is hover-tooltip vs click-to-select in the action handler.
+  // Splitting would duplicate the entire recursive snippet and CSS.
+
   interface Props {
     tree: ModuleFlowTreeViewport;
+    /** Which node shows selected highlight (null = none). Requires onNodeSelect. */
+    selectedNodeId?: string | null;
+    /** Click callback — presence enables interactive mode. */
+    onNodeSelect?: (nodeId: string) => void;
   }
 
-  const { tree }: Props = $props();
+  const { tree, selectedNodeId = null, onNodeSelect }: Props = $props();
+
+  const interactive = $derived(!!onNodeSelect);
 
   /** Active hover tooltip state — fixed-positioned via portal to escape overflow containers. */
   let tooltip = $state<{
@@ -52,11 +63,13 @@
   }
 
   /**
-   * Svelte use: action — attaches native mouseenter/mouseleave listeners directly,
+   * Svelte use: action — attaches native mouseenter/mouseleave/click listeners directly,
    * bypassing Svelte 5 event delegation which doesn't work in recursive {#snippet} blocks.
+   * In interactive mode: click-to-select with pointer cursor. Otherwise: hover-tooltip.
    */
-  function hoverAction(el: HTMLElement, getNode: () => FlowTreeNode) {
+  function nodeAction(el: HTMLElement, getNode: () => FlowTreeNode) {
     function onEnter() {
+      if (interactive) return;
       const node = getNode();
       if (!node.call) return;
       clearHoverTimer();
@@ -66,19 +79,47 @@
       }, 250);
     }
     function onLeave() {
+      if (interactive) return;
       clearHoverTimer();
       tooltip = null;
     }
+    function onClick() {
+      if (!interactive || !onNodeSelect) return;
+      onNodeSelect(getNode().id);
+    }
     el.addEventListener("mouseenter", onEnter);
     el.addEventListener("mouseleave", onLeave);
+    el.addEventListener("click", onClick);
     return {
       destroy() {
         el.removeEventListener("mouseenter", onEnter);
         el.removeEventListener("mouseleave", onLeave);
+        el.removeEventListener("click", onClick);
         clearHoverTimer();
       },
     };
   }
+
+  // Self-contained auto-scaling: shrink to fit when tree exceeds container width.
+  const FT_SCALE_BASELINE = 1.0;
+  const FT_SCALE_MIN = 0.5;
+  let rootEl = $state<HTMLDivElement | undefined>(undefined);
+  let ftScale = $state(FT_SCALE_BASELINE);
+
+  $effect(() => {
+    void tree;
+    ftScale = FT_SCALE_BASELINE;
+    const el = rootEl;
+    if (!el) return;
+    tick().then(() => {
+      if (!el) return;
+      const scrollW = el.scrollWidth;
+      const clientW = el.clientWidth;
+      if (scrollW > clientW + 2) {
+        ftScale = Math.max(FT_SCALE_MIN, FT_SCALE_BASELINE * clientW / scrollW);
+      }
+    });
+  });
 
   function bidColorClass(call: Call | null): string {
     if (!call || call.type !== "bid") return "text-text-primary";
@@ -109,8 +150,8 @@
 {#snippet subtree(node: FlowTreeNode)}
   <div class="ft-subtree">
     <div
-      class="ft-node"
-      use:hoverAction={() => node}
+      class="ft-node {interactive ? 'ft-node-interactive' : ''} {node.id === selectedNodeId ? 'ft-node-selected' : ''}"
+      use:nodeAction={() => node}
     >
       {#if node.turn}
         <span
@@ -141,9 +182,11 @@
 {/snippet}
 
 <div
+  bind:this={rootEl}
   class="ft-root"
   role="img"
   aria-label="Conversation flow tree showing bidding structure for this module"
+  style="--ft-scale: {ftScale}"
 >
   {@render subtree(tree.root)}
 </div>
@@ -293,6 +336,17 @@
   .ft-node:hover {
     border-color: color-mix(in srgb, var(--color-accent-primary) 45%, transparent);
     border-left-color: var(--color-accent-primary);
+  }
+
+  .ft-node-interactive {
+    cursor: pointer;
+  }
+
+  .ft-node-selected {
+    border-color: var(--color-accent-primary);
+    border-left-color: var(--color-accent-primary);
+    background: color-mix(in srgb, var(--color-accent-primary) 10%, var(--color-bg-elevated));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent-primary) 30%, transparent);
   }
 
   .ft-bid {

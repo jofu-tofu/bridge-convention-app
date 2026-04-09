@@ -110,7 +110,7 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     path: "ConversationFlowTree.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,
-    mobileNotes: "Desktop-only SVG tree; hidden on mobile via isDesktop check in LearningScreen",
+    mobileNotes: "Desktop-only HTML/CSS flexbox tree; hidden on mobile via isDesktop check in LearningScreen. Supports interactive mode for Workshop.",
   },
   {
     path: "MobileFlowTree.svelte",
@@ -208,25 +208,13 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     path: "convention-canvas/ConventionFlowEditor.svelte",
     mobileStrategy: "sidebar-overlay",
     minWidth: 320,
-    mobileNotes: "3-column flow editor: sidebar + SVG canvas + detail panel; sidebar overlays on mobile",
+    mobileNotes: "3-column flow editor: sidebar + flow tree + detail panel; sidebar overlays on mobile",
   },
   {
     path: "convention-canvas/ModulePickerSidebar.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,
     mobileNotes: "Module list sidebar embedded in ConventionFlowEditor",
-  },
-  {
-    path: "convention-canvas/FlowTreeNodeComponent.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 200,
-    mobileNotes: "Flow tree node rendered via foreignObject inside SVG canvas",
-  },
-  {
-    path: "convention-canvas/FlowTreeEdge.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 200,
-    mobileNotes: "SVG bezier edge between flow tree nodes",
   },
   {
     path: "convention-canvas/NodeDetailPanel.svelte",

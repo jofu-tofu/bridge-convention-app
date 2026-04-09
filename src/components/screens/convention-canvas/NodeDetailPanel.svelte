@@ -1,10 +1,10 @@
 <script lang="ts">
   import type { ConfigurableSurfaceView } from "../../../service/response-types";
+  import type { FlowTreeNode } from "../../../service";
   import ParameterPanel from "../ParameterPanel.svelte";
-  import type { FlowChartNode } from "./flow-chart-types";
 
   interface Props {
-    node: FlowChartNode;
+    node: FlowTreeNode;
     surfaces: readonly ConfigurableSurfaceView[];
     isUserModule: boolean;
     onParameterChange: (meaningId: string, clauseIndex: number, newValue: number | boolean) => void;
@@ -15,8 +15,8 @@
   let { node, surfaces, isUserModule, onParameterChange, onClose, onFork }: Props = $props();
 
   const matchedSurfaces = $derived(
-    node.flowNode.meaningId
-      ? surfaces.filter((s) => s.meaningId === node.flowNode.meaningId)
+    node.meaningId
+      ? surfaces.filter((s) => s.meaningId === node.meaningId)
       : [],
   );
 
@@ -41,15 +41,15 @@
   <div class="shrink-0 p-4 border-b border-border-subtle">
     <div class="flex items-center justify-between mb-2">
       <div class="flex items-center gap-2 min-w-0">
-        {#if node.flowNode.callDisplay}
+        {#if node.callDisplay}
           <span
             class="font-mono font-bold text-lg"
-            style="color: {getCallColor(node.flowNode.callDisplay)}"
+            style="color: {getCallColor(node.callDisplay)}"
           >
-            {node.flowNode.callDisplay}
+            {node.callDisplay}
           </span>
         {/if}
-        <span class="text-sm text-text-primary truncate">{node.flowNode.label}</span>
+        <span class="text-sm text-text-primary truncate">{node.label}</span>
       </div>
       <button
         class="shrink-0 w-7 h-7 rounded-[--radius-md] flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors cursor-pointer"
@@ -64,19 +64,19 @@
 
     <!-- Metadata badges -->
     <div class="flex items-center gap-2 flex-wrap">
-      {#if node.flowNode.turn}
+      {#if node.turn}
         <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-bg-surface text-text-muted">
-          {node.flowNode.turn === "opener" ? "Opener" : "Responder"}
+          {node.turn === "opener" ? "Opener" : "Responder"}
         </span>
       {/if}
-      {#if node.flowNode.recommendation}
+      {#if node.recommendation}
         <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-bg-surface text-text-muted">
-          {node.flowNode.recommendation}
+          {node.recommendation}
         </span>
       {/if}
-      {#if node.flowNode.disclosure}
+      {#if node.disclosure}
         <span class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-bg-surface text-text-muted">
-          {node.flowNode.disclosure}
+          {node.disclosure}
         </span>
       {/if}
     </div>
@@ -84,8 +84,8 @@
 
   <!-- Body -->
   <div class="flex-1 overflow-y-auto p-4">
-    {#if node.flowNode.explanationText}
-      <p class="text-xs text-text-secondary mb-4">{node.flowNode.explanationText}</p>
+    {#if node.explanationText}
+      <p class="text-xs text-text-secondary mb-4">{node.explanationText}</p>
     {/if}
 
     {#if isUserModule && matchedSurfaces.length > 0}

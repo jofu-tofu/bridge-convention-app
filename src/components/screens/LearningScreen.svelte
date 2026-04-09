@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { tick } from "svelte";
   import { SvelteSet } from "svelte/reactivity";
   import { getAppStore, getService } from "../../stores/context";
   import { listConventions } from "../../service";
@@ -17,8 +16,6 @@
   let innerW = $state(1024);
   let sidebarOpen = $state(false);
   let expandedClauses = new SvelteSet<string>();
-  let treeContainerEl = $state<HTMLDivElement | undefined>(undefined);
-
   /** Active variance popover state — fixed-positioned to escape overflow containers. */
   let variancePopover = $state<{
     variants: readonly ClauseSystemVariant[];
@@ -52,34 +49,6 @@
   }
 
   const isDesktop = $derived(innerW >= DESKTOP_MIN);
-
-  // Flow tree uses a fixed 1.0x baseline (the designed reading size) and only
-  // shrinks below that when a tree's intrinsic width exceeds available space.
-  // This keeps all modules at a consistent, comfortable size — wide trees like
-  // Jacoby Transfers auto-shrink to fit instead of overflowing.
-  const FT_SCALE_BASELINE = 1.0;
-  const FT_SCALE_MIN = 0.5;
-
-  let ftScale = $state(FT_SCALE_BASELINE);
-
-  // After tree renders (or viewport/module changes), measure and shrink to fit
-  $effect(() => {
-    const _tree = flowTree;
-    const el = treeContainerEl;
-
-    ftScale = FT_SCALE_BASELINE;
-
-    if (!el) return;
-
-    tick().then(() => {
-      if (!el) return;
-      const scrollW = el.scrollWidth;
-      const clientW = el.clientWidth;
-      if (scrollW > clientW + 2) {
-        ftScale = Math.max(FT_SCALE_MIN, FT_SCALE_BASELINE * clientW / scrollW);
-      }
-    });
-  });
 
   /** All modules from the service. */
   let allModules = $state<readonly ModuleCatalogEntry[]>([]);
@@ -290,9 +259,7 @@
             <section class="px-4 sm:px-8 py-6">
               {#if isDesktop}
                 <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-3">Conversation Flow</h2>
-                <div bind:this={treeContainerEl}
-                     class="overflow-x-auto bg-bg-card rounded-[--radius-lg] border border-border-subtle"
-                     style="--ft-scale: {ftScale}">
+                <div class="overflow-x-auto bg-bg-card rounded-[--radius-lg] border border-border-subtle">
                   <ConversationFlowTree tree={flowTree} />
                 </div>
               {:else}
