@@ -114,6 +114,7 @@ components/
     NumberStepper.svelte             Horizontal [-] N [+] input with auto-repeat long-press, clamp, keyboard arrows
     NumberStepper.ts                 Pure helpers: clamp(), createAutoRepeat() for NumberStepper testability
     RangeStepper.svelte              Composes two NumberStepper instances with "to" separator and shared suffix
+    AuthModal.svelte                 Native <dialog> auth modal — login (OAuth buttons) when logged out, account info (sign out, settings link) when logged in. Exports open()/close().
     module-catalog.ts                Single source of truth for module categorization: MODULE_CATEGORIES, CATEGORY_DISPLAY, CatalogModule, mergeModules(), groupByCategory(), filterModules(). Pure functions — no store/Svelte imports. All screens import from here.
     ModuleChecklist.svelte           Shared collapsible checkbox grid for module selection: search, collapsible category sections, count badges. User modules shown under "My Conventions" section separated from system modules. Used by SystemEditor and PracticePackEditorScreen.
   __tests__/

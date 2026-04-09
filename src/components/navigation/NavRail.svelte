@@ -1,7 +1,15 @@
 <script lang="ts">
-  import { getAppStore } from "../../stores/context";
+  import { getAppStore, getAuthStore } from "../../stores/context";
+  import AuthModal from "../shared/AuthModal.svelte";
 
   const appStore = getAppStore();
+  const auth = getAuthStore();
+
+  let authModal = $state<ReturnType<typeof AuthModal>>();
+
+  const initial = $derived(
+    auth.user?.display_name?.charAt(0).toUpperCase() ?? null,
+  );
 
   const isHomeActive = $derived(appStore.screen === "conventions" || appStore.screen === "game");
   const isLearnActive = $derived(appStore.screen === "learning" || appStore.screen === "coverage");
@@ -72,4 +80,29 @@
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
     <span class="text-[10px] font-medium leading-none">Settings</span>
   </button>
+
+  <!-- User / Login -->
+  <div class="mt-auto pb-2">
+    <button
+      class="flex flex-col items-center gap-0.5 py-2 w-full transition-colors cursor-pointer text-text-muted hover:text-text-primary"
+      aria-label={auth.isLoggedIn ? "Account" : "Sign in"}
+      onclick={() => authModal?.open()}
+    >
+      {#if auth.isLoggedIn && auth.user?.avatar_url}
+        <img
+          src={auth.user.avatar_url}
+          alt=""
+          class="w-7 h-7 rounded-full object-cover"
+        />
+      {:else if auth.isLoggedIn && initial}
+        <div class="w-7 h-7 rounded-full bg-accent-primary flex items-center justify-center text-xs font-bold text-text-on-accent">
+          {initial}
+        </div>
+      {:else}
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="text-[10px] font-medium leading-none">Sign in</span>
+      {/if}
+    </button>
+  </div>
+  <AuthModal bind:this={authModal} />
 </nav>

@@ -1,11 +1,23 @@
 <script lang="ts">
   import { listConventions, ConventionCategory, displayConventionName } from "../../service";
   import type { ConventionInfo } from "../../service";
-  import { getAppStore } from "../../stores/context";
+  import { getAppStore, getAuthStore } from "../../stores/context";
+  import AuthModal from "../shared/AuthModal.svelte";
   import { filterConventions } from "./filter-conventions";
   import ItemCard from "../shared/ItemCard.svelte";
+  import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
 
   const appStore = getAppStore();
+  const auth = getAuthStore();
+
+  let authModal = $state<ReturnType<typeof AuthModal>>();
+
+  let innerW = $state(window.innerWidth);
+  const isMobile = $derived(innerW < DESKTOP_MIN);
+
+  const initial = $derived(
+    auth.user?.display_name?.charAt(0).toUpperCase() ?? null,
+  );
 
   let searchQuery = $state("");
   let activeCategory = $state<ConventionCategory | null>(null);
@@ -41,11 +53,38 @@
   const displayName = displayConventionName;
 </script>
 
+<svelte:window bind:innerWidth={innerW} />
+
 <main class="max-w-5xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Convention selection">
   <!-- Fixed header: title + search + filters -->
   <div class="shrink-0">
-    <h1 class="text-3xl font-bold tracking-tight text-text-primary mb-1">Bridge Practice</h1>
-    <p class="text-text-secondary mb-5">Select a convention to learn or practice.</p>
+    <div class="flex items-start justify-between">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight text-text-primary mb-1">Bridge Practice</h1>
+        <p class="text-text-secondary mb-5">Select a convention to learn or practice.</p>
+      </div>
+      {#if isMobile}
+        <button
+          class="shrink-0 ml-4 mt-1 transition-colors cursor-pointer text-text-muted hover:text-text-primary"
+          aria-label={auth.isLoggedIn ? "Account" : "Sign in"}
+          onclick={() => authModal?.open()}
+        >
+          {#if auth.isLoggedIn && auth.user?.avatar_url}
+            <img
+              src={auth.user.avatar_url}
+              alt=""
+              class="w-8 h-8 rounded-full object-cover"
+            />
+          {:else if auth.isLoggedIn && initial}
+            <div class="w-8 h-8 rounded-full bg-accent-primary flex items-center justify-center text-sm font-bold text-text-on-accent">
+              {initial}
+            </div>
+          {:else}
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          {/if}
+        </button>
+      {/if}
+    </div>
 
     <!-- Search -->
     <div class="mb-4">
@@ -198,6 +237,7 @@
       </div>
     {/if}
   </div>
+  <AuthModal bind:this={authModal} />
 </main>
 
 <style>
