@@ -29,12 +29,17 @@ components/
     MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible card, recursive snippet, tap-to-expand accordion for detail (recommendation/disclosure/explanation/clauses)
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
-    WorkshopScreen.svelte            System/convention/practice pack management — three-tab toggle (Systems, Conventions, Practice Packs). Hosts SystemEditor inline. Practice Packs tab: custom pack list with Edit/Delete, new pack creation (blank or fork from built-in bundle), built-in pack cards with Fork.
-    ConventionEditorScreen.svelte    Convention parameter editor — rename + threshold editing for user-owned conventions. Navigated to from ModuleViewer "Customize"/"Edit" buttons.
+    WorkshopScreen.svelte            System/convention/practice pack management — three-tab toggle (Systems, Conventions, Practice Packs). Conventions tab: ConventionFlowEditor (sidebar + flow tree canvas + detail panel). Hosts SystemEditor inline.
+    ConventionEditorScreen.svelte    Convention parameter editor — rename + threshold editing for user-owned conventions. Back navigation returns to Workshop Conventions tab.
     PracticePackEditorScreen.svelte  Practice pack builder — name/description + convention selection via ModuleChecklist with reorder. Supports create blank, fork from bundle, and edit modes.
-    ConventionsSection.svelte        Convention browser: sidebar (ModuleSidebar) + main content (ModuleViewer). Fork flow wired: fork button creates user module, navigates to editor.
-    ModuleSidebar.svelte             Two-section module list: "My Conventions" (user modules with source attribution) at top, separated from system modules grouped by category. "customized" badge on system modules with user forks. Search across both sections.
-    ModuleViewer.svelte              Module detail view: header, teaching content, conversation flow tree. "Customize" button for system modules forks (with error handling) and navigates to ConventionEditorScreen. "Edit" button for user modules navigates directly to editor.
+    convention-canvas/                    Interactive flow tree editor for convention management
+      flow-chart-types.ts            FlowChartNode, FlowChartEdge, CanvasViewport types
+      flow-tree-layout.ts            Pure tree layout algorithm (simplified Reingold-Tilford). No external deps.
+      ConventionFlowEditor.svelte    Main orchestrator: 3-column layout (sidebar + SVG canvas + detail panel), pan/zoom, parameter persistence
+      ModulePickerSidebar.svelte     Left sidebar: search + user modules + system library by category with fork/edit/delete
+      FlowTreeNodeComponent.svelte   Bid node in SVG foreignObject: turn badge, call display, label, recommendation
+      FlowTreeEdge.svelte            SVG cubic bezier edge between flow tree nodes
+      NodeDetailPanel.svelte         Right slide-out: node metadata + ParameterPanel for user modules, fork prompt for system modules
     SystemEditor.svelte              Custom system editor — two-tab layout (Parameters | Modules). Parameters tab: 2-column grid (Bidding Structure+Competitive | Strength) with strength bars, point formulas, thresholds. Modules tab: full-width ModuleChecklist with search, category grouping, mutual exclusion in toggleModule(). Header with name input, preset select, error badge, save/cancel. Tab badge shows active module count.
     StrengthBar.svelte               Side-by-side NT/Trump strength bars showing weak/invite/game/slam zones with threshold labels and formula suffixes. Reactive to threshold prop changes.
     strength-bar.ts                  Companion: zone types, color constants, thresholdPct() pure function.
@@ -123,7 +128,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** AppShell owns the full app layout — context setup + nav chrome + screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop/Settings icons. Learn navigates directly to Learning screen. Mobile: bottom tab bar (BottomTabBar) with 4 tabs. Workshop tab is the home for system configuration (custom system management). `?screen=profiles` redirects to Workshop.
+**Screen flow:** AppShell owns the full app layout — context setup + nav chrome + screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop/Settings icons. Learn navigates directly to Learning screen. Mobile: bottom tab bar (BottomTabBar) with 4 tabs. Workshop tab is the home for system/convention/practice pack management. `?screen=profiles` redirects to Workshop. Conventions tab shows an inline flow editor (ConventionFlowEditor): left sidebar with module picker, center SVG canvas with per-module flow tree, right slide-out panel for node parameter editing. Workshop = management (fork, edit, delete, configure). Learn = study (teaching content, flow trees, surfaces).
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 
@@ -131,6 +136,9 @@ components/
 
 ## Gotchas
 
+- **Convention flow editor: no external graph layout library.** Trees are small (5-15 nodes, depth 4-5); custom simplified Reingold-Tilford in `flow-tree-layout.ts` is sufficient. No dagre/elkjs.
+- **Node-to-surface matching uses `FlowTreeNode.meaningId`.** Do not parse the `id` field format (`"{moduleId}:{meaningId}:{idx}"`) — it is an internal Rust detail. Use the explicit `meaningId` field.
+- **System modules are read-only on canvas.** User must fork before editing parameters.
 - **Layout sizing is JS-driven.** GameScreen is the single source of truth for all layout dimensions. `availableW` (viewport minus debug panel) feeds `rootFontSize`, `sidePanelW`, and `tableScale`. These are set as inline CSS variables (`--width-side-panel`, `--game-scale`, `--panel-font`) on `<main>`. **Do NOT define layout sizing variables in `app.css` with `vw`/`%` units** — they won't account for panels that steal viewport space (e.g., the debug drawer). If you need a new layout-dependent variable, derive it from `availableW` in GameScreen and set it inline.
 - **Viewport lock:** `html`, `body`, `#app` use `overflow: clip` in `app.css` to prevent page-level scrolling. Side panels scroll internally.
 - **Autoplay effect:** GameScreen has a DEV-only `$effect` for `?autoplay=true` that uses `requestAnimationFrame` to defer actions per frame (not `tick()` which causes infinite microtask loops, not `setTimeout` which is a real timer).

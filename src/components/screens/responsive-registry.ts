@@ -95,24 +95,6 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "max-w-3xl centered container; convention checklist and reorder list stack vertically",
   },
   {
-    path: "ConventionsSection.svelte",
-    mobileStrategy: "sidebar-overlay",
-    minWidth: 320,
-    mobileNotes: "Convention browser; sidebar becomes overlay on mobile, module viewer full-width",
-  },
-  {
-    path: "ModuleSidebar.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Embedded module list; becomes overlay or dropdown on mobile",
-  },
-  {
-    path: "ModuleViewer.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Module detail view with flow tree; full-width on mobile",
-  },
-  {
     path: "StrengthBar.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,
@@ -219,5 +201,37 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileStrategy: "embedded",
     minWidth: 280,
     mobileNotes: "CSS transform scaling with max-width/max-height constraints",
+  },
+
+  // --- Convention flow editor (convention-canvas/) ---
+  {
+    path: "convention-canvas/ConventionFlowEditor.svelte",
+    mobileStrategy: "sidebar-overlay",
+    minWidth: 320,
+    mobileNotes: "3-column flow editor: sidebar + SVG canvas + detail panel; sidebar overlays on mobile",
+  },
+  {
+    path: "convention-canvas/ModulePickerSidebar.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Module list sidebar embedded in ConventionFlowEditor",
+  },
+  {
+    path: "convention-canvas/FlowTreeNodeComponent.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 200,
+    mobileNotes: "Flow tree node rendered via foreignObject inside SVG canvas",
+  },
+  {
+    path: "convention-canvas/FlowTreeEdge.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 200,
+    mobileNotes: "SVG bezier edge between flow tree nodes",
+  },
+  {
+    path: "convention-canvas/NodeDetailPanel.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Slide-out detail panel with parameter editing",
   },
 ] as const;

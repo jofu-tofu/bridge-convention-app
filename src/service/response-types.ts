@@ -477,6 +477,7 @@ export interface FlowTreeNode extends TeachingSurfaceFields {
   readonly label: string;
   readonly moduleId: string | null;
   readonly moduleDisplayName: string | null;
+  readonly meaningId: string | null;
   readonly children: readonly FlowTreeNode[];
   readonly depth: number;
 }

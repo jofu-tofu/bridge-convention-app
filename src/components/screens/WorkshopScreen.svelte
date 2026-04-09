@@ -9,7 +9,11 @@
   import SystemDetailView from "./SystemDetailView.svelte";
   import SystemCompareView from "./SystemCompareView.svelte";
   import SystemEditor from "./SystemEditor.svelte";
-  import ConventionsSection from "./ConventionsSection.svelte";
+  import ConventionFlowEditor from "./convention-canvas/ConventionFlowEditor.svelte";
+  import type { ModuleCatalogEntry, ModuleCategory } from "../../service";
+  import { listModules } from "../../service";
+  import type { UserModule } from "../../service/session-types";
+  import { getService, getUserModuleStore } from "../../stores/context";
 
   const appStore = getAppStore();
   const customSystems = getCustomSystemsStore();
@@ -21,6 +25,11 @@
   let editingSystem = $state<CustomSystem | null>(null);
   let creatingFrom = $state<BaseSystemId | null>(null);
   let showNewSystemMenu = $state(false);
+
+  // Convention management state
+  const systemModules: ModuleCatalogEntry[] = listModules();
+  const userModules = getUserModuleStore();
+  const service = getService();
 
   const presetConfig = $derived(viewingPreset ? getSystemConfig(viewingPreset) : null);
   const builtInBundles: ConventionInfo[] = listConventions();
@@ -54,6 +63,39 @@
     editingSystem = null;
     creatingFrom = null;
   }
+
+  let forkingModuleId = $state<string | null>(null);
+
+  async function handleFork(moduleId: string) {
+    if (forkingModuleId) return;
+    forkingModuleId = moduleId;
+    try {
+      const content = await service.forkModule(moduleId);
+      const contentObj = content as Record<string, unknown>;
+      const forkedModuleId = contentObj.moduleId as string;
+      if (!forkedModuleId) return;
+      const now = new Date().toISOString();
+      const userModule: UserModule = {
+        metadata: {
+          moduleId: forkedModuleId,
+          displayName: contentObj.displayName as string,
+          category: (contentObj.category as ModuleCategory) ?? "custom",
+          forkedFrom: {
+            moduleId: moduleId,
+            fixtureVersion: (contentObj.fixtureVersion as number) ?? 1,
+          },
+          createdAt: now,
+          updatedAt: now,
+        },
+        content,
+      };
+      userModules.saveModule(userModule);
+      appStore.navigateToConventionEditor(forkedModuleId);
+    } finally {
+      forkingModuleId = null;
+    }
+  }
+
 </script>
 
 {#if editingSystem || creatingFrom}
@@ -217,8 +259,12 @@
       </ScreenSection>
     </div>
     {:else if activeSection === "conventions"}
-    <div class="flex-1 min-h-0">
-      <ConventionsSection />
+    <div class="flex-1 overflow-hidden">
+      <ConventionFlowEditor
+        {systemModules}
+        onFork={handleFork}
+        onNavigateToEditor={(id) => appStore.navigateToConventionEditor(id)}
+      />
     </div>
     {:else if activeSection === "practice-packs"}
     <div class="flex-1 overflow-y-auto pb-6 space-y-8">
