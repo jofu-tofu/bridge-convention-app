@@ -9,6 +9,7 @@
 import type { SystemSelectionId, CustomSystem, SystemConfig, BaseSystemId, PointFormula } from "../service";
 import { getSystemConfig, AVAILABLE_BASE_SYSTEMS, DEFAULT_BASE_MODULE_IDS, normalizePointFormula } from "../service";
 import { listModules } from "../service/service-helpers";
+import { loadFromStorage, saveToStorage } from "./local-storage";
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -20,23 +21,17 @@ interface StoredSystems {
   systems: CustomSystem[];
 }
 
-function loadFromStorage(): CustomSystem[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as StoredSystems;
-    if (!Array.isArray(parsed.systems)) return [];
+function loadSystems(): CustomSystem[] {
+  return loadFromStorage(STORAGE_KEY, [] as CustomSystem[], (raw) => {
+    const parsed = raw as StoredSystems;
+    if (!Array.isArray(parsed?.systems)) return undefined;
     return parsed.systems.filter(validateStoredSystem).map(healSystem);
-  } catch {
-    return [];
-  }
+  });
 }
 
-function saveToStorage(systems: CustomSystem[]): void {
-  try {
-    const data: StoredSystems = { systems };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch { /* storage unavailable */ }
+function saveSystems(systems: CustomSystem[]): void {
+  const data: StoredSystems = { systems };
+  saveToStorage(STORAGE_KEY, data);
 }
 
 /** Shallow validation of a stored system entry. */
@@ -105,10 +100,10 @@ function generateId(): `custom:${string}` {
 // ── Store ──────────────────────────────────────────────────────────
 
 export function createCustomSystemsStore() {
-  let systems = $state<CustomSystem[]>(loadFromStorage());
+  let systems = $state<CustomSystem[]>(loadSystems());
 
   function persist(): void {
-    saveToStorage(systems);
+    saveSystems(systems);
   }
 
   return {

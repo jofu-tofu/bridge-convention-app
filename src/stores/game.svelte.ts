@@ -6,7 +6,6 @@ import type {
   Contract,
   Call,
   Card,
-  DDSolution,
 } from "../service";
 import { Seat } from "../service";
 import type {
@@ -21,22 +20,21 @@ import type { ServicePublicBeliefs } from "../service";
 import { partnerSeat } from "../service";
 
 import type {
-  BiddingViewport,
   ViewportBidFeedback,
   TeachingDetail,
-  DeclarerPromptViewport,
-  PlayingViewport,
-  ExplanationViewport,
 } from "../service";
 import type { ViewportBidGrade } from "../service";
 import { PracticeMode, PlayPreference, PromptMode } from "../service";
 import type { BidFeedbackDTO } from "../service/debug-types";
-import { isValidTransition, resolveTransition } from "../service";
-import type { GamePhase, ViewportNeeded, PhaseEvent, ServiceAction, TransitionResult, PlayEntryResult } from "../service";
+import type { GamePhase } from "../service";
 import { delay } from "../service";
-import { computePromptMode, computeFaceUpSeats } from "./prompt-logic";
+import { computeFaceUpSeats } from "./prompt-logic";
+import { AI_BID_DELAY, animateIncremental } from "./animate";
 import { createBiddingPhase } from "./bidding-phase.svelte";
 import { createPlayPhase } from "./play-phase.svelte";
+import { createViewportCache, viewportNeededForPhase } from "./viewport-cache.svelte";
+import { createDDSSolver } from "./dds-solver.svelte";
+import { createPhaseTransitions } from "./phase-transitions.svelte";
 
 // ── Re-exports ──────────────────────────────────────────────────────
 
@@ -83,24 +81,13 @@ export interface PlayLogEntry {
   readonly trickIndex: number;
 }
 
-// ── Grouped phase state types ───────────────────────────────────────
+// ── Helpers ─────────────────────────────────────────────────────────
 
-interface DDSState { solution: DDSolution | null; solving: boolean; error: string | null; }
-interface ViewportCache { bidding: BiddingViewport | null; declarerPrompt: DeclarerPromptViewport | null; playing: PlayingViewport | null; explanation: ExplanationViewport | null; }
-
-function freshDDSState(): DDSState { return { solution: null, solving: false, error: null }; }
 function freshPublicBeliefState(): ServicePublicBeliefState {
   return {
     beliefs: {} as Record<Seat, ServicePublicBeliefs>,
     annotations: [],
   };
-}
-function freshViewportCache(): ViewportCache { return { bidding: null, declarerPrompt: null, playing: null, explanation: null }; }
-
-function describeError(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (typeof err === "string") return err;
-  return String(err);
 }
 
 // ── Store factory ───────────────────────────────────────────────────
@@ -125,246 +112,66 @@ export function createGameStore(
   let playPreference = $state<PlayPreference>(PlayPreference.Prompt);
 
   // ── Grouped phase state ─────────────────────────────────────
-  // Grouped into typed objects so phase resets are a single assignment
-  // (e.g., `dds = freshDDSState()`) rather than resetting N individual fields.
-  // Svelte 5's proxy tracks fine-grained property mutations within each object.
-
-  let dds = $state<DDSState>(freshDDSState());
   let publicBeliefState = $state<ServicePublicBeliefState>(freshPublicBeliefState());
-  let viewports = $state<ViewportCache>(freshViewportCache());
 
-  // ── Derived contract ────────────────────────────────────────
-  // Single source of truth: always derived from whichever viewport has it.
-  // Eliminates manual syncing via extractContractFromViewport().
-  const contract = $derived.by((): Contract | null => {
-    return viewports.declarerPrompt?.contract
-      ?? viewports.playing?.contract
-      ?? viewports.explanation?.contract
-      ?? null;
-  });
-
-  // ── Lifecycle guard ─────────────────────────────────────────
-  // guarded() drops concurrent calls rather than queuing them because lifecycle
-  // actions (skip-to-review, accept-prompt, etc.) are user-initiated and
-  // idempotent — a dropped click is harmless, but a queued action executing
-  // after the phase has changed would be wrong. Queuing would also require
-  // tracking/flushing the queue on drill reset, adding complexity for no benefit.
-  let transitioning = $state(false);
   // startNewDrill uses cancel-based concurrency (not guarded) — a new drill
   // supersedes any in-progress drill via activeHandle comparison. This flag
   // provides UI-disabling behavior that guarded() would have provided.
   let isStarting = $state(false);
 
-  function guarded<Args extends unknown[]>(
-    fn: (...args: Args) => void | Promise<void>,
-  ): (...args: Args) => void {
-    return (...args: Args): void => {
-      if (transitioning) return;
-      transitioning = true;
-      try {
-        const result = fn(...args);
-        if (result instanceof Promise) {
-          // Intentionally not returned — callers should not await lifecycle actions.
-          // The promise is tracked internally for flag cleanup.
-          void result.catch(() => {}).finally(() => { transitioning = false; });
-        } else {
-          transitioning = false;
-        }
-      } catch {
-        transitioning = false;
-      }
-    };
-  }
+  // ── Sub-modules ─────────────────────────────────────────────
 
-  async function fetchAndCacheViewport(handle: DrillHandle, vpName: ViewportNeeded): Promise<void> {
-    switch (vpName) {
-      case "bidding":
-        viewports.bidding = await activeService.getBiddingViewport(handle);
-        break;
-      case "declarerPrompt":
-        viewports.declarerPrompt = await activeService.getDeclarerPromptViewport(handle);
-        break;
-      case "playing":
-        viewports.playing = await activeService.getPlayingViewport(handle);
-        break;
-      case "explanation":
-        viewports.explanation = await activeService.getExplanationViewport(handle);
-        break;
-    }
-  }
+  const vpCache = createViewportCache({
+    getActiveService: () => activeService,
+  });
 
-  function viewportNeededForPhase(currentPhase: GamePhase): ViewportNeeded | null {
-    switch (currentPhase) {
-      case "BIDDING":
-        return "bidding";
-      case "DECLARER_PROMPT":
-        return "declarerPrompt";
-      case "PLAYING":
-        return "playing";
-      case "EXPLANATION":
-        return "explanation";
-    }
-  }
+  const ddsSolver = createDDSSolver({
+    getActiveHandle: () => activeHandle,
+    getActiveService: () => activeService,
+  });
+
+  // ── Derived contract ────────────────────────────────────────
+  // Single source of truth: always derived from whichever viewport has it.
+  const contract = $derived.by((): Contract | null => {
+    return vpCache.viewports.declarerPrompt?.contract
+      ?? vpCache.viewports.playing?.contract
+      ?? vpCache.viewports.explanation?.contract
+      ?? null;
+  });
 
   // ── Derived ───────────────────────────────────────────────────
 
   const userSeat = $derived<Seat | null>(
-    viewports.bidding?.seat ?? viewports.declarerPrompt?.userSeat ?? viewports.playing?.userSeat ?? viewports.explanation?.userSeat ?? null,
+    vpCache.viewports.bidding?.seat ?? vpCache.viewports.declarerPrompt?.userSeat ?? vpCache.viewports.playing?.userSeat ?? vpCache.viewports.explanation?.userSeat ?? null,
   );
 
-  // ── Practice mode helpers ────────────────────────────────────
+  // ── Play sub-module ───────────────────────────────────────────
 
-  /**
-   * Handle auto-transition from DECLARER_PROMPT based on playPreference.
-   * Uses phase coordinator to decide whether to auto-accept or auto-skip.
-   * Returns true if still active (not cancelled).
-   */
-  async function handleAutoPromptTransition(handle: DrillHandle): Promise<boolean> {
-    const desc = resolveTransition("DECLARER_PROMPT", { type: "PROMPT_ENTERED", playPreference });
-    if (!desc.chainedEvent) return true; // "prompt" mode — stay at DECLARER_PROMPT
+  const playPhase = createPlayPhase({
+    getActiveHandle: () => activeHandle,
+    getActiveService: () => activeService,
+    getPlayingViewport: () => vpCache.viewports.playing,
+    setPlayingViewport: (vp) => { vpCache.viewports.playing = vp; },
+    dispatchEvent: (handle, event) => transitions.executeTransition(handle, event),
+    delayFn,
+  });
 
-    if (desc.chainedEvent.type === "ACCEPT_PLAY") {
-      const seat = effectiveUserSeat ?? userSeat ?? Seat.South;
-      await dispatchPlayTransition(handle, { type: "ACCEPT_PLAY", seat });
-      return activeHandle === handle;
-    }
-    if (desc.chainedEvent.type === "DECLINE_PLAY") {
-      await executeTransition(handle, { type: "DECLINE_PLAY" });
-      return activeHandle === handle;
-    }
-    return true;
-  }
+  // ── Phase transition sub-module ───────────────────────────────
 
-  /**
-   * Handle post-auction phase transition using the phase coordinator.
-   * Replaces the duplicated if/else chain in userBidViaService, startDrillFromHandle, and skipToPhase.
-   */
-  async function handlePostAuction(
-    handle: DrillHandle,
-    servicePhase: GamePhase,
-  ): Promise<boolean> {
-    const desc = resolveTransition("BIDDING", { type: "AUCTION_COMPLETE", servicePhase });
-    if (!desc.targetPhase) return true;
-
-    // 1. Fetch viewports (contract is auto-derived from them)
-    for (const vpName of desc.viewportsNeeded) {
-      await fetchAndCacheViewport(handle, vpName);
-      if (activeHandle !== handle) return false;
-    }
-    if (desc.targetPhase === "DECLARER_PROMPT" || desc.targetPhase === "PLAYING") {
-      effectiveUserSeat = userSeat;
-    }
-
-    // 2. Phase transition
-    transitionTo(desc.targetPhase);
-
-    // 3. Post-transition actions
-    if (desc.resetPlay) playPhase.play.aborted = false;
-    if (desc.triggerDDS) void triggerDDSSolve();
-
-    // 4. Auto-transition from prompt
-    if (desc.targetPhase === "DECLARER_PROMPT") {
-      return handleAutoPromptTransition(handle);
-    }
-
-    return true;
-  }
-
-  // ── Unified lifecycle executor ─────────────────────────────────
-
-  function resetPlayState(): void {
-    playPhase.play.aborted = false;
-    playPhase.animatedTrickOverride = null;
-    playPhase.play.score = null;
-    playPhase.play.showingTrickResult = false;
-    playPhase.play.processing = false;
-    playPhase.play.log = [];
-  }
-
-  async function executeServiceAction(
-    handle: DrillHandle,
-    action: ServiceAction,
-  ): Promise<PlayEntryResult | void> {
-    switch (action.type) {
-      case "enterPlay":
-        return activeService.enterPlay(handle, action.seat);
-      case "declinePlay":
-        return void await activeService.declinePlay(handle);
-      case "returnToPrompt":
-        return void await activeService.returnToPrompt(handle);
-      case "restartPlay":
-        return activeService.restartPlay(handle);
-      case "skipToReview":
-        return activeService.skipToReview(handle);
-    }
-  }
-
-  async function executeTransition(
-    handle: DrillHandle,
-    event: PhaseEvent,
-  ): Promise<TransitionResult> {
-    const cancelled = (): TransitionResult => ({ serviceResult: null, completed: false });
-
-    const desc = resolveTransition(phase, event);
-    if (!desc.targetPhase) {
-      // No-op descriptor (e.g. PROMPT_ENTERED with "prompt" mode) — check for chained event
-      if (desc.chainedEvent) {
-        return executeTransition(handle, desc.chainedEvent);
-      }
-      return { serviceResult: null, completed: true };
-    }
-
-    // 1. Reset play state if needed
-    if (desc.resetPlay) resetPlayState();
-
-    // 2. Run service actions
-    let lastResult: PlayEntryResult | null = null;
-    for (const action of desc.serviceActions) {
-      const result = await executeServiceAction(handle, action);
-      if (activeHandle !== handle) return cancelled();
-      if (result && typeof result === "object" && "phase" in result) {
-        lastResult = result;
-      }
-    }
-
-    // 3. Fetch viewports
-    for (const vp of desc.viewportsNeeded) {
-      await fetchAndCacheViewport(handle, vp);
-      if (activeHandle !== handle) return cancelled();
-    }
-
-    // 4. Phase transitions — intermediate phases first, then target
-    for (const p of desc.intermediatePhases) {
-      transitionTo(p);
-    }
-    // Skip transitionTo when target === current phase (e.g. RESTART_PLAY: PLAYING → PLAYING)
-    if (desc.targetPhase !== phase) {
-      transitionTo(desc.targetPhase);
-    }
-
-    // 5. Side effects
-    if (desc.triggerDDS) void triggerDDSSolve();
-
-    // 6. Chained event
-    if (desc.chainedEvent) {
-      return executeTransition(handle, desc.chainedEvent);
-    }
-
-    return { serviceResult: lastResult, completed: true };
-  }
-
-  async function dispatchPlayTransition(
-    handle: DrillHandle,
-    event: PhaseEvent,
-  ): Promise<void> {
-    const { serviceResult, completed } = await executeTransition(handle, event);
-    if (!completed) return;
-    const aiPlays = serviceResult?.aiPlays ?? [];
-    if (aiPlays.length > 0) {
-      const { ok } = await playPhase.animateAiPlays(handle, [...aiPlays], []);
-      if (!ok) return;
-    }
-  }
+  const transitions = createPhaseTransitions({
+    getActiveHandle: () => activeHandle,
+    getActiveService: () => activeService,
+    getPhase: () => phase,
+    setPhase: (p) => { phase = p; },
+    getEffectiveUserSeat: () => effectiveUserSeat,
+    setEffectiveUserSeat: (s) => { effectiveUserSeat = s; },
+    getUserSeat: () => userSeat,
+    getContract: () => contract,
+    getPlayPreference: () => playPreference,
+    playPhase,
+    viewportCache: vpCache,
+    ddsSolver,
+  });
 
   // ── Bidding sub-module ────────────────────────────────────────
 
@@ -372,100 +179,82 @@ export function createGameStore(
     getActiveHandle: () => activeHandle,
     getActiveService: () => activeService,
     getPhase: () => phase,
-    getBiddingViewport: () => viewports.bidding,
-    setBiddingViewport: (vp) => { viewports.bidding = vp; },
+    getBiddingViewport: () => vpCache.viewports.bidding,
+    setBiddingViewport: (vp) => { vpCache.viewports.bidding = vp; },
     setPublicBeliefState: (state) => { publicBeliefState = state; },
-    handlePostAuction,
+    handlePostAuction: transitions.handlePostAuction,
     delayFn,
   });
 
-  // ── Phase helpers ─────────────────────────────────────────────
+  // ── Prompt helpers ────────────────────────────────────────────
 
-  function transitionTo(target: GamePhase): boolean {
-    if (isValidTransition(phase, target)) {
-      phase = target;
-      return true;
-    }
-    const msg = `Invalid phase transition: ${phase} → ${target}`;
-    if (import.meta.env.DEV) {
-      throw new Error(msg);
-    }
-    return false;
-  }
-
-  /** Determine the current prompt mode from game state. */
-  function getPromptMode(): PromptMode | null {
-    return computePromptMode(phase, contract, userSeat);
-  }
-
-  /** Compute which seats should be shown face-up. */
   function getFaceUpSeats(): ReadonlySet<Seat> {
     return computeFaceUpSeats(effectiveUserSeat, userSeat, phase, contract);
   }
 
-  // ── DDS helpers ───────────────────────────────────────────────
-
-  async function triggerDDSSolve() {
-    if (!activeHandle || dds.solving) return;
-    const handle = activeHandle;
-    dds.solving = true;
-    dds.error = null;
-    dds.solution = null;
-
-    try {
-      const result = await activeService.getDDSSolution(handle);
-      if (activeHandle !== handle) return; // cancelled
-      dds.solution = result.solution;
-      if (result.error) dds.error = result.error;
-    } catch (err: unknown) {
-      if (activeHandle !== handle) return;
-      dds.error = describeError(err);
-    } finally {
-      if (activeHandle === handle) {
-        dds.solving = false;
-      }
-    }
-  }
-
-  // ── Play sub-module ───────────────────────────────────────────
-
-  const playPhase = createPlayPhase({
-    getActiveHandle: () => activeHandle,
-    getActiveService: () => activeService,
-    getPlayingViewport: () => viewports.playing,
-    setPlayingViewport: (vp) => { viewports.playing = vp; },
-    dispatchEvent: (handle, event) => executeTransition(handle, event),
-    delayFn,
-  });
-
-  // ── Play phase transitions ────────────────────────────────────
+  // ── User action handlers ──────────────────────────────────────
 
   async function acceptPromptAction(): Promise<void> {
     if (!contract || phase !== "DECLARER_PROMPT") return;
     if (!activeHandle) return;
     const handle = activeHandle;
-    const mode = getPromptMode();
+    const mode = transitions.getPromptMode();
     const seat = mode === PromptMode.DeclarerSwap
       ? contract.declarer
       : (effectiveUserSeat ?? userSeat ?? Seat.South);
     effectiveUserSeat = seat;
-    await dispatchPlayTransition(handle, { type: "ACCEPT_PLAY", seat });
+    await transitions.dispatchPlayTransition(handle, { type: "ACCEPT_PLAY", seat });
   }
 
   async function declinePromptAction(): Promise<void> {
     if (phase !== "DECLARER_PROMPT") return;
     if (!activeHandle) return;
-    await executeTransition(activeHandle, { type: "DECLINE_PLAY" });
+    await transitions.executeTransition(activeHandle, { type: "DECLINE_PLAY" });
   }
 
   function acceptPrompt() { return acceptPromptAction(); }
   function declinePrompt() { return declinePromptAction(); }
 
+  async function skipToReviewAction(): Promise<void> {
+    playPhase.play.aborted = true;
+    if (!activeHandle) return;
+    await transitions.executeTransition(activeHandle, { type: "SKIP_TO_REVIEW" });
+  }
+
+  async function restartPlayAction(): Promise<void> {
+    if (!contract || phase !== "PLAYING") return;
+    if (!activeHandle) return;
+    // Cancel in-flight animations before restart
+    playPhase.play.aborted = true;
+    playPhase.animatedTrickOverride = null;
+    await transitions.dispatchPlayTransition(activeHandle, { type: "RESTART_PLAY" });
+  }
+
+  async function playThisHandAction(): Promise<void> {
+    if (!contract) return;
+    if (phase !== "EXPLANATION") return;
+    if (!activeHandle) return;
+    const handle = activeHandle;
+    const currentContract = contract;
+    playPhase.resetPlay();
+    effectiveUserSeat = userSeat;
+    ddsSolver.reset();
+
+    // Determine seat: if partner declares, play as declarer (swap); otherwise keep user seat
+    const declarer = currentContract.declarer;
+    const seat = (declarer !== userSeat && partnerSeat(declarer) === userSeat)
+      ? declarer
+      : effectiveUserSeat ?? userSeat ?? Seat.South;
+    effectiveUserSeat = seat;
+
+    await transitions.dispatchPlayTransition(handle, { type: "PLAY_THIS_HAND", seat });
+  }
+
   // ── Reset ─────────────────────────────────────────────────────
 
   function resetImpl() {
     // Clear lifecycle guard — any in-flight operations will bail via activeHandle check
-    transitioning = false;
+    transitions.transitioning = false;
 
     // Session
     activeHandle = null;
@@ -476,54 +265,15 @@ export function createGameStore(
     practiceMode = PracticeMode.DecisionDrill;
     playPreference = PlayPreference.Prompt;
 
-    // Grouped state
+    // Sub-module state
     biddingPhase.reset();
     playPhase.resetPlay(); // aborted=true cancels in-flight animations
-    dds = freshDDSState();
+    ddsSolver.reset();
     publicBeliefState = freshPublicBeliefState();
-    viewports = freshViewportCache();
+    vpCache.reset();
   }
 
-  function resetPlay() {
-    playPhase.resetPlay(); // includes aborted=true, clears viewport
-  }
-
-  // ── Lifecycle inner functions (guarded at the public boundary) ──
-
-  async function skipToReviewAction(): Promise<void> {
-    playPhase.play.aborted = true;
-    if (!activeHandle) return;
-    await executeTransition(activeHandle, { type: "SKIP_TO_REVIEW" });
-  }
-
-  async function restartPlayAction(): Promise<void> {
-    if (!contract || phase !== "PLAYING") return;
-    if (!activeHandle) return;
-    // Cancel in-flight animations before restart
-    playPhase.play.aborted = true;
-    playPhase.animatedTrickOverride = null;
-    await dispatchPlayTransition(activeHandle, { type: "RESTART_PLAY" });
-  }
-
-  async function playThisHandAction(): Promise<void> {
-    if (!contract) return;
-    if (phase !== "EXPLANATION") return;
-    if (!activeHandle) return;
-    const handle = activeHandle;
-    const currentContract = contract;
-    resetPlay();
-    effectiveUserSeat = userSeat;
-    dds = freshDDSState();
-
-    // Determine seat: if partner declares, play as declarer (swap); otherwise keep user seat
-    const declarer = currentContract.declarer;
-    const seat = (declarer !== userSeat && partnerSeat(declarer) === userSeat)
-      ? declarer
-      : effectiveUserSeat ?? userSeat ?? Seat.South;
-    effectiveUserSeat = seat;
-
-    await dispatchPlayTransition(handle, { type: "PLAY_THIS_HAND", seat });
-  }
+  // ── Drill lifecycle ───────────────────────────────────────────
 
   async function startDrillFromHandleImpl(handle: DrillHandle, drillService?: DevServicePort) {
     resetImpl();
@@ -535,20 +285,23 @@ export function createGameStore(
     // Start drill via service
     const startResult = await activeService.startDrill(handle);
     if (activeHandle !== handle) return;
-    viewports.bidding = startResult.viewport;
+    vpCache.viewports.bidding = startResult.viewport;
     practiceMode = startResult.practiceMode;
     playPreference = startResult.playPreference;
 
     // Animate initial AI bids via incremental reveal
     if (startResult.aiBids.length > 0 && !startResult.auctionComplete) {
-      biddingPhase.biddingAnim = { totalAiBids: startResult.aiBids.length, revealed: 0 };
-
-      for (let i = 0; i < startResult.aiBids.length; i++) {
-        await delayFn(300);
-        if (activeHandle !== handle) return;
-        biddingPhase.biddingAnim = { totalAiBids: startResult.aiBids.length, revealed: i + 1 };
-      }
+      const count = startResult.aiBids.length;
+      biddingPhase.biddingAnim = { totalAiBids: count, revealed: 0 };
+      const ok = await animateIncremental({
+        count,
+        delayMs: AI_BID_DELAY,
+        delayFn,
+        isCancelled: () => activeHandle !== handle,
+        onReveal: (i) => { biddingPhase.biddingAnim = { totalAiBids: count, revealed: i + 1 }; },
+      });
       biddingPhase.biddingAnim = null;
+      if (!ok) return;
     }
 
     // Fetch belief state from service
@@ -557,7 +310,7 @@ export function createGameStore(
 
     // Handle auction complete during initial bids
     if (startResult.auctionComplete) {
-      const ok = await handlePostAuction(handle, startResult.phase as GamePhase);
+      const ok = await transitions.handlePostAuction(handle, startResult.phase as GamePhase);
       if (!ok || activeHandle !== handle) return;
     }
 
@@ -569,7 +322,7 @@ export function createGameStore(
 
     const vpName = viewportNeededForPhase(phase);
     if (vpName) {
-      await fetchAndCacheViewport(handle, vpName);
+      await vpCache.fetchAndCache(handle, vpName);
     }
     await tick();
   }
@@ -602,7 +355,7 @@ export function createGameStore(
 
     // Bidding state — always viewport-derived
     get auction(): Auction {
-      if (viewports.bidding) {
+      if (vpCache.viewports.bidding) {
         return {
           entries: biddingPhase.displayedAuctionEntries.map(e => ({ seat: e.seat, call: e.call })),
           isComplete: phase !== "BIDDING",
@@ -614,7 +367,7 @@ export function createGameStore(
       return biddingPhase.displayedCurrentBidder;
     },
     get bidHistory(): BidHistoryEntry[] {
-      if (viewports.bidding) {
+      if (vpCache.viewports.bidding) {
         return biddingPhase.displayedAuctionEntries.map(e => ({
           seat: e.seat,
           call: e.call,
@@ -625,8 +378,8 @@ export function createGameStore(
       }
       return [];
     },
-    get isProcessing() { return transitioning || isStarting || biddingPhase.bidding.processing || playPhase.play.processing; },
-    get isTransitioning() { return transitioning; },
+    get isProcessing() { return transitions.transitioning || isStarting || biddingPhase.bidding.processing || playPhase.play.processing; },
+    get isTransitioning() { return transitions.transitioning; },
     get isUserTurn() {
       return biddingPhase.displayedIsUserTurn;
     },
@@ -638,45 +391,45 @@ export function createGameStore(
 
     // Play state — always viewport-derived
     get tricks() {
-      const vp = viewports.playing;
+      const vp = vpCache.viewports.playing;
       return vp ? vp.tricks : [];
     },
     get currentTrick() {
-      return viewports.playing ? playPhase.displayedCurrentTrick : [];
+      return vpCache.viewports.playing ? playPhase.displayedCurrentTrick : [];
     },
     get currentPlayer() {
-      const vp = viewports.playing;
+      const vp = vpCache.viewports.playing;
       return vp ? vp.currentPlayer : null;
     },
     get declarerTricksWon() {
-      const vp = viewports.playing;
+      const vp = vpCache.viewports.playing;
       return vp ? vp.declarerTricksWon : 0;
     },
     get defenderTricksWon() {
-      const vp = viewports.playing;
+      const vp = vpCache.viewports.playing;
       return vp ? vp.defenderTricksWon : 0;
     },
     get dummySeat() {
-      const vp = viewports.playing;
+      const vp = vpCache.viewports.playing;
       return vp ? partnerSeat(vp.contract?.declarer ?? Seat.North) : null;
     },
     get score() { return playPhase.play.score; },
     get trumpSuit() {
-      const vp = viewports.playing;
+      const vp = vpCache.viewports.playing;
       return vp ? vp.trumpSuit : undefined;
     },
 
     // DDS state
-    get ddsSolution() { return dds.solution; },
-    get ddsSolving() { return dds.solving; },
-    get ddsError() { return dds.error; },
+    get ddsSolution() { return ddsSolver.solution; },
+    get ddsSolving() { return ddsSolver.solving; },
+    get ddsError() { return ddsSolver.error; },
 
     // Prompt state
-    get promptMode(): PromptMode | null { return getPromptMode(); },
+    get promptMode(): PromptMode | null { return transitions.getPromptMode(); },
     get faceUpSeats(): ReadonlySet<Seat> { return getFaceUpSeats(); },
 
     // ── Viewport getters ──────────────────────────────────────
-    get biddingViewport() { return viewports.bidding; },
+    get biddingViewport() { return vpCache.viewports.bidding; },
     get viewportFeedback(): ViewportBidFeedback | null {
       const fb = biddingPhase.bidFeedback;
       if (!fb) return null;
@@ -687,9 +440,9 @@ export function createGameStore(
       if (!fb) return null;
       return fb.teaching;
     },
-    get declarerPromptViewport() { return viewports.declarerPrompt; },
-    get playingViewport() { return viewports.playing; },
-    get explanationViewport() { return viewports.explanation; },
+    get declarerPromptViewport() { return vpCache.viewports.declarerPrompt; },
+    get playingViewport() { return vpCache.viewports.playing; },
+    get explanationViewport() { return vpCache.viewports.explanation; },
 
     // Public belief state
     get publicBeliefState(): ServicePublicBeliefState { return publicBeliefState; },
@@ -705,14 +458,14 @@ export function createGameStore(
       void playPhase.userPlayCardViaService(card, seat);
     },
 
-    skipToReview: guarded(skipToReviewAction),
-    restartPlay: guarded(restartPlayAction),
-    playThisHand: guarded(playThisHandAction),
+    skipToReview: transitions.guarded(skipToReviewAction),
+    restartPlay: transitions.guarded(restartPlayAction),
+    playThisHand: transitions.guarded(playThisHandAction),
     startDrillFromHandle: startDrillFromHandleImpl,
     startNewDrill: startNewDrillImpl,
 
-    acceptPrompt: guarded(acceptPrompt),
-    declinePrompt: guarded(declinePrompt),
+    acceptPrompt: transitions.guarded(acceptPrompt),
+    declinePrompt: transitions.guarded(declinePrompt),
 
     /**
      * Instantly auto-complete bidding and advance to the target phase.
@@ -735,12 +488,12 @@ export function createGameStore(
         if (activeHandle !== handle) return false;
 
         if (result.nextViewport) {
-          viewports.bidding = result.nextViewport;
+          vpCache.viewports.bidding = result.nextViewport;
         }
 
         // Check if auction completed (phaseTransition is always set when auction ends)
         if (result.phaseTransition) {
-          const ok = await handlePostAuction(handle, result.phaseTransition.to as GamePhase);
+          const ok = await transitions.handlePostAuction(handle, result.phaseTransition.to as GamePhase);
           if (!ok) return false;
           break;
         }
@@ -765,10 +518,10 @@ export function createGameStore(
         // review screen renders immediately without a momentary blank flash.
         // The viewport may already be cached (from the while-loop EXPLANATION
         // branch), so only fetch if missing.
-        if (phase === "EXPLANATION" && !viewports.explanation) {
+        if (phase === "EXPLANATION" && !vpCache.viewports.explanation) {
           const vpName = viewportNeededForPhase(phase);
           if (vpName) {
-            await fetchAndCacheViewport(handle, vpName);
+            await vpCache.fetchAndCache(handle, vpName);
           }
         }
         return phase === "EXPLANATION";

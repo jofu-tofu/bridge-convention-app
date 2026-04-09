@@ -4,6 +4,7 @@
  */
 
 import type { CustomPracticePack } from "../service/session-types";
+import { loadFromStorage, saveToStorage } from "./local-storage";
 
 const STORAGE_KEY = "bridge-app:practice-packs";
 
@@ -11,23 +12,17 @@ interface StoredPacks {
   packs: CustomPracticePack[];
 }
 
-function loadFromStorage(): CustomPracticePack[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as StoredPacks;
-    if (!Array.isArray(parsed.packs)) return [];
+function loadPacks(): CustomPracticePack[] {
+  return loadFromStorage(STORAGE_KEY, [] as CustomPracticePack[], (raw) => {
+    const parsed = raw as StoredPacks;
+    if (!Array.isArray(parsed?.packs)) return undefined;
     return parsed.packs.filter(validateStoredPack);
-  } catch {
-    return [];
-  }
+  });
 }
 
-function saveToStorage(packs: CustomPracticePack[]): void {
-  try {
-    const data: StoredPacks = { packs };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch { /* storage unavailable */ }
+function savePacks(packs: CustomPracticePack[]): void {
+  const data: StoredPacks = { packs };
+  saveToStorage(STORAGE_KEY, data);
 }
 
 function validateStoredPack(pack: unknown): pack is CustomPracticePack {
@@ -44,10 +39,10 @@ function generateId(): `practice-pack:${string}` {
 }
 
 export function createPracticePacksStore() {
-  let packs = $state<CustomPracticePack[]>(loadFromStorage());
+  let packs = $state<CustomPracticePack[]>(loadPacks());
 
   function persist(): void {
-    saveToStorage(packs);
+    savePacks(packs);
   }
 
   return {

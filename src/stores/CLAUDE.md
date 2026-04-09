@@ -16,7 +16,15 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 | File                 | Role                                                                                               |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
 | `app.svelte.ts`      | `createAppStore()` — screen navigation, selected convention, learning state, coverage state, dev seed, dev flags (`autoplay`, `debugExpanded`, `autoDismissFeedback`, `skipToPhase`), drill tuning (persisted to localStorage) |
-| `game.svelte.ts`     | `createGameStore(service)` — coordinator/facade, phase machine, drill lifecycle, thin reactive cache over service viewports |
+| `game.svelte.ts`     | `createGameStore(service)` — coordinator/facade, drill lifecycle, user action handlers, thin reactive cache over service viewports. Delegates to sub-modules for bidding, play, phase transitions, viewport caching, and DDS |
+| `bidding-phase.svelte.ts` | `createBiddingPhase(deps)` — bidding state, AI bid animation, user bid submission, feedback, session stats |
+| `play-phase.svelte.ts` | `createPlayPhase(deps)` — play state, AI play animation, user card play, trick display |
+| `phase-transitions.svelte.ts` | `createPhaseTransitions(deps)` — phase state machine (`transitionTo`), unified lifecycle executor (`executeTransition`), `dispatchPlayTransition`, `handlePostAuction`, `guarded()` wrapper, prompt mode |
+| `viewport-cache.svelte.ts` | `createViewportCache(deps)` — reactive viewport cache (`ViewportCache`), `fetchAndCache`, `viewportNeededForPhase` pure helper |
+| `dds-solver.svelte.ts` | `createDDSSolver(deps)` — DDS solution/solving/error state, `triggerSolve` |
+| `local-storage.ts`   | Shared `loadFromStorage` / `saveToStorage` helpers — all stores use these instead of inlining try/catch JSON read/write |
+| `prompt-logic.ts`    | Pure functions: `computePromptMode`, `computeFaceUpSeats` |
+| `animate.ts`         | Pure animation helpers: `animateIncremental`, delay constants (`AI_BID_DELAY`, `AI_PLAY_DELAY`, `TRICK_PAUSE`) |
 | `custom-systems.svelte.ts` | `createCustomSystemsStore()` — CRUD for custom systems, localStorage persistence. `resolveSystemForSession()` maps `SystemSelectionId` to `{systemConfig, baseModuleIds}` for session creation. Healing allows `user:*` module IDs through without validation. |
 | `user-modules.svelte.ts` | `createUserModuleStore()` — CRUD for user-owned convention modules (forked/created), localStorage persistence (`bridge-app:user-modules`). Full-copy fork model, no deltas. |
 | `practice-packs.svelte.ts` | `createPracticePacksStore()` — CRUD for custom practice packs, localStorage persistence (`bridge-app:practice-packs`). Each pack is a named, ordered list of convention module IDs. |
@@ -29,13 +37,13 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **Lifecycle guard (`guarded()` wrapper).** Most public lifecycle methods (skipToReview, restartPlay, playThisHand, acceptPrompt, declinePrompt) are wrapped with `guarded()`. The guard sets `transitioning = true` synchronously, drops concurrent calls, and clears the flag in `.finally()`. Internal callers (e.g., `handleAutoPromptTransition` calling `acceptPrompt`) use the inner functions directly — they bypass the guard because they execute within an already-running guarded chain. `startDrillFromHandle` is NOT guarded (tests need to await it). **`startNewDrill` uses cancel-based concurrency (NOT guarded):** a new drill always supersedes any in-progress drill via `activeHandle` comparison. An `isStarting` flag provides UI-disabling behavior that `guarded()` would have provided. `isTransitioning` getter exposes the guard flag for UI button disabling. `isProcessing` includes `transitioning` and `isStarting`.
 
-**Grouped phase state.** Coordinator-owned `$state` is grouped into typed objects for `dds: DDSState` and `viewports: ViewportCache`; bidding/play submodules own their own local grouped state. Factory functions (`freshDDSState()`, etc.) handle resets. Individual field updates use direct property mutation (`dds.solving = true`) which Svelte 5's proxy tracks fine-grained. Full object replacement (`dds = freshDDSState()`) is correct for resets only.
+**Grouped phase state.** DDS state lives in `dds-solver.svelte.ts`, viewport cache in `viewport-cache.svelte.ts`, phase machine + transition executor in `phase-transitions.svelte.ts`. Bidding/play sub-modules own their own local grouped state. Each sub-module has a `reset()` method; `resetImpl()` in the coordinator calls all of them.
 
 **`bidFeedback` stays flat.** Always replaced wholesale (never mutated in-place), so `$state` works correctly. Do NOT fold into `BiddingPhaseState`.
 
 **Animation fields stay flat.** `biddingAnim` and `animatedTrickOverride` have independent lifecycles and never reset together. Grouping would add no benefit.
 
-**Rejected alternatives:** Discriminated union `PhaseState` (fights Svelte 5 proxy reactivity). Phase-scoped sub-store files (too much churn, moves animation away from transition logic).
+**Rejected alternatives:** Discriminated union `PhaseState` (fights Svelte 5 proxy reactivity).
 
 **Viewport getters:** `gameStore.biddingViewport` — cached `BiddingViewport` from `ServicePort.getBiddingViewport()`. `gameStore.viewportFeedback` — `ViewportBidFeedback` from bid grading. `gameStore.declarerPromptViewport` — cached `DeclarerPromptViewport` from `ServicePort.getDeclarerPromptViewport()`. `gameStore.playingViewport` — cached `PlayingViewport` from `ServicePort.getPlayingViewport()`. `gameStore.explanationViewport` — cached `ExplanationViewport` from `ServicePort.getExplanationViewport()`. All viewports are `$state` variables refreshed via service calls after state changes. Components consume these instead of raw deal/engine state.
 
@@ -55,7 +63,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 ## Game Phases
 
-**Phase machine:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION. Tracked in `game.svelte.ts` via `transitionTo()` guard.
+**Phase machine:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION. Tracked in `phase-transitions.svelte.ts` via `transitionTo()` guard.
 
 **User always bids as South.** The `effectiveUserSeat` handles play-phase seat swaps.
 
@@ -68,7 +76,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 **AI play behavior:** Heuristic strategy chain (opening leads, second-hand-low, third-hand-high, cover honor, trump management, discard, fallback) with 500ms delay between plays. Falls back to random play if no strategy configured.
 
-**Unified lifecycle executor.** All phase transitions go through `executeTransition(handle, event)`. Never call `transitionTo()` directly from lifecycle functions — the executor enforces viewport-before-transition ordering that prevents blank-screen bugs. The pipeline is: resolve descriptor → reset play state → run service actions → fetch viewports → phase transitions (intermediate then target) → side effects (DDS) → chained events. `dispatchPlayTransition` wraps `executeTransition` + AI play animation for the 3 events that produce `aiPlays` (ACCEPT_PLAY, RESTART_PLAY, PLAY_THIS_HAND). `handlePostAuction` is a thin wrapper for AUCTION_COMPLETE (effectiveUserSeat + auto-prompt chaining). PLAYING→PLAYING is intentionally absent from `VALID_TRANSITIONS` (`session-types.ts`). `RESTART_PLAY` works because the executor skips `transitionTo()` when target === current phase. Do NOT add self-transitions to the valid transitions table.
+**Unified lifecycle executor.** All phase transitions go through `executeTransition(handle, event)` in `phase-transitions.svelte.ts`. Never call `transitionTo()` directly from lifecycle functions — the executor enforces viewport-before-transition ordering that prevents blank-screen bugs. The pipeline is: resolve descriptor → reset play state → run service actions → fetch viewports → phase transitions (intermediate then target) → side effects (DDS) → chained events. `dispatchPlayTransition` wraps `executeTransition` + AI play animation for the 3 events that produce `aiPlays` (ACCEPT_PLAY, RESTART_PLAY, PLAY_THIS_HAND). `handlePostAuction` is a thin wrapper for AUCTION_COMPLETE (effectiveUserSeat + auto-prompt chaining). PLAYING→PLAYING is intentionally absent from `VALID_TRANSITIONS` (`session-types.ts`). `RESTART_PLAY` works because the executor skips `transitionTo()` when target === current phase. Do NOT add self-transitions to the valid transitions table.
 - **Phase authority:** Rust `bidding-controller` decides the phase at auction completion (mutates `SessionState.phase`). The coordinator does NOT recompute this — it receives `servicePhase` and maps it to orchestration actions.
 - **Reactive execution:** The store owns animation, cancellation (`activeHandle`), and Svelte `$state` mutations.
 
@@ -102,4 +110,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `game.svelte.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-03-25 | version=11 | dir-commits-at-audit=14 | tree-sig=dirs:2,files:19,exts:ts:18,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-08 | version=14 | dir-commits-at-audit=15 | tree-sig=dirs:2,files:23,exts:ts:22,md:1 -->

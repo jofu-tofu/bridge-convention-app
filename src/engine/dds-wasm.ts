@@ -183,13 +183,13 @@ export function packDealsPBN(pbn: string, view: DataView): void {
 }
 
 /**
- * Unpack ddTableResults from a DataView at the given byte offset.
- * resTable[strain][seat] — 5 strains × 4 seats, each int32.
- * Returns Record<Seat, Record<BidSuit, number>>.
+ * Unpack a ddTableResults tricks table (5 strains × 4 seats).
+ * @param baseOffset  Byte offset of the first int32 in the table.
+ * @param readInt32   Callback that reads an int32 at the given byte address.
  */
-export function unpackResults(
-  view: DataView,
-  offset: number,
+export function unpackTricksTable(
+  baseOffset: number,
+  readInt32: (addr: number) => number,
 ): Record<Seat, Record<BidSuit, number>> {
   const result = {} as Record<Seat, Record<BidSuit, number>>;
 
@@ -201,13 +201,24 @@ export function unpackResults(
     const strain = DDS_STRAIN_MAP[strainIdx]!;
     for (let seatIdx = 0; seatIdx < 4; seatIdx++) {
       const seat = DDS_SEAT_MAP[seatIdx]!;
-      const byteOffset = offset + (strainIdx * 4 + seatIdx) * 4;
-      const tricks = view.getInt32(byteOffset, true);
-      result[seat][strain] = tricks;
+      const addr = baseOffset + (strainIdx * 4 + seatIdx) * 4;
+      result[seat][strain] = readInt32(addr);
     }
   }
 
   return result;
+}
+
+/**
+ * Unpack ddTableResults from a DataView at the given byte offset.
+ * resTable[strain][seat] — 5 strains × 4 seats, each int32.
+ * Returns Record<Seat, Record<BidSuit, number>>.
+ */
+export function unpackResults(
+  view: DataView,
+  offset: number,
+): Record<Seat, Record<BidSuit, number>> {
+  return unpackTricksTable(offset, (addr) => view.getInt32(addr, true));
 }
 
 // ── SolveBoard struct constants from dll.h ──────────────────────────
@@ -327,19 +338,10 @@ export function solveFromPBN(
     }
 
     // Unpack results via getValue — skip noOfBoards (4 bytes at resPtr)
-    // resTable[strain][seat] — 5 strains × 4 seats, each int32.
-    const tricks = {} as Record<Seat, Record<BidSuit, number>>;
-    for (const seat of DDS_SEAT_MAP) {
-      tricks[seat] = {} as Record<BidSuit, number>;
-    }
-    for (let strainIdx = 0; strainIdx < 5; strainIdx++) {
-      const strain = DDS_STRAIN_MAP[strainIdx]!;
-      for (let seatIdx = 0; seatIdx < 4; seatIdx++) {
-        const seat = DDS_SEAT_MAP[seatIdx]!;
-        const addr = resPtr + 4 + (strainIdx * 4 + seatIdx) * 4;
-        tricks[seat][strain] = module.getValue(addr, "i32");
-      }
-    }
+    const tricks = unpackTricksTable(
+      resPtr + 4,
+      (addr) => module.getValue(addr, "i32"),
+    );
 
     return { tricks, par: null };
   } finally {

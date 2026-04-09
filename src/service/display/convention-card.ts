@@ -2,7 +2,6 @@ import type { SystemConfig } from "../session-types";
 import {
   ConventionCardSectionId,
   type ConventionCardPanelView,
-  type ConventionCardSection,
   type ConventionCardLineItem,
   type ConventionCardModuleDetail,
   type AcblCardPanelView,
@@ -186,6 +185,47 @@ function getActiveModuleIds(conventionId?: string): ReadonlySet<string> {
   ]);
 }
 
+/** Generic section definition — every format-specific def must provide at least these fields. */
+interface BaseSectionDef {
+  readonly moduleIds: readonly string[];
+}
+
+/** Resolved items + modules for a single section, shared across both card formats. */
+interface ResolvedSectionCore {
+  readonly items: readonly ConventionCardLineItem[];
+  readonly modules: readonly ConventionCardModuleDetail[];
+}
+
+/**
+ * Iterate section definitions, resolve active modules, and build items/modules
+ * for each section. The caller provides a `resolveItems` callback that returns
+ * items for a given def (or undefined to skip the section entirely), and a
+ * `keep` predicate to filter the resolved results.
+ */
+function buildSections<D extends BaseSectionDef, S>(
+  defs: readonly D[],
+  activeModuleIds: ReadonlySet<string>,
+  resolveItems: (def: D, activeModuleIds: ReadonlySet<string>) => readonly ConventionCardLineItem[] | undefined,
+  assembleSection: (def: D, core: ResolvedSectionCore) => S | undefined,
+): S[] {
+  const sections: S[] = [];
+  for (const def of defs) {
+    const items = resolveItems(def, activeModuleIds);
+    if (items === undefined) continue;
+
+    const modules: ConventionCardModuleDetail[] = [];
+    for (const mid of def.moduleIds) {
+      if (!activeModuleIds.has(mid)) continue;
+      const detail = buildModuleDetail(mid);
+      if (detail) modules.push(detail);
+    }
+
+    const section = assembleSection(def, { items, modules });
+    if (section !== undefined) sections.push(section);
+  }
+  return sections;
+}
+
 /** Build a full convention card panel view with structured sections. */
 export function buildConventionCardPanel(
   systemConfig: SystemConfig,
@@ -193,34 +233,27 @@ export function buildConventionCardPanel(
 ): ConventionCardPanelView {
   const activeModuleIds = getActiveModuleIds(conventionId);
 
-  const sections: ConventionCardSection[] = [];
+  const sections = buildSections(
+    SECTION_DEFS,
+    activeModuleIds,
+    (def) => def.buildItems(systemConfig),
+    (def, { items, modules }) => {
+      if (items.length === 0 && modules.length === 0) return undefined;
 
-  for (const def of SECTION_DEFS) {
-    const items = def.buildItems(systemConfig);
-    const modules: ConventionCardModuleDetail[] = [];
+      const summaryParts = [
+        ...items.map((i) => i.value),
+        ...modules.map((m) => m.moduleName),
+      ];
 
-    for (const mid of def.moduleIds) {
-      if (!activeModuleIds.has(mid)) continue;
-      const detail = buildModuleDetail(mid);
-      if (detail) modules.push(detail);
-    }
-
-    // Omit empty sections
-    if (items.length === 0 && modules.length === 0) continue;
-
-    const summaryParts = [
-      ...items.map((i) => i.value),
-      ...modules.map((m) => m.moduleName),
-    ];
-
-    sections.push({
-      id: def.id,
-      title: def.title,
-      compactSummary: summaryParts.join(" \u00b7 "),
-      items,
-      modules,
-    });
-  }
+      return {
+        id: def.id,
+        title: def.title,
+        compactSummary: summaryParts.join(" \u00b7 "),
+        items,
+        modules,
+      };
+    },
+  );
 
   return {
     partnership: "N-S",
@@ -350,23 +383,22 @@ export function buildAcblCardPanel(
 ): AcblCardPanelView {
   const activeModuleIds = getActiveModuleIds(conventionId);
 
-  const sections: AcblCardSection[] = ACBL_SECTION_DEFS.map((def) => {
-    const hasActiveModule = def.moduleIds.some((mid) => activeModuleIds.has(mid));
-    const available = def.alwaysAvailable || hasActiveModule;
-
-    const items = available ? def.buildItems(systemConfig, activeModuleIds) : [];
-    const modules: ConventionCardModuleDetail[] = [];
-
-    if (available) {
-      for (const mid of def.moduleIds) {
-        if (!activeModuleIds.has(mid)) continue;
-        const detail = buildModuleDetail(mid);
-        if (detail) modules.push(detail);
-      }
-    }
-
-    return { id: def.id, title: def.title, available, items, modules };
-  });
+  const sections = buildSections<AcblSectionDef, AcblCardSection>(
+    ACBL_SECTION_DEFS,
+    activeModuleIds,
+    (def, active) => {
+      const hasActiveModule = def.moduleIds.some((mid) => active.has(mid));
+      const available = def.alwaysAvailable || hasActiveModule;
+      return available ? def.buildItems(systemConfig, active) : [];
+    },
+    (def, { items, modules }) => {
+      const hasActiveModule = def.moduleIds.some((mid) => activeModuleIds.has(mid));
+      const available = def.alwaysAvailable || hasActiveModule;
+      // When unavailable, modules array is empty (resolveItems returned [] so
+      // the generic loop had nothing to filter), and items is already [].
+      return { id: def.id, title: def.title, available, items, modules };
+    },
+  );
 
   return {
     partnership: "N-S",

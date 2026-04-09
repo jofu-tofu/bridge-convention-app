@@ -1,5 +1,6 @@
 import type { ConventionInfo, SystemSelectionId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
 import { OpponentMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
+import { loadFromStorage, saveToStorage } from "./local-storage";
 
 export type Screen = "conventions" | "game" | "learning" | "settings" | "coverage" | "profiles" | "workshop" | "convention-editor" | "practice-pack-editor";
 
@@ -9,13 +10,12 @@ const SETTINGS_KEY = "bridge-app:practice-preferences";
 const LAST_CONVENTION_KEY = "bridge-app:last-convention";
 
 function loadPreferences(): PracticePreferences {
-  try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (raw) {
-      return mergePreferences(JSON.parse(raw) as Record<string, unknown>);
+  return loadFromStorage(SETTINGS_KEY, DEFAULT_PRACTICE_PREFERENCES, (raw) => {
+    if (raw && typeof raw === "object") {
+      return mergePreferences(raw as Record<string, unknown>);
     }
-  } catch { /* SSR or storage unavailable */ }
-  return DEFAULT_PRACTICE_PREFERENCES;
+    return undefined;
+  });
 }
 
 /** Merge a partial persisted blob with defaults. */
@@ -82,7 +82,7 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
 }
 
 function savePreferences(prefs: PracticePreferences) {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(prefs)); } catch { /* ignore */ }
+  saveToStorage(SETTINGS_KEY, prefs);
 }
 
 // ─── Store ──────────────────────────────────────────────────

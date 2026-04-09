@@ -4,6 +4,7 @@
  */
 
 import type { UserModule, UserModuleMetadata, ModuleCategory } from "../service/session-types";
+import { loadFromStorage, saveToStorage } from "./local-storage";
 
 // Re-export for convenience — callers can import from the store barrel
 export type { UserModule, UserModuleMetadata, ModuleCategory };
@@ -14,27 +15,25 @@ interface UserModuleStoreState {
   modules: Record<string, UserModule>;
 }
 
-function loadFromStorage(): UserModuleStoreState {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { modules: {} };
-    const parsed = JSON.parse(raw) as UserModuleStoreState;
-    if (!parsed.modules || typeof parsed.modules !== "object") return { modules: {} };
+const DEFAULT_STATE: UserModuleStoreState = { modules: {} };
+
+function loadModules(): UserModuleStoreState {
+  return loadFromStorage(STORAGE_KEY, DEFAULT_STATE, (raw) => {
+    const parsed = raw as UserModuleStoreState;
+    if (!parsed?.modules || typeof parsed.modules !== "object") return undefined;
     return parsed;
-  } catch {
-    return { modules: {} };
-  }
+  });
 }
 
-function persistToStorage(state: UserModuleStoreState): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function persistModules(state: UserModuleStoreState): void {
+  saveToStorage(STORAGE_KEY, state);
 }
 
 export function createUserModuleStore() {
-  let state = $state<UserModuleStoreState>(loadFromStorage());
+  let state = $state<UserModuleStoreState>(loadModules());
 
   function persist(): void {
-    persistToStorage(state);
+    persistModules(state);
   }
 
   return {
