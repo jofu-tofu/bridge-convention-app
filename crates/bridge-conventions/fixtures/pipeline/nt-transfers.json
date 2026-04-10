@@ -84,39 +84,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "stayman:ask-major",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "C"
-    },
-    "truthSetMeaningIds": [
-      "stayman:ask-major",
-      "transfer:to-spades"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "C"
-      },
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "H"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "transfer:to-hearts",
-      "bridge:nt-invite",
-      "bridge:to-3nt",
-      "stayman:ask-major"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 4,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 5,
-    "meaningViewCount": 5,
-    "whyNotCount": 3
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "nt-transfers",
@@ -904,37 +881,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "stayman:nt-invite-after-denial",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "NT"
-    },
-    "truthSetMeaningIds": [
-      "stayman:nt-invite-after-denial"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "NT"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "stayman:nt-game-after-denial",
-      "stayman:show-five-hearts-after-denial",
-      "stayman:show-five-spades-after-denial",
-      "stayman:minor-gf-3c-after-2d",
-      "stayman:minor-gf-3d-after-2d",
-      "stayman:major-signoff-4h-after-2d",
-      "stayman:major-signoff-4s-after-2d",
-      "stayman:quantitative-4nt-after-2d"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 8,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 9,
-    "meaningViewCount": 9,
-    "whyNotCount": 8
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "nt-transfers",
@@ -1168,33 +1124,15 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "stayman:ask-major",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "C"
-    },
-    "truthSetMeaningIds": [
-      "stayman:ask-major"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "C"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "transfer:to-hearts",
-      "transfer:to-spades",
-      "bridge:nt-invite",
-      "bridge:to-3nt",
-      "stayman:ask-major"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 5,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 5,
-    "meaningViewCount": 5,
-    "whyNotCount": 4
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   }
 ]

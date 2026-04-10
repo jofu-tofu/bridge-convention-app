@@ -207,38 +207,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "transfer:to-hearts",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "D"
-    },
-    "truthSetMeaningIds": [
-      "transfer:to-hearts"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "D"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "bergen:splinter-hearts",
-      "bergen:game-raise-hearts",
-      "bergen:limit-raise-hearts",
-      "bergen:constructive-raise-hearts",
-      "bergen:preemptive-raise-hearts",
-      "bergen:natural-1nt-response-hearts",
-      "stayman:ask-major",
-      "stayman:ask-major",
-      "transfer:to-spades"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 9,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 9,
-    "meaningViewCount": 9,
-    "whyNotCount": 9
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "bergen-bundle",
@@ -325,38 +303,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "transfer:to-spades",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "H"
-    },
-    "truthSetMeaningIds": [
-      "transfer:to-spades"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "H"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "bergen:splinter-hearts",
-      "bergen:game-raise-hearts",
-      "bergen:limit-raise-hearts",
-      "bergen:constructive-raise-hearts",
-      "bergen:preemptive-raise-hearts",
-      "bergen:natural-1nt-response-hearts",
-      "stayman:ask-major",
-      "stayman:ask-major",
-      "transfer:to-hearts"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 9,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 9,
-    "meaningViewCount": 9,
-    "whyNotCount": 9
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "bergen-bundle",
@@ -443,38 +399,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "transfer:to-spades",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "H"
-    },
-    "truthSetMeaningIds": [
-      "transfer:to-spades"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "H"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "bergen:splinter-spades",
-      "bergen:game-raise-spades",
-      "bergen:limit-raise-spades",
-      "bergen:constructive-raise-spades",
-      "bergen:preemptive-raise-spades",
-      "bergen:natural-1nt-response-spades",
-      "stayman:ask-major",
-      "stayman:ask-major",
-      "transfer:to-hearts"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 9,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 9,
-    "meaningViewCount": 9,
-    "whyNotCount": 9
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "bergen-bundle",

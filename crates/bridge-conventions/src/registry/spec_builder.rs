@@ -46,8 +46,12 @@ pub fn spec_from_bundle(
         }
     }
 
-    // Merge member IDs + base IDs with deduplication (preserving order)
-    // When a bundle member has a user replacement, substitute the user ID.
+    // Use the bundle's own member modules + natural-bids only.
+    // Convention base modules (stayman, jacoby-transfers, blackwood) are NOT
+    // merged — they caused false activations in bundles where their auction
+    // context doesn't arise (e.g., Jacoby Transfers firing after suit openings).
+    // natural-bids is always included because it provides the observation
+    // vocabulary (1NT opening, suit openings) that other modules' FSMs need.
     let mut seen = HashSet::new();
     let mut all_ids: Vec<&str> = Vec::new();
 
@@ -57,8 +61,10 @@ pub fn spec_from_bundle(
             all_ids.push(effective_id);
         }
     }
+    // Merge natural-bids (observation vocabulary) and user-forked modules
     for id in base_module_ids {
-        if seen.insert(id.as_str()) {
+        let dominated = id == "natural-bids" || id.starts_with("user:");
+        if dominated && seen.insert(id.as_str()) {
             all_ids.push(id.as_str());
         }
     }
@@ -122,19 +128,16 @@ mod tests {
 
         let module_ids: Vec<&str> = s.modules.iter().map(|m| m.module_id.as_str()).collect();
 
-        // Bundle members: stayman, jacoby-transfers, smolen
-        // Base modules: natural-bids, stayman (dedup), jacoby-transfers (dedup), blackwood
-        // Expected: stayman, jacoby-transfers, smolen, natural-bids, blackwood
+        // Bundle members + natural-bids (observation vocabulary)
         assert!(module_ids.contains(&"stayman"));
         assert!(module_ids.contains(&"jacoby-transfers"));
         assert!(module_ids.contains(&"smolen"));
         assert!(module_ids.contains(&"natural-bids"));
-        assert!(module_ids.contains(&"blackwood"));
-        assert_eq!(module_ids.len(), 5);
+        assert_eq!(module_ids.len(), 4);
     }
 
     #[test]
-    fn spec_from_bundle_includes_base_modules() {
+    fn spec_from_bundle_only_member_modules() {
         let config = sayc_config();
         let base = default_base_module_ids();
         let spec = spec_from_bundle("bergen-bundle", &config, &base, &no_user_modules());
@@ -142,12 +145,8 @@ mod tests {
         let s = spec.unwrap();
 
         let module_ids: Vec<&str> = s.modules.iter().map(|m| m.module_id.as_str()).collect();
-        assert!(module_ids.contains(&"bergen"));
-        assert!(module_ids.contains(&"natural-bids"));
-        assert!(module_ids.contains(&"stayman"));
-        assert!(module_ids.contains(&"jacoby-transfers"));
-        assert!(module_ids.contains(&"blackwood"));
-        assert_eq!(module_ids.len(), 5);
+        // Bundle member + natural-bids only
+        assert_eq!(module_ids, vec!["bergen", "natural-bids"]);
     }
 
     #[test]
@@ -190,28 +189,22 @@ mod tests {
         let spec = spec_from_bundle("nt-bundle", &config, &base, &no_user_modules()).unwrap();
         let module_ids: Vec<&str> = spec.modules.iter().map(|m| m.module_id.as_str()).collect();
 
-        // Bundle members first: stayman, jacoby-transfers, smolen
+        // Bundle members in order, then natural-bids
         assert_eq!(module_ids[0], "stayman");
         assert_eq!(module_ids[1], "jacoby-transfers");
         assert_eq!(module_ids[2], "smolen");
-        // Then remaining base: natural-bids, blackwood
         assert_eq!(module_ids[3], "natural-bids");
-        assert_eq!(module_ids[4], "blackwood");
     }
 
     #[test]
-    fn spec_from_bundle_custom_base_modules() {
+    fn spec_from_bundle_convention_base_modules_not_merged() {
         let config = sayc_config();
-        let custom_base = vec!["natural-bids".to_string(), "blackwood".to_string()];
-        let spec = spec_from_bundle("bergen-bundle", &config, &custom_base, &no_user_modules()).unwrap();
+        let base = vec!["natural-bids".to_string(), "blackwood".to_string()];
+        let spec = spec_from_bundle("bergen-bundle", &config, &base, &no_user_modules()).unwrap();
 
         let module_ids: Vec<&str> = spec.modules.iter().map(|m| m.module_id.as_str()).collect();
-        // Bundle member: bergen
-        // Custom base: natural-bids, blackwood
-        assert_eq!(module_ids.len(), 3);
-        assert!(module_ids.contains(&"bergen"));
-        assert!(module_ids.contains(&"natural-bids"));
-        assert!(module_ids.contains(&"blackwood"));
+        // Bundle member + natural-bids; blackwood NOT merged
+        assert_eq!(module_ids, vec!["bergen", "natural-bids"]);
     }
 
     #[test]

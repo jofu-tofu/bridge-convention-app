@@ -10,6 +10,7 @@ use bridge_conventions::types::meaning::{ConstraintValue, FactOperator};
 use bridge_conventions::types::module_types::ConventionModule;
 use bridge_conventions::BaseSystemId;
 use bridge_engine::constants::{partner_seat, SEATS};
+use bridge_engine::strategy::BiddingStrategy;
 use bridge_engine::types::{Call, Card, Seat};
 use bridge_session::session::{
     build_bidding_viewport, build_bundle_flow_tree, build_declarer_prompt_viewport,
@@ -1002,8 +1003,13 @@ impl DevServicePort for ServicePortImpl {
             Some(c) => c,
             None => return Ok(None),
         };
-        let (bid, _eval) = adapter.suggest_with_evaluation(&ctx, Some(&session.state.deal.hands));
-        Ok(bid.map(|b| b.call))
+        // Use suggest_bid() (not suggest_with_evaluation with all_hands) to match
+        // the same pipeline path the bidding controller uses for grading.
+        // Default to Pass when no convention matches — same as bidding_controller::get_expected_bid.
+        let call = adapter.suggest_bid(&ctx)
+            .map(|b| b.call)
+            .unwrap_or(Call::Pass);
+        Ok(Some(call))
     }
 
     fn get_debug_log(&self, handle: &str) -> Result<Vec<ServiceDebugLogEntryDTO>, ServiceError> {

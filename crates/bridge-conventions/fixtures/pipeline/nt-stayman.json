@@ -84,34 +84,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "transfer:to-spades",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "H"
-    },
-    "truthSetMeaningIds": [
-      "transfer:to-spades"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "H"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "stayman:ask-major",
-      "stayman:ask-major",
-      "bridge:nt-invite",
-      "bridge:to-3nt",
-      "transfer:to-hearts"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 5,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 5,
-    "meaningViewCount": 5,
-    "whyNotCount": 5
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "nt-stayman",
@@ -312,34 +294,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "transfer:to-hearts",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "D"
-    },
-    "truthSetMeaningIds": [
-      "transfer:to-hearts"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "D"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "stayman:ask-major",
-      "stayman:ask-major",
-      "bridge:nt-invite",
-      "bridge:to-3nt",
-      "transfer:to-spades"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 5,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 5,
-    "meaningViewCount": 5,
-    "whyNotCount": 5
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "nt-stayman",
@@ -426,34 +390,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "bridge:nt-invite",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "NT"
-    },
-    "truthSetMeaningIds": [
-      "bridge:nt-invite"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "NT"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "stayman:ask-major",
-      "stayman:ask-major",
-      "bridge:to-3nt",
-      "transfer:to-hearts",
-      "transfer:to-spades"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 5,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 5,
-    "meaningViewCount": 5,
-    "whyNotCount": 5
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "nt-stayman",
@@ -540,34 +486,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "transfer:to-spades",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "H"
-    },
-    "truthSetMeaningIds": [
-      "transfer:to-spades"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "H"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "stayman:ask-major",
-      "stayman:ask-major",
-      "bridge:nt-invite",
-      "bridge:to-3nt",
-      "transfer:to-hearts"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 5,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 5,
-    "meaningViewCount": 5,
-    "whyNotCount": 5
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "nt-stayman",
@@ -654,34 +582,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "transfer:to-spades",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "H"
-    },
-    "truthSetMeaningIds": [
-      "transfer:to-spades"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "H"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "stayman:ask-major",
-      "stayman:ask-major",
-      "bridge:nt-invite",
-      "bridge:to-3nt",
-      "transfer:to-hearts"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 5,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 5,
-    "meaningViewCount": 5,
-    "whyNotCount": 5
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "nt-stayman",
@@ -768,34 +678,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "transfer:to-spades",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "H"
-    },
-    "truthSetMeaningIds": [
-      "transfer:to-spades"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "H"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "stayman:ask-major",
-      "stayman:ask-major",
-      "bridge:nt-invite",
-      "bridge:to-3nt",
-      "transfer:to-hearts"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 5,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 5,
-    "meaningViewCount": 5,
-    "whyNotCount": 5
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "nt-stayman",
@@ -1065,39 +957,16 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "transfer:invite-majors-hearts",
-    "selectedCall": {
-      "type": "bid",
-      "level": 2,
-      "strain": "S"
-    },
-    "truthSetMeaningIds": [
-      "transfer:invite-majors-hearts"
-    ],
-    "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 2,
-        "strain": "S"
-      }
-    ],
-    "acceptableSetMeaningIds": [
-      "transfer:nt-game-hearts",
-      "transfer:invite-hearts",
-      "transfer:signoff-hearts",
-      "transfer:game-hearts",
-      "transfer:invite-raise-hearts",
-      "transfer:new-suit-clubs-hearts",
-      "transfer:new-suit-diamonds-hearts",
-      "transfer:splinter-spades",
-      "transfer:quantitative-hearts",
-      "blackwood:ask-aces"
-    ],
+    "selectedMeaningId": null,
+    "selectedCall": null,
+    "truthSetMeaningIds": [],
+    "truthSetCalls": [],
+    "acceptableSetMeaningIds": [],
     "eliminatedCount": 10,
-    "bidGradeIfCorrect": "correct",
-    "callViewCount": 10,
-    "meaningViewCount": 11,
-    "whyNotCount": 10
+    "bidGradeIfCorrect": "off-system",
+    "callViewCount": 0,
+    "meaningViewCount": 0,
+    "whyNotCount": 0
   },
   {
     "bundleId": "nt-stayman",
