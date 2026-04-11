@@ -319,6 +319,7 @@ export enum PracticeRole {
 export enum PracticeMode {
   DecisionDrill = "decision-drill",
   FullAuction = "full-auction",
+  Learn = "learn",
 }
 
 export enum PlayPreference {

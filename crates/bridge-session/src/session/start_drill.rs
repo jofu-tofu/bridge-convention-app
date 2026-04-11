@@ -754,8 +754,8 @@ pub fn start_drill(
 
     // ── Play preference ─────────────────────────────────────────
     let default_play_preference = match practice_mode {
-        PracticeMode::DecisionDrill => PlayPreference::Skip,
-        _ => PlayPreference::Prompt,
+        PracticeMode::DecisionDrill | PracticeMode::Learn => PlayPreference::Skip,
+        PracticeMode::FullAuction => PlayPreference::Prompt,
     };
     let play_preference = options.play_preference.unwrap_or(default_play_preference);
 

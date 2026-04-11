@@ -42,6 +42,7 @@ pub enum PracticeRole {
 pub enum PracticeMode {
     DecisionDrill,
     FullAuction,
+    Learn,
 }
 
 // ── Play preference ───────────────────────────────────────────────
