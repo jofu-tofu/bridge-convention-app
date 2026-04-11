@@ -146,6 +146,18 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     minWidth: 320,
     mobileNotes: "Inherits stack layout; all-hands view uses 2-col grid that wraps",
   },
+  {
+    path: "game-screen/LearnPhase.svelte",
+    mobileStrategy: "stack",
+    minWidth: 320,
+    mobileNotes: "Inherits stack layout from GameScreen; step-through auction with all hands visible",
+  },
+  {
+    path: "game-screen/LearnSidePanel.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Step indicator + navigation buttons; embedded in LearnPhase side panel area",
+  },
 
   // --- Embedded sub-components (not standalone screens) ---
   {
