@@ -19,6 +19,6 @@ pub use phase_coordinator::{
 };
 pub use phase_machine::{is_valid_transition, valid_targets};
 pub use types::{
-    ContinuationTarget, DrillSettings, DrillTuning, GamePhase, OpponentMode, PlayPreference,
+    DrillSettings, DrillTuning, GamePhase, OpponentMode, PlayPreference,
     PracticeFocus, PracticeMode, PracticeRole, PromptMode, VulnerabilityDistribution,
 };

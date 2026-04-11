@@ -67,7 +67,7 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const phaseParam = params.get("phase");
   const practiceModeParam = params.get("practiceMode")
     ?? ((phaseParam || conventionParam) ? PracticeMode.DecisionDrill : null);
-  if (practiceModeParam === PracticeMode.DecisionDrill || practiceModeParam === PracticeMode.FullAuction || practiceModeParam === PracticeMode.ContinuationDrill) {
+  if (practiceModeParam === PracticeMode.DecisionDrill || practiceModeParam === PracticeMode.FullAuction) {
     store.setPracticeMode(practiceModeParam);
   }
 

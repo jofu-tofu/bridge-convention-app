@@ -27,7 +27,7 @@ Playwright end-to-end smoke tests for user-facing behavior.
 | -------------------------------------- | ------------------------------------------------------------------ |
 | `e2e/smoke.spec.ts`                    | Core app smoke: home search/filter, picker, deep links, blocking feedback, settings/home nav |
 | `e2e/helpers.ts`                      | Shared Playwright helpers for debug-drawer cleanup, drawer text reads, and bid test IDs |
-| `e2e/session-modes.spec.ts`           | Session-mode wiring smoke: default decision drill, full-auction/continuation labels, autoplay→review, review analysis tab |
+| `e2e/session-modes.spec.ts`           | Session-mode wiring smoke: default decision drill, full-auction label, autoplay→review, review analysis tab |
 | `e2e/representative-conventions.spec.ts` | Desktop-only representative bundle flows: Jacoby Transfers and Bergen Raises |
 | `e2e/responsive-layout.spec.ts`       | Responsive shell checks for home, game, and settings. Desktop also runs it; mobile/tablet run this file only |
 

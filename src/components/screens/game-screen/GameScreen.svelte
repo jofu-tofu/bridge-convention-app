@@ -315,9 +315,9 @@
         >
           {phaseInfo.label}
         </span>
-        {#if gameStore.practiceMode !== PracticeMode.DecisionDrill}
+        {#if gameStore.practiceMode === PracticeMode.FullAuction}
           <span class="text-[--text-annotation] text-text-muted" data-testid="practice-mode-label">
-            {gameStore.practiceMode === PracticeMode.FullAuction ? "Full Auction" : "Continuation"}
+            Full Auction
           </span>
         {/if}
         <span class="sr-only" aria-live="polite">Phase: {phaseInfo.label}</span>

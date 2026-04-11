@@ -42,7 +42,6 @@ pub enum PracticeRole {
 pub enum PracticeMode {
     DecisionDrill,
     FullAuction,
-    ContinuationDrill,
 }
 
 // ── Play preference ───────────────────────────────────────────────
@@ -75,15 +74,6 @@ pub struct PracticeFocus {
     pub prerequisite_module_ids: Vec<String>,
     pub follow_up_module_ids: Vec<String>,
     pub background_module_ids: Vec<String>,
-}
-
-// ── Continuation target ───────────────────────────────────────────
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ContinuationTarget {
-    pub module_id: String,
-    pub phase: String,
 }
 
 // ── Vulnerability distribution ────────────────────────────────────
@@ -133,8 +123,6 @@ pub struct DrillSettings {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub practice_mode: Option<PracticeMode>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub continuation_target: Option<ContinuationTarget>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub play_preference: Option<PlayPreference>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub practice_role: Option<PracticeRole>,
@@ -147,7 +135,6 @@ impl Default for DrillSettings {
             tuning: DrillTuning::default(),
             play_profile_id: Some(PlayProfileId::WorldClass),
             practice_mode: None,
-            continuation_target: None,
             play_preference: None,
             practice_role: None,
         }
@@ -188,10 +175,6 @@ mod tests {
             serde_json::to_string(&PracticeMode::FullAuction).unwrap(),
             r#""full-auction""#
         );
-        assert_eq!(
-            serde_json::to_string(&PracticeMode::ContinuationDrill).unwrap(),
-            r#""continuation-drill""#
-        );
     }
 
     #[test]
@@ -220,7 +203,6 @@ mod tests {
             tuning: DrillTuning::default(),
             play_profile_id: Some(PlayProfileId::Beginner),
             practice_mode: Some(PracticeMode::FullAuction),
-            continuation_target: None,
             play_preference: Some(PlayPreference::Always),
             practice_role: Some(PracticeRole::Opener),
         };

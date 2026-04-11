@@ -73,7 +73,7 @@ export function printSubcommandHelp(cmd: string): void {
       console.error("  --opponents=<mode>  Opponent mode (default: natural)");
       console.error("  --module=<id>       Target module focus");
       console.error("  --role=<role>       Practice role (opener/responder/both)");
-      console.error("  --mode=<mode>       Practice mode (decision-drill/full-auction/continuation-drill)");
+      console.error("  --mode=<mode>       Practice mode (decision-drill/full-auction)");
       console.error("  --bid=<bid>         Submit a single bid (P, X, XX, 1C..7NT)");
       console.error("  --bids=<b1,b2,...>  Submit multiple user-seat bids in sequence");
       console.error("");

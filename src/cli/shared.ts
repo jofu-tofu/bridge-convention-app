@@ -136,11 +136,10 @@ export function parseCallString(s: string): Call {
 const PRACTICE_MODE_MAP: Record<string, PracticeMode> = {
   "decision-drill": PracticeMode.DecisionDrill,
   "full-auction": PracticeMode.FullAuction,
-  "continuation-drill": PracticeMode.ContinuationDrill,
 };
 
 export function parsePracticeMode(args: Flags): PracticeMode | undefined {
-  return parseMappedArg(args, "mode", PRACTICE_MODE_MAP, "decision-drill, full-auction, continuation-drill");
+  return parseMappedArg(args, "mode", PRACTICE_MODE_MAP, "decision-drill, full-auction");
 }
 
 const PRACTICE_ROLE_MAP: Record<string, PracticeRole> = {

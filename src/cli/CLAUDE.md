@@ -60,7 +60,7 @@ Controls opponent (E/W) bidding behavior. Default: `natural`.
 ### `--module=<id>`
 Target module focus (play command only). Threads through SessionConfig.targetModuleId.
 
-### `--mode=<decision-drill|full-auction|continuation-drill>`
+### `--mode=<decision-drill|full-auction>`
 Practice mode (play command only).
 
 ### `--role=<opener|responder|both>`

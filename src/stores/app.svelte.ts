@@ -54,7 +54,7 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
   }
 
   // Validate practiceMode
-  const VALID_PRACTICE_MODES = new Set<string>(["decision-drill", "full-auction", "continuation-drill"]);
+  const VALID_PRACTICE_MODES = new Set<string>(["decision-drill", "full-auction"]);
   const practiceMode = drill?.practiceMode && VALID_PRACTICE_MODES.has(drill.practiceMode) ? drill.practiceMode : undefined;
 
   // Validate practiceRole

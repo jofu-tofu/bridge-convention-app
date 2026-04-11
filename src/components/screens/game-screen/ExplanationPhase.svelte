@@ -304,9 +304,9 @@
     </div>
   {/if}
 
-  {#if practiceMode !== PracticeMode.DecisionDrill}
+  {#if practiceMode === PracticeMode.FullAuction}
     <p class="text-[--text-annotation] text-text-muted">
-      Mode: {practiceMode === PracticeMode.FullAuction ? "Full Auction" : "Continuation"}
+      Mode: Full Auction
     </p>
   {/if}
 

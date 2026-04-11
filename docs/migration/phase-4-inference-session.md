@@ -99,7 +99,7 @@ Record complete drill sessions: create → bid through auction → play → expl
 
 Include:
 - All 6 bundles
-- Multiple practice modes (decision-drill, full-auction, continuation-drill)
+- Multiple practice modes (decision-drill, full-auction)
 - Both opener and responder roles
 - Edge cases: passed-out auctions, doubled contracts, slam bidding
 

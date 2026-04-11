@@ -195,7 +195,6 @@ describe("parsePracticeMode", () => {
   it("parses valid modes", () => {
     expect(parsePracticeMode({ mode: "decision-drill" })).toBe("decision-drill");
     expect(parsePracticeMode({ mode: "full-auction" })).toBe("full-auction");
-    expect(parsePracticeMode({ mode: "continuation-drill" })).toBe("continuation-drill");
   });
 
   it("exits for invalid mode", () => {

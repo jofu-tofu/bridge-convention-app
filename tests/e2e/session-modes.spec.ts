@@ -22,14 +22,6 @@ test.describe("session modes", () => {
     await expect(page.getByText(DECISION_CONTEXT)).toHaveCount(0);
   });
 
-  test("continuation drill deep links preserve the continuation mode label", async ({ page }) => {
-    await page.goto("/?convention=nt-transfers&seed=42&practiceMode=continuation-drill");
-    await waitForPhase(page, "Bidding");
-
-    await expect(page.getByTestId("practice-mode-label")).toHaveText("Continuation");
-    await expect(page.getByText(DECISION_CONTEXT)).toHaveCount(0);
-  });
-
   test("autoplay reaches review and next deal restarts bidding", async ({ page }) => {
     await page.goto("/?convention=nt-bundle&seed=42&autoplay=true");
     await waitForPhase(page, "Review", 30_000);
