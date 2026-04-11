@@ -24,14 +24,16 @@ function parseFrontmatter(raw: string): FrontmatterResult {
   if (!match) return { data: {}, body: raw };
 
   const data: Record<string, string> = {};
-  for (const line of match[1]!.split("\n")) {
+  const frontmatter = match[1] ?? "";
+  const body = match[2] ?? "";
+  for (const line of frontmatter.split("\n")) {
     const idx = line.indexOf(":");
     if (idx === -1) continue;
     const key = line.slice(0, idx).trim();
     const val = line.slice(idx + 1).trim().replace(/^["']|["']$/g, "");
     data[key] = val;
   }
-  return { data, body: match[2]! };
+  return { data, body };
 }
 
 const modules: Record<string, string> = import.meta.glob("/content/guides/*.md", {
