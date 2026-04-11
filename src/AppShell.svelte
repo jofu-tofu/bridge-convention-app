@@ -18,6 +18,7 @@
   import WorkshopScreen from "./components/screens/WorkshopScreen.svelte";
   import ConventionEditorScreen from "./components/screens/ConventionEditorScreen.svelte";
   import PracticePackEditorScreen from "./components/screens/PracticePackEditorScreen.svelte";
+  import GuidesScreen from "./components/screens/GuidesScreen.svelte";
 
 
   interface Props {
@@ -61,6 +62,8 @@
     <ConventionEditorScreen />
   {:else if props.appStore.screen === "practice-pack-editor"}
     <PracticePackEditorScreen />
+  {:else if props.appStore.screen === "guides"}
+    <GuidesScreen />
   {:else}
     <div class="flex h-full items-center justify-center text-red-400">
       <p>Unknown screen: {props.appStore.screen}</p>

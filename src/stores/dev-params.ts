@@ -2,6 +2,7 @@ import type { createAppStore } from "./app.svelte";
 import { ConventionCategory, PracticeMode, PracticeRole, SubscriptionTier } from "../service";
 import type { ConventionInfo } from "../service";
 import { listConventions } from "../service/service-helpers";
+import { FEATURES } from "./feature-flags";
 
 /**
  * Consolidated URL parameter API for deep-linking and dev/test workflows.
@@ -37,12 +38,16 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     store.navigateToCoverage();
     return;
   }
-  if (screenParam === "workshop") {
+  if (screenParam === "workshop" && FEATURES.workshop) {
     store.navigateToWorkshop();
     return;
   }
   if (screenParam === "settings") {
     store.navigateToSettings();
+    return;
+  }
+  if (screenParam === "guides") {
+    store.navigateToGuides();
     return;
   }
 

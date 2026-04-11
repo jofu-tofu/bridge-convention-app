@@ -31,8 +31,9 @@ COPY --from=wasm-build /build/crates/bridge-wasm/pkg/ crates/bridge-wasm/pkg/
 COPY static/ static/
 COPY src/ src/
 COPY index.html svelte.config.js vite.config.ts tsconfig.json ./
-COPY scripts/ensure-dds.sh scripts/ensure-dds.sh
-RUN npm run dds:ensure && npx vite build
+COPY scripts/ scripts/
+COPY content/ content/
+RUN npm run dds:ensure && npx vite build && npx tsx scripts/build-guides-html.ts
 
 # Stage 5 — production: serve static files with Caddy
 FROM caddy:2-alpine AS production

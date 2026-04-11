@@ -24,7 +24,7 @@ Game components MUST use `--text-*` tokens (ESLint enforced) and `--color-*` tok
 App.svelte                           Root — creates engine/stores, sets context, routes screens
 components/
   screens/
-    ConventionSelectScreen.svelte    Convention picker with search + category filter + 2-column responsive card grid
+    ConventionSelectScreen.svelte    Convention picker with search + category filter + 2-column responsive card grid. Practice buttons show lock state for non-premium bundles; PaywallOverlay opens on locked practice attempt.
     LearningScreen.svelte            Module-centric learning screen: sidebar lists modules (filterable by bundle), main content shows conversation flow tree (desktop) + module teaching (principle/tradeoff/mistakes) + surfaces grouped by conversation phase
     MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible card, recursive snippet, tap-to-expand accordion for detail (recommendation/disclosure/explanation/clauses)
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors, self-contained auto-scaling. Optional interactive mode (selectedNodeId + onNodeSelect props) for Workshop click-to-select.
@@ -98,8 +98,8 @@ components/
       DebugPlayLog.svelte            Card play history by trick
       debug-helpers.ts               Formatting utilities (formatCall re-export, formatSuitCards, fmtFactValue, truncate)
   navigation/
-    NavRail.svelte                   Thin left rail (~80px) — Home/Learn/Workshop/Settings icons. Desktop only. Learn is direct navigation (no flyout).
-    BottomTabBar.svelte              Mobile bottom tab bar — Home + Learn + Workshop + Settings tabs. Mobile only.
+    NavRail.svelte                   Thin left rail (~80px) — Home/Learn/Workshop (dev only)/Settings icons. Desktop only. Workshop gated behind FEATURES.workshop. Learn is direct navigation (no flyout).
+    BottomTabBar.svelte              Mobile bottom tab bar — Home + Learn + Workshop (dev only) + Settings tabs. Mobile only. Workshop tab gated behind FEATURES.workshop.
   shared/
     Button.svelte                    Primary/secondary/ghost variants
     Card.svelte                      70x98 visual playing card
@@ -115,6 +115,7 @@ components/
     NumberStepper.ts                 Pure helpers: clamp(), createAutoRepeat() for NumberStepper testability
     RangeStepper.svelte              Composes two NumberStepper instances with "to" separator and shared suffix
     AuthModal.svelte                 Native <dialog> auth modal — login (OAuth buttons) when logged out, account info (sign out, settings link) when logged in. Exports open()/close().
+    PaywallOverlay.svelte            Native <dialog> upgrade prompt — shown when user tries to practice a locked bundle. Exports open()/close(). Subscribe button is a placeholder (no payment integration yet).
     module-catalog.ts                Single source of truth for module categorization: MODULE_CATEGORIES, CATEGORY_DISPLAY, CatalogModule, mergeModules(), groupByCategory(), filterModules(). Pure functions — no store/Svelte imports. All screens import from here.
     ModuleChecklist.svelte           Shared collapsible checkbox grid for module selection: search, collapsible category sections, count badges. User modules shown under "My Conventions" section separated from system modules. Used by SystemEditor and PracticePackEditorScreen.
   __tests__/
@@ -125,7 +126,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** AppShell owns the full app layout — context setup + nav chrome + screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop/Settings icons. Learn navigates directly to Learning screen. Mobile: bottom tab bar (BottomTabBar) with 4 tabs. Workshop tab is the home for system/convention/practice pack management. `?profiles=true` backward compat alias redirects to Workshop. Conventions tab shows an inline flow editor (ConventionFlowEditor): left sidebar with module picker, center flow tree (shared ConversationFlowTree in interactive mode), right slide-out panel for node parameter editing. Workshop = management (fork, edit, delete, configure). Learn = study (teaching content, flow trees, surfaces).
+**Screen flow:** AppShell owns the full app layout — context setup + nav chrome + screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop (dev only)/Settings icons. Learn navigates directly to Learning screen. Mobile: bottom tab bar (BottomTabBar) with Home/Learn/Workshop (dev only)/Settings tabs (3 tabs in production, 4 in dev). Workshop tab is the home for system/convention/practice pack management, gated behind `FEATURES.workshop`. `?profiles=true` backward compat alias redirects to Workshop. Conventions tab shows an inline flow editor (ConventionFlowEditor): left sidebar with module picker, center flow tree (shared ConversationFlowTree in interactive mode), right slide-out panel for node parameter editing. Workshop = management (fork, edit, delete, configure). Learn = study (teaching content, flow trees, surfaces).
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 

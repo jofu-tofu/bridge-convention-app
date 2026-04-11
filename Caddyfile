@@ -16,6 +16,9 @@ bridgelab.net {
         @dds path /dds/*
         header @dds Cache-Control "public, max-age=31536000, immutable"
 
+        @guides path /guides/*
+        header @guides Cache-Control "public, max-age=86400"
+
         header /index.html Cache-Control "public, max-age=3600"
 
         try_files {path} /index.html
