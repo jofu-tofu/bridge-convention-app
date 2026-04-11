@@ -5,6 +5,44 @@ use bridge_engine::types::{
     Auction, AuctionEntry, BidSuit, Call, Deal, DealConstraints, Seat, Suit,
 };
 
+fn opening_auction(dealer: Seat, strain: BidSuit) -> Auction {
+    Auction {
+        entries: vec![AuctionEntry {
+            seat: dealer,
+            call: Call::Bid { level: 1, strain },
+        }],
+        is_complete: false,
+    }
+}
+
+fn natural_suit_opening_for_dealer(dealer: Seat, deal: Option<&Deal>) -> Option<Auction> {
+    let hand = deal?.hands.get(&dealer)?;
+    let hearts = hand.cards.iter().filter(|c| c.suit == Suit::Hearts).count();
+    let spades = hand.cards.iter().filter(|c| c.suit == Suit::Spades).count();
+    let diamonds = hand
+        .cards
+        .iter()
+        .filter(|c| c.suit == Suit::Diamonds)
+        .count();
+    let clubs = hand.cards.iter().filter(|c| c.suit == Suit::Clubs).count();
+
+    if hearts >= 5 || spades >= 5 {
+        let strain = if spades > hearts {
+            BidSuit::Spades
+        } else {
+            BidSuit::Hearts
+        };
+        return Some(opening_auction(dealer, strain));
+    }
+
+    let strain = if diamonds > clubs {
+        BidSuit::Diamonds
+    } else {
+        BidSuit::Clubs
+    };
+    Some(opening_auction(dealer, strain))
+}
+
 /// Derive practice focus — which modules are target, prerequisites, follow-up, background.
 ///
 /// Uses member ordering as a proxy for module dependencies.
@@ -69,7 +107,9 @@ pub fn derive_practice_focus(
 /// 3. If balanced + HCP overlaps 15–17: return 1NT
 /// 4. If 5+ hearts: return 1H
 /// 5. If 5+ spades: return 1S
-/// 6. Otherwise: return None
+/// 6. If a deal is available and the constraint implies a generic suit opening:
+///    derive a natural opening from the dealer hand (major if 5+, else longer minor)
+/// 7. Otherwise: return None
 ///
 /// // MAINTENANCE: This function uses hardcoded bundle-family recognition.
 /// // When adding a new bundle type (e.g., weak twos, DONT), update the
@@ -95,16 +135,7 @@ pub fn derive_initial_auction(
             let min_hcp = sc.min_hcp.unwrap_or(0);
             let max_hcp = sc.max_hcp.unwrap_or(40);
             if min_hcp <= 17 && max_hcp >= 15 {
-                return Some(Auction {
-                    entries: vec![AuctionEntry {
-                        seat: dealer,
-                        call: Call::Bid {
-                            level: 1,
-                            strain: BidSuit::NoTrump,
-                        },
-                    }],
-                    is_complete: false,
-                });
+                return Some(opening_auction(dealer, BidSuit::NoTrump));
             }
         }
 
@@ -112,71 +143,38 @@ pub fn derive_initial_auction(
         if let Some(ref min_lengths) = sc.min_length {
             if let Some(&hearts_min) = min_lengths.get(&Suit::Hearts) {
                 if hearts_min >= 5 {
-                    return Some(Auction {
-                        entries: vec![AuctionEntry {
-                            seat: dealer,
-                            call: Call::Bid {
-                                level: 1,
-                                strain: BidSuit::Hearts,
-                            },
-                        }],
-                        is_complete: false,
-                    });
+                    return Some(opening_auction(dealer, BidSuit::Hearts));
                 }
             }
 
             // Rule 5: 5+ spades → 1S
             if let Some(&spades_min) = min_lengths.get(&Suit::Spades) {
                 if spades_min >= 5 {
-                    return Some(Auction {
-                        entries: vec![AuctionEntry {
-                            seat: dealer,
-                            call: Call::Bid {
-                                level: 1,
-                                strain: BidSuit::Spades,
-                            },
-                        }],
-                        is_complete: false,
-                    });
+                    return Some(opening_auction(dealer, BidSuit::Spades));
                 }
             }
         }
 
-        // Rule 4b/5b: min_length_any — OR semantics (5+ in any listed major)
+        // Rule 6: min_length_any can imply a generic suit opening (e.g. Michaels).
+        // Use the actual dealer hand to choose a natural one-level suit bid.
         if let Some(ref min_any) = sc.min_length_any {
-            let has_major_any = min_any.get(&Suit::Hearts).map_or(false, |&m| m >= 5)
-                || min_any.get(&Suit::Spades).map_or(false, |&m| m >= 5);
-            if has_major_any {
-                // Use actual deal to pick the correct major
-                if let Some(deal) = deal {
-                    if let Some(hand) = deal.hands.get(&dealer) {
-                        let hearts = hand.cards.iter().filter(|c| c.suit == Suit::Hearts).count();
-                        let spades = hand.cards.iter().filter(|c| c.suit == Suit::Spades).count();
-                        let strain = if spades > hearts {
-                            BidSuit::Spades
-                        } else {
-                            BidSuit::Hearts
-                        };
-                        return Some(Auction {
-                            entries: vec![AuctionEntry {
-                                seat: dealer,
-                                call: Call::Bid { level: 1, strain },
-                            }],
-                            is_complete: false,
-                        });
-                    }
+            let opens_any_suit = min_any.values().any(|&m| m >= 5);
+            if opens_any_suit {
+                if let Some(auction) = natural_suit_opening_for_dealer(dealer, deal) {
+                    return Some(auction);
                 }
-                // Fallback without deal: pick hearts
-                return Some(Auction {
-                    entries: vec![AuctionEntry {
-                        seat: dealer,
-                        call: Call::Bid {
-                            level: 1,
-                            strain: BidSuit::Hearts,
-                        },
-                    }],
-                    is_complete: false,
-                });
+                if min_any.get(&Suit::Hearts).map_or(false, |&m| m >= 5) {
+                    return Some(opening_auction(dealer, BidSuit::Hearts));
+                }
+                if min_any.get(&Suit::Spades).map_or(false, |&m| m >= 5) {
+                    return Some(opening_auction(dealer, BidSuit::Spades));
+                }
+                if min_any.get(&Suit::Diamonds).map_or(false, |&m| m >= 5) {
+                    return Some(opening_auction(dealer, BidSuit::Diamonds));
+                }
+                if min_any.get(&Suit::Clubs).map_or(false, |&m| m >= 5) {
+                    return Some(opening_auction(dealer, BidSuit::Clubs));
+                }
             }
         }
     }
@@ -471,6 +469,114 @@ mod tests {
             Call::Bid {
                 level: 1,
                 strain: BidSuit::Spades
+            }
+        );
+    }
+
+    #[test]
+    fn min_length_any_with_deal_picks_longer_minor_when_no_five_card_major() {
+        use bridge_engine::types::{Card, Deal, Hand, Rank, Vulnerability};
+
+        let mut min_any = HashMap::new();
+        min_any.insert(Suit::Clubs, 5);
+        min_any.insert(Suit::Diamonds, 5);
+        min_any.insert(Suit::Hearts, 5);
+        min_any.insert(Suit::Spades, 5);
+
+        let constraints = DealConstraints {
+            seats: vec![SeatConstraint {
+                seat: Seat::South,
+                min_hcp: Some(6),
+                max_hcp: Some(15),
+                balanced: None,
+                min_length: None,
+                max_length: None,
+                min_length_any: Some(min_any),
+            }],
+            dealer: Some(Seat::East),
+            vulnerability: None,
+            max_attempts: None,
+            seed: None,
+        };
+
+        let mut hands = HashMap::new();
+        hands.insert(
+            Seat::East,
+            Hand {
+                cards: vec![
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::King,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Queen,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Jack,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Ten,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::King,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Queen,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Jack,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::King,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::King,
+                    },
+                ],
+            },
+        );
+        let deal = Deal {
+            hands,
+            dealer: Seat::East,
+            vulnerability: Vulnerability::None,
+        };
+
+        let result = derive_initial_auction(
+            PracticeRole::Responder,
+            Seat::East,
+            Some(&constraints),
+            Some(&deal),
+        );
+        let auction = result.expect("should produce a minor-suit opening");
+        assert_eq!(
+            auction.entries[0].call,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Diamonds
             }
         );
     }

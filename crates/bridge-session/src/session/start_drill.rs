@@ -3,9 +3,11 @@
 //!
 //! Ported from TS `src/session/start-drill.ts`.
 
+use bridge_engine::constants::next_seat;
 use bridge_engine::deal_generator::generate_deal;
 use bridge_engine::types::{
-    Auction, AuctionEntry, Deal, DealConstraints, Seat, SeatConstraint, Vulnerability,
+    Auction, AuctionEntry, BidSuit, Call, Deal, DealConstraints, Seat, SeatConstraint, Suit,
+    Vulnerability,
 };
 
 use crate::inference::inference_engine::InferenceEngine;
@@ -35,6 +37,9 @@ pub struct DrillBundle {
     pub play_preference: PlayPreference,
     pub resolved_role: PracticeRole,
 }
+
+const NEGATIVE_DOUBLES_BUNDLE_ID: &str = "negative-doubles-bundle";
+const NEGATIVE_DOUBLES_DEAL_ATTEMPTS: u64 = 256;
 
 // ── Rotation utilities ──────────────────────────────────────────────
 
@@ -81,6 +86,399 @@ pub fn rotate_auction(auction: &Auction) -> Auction {
             })
             .collect(),
         is_complete: auction.is_complete,
+    }
+}
+
+fn is_negative_doubles_bundle(convention_id: &str) -> bool {
+    convention_id == NEGATIVE_DOUBLES_BUNDLE_ID
+}
+
+fn suit_length(deal: &Deal, seat: Seat, suit: Suit) -> usize {
+    deal.hands
+        .get(&seat)
+        .map(|hand| hand.cards.iter().filter(|card| card.suit == suit).count())
+        .unwrap_or(0)
+}
+
+fn negative_doubles_opening_call(deal: &Deal, dealer: Seat) -> Option<Call> {
+    let clubs = suit_length(deal, dealer, Suit::Clubs);
+    let diamonds = suit_length(deal, dealer, Suit::Diamonds);
+    let hearts = suit_length(deal, dealer, Suit::Hearts);
+    let spades = suit_length(deal, dealer, Suit::Spades);
+
+    if spades >= 5 || hearts >= 5 {
+        return Some(Call::Bid {
+            level: 1,
+            strain: if spades > hearts {
+                BidSuit::Spades
+            } else {
+                BidSuit::Hearts
+            },
+        });
+    }
+
+    if diamonds >= 5 || clubs >= 5 {
+        return Some(Call::Bid {
+            level: 1,
+            strain: if diamonds > clubs {
+                BidSuit::Diamonds
+            } else {
+                BidSuit::Clubs
+            },
+        });
+    }
+
+    None
+}
+
+fn negative_doubles_overcall_call(deal: &Deal, overcaller: Seat, opening: &Call) -> Option<Call> {
+    let hcp = deal
+        .hands
+        .get(&overcaller)
+        .map(bridge_engine::hand_evaluator::evaluate_hand_hcp)
+        .map(|evaluation| evaluation.hcp as i32)
+        .unwrap_or(0);
+    let clubs = suit_length(deal, overcaller, Suit::Clubs);
+    let diamonds = suit_length(deal, overcaller, Suit::Diamonds);
+    let hearts = suit_length(deal, overcaller, Suit::Hearts);
+    let spades = suit_length(deal, overcaller, Suit::Spades);
+
+    let mut candidates: Vec<(usize, usize, Call)> = Vec::new();
+    let mut push_candidate = |priority: usize, length: usize, min_hcp: i32, call: Call| {
+        if length >= 5 && hcp >= min_hcp && hcp <= 16 {
+            candidates.push((length, priority, call));
+        }
+    };
+
+    match opening {
+        Call::Bid {
+            level: 1,
+            strain: BidSuit::Clubs,
+        } => {
+            push_candidate(
+                0,
+                diamonds,
+                8,
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Diamonds,
+                },
+            );
+            push_candidate(
+                1,
+                hearts,
+                8,
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Hearts,
+                },
+            );
+            push_candidate(
+                2,
+                spades,
+                8,
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Spades,
+                },
+            );
+        }
+        Call::Bid {
+            level: 1,
+            strain: BidSuit::Diamonds,
+        } => {
+            push_candidate(
+                0,
+                hearts,
+                8,
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Hearts,
+                },
+            );
+            push_candidate(
+                1,
+                spades,
+                8,
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Spades,
+                },
+            );
+        }
+        Call::Bid {
+            level: 1,
+            strain: BidSuit::Hearts,
+        } => {
+            push_candidate(
+                0,
+                spades,
+                8,
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Spades,
+                },
+            );
+            push_candidate(
+                1,
+                clubs,
+                10,
+                Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Clubs,
+                },
+            );
+            push_candidate(
+                2,
+                diamonds,
+                10,
+                Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Diamonds,
+                },
+            );
+        }
+        Call::Bid {
+            level: 1,
+            strain: BidSuit::Spades,
+        } => {
+            push_candidate(
+                0,
+                clubs,
+                10,
+                Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Clubs,
+                },
+            );
+            push_candidate(
+                1,
+                diamonds,
+                10,
+                Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Diamonds,
+                },
+            );
+            push_candidate(
+                2,
+                hearts,
+                10,
+                Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Hearts,
+                },
+            );
+        }
+        _ => {}
+    }
+
+    candidates
+        .into_iter()
+        .max_by(|(len_a, prio_a, _), (len_b, prio_b, _)| {
+            len_a.cmp(len_b).then_with(|| prio_b.cmp(prio_a))
+        })
+        .map(|(_, _, call)| call)
+}
+
+fn negative_doubles_sequence(deal: &Deal, dealer: Seat) -> Option<Auction> {
+    let opening = negative_doubles_opening_call(deal, dealer)?;
+    let overcaller = next_seat(dealer);
+    let overcall = negative_doubles_overcall_call(deal, overcaller, &opening)?;
+
+    Some(Auction {
+        entries: vec![
+            AuctionEntry {
+                seat: dealer,
+                call: opening,
+            },
+            AuctionEntry {
+                seat: overcaller,
+                call: overcall,
+            },
+        ],
+        is_complete: false,
+    })
+}
+
+/// Build opener-role initial auction: dealer opens, LHO overcalls, partner doubles.
+/// Returns None if any step fails.
+fn negative_doubles_opener_sequence(deal: &Deal, dealer: Seat) -> Option<Auction> {
+    let opening = negative_doubles_opening_call(deal, dealer)?;
+    let overcaller = next_seat(dealer);
+    let overcall = negative_doubles_overcall_call(deal, overcaller, &opening)?;
+    let partner = next_seat(overcaller);
+
+    // Verify partner can actually make a negative double
+    let partial = Auction {
+        entries: vec![
+            AuctionEntry {
+                seat: dealer,
+                call: opening.clone(),
+            },
+            AuctionEntry {
+                seat: overcaller,
+                call: overcall.clone(),
+            },
+        ],
+        is_complete: false,
+    };
+    if !negative_doubles_responder_can_double(deal, dealer, &partial) {
+        return None;
+    }
+
+    Some(Auction {
+        entries: vec![
+            AuctionEntry {
+                seat: dealer,
+                call: opening,
+            },
+            AuctionEntry {
+                seat: overcaller,
+                call: overcall,
+            },
+            AuctionEntry {
+                seat: partner,
+                call: Call::Double,
+            },
+            AuctionEntry {
+                seat: next_seat(partner),
+                call: Call::Pass,
+            },
+        ],
+        is_complete: false,
+    })
+}
+
+fn negative_doubles_responder_can_double(deal: &Deal, dealer: Seat, auction: &Auction) -> bool {
+    if auction.entries.len() < 2 {
+        return false;
+    }
+
+    let responder = next_seat(next_seat(dealer));
+    let hcp = deal
+        .hands
+        .get(&responder)
+        .map(bridge_engine::hand_evaluator::evaluate_hand_hcp)
+        .map(|evaluation| evaluation.hcp as usize)
+        .unwrap_or(0);
+    let clubs = suit_length(deal, responder, Suit::Clubs);
+    let diamonds = suit_length(deal, responder, Suit::Diamonds);
+    let hearts = suit_length(deal, responder, Suit::Hearts);
+    let spades = suit_length(deal, responder, Suit::Spades);
+
+    match (&auction.entries[0].call, &auction.entries[1].call) {
+        (
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Diamonds,
+            },
+        ) => hcp >= 6 && hearts >= 4 && spades >= 4,
+        (
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts,
+            },
+        ) => hcp >= 6 && spades >= 4,
+        (
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades,
+            },
+        ) => hcp >= 8 && hearts >= 4,
+        (
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Diamonds,
+            },
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts,
+            },
+        ) => hcp >= 6 && spades >= 4,
+        (
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Diamonds,
+            },
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades,
+            },
+        ) => hcp >= 8 && hearts >= 4,
+        (
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts,
+            },
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades,
+            },
+        ) => hcp >= 6 && clubs >= 4 && diamonds >= 4,
+        (
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts,
+            },
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Clubs,
+            },
+        ) => hcp >= 8 && spades >= 4 && diamonds >= 4,
+        (
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts,
+            },
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Diamonds,
+            },
+        ) => hcp >= 8 && spades >= 4,
+        (
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades,
+            },
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Clubs,
+            },
+        ) => hcp >= 8 && hearts >= 4 && diamonds >= 4,
+        (
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades,
+            },
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Diamonds,
+            },
+        ) => hcp >= 8 && hearts >= 4,
+        (
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades,
+            },
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Hearts,
+            },
+        ) => hcp >= 8 && clubs >= 4 && diamonds >= 4,
+        _ => false,
     }
 }
 
@@ -266,14 +664,76 @@ pub fn start_drill(
     }
 
     // ── Deal generation ─────────────────────────────────────────
-    let constraints = DealConstraints {
-        vulnerability: Some(vulnerability),
-        seed: options.seed,
-        ..resolved_constraints
+    let mut chosen_deal = None;
+    let mut chosen_initial_auction = None;
+    let deal_attempts = if is_negative_doubles_bundle(&convention.id) {
+        NEGATIVE_DOUBLES_DEAL_ATTEMPTS
+    } else {
+        1
     };
 
-    let deal_result =
-        generate_deal(&constraints).map_err(|e| format!("Deal generation failed: {e}"))?;
+    for attempt in 0..deal_attempts {
+        let constraints = DealConstraints {
+            vulnerability: Some(vulnerability),
+            seed: options.seed.map(|seed| seed + attempt),
+            ..resolved_constraints.clone()
+        };
+
+        let deal_result =
+            generate_deal(&constraints).map_err(|e| format!("Deal generation failed: {e}"))?;
+        let dealer = deal_result.deal.dealer;
+
+        let negdbl_sequence = if is_negative_doubles_bundle(&convention.id) {
+            negative_doubles_sequence(&deal_result.deal, dealer)
+        } else {
+            None
+        };
+
+        let initial_auction = if is_negative_doubles_bundle(&convention.id) {
+            match resolved_role {
+                PracticeRole::Responder => negdbl_sequence.clone(),
+                PracticeRole::Opener => {
+                    negative_doubles_opener_sequence(&deal_result.deal, dealer)
+                }
+                _ => negdbl_sequence.clone(),
+            }
+        } else {
+            derive_initial_auction(
+                resolved_role,
+                dealer,
+                Some(&convention.deal_constraints),
+                Some(&deal_result.deal),
+            )
+        };
+
+        let acceptable = if is_negative_doubles_bundle(&convention.id) {
+            match resolved_role {
+                PracticeRole::Responder => negdbl_sequence
+                    .as_ref()
+                    .map(|auction| {
+                        negative_doubles_responder_can_double(&deal_result.deal, dealer, auction)
+                    })
+                    .unwrap_or(false),
+                PracticeRole::Opener => initial_auction.is_some(),
+                _ => negdbl_sequence.is_some(),
+            }
+        } else {
+            true
+        };
+
+        if acceptable {
+            chosen_deal = Some(deal_result.deal);
+            chosen_initial_auction = initial_auction;
+            break;
+        }
+    }
+
+    let deal = chosen_deal.ok_or_else(|| {
+        format!(
+            "Deal generation failed: no negative-double-compatible auction found in {} attempts",
+            NEGATIVE_DOUBLES_DEAL_ATTEMPTS
+        )
+    })?;
 
     // ── Inference engines ───────────────────────────────────────
     let ns_inference_engine = Some(InferenceEngine::new(
@@ -310,19 +770,10 @@ pub fn start_drill(
         PracticeFocus::default()
     };
 
-    // Initial auction (always derived from convention constraints)
-    let dealer = deal_result.deal.dealer;
-    let initial_auction = derive_initial_auction(
-        resolved_role,
-        dealer,
-        Some(&convention.deal_constraints),
-        Some(&deal_result.deal),
-    );
-
     Ok(DrillBundle {
-        deal: deal_result.deal,
+        deal,
         config,
-        initial_auction,
+        initial_auction: chosen_initial_auction,
         ns_inference_engine,
         ew_inference_engine,
         is_off_convention,

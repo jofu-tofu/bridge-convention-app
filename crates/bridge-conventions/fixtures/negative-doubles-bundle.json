@@ -81,7 +81,7 @@
   "dealConstraints": {
     "seats": [
       {
-        "seat": "S",
+        "seat": "N",
         "minHcp": 12,
         "maxHcp": 21,
         "minLengthAny": {
@@ -103,17 +103,17 @@
         }
       },
       {
-        "seat": "N",
+        "seat": "S",
         "minHcp": 6,
         "maxHcp": 15
       }
     ],
-    "dealer": "S"
+    "dealer": "N"
   },
   "offConventionConstraints": {
     "seats": [
       {
-        "seat": "S",
+        "seat": "N",
         "minHcp": 12,
         "maxHcp": 21
       },
@@ -123,13 +123,13 @@
         "maxHcp": 16
       },
       {
-        "seat": "N"
+        "seat": "S"
       }
     ],
-    "dealer": "S"
+    "dealer": "N"
   },
   "allowedDealers": [
-    "S"
+    "N"
   ],
   "derivedTeaching": {
     "surfaceGroups": []

@@ -838,7 +838,7 @@
             "declarationOrder": 0
           },
           "sourceIntent": {
-            "type": "SuitOpening",
+            "type": "SuitOpen",
             "params": {
               "suit": "clubs"
             }
@@ -867,7 +867,7 @@
             "declarationOrder": 1
           },
           "sourceIntent": {
-            "type": "SuitOpening",
+            "type": "SuitOpen",
             "params": {
               "suit": "diamonds"
             }
@@ -896,7 +896,7 @@
             "declarationOrder": 2
           },
           "sourceIntent": {
-            "type": "SuitOpening",
+            "type": "SuitOpen",
             "params": {
               "suit": "hearts"
             }
@@ -925,7 +925,7 @@
             "declarationOrder": 3
           },
           "sourceIntent": {
-            "type": "SuitOpening",
+            "type": "SuitOpen",
             "params": {
               "suit": "spades"
             }
@@ -1986,6 +1986,50 @@
           }
         },
         {
+          "meaningId": "michaels:adv-invite-hearts-3h-1s",
+          "semanticClassId": "michaels:adv-invite-known",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
+              "description": "3+ hearts to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerInviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerInviteValues:boolean:true",
+              "description": "8-9 HCP (invitational values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerInviteHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H \u2014 invitational hearts",
+            "summary": "Invite game in hearts with 8-9 HCP and 3+ heart support"
+          }
+        },
+        {
           "meaningId": "michaels:adv-game-hearts-4h-1s",
           "semanticClassId": "michaels:adv-game-known",
           "moduleId": "michaels-unusual",
@@ -2017,7 +2061,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 2
+            "declarationOrder": 3
           },
           "sourceIntent": {
             "type": "MichaelsAdvancerGameHearts",
@@ -2051,7 +2095,7 @@
           "ranking": {
             "recommendationBand": "may",
             "modulePrecedence": 0,
-            "declarationOrder": 3
+            "declarationOrder": 4
           },
           "sourceIntent": {
             "type": "MichaelsAdvancerPass",
@@ -2357,8 +2401,22 @@
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } },
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 5
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 5
+              }
+            }
           ]
         }
       },
@@ -2375,8 +2433,22 @@
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 5 } },
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 5 } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 5
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 5
+              }
+            }
           ]
         }
       },
@@ -2393,11 +2465,35 @@
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } },
-            { "kind": "or", "operands": [
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 5 } },
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 5 } }
-            ]}
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 5
+              }
+            },
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
+            }
           ]
         }
       },
@@ -2414,11 +2510,35 @@
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } },
-            { "kind": "or", "operands": [
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 5 } },
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 5 } }
-            ]}
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 5
+              }
+            },
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
+            }
           ]
         }
       },
@@ -2436,8 +2556,23 @@
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 5 } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "C", "op": "gte", "b": "D" } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 5
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "C",
+                "op": "gte",
+                "b": "D"
+              }
+            }
           ]
         }
       },
@@ -2455,8 +2590,23 @@
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 5 } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "D", "op": "gt", "b": "C" } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 5
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "D",
+                "op": "gt",
+                "b": "C"
+              }
+            }
           ]
         }
       },
@@ -2473,16 +2623,62 @@
         "composition": {
           "kind": "or",
           "operands": [
-            { "kind": "and", "operands": [
-              { "kind": "extended", "clause": { "clauseKind": "vulnerabilityIs", "vulnerable": false } },
-              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 6 } },
-              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 15 } }
-            ]},
-            { "kind": "and", "operands": [
-              { "kind": "extended", "clause": { "clauseKind": "vulnerabilityIs", "vulnerable": true } },
-              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 8 } },
-              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 15 } }
-            ]}
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "vulnerabilityIs",
+                    "vulnerable": false
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.hcp",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.hcp",
+                    "operator": "lte",
+                    "value": 15
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "vulnerabilityIs",
+                    "vulnerable": true
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.hcp",
+                    "operator": "gte",
+                    "value": 8
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.hcp",
+                    "operator": "lte",
+                    "value": 15
+                  }
+                }
+              ]
+            }
           ]
         }
       },
@@ -2496,7 +2692,14 @@
         "constrainsDimensions": [
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 3 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.hearts",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       },
       {
         "id": "module.michaels.hasSpadeSupport",
@@ -2508,7 +2711,14 @@
         "constrainsDimensions": [
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 3 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.spades",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       },
       {
         "id": "module.michaels.hasClubSupport",
@@ -2520,7 +2730,14 @@
         "constrainsDimensions": [
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 3 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.clubs",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       },
       {
         "id": "module.michaels.hasDiamondSupport",
@@ -2532,7 +2749,14 @@
         "constrainsDimensions": [
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 3 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.diamonds",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       },
       {
         "id": "module.michaels.advancerGameValues",
@@ -2544,7 +2768,14 @@
         "constrainsDimensions": [
           "pointRange"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 10 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.hcp",
+            "operator": "gte",
+            "value": 10
+          }
+        }
       },
       {
         "id": "module.michaels.advancerInviteValues",
@@ -2559,8 +2790,22 @@
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 8 } },
-            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 9 } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 8
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "lte",
+                "value": 9
+              }
+            }
           ]
         }
       },
@@ -2574,7 +2819,14 @@
         "constrainsDimensions": [
           "pointRange"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 7 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.hcp",
+            "operator": "lte",
+            "value": 7
+          }
+        }
       }
     ]
   }
