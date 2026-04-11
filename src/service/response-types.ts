@@ -15,7 +15,7 @@
  */
 
 import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Suit, DDSolution, AuctionEntry, NumberRange } from "../engine/types";
-import type { PracticeMode, PlayPreference, PromptMode, TeachingProjection, ConventionTeaching, ParseTreeView } from "./session-types";
+import type { GamePhase, PracticeMode, PlayPreference, PromptMode, TeachingProjection, ConventionTeaching, ParseTreeView } from "./session-types";
 
 /** Bid context relative to the practice target. */
 enum BidContext {
@@ -32,14 +32,6 @@ enum BidContext {
 // structural compatibility). Defining them here makes the service boundary
 // explicit: backend changes require a conscious mapping update, and this
 // file is readable without chasing imports across 7 modules.
-
-/** Game phase — service-owned mirror of session/phase-machine GamePhase. */
-export enum ServiceGamePhase {
-  Bidding = "BIDDING",
-  DeclarerPrompt = "DECLARER_PROMPT",
-  Playing = "PLAYING",
-  Explanation = "EXPLANATION",
-}
 
 /** Bid grade — service-owned string union (mirror of BidGrade enum values). */
 export enum ViewportBidGrade {
@@ -257,7 +249,7 @@ export interface DrillStartResult {
   /** True when the auction completed during initial AI bids (e.g., all four seats passed). */
   readonly auctionComplete: boolean;
   /** Phase after drill start — typically BIDDING, but may be EXPLANATION/PLAYING/DECLARER_PROMPT if auction completed during initial AI bids. */
-  readonly phase: ServiceGamePhase;
+  readonly phase: GamePhase;
   /** Play inferences captured at auction end — present when auctionComplete is true. */
   readonly playInferences?: Record<Seat, ServicePublicBeliefs> | null;
   readonly practiceMode: PracticeMode;
@@ -289,13 +281,13 @@ export interface BidSubmitResult {
 
 /** Phase transition notification. */
 export interface PhaseTransition {
-  readonly from: ServiceGamePhase;
-  readonly to: ServiceGamePhase;
+  readonly from: GamePhase;
+  readonly to: GamePhase;
 }
 
 /** Result of entering the play phase (play/restart). */
 export interface PlayEntryResult {
-  readonly phase: ServiceGamePhase;
+  readonly phase: GamePhase;
   /** AI plays that ran immediately after entering the play phase (opening lead by AI, etc.). */
   readonly aiPlays?: readonly AiPlayEntry[];
 }

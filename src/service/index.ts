@@ -7,7 +7,6 @@ export type { DrillHandle, SessionConfig } from "./request-types";
 
 // ── 2. Viewports & Response Types (service-owned) ────────────────────
 export {
-  ServiceGamePhase,
   ViewportBidGrade,
   ConventionCardSectionId,
   ConventionCardFormat,

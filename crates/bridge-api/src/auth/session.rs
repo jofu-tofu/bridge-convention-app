@@ -43,9 +43,3 @@ pub async fn delete_session(pool: &SqlitePool, token: &str) -> Result<(), sqlx::
     Ok(())
 }
 
-pub async fn cleanup_expired(pool: &SqlitePool) -> Result<u64, sqlx::Error> {
-    let result = sqlx::query("DELETE FROM sessions WHERE expires_at <= datetime('now')")
-        .execute(pool)
-        .await?;
-    Ok(result.rows_affected())
-}

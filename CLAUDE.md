@@ -126,7 +126,7 @@ UI layers (`components/`, `stores/`) import ONLY from `service/`. `service/` is 
 
 ```
 src/
-  engine/          Pure TS engine types + DDS browser support (types, auction, scoring, play, dds-client, dds-worker)
+  engine/          Pure TS engine types + DDS browser support (types, constants, hand-evaluator, scoring/isVulnerable, call-helpers, dds-*)
   service/         WASM proxy: ServicePort, BridgeService, barrel, session-types, display/, util/, auth
     display/       Call/contract/card formatting, hand summary, convention card builder
     util/          Pure utilities: delay
@@ -154,7 +154,7 @@ tests/
 
 | Subsystem          | Entry                                  | Summary                                                 |
 | ------------------ | -------------------------------------- | ------------------------------------------------------- |
-| Engine (TS)        | `src/engine/types.ts`                  | TS engine types + DDS browser support                   |
+| Engine (TS)        | `src/engine/types.ts`                  | TS engine types, hand eval, isVulnerable, DDS browser   |
 | Engine (Rust)      | `crates/bridge-engine/`      | Pure Rust game logic                                    |
 | Conventions (Rust) | `crates/bridge-conventions/` | Convention types, fact DSL, pipeline, teaching, adapter |
 | Session (Rust)     | `crates/bridge-session/`     | Session state, controllers, heuristics, inference       |

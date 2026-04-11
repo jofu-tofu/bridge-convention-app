@@ -20,7 +20,8 @@ import type {
   DeclarerPromptViewport,
   ExplanationViewport,
 } from "../service/response-types";
-import { ServiceGamePhase, ViewportBidGrade } from "../service/response-types";
+import { ViewportBidGrade } from "../service/response-types";
+import type { GamePhase } from "../service/session-types";
 import { PlayPreference, PracticeMode, PromptMode } from "../service/session-types";
 
 // ── Internal helpers ─────────────────────────────────────────────────
@@ -78,7 +79,7 @@ export function makeDrillStartResult(overrides?: Partial<DrillStartResult>): Dri
     isOffConvention: false,
     aiBids: [],
     auctionComplete: false,
-    phase: ServiceGamePhase.Bidding,
+    phase: "BIDDING" as GamePhase,
     practiceMode: PracticeMode.DecisionDrill,
     playPreference: PlayPreference.Prompt,
     ...overrides,
@@ -101,7 +102,7 @@ export function makeBidSubmitResult(overrides?: Partial<BidSubmitResult>): BidSu
 
 export function makePlayEntryResult(overrides?: Partial<PlayEntryResult>): PlayEntryResult {
   return {
-    phase: ServiceGamePhase.Playing,
+    phase: "PLAYING" as GamePhase,
     aiPlays: undefined,
     ...overrides,
   };

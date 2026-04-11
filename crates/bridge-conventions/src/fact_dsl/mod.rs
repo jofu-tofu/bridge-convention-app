@@ -11,7 +11,6 @@
 //! - `system_facts` — Layers 3/6: system config evaluators (standard + relational)
 //! - `point_helpers` — Centralized `compute_total_points()` for formula-driven point computation
 //! - `composition` — FactComposition tree interpreter (primitive, extended, compute evaluation)
-//! - `rust_compositions` — Rust-constructed compositions for TS facts lacking composition fields
 //! - `topo_sort` — Topological sort for dependency ordering
 //! - `inversion` — FactComposition → InvertedConstraint for deal generation
 //! - `evaluator` — `evaluate_facts()` orchestrator combining all layers
@@ -22,8 +21,6 @@ pub mod evaluator;
 pub mod inversion;
 pub mod point_helpers;
 pub mod primitives;
-#[path = "rust_compositions/mod.rs"]
-pub mod rust_compositions;
 pub mod system_facts;
 pub mod topo_sort;
 pub mod types;

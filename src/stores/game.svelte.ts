@@ -310,7 +310,7 @@ export function createGameStore(
 
     // Handle auction complete during initial bids
     if (startResult.auctionComplete) {
-      const ok = await transitions.handlePostAuction(handle, startResult.phase as GamePhase);
+      const ok = await transitions.handlePostAuction(handle, startResult.phase);
       if (!ok || activeHandle !== handle) return;
     }
 
@@ -493,7 +493,7 @@ export function createGameStore(
 
         // Check if auction completed (phaseTransition is always set when auction ends)
         if (result.phaseTransition) {
-          const ok = await transitions.handlePostAuction(handle, result.phaseTransition.to as GamePhase);
+          const ok = await transitions.handlePostAuction(handle, result.phaseTransition.to);
           if (!ok) return false;
           break;
         }

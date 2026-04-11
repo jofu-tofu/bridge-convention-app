@@ -5,7 +5,7 @@ Detailed technical notes, historical context, and non-obvious decisions. Read wh
 ## Engine & WASM
 
 ### WASM Required for Browser
-All game logic runs in Rust via WASM (`WasmService`). If WASM init fails, the app shows an error screen — there is no fallback. TS engine modules (`deal-generator.ts`, `auction.ts`, etc.) exist as reference implementations but are not used at runtime. Vercel deploys install Rust + wasm-pack via `scripts/vercel-build.sh` and produce a real WASM build. Stub files (`scripts/ensure-wasm-stubs.sh`) are retained as a fallback if the WASM toolchain is unavailable.
+All game logic runs in Rust via WASM (`WasmService`). If WASM init fails, the app shows an error screen — there is no fallback. TS `engine/` contains types, constants, hand evaluation, `isVulnerable()`, and DDS browser support — no auction, deal generation, or scoring logic. Vercel deploys install Rust + wasm-pack via `scripts/vercel-build.sh` and produce a real WASM build. Stub files (`scripts/ensure-wasm-stubs.sh`) are retained as a fallback if the WASM toolchain is unavailable.
 
 ### DDS Browser Implementation
 DDS table analysis works via Emscripten-compiled C++ DDS in a Web Worker (`dds-client.ts`). The deal is extracted from the Rust service as a PBN string (`getDealPBN`), then sent to the worker for solving. `initDDS()` fires at app startup (fire-and-forget); `isDDSAvailable()` gates calls. Par is always null (mode=-1). DDS WASM artifacts (`static/dds/`) are committed; rebuild with `npm run dds:build` (requires Emscripten).

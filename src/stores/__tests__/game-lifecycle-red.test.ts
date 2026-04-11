@@ -11,7 +11,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { DevServicePort } from "../../service/port";
 import { Seat, Suit, Rank, BidSuit } from "../../engine/types";
 import type { AiBidEntry } from "../../service/response-types";
-import { ServiceGamePhase, ViewportBidGrade } from "../../service/response-types";
+import { ViewportBidGrade } from "../../service/response-types";
 import { PlayPreference, SAYC_SYSTEM_CONFIG, DEFAULT_BASE_MODULE_IDS } from "../../service/session-types";
 import { createGameStore } from "../game.svelte";
 import { createMockService } from "../../test-support/service-mocks";
@@ -115,7 +115,7 @@ describe("game store lifecycle (RED tests)", () => {
   it("RED: phaseTransition in submitBid triggers post-auction orchestration", async () => {
     vi.mocked(mockService.submitBid).mockResolvedValue(
       makeBidSubmitResult({
-        phaseTransition: { from: ServiceGamePhase.Bidding, to: ServiceGamePhase.DeclarerPrompt },
+        phaseTransition: { from: "BIDDING", to: "DECLARER_PROMPT" },
       }),
     );
 
@@ -143,7 +143,7 @@ describe("game store lifecycle (RED tests)", () => {
 
     vi.mocked(mockService.submitBid).mockResolvedValue(
       makeBidSubmitResult({
-        phaseTransition: { from: ServiceGamePhase.Bidding, to: ServiceGamePhase.DeclarerPrompt },
+        phaseTransition: { from: "BIDDING", to: "DECLARER_PROMPT" },
       }),
     );
 
@@ -170,7 +170,7 @@ describe("game store lifecycle (RED tests)", () => {
 
     vi.mocked(mockService.submitBid).mockResolvedValue(
       makeBidSubmitResult({
-        phaseTransition: { from: ServiceGamePhase.Bidding, to: ServiceGamePhase.Playing },
+        phaseTransition: { from: "BIDDING", to: "PLAYING" },
       }),
     );
 
@@ -230,7 +230,7 @@ describe("game store lifecycle (RED tests)", () => {
   async function drillToDeclarerPrompt(store: ReturnType<typeof createGameStore>, svc: DevServicePort) {
     vi.mocked(svc.submitBid).mockResolvedValue(
       makeBidSubmitResult({
-        phaseTransition: { from: ServiceGamePhase.Bidding, to: ServiceGamePhase.DeclarerPrompt },
+        phaseTransition: { from: "BIDDING", to: "DECLARER_PROMPT" },
       }),
     );
     vi.mocked(svc.getDeclarerPromptViewport).mockResolvedValue(

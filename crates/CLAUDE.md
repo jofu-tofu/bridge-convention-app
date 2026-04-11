@@ -25,11 +25,10 @@ crates/
                        FactCatalogExtension — data only, no evaluator functions), typed enums for unknown
                        fields, serde_json::Number to preserve integer/float distinction in round-trips.
                        Phase 2 adds `fact_dsl/` module: FactComposition tree interpreter, evaluate_facts()
-                       orchestrator, Rust-constructed compositions for TS facts lacking composition fields.
+                       orchestrator. All fact compositions are inline JSON in fixture files.
                        Rust FactComposition is a superset of TS — includes Match, Compute, Extended nodes
                        and TopHonorCount/SuitCompare/LongestSuitIs/AceCount/KingCount/VulnerabilityIs
-                       clause types not in TS. Facts using these have Rust-constructed trees in
-                       fact_dsl/rust_compositions.rs. Zero built-in evaluator registry.
+                       clause types. Zero built-in evaluator registry.
                        Point formula configuration via `PointConfig` on `SystemConfig`.
                        Centralized computation in `fact_dsl/point_helpers.rs`.
                        Phase 3 adds `pipeline/` (observation + evaluation + run_pipeline), `teaching/`

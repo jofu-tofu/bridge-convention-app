@@ -3,9 +3,9 @@
 //! Combines all evaluation layers in strict order:
 //! 1. Pre-seed context facts (isVulnerable)
 //! 2. Primitive facts (from Hand/HandEvaluation)
-//! 3. Bridge-derived standard (Rust-constructed compositions)
+//! 3. Bridge-derived standard
 //! 4. System facts standard (SystemConfig thresholds)
-//! 5. Module-derived (JSON compositions + Rust-constructed, topologically sorted)
+//! 5. Module-derived (JSON compositions, topologically sorted)
 //! 6. Bridge relational (override layer 3 using RelationalFactContext)
 //! 7. System relational (override layer 4 using fitAgreed + trump TP)
 
@@ -18,7 +18,6 @@ use crate::types::{EvaluationWorld, FactDefinition, SystemConfig};
 use super::bridge_derived::{evaluate_bridge_derived, evaluate_bridge_relational};
 use super::composition::evaluate_composition;
 use super::primitives::evaluate_primitives;
-use super::rust_compositions::build_rust_compositions;
 use super::system_facts::{evaluate_system_facts, evaluate_system_relational};
 use super::topo_sort::topological_sort;
 use super::types::{EvaluatedFacts, FactValue, RelationalFactContext};
@@ -67,19 +66,14 @@ pub fn evaluate_facts(
     }
 
     // Layer 4: Module-derived facts (topologically sorted)
-    let rust_compositions = build_rust_compositions();
     let acting_hand_defs: Vec<&FactDefinition> = definitions
         .iter()
         .filter(|d| d.world == EvaluationWorld::ActingHand)
         .collect();
 
-    // Collect definitions that have compositions (JSON or Rust-constructed)
     let composable_defs: Vec<FactDefinition> = acting_hand_defs
         .iter()
-        .filter(|d| {
-            d.composition.is_some()
-                || rust_compositions.contains_key(&d.id)
-        })
+        .filter(|d| d.composition.is_some())
         .filter(|d| !POSTERIOR_FACTS.contains(&d.id.as_str()))
         .map(|d| (*d).clone())
         .collect();
@@ -93,13 +87,7 @@ pub fn evaluate_facts(
             continue;
         }
 
-        // Use JSON composition if available, otherwise Rust-constructed
-        let comp = def
-            .composition
-            .as_ref()
-            .or_else(|| rust_compositions.get(&def.id));
-
-        if let Some(composition) = comp {
+        if let Some(composition) = def.composition.as_ref() {
             let value = evaluate_composition(composition, hand, &facts, bindings);
             facts.insert(
                 def.id.clone(),

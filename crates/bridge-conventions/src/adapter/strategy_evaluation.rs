@@ -5,7 +5,6 @@
 use serde::{Deserialize, Serialize};
 
 use crate::fact_dsl::types::EvaluatedFacts;
-use crate::pipeline::evaluation::provenance::HandoffTrace;
 use crate::pipeline::observation::committed_step::AuctionContext;
 use crate::pipeline::types::PipelineResult;
 use crate::teaching::teaching_types::{SurfaceGroup, TeachingProjection};
@@ -20,21 +19,6 @@ pub struct MachineDebugSnapshot {
     pub active_surface_group_ids: Vec<String>,
     /// Diagnostic messages (populated from rules path).
     pub diagnostics: Vec<DiagnosticEntry>,
-    /// State history (legacy FSM — None from rules path).
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub state_history: Option<Vec<String>>,
-    /// Transition history (legacy FSM — None from rules path).
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub transition_history: Option<Vec<String>>,
-    /// Handoff traces (legacy FSM — None from rules path).
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub handoff_traces: Option<Vec<HandoffTrace>>,
-    /// Submachine stack (legacy FSM — None from rules path).
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub submachine_stack: Option<Vec<SubmachineEntry>>,
-    /// Machine registers (legacy FSM — None from rules path).
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub registers: Option<serde_json::Value>,
 }
 
 /// A diagnostic entry.
@@ -45,14 +29,6 @@ pub struct DiagnosticEntry {
     pub message: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub module_id: Option<String>,
-}
-
-/// Submachine stack entry.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SubmachineEntry {
-    pub parent_machine_id: String,
-    pub return_state_id: String,
 }
 
 /// Unified evaluation snapshot — all pipeline outputs from the most recent suggest() call.

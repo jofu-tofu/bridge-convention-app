@@ -284,10 +284,5 @@ fn build_machine_snapshot(surface_results: &[ModuleSurfaceResult]) -> MachineDeb
         current_state_id: "rules-path".into(),
         active_surface_group_ids,
         diagnostics,
-        state_history: None,
-        transition_history: None,
-        handoff_traces: None,
-        submachine_stack: None,
-        registers: None,
     }
 }

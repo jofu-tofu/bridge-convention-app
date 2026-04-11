@@ -17,7 +17,7 @@ import type {
   Suit,
 } from "../service";
 import type { DevServicePort, DrillHandle, SessionConfig } from "../service";
-import type { ServiceGamePhase, ServicePublicBeliefState, PracticeMode, PromptMode } from "../service";
+import type { GamePhase, ServicePublicBeliefState, PracticeMode, PromptMode } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import type {
   BidFeedback,
@@ -46,7 +46,7 @@ export interface GameStore {
 
   // Coordinator state
   readonly deal: Deal | null;
-  readonly phase: `${ServiceGamePhase}`;
+  readonly phase: GamePhase;
   readonly contract: Contract | null;
   readonly practiceMode: PracticeMode;
 

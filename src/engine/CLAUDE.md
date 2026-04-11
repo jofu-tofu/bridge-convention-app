@@ -1,23 +1,20 @@
 # Engine
 
-Pure TypeScript game logic. Zero platform dependencies.
+TypeScript engine types, hand evaluation, and DDS browser support. All game logic (auction, deal generation, scoring, play) runs in Rust — this module provides types, constants, HCP evaluation, `isVulnerable()`, and DDS Worker integration.
 
 ## Conventions
 
-- Pure engine logic modules (`auction.ts`, `scoring.ts`, `play.ts`, `deal-generator.ts`, etc.) never import from `svelte`, `window`, `document`, or `localStorage`. DDS modules (`dds-client.ts`, `dds-worker.ts`) are the explicit exceptions (DDS uses Worker API).
-- Engine is a leaf module — it does not import from `strategy/`, `conventions/`, `inference/`, `stores/`, `components/`, or other higher-level modules. Cross-boundary types that engine needs are defined locally in `engine/` or passed in by callers.
-- `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only
-- Utility functions (`calculateHcp`, `getSuitLength`, `isBalanced`) exported separately for reuse by deal-generator
-- All bidding/scoring/play methods implemented. DDS works via DDS Web Worker (browser). `suggestPlay` throws in all builds — not yet implemented.
+- Engine is a leaf module — it does not import from `strategy/`, `conventions/`, `inference/`, `stores/`, `components/`, or other higher-level modules.
+- DDS modules (`dds-client.ts`, `dds-worker.ts`) are the explicit exceptions (DDS uses Worker API).
+- `HandEvaluationStrategy` interface enables pluggable evaluation; V1 ships `hcpStrategy` only.
 
 ## Architecture
 
 **Module dependency graph:**
 
 ```
-types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
-                        ↘ auction.ts
-         types.ts → scoring.ts
+types.ts → constants.ts → hand-evaluator.ts
+         types.ts → scoring.ts (isVulnerable only)
          call-helpers.ts (standalone, no engine imports)
 ```
 
@@ -28,10 +25,7 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 | `types.ts`            | All enums (`Suit`, `Rank`, `Seat`) and interfaces (`Card`, `Hand`, `Deal`, `Contract`)    |
 | `constants.ts`        | Suit/rank orderings, display mappings                                                     |
 | `hand-evaluator.ts`   | HCP calculation, strategy pattern for evaluation                                          |
-| `deal-generator.ts`   | Rejection sampling with Fisher-Yates shuffle, seat constraints                            |
-| `auction.ts`          | Auction logic: bid comparison, legality, completion, contract/declarer extraction         |
-| `scoring.ts`          | Contract scoring: trick points, bonuses, penalties, unified score calculation             |
-| `notation.ts`         | Card notation parser (`parseCard`, `parseHand`) — shared by CLI and test fixtures         |
+| `scoring.ts`          | `isVulnerable()` utility only — all other scoring logic runs in Rust                      |
 | `call-helpers.ts`     | Canonical `callsMatch()` — call equality check shared by stores and inference             |
 | `dds-wasm.ts`         | DDS PBN conversion, struct pack/unpack, `solveFromPBN()` (PBN-based table solve), `solveWithModule()` (Deal-based wrapper), `solveBoardWithModule()` (per-card) — pure logic, no DOM/Worker. Exports `handsToPBN()`, `cardsToPBNHand()`, `unpackTricksTable()` (shared 5×4 tricks unpacker with pluggable readInt32 callback), DDS index helpers (`trumpToDdsIndex`, `seatToDdsIndex`, `rankToDdsValue`), and index mapping constants (`DDS_STRAIN_MAP`, `DDS_SEAT_MAP`, `DDS_SUIT_MAP_PLAY`, `DDS_RANK_MAP`). |
 | `dds-worker.ts`       | Classic Web Worker — loads DDS WASM via `importScripts`, handles `CalcAllTablesPBN` (Deal or PBN) and `SolveBoardPBN` requests |
@@ -39,23 +33,16 @@ types.ts → constants.ts → hand-evaluator.ts → deal-generator.ts
 
 ## Gotchas
 
-- Bid strain ordering (C<D<H<S<NT in `auction.ts`) differs from `SUIT_ORDER` (S,H,D,C in `constants.ts`) — they serve different purposes
-- Declarer = first player on declaring side to name the final strain (not last bidder)
-- `calculateScore` returns positive for declarer making, negative for going down
 - Total HCP invariant: every valid deal has exactly 40 HCP across all 4 hands
-- `getContract` returns `null` for passout — all callers must null-check
-- `addCall` throws on illegal calls — validate with `isLegalCall` or use `getLegalCalls`
-- Only duplicate bridge scoring implemented (not rubber bridge)
 
 ## Constraints
 
-- Deal generation: flat rejection sampling, default 10,000 max attempts (configurable via `maxAttempts`). Convention deal constraints use `minLengthAny` for OR constraints and `customCheck` for exotic filters. `DealConstraints.rng` accepts an optional PRNG function for deterministic deals (used by dev seed feature).
 - Tests colocated in `__tests__/<module>.test.ts`; use `import type` for interfaces
 - Coverage: 90% branches, 90% functions, 85% lines (enforced in `vitest.config.ts`)
 
 ## Rust Backend Integration
 
-- **Engine called from Rust directly.** The Rust `bridge-engine` crate is the primary engine. TS engine modules (`deal-generator.ts`, `auction.ts`, `scoring.ts`, `play.ts`) exist as reference implementations but are not used at runtime — all game logic flows through `bridge-service` → `bridge-session` → `bridge-engine` in Rust.
+- **All game logic runs in Rust.** The Rust `bridge-engine` crate is the primary engine. TS engine modules are types, constants, DDS browser support, and `isVulnerable()` — no auction, deal generation, or scoring logic remains in TS.
 - **RNG:** Rust uses ChaCha8Rng. TS uses mulberry32. Same seed produces different deals — seeds are not cross-engine portable.
 - **DDS browser support:** DDS works via DDS Web Worker (Emscripten-compiled C++ DDS in browser). `initDDS()` fires in background; `isDDSAvailable()` gates calls. Par is always null (mode=-1). `solveBoardWasm()` exposes per-card optimal play via `SolveBoardPBN`.
 
