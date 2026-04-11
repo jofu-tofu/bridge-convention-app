@@ -99,5 +99,5 @@ export class WasmService implements ServicePort {
 - [ ] WASM binary size documented
 - [ ] Update `src/service/CLAUDE.md` — rewrite for new proxy architecture
 - [ ] Update root `CLAUDE.md` — remove TS backend module references, update architecture
-- [ ] Update `docs/migration/index.md` — mark all phases complete
+- [ ] Update `docs/architecture/migration/index.md` — mark all phases complete
 - [ ] Remove or archive per-directory CLAUDE.md files for deleted TS directories

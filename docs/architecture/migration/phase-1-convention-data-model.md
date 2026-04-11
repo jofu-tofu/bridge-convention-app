@@ -73,4 +73,4 @@ This produces the golden-master fixture for round-trip testing.
 - [x] `Cargo.toml` workspace member added
 - [x] Update `crates/CLAUDE.md` (if it exists) with new crate
 - [x] Update `src/conventions/CLAUDE.md` — note Rust type mirror exists
-- [x] Update `docs/migration/index.md` phase tracker status
+- [x] Update `docs/architecture/migration/index.md` phase tracker status

@@ -1,5 +1,7 @@
 # Posterior Engine Boundary Redesign — Implementation Plan
 
+Historical design note from the pre-migration/posterior-redesign exploration. The current production posterior implementation lives in `crates/bridge-session/src/inference/posterior.rs`. Use this document only when exploring future factor-graph, soft-evidence, or query-port redesign work.
+
 ## Summary
 
 Redesign the posterior engine's I/O boundary around a convention-erased `FactorGraphIR`, evict beliefs from `PublicSnapshot`, and introduce a `PosteriorQueryPort` that all consumers call explicitly. The internal canonical state becomes weighted particles over full latent worlds (deal + branch assignments). The boundary is designed so a Rust/WASM backend can replace the TS sampler later without changing any consumer code.
@@ -10,7 +12,6 @@ Redesign the posterior engine's I/O boundary around a convention-erased `FactorG
 - Boundary presentation: `docs/posterior-boundaries-presentation.html`
 - Current posterior contracts: `src/core/contracts/posterior.ts`
 - Current posterior engine: `src/inference/posterior/`
-- Protocol spec (posterior section): `~/Obsidian/Bridge Convention Vault/Sparks/2026-03-09-better-convention-protocol.md` § Posterior Engine
 
 ---
 

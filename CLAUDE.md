@@ -102,7 +102,7 @@ Backward compat alias: `?profiles=true` → `?screen=workshop`.
 
 ## Design Philosophy
 
-See `docs/design-philosophy.md` for the full set of 14 design principles and subsystem design rationale. See `TESTING.md` § TDD Philosophy for the decision tree, anti-patterns, and ranked priorities when principles conflict.
+See `docs/architecture/design-philosophy.md` for the full set of 14 design principles and subsystem design rationale. See `TESTING.md` § TDD Philosophy for the decision tree, anti-patterns, and ranked priorities when principles conflict.
 
 ## System Parameterization
 
@@ -178,7 +178,7 @@ tests/
 ## Completed: Rust/WASM Migration
 
 Backend modules (conventions/, inference/, session/, service/) have been migrated from TypeScript to Rust/WASM. All 5 phases are complete. TS `service/` is now a thin WASM proxy (~100 LOC). Convention logic, inference, session management, and viewport building all run in Rust.
-See `docs/migration/index.md` for the phase tracker and architectural decisions. See `docs/product-direction.md` for the product decisions that drove this migration.
+See `docs/architecture/migration/index.md` for the phase tracker and architectural decisions. See `docs/product/product-direction.md` for the product decisions that drove this migration.
 
 ## Gotchas
 
@@ -221,18 +221,20 @@ docs/
   research/        Evidence-based research (SEO, etc.)
 ```
 
+Start with `docs/README.md` when the right home for a topic is unclear. Root `docs/` should stay thin: category indexes only, with topic docs living inside the appropriate subtree.
+
 Agents do not need this context for routine work. **Read from docs/ when:**
 
-- **Making a design decision** with multiple viable approaches → read `docs/architecture/design-philosophy.md`
-  to check if a prior principle already resolves it
+- **Making a design decision** with multiple viable approaches → read `docs/architecture/README.md`
+  first, then `docs/architecture/design-philosophy.md` to check if a prior principle already resolves it
 - **Wondering "why is it done this way?"** about a non-obvious pattern → read `docs/guides/gotchas.md`
   or the relevant subsystem doc
 - **Adding a new convention bundle** → read `docs/guides/convention-authoring.md` for the full
   checklist, templates, and common pitfalls
-- **Working on inference/posterior (Rust)** → read `docs/architecture/architecture-specs.md` for open questions
-  and spec status before implementing
-- **Planning a large refactor** → read `docs/architecture/design-philosophy.md` + `docs/architecture/architecture-specs.md`
-  to avoid violating architectural constraints
+- **Working on inference/posterior (Rust)** → read `docs/architecture/README.md` and
+  `docs/architecture/architecture-specs.md` for current boundaries, open questions, and which docs are historical
+- **Planning a large refactor** → read `docs/architecture/README.md`, `docs/architecture/design-philosophy.md`,
+  and `docs/architecture/architecture-specs.md` to avoid violating architectural constraints
 - **Touching CLI evaluation pipeline** → read `docs/guides/cli-evaluation.md` for the two-phase
   design and known gaps
 - **Modifying typography/layout tokens** → read `docs/guides/typography-and-layout.md` for the
@@ -245,6 +247,10 @@ Agents do not need this context for routine work. **Read from docs/ when:**
   decisions, and per-phase specs. Migration is complete; docs retained as architectural reference.
 - **SEO and discoverability** → read `docs/research/seo-principles-web-apps/evidence-map.md` for
   the full evidence map on SEO best practices for this app
+- **FTUE or onboarding research** → read `docs/research/ftue-and-seo/README.md` for the first-visit
+  audit and implementation recommendations
+- **Learn-mode pedagogy** → read `docs/research/learn-mode-pedagogy/README.md` for the evidence summary
+  and placement of future learning-design research
 
 **Read docs/ before working.** If your task touches a topic covered by any doc (architecture, conventions, SEO, product direction, testing, etc.), you MUST read the relevant doc first. Do not rely on memory or assumptions — read the current state before making decisions or writing code.
 
@@ -303,4 +309,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-07 | version=22 | dir-commits-at-audit=67 | tree-sig=dirs:16,files:100+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-11 | version=24 | dir-commits-at-audit=67 | tree-sig=dirs:16,files:100+ -->

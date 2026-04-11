@@ -84,4 +84,4 @@ When Rust output differs, ask: "bug or improvement?" Update the fixture and docu
 - [ ] Update `src/conventions/pipeline/CLAUDE.md` — note Rust ownership
 - [ ] Update `src/conventions/teaching/CLAUDE.md` — note Rust ownership
 - [ ] Update `src/conventions/adapter/CLAUDE.md` — note Rust ownership
-- [ ] Update `docs/migration/index.md` phase tracker status
+- [ ] Update `docs/architecture/migration/index.md` phase tracker status

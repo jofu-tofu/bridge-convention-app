@@ -1,6 +1,6 @@
 # Rust/WASM Migration (Complete)
 
-Backend modules (`conventions/`, `inference/`, `session/`, `service/`) have been migrated from TypeScript to Rust/WASM. All 5 phases are complete. See `docs/product-direction.md` for the product decisions that drove this migration.
+Backend modules (`conventions/`, `inference/`, `session/`, `service/`) have been migrated from TypeScript to Rust/WASM. All 5 phases are complete. See `docs/product/product-direction.md` for the product decisions that drove this migration.
 
 ## Phase Tracker
 
@@ -64,7 +64,7 @@ All 23 methods exposed via `wasm-bindgen`. TS `service/` becomes a thin proxy.
 - **ServicePort** (compute, WASM, stateless per-request) — client-side, no network after load
 - **DataPort** (auth/entitlements/progress, server) — future addition
 
-They don't mix. See `docs/product-direction.md`.
+They don't mix. See `docs/product/product-direction.md`.
 
 ### 5. Dual-Path Validation
 

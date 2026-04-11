@@ -65,5 +65,5 @@ When Rust output differs from a snapshot, ask: "bug or improvement?" Update the 
 - [ ] Golden-master snapshot script (deferred — snapshot capture requires TS integration)
 - [ ] Golden-master snapshot tests against TS output (deferred — requires snapshot script)
 - [ ] Deal constraint derivation ported (Phase 3 — depends on pipeline context)
-- [x] Update `docs/migration/index.md` phase tracker status
+- [x] Update `docs/architecture/migration/index.md` phase tracker status
 - [x] Update `crates/CLAUDE.md` — Rust fact evaluator documentation

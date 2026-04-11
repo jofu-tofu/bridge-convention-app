@@ -46,7 +46,7 @@ Coverage is enforced in `vitest.config.ts`. Runs with `npm run test:coverage`.
 
 Tests encode bridge rules as executable assertions, serving as both verification and living documentation. Each test name references the bridge rule being tested (e.g., "auction ends after three consecutive passes following a bid").
 
-**Rule Sources:** See `docs/convention-authoring.md` § Authoritative Bridge Rules Sources for references.
+**Rule Sources:** See `docs/guides/convention-authoring.md` § Authoritative Bridge Rules Sources for references.
 
 **Test Organization:**
 

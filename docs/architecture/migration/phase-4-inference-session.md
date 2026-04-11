@@ -131,4 +131,4 @@ When Rust output differs, ask: "bug or improvement?" Update the fixture and docu
 - [x] Update `src/inference/CLAUDE.md` — note Rust ownership
 - [x] Update `src/session/CLAUDE.md` — note Rust ownership
 - [x] Update `src/session/heuristics/CLAUDE.md` — note Rust ownership
-- [x] Update `docs/migration/index.md` phase tracker status
+- [x] Update `docs/architecture/migration/index.md` phase tracker status

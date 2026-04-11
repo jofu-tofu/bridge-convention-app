@@ -69,7 +69,7 @@ Nothing imports from `service/` except `stores/`, `components/`, and `cli/comman
 - **ServicePort** (compute, WASM, client-side) — all game logic runs locally after initial load
 - **DataPort** (auth/entitlements/progress, server) — implemented as `bridge-api` (Axum :3001, SQLite). `auth.ts` is the TS client.
 
-They don't mix. See `docs/product-direction.md`.
+They don't mix. See `docs/product/product-direction.md`.
 
 ---
 

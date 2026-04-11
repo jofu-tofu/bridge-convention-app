@@ -16,7 +16,7 @@ Svelte 5 UI components for the drill workflow. Consumer of stores, lib, and engi
 
 ## Typography & Layout
 
-Game components MUST use `--text-*` tokens (ESLint enforced) and `--color-*` tokens instead of hardcoded Tailwind classes. See `docs/typography-and-layout.md` for the full token system, responsive sizing, z-index hierarchy, and accessibility guidelines.
+Game components MUST use `--text-*` tokens (ESLint enforced) and `--color-*` tokens instead of hardcoded Tailwind classes. See `docs/guides/typography-and-layout.md` for the full token system, responsive sizing, z-index hierarchy, and accessibility guidelines.
 
 ## Architecture
 

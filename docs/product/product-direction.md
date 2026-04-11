@@ -124,4 +124,4 @@ Browser ──fetch──► Caddy ──/api/*──► Axum (bridge-api :3001)
 - Forced architecture improvement during port
 - Learning opportunity (user is learning Rust — phases are designed as achievable milestones)
 
-See `docs/migration/index.md` for the full migration spec.
+See `docs/architecture/migration/index.md` for the full migration spec.
