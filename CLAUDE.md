@@ -7,7 +7,9 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). W
 | Command                                          | Purpose                                                  |
 | ------------------------------------------------ | -------------------------------------------------------- |
 | `npm run dev`                                    | Build WASM (if needed) + start dev server (port 1420)    |
-| `npm run build`                                  | Build WASM + production bundle                           |
+| `npm run build`                                  | Build WASM + production bundle + static learn pages      |
+| `npm run static:extract`                         | Build bridge-static binary + extract learn JSON          |
+| `npm run build:learn`                            | Generate static HTML learn pages from JSON               |
 | `npm run wasm:build`                             | Build WASM (release)                                     |
 | `npm run wasm:dev`                               | Build WASM (debug, faster)                               |
 | `npm run check`                                  | Svelte type-check                                        |
@@ -100,7 +102,7 @@ Backward compat alias: `?profiles=true` → `?screen=workshop`.
 
 ## Design Philosophy
 
-See `docs/design-philosophy.md` for the full set of 13 design principles and subsystem design rationale. See `TESTING.md` § TDD Philosophy for the decision tree, anti-patterns, and ranked priorities when principles conflict.
+See `docs/design-philosophy.md` for the full set of 14 design principles and subsystem design rationale. See `TESTING.md` § TDD Philosophy for the decision tree, anti-patterns, and ranked priorities when principles conflict.
 
 ## System Parameterization
 
@@ -139,13 +141,14 @@ src/
     screens/       Screen-level components (ConventionSelectScreen, LearningScreen, game-screen/GameScreen)
     game/          Game components + co-located .ts companions (DecisionTree.ts, RoundBidList.ts, BidFeedbackPanel.ts)
     shared/        Reusable components (Card, Button, ConventionCallout, ModuleChecklist) + display utilities (tokens, sort-cards, seat-mapping, table-scale, breakpoints, vulnerability-labels, layout-props) + module categorization (module-catalog.ts — single source for MODULE_CATEGORIES, all screens import from here)
-crates/            Rust workspace with six crates
+crates/            Rust workspace with seven crates
   bridge-engine/       Pure Rust game logic (types, hand eval, deal gen, auction, scoring, play)
   bridge-conventions/  Convention types, fact DSL, pipeline, teaching, adapter
   bridge-session/      Session state, controllers, heuristics, inference
   bridge-service/      ServicePort impl, viewport builders
   bridge-wasm/         WASM bindings via wasm-bindgen for browser deployment (full ServicePort)
   bridge-api/          Axum API server — auth, user data (DataPort). Independent of game crates.
+  bridge-static/       Static data extractor — outputs convention JSON for build-time HTML generation
 tests/
   e2e/             Playwright E2E tests
 ```
@@ -165,6 +168,7 @@ tests/
 | Stores             | `src/stores/app.svelte.ts`             | Svelte stores, game coordinator, feature flags, entitlements |
 | Components         | —                                      | Svelte UI (screens/game/shared)                         |
 | API (Rust)         | `crates/bridge-api/`         | Axum API server — auth, user data (DataPort)            |
+| Static (Rust)      | `crates/bridge-static/`      | Static data extractor for build-time HTML generation    |
 | Tests              | `tests/e2e/`                           | Vitest + Playwright                                     |
 
 **Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION. User always bids as South. `playPreference` (from practice mode) controls BIDDING exit: `skip` → EXPLANATION, `always` → PLAYING, `prompt` → DECLARER_PROMPT.
@@ -180,7 +184,7 @@ See `docs/migration/index.md` for the phase tracker and architectural decisions.
 
 - `npm run dev` builds WASM if `pkg/` missing, then starts Vite with HMR — the dev server stays running and reflects file changes instantly. Do NOT restart the server or browser after editing source files; just save and the page updates automatically
 - WASM must build before Vite (`npm run dev` handles this automatically via `wasm:ensure`)
-- **WASM required for browser.** All game logic runs in Rust via WASM. If WASM init fails, the app shows an error screen — no fallback. See `docs/gotchas.md` for details.
+- **WASM required for browser.** All game logic runs in Rust via WASM. If WASM init fails, the app shows an error screen — no fallback. See `docs/guides/gotchas.md` for details.
 - WASM must be built via `wasm-pack` (not `cargo build`), because `wasm-pack` handles `--target web`, `.wasm` packaging, and JS glue generation
 - Read a subsystem's CLAUDE.md before working in that directory
 - Full testing playbook is in **TESTING.md**, not here
@@ -188,14 +192,15 @@ See `docs/migration/index.md` for the phase tracker and architectural decisions.
 - `vitest.config.ts` has `resolve.conditions: ["browser"]` so Svelte 5 `mount()` works in jsdom tests — don't use `require()` in tests, use ES imports
 - Component tests use `@testing-library/svelte` — components needing context (stores/engine) need wrapper setup in test-helpers.ts
 - Svelte `{#each}` blocks require keyed iteration (`{#each items as item (item.id)}`) per ESLint rule `svelte/require-each-key`
-- See `docs/gotchas.md` for detailed technical notes (DDS browser, vendor/dds, convention system details, CLI enumeration, deal generation)
+- See `docs/guides/gotchas.md` for detailed technical notes (DDS browser, vendor/dds, convention system details, CLI enumeration, deal generation)
 - **MC+DDS play runs entirely in Rust/WASM.** The DDS Worker callback is injected at service init via `wireDdsSolver()`. The store calls `playCard` and receives all AI plays regardless of profile — Expert/WorldClass use MC+DDS (async DDS via injected JS solver in `bridge-wasm`), Beginner/ClubPlayer use synchronous heuristic chain. MC sampling, evaluation, and suggest logic live in `bridge-session/src/dds/`. Expert samples randomly (no beliefs); WorldClass adds belief-constraint filtering (`PlayProfile.use_posterior`). Posterior inference (`PosteriorEngine` in `bridge-session/src/inference/posterior.rs`) uses rejection sampling against L1 `DerivedRanges`, 200-sample budget, wired into heuristics via `PlayBeliefs`.
 
 **Context tree** (read the relevant one before working in that directory):
 
 - `src/engine/CLAUDE.md` — engine types, DDS browser support, module graph
 - `src/service/CLAUDE.md` — WASM proxy, display/, util/, session-types
-- `crates/CLAUDE.md` — Rust workspace: 6 crates, serde contract, commands
+- `crates/CLAUDE.md` — Rust workspace: 7 crates, serde contract, commands
+- `crates/bridge-static/CLAUDE.md` — static data extractor, JSON contract, architectural constraints
 - `src/cli/CLAUDE.md` — headless coverage test runner
 - `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns
 - `src/stores/CLAUDE.md` — factory DI pattern, game store methods, race condition handling
@@ -206,40 +211,56 @@ See `docs/migration/index.md` for the phase tracker and architectural decisions.
 
 ## Reference Knowledge (docs/)
 
-The `docs/` folder contains decision history, design philosophy, architecture specs,
-and detailed guides extracted from CLAUDE.md files. Agents do not need this context
-for routine work. **Read from docs/ when:**
+The `docs/` folder is organized into categories:
 
-- **Making a design decision** with multiple viable approaches → read `docs/design-philosophy.md`
+```
+docs/
+  architecture/    Design decisions, specs, migration history
+  guides/          Practical how-tos (convention authoring, CLI, gotchas, testing, typography)
+  product/         Product direction, roadmap, personas
+  research/        Evidence-based research (SEO, etc.)
+```
+
+Agents do not need this context for routine work. **Read from docs/ when:**
+
+- **Making a design decision** with multiple viable approaches → read `docs/architecture/design-philosophy.md`
   to check if a prior principle already resolves it
-- **Wondering "why is it done this way?"** about a non-obvious pattern → read `docs/gotchas.md`
+- **Wondering "why is it done this way?"** about a non-obvious pattern → read `docs/guides/gotchas.md`
   or the relevant subsystem doc
-- **Adding a new convention bundle** → read `docs/convention-authoring.md` for the full
+- **Adding a new convention bundle** → read `docs/guides/convention-authoring.md` for the full
   checklist, templates, and common pitfalls
-- **Working on inference/posterior (Rust)** → read `docs/architecture-specs.md` for open questions
+- **Working on inference/posterior (Rust)** → read `docs/architecture/architecture-specs.md` for open questions
   and spec status before implementing
-- **Planning a large refactor** → read `docs/design-philosophy.md` + `docs/architecture-specs.md`
+- **Planning a large refactor** → read `docs/architecture/design-philosophy.md` + `docs/architecture/architecture-specs.md`
   to avoid violating architectural constraints
-- **Touching CLI evaluation pipeline** → read `docs/cli-evaluation.md` for the two-phase
+- **Touching CLI evaluation pipeline** → read `docs/guides/cli-evaluation.md` for the two-phase
   design and known gaps
-- **Modifying typography/layout tokens** → read `docs/typography-and-layout.md` for the
+- **Modifying typography/layout tokens** → read `docs/guides/typography-and-layout.md` for the
   full token system
-- **Making UX, onboarding, or prioritization decisions** → read `docs/personas/README.md`
-  and the relevant persona in `docs/personas/`
-- **Product direction and deployment** → read `docs/product-direction.md` for monetization model,
+- **Making UX, onboarding, or prioritization decisions** → read `docs/product/personas/README.md`
+  and the relevant persona in `docs/product/personas/`
+- **Product direction and deployment** → read `docs/product/product-direction.md` for monetization model,
   deployment architecture, two-port model, content protection strategy, and decision history
-- **Rust/WASM migration** → read `docs/migration/index.md` for phase tracker, architectural
+- **Rust/WASM migration** → read `docs/architecture/migration/index.md` for phase tracker, architectural
   decisions, and per-phase specs. Migration is complete; docs retained as architectural reference.
+- **SEO and discoverability** → read `docs/research/seo-principles-web-apps/evidence-map.md` for
+  the full evidence map on SEO best practices for this app
 
-**Update docs/ when:**
+**Read docs/ before working.** If your task touches a topic covered by any doc (architecture, conventions, SEO, product direction, testing, etc.), you MUST read the relevant doc first. Do not rely on memory or assumptions — read the current state before making decisions or writing code.
 
-- A design decision is made that future agents should know about → add to
-  `docs/design-philosophy.md` or `docs/gotchas.md`
+**Update docs/ after changing things.** If your work makes a design decision, changes behavior documented in docs, invalidates an assumption, or resolves an open question tracked in docs, you MUST update the affected doc in the same session — not as a follow-up. Code changes and doc updates ship together.
+
+Specific update triggers:
+
+- A design decision is made that future agents should know about → update
+  `docs/architecture/design-philosophy.md` or `docs/guides/gotchas.md`
 - A spec status changes (open question resolved, phase completed) → update
-  `docs/architecture-specs.md` or `docs/roadmap.md`
+  `docs/architecture/architecture-specs.md` or `docs/product/roadmap.md`
 - The target audience or user-needs framing changes materially → update
-  `docs/personas/README.md` and the affected files in `docs/personas/`
-- A non-obvious gotcha is discovered during implementation → add to `docs/gotchas.md`
+  `docs/product/personas/README.md` and the affected files in `docs/product/personas/`
+- A non-obvious gotcha is discovered during implementation → add to `docs/guides/gotchas.md`
+- SEO-related implementation decisions → update `docs/research/seo-principles-web-apps/evidence-map.md`
+  recommendations section if approach differs from what evidence suggested
 
 ---
 

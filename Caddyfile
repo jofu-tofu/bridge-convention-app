@@ -19,6 +19,9 @@ bridgelab.net {
         @guides path /guides/*
         header @guides Cache-Control "public, max-age=86400"
 
+        @learn path /learn/*
+        header @learn Cache-Control "public, max-age=86400"
+
         header /index.html Cache-Control "public, max-age=3600"
 
         try_files {path} /index.html

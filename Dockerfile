@@ -22,6 +22,13 @@ COPY crates/ /build/crates/
 WORKDIR /build
 RUN wasm-pack build crates/bridge-wasm --target web --out-dir pkg
 
+# Stage 3.5 — build bridge-static binary (reuses rust-deps cache)
+FROM rust-deps AS static-build
+COPY Cargo.toml Cargo.lock /build/
+COPY crates/ /build/crates/
+WORKDIR /build
+RUN cargo build --release -p bridge-static
+
 # Stage 4 — Node build (npm ci + vite build)
 FROM node:20-slim AS node-build
 WORKDIR /build
@@ -33,7 +40,10 @@ COPY src/ src/
 COPY index.html svelte.config.js vite.config.ts tsconfig.json ./
 COPY scripts/ scripts/
 COPY content/ content/
-RUN npm run dds:ensure && npx vite build && npx tsx scripts/build-guides-html.ts
+COPY --from=static-build /build/target/release/bridge-static /usr/local/bin/bridge-static
+RUN npm run dds:ensure && npx vite build && npx tsx scripts/build-guides-html.ts && \
+    mkdir -p dist/.static && bridge-static --output dist/.static/learn-data.json && \
+    npx tsx scripts/build-learn-html.ts
 
 # Stage 5 — production: serve static files with Caddy
 FROM caddy:2-alpine AS production

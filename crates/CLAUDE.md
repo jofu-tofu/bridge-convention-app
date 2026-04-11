@@ -1,6 +1,6 @@
 # Rust Workspace (crates/)
 
-Cargo workspace with six crates implementing the bridge engine, convention data model, session logic, service layer, and API server in Rust.
+Cargo workspace with seven crates implementing the bridge engine, convention data model, session logic, service layer, API server, and static data extraction in Rust.
 
 ## Commands
 
@@ -36,6 +36,11 @@ crates/
                        evaluation, practical scorer). `ConventionStrategy::suggest()` returns
                        `(Option<BidResult>, StrategyEvaluation)` — immutable &self, debug payload as
                        out-param (intentional Rust idiom divergence from TS &mut self pattern).
+                       **Negative Doubles opener rebids are synthesized at load time:** the
+                       `negative-doubles` fixture still defines responder and overcall surfaces, but
+                       `registry/module_registry.rs` replaces the coarse `after-neg-dbl` opener states
+                       with route-specific states keyed to the exact opening + overcall sequence. Edit
+                       that synthesis table when changing opener rebid behavior or legal rebid levels.
                        **Bundle modules are runtime-derived:** Bundle JSON fixtures (`fixtures/*.json`)
                        do not contain a `modules` array. The `bundle_registry` populates
                        `ConventionBundle.modules` at cache-init time by looking up each `member_id`
@@ -71,6 +76,9 @@ crates/
                        (:3001). Independent of game crates (no bridge-engine/conventions/
                        session/service deps). SQLite via sqlx, OAuth (Google + GitHub),
                        server-side sessions. See Dockerfile.api for container build.
+  bridge-static/       Static data extractor — outputs convention JSON for build-time
+                       HTML generation. Thin binary that calls bridge-session viewport
+                       builders — MUST NOT contain convention logic or data.
 ```
 
 ## Conventions
@@ -137,4 +145,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-07 | version=6 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:41 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-11 | version=7 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:41 -->

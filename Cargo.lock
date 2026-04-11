@@ -230,6 +230,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bridge-static"
+version = "0.1.0"
+dependencies = [
+ "bridge-conventions",
+ "bridge-session",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "bridge-wasm"
 version = "0.1.0"
 dependencies = [
