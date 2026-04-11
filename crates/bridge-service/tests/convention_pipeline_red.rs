@@ -28,12 +28,8 @@ const PIPELINE_FIXTURE_DIR: &str = concat!(
 struct PipelineSnapshot {
     bundle_id: String,
     label: String,
-    #[allow(dead_code)]
-    seed: u64,
     selected_call: Option<serde_json::Value>,
     hand: serde_json::Value,
-    #[allow(dead_code)]
-    evaluation: serde_json::Value,
     auction_entries: Vec<serde_json::Value>,
 }
 

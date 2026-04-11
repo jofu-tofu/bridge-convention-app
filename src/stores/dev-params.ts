@@ -10,7 +10,7 @@ import { listConventions } from "../service/service-helpers";
  *   ?convention=<id>       Select convention → game screen
  *   ?learn=<id>            Module or bundle → learning screen
  *   ?seed=<number>         Deterministic PRNG seed
- *   ?screen=<name>         Direct screen nav: settings | coverage | profiles
+ *   ?screen=<name>         Direct screen nav: settings | coverage | workshop
  *   ?phase=<name>          Skip to game phase: review | playing | declarer
  *   ?targetState=<id>      FSM state targeting (coverage)
  *   ?targetSurface=<id>    Meaning surface targeting (coverage)
@@ -18,20 +18,16 @@ import { listConventions } from "../service/service-helpers";
  * Dev-only params (DEV build):
  *   ?dev=<flags>           Comma-separated: debug, expanded, autoplay, autoDismiss
  *
- * Backward compat aliases (mapped to consolidated params):
- *   ?coverage=true         → ?screen=coverage
- *   ?profiles=true         → ?screen=profiles
- *   ?debug=true            → ?dev=debug
- *   ?autoplay=true         → ?dev=autoplay
+ * Backward compat alias:
+ *   ?profiles=true         → ?screen=workshop
  */
 export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const params = new URLSearchParams(window.location.search);
 
   // ── Screen navigation ──────────────────────────────────────
-  // ?screen= is the canonical param; ?coverage=true and ?profiles=true are aliases
+  // ?screen= is the canonical param; ?profiles=true is a backward compat alias
   const screenParam = params.get("screen")
-    ?? (params.get("coverage") === "true" ? "coverage" : null)
-    ?? (params.get("profiles") === "true" ? "profiles" : null);
+    ?? (params.get("profiles") === "true" ? "workshop" : null);
 
   if (screenParam === "coverage") {
     const coverageConvention = params.get("convention");
@@ -41,7 +37,7 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
     store.navigateToCoverage();
     return;
   }
-  if (screenParam === "profiles" || screenParam === "workshop") {
+  if (screenParam === "workshop") {
     store.navigateToWorkshop();
     return;
   }
@@ -119,13 +115,9 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   // ── Dev flags (DEV builds only) ────────────────────────────
   if (!import.meta.env.DEV) return;
 
-  // Parse ?dev= comma-separated flags + backward compat aliases
+  // Parse ?dev= comma-separated flags
   const devParam = params.get("dev");
   const devFlags = new Set(devParam ? devParam.split(",").map(f => f.trim()) : []);
-
-  // Backward compat: ?debug=true → dev=debug, ?autoplay=true → dev=autoplay
-  if (params.get("debug") === "true") devFlags.add("debug");
-  if (params.get("autoplay") === "true") devFlags.add("autoplay");
 
   if (devFlags.has("debug")) {
     store.setDebugPanel(true);

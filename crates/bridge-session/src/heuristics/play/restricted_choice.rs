@@ -67,16 +67,9 @@ impl PlayHeuristic for RestrictedChoiceHeuristic {
 /// A restricted choice signal: an opponent played a single honor that could
 /// have been from touching honors.
 #[derive(Debug)]
-#[allow(dead_code)] // Fields used in tests and future finesse-direction logic
 struct RestrictedChoiceSignal {
     /// The suit where the signal was observed
     suit: Suit,
-    /// The opponent who played the honor
-    opponent: Seat,
-    /// The honor that was played
-    played_rank: Rank,
-    /// The touching honor we expect to be with their partner
-    missing_rank: Rank,
 }
 
 /// Scan previous tricks for restricted-choice signals from opponents.
@@ -124,19 +117,9 @@ fn find_restricted_choice_signals(
                 if played_high && !played_low {
                     // They played the higher honor — the lower is more likely
                     // to be with their partner (restricted choice)
-                    signals.push(RestrictedChoiceSignal {
-                        suit,
-                        opponent: opp,
-                        played_rank: high,
-                        missing_rank: low,
-                    });
+                    signals.push(RestrictedChoiceSignal { suit });
                 } else if played_low && !played_high {
-                    signals.push(RestrictedChoiceSignal {
-                        suit,
-                        opponent: opp,
-                        played_rank: low,
-                        missing_rank: high,
-                    });
+                    signals.push(RestrictedChoiceSignal { suit });
                 }
             }
         }
@@ -212,10 +195,7 @@ mod tests {
 
         let signals = find_restricted_choice_signals(&[trick], Seat::South, Seat::South);
         assert!(!signals.is_empty());
-        let sig = signals.iter().find(|s| s.suit == Suit::Spades).unwrap();
-        assert_eq!(sig.opponent, Seat::East);
-        assert_eq!(sig.played_rank, Rank::Jack);
-        assert_eq!(sig.missing_rank, Rank::Queen);
+        assert!(signals.iter().any(|s| s.suit == Suit::Spades));
     }
 
     #[test]

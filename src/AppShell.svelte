@@ -55,7 +55,7 @@
     <SettingsScreen />
   {:else if props.appStore.screen === "coverage"}
     <CoverageScreen />
-  {:else if props.appStore.screen === "workshop" || props.appStore.screen === "profiles"}
+  {:else if props.appStore.screen === "workshop"}
     <WorkshopScreen />
   {:else if props.appStore.screen === "convention-editor"}
     <ConventionEditorScreen />

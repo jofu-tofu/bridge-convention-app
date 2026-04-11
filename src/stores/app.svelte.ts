@@ -2,7 +2,7 @@ import type { ConventionInfo, SystemSelectionId, VulnerabilityDistribution, Dril
 import { OpponentMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 import { loadFromStorage, saveToStorage } from "./local-storage";
 
-export type Screen = "conventions" | "game" | "learning" | "settings" | "coverage" | "profiles" | "workshop" | "convention-editor" | "practice-pack-editor";
+export type Screen = "conventions" | "game" | "learning" | "settings" | "coverage" | "workshop" | "convention-editor" | "practice-pack-editor";
 
 // ─── Persistence ────────────────────────────────────────────
 
@@ -238,10 +238,6 @@ export function createAppStore() {
       editingModuleId = null;
       editingPackId = null;
       editingPackBasedOn = null;
-      currentScreen = "workshop";
-    },
-
-    navigateToProfiles() {
       currentScreen = "workshop";
     },
 

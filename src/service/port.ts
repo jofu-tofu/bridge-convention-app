@@ -25,7 +25,6 @@ import type {
   PlayCardResult,
   DDSolutionResult,
   ConventionInfo,
-  BundleFlowTreeViewport,
   ModuleFlowTreeViewport,
   ServiceInferenceSnapshot,
   ServicePublicBeliefState,
@@ -86,9 +85,6 @@ interface ServicePort {
   /** Build a learning viewport for a single module by ID. */
   getModuleLearningViewport(moduleId: string): Promise<ModuleLearningViewport | null>;
 
-  /** Build a unified conversation flow tree for a bundle. */
-  getBundleFlowTree(bundleId: string): Promise<BundleFlowTreeViewport | null>;
-
   /** Build a conversation flow tree scoped to a single module. */
   getModuleFlowTree(moduleId: string): Promise<ModuleFlowTreeViewport | null>;
 
@@ -113,8 +109,4 @@ export interface DevServicePort extends ServicePort {
 
   /** Return the resolved convention name for a session. */
   getConventionName(handle: DrillHandle): Promise<string>;
-
-  /** Create a session from a pre-built DrillBundle (for tests using stub engines).
-   *  @deprecated Only available in LocalService (TS backend). Not supported in BridgeService. */
-  createDrillSessionFromBundle(bundle: unknown): Promise<DrillHandle>;
 }

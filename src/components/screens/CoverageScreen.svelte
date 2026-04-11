@@ -40,7 +40,7 @@
   function coverageUrl(bundleId: string): string {
     if (typeof window === 'undefined') return '';
     const base = `${window.location.origin}${window.location.pathname}`;
-    return `${base}?coverage=true&convention=${bundleId}`;
+    return `${base}?screen=coverage&convention=${bundleId}`;
   }
 </script>
 
@@ -134,7 +134,7 @@
       <!-- Shareable link -->
       <div class="text-xs text-text-muted mt-4">
         Shareable: <a href={coverageUrl(selectedBundle.id)} class="text-blue-400 hover:underline">
-          ?coverage=true&convention={selectedBundle.id}
+          ?screen=coverage&convention={selectedBundle.id}
         </a>
       </div>
 

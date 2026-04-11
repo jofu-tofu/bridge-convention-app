@@ -67,7 +67,6 @@ pub(crate) struct TaggedSurface {
     pub clauses: Vec<SurfaceClauseView>,
 }
 
-#[allow(dead_code)] // phase is used during tree construction for identification
 pub(crate) struct MutableNode {
     pub id: String,
     pub call_key: Option<String>,
@@ -79,7 +78,6 @@ pub(crate) struct MutableNode {
     pub meaning_id: Option<String>,
     pub children: Vec<MutableNode>,
     pub depth: usize,
-    pub phase: String,
     pub transition_obs: Option<ObsPattern>,
     pub recommendation: Option<RecommendationBand>,
     pub disclosure: Option<Disclosure>,

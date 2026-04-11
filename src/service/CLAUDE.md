@@ -1,10 +1,10 @@
-<!-- context-layer: service | version: 9 | last-audited: 2026-04-07 -->
+<!-- context-layer: service | version: 10 | last-audited: 2026-04-10 -->
 
 # Service
 
-WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend (26 methods). The client holds an opaque `DrillHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never raw domain types. All game logic (conventions, inference, session) runs in Rust via `bridge-service`. TS `service/` is a thin serialize/call/deserialize proxy. DDS solver is wired automatically during `init()` — the WASM layer routes Expert/WorldClass profiles through async DDS play internally.
+WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend (25 methods). The client holds an opaque `DrillHandle` and gets back `BiddingViewport`, `ViewportBidFeedback`, `TeachingDetail` — never raw domain types. All game logic (conventions, inference, session) runs in Rust via `bridge-service`. TS `service/` is a thin serialize/call/deserialize proxy. DDS solver is wired automatically during `init()` — the WASM layer routes Expert/WorldClass profiles through async DDS play internally.
 
-**ServicePort methods (26):**
+**ServicePort methods (25):**
 - **Lifecycle:** `init` (must be called once before any other method; idempotent; DDS wiring is fire-and-forget in browser)
 - **Session:** `createDrillSession`, `startDrill`
 - **Bidding:** `submitBid`
@@ -14,7 +14,7 @@ WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend 
 - **Inference:** `getPublicBeliefState`
 - **DDS:** `getDDSSolution`
 - **Catalog:** `listConventions`
-- **Learning:** `listModules`, `getModuleLearningViewport`, `getBundleFlowTree`, `getModuleFlowTree`
+- **Learning:** `listModules`, `getModuleLearningViewport`, `getModuleFlowTree`
 - **Module forking:** `forkModule`
 - **Module config:** `getModuleConfigSchema`, `validateModule`
 

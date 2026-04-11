@@ -28,7 +28,6 @@ import type {
   ConventionInfo,
   ModuleCatalogEntry,
   ModuleLearningViewport,
-  BundleFlowTreeViewport,
   ModuleFlowTreeViewport,
   ServicePublicBeliefState,
   ServiceInferenceSnapshot,
@@ -68,7 +67,6 @@ interface WasmServicePortBindings {
   list_conventions(): ConventionInfo[];
   list_modules(): ModuleCatalogEntry[];
   get_module_learning_viewport(moduleId: string): ModuleLearningViewport | null;
-  get_bundle_flow_tree(bundleId: string): BundleFlowTreeViewport | null;
   get_module_flow_tree(moduleId: string): ModuleFlowTreeViewport | null;
   fork_module(source_module_id: string): unknown;
   get_module_config_schema(module_id: string, user_modules_json: string | null): ModuleConfigSchemaView;
@@ -267,10 +265,6 @@ export class BridgeService implements DevServicePort {
     return getPort().get_module_learning_viewport(moduleId);
   }
 
-  async getBundleFlowTree(bundleId: string): Promise<BundleFlowTreeViewport | null> {
-    return getPort().get_bundle_flow_tree(bundleId);
-  }
-
   async getModuleFlowTree(moduleId: string): Promise<ModuleFlowTreeViewport | null> {
     return getPort().get_module_flow_tree(moduleId);
   }
@@ -308,7 +302,4 @@ export class BridgeService implements DevServicePort {
     return getPort().get_convention_name?.(handle) ?? "";
   }
 
-  async createDrillSessionFromBundle(_bundle: unknown): Promise<DrillHandle> {
-    throw new Error("createDrillSessionFromBundle not available in WASM service — use createDrillSession with config");
-  }
 }

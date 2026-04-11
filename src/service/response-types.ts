@@ -7,7 +7,7 @@
  *
  * ALLOWED to cross: BiddingViewport, ViewportBidFeedback, TeachingDetail,
  *   Call, Card, Seat, Vulnerability, DrillHandle, session config DTOs,
- *   FlowTreeNode, BundleFlowTreeViewport.
+ *   FlowTreeNode, ModuleFlowTreeViewport.
  *
  * NEVER crosses: Deal, BidResult, DrillSession, DrillBundle,
  *   ConventionStrategy, StrategyEvaluation, ArbitrationResult,
@@ -15,7 +15,7 @@
  */
 
 import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Suit, DDSolution, AuctionEntry, NumberRange } from "../engine/types";
-import type { PracticeMode, PlayPreference, PromptMode, TeachingProjection, ConventionTeaching } from "./session-types";
+import type { PracticeMode, PlayPreference, PromptMode, TeachingProjection, ConventionTeaching, ParseTreeView } from "./session-types";
 
 /** Bid context relative to the practice target. */
 enum BidContext {
@@ -141,46 +141,6 @@ interface ServiceCallProjection {
   readonly supportingMeanings: readonly string[];
   readonly primaryMeaning?: string;
   readonly projectionKind: "single-rationale" | "merged-equivalent" | "multi-rationale-same-call";
-}
-
-/** Parse tree module verdict — service-owned mirror. */
-enum ServiceParseTreeModuleVerdict {
-  Selected = "selected",
-  Applicable = "applicable",
-  Eliminated = "eliminated",
-}
-
-/** Parse tree condition — service-owned mirror of teaching-types ParseTreeCondition. */
-interface ServiceParseTreeCondition {
-  readonly factId: string;
-  readonly description: string;
-  readonly satisfied: boolean;
-  readonly observedValue?: unknown;
-}
-
-/** Parse tree module node — service-owned mirror of teaching-types ParseTreeModuleNode. */
-interface ServiceParseTreeModuleNode {
-  readonly moduleId: string;
-  readonly displayLabel: string;
-  readonly verdict: ServiceParseTreeModuleVerdict;
-  readonly conditions: readonly ServiceParseTreeCondition[];
-  readonly meanings: readonly {
-    readonly meaningId: string;
-    readonly displayLabel: string;
-    readonly matched: boolean;
-    readonly call?: Call;
-  }[];
-  readonly eliminationReason?: string;
-}
-
-/** Parse tree view — service-owned mirror of teaching-types ParseTreeView. */
-interface ServiceParseTreeView {
-  readonly modules: readonly ServiceParseTreeModuleNode[];
-  readonly selectedPath: {
-    readonly moduleId: string;
-    readonly meaningId: string;
-    readonly call: Call;
-  } | null;
 }
 
 // ── Service-owned viewport-safe bid history ─────────────────────────
@@ -482,15 +442,6 @@ export interface FlowTreeNode extends TeachingSurfaceFields {
   readonly depth: number;
 }
 
-/** Unified conversation flow tree for a bundle. */
-export interface BundleFlowTreeViewport {
-  readonly bundleId: string;
-  readonly bundleName: string;
-  readonly root: FlowTreeNode;
-  readonly nodeCount: number;
-  readonly maxDepth: number;
-}
-
 /** Conversation flow tree scoped to a single module. */
 export interface ModuleFlowTreeViewport {
   readonly moduleId: string;
@@ -755,7 +706,7 @@ export interface TeachingDetail {
   /** Post-bid parse tree showing the full decision chain:
    *  which conventions were considered, why each was accepted/rejected,
    *  and the path to the correct bid. */
-  readonly parseTree?: ServiceParseTreeView;
+  readonly parseTree?: ParseTreeView;
 
   // ── Observation history ────────────────────────────────────
   /** Viewport-safe projection of the observation log from the rule interpreter.

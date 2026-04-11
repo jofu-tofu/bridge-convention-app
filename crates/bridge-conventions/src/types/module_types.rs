@@ -97,8 +97,6 @@ pub struct ConventionModule {
     pub module_id: String,
     pub display_name: String,
     pub category: ModuleCategory,
-    #[serde(default)]
-    pub fixture_version: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub variant_of: Option<String>,
     pub description: ModuleDescription,

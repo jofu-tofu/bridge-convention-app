@@ -30,13 +30,13 @@ function getWasm(): Record<string, unknown> {
 }
 
 /** Called by BridgeService.init() to share the module reference and port instance. */
-export function setWasmModule(mod: Record<string, unknown>, port?: { list_conventions(): unknown[]; list_modules(): unknown[]; get_module_learning_viewport(id: string): unknown; get_bundle_flow_tree(id: string): unknown; get_module_flow_tree(id: string): unknown }): void {
+export function setWasmModule(mod: Record<string, unknown>, port?: { list_conventions(): unknown[]; list_modules(): unknown[]; get_module_learning_viewport(id: string): unknown; get_module_flow_tree(id: string): unknown }): void {
   wasmModule = mod;
   if (port) cachedPort = port;
 }
 
 // Cached singleton port — created once after WASM init.
-let cachedPort: { list_conventions(): unknown[]; list_modules(): unknown[]; get_module_learning_viewport(id: string): unknown; get_bundle_flow_tree(id: string): unknown; get_module_flow_tree(id: string): unknown } | null = null;
+let cachedPort: { list_conventions(): unknown[]; list_modules(): unknown[]; get_module_learning_viewport(id: string): unknown; get_module_flow_tree(id: string): unknown } | null = null;
 
 function getSyncPort() {
   if (!cachedPort) {

@@ -48,7 +48,6 @@ export function createMockService(
     // Learning
     listModules: vi.fn().mockResolvedValue([]),
     getModuleLearningViewport: vi.fn().mockResolvedValue(null),
-    getBundleFlowTree: vi.fn().mockResolvedValue(null),
     getModuleFlowTree: vi.fn().mockResolvedValue(null),
     // Module forking
     forkModule: vi.fn().mockResolvedValue({}),
@@ -60,7 +59,6 @@ export function createMockService(
     getDebugLog: vi.fn().mockResolvedValue([]),
     getInferenceTimeline: vi.fn().mockResolvedValue([]),
     getConventionName: vi.fn().mockResolvedValue("Test Convention"),
-    createDrillSessionFromBundle: vi.fn().mockRejectedValue(new Error("stub")),
   } satisfies Record<keyof DevServicePort, ReturnType<typeof vi.fn>>;
 
   return { ...base, ...overrides };
