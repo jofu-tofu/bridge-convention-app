@@ -3463,7 +3463,16 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitQuality"
-        ]
+        ],
+        "composition": {
+          "kind": "match",
+          "cases": [
+            { "when": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "H", "min": 3, "max": 3 } }, "then": 3 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "H", "min": 2, "max": 2 } }, "then": 2 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "H", "min": 1, "max": 1 } }, "then": 1 }
+          ],
+          "default": 0
+        }
       },
       {
         "id": "module.weakTwo.topHonorCount.spades",
@@ -3475,7 +3484,16 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitQuality"
-        ]
+        ],
+        "composition": {
+          "kind": "match",
+          "cases": [
+            { "when": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "S", "min": 3, "max": 3 } }, "then": 3 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "S", "min": 2, "max": 2 } }, "then": 2 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "S", "min": 1, "max": 1 } }, "then": 1 }
+          ],
+          "default": 0
+        }
       },
       {
         "id": "module.weakTwo.topHonorCount.diamonds",
@@ -3487,7 +3505,16 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitQuality"
-        ]
+        ],
+        "composition": {
+          "kind": "match",
+          "cases": [
+            { "when": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "D", "min": 3, "max": 3 } }, "then": 3 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "D", "min": 2, "max": 2 } }, "then": 2 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "D", "min": 1, "max": 1 } }, "then": 1 }
+          ],
+          "default": 0
+        }
       },
       {
         "id": "module.weakTwo.isMinimum",
@@ -3503,24 +3530,18 @@
           "pointRange"
         ],
         "composition": {
-          "kind": "and",
+          "kind": "or",
           "operands": [
-            {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.hcp",
-                "operator": "gte",
-                "value": 5
-              }
-            },
-            {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.hcp",
-                "operator": "lte",
-                "value": 7
-              }
-            }
+            { "kind": "and", "operands": [
+              { "kind": "extended", "clause": { "clauseKind": "vulnerabilityIs", "vulnerable": false } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 5 } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 7 } }
+            ]},
+            { "kind": "and", "operands": [
+              { "kind": "extended", "clause": { "clauseKind": "vulnerabilityIs", "vulnerable": true } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 6 } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 7 } }
+            ]}
           ]
         }
       },
@@ -3572,24 +3593,18 @@
           "pointRange"
         ],
         "composition": {
-          "kind": "and",
+          "kind": "or",
           "operands": [
-            {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.hcp",
-                "operator": "gte",
-                "value": 5
-              }
-            },
-            {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.hcp",
-                "operator": "lte",
-                "value": 11
-              }
-            }
+            { "kind": "and", "operands": [
+              { "kind": "extended", "clause": { "clauseKind": "vulnerabilityIs", "vulnerable": false } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 5 } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 11 } }
+            ]},
+            { "kind": "and", "operands": [
+              { "kind": "extended", "clause": { "clauseKind": "vulnerabilityIs", "vulnerable": true } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 6 } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 11 } }
+            ]}
           ]
         }
       },
@@ -3607,7 +3622,8 @@
           "suitLength",
           "suitQuality",
           "shapeClass"
-        ]
+        ],
+        "composition": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "H", "min": 3, "max": 3 } }
       },
       {
         "id": "module.weakTwo.isSolid.spades",
@@ -3623,7 +3639,8 @@
           "suitLength",
           "suitQuality",
           "shapeClass"
-        ]
+        ],
+        "composition": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "S", "min": 3, "max": 3 } }
       },
       {
         "id": "module.weakTwo.isSolid.diamonds",
@@ -3639,7 +3656,8 @@
           "suitLength",
           "suitQuality",
           "shapeClass"
-        ]
+        ],
+        "composition": { "kind": "extended", "clause": { "clauseKind": "topHonorCount", "suit": "D", "min": 3, "max": 3 } }
       },
       {
         "id": "module.weakTwo.hasNewSuit.hearts",
@@ -3655,7 +3673,15 @@
         ],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 5 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 5 } }
+          ]
+        }
       },
       {
         "id": "module.weakTwo.hasNewSuit.spades",
@@ -3671,7 +3697,15 @@
         ],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 5 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 5 } }
+          ]
+        }
       },
       {
         "id": "module.weakTwo.hasNewSuit.diamonds",
@@ -3687,7 +3721,15 @@
         ],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 5 } }
+          ]
+        }
       },
       {
         "id": "module.weakTwo.hasNsfSupport.hearts",
@@ -3703,7 +3745,15 @@
         ],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 3 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 3 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 3 } }
+          ]
+        }
       },
       {
         "id": "module.weakTwo.hasNsfSupport.spades",
@@ -3719,7 +3769,15 @@
         ],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 3 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 3 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 3 } }
+          ]
+        }
       },
       {
         "id": "module.weakTwo.hasNsfSupport.diamonds",
@@ -3735,7 +3793,15 @@
         ],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 3 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 3 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 3 } }
+          ]
+        }
       }
     ]
   }

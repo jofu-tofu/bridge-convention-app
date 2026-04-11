@@ -2353,7 +2353,14 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } }
+          ]
+        }
       },
       {
         "id": "module.michaels.bothMinorsFiveFive",
@@ -2364,7 +2371,14 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 5 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 5 } }
+          ]
+        }
       },
       {
         "id": "module.michaels.spadesAndMinor",
@@ -2375,7 +2389,17 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } },
+            { "kind": "or", "operands": [
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 5 } },
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 5 } }
+            ]}
+          ]
+        }
       },
       {
         "id": "module.michaels.heartsAndMinor",
@@ -2386,7 +2410,17 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } },
+            { "kind": "or", "operands": [
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 5 } },
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 5 } }
+            ]}
+          ]
+        }
       },
       {
         "id": "module.michaels.minorIsClubs",
@@ -2398,7 +2432,14 @@
         "constrainsDimensions": [
           "suitLength",
           "suitRelation"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 5 } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "C", "op": "gte", "b": "D" } }
+          ]
+        }
       },
       {
         "id": "module.michaels.minorIsDiamonds",
@@ -2410,7 +2451,14 @@
         "constrainsDimensions": [
           "suitLength",
           "suitRelation"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 5 } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "D", "op": "gt", "b": "C" } }
+          ]
+        }
       },
       {
         "id": "module.michaels.inOvercallRange",
@@ -2421,7 +2469,22 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "pointRange"
-        ]
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            { "kind": "and", "operands": [
+              { "kind": "extended", "clause": { "clauseKind": "vulnerabilityIs", "vulnerable": false } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 6 } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 15 } }
+            ]},
+            { "kind": "and", "operands": [
+              { "kind": "extended", "clause": { "clauseKind": "vulnerabilityIs", "vulnerable": true } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 8 } },
+              { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 15 } }
+            ]}
+          ]
+        }
       },
       {
         "id": "module.michaels.hasHeartSupport",
@@ -2432,7 +2495,8 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 3 } }
       },
       {
         "id": "module.michaels.hasSpadeSupport",
@@ -2443,7 +2507,8 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 3 } }
       },
       {
         "id": "module.michaels.hasClubSupport",
@@ -2454,7 +2519,8 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 3 } }
       },
       {
         "id": "module.michaels.hasDiamondSupport",
@@ -2465,7 +2531,8 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 3 } }
       },
       {
         "id": "module.michaels.advancerGameValues",
@@ -2476,7 +2543,8 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "pointRange"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 10 } }
       },
       {
         "id": "module.michaels.advancerInviteValues",
@@ -2487,7 +2555,14 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "pointRange"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 8 } },
+            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 9 } }
+          ]
+        }
       },
       {
         "id": "module.michaels.advancerWeak",
@@ -2498,7 +2573,8 @@
         "derivesFrom": [],
         "constrainsDimensions": [
           "pointRange"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 7 } }
       }
     ]
   }

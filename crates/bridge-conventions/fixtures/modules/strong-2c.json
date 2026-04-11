@@ -6,12 +6,12 @@
   "description": "Open 2C with 22+ HCP (game-forcing), responder bids 2D waiting or shows a positive suit",
   "purpose": "Reserve the 2C opening for very strong hands, establishing a game-forcing auction where opener describes their hand after the initial relay or positive response",
   "teaching": {
-    "tradeoff": "Using 2C as a strong artificial opening means you lose the natural 2C bid \u2014 but hands with 22+ HCP are rare enough that the tradeoff is overwhelmingly positive.",
+    "tradeoff": "Using 2C as a strong artificial opening means you lose the natural 2C bid — but hands with 22+ HCP are rare enough that the tradeoff is overwhelmingly positive.",
     "principle": "Strong hands need space to describe themselves. The 2C opening forces the auction to game, giving opener time to show shape without risk of being passed out.",
     "commonMistakes": [
-      "2D is a waiting bid (not necessarily diamonds) \u2014 it says nothing about responder's suit holdings",
-      "After a 2D response, opener's rebid is natural and game-forcing \u2014 responder cannot pass below game",
-      "A positive response (2H/2S/3C/3D) shows 8+ HCP and a 5+ card suit \u2014 don't make a positive response with a weak hand"
+      "2D is a waiting bid (not necessarily diamonds) — it says nothing about responder's suit holdings",
+      "After a 2D response, opener's rebid is natural and game-forcing — responder cannot pass below game",
+      "A positive response (2H/2S/3C/3D) shows 8+ HCP and a 5+ card suit — don't make a positive response with a weak hand"
     ]
   },
   "explanationEntries": [
@@ -32,9 +32,9 @@
       "explanationId": "strong2c.isWaitingResponse",
       "factId": "module.strong2c.isWaitingResponse",
       "templateKey": "strong2c.isWaitingResponse.supporting",
-      "displayText": "0-7 HCP \u2014 waiting/negative response",
+      "displayText": "0-7 HCP — waiting/negative response",
       "contrastiveTemplateKey": "strong2c.isWaitingResponse.whyNot",
-      "contrastiveDisplayText": "Has 8+ HCP \u2014 too strong for waiting response",
+      "contrastiveDisplayText": "Has 8+ HCP — too strong for waiting response",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -45,9 +45,9 @@
       "explanationId": "strong2c.isPositiveResponse",
       "factId": "module.strong2c.isPositiveResponse",
       "templateKey": "strong2c.isPositiveResponse.supporting",
-      "displayText": "8+ HCP \u2014 positive response",
+      "displayText": "8+ HCP — positive response",
       "contrastiveTemplateKey": "strong2c.isPositiveResponse.whyNot",
-      "contrastiveDisplayText": "Fewer than 8 HCP \u2014 not strong enough for positive response",
+      "contrastiveDisplayText": "Fewer than 8 HCP — not strong enough for positive response",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -58,7 +58,7 @@
       "explanationId": "strong2c.positiveBalanced",
       "factId": "module.strong2c.positiveBalanced",
       "templateKey": "strong2c.positiveBalanced.supporting",
-      "displayText": "8+ HCP, balanced, no 5-card suit \u2014 positive 2NT response",
+      "displayText": "8+ HCP, balanced, no 5-card suit — positive 2NT response",
       "contrastiveTemplateKey": "strong2c.positiveBalanced.whyNot",
       "contrastiveDisplayText": "Does not qualify for balanced positive 2NT response",
       "preferredLevel": "semantic",
@@ -71,7 +71,7 @@
       "explanationId": "strong2c.balanced22to24",
       "factId": "module.strong2c.balanced22to24",
       "templateKey": "strong2c.balanced22to24.supporting",
-      "displayText": "22-24 HCP balanced \u2014 rebid 2NT",
+      "displayText": "22-24 HCP balanced — rebid 2NT",
       "contrastiveTemplateKey": "strong2c.balanced22to24.whyNot",
       "contrastiveDisplayText": "Not 22-24 HCP balanced",
       "preferredLevel": "semantic",
@@ -84,7 +84,7 @@
       "explanationId": "strong2c.balanced25to27",
       "factId": "module.strong2c.balanced25to27",
       "templateKey": "strong2c.balanced25to27.supporting",
-      "displayText": "25-27 HCP balanced \u2014 rebid 3NT",
+      "displayText": "25-27 HCP balanced — rebid 3NT",
       "contrastiveTemplateKey": "strong2c.balanced25to27.whyNot",
       "contrastiveDisplayText": "Not 25-27 HCP balanced",
       "preferredLevel": "semantic",
@@ -97,7 +97,7 @@
       "explanationId": "strong2c.responderGameValues",
       "factId": "module.strong2c.responderGameValues",
       "templateKey": "strong2c.responderGameValues.supporting",
-      "displayText": "3-7 HCP \u2014 enough for game opposite 22-24",
+      "displayText": "3-7 HCP — enough for game opposite 22-24",
       "contrastiveTemplateKey": "strong2c.responderGameValues.whyNot",
       "contrastiveDisplayText": "Does not have 3-7 HCP game values",
       "preferredLevel": "semantic",
@@ -110,9 +110,9 @@
       "explanationId": "strong2c.responderSlamValues",
       "factId": "module.strong2c.responderSlamValues",
       "templateKey": "strong2c.responderSlamValues.supporting",
-      "displayText": "8+ HCP \u2014 slam interest opposite 22-24",
+      "displayText": "8+ HCP — slam interest opposite 22-24",
       "contrastiveTemplateKey": "strong2c.responderSlamValues.whyNot",
-      "contrastiveDisplayText": "Fewer than 8 HCP \u2014 not enough for slam try",
+      "contrastiveDisplayText": "Fewer than 8 HCP — not enough for slam try",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -420,7 +420,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2C \u2014 strong artificial",
+            "name": "2C — strong artificial",
             "summary": "Open 2C with 22+ HCP, forcing to game"
           }
         }
@@ -461,7 +461,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2D \u2014 waiting/negative",
+            "name": "2D — waiting/negative",
             "summary": "Artificial waiting response with 0-7 HCP, says nothing about diamonds"
           }
         },
@@ -505,7 +505,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 positive with hearts",
+            "name": "2H — positive with hearts",
             "summary": "Natural positive response showing 8+ HCP and 5+ hearts"
           }
         },
@@ -549,7 +549,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 positive with spades",
+            "name": "2S — positive with spades",
             "summary": "Natural positive response showing 8+ HCP and 5+ spades"
           }
         },
@@ -593,7 +593,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 positive with clubs",
+            "name": "3C — positive with clubs",
             "summary": "Natural positive response showing 8+ HCP and 5+ clubs"
           }
         },
@@ -637,7 +637,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 positive with diamonds",
+            "name": "3D — positive with diamonds",
             "summary": "Natural positive response showing 8+ HCP and 5+ diamonds"
           }
         },
@@ -673,7 +673,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2NT \u2014 positive balanced",
+            "name": "2NT — positive balanced",
             "summary": "Positive response showing 8+ HCP, balanced hand with no 5-card suit"
           }
         }
@@ -714,7 +714,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 natural rebid",
+            "name": "2H — natural rebid",
             "summary": "Show 5+ hearts, game-forcing after 2C-2D"
           }
         },
@@ -750,7 +750,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 natural rebid",
+            "name": "2S — natural rebid",
             "summary": "Show 5+ spades, game-forcing after 2C-2D"
           }
         },
@@ -786,7 +786,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 natural rebid",
+            "name": "3C — natural rebid",
             "summary": "Show 5+ clubs, game-forcing after 2C-2D"
           }
         },
@@ -822,7 +822,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 natural rebid",
+            "name": "3D — natural rebid",
             "summary": "Show 5+ diamonds, game-forcing after 2C-2D"
           }
         },
@@ -858,7 +858,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2NT \u2014 22-24 balanced",
+            "name": "2NT — 22-24 balanced",
             "summary": "Show 22-24 HCP balanced hand after 2C-2D"
           }
         },
@@ -894,7 +894,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3NT \u2014 25-27 balanced",
+            "name": "3NT — 25-27 balanced",
             "summary": "Show 25-27 HCP balanced hand after 2C-2D"
           }
         }
@@ -924,7 +924,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 very weak",
+            "name": "Pass — very weak",
             "summary": "Pass opener's 2NT rebid with 0-2 HCP"
           }
         },
@@ -960,7 +960,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3NT \u2014 game values",
+            "name": "3NT — game values",
             "summary": "Raise to game with 3-7 HCP opposite opener's 22-24 balanced"
           }
         },
@@ -996,7 +996,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4NT \u2014 quantitative slam try",
+            "name": "4NT — quantitative slam try",
             "summary": "Invite slam with 8+ HCP opposite opener's 22-24 balanced"
           }
         },
@@ -1040,7 +1040,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 5+ hearts, game values",
+            "name": "3H — 5+ hearts, game values",
             "summary": "Show 5+ hearts with game values, looking for a major-suit fit"
           }
         },
@@ -1084,7 +1084,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 5+ spades, game values",
+            "name": "3S — 5+ spades, game values",
             "summary": "Show 5+ spades with game values, looking for a major-suit fit"
           }
         }
@@ -1125,7 +1125,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 raise hearts",
+            "name": "3H — raise hearts",
             "summary": "Raise opener's hearts with 3+ card support"
           }
         },
@@ -1161,7 +1161,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 raise spades",
+            "name": "3S — raise spades",
             "summary": "Raise opener's spades with 3+ card support"
           }
         },
@@ -1197,7 +1197,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4C \u2014 raise clubs",
+            "name": "4C — raise clubs",
             "summary": "Raise opener's clubs with 3+ card support"
           }
         },
@@ -1233,7 +1233,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4D \u2014 raise diamonds",
+            "name": "4D — raise diamonds",
             "summary": "Raise opener's diamonds with 3+ card support"
           }
         },
@@ -1260,7 +1260,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2NT \u2014 waiting, no fit",
+            "name": "2NT — waiting, no fit",
             "summary": "No fit for opener's suit, game-forcing relay to continue describing"
           }
         },
@@ -1287,7 +1287,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3NT \u2014 no fit, game",
+            "name": "3NT — no fit, game",
             "summary": "No fit for opener's suit, suggest playing 3NT"
           }
         },
@@ -1323,7 +1323,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 own suit",
+            "name": "3C — own suit",
             "summary": "Show 5+ clubs, no fit for opener's suit"
           }
         },
@@ -1359,7 +1359,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 own suit",
+            "name": "3D — own suit",
             "summary": "Show 5+ diamonds, no fit for opener's suit"
           }
         },
@@ -1395,7 +1395,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 own suit",
+            "name": "3H — own suit",
             "summary": "Show 5+ hearts, no fit for opener's suit"
           }
         },
@@ -1431,7 +1431,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 own suit",
+            "name": "3S — own suit",
             "summary": "Show 5+ spades, no fit for opener's suit"
           }
         }
@@ -1472,7 +1472,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 raise partner's hearts",
+            "name": "3H — raise partner's hearts",
             "summary": "Raise responder's heart suit with 3+ card support"
           }
         },
@@ -1508,7 +1508,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 raise partner's spades",
+            "name": "3S — raise partner's spades",
             "summary": "Raise responder's spade suit with 3+ card support"
           }
         },
@@ -1544,7 +1544,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4C \u2014 raise partner's clubs",
+            "name": "4C — raise partner's clubs",
             "summary": "Raise responder's club suit with 3+ card support"
           }
         },
@@ -1580,7 +1580,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4D \u2014 raise partner's diamonds",
+            "name": "4D — raise partner's diamonds",
             "summary": "Raise responder's diamond suit with 3+ card support"
           }
         },
@@ -1607,7 +1607,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3NT \u2014 no fit, balanced",
+            "name": "3NT — no fit, balanced",
             "summary": "No fit for responder's suit, suggest 3NT with balanced hand"
           }
         },
@@ -1643,7 +1643,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 own suit",
+            "name": "3C — own suit",
             "summary": "Show 5+ clubs, no fit for responder's suit"
           }
         },
@@ -1679,7 +1679,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 own suit",
+            "name": "3D — own suit",
             "summary": "Show 5+ diamonds, no fit for responder's suit"
           }
         },
@@ -1715,7 +1715,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 own suit",
+            "name": "3H — own suit",
             "summary": "Show 5+ hearts, no fit for responder's suit"
           }
         },
@@ -1751,7 +1751,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 own suit",
+            "name": "3S — own suit",
             "summary": "Show 5+ spades, no fit for responder's suit"
           }
         }
@@ -1792,7 +1792,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 show clubs",
+            "name": "3C — show clubs",
             "summary": "Show 5+ clubs after responder's 2NT positive"
           }
         },
@@ -1828,7 +1828,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 show diamonds",
+            "name": "3D — show diamonds",
             "summary": "Show 5+ diamonds after responder's 2NT positive"
           }
         },
@@ -1864,7 +1864,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 show hearts",
+            "name": "3H — show hearts",
             "summary": "Show 5+ hearts after responder's 2NT positive"
           }
         },
@@ -1900,7 +1900,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 show spades",
+            "name": "3S — show spades",
             "summary": "Show 5+ spades after responder's 2NT positive"
           }
         },
@@ -1927,7 +1927,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3NT \u2014 balanced, game",
+            "name": "3NT — balanced, game",
             "summary": "Balanced hand, settle in 3NT after responder's balanced positive"
           }
         },
@@ -1963,7 +1963,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4NT \u2014 quantitative slam try",
+            "name": "4NT — quantitative slam try",
             "summary": "25-27 HCP balanced, invite slam opposite responder's 8+ HCP"
           }
         }
@@ -1978,10 +1978,20 @@
         "world": "acting-hand",
         "description": "22+ HCP qualifies for strong 2C opening",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
         "constrainsDimensions": [
           "pointRange"
-        ]
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.hcp",
+            "operator": "gte",
+            "value": 22
+          }
+        }
       },
       {
         "id": "module.strong2c.isWaitingResponse",
@@ -1989,10 +1999,20 @@
         "world": "acting-hand",
         "description": "0-7 HCP (waiting/negative response)",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
         "constrainsDimensions": [
           "pointRange"
-        ]
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.hcp",
+            "operator": "lte",
+            "value": 7
+          }
+        }
       },
       {
         "id": "module.strong2c.isPositiveResponse",
@@ -2000,10 +2020,20 @@
         "world": "acting-hand",
         "description": "8+ HCP (positive response)",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
         "constrainsDimensions": [
           "pointRange"
-        ]
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.hcp",
+            "operator": "gte",
+            "value": 8
+          }
+        }
       },
       {
         "id": "module.strong2c.positiveBalanced",
@@ -2011,11 +2041,62 @@
         "world": "acting-hand",
         "description": "8+ HCP balanced with no 5-card suit",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.hcp",
+          "hand.suitLength.spades",
+          "hand.suitLength.hearts",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.clubs"
+        ],
         "constrainsDimensions": [
           "pointRange",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 8
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "lte",
+                "value": 4
+              }
+            }
+          ]
+        }
       },
       {
         "id": "module.strong2c.balanced22to24",
@@ -2023,11 +2104,70 @@
         "world": "acting-hand",
         "description": "22-24 HCP balanced",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.hcp",
+          "hand.suitLength.spades",
+          "hand.suitLength.hearts",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.clubs"
+        ],
         "constrainsDimensions": [
           "pointRange",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 22
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "lte",
+                "value": 24
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "lte",
+                "value": 4
+              }
+            }
+          ]
+        }
       },
       {
         "id": "module.strong2c.balanced25to27",
@@ -2035,11 +2175,70 @@
         "world": "acting-hand",
         "description": "25-27 HCP balanced",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.hcp",
+          "hand.suitLength.spades",
+          "hand.suitLength.hearts",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.clubs"
+        ],
         "constrainsDimensions": [
           "pointRange",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 25
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "lte",
+                "value": 27
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "lte",
+                "value": 4
+              }
+            }
+          ]
+        }
       },
       {
         "id": "module.strong2c.responderGameValues",
@@ -2047,10 +2246,33 @@
         "world": "acting-hand",
         "description": "3-7 HCP (game values opposite 22-24)",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
         "constrainsDimensions": [
           "pointRange"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "lte",
+                "value": 7
+              }
+            }
+          ]
+        }
       },
       {
         "id": "module.strong2c.responderSlamValues",
@@ -2058,10 +2280,20 @@
         "world": "acting-hand",
         "description": "8+ HCP (slam try values)",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
         "constrainsDimensions": [
           "pointRange"
-        ]
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.hcp",
+            "operator": "gte",
+            "value": 8
+          }
+        }
       },
       {
         "id": "module.strong2c.hasHeartSupport",
@@ -2069,10 +2301,20 @@
         "world": "acting-hand",
         "description": "3+ hearts to support partner",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.suitLength.hearts"
+        ],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.hearts",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       },
       {
         "id": "module.strong2c.hasSpadeSupport",
@@ -2080,10 +2322,20 @@
         "world": "acting-hand",
         "description": "3+ spades to support partner",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.suitLength.spades"
+        ],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.spades",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       },
       {
         "id": "module.strong2c.hasClubSupport",
@@ -2091,10 +2343,20 @@
         "world": "acting-hand",
         "description": "3+ clubs to support partner",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.suitLength.clubs"
+        ],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.clubs",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       },
       {
         "id": "module.strong2c.hasDiamondSupport",
@@ -2102,10 +2364,20 @@
         "world": "acting-hand",
         "description": "3+ diamonds to support partner",
         "valueType": "boolean",
-        "derivesFrom": [],
+        "derivesFrom": [
+          "hand.suitLength.diamonds"
+        ],
         "constrainsDimensions": [
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.diamonds",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       }
     ]
   }

@@ -2334,30 +2334,24 @@
         "composition": {
           "kind": "or",
           "operands": [
-            {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.suitLength.clubs",
-                "operator": "gte",
-                "value": 6
-              }
-            },
-            {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.suitLength.diamonds",
-                "operator": "gte",
-                "value": 6
-              }
-            },
-            {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.suitLength.hearts",
-                "operator": "gte",
-                "value": 6
-              }
-            }
+            { "kind": "and", "operands": [
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 6 } },
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "lte", "value": 3 } },
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "lte", "value": 3 } },
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "lte", "value": 3 } }
+            ]},
+            { "kind": "and", "operands": [
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 6 } },
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "lte", "value": 3 } },
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "lte", "value": 3 } },
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "lte", "value": 3 } }
+            ]},
+            { "kind": "and", "operands": [
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 6 } },
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "lte", "value": 3 } },
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "lte", "value": 3 } },
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "lte", "value": 3 } }
+            ]}
           ]
         }
       },
@@ -2453,7 +2447,15 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.singleSuited", "expected": true } },
+            { "kind": "extended", "clause": { "clauseKind": "longestSuitIs", "suit": "C" } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 6 } }
+          ]
+        }
       },
       {
         "id": "module.dont.singleSuitDiamonds",
@@ -2467,7 +2469,15 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.singleSuited", "expected": true } },
+            { "kind": "extended", "clause": { "clauseKind": "longestSuitIs", "suit": "D" } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 6 } }
+          ]
+        }
       },
       {
         "id": "module.dont.singleSuitHearts",
@@ -2481,7 +2491,15 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.singleSuited", "expected": true } },
+            { "kind": "extended", "clause": { "clauseKind": "longestSuitIs", "suit": "H" } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 6 } }
+          ]
+        }
       },
       {
         "id": "module.dont.clubsHigherDiamonds",
@@ -2495,7 +2513,15 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 4 } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "D", "op": "gt", "b": "H" } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "D", "op": "gt", "b": "S" } }
+          ]
+        }
       },
       {
         "id": "module.dont.clubsHigherHearts",
@@ -2509,7 +2535,15 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 4 } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "H", "op": "gte", "b": "D" } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "H", "op": "gt", "b": "S" } }
+          ]
+        }
       },
       {
         "id": "module.dont.clubsHigherSpades",
@@ -2523,7 +2557,15 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 4 } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "S", "op": "gte", "b": "H" } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "S", "op": "gte", "b": "D" } }
+          ]
+        }
       },
       {
         "id": "module.dont.diamondsMajorHearts",
@@ -2537,7 +2579,14 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 4 } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "H", "op": "gt", "b": "S" } }
+          ]
+        }
       },
       {
         "id": "module.dont.diamondsMajorSpades",
@@ -2551,7 +2600,14 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 4 } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "S", "op": "gte", "b": "H" } }
+          ]
+        }
       },
       {
         "id": "module.dont.hasHeartSupport",
@@ -2563,7 +2619,17 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 3 } },
+            { "kind": "and", "operands": [
+              { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 2 } },
+              { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "H", "op": "gte", "b": "S" } }
+            ]}
+          ]
+        }
       },
       {
         "id": "module.dont.hasSpadeSupport",
@@ -2635,7 +2701,14 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 6 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 6 } }
+          ]
+        }
       },
       {
         "id": "module.dont.longMinorIsClubs",
@@ -2650,7 +2723,14 @@
           "suitIdentity",
           "suitLength",
           "shapeClass"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 6 } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "C", "op": "gte", "b": "D" } }
+          ]
+        }
       },
       {
         "id": "module.dont.longMinorIsDiamonds",
@@ -2665,7 +2745,14 @@
           "suitIdentity",
           "suitLength",
           "shapeClass"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 6 } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "D", "op": "gt", "b": "C" } }
+          ]
+        }
       }
     ]
   }

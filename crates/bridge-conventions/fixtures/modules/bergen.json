@@ -2520,7 +2520,14 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "eq", "value": 4 } },
+            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "eq", "value": 4 } }
+          ]
+        }
       }
     ]
   }

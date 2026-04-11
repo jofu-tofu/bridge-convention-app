@@ -792,7 +792,8 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } }
       },
       {
         "id": "module.smolen.hasFiveSpades",
@@ -806,7 +807,8 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } }
       },
       {
         "id": "module.smolen.hasFourSpades",
@@ -820,7 +822,8 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 4 } }
       },
       {
         "id": "module.smolen.hasFourHearts",
@@ -834,7 +837,8 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 4 } }
       },
       {
         "id": "module.smolen.openerHasHeartFit",
@@ -848,7 +852,8 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 3 } }
       },
       {
         "id": "module.smolen.openerHasSpadesFit",
@@ -862,7 +867,8 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 3 } }
       }
     ]
   }

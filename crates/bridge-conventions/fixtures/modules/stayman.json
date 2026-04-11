@@ -2005,7 +2005,14 @@
         ],
         "constrainsDimensions": [
           "suitIdentity"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "bridge.hasFourCardMajor", "expected": true } },
+            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 8 } }
+          ]
+        }
       },
       {
         "id": "module.stayman.preferred",
@@ -2021,7 +2028,24 @@
         ],
         "constrainsDimensions": [
           "suitIdentity"
-        ]
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.stayman.eligible", "expected": true } },
+            { "kind": "or", "operands": [
+              { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "bridge.hasFiveCardMajor", "expected": false } },
+              { "kind": "and", "operands": [
+                { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 4 } },
+                { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 4 } },
+                { "kind": "or", "operands": [
+                  { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } },
+                  { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } }
+                ]}
+              ]}
+            ]}
+          ]
+        }
       },
       {
         "id": "module.stayman.nsHaveEightCardFitLikely",

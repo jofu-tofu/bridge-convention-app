@@ -2494,7 +2494,15 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": {
+          "kind": "match",
+          "cases": [
+            { "when": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } }, "then": "spades" },
+            { "when": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } }, "then": "hearts" }
+          ],
+          "default": "none"
+        }
       },
       {
         "id": "module.transfer.eligible",
@@ -2508,7 +2516,8 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "bridge.hasFiveCardMajor", "expected": true } }
       },
       {
         "id": "module.transfer.preferred",
@@ -2522,7 +2531,8 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.transfer.eligible", "expected": true } }
       },
       {
         "id": "module.transfer.openerHasHeartFit",
@@ -2536,7 +2546,8 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 3 } }
       },
       {
         "id": "module.transfer.openerHasSpadesFit",
@@ -2550,7 +2561,8 @@
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength"
-        ]
+        ],
+        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 3 } }
       }
     ]
   }

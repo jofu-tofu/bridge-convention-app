@@ -887,7 +887,17 @@
         "world": "acting-hand",
         "description": "Number of aces held in hand (0-4)",
         "valueType": "number",
-        "constrainsDimensions": []
+        "constrainsDimensions": [],
+        "composition": {
+          "kind": "match",
+          "cases": [
+            { "when": { "kind": "extended", "clause": { "clauseKind": "aceCount", "min": 4, "max": 4 } }, "then": 4 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "aceCount", "min": 3, "max": 3 } }, "then": 3 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "aceCount", "min": 2, "max": 2 } }, "then": 2 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "aceCount", "min": 1, "max": 1 } }, "then": 1 }
+          ],
+          "default": 0
+        }
       },
       {
         "id": "module.blackwood.kingCount",
@@ -895,7 +905,17 @@
         "world": "acting-hand",
         "description": "Number of kings held in hand (0-4)",
         "valueType": "number",
-        "constrainsDimensions": []
+        "constrainsDimensions": [],
+        "composition": {
+          "kind": "match",
+          "cases": [
+            { "when": { "kind": "extended", "clause": { "clauseKind": "kingCount", "min": 4, "max": 4 } }, "then": 4 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "kingCount", "min": 3, "max": 3 } }, "then": 3 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "kingCount", "min": 2, "max": 2 } }, "then": 2 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "kingCount", "min": 1, "max": 1 } }, "then": 1 }
+          ],
+          "default": 0
+        }
       }
     ]
   }
