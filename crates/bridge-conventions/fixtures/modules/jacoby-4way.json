@@ -1,22 +1,21 @@
 {
   "moduleId": "jacoby-4way",
-  "displayName": "4-Way Transfers",
+  "displayName": "Jacoby Transfers",
   "category": "notrump-responses",
   "fixtureVersion": 1,
   "variantOf": "jacoby-transfers",
-  "description": "Extended Jacoby Transfers including minor suit transfers (2S to clubs, 2NT to diamonds)",
-  "purpose": "Extend the transfer principle to all four suits, allowing responder to show any long suit and right-side the contract",
+  "description": "Jacoby Transfers for major-suit responses, with the standard transfer structure kept intact",
+  "purpose": "Use the Jacoby transfer structure for major-suit hands while preserving the usual right-side-the-contract benefits",
   "references": {
-    "primary": { "url": "https://www.bridgeguys.com/Conventions/FourWayTransfers.html", "label": "Bridge Guys — 4-way transfer extensions including minor suit transfers" },
-    "discovery": { "url": "https://www.bridgebum.com/four_suit_transfer_bids.php" },
-    "secondary": []
+    "authority": { "url": "https://www.bridgeguys.com/Conventions/FourWayTransfers.html", "label": "Bridge Guys — Jacoby transfer structure for major suits" },
+    "discovery": { "url": "https://www.bridgebum.com/four_suit_transfer_bids.php" }
   },
   "teaching": {
-    "tradeoff": "Using 2S and 2NT as minor transfers means you lose natural invitational 2NT and natural 2S responses to 1NT.",
-    "principle": "Transfer principle extended: every suit can be shown via a transfer, keeping the strong hand as declarer.",
+    "tradeoff": "This module keeps the standard major-suit transfer structure, so natural invitational 2NT and natural 2S responses remain available.",
+    "principle": "Transfer principle applied to the major suits, keeping the strong hand as declarer.",
     "commonMistakes": [
-      "Remember that 2NT is no longer a natural invite — use Stayman or other routes for invitational hands without a long minor",
-      "Minor transfers typically show 6+ cards in the minor since you are bypassing 2NT"
+      "Remember that this fixture is about major-suit transfers, not minor-suit transfer extensions",
+      "Use Stayman or other routes for invitational hands without a long major"
     ]
   },
   "explanationEntries": [
@@ -2504,8 +2503,28 @@
         "composition": {
           "kind": "match",
           "cases": [
-            { "when": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } }, "then": "spades" },
-            { "when": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } }, "then": "hearts" }
+            {
+              "when": {
+                "kind": "primitive",
+                "clause": {
+                  "factId": "hand.suitLength.spades",
+                  "operator": "gte",
+                  "value": 5
+                }
+              },
+              "then": "spades"
+            },
+            {
+              "when": {
+                "kind": "primitive",
+                "clause": {
+                  "factId": "hand.suitLength.hearts",
+                  "operator": "gte",
+                  "value": 5
+                }
+              },
+              "then": "hearts"
+            }
           ],
           "default": "none"
         }
@@ -2523,7 +2542,14 @@
           "suitIdentity",
           "suitLength"
         ],
-        "composition": { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "bridge.hasFiveCardMajor", "expected": true } }
+        "composition": {
+          "kind": "extended",
+          "clause": {
+            "clauseKind": "booleanFact",
+            "fact_id": "bridge.hasFiveCardMajor",
+            "expected": true
+          }
+        }
       },
       {
         "id": "module.transfer.preferred",
@@ -2538,7 +2564,14 @@
           "suitIdentity",
           "suitLength"
         ],
-        "composition": { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.transfer.eligible", "expected": true } }
+        "composition": {
+          "kind": "extended",
+          "clause": {
+            "clauseKind": "booleanFact",
+            "fact_id": "module.transfer.eligible",
+            "expected": true
+          }
+        }
       },
       {
         "id": "module.transfer.openerHasHeartFit",
@@ -2553,7 +2586,14 @@
           "suitIdentity",
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 3 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.hearts",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       },
       {
         "id": "module.transfer.openerHasSpadesFit",
@@ -2568,7 +2608,14 @@
           "suitIdentity",
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 3 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.spades",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       }
     ]
   }

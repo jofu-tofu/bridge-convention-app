@@ -6,11 +6,8 @@
   "description": "Use 4NT to ask for aces when considering slam",
   "purpose": "Determine whether the partnership has enough aces to bid slam safely",
   "references": {
-    "primary": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Blackwood is a core SAYC convention, fully standardized" },
-    "discovery": { "url": "https://www.bridgebum.com/blackwood.php" },
-    "secondary": [
-      { "url": "https://www.bridgeguys.com/Conventions/Blackwood.html", "label": "Bridge Guys — Blackwood variants and when NOT to use it" }
-    ]
+    "authority": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Blackwood is a core SAYC convention, fully standardized" },
+    "discovery": { "url": "https://www.bridgebum.com/blackwood.php" }
   },
   "teaching": {
     "tradeoff": "Using 4NT as Blackwood means you can't use it as a natural quantitative raise to slam.",
@@ -129,7 +126,7 @@
       "explanationId": "blackwood.signoffSmallSlam",
       "meaningId": "blackwood:signoff-small-slam",
       "templateKey": "blackwood.signoffSmallSlam.semantic",
-      "displayText": "Sign off at 6NT — small slam",
+      "displayText": "Sign off at small slam in the agreed trump suit",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -139,7 +136,7 @@
       "explanationId": "blackwood.signoffGrandSlam",
       "meaningId": "blackwood:signoff-grand-slam",
       "templateKey": "blackwood.signoffGrandSlam.semantic",
-      "displayText": "Bid 7NT — grand slam with all aces and kings",
+      "displayText": "Bid grand slam in the agreed trump suit with all aces and kings",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -388,7 +385,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "5♣ — 0 (or 4) aces",
+            "name": "5♣ — 4 aces",
             "summary": "Show all four aces in response to partner's Blackwood ask"
           }
         },
@@ -549,8 +546,14 @@
             "defaultCall": {
               "type": "bid",
               "level": 6,
-              "strain": "NT"
-            }
+              "strain": "H"
+            },
+            "alternateEncodings": [
+              { "call": { "type": "bid", "level": 6, "strain": "S" } },
+              { "call": { "type": "bid", "level": 6, "strain": "D" } },
+              { "call": { "type": "bid", "level": 6, "strain": "C" } },
+              { "call": { "type": "bid", "level": 6, "strain": "NT" } }
+            ]
           },
           "clauses": [],
           "ranking": {
@@ -566,8 +569,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "6NT — small slam signoff",
-            "summary": "Bid small slam after confirming sufficient aces for twelve tricks"
+            "name": "Small slam in agreed suit",
+            "summary": "Bid small slam in the agreed trump suit after confirming sufficient aces"
           }
         },
         {
@@ -578,8 +581,13 @@
             "defaultCall": {
               "type": "bid",
               "level": 5,
-              "strain": "NT"
-            }
+              "strain": "H"
+            },
+            "alternateEncodings": [
+              { "call": { "type": "bid", "level": 5, "strain": "S" } },
+              { "call": { "type": "bid", "level": 5, "strain": "D" } },
+              { "call": { "type": "bid", "level": 5, "strain": "C" } }
+            ]
           },
           "clauses": [],
           "ranking": {
@@ -595,8 +603,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Sign off",
-            "summary": "Stop below slam after learning the partnership is missing too many aces"
+            "name": "Sign off in agreed suit",
+            "summary": "Stop below slam in the agreed trump suit after learning the partnership is missing too many aces"
           }
         }
       ]
@@ -680,7 +688,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6♣ — 0 (or 4) kings",
+            "name": "6♣ — 4 kings",
             "summary": "Show all four kings in response to partner's king ask"
           }
         },
@@ -812,8 +820,14 @@
             "defaultCall": {
               "type": "bid",
               "level": 7,
-              "strain": "NT"
-            }
+              "strain": "H"
+            },
+            "alternateEncodings": [
+              { "call": { "type": "bid", "level": 7, "strain": "S" } },
+              { "call": { "type": "bid", "level": 7, "strain": "D" } },
+              { "call": { "type": "bid", "level": 7, "strain": "C" } },
+              { "call": { "type": "bid", "level": 7, "strain": "NT" } }
+            ]
           },
           "clauses": [],
           "ranking": {
@@ -829,8 +843,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "7NT — grand slam",
-            "summary": "Bid grand slam after confirming all aces and sufficient kings"
+            "name": "Grand slam in agreed suit",
+            "summary": "Bid grand slam in the agreed trump suit after confirming all aces and sufficient kings"
           }
         },
         {
@@ -841,8 +855,14 @@
             "defaultCall": {
               "type": "bid",
               "level": 6,
-              "strain": "NT"
-            }
+              "strain": "H"
+            },
+            "alternateEncodings": [
+              { "call": { "type": "bid", "level": 6, "strain": "S" } },
+              { "call": { "type": "bid", "level": 6, "strain": "D" } },
+              { "call": { "type": "bid", "level": 6, "strain": "C" } },
+              { "call": { "type": "bid", "level": 6, "strain": "NT" } }
+            ]
           },
           "clauses": [],
           "ranking": {
@@ -858,8 +878,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "6NT — small slam signoff",
-            "summary": "Settle for small slam after learning the partnership is missing a king"
+            "name": "Small slam in agreed suit",
+            "summary": "Settle for small slam in the agreed trump suit after learning the partnership is missing a king"
           }
         }
       ]
