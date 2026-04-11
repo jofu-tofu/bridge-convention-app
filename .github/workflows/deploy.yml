@@ -43,6 +43,7 @@ jobs:
 
       - name: Type-check & test
         run: |
+          npx svelte-kit sync
           npm run check
           npm run test:run
           npm run lint

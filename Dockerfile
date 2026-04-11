@@ -37,16 +37,15 @@ RUN npm ci
 COPY --from=wasm-build /build/crates/bridge-wasm/pkg/ crates/bridge-wasm/pkg/
 COPY static/ static/
 COPY src/ src/
-COPY index.html svelte.config.js vite.config.ts tsconfig.json ./
+COPY svelte.config.js vite.config.ts tsconfig.json ./
 COPY scripts/ scripts/
 COPY content/ content/
 COPY --from=static-build /build/target/release/bridge-static /usr/local/bin/bridge-static
-RUN npm run dds:ensure && npx vite build && npx tsx scripts/build-guides-html.ts && \
-    mkdir -p dist/.static && bridge-static --output dist/.static/learn-data.json && \
-    npx tsx scripts/build-learn-html.ts
+RUN mkdir -p static/.static && bridge-static --output static/.static/learn-data.json && \
+    npm run dds:ensure && npx vite build
 
 # Stage 5 — production: serve static files with Caddy
 FROM caddy:2-alpine AS production
 COPY Caddyfile /etc/caddy/Caddyfile
-COPY --from=node-build /build/dist/ /srv/
+COPY --from=node-build /build/build/ /srv/
 EXPOSE 80
