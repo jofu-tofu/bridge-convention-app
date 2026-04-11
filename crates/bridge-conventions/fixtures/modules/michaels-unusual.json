@@ -5,6 +5,14 @@
   "fixtureVersion": 1,
   "description": "Michaels Cue Bids and Unusual 2NT: compete over opponent's suit opening with two-suited hands (5-5+)",
   "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
+  "references": {
+    "primary": { "url": "https://www.bridgeguys.com/Conventions/MichaelsCueBid.html", "label": "Bridge Guys — comprehensive Michaels coverage with advancer responses and continuations" },
+    "discovery": { "url": "https://www.bridgebum.com/michaels_cue_bid.php" },
+    "secondary": [
+      { "url": "https://www.bridgeguys.com/Conventions/Unusual2NT.html", "label": "Bridge Guys — Unusual 2NT companion convention" },
+      { "url": "https://www.larryco.com/bridge-articles/michaels-cue-bid", "label": "Larry Cohen — practical Michaels guidance" }
+    ]
+  },
   "teaching": {
     "tradeoff": "Michaels/Unusual 2NT sacrifices the natural meaning of the cue bid and 2NT in exchange for immediately showing a two-suited competitive hand.",
     "principle": "Against a suit opening, showing two suits at once lets partner judge fit quickly. The specific cue bid varies by opening suit to encode which suits you hold.",

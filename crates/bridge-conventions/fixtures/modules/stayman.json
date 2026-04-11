@@ -5,6 +5,13 @@
   "fixtureVersion": 1,
   "description": "Bid 2C over 1NT to find a 4-4 major-suit fit",
   "purpose": "Discover whether opener holds a 4-card major so the partnership can play in an 8-card major fit instead of notrump",
+  "references": {
+    "primary": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Stayman is a core SAYC convention, standardized in the ACBL booklet" },
+    "discovery": { "url": "https://www.bridgebum.com/stayman.php" },
+    "secondary": [
+      { "url": "https://www.bridgeguys.com/Conventions/Stayman.html", "label": "Bridge Guys — detailed continuation sequences" }
+    ]
+  },
   "teaching": {
     "tradeoff": "Using 2C as Stayman means you can't play in a natural 2C contract.",
     "principle": "Always check for a 4-4 major fit before settling in notrump — majors score better and play easier with a trump suit.",

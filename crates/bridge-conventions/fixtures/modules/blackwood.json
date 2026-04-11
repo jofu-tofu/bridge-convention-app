@@ -5,6 +5,13 @@
   "fixtureVersion": 1,
   "description": "Use 4NT to ask for aces when considering slam",
   "purpose": "Determine whether the partnership has enough aces to bid slam safely",
+  "references": {
+    "primary": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Blackwood is a core SAYC convention, fully standardized" },
+    "discovery": { "url": "https://www.bridgebum.com/blackwood.php" },
+    "secondary": [
+      { "url": "https://www.bridgeguys.com/Conventions/Blackwood.html", "label": "Bridge Guys — Blackwood variants and when NOT to use it" }
+    ]
+  },
   "teaching": {
     "tradeoff": "Using 4NT as Blackwood means you can't use it as a natural quantitative raise to slam.",
     "principle": "Before bidding slam, check for aces — missing two aces means the opponents can cash two tricks immediately.",

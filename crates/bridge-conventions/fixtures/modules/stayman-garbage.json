@@ -6,6 +6,11 @@
   "variantOf": "stayman",
   "description": "Bid 2C over 1NT as Garbage Stayman — escape to a major with a weak hand",
   "purpose": "Use Stayman as an escape mechanism with weak hands containing both majors, planning to pass any response",
+  "references": {
+    "primary": { "url": "https://www.bridgeguys.com/Conventions/GarbageStayman.html", "label": "Bridge Guys — Garbage Stayman as a specialized escape variant" },
+    "discovery": { "url": "https://www.bridgebum.com/garbage_stayman.php" },
+    "secondary": []
+  },
   "teaching": {
     "tradeoff": "Garbage Stayman sacrifices the standard HCP requirement for Stayman to allow weak hands to escape 1NT.",
     "principle": "With a weak hand and both majors, bid 2C planning to pass any response — you will land in a better contract than 1NT.",

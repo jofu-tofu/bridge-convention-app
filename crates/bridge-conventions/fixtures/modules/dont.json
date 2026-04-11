@@ -5,6 +5,13 @@
   "fixtureVersion": 1,
   "description": "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns",
   "purpose": "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
+  "references": {
+    "primary": { "url": "https://www.bridgeguys.com/Conventions/DONT.html", "label": "Bridge Guys — comprehensive DONT coverage including Marty Bergen's original and common variants" },
+    "discovery": { "url": "https://www.bridgebum.com/dont.php" },
+    "secondary": [
+      { "url": "https://www.kwbridge.com/bb/b_dont.htm", "label": "Karen Walker — clear advancer response explanations" }
+    ]
+  },
   "teaching": {
     "tradeoff": "DONT overcalls commit to the 2-level immediately — if partner has a misfit, you may go down.",
     "principle": "Against a strong 1NT, disrupting their communication is more valuable than finding your own perfect contract.",
@@ -2201,7 +2208,7 @@
         "id": "module.dont.diamondsAndMajor",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "D4+ and (H4+ or S4+) — diamonds + a major for 2D bid",
+        "description": "D5+ and (H4+ or S4+) — diamonds + a major for 2D bid",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -2217,7 +2224,7 @@
               "clause": {
                 "factId": "hand.suitLength.diamonds",
                 "operator": "gte",
-                "value": 4
+                "value": 5
               }
             },
             {
@@ -2248,7 +2255,7 @@
         "id": "module.dont.clubsAndHigher",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "C4+ and (D4+ or H4+ or S4+) — clubs + higher suit for 2C bid",
+        "description": "C5+ and (D4+ or H4+ or S4+) — clubs + higher suit for 2C bid",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -2264,7 +2271,7 @@
               "clause": {
                 "factId": "hand.suitLength.clubs",
                 "operator": "gte",
-                "value": 4
+                "value": 5
               }
             },
             {

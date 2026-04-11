@@ -5,6 +5,13 @@
   "fixtureVersion": 1,
   "description": "After partner opens 1-of-a-suit and the opponent overcalls, responder's double is conventional — showing values and unbid suits rather than penalty",
   "purpose": "Keep the bidding alive at a low level when opponents overcall, showing the unbid suits (especially majors) that a natural response would have shown",
+  "references": {
+    "primary": { "url": "https://www.larryco.com/bridge-articles/negative-doubles", "label": "Larry Cohen — authoritative on modern negative double practice and level-dependent thresholds" },
+    "discovery": { "url": "https://www.bridgebum.com/negative_double.php" },
+    "secondary": [
+      { "url": "https://www.bridgeguys.com/Conventions/NegativeDoubles.html", "label": "Bridge Guys — opener rebid sequences and level thresholds" }
+    ]
+  },
   "teaching": {
     "tradeoff": "Using double as conventional means you can't make a penalty double of the overcall at low levels.",
     "principle": "When opponents overcall, double shows the values and suits (especially unbid majors) that a natural response would show, keeping the bidding alive at a low level.",
@@ -163,7 +170,7 @@
       "explanationId": "negdbl.double.after1h2c",
       "meaningId": "negdbl:double-after-1h-2c",
       "templateKey": "negdbl.double.after1h2c.semantic",
-      "displayText": "Double: Shows spades + diamonds over 2C overcall of 1H",
+      "displayText": "Double: Shows 4+ spades over 2C overcall of 1H",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -183,7 +190,7 @@
       "explanationId": "negdbl.double.after1s2c",
       "meaningId": "negdbl:double-after-1s-2c",
       "templateKey": "negdbl.double.after1s2c.semantic",
-      "displayText": "Double: Shows hearts + diamonds over 2C overcall of 1S",
+      "displayText": "Double: Shows 4+ hearts over 2C overcall of 1S",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -1318,9 +1325,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
               "isPublic": true
             },
             {
@@ -1344,7 +1351,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows 4+ hearts with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows 4+ hearts with competitive values"
           }
         },
         {
@@ -1478,9 +1485,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
               "isPublic": true
             },
             {
@@ -1504,7 +1511,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows 4+ hearts with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows 4+ hearts with competitive values"
           }
         },
         {
@@ -1658,14 +1665,6 @@
               "clauseId": "hand.suitLength.spades:gte:4",
               "description": "4+ spades",
               "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.diamonds",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.diamonds:gte:4",
-              "description": "4+ diamonds",
-              "isPublic": true
             }
           ],
           "ranking": {
@@ -1680,7 +1679,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows spades + diamonds with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows 4+ spades with competitive values (2-level, needs 8+ HCP)"
           }
         },
         {
@@ -1826,14 +1825,6 @@
               "clauseId": "hand.suitLength.hearts:gte:4",
               "description": "4+ hearts",
               "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.diamonds",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.diamonds:gte:4",
-              "description": "4+ diamonds",
-              "isPublic": true
             }
           ],
           "ranking": {
@@ -1848,7 +1839,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows hearts + diamonds with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows 4+ hearts with competitive values (2-level, needs 8+ HCP)"
           }
         },
         {

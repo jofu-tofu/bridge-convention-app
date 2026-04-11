@@ -6,6 +6,11 @@
   "variantOf": "jacoby-transfers",
   "description": "Extended Jacoby Transfers including minor suit transfers (2S to clubs, 2NT to diamonds)",
   "purpose": "Extend the transfer principle to all four suits, allowing responder to show any long suit and right-side the contract",
+  "references": {
+    "primary": { "url": "https://www.bridgeguys.com/Conventions/FourWayTransfers.html", "label": "Bridge Guys — 4-way transfer extensions including minor suit transfers" },
+    "discovery": { "url": "https://www.bridgebum.com/four_suit_transfer_bids.php" },
+    "secondary": []
+  },
   "teaching": {
     "tradeoff": "Using 2S and 2NT as minor transfers means you lose natural invitational 2NT and natural 2S responses to 1NT.",
     "principle": "Transfer principle extended: every suit can be shown via a transfer, keeping the strong hand as declarer.",
@@ -606,7 +611,7 @@
         {
           "meaningId": "transfer:to-hearts",
           "semanticClassId": "transfer:to-hearts",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -642,7 +647,7 @@
         {
           "meaningId": "transfer:to-spades",
           "semanticClassId": "transfer:to-spades",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -691,7 +696,7 @@
         {
           "meaningId": "transfer:accept",
           "semanticClassId": "transfer:accept",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -733,7 +738,7 @@
         {
           "meaningId": "transfer:accept-spades",
           "semanticClassId": "transfer:accept-spades",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -771,7 +776,7 @@
         {
           "meaningId": "transfer:nt-game-hearts",
           "semanticClassId": "transfer:nt-game",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -836,7 +841,7 @@
         {
           "meaningId": "transfer:invite-hearts",
           "semanticClassId": "transfer:invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -890,7 +895,7 @@
         {
           "meaningId": "transfer:signoff-hearts",
           "semanticClassId": "transfer:signoff",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "pass"
@@ -927,7 +932,7 @@
         {
           "meaningId": "transfer:game-hearts",
           "semanticClassId": "transfer:game-in-major",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -975,7 +980,7 @@
         {
           "meaningId": "transfer:invite-raise-hearts",
           "semanticClassId": "transfer:invite-raise",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1023,7 +1028,7 @@
         {
           "meaningId": "transfer:invite-majors-hearts",
           "semanticClassId": "transfer:invite-majors",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1071,7 +1076,7 @@
         {
           "meaningId": "transfer:new-suit-clubs-hearts",
           "semanticClassId": "transfer:new-suit-gf",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1119,7 +1124,7 @@
         {
           "meaningId": "transfer:new-suit-diamonds-hearts",
           "semanticClassId": "transfer:new-suit-gf",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1167,7 +1172,7 @@
         {
           "meaningId": "transfer:splinter-spades",
           "semanticClassId": "transfer:splinter-slam-try",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1215,7 +1220,7 @@
         {
           "meaningId": "transfer:quantitative-hearts",
           "semanticClassId": "transfer:quantitative",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1272,7 +1277,7 @@
         {
           "meaningId": "transfer:nt-game-spades",
           "semanticClassId": "transfer:nt-game",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1337,7 +1342,7 @@
         {
           "meaningId": "transfer:invite-spades",
           "semanticClassId": "transfer:invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1391,7 +1396,7 @@
         {
           "meaningId": "transfer:signoff-spades",
           "semanticClassId": "transfer:signoff",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "pass"
@@ -1428,7 +1433,7 @@
         {
           "meaningId": "transfer:game-spades",
           "semanticClassId": "transfer:game-in-major",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1476,7 +1481,7 @@
         {
           "meaningId": "transfer:invite-raise-spades",
           "semanticClassId": "transfer:invite-raise",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1524,7 +1529,7 @@
         {
           "meaningId": "transfer:new-suit-clubs-spades",
           "semanticClassId": "transfer:new-suit-gf",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1572,7 +1577,7 @@
         {
           "meaningId": "transfer:new-suit-diamonds-spades",
           "semanticClassId": "transfer:new-suit-gf",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1620,7 +1625,7 @@
         {
           "meaningId": "transfer:slam-try-hearts",
           "semanticClassId": "transfer:slam-try-second-major",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1668,7 +1673,7 @@
         {
           "meaningId": "transfer:game-other-major-spades",
           "semanticClassId": "transfer:game-other-major",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1724,7 +1729,7 @@
         {
           "meaningId": "transfer:quantitative-spades",
           "semanticClassId": "transfer:quantitative",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1778,7 +1783,7 @@
         {
           "meaningId": "transfer:correct-to-4h",
           "semanticClassId": "transfer:correct-to-major",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1817,7 +1822,7 @@
         {
           "meaningId": "transfer:pass-3nt-hearts",
           "semanticClassId": "transfer:pass-3nt",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "pass"
@@ -1860,7 +1865,7 @@
         {
           "meaningId": "transfer:correct-to-4s",
           "semanticClassId": "transfer:correct-to-major",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1899,7 +1904,7 @@
         {
           "meaningId": "transfer:pass-3nt-spades",
           "semanticClassId": "transfer:pass-3nt",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "pass"
@@ -1942,7 +1947,7 @@
         {
           "meaningId": "transfer:accept-invite-game-hearts",
           "semanticClassId": "transfer:accept-invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -1990,7 +1995,7 @@
         {
           "meaningId": "transfer:accept-invite-hearts",
           "semanticClassId": "transfer:accept-invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -2036,7 +2041,7 @@
         {
           "meaningId": "transfer:signoff-with-fit-hearts",
           "semanticClassId": "transfer:signoff-with-fit",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -2084,7 +2089,7 @@
         {
           "meaningId": "transfer:decline-invite-hearts",
           "semanticClassId": "transfer:decline-invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "pass"
@@ -2134,7 +2139,7 @@
         {
           "meaningId": "transfer:accept-invite-game-spades",
           "semanticClassId": "transfer:accept-invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -2182,7 +2187,7 @@
         {
           "meaningId": "transfer:accept-invite-spades",
           "semanticClassId": "transfer:accept-invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -2228,7 +2233,7 @@
         {
           "meaningId": "transfer:signoff-with-fit-spades",
           "semanticClassId": "transfer:signoff-with-fit",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -2276,7 +2281,7 @@
         {
           "meaningId": "transfer:decline-invite-spades",
           "semanticClassId": "transfer:decline-invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "pass"
@@ -2326,7 +2331,7 @@
         {
           "meaningId": "transfer:accept-invite-raise-hearts",
           "semanticClassId": "transfer:accept-invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -2365,7 +2370,7 @@
         {
           "meaningId": "transfer:decline-invite-raise-hearts",
           "semanticClassId": "transfer:decline-invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "pass"
@@ -2406,7 +2411,7 @@
         {
           "meaningId": "transfer:accept-invite-raise-spades",
           "semanticClassId": "transfer:accept-invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "bid",
@@ -2445,7 +2450,7 @@
         {
           "meaningId": "transfer:decline-invite-raise-spades",
           "semanticClassId": "transfer:decline-invite",
-          "moduleId": "jacoby-transfers",
+          "moduleId": "jacoby-4way",
           "encoding": {
             "defaultCall": {
               "type": "pass"

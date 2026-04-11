@@ -5,6 +5,13 @@
   "fixtureVersion": 1,
   "description": "After 1m-1M-1NT, bid the other minor as an artificial checkback to find major-suit fits or determine strength",
   "purpose": "After opener rebids 1NT, responder may need to explore for an 8-card major fit or determine whether to invite or bid game. NMF provides a one-round forcing mechanism to extract more information from opener.",
+  "references": {
+    "primary": { "url": "https://www.bridgeguys.com/Conventions/NewMinorForcing.html", "label": "Bridge Guys — comprehensive NMF coverage with opener's rebid structure" },
+    "discovery": { "url": "https://www.bridgebum.com/new_minor_forcing.php" },
+    "secondary": [
+      { "url": "https://www.kwbridge.com/bb/b_nmf.htm", "label": "Karen Walker — clear NMF explanations and continuation bidding" }
+    ]
+  },
   "teaching": {
     "tradeoff": "After 1m-1M-1NT, the bid of the other minor loses its natural meaning in exchange for an artificial forcing checkback bid.",
     "principle": "After a 1NT rebid by opener, responder may still need to explore for an 8-card major fit or determine whether to invite or bid game. NMF provides a one-round forcing mechanism to extract more information.",

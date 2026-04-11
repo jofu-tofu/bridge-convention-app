@@ -5,6 +5,11 @@
   "fixtureVersion": 1,
   "description": "Jump to 3H/3S after Stayman denial to show 5-4 in majors, game-forcing",
   "purpose": "Handle the 5-4 major hand with game values after Stayman gets a 2D denial — let opener choose the fit while keeping the strong hand as declarer",
+  "references": {
+    "primary": { "url": "https://www.bridgeguys.com/Conventions/Smolen.html", "label": "Bridge Guys — Smolen convention with opener's rebids after the game-forcing jump" },
+    "discovery": { "url": "https://www.bridgebum.com/smolen.php" },
+    "secondary": []
+  },
   "teaching": {
     "tradeoff": "Smolen uses jump bids (3H/3S) that could otherwise be used as natural invitational bids.",
     "principle": "Bid the shorter major at the 3-level — this tells opener about both majors and lets the strong hand declare.",

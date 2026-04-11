@@ -5,6 +5,11 @@
   "fixtureVersion": 1,
   "description": "Standard natural bids: opening bids, natural notrump raises, and other common non-convention sequences",
   "purpose": "Learn the standard natural bids you use when no special convention applies",
+  "references": {
+    "primary": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — natural bidding rules are defined by the base system" },
+    "discovery": { "url": "https://www.bridgebum.com/one_notrump_opening.php" },
+    "secondary": []
+  },
   "teaching": {
     "tradeoff": "There is no special tradeoff here — these bids keep their usual natural meanings",
     "principle": "When no major fit exists, raise notrump to the level your combined HCP supports — 25 total for game.",
