@@ -9,10 +9,9 @@
     isUserModule: boolean;
     onParameterChange: (meaningId: string, clauseIndex: number, newValue: number | boolean) => void;
     onClose: () => void;
-    onFork: () => void;
   }
 
-  let { node, surfaces, isUserModule, onParameterChange, onClose, onFork }: Props = $props();
+  let { node, surfaces, isUserModule, onParameterChange, onClose }: Props = $props();
 
   const matchedSurfaces = $derived(
     node.meaningId
@@ -91,15 +90,7 @@
     {#if isUserModule && matchedSurfaces.length > 0}
       <ParameterPanel surfaces={matchedSurfaces} {onParameterChange} />
     {:else if !isUserModule}
-      <div class="text-center py-6">
-        <p class="text-sm text-text-muted mb-3">System modules are read-only.</p>
-        <button
-          class="px-4 py-2 rounded-[--radius-md] text-sm font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-accent-primary transition-colors cursor-pointer"
-          onclick={onFork}
-        >
-          Fork to Edit
-        </button>
-      </div>
+      <p class="text-sm text-text-muted italic">View only — system modules are read-only.</p>
     {:else}
       <p class="text-sm text-text-muted italic">No configurable parameters for this node.</p>
     {/if}

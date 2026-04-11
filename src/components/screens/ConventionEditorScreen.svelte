@@ -120,6 +120,9 @@
   }
 
   function handleCancel(): void {
+    if (appStore.editingModuleIsNew && moduleId) {
+      userModules.deleteModule(moduleId);
+    }
     appStore.navigateToWorkshop();
   }
 

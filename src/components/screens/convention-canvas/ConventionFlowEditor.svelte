@@ -7,13 +7,14 @@
   import NodeDetailPanel from "./NodeDetailPanel.svelte";
   import ConversationFlowTree from "../ConversationFlowTree.svelte";
 
+  // Fork entry point moved to CreationPickerDialog (Workshop "New Convention" button)
+
   interface Props {
     systemModules: ModuleCatalogEntry[];
-    onFork: (moduleId: string) => Promise<void>;
     onNavigateToEditor: (moduleId: string) => void;
   }
 
-  let { systemModules, onFork, onNavigateToEditor }: Props = $props();
+  let { systemModules, onNavigateToEditor }: Props = $props();
 
   const userModules = getUserModuleStore();
 
@@ -95,12 +96,6 @@
     parameterOverrides = { ...parameterOverrides, [`${meaningId}:${clauseIndex}`]: newValue };
   }
 
-  function handleForkSelected() {
-    if (selectedModuleId) {
-      onFork(selectedModuleId);
-    }
-  }
-
   function handleDeleteModule(moduleId: string) {
     userModules.deleteModule(moduleId);
     if (selectedModuleId === moduleId) {
@@ -120,7 +115,6 @@
     {selectedModuleId}
     {search}
     onSelectModule={(id) => { selectedModuleId = id; }}
-    onFork={(id) => { onFork(id); }}
     onDelete={handleDeleteModule}
     {onNavigateToEditor}
     onSearchChange={(v) => { search = v; }}
@@ -156,7 +150,6 @@
         {isUserModule}
         onParameterChange={handleParameterChange}
         onClose={() => { selectedNodeId = null; }}
-        onFork={handleForkSelected}
       />
     {/if}
   </div>

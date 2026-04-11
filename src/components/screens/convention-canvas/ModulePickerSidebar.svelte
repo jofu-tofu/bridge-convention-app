@@ -8,7 +8,6 @@
     selectedModuleId: string | null;
     search: string;
     onSelectModule: (moduleId: string) => void;
-    onFork: (moduleId: string) => void;
     onDelete: (moduleId: string) => void;
     onNavigateToEditor: (moduleId: string) => void;
     onSearchChange: (value: string) => void;
@@ -19,7 +18,6 @@
     selectedModuleId,
     search,
     onSelectModule,
-    onFork,
     onDelete,
     onNavigateToEditor,
     onSearchChange,
@@ -105,23 +103,15 @@
         <p class="text-[9px] font-medium text-text-muted px-2 mb-1">{category}</p>
         <div class="space-y-0.5">
           {#each mods as mod (mod.moduleId)}
-            <div class="flex items-center gap-1">
-              <button
-                class="flex-1 text-left px-2 py-1 rounded-[--radius-md] text-xs transition-colors cursor-pointer truncate
-                  {isSelected(mod.moduleId)
-                    ? 'bg-accent-primary/10 text-accent-primary'
-                    : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary'}"
-                onclick={() => onSelectModule(mod.moduleId)}
-              >
-                {mod.displayName}
-              </button>
-              {#if isSelected(mod.moduleId)}
-                <button
-                  class="shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded text-text-muted hover:text-accent-primary border border-border-subtle hover:border-accent-primary transition-colors cursor-pointer"
-                  onclick={() => onFork(mod.moduleId)}
-                >Fork</button>
-              {/if}
-            </div>
+            <button
+              class="w-full text-left px-2 py-1 rounded-[--radius-md] text-xs transition-colors cursor-pointer truncate
+                {isSelected(mod.moduleId)
+                  ? 'bg-accent-primary/10 text-accent-primary'
+                  : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary'}"
+              onclick={() => onSelectModule(mod.moduleId)}
+            >
+              {mod.displayName}
+            </button>
           {/each}
         </div>
       </div>

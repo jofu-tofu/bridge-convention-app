@@ -41,6 +41,12 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "max-w-3xl centered container, single-column card grid",
   },
   {
+    path: "GuidesScreen.svelte",
+    mobileStrategy: "centered",
+    minWidth: 320,
+    mobileNotes: "max-w-3xl centered container, scrollable article content",
+  },
+  {
     path: "LearningScreen.svelte",
     mobileStrategy: "sidebar-overlay",
     minWidth: 320,
@@ -69,18 +75,6 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileStrategy: "centered",
     minWidth: 320,
     mobileNotes: "Two-panel editor: viz hidden below 1024px, tabbed fields full-width, overflow-y on tab content",
-  },
-  {
-    path: "SystemDetailView.svelte",
-    mobileStrategy: "centered",
-    minWidth: 320,
-    mobileNotes: "Single-system detail view with category cards",
-  },
-  {
-    path: "SystemCompareView.svelte",
-    mobileStrategy: "full-width",
-    minWidth: 320,
-    mobileNotes: "Side-by-side comparison table, horizontally scrollable on mobile",
   },
   {
     path: "ConventionEditorScreen.svelte",

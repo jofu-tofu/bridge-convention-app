@@ -1,8 +1,9 @@
 import type { ConventionInfo, SystemSelectionId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
 import { OpponentMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 import { loadFromStorage, saveToStorage } from "./local-storage";
+import { FEATURES } from "./feature-flags";
 
-export type Screen = "conventions" | "game" | "learning" | "settings" | "coverage" | "workshop" | "convention-editor" | "practice-pack-editor";
+export type Screen = "conventions" | "game" | "learning" | "settings" | "coverage" | "workshop" | "convention-editor" | "practice-pack-editor" | "guides";
 
 // ─── Persistence ────────────────────────────────────────────
 
@@ -112,6 +113,7 @@ export function createAppStore() {
   let targetSurface = $state<string | null>(null);
   let coverageBundle = $state<string | null>(null);
   let editingModuleId = $state<string | null>(null);
+  let editingModuleIsNew = $state(false);
   let editingPackId = $state<string | null>(null);
   let editingPackBasedOn = $state<string | null>(null);
 
@@ -230,12 +232,18 @@ export function createAppStore() {
       currentScreen = "settings";
     },
 
+    navigateToGuides() {
+      currentScreen = "guides";
+    },
+
     navigateToCoverage() {
       currentScreen = "coverage";
     },
 
     navigateToWorkshop() {
+      if (!FEATURES.workshop) return;
       editingModuleId = null;
+      editingModuleIsNew = false;
       editingPackId = null;
       editingPackBasedOn = null;
       currentScreen = "workshop";
@@ -245,8 +253,13 @@ export function createAppStore() {
       return editingModuleId;
     },
 
-    navigateToConventionEditor(moduleId: string | null) {
+    get editingModuleIsNew() {
+      return editingModuleIsNew;
+    },
+
+    navigateToConventionEditor(moduleId: string | null, isNew = false) {
       editingModuleId = moduleId;
+      editingModuleIsNew = isNew;
       currentScreen = "convention-editor";
     },
 
