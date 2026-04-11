@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { AuctionEntryView, ServiceBidHistoryEntry } from "../../service";
+  import type { AuctionEntryView, BidHistoryEntry } from "../../service";
 
   interface Props {
     entry: AuctionEntryView;
-    historyEntry: ServiceBidHistoryEntry;
+    historyEntry: BidHistoryEntry;
   }
 
   const { entry, historyEntry }: Props = $props();
