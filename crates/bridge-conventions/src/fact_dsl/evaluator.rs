@@ -118,9 +118,9 @@ pub fn evaluate_facts(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::types::fv_bool;
-    use bridge_engine::{Card, Hand, Rank, Suit, evaluate_hand_hcp};
+    use super::*;
+    use bridge_engine::{evaluate_hand_hcp, Card, Hand, Rank, Suit};
 
     fn make_hand(specs: &[(&str, &str)]) -> Hand {
         let cards: Vec<Card> = specs
@@ -134,11 +134,20 @@ mod tests {
                     _ => panic!("bad suit"),
                 },
                 rank: match *r {
-                    "2" => Rank::Two, "3" => Rank::Three, "4" => Rank::Four,
-                    "5" => Rank::Five, "6" => Rank::Six, "7" => Rank::Seven,
-                    "8" => Rank::Eight, "9" => Rank::Nine, "T" => Rank::Ten,
-                    "J" => Rank::Jack, "Q" => Rank::Queen, "K" => Rank::King,
-                    "A" => Rank::Ace, _ => panic!("bad rank"),
+                    "2" => Rank::Two,
+                    "3" => Rank::Three,
+                    "4" => Rank::Four,
+                    "5" => Rank::Five,
+                    "6" => Rank::Six,
+                    "7" => Rank::Seven,
+                    "8" => Rank::Eight,
+                    "9" => Rank::Nine,
+                    "T" => Rank::Ten,
+                    "J" => Rank::Jack,
+                    "Q" => Rank::Queen,
+                    "K" => Rank::King,
+                    "A" => Rank::Ace,
+                    _ => panic!("bad rank"),
                 },
             })
             .collect();
@@ -149,10 +158,19 @@ mod tests {
     fn evaluate_primitives_only() {
         // S: AK32  H: QJ3  D: A52  C: K73
         let hand = make_hand(&[
-            ("S", "A"), ("S", "K"), ("S", "3"), ("S", "2"),
-            ("H", "Q"), ("H", "J"), ("H", "3"),
-            ("D", "A"), ("D", "5"), ("D", "2"),
-            ("C", "K"), ("C", "7"), ("C", "3"),
+            ("S", "A"),
+            ("S", "K"),
+            ("S", "3"),
+            ("S", "2"),
+            ("H", "Q"),
+            ("H", "J"),
+            ("H", "3"),
+            ("D", "A"),
+            ("D", "5"),
+            ("D", "2"),
+            ("C", "K"),
+            ("C", "7"),
+            ("C", "3"),
         ]);
         let eval = evaluate_hand_hcp(&hand);
         let result = evaluate_facts(&hand, &eval, &[], None, None, None);
@@ -160,9 +178,18 @@ mod tests {
         assert_eq!(result.world, EvaluationWorld::ActingHand);
         // HCP = 4+3+2+1+4+3 = 17
         assert_eq!(result.facts["hand.hcp"].value.as_number(), 17.0);
-        assert_eq!(result.facts["hand.suitLength.spades"].value.as_number(), 4.0);
-        assert_eq!(result.facts["hand.suitLength.hearts"].value.as_number(), 3.0);
-        assert_eq!(result.facts["hand.suitLength.diamonds"].value.as_number(), 3.0);
+        assert_eq!(
+            result.facts["hand.suitLength.spades"].value.as_number(),
+            4.0
+        );
+        assert_eq!(
+            result.facts["hand.suitLength.hearts"].value.as_number(),
+            3.0
+        );
+        assert_eq!(
+            result.facts["hand.suitLength.diamonds"].value.as_number(),
+            3.0
+        );
         assert_eq!(result.facts["hand.suitLength.clubs"].value.as_number(), 3.0);
         assert_eq!(result.facts["hand.isBalanced"].value.as_bool(), true);
     }
@@ -171,27 +198,54 @@ mod tests {
     fn evaluate_bridge_derived_facts() {
         // S: AK532  H: QJ32  D: A5  C: K7
         let hand = make_hand(&[
-            ("S", "A"), ("S", "K"), ("S", "5"), ("S", "3"), ("S", "2"),
-            ("H", "Q"), ("H", "J"), ("H", "3"), ("H", "2"),
-            ("D", "A"), ("D", "5"),
-            ("C", "K"), ("C", "7"),
+            ("S", "A"),
+            ("S", "K"),
+            ("S", "5"),
+            ("S", "3"),
+            ("S", "2"),
+            ("H", "Q"),
+            ("H", "J"),
+            ("H", "3"),
+            ("H", "2"),
+            ("D", "A"),
+            ("D", "5"),
+            ("C", "K"),
+            ("C", "7"),
         ]);
         let eval = evaluate_hand_hcp(&hand);
         let result = evaluate_facts(&hand, &eval, &[], None, None, None);
 
-        assert_eq!(result.facts["bridge.hasFourCardMajor"].value.as_bool(), true);
-        assert_eq!(result.facts["bridge.hasFiveCardMajor"].value.as_bool(), true);
-        assert_eq!(result.facts["bridge.majorPattern"].value.as_text(), "five-four");
+        assert_eq!(
+            result.facts["bridge.hasFourCardMajor"].value.as_bool(),
+            true
+        );
+        assert_eq!(
+            result.facts["bridge.hasFiveCardMajor"].value.as_bool(),
+            true
+        );
+        assert_eq!(
+            result.facts["bridge.majorPattern"].value.as_text(),
+            "five-four"
+        );
         assert_eq!(result.facts["bridge.hasShortage"].value.as_bool(), false);
     }
 
     #[test]
     fn evaluate_with_vulnerability() {
         let hand = make_hand(&[
-            ("S", "A"), ("S", "K"), ("S", "Q"), ("S", "J"),
-            ("H", "A"), ("H", "K"), ("H", "Q"),
-            ("D", "A"), ("D", "K"), ("D", "Q"),
-            ("C", "A"), ("C", "K"), ("C", "Q"),
+            ("S", "A"),
+            ("S", "K"),
+            ("S", "Q"),
+            ("S", "J"),
+            ("H", "A"),
+            ("H", "K"),
+            ("H", "Q"),
+            ("D", "A"),
+            ("D", "K"),
+            ("D", "Q"),
+            ("C", "A"),
+            ("C", "K"),
+            ("C", "Q"),
         ]);
         let eval = evaluate_hand_hcp(&hand);
 
@@ -209,48 +263,90 @@ mod tests {
         // S: AK532  H: QJ32  D: A5  C: K7  → five-four (S5+H4+)
         // Wait, above has S=5, H=4: that's five-four
         let hand = make_hand(&[
-            ("S", "A"), ("S", "K"), ("S", "5"), ("S", "3"), ("S", "2"),
-            ("H", "Q"), ("H", "J"), ("H", "3"), ("H", "2"),
-            ("D", "A"), ("D", "5"),
-            ("C", "K"), ("C", "7"),
+            ("S", "A"),
+            ("S", "K"),
+            ("S", "5"),
+            ("S", "3"),
+            ("S", "2"),
+            ("H", "Q"),
+            ("H", "J"),
+            ("H", "3"),
+            ("H", "2"),
+            ("D", "A"),
+            ("D", "5"),
+            ("C", "K"),
+            ("C", "7"),
         ]);
         let eval = evaluate_hand_hcp(&hand);
         let result = evaluate_facts(&hand, &eval, &[], None, None, None);
         // S=5, H=4: matches five-four case
-        assert_eq!(result.facts["bridge.majorPattern"].value.as_text(), "five-four");
+        assert_eq!(
+            result.facts["bridge.majorPattern"].value.as_text(),
+            "five-four"
+        );
     }
 
     #[test]
     fn evaluate_major_pattern_both_four() {
         // S=4, H=4, D=3, C=2
         let hand = make_hand(&[
-            ("S", "A"), ("S", "K"), ("S", "5"), ("S", "3"),
-            ("H", "Q"), ("H", "J"), ("H", "3"), ("H", "2"),
-            ("D", "A"), ("D", "5"), ("D", "4"),
-            ("C", "K"), ("C", "7"),
+            ("S", "A"),
+            ("S", "K"),
+            ("S", "5"),
+            ("S", "3"),
+            ("H", "Q"),
+            ("H", "J"),
+            ("H", "3"),
+            ("H", "2"),
+            ("D", "A"),
+            ("D", "5"),
+            ("D", "4"),
+            ("C", "K"),
+            ("C", "7"),
         ]);
         let eval = evaluate_hand_hcp(&hand);
         let result = evaluate_facts(&hand, &eval, &[], None, None, None);
-        assert_eq!(result.facts["bridge.majorPattern"].value.as_text(), "both-four");
+        assert_eq!(
+            result.facts["bridge.majorPattern"].value.as_text(),
+            "both-four"
+        );
     }
 
     #[test]
     fn evaluate_yarborough() {
         // 0 HCP, 4333 shape
         let hand = make_hand(&[
-            ("S", "2"), ("S", "3"), ("S", "4"), ("S", "5"),
-            ("H", "2"), ("H", "3"), ("H", "4"),
-            ("D", "2"), ("D", "3"), ("D", "4"),
-            ("C", "2"), ("C", "3"), ("C", "4"),
+            ("S", "2"),
+            ("S", "3"),
+            ("S", "4"),
+            ("S", "5"),
+            ("H", "2"),
+            ("H", "3"),
+            ("H", "4"),
+            ("D", "2"),
+            ("D", "3"),
+            ("D", "4"),
+            ("C", "2"),
+            ("C", "3"),
+            ("C", "4"),
         ]);
         let eval = evaluate_hand_hcp(&hand);
         let result = evaluate_facts(&hand, &eval, &[], None, None, None);
 
         assert_eq!(result.facts["hand.hcp"].value.as_number(), 0.0);
         assert_eq!(result.facts["hand.isBalanced"].value.as_bool(), true);
-        assert_eq!(result.facts["bridge.hasFourCardMajor"].value.as_bool(), true);
-        assert_eq!(result.facts["bridge.hasFiveCardMajor"].value.as_bool(), false);
-        assert_eq!(result.facts["bridge.majorPattern"].value.as_text(), "one-four");
+        assert_eq!(
+            result.facts["bridge.hasFourCardMajor"].value.as_bool(),
+            true
+        );
+        assert_eq!(
+            result.facts["bridge.hasFiveCardMajor"].value.as_bool(),
+            false
+        );
+        assert_eq!(
+            result.facts["bridge.majorPattern"].value.as_text(),
+            "one-four"
+        );
         assert_eq!(result.facts["bridge.hasShortage"].value.as_bool(), false);
     }
 
@@ -259,19 +355,38 @@ mod tests {
         // 13 spades
         let hand = Hand {
             cards: [
-                Rank::Two, Rank::Three, Rank::Four, Rank::Five, Rank::Six,
-                Rank::Seven, Rank::Eight, Rank::Nine, Rank::Ten,
-                Rank::Jack, Rank::Queen, Rank::King, Rank::Ace,
+                Rank::Two,
+                Rank::Three,
+                Rank::Four,
+                Rank::Five,
+                Rank::Six,
+                Rank::Seven,
+                Rank::Eight,
+                Rank::Nine,
+                Rank::Ten,
+                Rank::Jack,
+                Rank::Queen,
+                Rank::King,
+                Rank::Ace,
             ]
             .iter()
-            .map(|&rank| Card { suit: Suit::Spades, rank })
+            .map(|&rank| Card {
+                suit: Suit::Spades,
+                rank,
+            })
             .collect(),
         };
         let eval = evaluate_hand_hcp(&hand);
         let result = evaluate_facts(&hand, &eval, &[], None, None, None);
 
-        assert_eq!(result.facts["hand.suitLength.spades"].value.as_number(), 13.0);
-        assert_eq!(result.facts["hand.suitLength.hearts"].value.as_number(), 0.0);
+        assert_eq!(
+            result.facts["hand.suitLength.spades"].value.as_number(),
+            13.0
+        );
+        assert_eq!(
+            result.facts["hand.suitLength.hearts"].value.as_number(),
+            0.0
+        );
         assert_eq!(result.facts["hand.isBalanced"].value.as_bool(), false);
         assert_eq!(result.facts["bridge.hasShortage"].value.as_bool(), true);
     }

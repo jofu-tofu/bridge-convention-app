@@ -15,8 +15,7 @@ impl Config {
         Self {
             database_url: env::var("DATABASE_URL")
                 .unwrap_or_else(|_| "sqlite:///data/bridge.db".to_string()),
-            base_url: env::var("BASE_URL")
-                .unwrap_or_else(|_| "http://localhost:1420".to_string()),
+            base_url: env::var("BASE_URL").unwrap_or_else(|_| "http://localhost:1420".to_string()),
             google_client_id: env::var("GOOGLE_CLIENT_ID").unwrap_or_default(),
             google_client_secret: env::var("GOOGLE_CLIENT_SECRET").unwrap_or_default(),
             github_client_id: env::var("GITHUB_CLIENT_ID").unwrap_or_default(),

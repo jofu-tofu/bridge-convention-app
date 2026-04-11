@@ -16,11 +16,11 @@ use bridge_session::session::{
     build_bidding_viewport, build_bundle_flow_tree, build_declarer_prompt_viewport,
     build_explanation_viewport, build_module_catalog, build_module_flow_tree,
     build_module_learning_viewport, build_playing_viewport, format_call, process_bid,
-    process_play_card, run_initial_ai_bids, run_initial_ai_plays,
-    AiPlayEntry, BiddingViewport, BuildBiddingViewportInput, BuildDeclarerPromptViewportInput,
-    BuildExplanationViewportInput, BuildPlayingViewportInput, BundleFlowTreeViewport,
-    DeclarerPromptViewport, ExplanationViewport, ModuleCatalogEntry,
-    ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult, PlayingViewport, SeatStrategy,
+    process_play_card, run_initial_ai_bids, run_initial_ai_plays, AiPlayEntry, BiddingViewport,
+    BuildBiddingViewportInput, BuildDeclarerPromptViewportInput, BuildExplanationViewportInput,
+    BuildPlayingViewportInput, BundleFlowTreeViewport, DeclarerPromptViewport, ExplanationViewport,
+    ModuleCatalogEntry, ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult,
+    PlayingViewport, SeatStrategy,
 };
 use bridge_session::types::{GamePhase, PromptMode};
 
@@ -84,9 +84,7 @@ fn initial_ai_play_dtos(
     ai_play_dtos(run_initial_ai_plays(&mut session.state))
 }
 
-fn initialize_play_phase(
-    session: &mut crate::session_manager::ActiveSession,
-) -> PlayEntryResult {
+fn initialize_play_phase(session: &mut crate::session_manager::ActiveSession) -> PlayEntryResult {
     if let Some(ref contract) = session.state.contract {
         let contract = contract.clone();
         session.state.initialize_play(&contract);
@@ -139,10 +137,9 @@ fn resolve_module_for_schema(
         Ok((module, ModuleOwnership::User))
     } else {
         use bridge_conventions::registry::module_registry::get_module;
-        let module = get_module(module_id, BaseSystemId::Sayc)
-            .ok_or_else(|| {
-                ServiceError::ModuleNotFound(format!("Module '{}' not found", module_id))
-            })?;
+        let module = get_module(module_id, BaseSystemId::Sayc).ok_or_else(|| {
+            ServiceError::ModuleNotFound(format!("Module '{}' not found", module_id))
+        })?;
         Ok((module.clone(), ModuleOwnership::System))
     }
 }
@@ -248,7 +245,9 @@ fn build_configurable_surfaces(
 }
 
 /// Validate a module's content, returning any errors.
-fn validate_module_content(module: &ConventionModule) -> Vec<crate::config_schema_types::ValidationError> {
+fn validate_module_content(
+    module: &ConventionModule,
+) -> Vec<crate::config_schema_types::ValidationError> {
     use crate::config_schema_types::ValidationError;
 
     let mut errors = Vec::new();
@@ -291,10 +290,7 @@ fn validate_module_content(module: &ConventionModule) -> Vec<crate::config_schem
                     if let Some(val) = constraint_value_as_i32(&clause.value) {
                         let fact = &clause.fact_id;
 
-                        if fact.contains("hcp")
-                            || fact.contains("points")
-                            || fact.contains("tp")
-                        {
+                        if fact.contains("hcp") || fact.contains("points") || fact.contains("tp") {
                             if !(0..=40).contains(&val) {
                                 errors.push(ValidationError {
                                     field: clause_path.clone(),
@@ -380,11 +376,9 @@ impl ServicePort for ServicePortImpl {
     fn create_drill_session(&mut self, config: SessionConfig) -> Result<DrillHandle, ServiceError> {
         let setup = crate::drill_setup::build_drill_setup(&config)?;
 
-        let handle = self.manager.create(
-            setup.state,
-            setup.drill_config,
-            setup.seat_strategies,
-        );
+        let handle = self
+            .manager
+            .create(setup.state, setup.drill_config, setup.seat_strategies);
 
         Ok(handle)
     }
@@ -778,10 +772,9 @@ impl ServicePort for ServicePortImpl {
     fn fork_module(&self, source_module_id: &str) -> Result<String, ServiceError> {
         use bridge_conventions::registry::module_registry::get_module;
 
-        let source = get_module(source_module_id, BaseSystemId::Sayc)
-            .ok_or_else(|| {
-                ServiceError::ModuleNotFound(format!("Module '{}' not found", source_module_id))
-            })?;
+        let source = get_module(source_module_id, BaseSystemId::Sayc).ok_or_else(|| {
+            ServiceError::ModuleNotFound(format!("Module '{}' not found", source_module_id))
+        })?;
 
         let mut forked = source.clone();
         // Generate a random hex ID (16 bytes = 32 hex chars) using the existing rand crate
@@ -820,10 +813,8 @@ impl ServicePort for ServicePortImpl {
         &self,
         module_json: &str,
     ) -> Result<crate::config_schema_types::ValidationResult, ServiceError> {
-        let module: ConventionModule =
-            serde_json::from_str(module_json).map_err(|e| {
-                ServiceError::Internal(format!("Failed to parse module JSON: {}", e))
-            })?;
+        let module: ConventionModule = serde_json::from_str(module_json)
+            .map_err(|e| ServiceError::Internal(format!("Failed to parse module JSON: {}", e)))?;
 
         let errors = validate_module_content(&module);
         Ok(crate::config_schema_types::ValidationResult {
@@ -886,9 +877,8 @@ impl ServicePortImpl {
     /// Check if the current profile requires DDS-based play.
     pub fn needs_dds_play(&self, handle: &str) -> Result<bool, ServiceError> {
         let session = self.manager.get(handle)?;
-        let profile = bridge_session::heuristics::play_profiles::get_profile(
-            session.state.play_profile_id,
-        );
+        let profile =
+            bridge_session::heuristics::play_profiles::get_profile(session.state.play_profile_id);
         Ok(profile.use_posterior)
     }
 
@@ -968,9 +958,8 @@ impl ServicePortImpl {
             .map(|(s, b)| (*s, b.ranges.clone()))
             .collect();
 
-        let profile = bridge_session::heuristics::play_profiles::get_profile(
-            session.state.play_profile_id,
-        );
+        let profile =
+            bridge_session::heuristics::play_profiles::get_profile(session.state.play_profile_id);
 
         Ok(Some(DdsPlayContext {
             current_player,
@@ -1006,7 +995,8 @@ impl DevServicePort for ServicePortImpl {
         // Use suggest_bid() (not suggest_with_evaluation with all_hands) to match
         // the same pipeline path the bidding controller uses for grading.
         // Default to Pass when no convention matches — same as bidding_controller::get_expected_bid.
-        let call = adapter.suggest_bid(&ctx)
+        let call = adapter
+            .suggest_bid(&ctx)
             .map(|b| b.call)
             .unwrap_or(Call::Pass);
         Ok(Some(call))
@@ -1168,7 +1158,9 @@ mod tests {
                 bridge_conventions::types::system_config::BaseSystemId::Sayc,
             ),
             base_module_ids: bridge_conventions::registry::module_registry::BASE_MODULE_IDS
-                .iter().map(|s| s.to_string()).collect(),
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
             practice_mode: None,
             target_module_id: None,
             practice_role: None,

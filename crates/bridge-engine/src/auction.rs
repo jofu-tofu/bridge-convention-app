@@ -17,7 +17,9 @@ fn strain_rank(strain: BidSuit) -> u8 {
 
 /// Compare two contract bids. Returns Ordering.
 pub fn compare_bids(a_level: u8, a_strain: BidSuit, b_level: u8, b_strain: BidSuit) -> Ordering {
-    a_level.cmp(&b_level).then_with(|| strain_rank(a_strain).cmp(&strain_rank(b_strain)))
+    a_level
+        .cmp(&b_level)
+        .then_with(|| strain_rank(a_strain).cmp(&strain_rank(b_strain)))
 }
 
 fn same_side(a: Seat, b: Seat) -> bool {
@@ -26,12 +28,20 @@ fn same_side(a: Seat, b: Seat) -> bool {
 
 /// Find the last non-pass entry.
 fn last_non_pass(auction: &Auction) -> Option<&AuctionEntry> {
-    auction.entries.iter().rev().find(|e| !matches!(e.call, Call::Pass))
+    auction
+        .entries
+        .iter()
+        .rev()
+        .find(|e| !matches!(e.call, Call::Pass))
 }
 
 /// Find the last contract bid entry.
 fn last_bid(auction: &Auction) -> Option<&AuctionEntry> {
-    auction.entries.iter().rev().find(|e| matches!(e.call, Call::Bid { .. }))
+    auction
+        .entries
+        .iter()
+        .rev()
+        .find(|e| matches!(e.call, Call::Bid { .. }))
 }
 
 /// Check whether a call is legal given the current auction state and seat.
@@ -47,7 +57,11 @@ pub fn is_legal_call(auction: &Auction, call: &Call, seat: Seat) -> bool {
             match last_bid(auction) {
                 None => true, // first bid is always legal
                 Some(entry) => {
-                    let Call::Bid { level: prev_level, strain: prev_strain } = &entry.call else {
+                    let Call::Bid {
+                        level: prev_level,
+                        strain: prev_strain,
+                    } = &entry.call
+                    else {
                         return false;
                     };
                     compare_bids(*level, *strain, *prev_level, *prev_strain) == Ordering::Greater
@@ -55,23 +69,15 @@ pub fn is_legal_call(auction: &Auction, call: &Call, seat: Seat) -> bool {
             }
         }
 
-        Call::Double => {
-            match last_non_pass(auction) {
-                None => false,
-                Some(entry) => {
-                    matches!(entry.call, Call::Bid { .. }) && !same_side(entry.seat, seat)
-                }
-            }
-        }
+        Call::Double => match last_non_pass(auction) {
+            None => false,
+            Some(entry) => matches!(entry.call, Call::Bid { .. }) && !same_side(entry.seat, seat),
+        },
 
-        Call::Redouble => {
-            match last_non_pass(auction) {
-                None => false,
-                Some(entry) => {
-                    matches!(entry.call, Call::Double) && !same_side(entry.seat, seat)
-                }
-            }
-        }
+        Call::Redouble => match last_non_pass(auction) {
+            None => false,
+            Some(entry) => matches!(entry.call, Call::Double) && !same_side(entry.seat, seat),
+        },
     }
 }
 
@@ -99,7 +105,10 @@ pub fn is_auction_complete(auction: &Auction) -> bool {
     }
 
     // 3 passes after at least one bid
-    entries.iter().take(len - 3).any(|e| !matches!(e.call, Call::Pass))
+    entries
+        .iter()
+        .take(len - 3)
+        .any(|e| !matches!(e.call, Call::Pass))
 }
 
 /// Append a call to the auction, returning a new Auction with updated completion status.
@@ -128,7 +137,11 @@ pub fn add_call(auction: &Auction, entry: AuctionEntry) -> Result<Auction, Engin
 pub fn get_declarer(auction: &Auction) -> Result<Seat, EngineError> {
     let last = last_bid(auction).ok_or(EngineError::NoBidsInAuction)?;
 
-    let Call::Bid { strain: final_strain, .. } = &last.call else {
+    let Call::Bid {
+        strain: final_strain,
+        ..
+    } = &last.call
+    else {
         return Err(EngineError::NoBidsInAuction);
     };
     let final_strain = *final_strain;
@@ -195,7 +208,13 @@ pub fn get_legal_calls(auction: &Auction, seat: Seat) -> Vec<Call> {
     }
 
     // All 35 bids
-    let strains = [BidSuit::Clubs, BidSuit::Diamonds, BidSuit::Hearts, BidSuit::Spades, BidSuit::NoTrump];
+    let strains = [
+        BidSuit::Clubs,
+        BidSuit::Diamonds,
+        BidSuit::Hearts,
+        BidSuit::Spades,
+        BidSuit::NoTrump,
+    ];
     for level in 1..=7u8 {
         for &strain in &strains {
             let bid = Call::Bid { level, strain };
@@ -223,7 +242,10 @@ mod tests {
     use super::*;
 
     fn empty_auction() -> Auction {
-        Auction { entries: vec![], is_complete: false }
+        Auction {
+            entries: vec![],
+            is_complete: false,
+        }
     }
 
     fn entry(seat: Seat, call: Call) -> AuctionEntry {
@@ -267,22 +289,63 @@ mod tests {
     #[test]
     fn first_bid_always_legal() {
         let auction = empty_auction();
-        assert!(is_legal_call(&auction, &Call::Bid { level: 1, strain: BidSuit::Clubs }, Seat::North));
+        assert!(is_legal_call(
+            &auction,
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs
+            },
+            Seat::North
+        ));
     }
 
     #[test]
     fn bid_must_be_higher() {
         let mut auction = empty_auction();
-        auction.entries.push(entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Hearts }));
+        auction.entries.push(entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts,
+            },
+        ));
 
         // 1S > 1H = legal
-        assert!(is_legal_call(&auction, &Call::Bid { level: 1, strain: BidSuit::Spades }, Seat::East));
+        assert!(is_legal_call(
+            &auction,
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades
+            },
+            Seat::East
+        ));
         // 1C < 1H = illegal
-        assert!(!is_legal_call(&auction, &Call::Bid { level: 1, strain: BidSuit::Clubs }, Seat::East));
+        assert!(!is_legal_call(
+            &auction,
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs
+            },
+            Seat::East
+        ));
         // 1H = 1H = illegal
-        assert!(!is_legal_call(&auction, &Call::Bid { level: 1, strain: BidSuit::Hearts }, Seat::East));
+        assert!(!is_legal_call(
+            &auction,
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts
+            },
+            Seat::East
+        ));
         // 2C > 1H = legal
-        assert!(is_legal_call(&auction, &Call::Bid { level: 2, strain: BidSuit::Clubs }, Seat::East));
+        assert!(is_legal_call(
+            &auction,
+            &Call::Bid {
+                level: 2,
+                strain: BidSuit::Clubs
+            },
+            Seat::East
+        ));
     }
 
     #[test]
@@ -292,7 +355,13 @@ mod tests {
         assert!(!is_legal_call(&auction, &Call::Double, Seat::North));
 
         // N bids 1C
-        auction.entries.push(entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Clubs }));
+        auction.entries.push(entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
+        ));
         // E can double (opponent's bid)
         assert!(is_legal_call(&auction, &Call::Double, Seat::East));
         // S can't double (partner's bid)
@@ -302,7 +371,13 @@ mod tests {
     #[test]
     fn redouble_requires_opponent_double() {
         let mut auction = empty_auction();
-        auction.entries.push(entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Clubs }));
+        auction.entries.push(entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
+        ));
         auction.entries.push(entry(Seat::East, Call::Double));
 
         // S can redouble (opponent's double of partner's bid)
@@ -326,7 +401,13 @@ mod tests {
     #[test]
     fn three_passes_after_bid() {
         let mut auction = empty_auction();
-        auction.entries.push(entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Clubs }));
+        auction.entries.push(entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
+        ));
         auction.entries.push(entry(Seat::East, Call::Pass));
         auction.entries.push(entry(Seat::South, Call::Pass));
         assert!(!is_auction_complete(&auction)); // only 2 passes after bid
@@ -338,8 +419,20 @@ mod tests {
     #[test]
     fn auction_not_complete_with_bids() {
         let mut auction = empty_auction();
-        auction.entries.push(entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Clubs }));
-        auction.entries.push(entry(Seat::East, Call::Bid { level: 1, strain: BidSuit::Diamonds }));
+        auction.entries.push(entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
+        ));
+        auction.entries.push(entry(
+            Seat::East,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Diamonds,
+            },
+        ));
         auction.entries.push(entry(Seat::South, Call::Pass));
         auction.entries.push(entry(Seat::West, Call::Pass));
         assert!(!is_auction_complete(&auction));
@@ -355,7 +448,17 @@ mod tests {
     #[test]
     fn add_call_updates_complete() {
         let mut auction = empty_auction();
-        auction = add_call(&auction, entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Clubs })).unwrap();
+        auction = add_call(
+            &auction,
+            entry(
+                Seat::North,
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Clubs,
+                },
+            ),
+        )
+        .unwrap();
         assert!(!auction.is_complete);
 
         auction = add_call(&auction, entry(Seat::East, Call::Pass)).unwrap();
@@ -380,9 +483,21 @@ mod tests {
     fn declarer_first_to_name_strain() {
         // N opens 1S, S raises to 2S — declarer is N (first to name spades)
         let mut auction = empty_auction();
-        auction.entries.push(entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Spades }));
+        auction.entries.push(entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades,
+            },
+        ));
         auction.entries.push(entry(Seat::East, Call::Pass));
-        auction.entries.push(entry(Seat::South, Call::Bid { level: 2, strain: BidSuit::Spades }));
+        auction.entries.push(entry(
+            Seat::South,
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Spades,
+            },
+        ));
         auction.entries.push(entry(Seat::West, Call::Pass));
         auction.entries.push(entry(Seat::North, Call::Pass));
         auction.entries.push(entry(Seat::East, Call::Pass));
@@ -396,9 +511,21 @@ mod tests {
         // E opens 1H, W raises to 4H — declarer is E
         let mut auction = empty_auction();
         auction.entries.push(entry(Seat::North, Call::Pass));
-        auction.entries.push(entry(Seat::East, Call::Bid { level: 1, strain: BidSuit::Hearts }));
+        auction.entries.push(entry(
+            Seat::East,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts,
+            },
+        ));
         auction.entries.push(entry(Seat::South, Call::Pass));
-        auction.entries.push(entry(Seat::West, Call::Bid { level: 4, strain: BidSuit::Hearts }));
+        auction.entries.push(entry(
+            Seat::West,
+            Call::Bid {
+                level: 4,
+                strain: BidSuit::Hearts,
+            },
+        ));
         auction.entries.push(entry(Seat::North, Call::Pass));
         auction.entries.push(entry(Seat::East, Call::Pass));
         auction.entries.push(entry(Seat::South, Call::Pass));
@@ -422,7 +549,13 @@ mod tests {
     #[test]
     fn contract_extraction() {
         let mut auction = empty_auction();
-        auction.entries.push(entry(Seat::North, Call::Bid { level: 3, strain: BidSuit::NoTrump }));
+        auction.entries.push(entry(
+            Seat::North,
+            Call::Bid {
+                level: 3,
+                strain: BidSuit::NoTrump,
+            },
+        ));
         auction.entries.push(entry(Seat::East, Call::Pass));
         auction.entries.push(entry(Seat::South, Call::Pass));
         auction.entries.push(entry(Seat::West, Call::Pass));
@@ -438,7 +571,13 @@ mod tests {
     #[test]
     fn doubled_contract() {
         let mut auction = empty_auction();
-        auction.entries.push(entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Clubs }));
+        auction.entries.push(entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
+        ));
         auction.entries.push(entry(Seat::East, Call::Double));
         auction.entries.push(entry(Seat::South, Call::Pass));
         auction.entries.push(entry(Seat::West, Call::Pass));
@@ -452,7 +591,13 @@ mod tests {
     #[test]
     fn redoubled_contract() {
         let mut auction = empty_auction();
-        auction.entries.push(entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Clubs }));
+        auction.entries.push(entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
+        ));
         auction.entries.push(entry(Seat::East, Call::Double));
         auction.entries.push(entry(Seat::South, Call::Redouble));
         auction.entries.push(entry(Seat::West, Call::Pass));
@@ -471,15 +616,27 @@ mod tests {
         // Pass + 35 bids = 36 (no double or redouble possible)
         assert_eq!(calls.len(), 36);
         assert!(calls.contains(&Call::Pass));
-        assert!(calls.contains(&Call::Bid { level: 1, strain: BidSuit::Clubs }));
-        assert!(calls.contains(&Call::Bid { level: 7, strain: BidSuit::NoTrump }));
+        assert!(calls.contains(&Call::Bid {
+            level: 1,
+            strain: BidSuit::Clubs
+        }));
+        assert!(calls.contains(&Call::Bid {
+            level: 7,
+            strain: BidSuit::NoTrump
+        }));
         assert!(!calls.contains(&Call::Double));
     }
 
     #[test]
     fn get_legal_calls_after_bid() {
         let mut auction = empty_auction();
-        auction.entries.push(entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Hearts }));
+        auction.entries.push(entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts,
+            },
+        ));
 
         let calls = get_legal_calls(&auction, Seat::East);
         // Pass + higher bids + double
@@ -487,10 +644,19 @@ mod tests {
         assert!(calls.contains(&Call::Double));
         assert!(!calls.contains(&Call::Redouble));
         // 1H and below should not be present
-        assert!(!calls.contains(&Call::Bid { level: 1, strain: BidSuit::Clubs }));
-        assert!(!calls.contains(&Call::Bid { level: 1, strain: BidSuit::Hearts }));
+        assert!(!calls.contains(&Call::Bid {
+            level: 1,
+            strain: BidSuit::Clubs
+        }));
+        assert!(!calls.contains(&Call::Bid {
+            level: 1,
+            strain: BidSuit::Hearts
+        }));
         // 1S and above should be present
-        assert!(calls.contains(&Call::Bid { level: 1, strain: BidSuit::Spades }));
+        assert!(calls.contains(&Call::Bid {
+            level: 1,
+            strain: BidSuit::Spades
+        }));
     }
 
     #[test]
@@ -510,7 +676,13 @@ mod tests {
     fn double_with_intervening_passes() {
         // N: 1C, E: Pass, S: Pass — W can double (last non-pass is N's bid, opponent)
         let mut auction = empty_auction();
-        auction.entries.push(entry(Seat::North, Call::Bid { level: 1, strain: BidSuit::Clubs }));
+        auction.entries.push(entry(
+            Seat::North,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs,
+            },
+        ));
         auction.entries.push(entry(Seat::East, Call::Pass));
         auction.entries.push(entry(Seat::South, Call::Pass));
 

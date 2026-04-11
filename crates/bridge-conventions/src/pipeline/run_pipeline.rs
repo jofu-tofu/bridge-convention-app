@@ -31,7 +31,6 @@ pub struct PipelineInput<'a> {
     pub system_config: Option<&'a SystemConfig>,
 }
 
-
 /// Run the meaning pipeline — the 4-step pure transformation.
 ///
 /// 1. (Facts already evaluated by caller)
@@ -58,22 +57,28 @@ pub fn run_pipeline(input: PipelineInput) -> PipelineResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::fact_dsl::types::{FactValue, FactData};
+    use crate::fact_dsl::types::{FactData, FactValue};
+    use crate::types::authored_text::*;
     use crate::types::fact_types::EvaluationWorld;
     use crate::types::meaning::*;
-    use crate::types::authored_text::*;
     use std::collections::HashMap;
 
     fn make_facts(hcp: f64, suit_len: f64) -> EvaluatedFacts {
         let mut facts = HashMap::new();
-        facts.insert("hand.hcp".into(), FactValue {
-            fact_id: "hand.hcp".into(),
-            value: FactData::Number(hcp),
-        });
-        facts.insert("hand.suitLength.hearts".into(), FactValue {
-            fact_id: "hand.suitLength.hearts".into(),
-            value: FactData::Number(suit_len),
-        });
+        facts.insert(
+            "hand.hcp".into(),
+            FactValue {
+                fact_id: "hand.hcp".into(),
+                value: FactData::Number(hcp),
+            },
+        );
+        facts.insert(
+            "hand.suitLength.hearts".into(),
+            FactValue {
+                fact_id: "hand.suitLength.hearts".into(),
+                value: FactData::Number(suit_len),
+            },
+        );
         EvaluatedFacts {
             world: EvaluationWorld::ActingHand,
             facts,
@@ -147,7 +152,10 @@ mod tests {
             system_config: None,
         });
         assert!(result.selected.is_some());
-        assert_eq!(result.selected.unwrap().encoded.proposal.meaning_id, "test:bid");
+        assert_eq!(
+            result.selected.unwrap().encoded.proposal.meaning_id,
+            "test:bid"
+        );
     }
 
     #[test]

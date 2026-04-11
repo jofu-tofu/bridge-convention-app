@@ -367,6 +367,31 @@ fn negative_doubles_opener_routes() -> Vec<NegDblOpenerRoute> {
             nt_max: call_bid(3, BidSuit::NoTrump),
             cue: call_bid(2, BidSuit::Spades),
         },
+        // 1D-(2C)-X: 2-level overcall after minor opening (unambiguous route)
+        NegDblOpenerRoute {
+            open: "diamonds",
+            overcall: "clubs",
+            shown: vec![
+                NegDblShownRoute {
+                    suit: "hearts",
+                    simple: call_bid(2, BidSuit::Hearts),
+                    jump: call_bid(3, BidSuit::Hearts),
+                    game: call_bid(4, BidSuit::Hearts),
+                },
+                NegDblShownRoute {
+                    suit: "spades",
+                    simple: call_bid(2, BidSuit::Spades),
+                    jump: call_bid(3, BidSuit::Spades),
+                    game: call_bid(4, BidSuit::Spades),
+                },
+            ],
+            own_simple: call_bid(2, BidSuit::Diamonds),
+            own_jump: call_bid(3, BidSuit::Diamonds),
+            nt_min: call_bid(2, BidSuit::NoTrump),
+            nt_med: call_bid(3, BidSuit::NoTrump),
+            nt_max: call_bid(3, BidSuit::NoTrump),
+            cue: call_bid(3, BidSuit::Clubs),
+        },
         NegDblOpenerRoute {
             open: "hearts",
             overcall: "spades",
@@ -605,7 +630,7 @@ fn build_negative_doubles_after_negdbl_states() -> Vec<StateEntry> {
                 format!("negdbl:opener-minimum-nt-after-1{}-1{}", open_code, overcall_code),
                 "negdbl:opener-nt",
                 route.nt_min.clone(),
-                vec![hcp_min(12), hcp_max(14)],
+                vec![hcp_min(12), hcp_max(15)],
                 ranking(RecommendationBand::May, surfaces.len() as i32),
                 "NegDblOpenerNT",
                 HashMap::new(),

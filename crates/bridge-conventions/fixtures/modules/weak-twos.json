@@ -6,12 +6,8 @@
   "description": "Open 2D/2H/2S with 6+ cards and 5-11 HCP, responses include Ogust",
   "purpose": "Preempt opponents with a descriptive opening while giving partner enough information to judge game prospects via Ogust",
   "references": {
-    "primary": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Weak Twos are standard SAYC, Ogust responses are the common agreement" },
-    "discovery": { "url": "https://www.bridgebum.com/weak_two_bids.php" },
-    "secondary": [
-      { "url": "https://www.larryco.com/bridge-articles/weak-two-bids", "label": "Larry Cohen — practical Weak Two guidance and Ogust details" },
-      { "url": "https://www.bridgeguys.com/Conventions/WeakTwoBids.html", "label": "Bridge Guys — feature responses and continuation sequences" }
-    ]
+    "authority": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Weak Twos are standard SAYC, Ogust responses are the common agreement" },
+    "discovery": { "url": "https://www.bridgebum.com/weak_two_bids.php" }
   },
   "teaching": {
     "tradeoff": "Using 2D/2H/2S as weak openings means you can't use them for strong two-bids.",

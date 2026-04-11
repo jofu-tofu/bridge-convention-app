@@ -5,14 +5,10 @@
 
 use std::collections::HashMap;
 
-use crate::types::{
-    OneNtForcingStatus, SuitResponseForcingDuration, SystemConfig,
-};
+use crate::types::{OneNtForcingStatus, SuitResponseForcingDuration, SystemConfig};
 
 use super::point_helpers::compute_total_points;
-use super::types::{
-    fv_bool, fv_text, FactValue, RelationalFactContext, get_num,
-};
+use super::types::{fv_bool, fv_text, get_num, FactValue, RelationalFactContext};
 
 // --- Fact IDs ---
 
@@ -28,16 +24,16 @@ pub const SYSTEM_RESPONDER_ONE_NT_RANGE: &str = "system.responder.oneNtRange";
 pub const SYSTEM_DONT_OVERCALL_IN_RANGE: &str = "system.dontOvercall.inRange";
 
 /// Evaluate standard system facts (layer 3) from HCP and SystemConfig.
-pub fn evaluate_system_facts(
-    sys: &SystemConfig,
-    facts: &mut HashMap<String, FactValue>,
-) {
+pub fn evaluate_system_facts(sys: &SystemConfig, facts: &mut HashMap<String, FactValue>) {
     let hcp = get_num(facts, "hand.hcp");
 
     // HCP-based responder thresholds
     facts.insert(
         SYSTEM_RESPONDER_WEAK_HAND.to_string(),
-        fv_bool(SYSTEM_RESPONDER_WEAK_HAND, hcp < sys.responder_thresholds.invite_min as f64),
+        fv_bool(
+            SYSTEM_RESPONDER_WEAK_HAND,
+            hcp < sys.responder_thresholds.invite_min as f64,
+        ),
     );
     facts.insert(
         SYSTEM_RESPONDER_INVITE_VALUES.to_string(),

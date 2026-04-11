@@ -9,15 +9,13 @@ use crate::types::rule_types::NegotiationExpr;
 /// Evaluate a NegotiationExpr against the current NegotiationState.
 pub fn match_kernel(expr: &NegotiationExpr, kernel: &NegotiationState) -> bool {
     match expr {
-        NegotiationExpr::Fit { strain } => {
-            match &kernel.fit_agreed {
-                None => false,
-                Some(fit) => match strain {
-                    Some(s) => fit.strain == *s,
-                    None => true,
-                },
-            }
-        }
+        NegotiationExpr::Fit { strain } => match &kernel.fit_agreed {
+            None => false,
+            Some(fit) => match strain {
+                Some(s) => fit.strain == *s,
+                None => true,
+            },
+        },
 
         NegotiationExpr::NoFit => kernel.fit_agreed.is_none(),
 
@@ -56,27 +54,19 @@ pub fn match_kernel(expr: &NegotiationExpr, kernel: &NegotiationState) -> bool {
             kernel.competition == Competition::Simple(CompetitionSimple::Redoubled)
         }
 
-        NegotiationExpr::Overcalled { below } => {
-            match &kernel.competition {
-                Competition::Simple(_) => false,
-                Competition::Overcalled(data) => {
-                    match below {
-                        None => true,
-                        Some(threshold) => {
-                            is_bid_below(data.level, data.strain, threshold.level, threshold.strain)
-                        }
-                    }
+        NegotiationExpr::Overcalled { below } => match &kernel.competition {
+            Competition::Simple(_) => false,
+            Competition::Overcalled(data) => match below {
+                None => true,
+                Some(threshold) => {
+                    is_bid_below(data.level, data.strain, threshold.level, threshold.strain)
                 }
-            }
-        }
+            },
+        },
 
-        NegotiationExpr::And { exprs } => {
-            exprs.iter().all(|e| match_kernel(e, kernel))
-        }
+        NegotiationExpr::And { exprs } => exprs.iter().all(|e| match_kernel(e, kernel)),
 
-        NegotiationExpr::Or { exprs } => {
-            exprs.iter().any(|e| match_kernel(e, kernel))
-        }
+        NegotiationExpr::Or { exprs } => exprs.iter().any(|e| match_kernel(e, kernel)),
 
         NegotiationExpr::Not { expr } => !match_kernel(expr, kernel),
     }
@@ -121,7 +111,10 @@ mod tests {
 
     #[test]
     fn match_uncontested() {
-        assert!(match_kernel(&NegotiationExpr::Uncontested, &initial_kernel()));
+        assert!(match_kernel(
+            &NegotiationExpr::Uncontested,
+            &initial_kernel()
+        ));
     }
 
     #[test]
@@ -138,7 +131,10 @@ mod tests {
             }),
             ..initial_kernel()
         };
-        assert!(match_kernel(&NegotiationExpr::Fit { strain: None }, &kernel));
+        assert!(match_kernel(
+            &NegotiationExpr::Fit { strain: None },
+            &kernel
+        ));
     }
 
     #[test]
@@ -151,11 +147,15 @@ mod tests {
             ..initial_kernel()
         };
         assert!(match_kernel(
-            &NegotiationExpr::Fit { strain: Some(BidSuitName::Hearts) },
+            &NegotiationExpr::Fit {
+                strain: Some(BidSuitName::Hearts)
+            },
             &kernel,
         ));
         assert!(!match_kernel(
-            &NegotiationExpr::Fit { strain: Some(BidSuitName::Spades) },
+            &NegotiationExpr::Fit {
+                strain: Some(BidSuitName::Spades)
+            },
             &kernel,
         ));
     }

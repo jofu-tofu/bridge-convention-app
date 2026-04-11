@@ -6,11 +6,8 @@
   "description": "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns",
   "purpose": "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
   "references": {
-    "primary": { "url": "https://www.bridgeguys.com/Conventions/DONT.html", "label": "Bridge Guys — comprehensive DONT coverage including Marty Bergen's original and common variants" },
-    "discovery": { "url": "https://www.bridgebum.com/dont.php" },
-    "secondary": [
-      { "url": "https://www.kwbridge.com/bb/b_dont.htm", "label": "Karen Walker — clear advancer response explanations" }
-    ]
+    "authority": { "url": "https://www.bridgeguys.com/Conventions/DONT.html", "label": "Bridge Guys — comprehensive DONT coverage including Marty Bergen's original and common variants" },
+    "discovery": { "url": "https://www.bridgebum.com/dont.php" }
   },
   "teaching": {
     "tradeoff": "DONT overcalls commit to the 2-level immediately — if partner has a misfit, you may go down.",

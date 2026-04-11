@@ -28,14 +28,6 @@ pub use build_viewport::{
     build_auction_entries, build_bidding_viewport, build_declarer_prompt_viewport,
     build_explanation_viewport, build_playing_viewport, filter_visible_hands, format_call,
 };
-pub use viewport_types::{
-    AnnotationType, AuctionEntryView, BidAttemptRecord, BidContextView, BidHistoryEntryView,
-    BidRole,
-    BiddingOptionView, BiddingViewport, BuildBiddingViewportInput,
-    BuildDeclarerPromptViewportInput, BuildExplanationViewportInput, BuildPlayingViewportInput,
-    CallRoleEntry, DeclarerPromptViewport, ExplanationViewport, HandEvaluationView,
-    PlayRecommendation, PlayingViewport, ReviewCondition,
-};
 pub use config_factory::{create_drill_config, DrillConfig};
 pub use drill_session::get_next_bid;
 pub use flow_tree::{
@@ -64,4 +56,11 @@ pub use session_state::{get_current_turn, DebugLogEntry, PlayState, SeatStrategy
 pub use start_drill::{
     pick_vulnerability, rotate_auction, rotate_deal_constraints, rotate_seat_180, start_drill,
     DrillBundle,
+};
+pub use viewport_types::{
+    AnnotationType, AuctionEntryView, BidAttemptRecord, BidContextView, BidHistoryEntryView,
+    BidRole, BiddingOptionView, BiddingViewport, BuildBiddingViewportInput,
+    BuildDeclarerPromptViewportInput, BuildExplanationViewportInput, BuildPlayingViewportInput,
+    CallRoleEntry, DeclarerPromptViewport, ExplanationViewport, HandEvaluationView,
+    PlayRecommendation, PlayingViewport, ReviewCondition,
 };

@@ -10,7 +10,12 @@ pub fn get_legal_plays(hand: &Hand, lead_suit: Option<Suit>) -> Vec<Card> {
     match lead_suit {
         None => hand.cards.clone(),
         Some(suit) => {
-            let follow: Vec<Card> = hand.cards.iter().filter(|c| c.suit == suit).cloned().collect();
+            let follow: Vec<Card> = hand
+                .cards
+                .iter()
+                .filter(|c| c.suit == suit)
+                .cloned()
+                .collect();
             if follow.is_empty() {
                 hand.cards.clone()
             } else {
@@ -33,7 +38,11 @@ pub fn get_trick_winner(trick: &Trick) -> Result<Seat, EngineError> {
 
     // Check for trump cards
     if let Some(trump) = trump_suit {
-        let trump_plays: Vec<_> = trick.plays.iter().filter(|p| p.card.suit == trump).collect();
+        let trump_plays: Vec<_> = trick
+            .plays
+            .iter()
+            .filter(|p| p.card.suit == trump)
+            .collect();
         if !trump_plays.is_empty() {
             return trump_plays
                 .iter()
@@ -44,7 +53,11 @@ pub fn get_trick_winner(trick: &Trick) -> Result<Seat, EngineError> {
     }
 
     // No trump played — highest of led suit wins
-    let follow_plays: Vec<_> = trick.plays.iter().filter(|p| p.card.suit == lead_suit).collect();
+    let follow_plays: Vec<_> = trick
+        .plays
+        .iter()
+        .filter(|p| p.card.suit == lead_suit)
+        .collect();
     follow_plays
         .iter()
         .max_by_key(|p| rank_index(p.card.rank))
@@ -62,7 +75,10 @@ mod tests {
     }
 
     fn played(seat: Seat, suit: Suit, rank: Rank) -> PlayedCard {
-        PlayedCard { card: card(suit, rank), seat }
+        PlayedCard {
+            card: card(suit, rank),
+            seat,
+        }
     }
 
     #[test]
@@ -156,7 +172,7 @@ mod tests {
         let trick = Trick {
             plays: vec![
                 played(Seat::North, Suit::Spades, Rank::Ace),
-                played(Seat::East, Suit::Hearts, Rank::Two),   // trump
+                played(Seat::East, Suit::Hearts, Rank::Two), // trump
                 played(Seat::South, Suit::Hearts, Rank::King), // higher trump
                 played(Seat::West, Suit::Spades, Rank::King),
             ],
@@ -169,9 +185,7 @@ mod tests {
     #[test]
     fn incomplete_trick_errors() {
         let trick = Trick {
-            plays: vec![
-                played(Seat::North, Suit::Spades, Rank::Ace),
-            ],
+            plays: vec![played(Seat::North, Suit::Spades, Rank::Ace)],
             trump_suit: None,
             winner: None,
         };

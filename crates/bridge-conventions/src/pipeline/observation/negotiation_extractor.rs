@@ -107,7 +107,10 @@ pub fn apply_negotiation_actions(
 }
 
 /// Compute the delta between two kernel states. Returns only changed fields.
-pub fn compute_kernel_delta(before: &NegotiationState, after: &NegotiationState) -> NegotiationDelta {
+pub fn compute_kernel_delta(
+    before: &NegotiationState,
+    after: &NegotiationState,
+) -> NegotiationDelta {
     let mut delta = NegotiationDelta::default();
 
     if after.forcing != before.forcing {

@@ -2,8 +2,8 @@
 //!
 //! Mirrors TS from `pipeline/observation/route-matcher.ts`.
 
-use bridge_engine::types::Seat;
 use bridge_engine::partner_seat;
+use bridge_engine::types::Seat;
 
 use crate::pipeline::observation::committed_step::CommittedStep;
 use crate::types::bid_action::{BidAction, BidSuitName};
@@ -65,12 +65,10 @@ pub fn match_obs(pattern: &ObsPattern, obs: &BidAction, actor_role: Option<TurnR
     if let Some(ref pat_strain) = pattern.strain {
         match obs.strain() {
             Some(s) if s == pat_strain => {}
-            _ => {
-                match obs.target_suit() {
-                    Some(ts) if BidSuitName::from(*ts) == *pat_strain => {}
-                    _ => return false,
-                }
-            }
+            _ => match obs.target_suit() {
+                Some(ts) if BidSuitName::from(*ts) == *pat_strain => {}
+                _ => return false,
+            },
         }
     }
 
@@ -86,11 +84,7 @@ pub fn match_obs(pattern: &ObsPattern, obs: &BidAction, actor_role: Option<TurnR
 }
 
 /// Match a RouteExpr against a CommittedStep log.
-pub fn match_route(
-    expr: &RouteExpr,
-    log: &[CommittedStep],
-    opener_seat: Option<Seat>,
-) -> bool {
+pub fn match_route(expr: &RouteExpr, log: &[CommittedStep], opener_seat: Option<Seat>) -> bool {
     match expr {
         RouteExpr::Last { pattern } => match_last(pattern, log, opener_seat),
         RouteExpr::Contains { pattern } => match_contains(pattern, log, opener_seat),
@@ -102,41 +96,26 @@ pub fn match_route(
 }
 
 /// Does any observation in a step match the pattern?
-fn step_matches_obs(
-    pattern: &ObsPattern,
-    step: &CommittedStep,
-    opener_seat: Option<Seat>,
-) -> bool {
+fn step_matches_obs(pattern: &ObsPattern, step: &CommittedStep, opener_seat: Option<Seat>) -> bool {
     let actor_role = opener_seat.map(|os| derive_actor_role(step.actor, os));
     step.public_actions
         .iter()
         .any(|obs| match_obs(pattern, obs, actor_role))
 }
 
-fn match_last(
-    pattern: &ObsPattern,
-    log: &[CommittedStep],
-    opener_seat: Option<Seat>,
-) -> bool {
+fn match_last(pattern: &ObsPattern, log: &[CommittedStep], opener_seat: Option<Seat>) -> bool {
     match log.last() {
         Some(step) => step_matches_obs(pattern, step, opener_seat),
         None => false,
     }
 }
 
-fn match_contains(
-    pattern: &ObsPattern,
-    log: &[CommittedStep],
-    opener_seat: Option<Seat>,
-) -> bool {
-    log.iter().any(|step| step_matches_obs(pattern, step, opener_seat))
+fn match_contains(pattern: &ObsPattern, log: &[CommittedStep], opener_seat: Option<Seat>) -> bool {
+    log.iter()
+        .any(|step| step_matches_obs(pattern, step, opener_seat))
 }
 
-fn match_subseq(
-    patterns: &[ObsPattern],
-    log: &[CommittedStep],
-    opener_seat: Option<Seat>,
-) -> bool {
+fn match_subseq(patterns: &[ObsPattern], log: &[CommittedStep], opener_seat: Option<Seat>) -> bool {
     if patterns.is_empty() {
         return true;
     }
@@ -206,8 +185,20 @@ mod tests {
     #[test]
     fn match_route_last() {
         let log = vec![
-            make_step(Seat::South, vec![BidAction::Open { strain: BidSuitName::Notrump, strength: None }]),
-            make_step(Seat::North, vec![BidAction::Inquire { feature: HandFeature::MajorSuit, suit: None }]),
+            make_step(
+                Seat::South,
+                vec![BidAction::Open {
+                    strain: BidSuitName::Notrump,
+                    strength: None,
+                }],
+            ),
+            make_step(
+                Seat::North,
+                vec![BidAction::Inquire {
+                    feature: HandFeature::MajorSuit,
+                    suit: None,
+                }],
+            ),
         ];
         let expr = RouteExpr::Last {
             pattern: ObsPattern {
@@ -225,9 +216,21 @@ mod tests {
     #[test]
     fn match_route_subseq() {
         let log = vec![
-            make_step(Seat::South, vec![BidAction::Open { strain: BidSuitName::Notrump, strength: None }]),
+            make_step(
+                Seat::South,
+                vec![BidAction::Open {
+                    strain: BidSuitName::Notrump,
+                    strength: None,
+                }],
+            ),
             make_step(Seat::West, vec![BidAction::Pass]),
-            make_step(Seat::North, vec![BidAction::Inquire { feature: HandFeature::MajorSuit, suit: None }]),
+            make_step(
+                Seat::North,
+                vec![BidAction::Inquire {
+                    feature: HandFeature::MajorSuit,
+                    suit: None,
+                }],
+            ),
         ];
         let expr = RouteExpr::Subseq {
             steps: vec![

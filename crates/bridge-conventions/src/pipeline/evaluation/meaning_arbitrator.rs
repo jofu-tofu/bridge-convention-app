@@ -288,8 +288,7 @@ fn deduplicate_by_content(sorted_carriers: &[PipelineCarrier]) -> Vec<PipelineCa
 mod tests {
     use super::*;
     use crate::adapter::tree_evaluation::{
-        CandidateEligibility, EncodingEligibility, HandEligibility,
-        PedagogicalEligibility,
+        CandidateEligibility, EncodingEligibility, HandEligibility, PedagogicalEligibility,
     };
     use crate::pipeline::evaluation::provenance::{EncoderKind, EncodingTrace, LegalityTrace};
     use crate::pipeline::evaluation::types::{MeaningClause, RankingMetadata};
@@ -500,7 +499,11 @@ mod tests {
         );
 
         let result = deduplicate_by_content(&[a, b]);
-        assert_eq!(result.len(), 2, "different clause values should not collapse");
+        assert_eq!(
+            result.len(),
+            2,
+            "different clause values should not collapse"
+        );
     }
 
     #[test]

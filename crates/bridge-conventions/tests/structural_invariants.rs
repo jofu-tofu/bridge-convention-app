@@ -10,6 +10,7 @@
 //! - Every state phase must be reachable via FSM transitions (or be initial)
 //! - declarationOrder must be unique within each state
 //! - Every clause factId must reference a plausible fact namespace
+//! - Every module must have references.authority and references.discovery
 
 use std::collections::HashSet;
 use std::path::PathBuf;
@@ -239,6 +240,107 @@ fn filename_matches_module_id() {
     if !failures.is_empty() {
         panic!(
             "\n\nFilename/moduleId mismatches ({} failures):\n{}\n",
+            failures.len(),
+            failures.join("\n")
+        );
+    }
+}
+
+/// Every module must have `references.authority` and `references.discovery` fields.
+///
+/// `authority` is the authoritative source for this convention's rules.
+/// `discovery` is the bridgebum.com URL for finding and overviewing the convention.
+///
+/// These fields are metadata-only (not deserialized into ConventionModule), so this
+/// test reads the raw JSON to validate their presence.
+///
+/// Catches: new modules added without reference URLs, or stale fixtures missing
+/// the required reference structure.
+#[test]
+fn modules_have_required_references() {
+    let dir = PathBuf::from(MODULE_FIXTURE_DIR);
+    let mut failures: Vec<String> = Vec::new();
+
+    for entry in std::fs::read_dir(&dir).expect("Failed to read module fixture directory") {
+        let entry = entry.expect("Failed to read directory entry");
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("json") {
+            continue;
+        }
+
+        let filename = path.file_name().unwrap().to_string_lossy().into_owned();
+        let json_str = std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("Failed to read {filename}: {e}"));
+
+        let raw: serde_json::Value = serde_json::from_str(&json_str)
+            .unwrap_or_else(|e| panic!("Failed to parse {filename}: {e}"));
+
+        let refs = raw.get("references");
+
+        match refs {
+            None => {
+                failures.push(format!("  {filename}: missing `references` field entirely"));
+            }
+            Some(refs_obj) => {
+                // authority: must exist with a non-empty url
+                match refs_obj.get("authority") {
+                    None => {
+                        failures.push(format!(
+                            "  {filename}: missing `references.authority`"
+                        ));
+                    }
+                    Some(authority) => {
+                        let url = authority
+                            .get("url")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("");
+                        if url.is_empty() {
+                            failures.push(format!(
+                                "  {filename}: `references.authority.url` is empty"
+                            ));
+                        }
+                        let label = authority
+                            .get("label")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("");
+                        if label.is_empty() {
+                            failures.push(format!(
+                                "  {filename}: `references.authority.label` is empty"
+                            ));
+                        }
+                    }
+                }
+
+                // discovery: must exist with a non-empty url containing bridgebum.com
+                match refs_obj.get("discovery") {
+                    None => {
+                        failures.push(format!(
+                            "  {filename}: missing `references.discovery`"
+                        ));
+                    }
+                    Some(discovery) => {
+                        let url = discovery
+                            .get("url")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("");
+                        if url.is_empty() {
+                            failures.push(format!(
+                                "  {filename}: `references.discovery.url` is empty"
+                            ));
+                        } else if !url.contains("bridgebum.com") {
+                            failures.push(format!(
+                                "  {filename}: `references.discovery.url` should be a bridgebum.com URL, got '{url}'"
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if !failures.is_empty() {
+        panic!(
+            "\n\nModule reference validation failures ({} failures):\n{}\n",
             failures.len(),
             failures.join("\n")
         );

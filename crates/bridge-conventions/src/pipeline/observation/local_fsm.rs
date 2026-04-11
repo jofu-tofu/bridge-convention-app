@@ -24,7 +24,11 @@ pub fn advance_local_fsm(
             continue;
         }
 
-        if step.public_actions.iter().any(|obs| match_obs(&transition.on, obs, None)) {
+        if step
+            .public_actions
+            .iter()
+            .any(|obs| match_obs(&transition.on, obs, None))
+        {
             return transition.to.clone();
         }
     }

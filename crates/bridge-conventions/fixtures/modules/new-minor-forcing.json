@@ -6,11 +6,8 @@
   "description": "After 1m-1M-1NT, bid the other minor as an artificial checkback to find major-suit fits or determine strength",
   "purpose": "After opener rebids 1NT, responder may need to explore for an 8-card major fit or determine whether to invite or bid game. NMF provides a one-round forcing mechanism to extract more information from opener.",
   "references": {
-    "primary": { "url": "https://www.bridgeguys.com/Conventions/NewMinorForcing.html", "label": "Bridge Guys — comprehensive NMF coverage with opener's rebid structure" },
-    "discovery": { "url": "https://www.bridgebum.com/new_minor_forcing.php" },
-    "secondary": [
-      { "url": "https://www.kwbridge.com/bb/b_nmf.htm", "label": "Karen Walker — clear NMF explanations and continuation bidding" }
-    ]
+    "authority": { "url": "https://www.bridgeguys.com/Conventions/NewMinorForcing.html", "label": "Bridge Guys — comprehensive NMF coverage with opener's rebid structure" },
+    "discovery": { "url": "https://www.bridgebum.com/new_minor_forcing.php" }
   },
   "teaching": {
     "tradeoff": "After 1m-1M-1NT, the bid of the other minor loses its natural meaning in exchange for an artificial forcing checkback bid.",
@@ -203,10 +200,18 @@
       "roles": ["pedagogical"]
     },
     {
-      "explanationId": "nmf.openerSupportHearts",
-      "meaningId": "nmf:opener-support-hearts",
-      "templateKey": "nmf.openerSupportHearts.semantic",
-      "displayText": "Show 3+ card heart support after NMF",
+      "explanationId": "nmf.openerSupportHeartsMin",
+      "meaningId": "nmf:opener-support-hearts-min",
+      "templateKey": "nmf.openerSupportHeartsMin.semantic",
+      "displayText": "Show 3+ card heart support with minimum (12-13 HCP)",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.openerSupportHeartsMax",
+      "meaningId": "nmf:opener-support-hearts-max",
+      "templateKey": "nmf.openerSupportHeartsMax.semantic",
+      "displayText": "Jump raise to 3♥ — 3+ card heart support with maximum (14 HCP)",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -214,7 +219,15 @@
       "explanationId": "nmf.openerShowSpadesAfterHearts",
       "meaningId": "nmf:opener-show-spades-after-hearts",
       "templateKey": "nmf.openerShowSpadesAfterHearts.semantic",
-      "displayText": "Show 4+ spades (no heart support) after NMF",
+      "displayText": "Show 4+ spades (no heart support) with minimum after NMF",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.openerShowSpadesAfterHeartsMax",
+      "meaningId": "nmf:opener-show-spades-after-hearts-max",
+      "templateKey": "nmf.openerShowSpadesAfterHeartsMax.semantic",
+      "displayText": "Jump to 3♠ — 4+ spades (no heart support) with maximum (14 HCP)",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -235,10 +248,18 @@
       "roles": ["pedagogical"]
     },
     {
-      "explanationId": "nmf.openerSupportSpades",
-      "meaningId": "nmf:opener-support-spades",
-      "templateKey": "nmf.openerSupportSpades.semantic",
-      "displayText": "Show 3+ card spade support after NMF",
+      "explanationId": "nmf.openerSupportSpadesMin",
+      "meaningId": "nmf:opener-support-spades-min",
+      "templateKey": "nmf.openerSupportSpadesMin.semantic",
+      "displayText": "Show 3+ card spade support with minimum (12-13 HCP)",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.openerSupportSpadesMax",
+      "meaningId": "nmf:opener-support-spades-max",
+      "templateKey": "nmf.openerSupportSpadesMax.semantic",
+      "displayText": "Jump raise to 3♠ — 3+ card spade support with maximum (14 HCP)",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -246,7 +267,15 @@
       "explanationId": "nmf.openerShowHeartsAfterSpades",
       "meaningId": "nmf:opener-show-hearts-after-spades",
       "templateKey": "nmf.openerShowHeartsAfterSpades.semantic",
-      "displayText": "Show 4+ hearts (no spade support) after NMF",
+      "displayText": "Show 4+ hearts (no spade support) with minimum after NMF",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.openerShowHeartsAfterSpadesMax",
+      "meaningId": "nmf:opener-show-hearts-after-spades-max",
+      "templateKey": "nmf.openerShowHeartsAfterSpadesMax.semantic",
+      "displayText": "Jump to 3♥ — 4+ hearts (no spade support) with maximum (14 HCP)",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -1263,7 +1292,7 @@
       },
       "surfaces": [
         {
-          "meaningId": "nmf:opener-support-hearts",
+          "meaningId": "nmf:opener-support-hearts-min",
           "semanticClassId": "nmf:opener-show-support",
           "moduleId": "new-minor-forcing",
           "encoding": {
@@ -1281,6 +1310,22 @@
               "clauseId": "hand.suitLength.hearts:gte:3",
               "description": "3+ hearts",
               "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 13,
+              "clauseId": "hand.hcp:lte:13",
+              "description": "At most 13 HCP (minimum)",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -1296,8 +1341,54 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Show heart support",
-            "summary": "Show 3+ card support for responder's hearts"
+            "name": "Show heart support (min)",
+            "summary": "Minimum hand (12-13 HCP) with 3+ card heart support"
+          }
+        },
+        {
+          "meaningId": "nmf:opener-support-hearts-max",
+          "semanticClassId": "nmf:opener-jump-support",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.suitLength.hearts:gte:3",
+              "description": "3+ hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14 HCP (maximum)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NMFOpenerJumpSupport",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Jump raise hearts (max)",
+            "summary": "Maximum hand (14 HCP) with 3+ card heart support — jump to 3H"
           }
         },
         {
@@ -1327,12 +1418,28 @@
               "clauseId": "hand.suitLength.hearts:lte:2",
               "description": "No heart support",
               "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 13,
+              "clauseId": "hand.hcp:lte:13",
+              "description": "At most 13 HCP (minimum)",
+              "isPublic": true
             }
           ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 1
+            "declarationOrder": 2
           },
           "sourceIntent": {
             "type": "NMFOpenerShowOtherMajor",
@@ -1342,8 +1449,62 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Show 4 spades",
-            "summary": "No heart support but 4+ spades — show the other major"
+            "name": "Show 4 spades (min)",
+            "summary": "Minimum hand, no heart support but 4+ spades — show the other major"
+          }
+        },
+        {
+          "meaningId": "nmf:opener-show-spades-after-hearts-max",
+          "semanticClassId": "nmf:opener-jump-other-major",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.hearts:lte:2",
+              "description": "No heart support",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14 HCP (maximum)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "NMFOpenerJumpOtherMajor",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Jump to 3S (max)",
+            "summary": "Maximum hand (14 HCP), no heart support but 4+ spades — jump to show strength"
           }
         },
         {
@@ -1386,7 +1547,7 @@
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 2
+            "declarationOrder": 4
           },
           "sourceIntent": {
             "type": "NMFOpenerNTMin",
@@ -1430,7 +1591,7 @@
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 3
+            "declarationOrder": 5
           },
           "sourceIntent": {
             "type": "NMFOpenerNTMax",
@@ -1456,7 +1617,7 @@
       },
       "surfaces": [
         {
-          "meaningId": "nmf:opener-support-spades",
+          "meaningId": "nmf:opener-support-spades-min",
           "semanticClassId": "nmf:opener-show-support",
           "moduleId": "new-minor-forcing",
           "encoding": {
@@ -1474,6 +1635,22 @@
               "clauseId": "hand.suitLength.spades:gte:3",
               "description": "3+ spades",
               "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 13,
+              "clauseId": "hand.hcp:lte:13",
+              "description": "At most 13 HCP (minimum)",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -1489,8 +1666,54 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Show spade support",
-            "summary": "Show 3+ card support for responder's spades"
+            "name": "Show spade support (min)",
+            "summary": "Minimum hand (12-13 HCP) with 3+ card spade support"
+          }
+        },
+        {
+          "meaningId": "nmf:opener-support-spades-max",
+          "semanticClassId": "nmf:opener-jump-support",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.suitLength.spades:gte:3",
+              "description": "3+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14 HCP (maximum)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NMFOpenerJumpSupport",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Jump raise spades (max)",
+            "summary": "Maximum hand (14 HCP) with 3+ card spade support — jump to 3S"
           }
         },
         {
@@ -1520,12 +1743,28 @@
               "clauseId": "hand.suitLength.spades:lte:2",
               "description": "No spade support",
               "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 13,
+              "clauseId": "hand.hcp:lte:13",
+              "description": "At most 13 HCP (minimum)",
+              "isPublic": true
             }
           ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 1
+            "declarationOrder": 2
           },
           "sourceIntent": {
             "type": "NMFOpenerShowOtherMajor",
@@ -1535,8 +1774,62 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Show 4 hearts",
-            "summary": "No spade support but 4+ hearts — show the other major"
+            "name": "Show 4 hearts (min)",
+            "summary": "Minimum hand, no spade support but 4+ hearts — show the other major"
+          }
+        },
+        {
+          "meaningId": "nmf:opener-show-hearts-after-spades-max",
+          "semanticClassId": "nmf:opener-jump-other-major",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.spades:lte:2",
+              "description": "No spade support",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14 HCP (maximum)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "NMFOpenerJumpOtherMajor",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Jump to 3H (max)",
+            "summary": "Maximum hand (14 HCP), no spade support but 4+ hearts — jump to show strength"
           }
         },
         {
@@ -1579,7 +1872,7 @@
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 2
+            "declarationOrder": 4
           },
           "sourceIntent": {
             "type": "NMFOpenerNTMin",
@@ -1623,7 +1916,7 @@
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 3
+            "declarationOrder": 5
           },
           "sourceIntent": {
             "type": "NMFOpenerNTMax",

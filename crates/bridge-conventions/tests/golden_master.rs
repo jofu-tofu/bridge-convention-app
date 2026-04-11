@@ -19,9 +19,8 @@ fn load_fixture(name: &str) -> String {
 fn roundtrip_fixture(name: &str) {
     let json_str = load_fixture(name);
 
-    let bundle: ConventionBundle = serde_json::from_str(&json_str).unwrap_or_else(|e| {
-        panic!("Failed to deserialize {}.json: {}", name, e)
-    });
+    let bundle: ConventionBundle = serde_json::from_str(&json_str)
+        .unwrap_or_else(|e| panic!("Failed to deserialize {}.json: {}", name, e));
     assert_eq!(bundle.id, name, "Bundle ID mismatch");
 
     // Roundtrip non-module fields

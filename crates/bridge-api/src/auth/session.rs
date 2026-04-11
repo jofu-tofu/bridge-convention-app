@@ -42,4 +42,3 @@ pub async fn delete_session(pool: &SqlitePool, token: &str) -> Result<(), sqlx::
         .await?;
     Ok(())
 }
-

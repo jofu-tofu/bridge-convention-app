@@ -23,7 +23,6 @@ pub struct BidAlert {
     pub annotation_type: Option<AnnotationType>,
 }
 
-
 /// Resolve a BidAlert from a disclosure level.
 pub fn resolve_alert(disclosure: Disclosure) -> BidAlert {
     match disclosure {
@@ -41,4 +40,3 @@ pub fn resolve_alert(disclosure: Disclosure) -> BidAlert {
         },
     }
 }
-

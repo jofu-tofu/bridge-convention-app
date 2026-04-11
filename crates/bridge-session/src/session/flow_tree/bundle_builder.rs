@@ -14,7 +14,9 @@ use super::super::learning_viewport::derive_entry_condition;
 use super::surface_collector::collect_module_data;
 use super::tree_assembler::{attach_route_constrained, build_module_subtree};
 use super::tree_helpers::{max_depth_of, mk_entry_condition_root, mk_node, to_flow_tree_node};
-use super::types::{BundleFlowTreeViewport, ModulePhaseState, MutableNode, NodeCounter, TransitionEntry};
+use super::types::{
+    BundleFlowTreeViewport, ModulePhaseState, MutableNode, NodeCounter, TransitionEntry,
+};
 
 // ── Collected module data ─────────────────────────────────────────
 

@@ -50,8 +50,7 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
     );
 
     // 5. Resolve surface groups and convention config from bundle
-    let surface_groups =
-        bundle_resolver::resolve_surface_groups(&config.convention_id, system);
+    let surface_groups = bundle_resolver::resolve_surface_groups(&config.convention_id, system);
     let convention_config = bundle_resolver::build_convention_config(
         &config.convention_id,
         system,

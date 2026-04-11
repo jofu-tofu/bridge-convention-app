@@ -35,18 +35,27 @@ struct PipelineSnapshot {
 
 fn load_pipeline_fixtures(bundle_id: &str) -> Vec<PipelineSnapshot> {
     let path = format!("{}/{}.json", PIPELINE_FIXTURE_DIR, bundle_id);
-    let json_str = std::fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("Failed to read {}: {}", path, e));
+    let json_str =
+        std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("Failed to read {}: {}", path, e));
     serde_json::from_str(&json_str)
         .unwrap_or_else(|e| panic!("Failed to deserialize {}: {}", path, e))
 }
 
 fn build_adapter(bundle_id: &str) -> ConventionStrategyAdapter {
-    let system_config = bridge_conventions::registry::system_configs::get_system_config(BaseSystemId::Sayc);
-    let base_module_ids: Vec<String> = bridge_conventions::registry::module_registry::BASE_MODULE_IDS
-        .iter().map(|s| s.to_string()).collect();
-    let spec = spec_from_bundle(bundle_id, &system_config, &base_module_ids, &std::collections::HashMap::new())
-        .unwrap_or_else(|| panic!("spec_from_bundle failed for {}", bundle_id));
+    let system_config =
+        bridge_conventions::registry::system_configs::get_system_config(BaseSystemId::Sayc);
+    let base_module_ids: Vec<String> =
+        bridge_conventions::registry::module_registry::BASE_MODULE_IDS
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+    let spec = spec_from_bundle(
+        bundle_id,
+        &system_config,
+        &base_module_ids,
+        &std::collections::HashMap::new(),
+    )
+    .unwrap_or_else(|| panic!("spec_from_bundle failed for {}", bundle_id));
 
     let resolved = resolve_bundle(bundle_id, BaseSystemId::Sayc)
         .unwrap_or_else(|| panic!("resolve_bundle failed for {}", bundle_id));
@@ -79,13 +88,12 @@ fn build_adapter(bundle_id: &str) -> ConventionStrategyAdapter {
 }
 
 fn build_bidding_context(snapshot: &PipelineSnapshot) -> BiddingContext {
-    let hand: Hand = serde_json::from_value(snapshot.hand.clone())
-        .unwrap_or_else(|e| {
-            panic!(
-                "{}/{}: hand deserialization failed: {}",
-                snapshot.bundle_id, snapshot.label, e
-            )
-        });
+    let hand: Hand = serde_json::from_value(snapshot.hand.clone()).unwrap_or_else(|e| {
+        panic!(
+            "{}/{}: hand deserialization failed: {}",
+            snapshot.bundle_id, snapshot.label, e
+        )
+    });
 
     let evaluation = evaluate_hand_hcp(&hand);
 
@@ -120,11 +128,7 @@ fn build_bidding_context(snapshot: &PipelineSnapshot) -> BiddingContext {
 
 fn run_bundle_tests(bundle_id: &str) {
     let snapshots = load_pipeline_fixtures(bundle_id);
-    assert!(
-        !snapshots.is_empty(),
-        "No fixtures found for {}",
-        bundle_id
-    );
+    assert!(!snapshots.is_empty(), "No fixtures found for {}", bundle_id);
 
     let adapter = build_adapter(bundle_id);
     let mut pass_count = 0;
@@ -138,12 +142,13 @@ fn run_bundle_tests(bundle_id: &str) {
             None => continue,
         };
 
-        let expected: Call = serde_json::from_value(expected_call_json.clone()).unwrap_or_else(|e| {
-            panic!(
-                "{}/{}: selected_call deserialization failed: {}",
-                snapshot.bundle_id, snapshot.label, e
-            )
-        });
+        let expected: Call =
+            serde_json::from_value(expected_call_json.clone()).unwrap_or_else(|e| {
+                panic!(
+                    "{}/{}: selected_call deserialization failed: {}",
+                    snapshot.bundle_id, snapshot.label, e
+                )
+            });
 
         let ctx = build_bidding_context(snapshot);
         let result = adapter.suggest_bid(&ctx);
@@ -243,6 +248,245 @@ fn make_hand(cards_str: &str) -> Hand {
     Hand { cards }
 }
 
+fn make_context(hand: Hand, entries: Vec<AuctionEntry>, dealer: Seat) -> BiddingContext {
+    BiddingContext {
+        evaluation: evaluate_hand_hcp(&hand),
+        hand,
+        auction: Auction {
+            entries,
+            is_complete: false,
+        },
+        seat: Seat::South,
+        vulnerability: None,
+        dealer: Some(dealer),
+    }
+}
+
+#[test]
+fn negative_doubles_prefers_shown_major_fit_over_opener_rebid() {
+    let hand = make_hand("SA S8 S2 HQ H7 H4 D6 D5 CA CK C8 C5 C4");
+    let ctx = make_context(
+        hand,
+        vec![
+            AuctionEntry {
+                seat: Seat::South,
+                call: Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Clubs,
+                },
+            },
+            AuctionEntry {
+                seat: Seat::West,
+                call: Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Spades,
+                },
+            },
+            AuctionEntry {
+                seat: Seat::North,
+                call: Call::Double,
+            },
+            AuctionEntry {
+                seat: Seat::East,
+                call: Call::Pass,
+            },
+        ],
+        Seat::South,
+    );
+
+    let bid = build_adapter("negative-doubles-bundle")
+        .suggest_bid(&ctx)
+        .expect("pipeline should produce a rebid");
+
+    assert_eq!(
+        bid.call,
+        Call::Bid {
+            level: 2,
+            strain: BidSuit::Hearts,
+        }
+    );
+}
+
+#[test]
+fn negative_doubles_medium_values_jump_with_implied_spade_fit() {
+    let hand = make_hand("SK SQ S7 S4 HA H2 DK D8 D4 CA CJ C10 C3");
+    let ctx = make_context(
+        hand,
+        vec![
+            AuctionEntry {
+                seat: Seat::South,
+                call: Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Clubs,
+                },
+            },
+            AuctionEntry {
+                seat: Seat::West,
+                call: Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Hearts,
+                },
+            },
+            AuctionEntry {
+                seat: Seat::North,
+                call: Call::Double,
+            },
+            AuctionEntry {
+                seat: Seat::East,
+                call: Call::Pass,
+            },
+        ],
+        Seat::South,
+    );
+
+    let bid = build_adapter("negative-doubles-bundle")
+        .suggest_bid(&ctx)
+        .expect("pipeline should produce a rebid");
+
+    assert_eq!(
+        bid.call,
+        Call::Bid {
+            level: 2,
+            strain: BidSuit::Spades,
+        }
+    );
+}
+
+#[test]
+fn negative_doubles_medium_values_without_four_card_fit_rebid_notrump() {
+    let hand = make_hand("SK SQ S7 HA H2 DK D8 D4 CA CJ C10 C4 C3");
+    let ctx = make_context(
+        hand,
+        vec![
+            AuctionEntry {
+                seat: Seat::South,
+                call: Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Clubs,
+                },
+            },
+            AuctionEntry {
+                seat: Seat::West,
+                call: Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Hearts,
+                },
+            },
+            AuctionEntry {
+                seat: Seat::North,
+                call: Call::Double,
+            },
+            AuctionEntry {
+                seat: Seat::East,
+                call: Call::Pass,
+            },
+        ],
+        Seat::South,
+    );
+
+    let bid = build_adapter("negative-doubles-bundle")
+        .suggest_bid(&ctx)
+        .expect("pipeline should produce a rebid");
+
+    assert_eq!(
+        bid.call,
+        Call::Bid {
+            level: 2,
+            strain: BidSuit::NoTrump,
+        }
+    );
+}
+
+#[test]
+fn negative_doubles_game_values_bid_game_with_implied_major_fit() {
+    let hand = make_hand("SA SQ S2 HA HK H7 DK D8 CA CJ C10 C4 C3");
+    let ctx = make_context(
+        hand,
+        vec![
+            AuctionEntry {
+                seat: Seat::South,
+                call: Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Clubs,
+                },
+            },
+            AuctionEntry {
+                seat: Seat::West,
+                call: Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Spades,
+                },
+            },
+            AuctionEntry {
+                seat: Seat::North,
+                call: Call::Double,
+            },
+            AuctionEntry {
+                seat: Seat::East,
+                call: Call::Pass,
+            },
+        ],
+        Seat::South,
+    );
+
+    let bid = build_adapter("negative-doubles-bundle")
+        .suggest_bid(&ctx)
+        .expect("pipeline should produce a rebid");
+
+    assert_eq!(
+        bid.call,
+        Call::Bid {
+            level: 4,
+            strain: BidSuit::Hearts,
+        }
+    );
+}
+
+#[test]
+fn negative_doubles_level_relative_jump_raise_stays_legal() {
+    let hand = make_hand("SQ S9 S7 S4 HA HK HQ H8 DA D6 D5 CQ C4");
+    let ctx = make_context(
+        hand,
+        vec![
+            AuctionEntry {
+                seat: Seat::South,
+                call: Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Hearts,
+                },
+            },
+            AuctionEntry {
+                seat: Seat::West,
+                call: Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Diamonds,
+                },
+            },
+            AuctionEntry {
+                seat: Seat::North,
+                call: Call::Double,
+            },
+            AuctionEntry {
+                seat: Seat::East,
+                call: Call::Pass,
+            },
+        ],
+        Seat::South,
+    );
+
+    let bid = build_adapter("negative-doubles-bundle")
+        .suggest_bid(&ctx)
+        .expect("pipeline should produce a rebid");
+
+    assert_eq!(
+        bid.call,
+        Call::Bid {
+            level: 3,
+            strain: BidSuit::Spades,
+        }
+    );
+}
+
 #[test]
 fn grading_wiring_truth_set_populated() {
     // Hand with both Stayman (4 spades) and transfer (5 hearts) options
@@ -314,15 +558,24 @@ fn observation_log_tracks_fit_through_transfer_acceptance() {
             entries: vec![
                 AuctionEntry {
                     seat: Seat::North,
-                    call: Call::Bid { level: 1, strain: BidSuit::NoTrump },
+                    call: Call::Bid {
+                        level: 1,
+                        strain: BidSuit::NoTrump,
+                    },
                 },
                 AuctionEntry {
                     seat: Seat::South,
-                    call: Call::Bid { level: 2, strain: BidSuit::Diamonds },
+                    call: Call::Bid {
+                        level: 2,
+                        strain: BidSuit::Diamonds,
+                    },
                 },
                 AuctionEntry {
                     seat: Seat::North,
-                    call: Call::Bid { level: 2, strain: BidSuit::Hearts },
+                    call: Call::Bid {
+                        level: 2,
+                        strain: BidSuit::Hearts,
+                    },
                 },
             ],
             is_complete: false,

@@ -5,12 +5,11 @@
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
+use crate::pipeline::evidence_bundle::ConditionEvidence;
 use crate::types::meaning::{
-    AuthoredRankingMetadata, ConstraintValue, Disclosure,
-    FactOperator, RecommendationBand,
+    AuthoredRankingMetadata, ConstraintValue, Disclosure, FactOperator, RecommendationBand,
 };
 use crate::types::meaning::{MeaningId, SemanticClassId, SourceIntent};
-use crate::pipeline::evidence_bundle::ConditionEvidence;
 
 /// Evaluated clause with satisfaction status.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

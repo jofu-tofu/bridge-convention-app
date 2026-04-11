@@ -6,8 +6,19 @@ const SUITS: [Suit; 4] = [Suit::Clubs, Suit::Diamonds, Suit::Hearts, Suit::Spade
 pub const SUIT_ORDER: [Suit; 4] = [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs];
 
 pub const RANKS: [Rank; 13] = [
-    Rank::Two, Rank::Three, Rank::Four, Rank::Five, Rank::Six, Rank::Seven,
-    Rank::Eight, Rank::Nine, Rank::Ten, Rank::Jack, Rank::Queen, Rank::King, Rank::Ace,
+    Rank::Two,
+    Rank::Three,
+    Rank::Four,
+    Rank::Five,
+    Rank::Six,
+    Rank::Seven,
+    Rank::Eight,
+    Rank::Nine,
+    Rank::Ten,
+    Rank::Jack,
+    Rank::Queen,
+    Rank::King,
+    Rank::Ace,
 ];
 
 pub const SEATS: [Seat; 4] = [Seat::North, Seat::East, Seat::South, Seat::West];
@@ -94,7 +105,8 @@ mod tests {
     fn deck_has_52_unique_cards() {
         let deck = create_deck();
         assert_eq!(deck.len(), 52);
-        let unique: HashSet<String> = deck.iter()
+        let unique: HashSet<String> = deck
+            .iter()
             .map(|c| format!("{:?}{:?}", c.suit, c.rank))
             .collect();
         assert_eq!(unique.len(), 52);
@@ -139,6 +151,9 @@ mod tests {
 
     #[test]
     fn suit_order_is_spades_hearts_diamonds_clubs() {
-        assert_eq!(SUIT_ORDER, [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs]);
+        assert_eq!(
+            SUIT_ORDER,
+            [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs]
+        );
     }
 }

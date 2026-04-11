@@ -7,7 +7,9 @@ use std::collections::HashMap;
 
 use bridge_engine::Suit;
 
-use crate::types::{FactComposition, PrimitiveClause, PrimitiveClauseOperator, PrimitiveClauseValue};
+use crate::types::{
+    FactComposition, PrimitiveClause, PrimitiveClauseOperator, PrimitiveClauseValue,
+};
 
 /// Inverted constraint bounds extracted from a composition tree.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -293,8 +295,14 @@ mod tests {
             },
         };
         let result = invert_composition(&comp);
-        assert_eq!(result.min_length.as_ref().unwrap().get(&Suit::Spades), Some(&4));
-        assert_eq!(result.max_length.as_ref().unwrap().get(&Suit::Spades), Some(&6));
+        assert_eq!(
+            result.min_length.as_ref().unwrap().get(&Suit::Spades),
+            Some(&4)
+        );
+        assert_eq!(
+            result.max_length.as_ref().unwrap().get(&Suit::Spades),
+            Some(&6)
+        );
     }
 
     #[test]

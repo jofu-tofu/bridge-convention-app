@@ -30,11 +30,7 @@ fn load_all_module_definitions() -> Vec<(String, Vec<FactDefinition>)> {
             continue;
         }
 
-        let filename = path
-            .file_name()
-            .unwrap()
-            .to_string_lossy()
-            .into_owned();
+        let filename = path.file_name().unwrap().to_string_lossy().into_owned();
         let json_str = std::fs::read_to_string(&path)
             .unwrap_or_else(|e| panic!("Failed to read {filename}: {e}"));
 
@@ -102,7 +98,10 @@ fn all_module_derived_facts_have_valid_inline_composition() {
                             continue;
                         }
                     };
-                    if let Err(e) = serde_json::from_value::<bridge_conventions::types::FactComposition>(serialized) {
+                    if let Err(e) = serde_json::from_value::<
+                        bridge_conventions::types::FactComposition,
+                    >(serialized)
+                    {
                         failures.push(format!(
                             "  - '{id}' in '{filename}': composition is present but invalid: {e}",
                             id = def.id

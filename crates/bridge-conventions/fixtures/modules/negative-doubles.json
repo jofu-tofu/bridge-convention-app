@@ -6,11 +6,8 @@
   "description": "After partner opens 1-of-a-suit and the opponent overcalls, responder's double is conventional — showing values and unbid suits rather than penalty",
   "purpose": "Keep the bidding alive at a low level when opponents overcall, showing the unbid suits (especially majors) that a natural response would have shown",
   "references": {
-    "primary": { "url": "https://www.larryco.com/bridge-articles/negative-doubles", "label": "Larry Cohen — authoritative on modern negative double practice and level-dependent thresholds" },
-    "discovery": { "url": "https://www.bridgebum.com/negative_double.php" },
-    "secondary": [
-      { "url": "https://www.bridgeguys.com/Conventions/NegativeDoubles.html", "label": "Bridge Guys — opener rebid sequences and level thresholds" }
-    ]
+    "authority": { "url": "https://www.larryco.com/bridge-articles/negative-doubles", "label": "Larry Cohen — authoritative on modern negative double practice and level-dependent thresholds" },
+    "discovery": { "url": "https://www.bridgebum.com/negative_double.php" }
   },
   "teaching": {
     "tradeoff": "Using double as conventional means you can't make a penalty double of the overcall at low levels.",
@@ -151,6 +148,16 @@
       "meaningId": "negdbl:double-after-1d-1s",
       "templateKey": "negdbl.double.after1d1s.semantic",
       "displayText": "Double: Shows 4+ hearts over 1S overcall of 1D",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "negdbl.double.after1d2c",
+      "meaningId": "negdbl:double-after-1d-2c",
+      "templateKey": "negdbl.double.after1d2c.semantic",
+      "displayText": "Double: Shows both majors over 2C overcall of 1D",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -680,6 +687,168 @@
             "name": "Opponent overcalls 1S",
             "summary": "Opponent overcalls 1S over partner's 1C opening"
           }
+        },
+        {
+          "meaningId": "negdbl:opp-overcall-2d-after-1c",
+          "semanticClassId": "negdbl:opp-overcall",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.diamonds:gte:5",
+              "description": "5+ diamonds",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "10+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 16,
+              "clauseId": "hand.hcp:lte:16",
+              "description": "At most 16 HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "NegDblOpponentOvercall",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent overcalls 2D",
+            "summary": "Opponent overcalls 2D over partner's 1C opening"
+          }
+        },
+        {
+          "meaningId": "negdbl:opp-overcall-2h-after-1c",
+          "semanticClassId": "negdbl:opp-overcall",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "10+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 16,
+              "clauseId": "hand.hcp:lte:16",
+              "description": "At most 16 HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "NegDblOpponentOvercall",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent overcalls 2H",
+            "summary": "Opponent overcalls 2H over partner's 1C opening"
+          }
+        },
+        {
+          "meaningId": "negdbl:opp-overcall-2s-after-1c",
+          "semanticClassId": "negdbl:opp-overcall",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "5+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "10+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 16,
+              "clauseId": "hand.hcp:lte:16",
+              "description": "At most 16 HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "NegDblOpponentOvercall",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent overcalls 2S",
+            "summary": "Opponent overcalls 2S over partner's 1C opening"
+          }
         }
       ]
     },
@@ -793,6 +962,60 @@
           "teachingLabel": {
             "name": "Opponent overcalls 1S",
             "summary": "Opponent overcalls 1S over partner's 1D opening"
+          }
+        },
+        {
+          "meaningId": "negdbl:opp-overcall-2c-after-1d",
+          "semanticClassId": "negdbl:opp-overcall",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.clubs:gte:5",
+              "description": "5+ clubs",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "10+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 16,
+              "clauseId": "hand.hcp:lte:16",
+              "description": "At most 16 HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "NegDblOpponentOvercall",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent overcalls 2C",
+            "summary": "Opponent overcalls 2C over partner's 1D opening"
           }
         }
       ]
@@ -1542,6 +1765,94 @@
       ]
     },
     {
+      "phase": "after-oc-1d",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "clubs"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1d-2c",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "8+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows both majors (4-4+) with competitive values (2-level, needs 8+ HCP)"
+          }
+        },
+        {
+          "meaningId": "negdbl:pass-after-1d-2c",
+          "semanticClassId": "negdbl:responder-pass",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ]
+    },
+    {
       "phase": "after-oc-1h",
       "turn": "responder",
       "route": {
@@ -2179,9 +2490,9 @@
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 14,
-              "clauseId": "hand.hcp:lte:14",
-              "description": "At most 14 HCP",
+              "value": 15,
+              "clauseId": "hand.hcp:lte:15",
+              "description": "At most 15 HCP",
               "isPublic": true
             }
           ],
@@ -2369,9 +2680,9 @@
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 14,
-              "clauseId": "hand.hcp:lte:14",
-              "description": "At most 14 HCP",
+              "value": 15,
+              "clauseId": "hand.hcp:lte:15",
+              "description": "At most 15 HCP",
               "isPublic": true
             }
           ],
@@ -2559,9 +2870,9 @@
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 14,
-              "clauseId": "hand.hcp:lte:14",
-              "description": "At most 14 HCP",
+              "value": 15,
+              "clauseId": "hand.hcp:lte:15",
+              "description": "At most 15 HCP",
               "isPublic": true
             }
           ],
@@ -2749,9 +3060,9 @@
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 14,
-              "clauseId": "hand.hcp:lte:14",
-              "description": "At most 14 HCP",
+              "value": 15,
+              "clauseId": "hand.hcp:lte:15",
+              "description": "At most 15 HCP",
               "isPublic": true
             }
           ],

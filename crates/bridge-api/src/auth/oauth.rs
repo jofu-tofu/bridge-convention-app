@@ -28,7 +28,11 @@ pub struct OAuthProfile {
 
 /// Build the authorization URL for the OAuth consent screen.
 pub fn authorization_url(provider: OAuthProvider, config: &Config, state: &str) -> String {
-    let callback_url = format!("{}/api/auth/callback/{}", config.base_url, provider_slug(provider));
+    let callback_url = format!(
+        "{}/api/auth/callback/{}",
+        config.base_url,
+        provider_slug(provider)
+    );
 
     match provider {
         OAuthProvider::Google => {
@@ -58,7 +62,11 @@ pub async fn exchange_code(
     config: &Config,
     code: &str,
 ) -> Result<OAuthProfile, reqwest::Error> {
-    let callback_url = format!("{}/api/auth/callback/{}", config.base_url, provider_slug(provider));
+    let callback_url = format!(
+        "{}/api/auth/callback/{}",
+        config.base_url,
+        provider_slug(provider)
+    );
     let client = reqwest::Client::new();
 
     match provider {

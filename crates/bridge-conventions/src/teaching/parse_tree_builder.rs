@@ -14,16 +14,16 @@ pub fn build_parse_tree(result: &PipelineResult) -> ParseTreeView {
     // Process truth set carriers (selected + applicable)
     for carrier in &result.truth_set {
         let module_id = &carrier.proposal().module_id;
-        let node = module_nodes.entry(module_id.clone()).or_insert_with(|| {
-            ParseTreeModuleNode {
+        let node = module_nodes
+            .entry(module_id.clone())
+            .or_insert_with(|| ParseTreeModuleNode {
                 module_id: module_id.clone(),
                 display_label: module_id.clone(),
                 verdict: ParseTreeModuleVerdict::Applicable,
                 conditions: Vec::new(),
                 meanings: Vec::new(),
                 elimination_reason: None,
-            }
-        });
+            });
 
         node.meanings.push(ParseTreeMeaning {
             meaning_id: carrier.proposal().meaning_id.clone(),
@@ -36,8 +36,9 @@ pub fn build_parse_tree(result: &PipelineResult) -> ParseTreeView {
     // Process eliminated carriers
     for carrier in &result.eliminated {
         let module_id = &carrier.proposal().module_id;
-        let node = module_nodes.entry(module_id.clone()).or_insert_with(|| {
-            ParseTreeModuleNode {
+        let node = module_nodes
+            .entry(module_id.clone())
+            .or_insert_with(|| ParseTreeModuleNode {
                 module_id: module_id.clone(),
                 display_label: module_id.clone(),
                 verdict: ParseTreeModuleVerdict::Eliminated,
@@ -48,8 +49,7 @@ pub fn build_parse_tree(result: &PipelineResult) -> ParseTreeView {
                     .elimination
                     .as_ref()
                     .map(|e| e.reason.clone()),
-            }
-        });
+            });
 
         // Add conditions from failed clauses
         for clause in &carrier.proposal().clauses {

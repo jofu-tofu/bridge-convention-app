@@ -1,13 +1,13 @@
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Redirect, Response};
-use axum_extra::extract::CookieJar;
 use axum_extra::extract::cookie::Cookie;
+use axum_extra::extract::CookieJar;
 use rand::Rng;
 use serde::Deserialize;
 
-use crate::AppState;
 use crate::error::AppError;
+use crate::AppState;
 
 use super::oauth::{self, OAuthProvider};
 use super::session;
@@ -76,7 +76,11 @@ pub async fn oauth_callback(
     let token = session::create_session(&state.pool, &user_id).await?;
 
     // Clear CSRF cookie, set session cookie
-    let jar = jar.remove(Cookie::build("oauth_state").path("/api/auth/callback").build());
+    let jar = jar.remove(
+        Cookie::build("oauth_state")
+            .path("/api/auth/callback")
+            .build(),
+    );
     let session_cookie = Cookie::build(("session", token))
         .http_only(true)
         .secure(true)
@@ -101,10 +105,7 @@ pub async fn logout(
 }
 
 /// GET /api/auth/me — return current user or 401
-pub async fn get_me(
-    State(state): State<AppState>,
-    jar: CookieJar,
-) -> Result<Response, AppError> {
+pub async fn get_me(State(state): State<AppState>, jar: CookieJar) -> Result<Response, AppError> {
     let token = jar
         .get("session")
         .map(|c| c.value().to_string())

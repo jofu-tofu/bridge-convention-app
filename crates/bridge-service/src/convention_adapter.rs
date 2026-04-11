@@ -494,10 +494,7 @@ impl ConventionStrategyAdapter {
     }
 
     /// Extract truth-set alternative calls (excluding the selected bid).
-    fn extract_truth_set_calls(
-        evaluation: &StrategyEvaluation,
-        selected_call: &Call,
-    ) -> Vec<Call> {
+    fn extract_truth_set_calls(evaluation: &StrategyEvaluation, selected_call: &Call) -> Vec<Call> {
         let pr = match &evaluation.pipeline_result {
             Some(pr) => pr,
             None => return Vec::new(),
@@ -521,7 +518,9 @@ impl ConventionStrategyAdapter {
             None => return Vec::new(),
         };
         bridge_conventions::pipeline::evaluation::arbitration_helpers::extract_near_miss_calls(
-            pr, groups, selected_call,
+            pr,
+            groups,
+            selected_call,
         )
     }
 
@@ -556,7 +555,6 @@ impl ConventionStrategyAdapter {
             .ok()
             .and_then(|guard| guard.clone())
     }
-
 }
 
 impl BiddingStrategy for ConventionStrategyAdapter {

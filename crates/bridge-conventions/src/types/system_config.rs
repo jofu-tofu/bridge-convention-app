@@ -34,10 +34,22 @@ impl<'de> Deserialize<'de> for PointFormula {
 
             fn visit_str<E: de::Error>(self, value: &str) -> Result<PointFormula, E> {
                 match value {
-                    "hcp-only" => Ok(PointFormula { include_shortage: false, include_length: false }),
-                    "hcp-plus-shortage" => Ok(PointFormula { include_shortage: true, include_length: false }),
-                    "hcp-plus-all-distribution" => Ok(PointFormula { include_shortage: true, include_length: true }),
-                    _ => Err(de::Error::unknown_variant(value, &["hcp-only", "hcp-plus-shortage", "hcp-plus-all-distribution"])),
+                    "hcp-only" => Ok(PointFormula {
+                        include_shortage: false,
+                        include_length: false,
+                    }),
+                    "hcp-plus-shortage" => Ok(PointFormula {
+                        include_shortage: true,
+                        include_length: false,
+                    }),
+                    "hcp-plus-all-distribution" => Ok(PointFormula {
+                        include_shortage: true,
+                        include_length: true,
+                    }),
+                    _ => Err(de::Error::unknown_variant(
+                        value,
+                        &["hcp-only", "hcp-plus-shortage", "hcp-plus-all-distribution"],
+                    )),
                 }
             }
 
@@ -49,7 +61,9 @@ impl<'de> Deserialize<'de> for PointFormula {
                     match key.as_str() {
                         "includeShortage" => include_shortage = Some(map.next_value()?),
                         "includeLength" => include_length = Some(map.next_value()?),
-                        _ => { let _ = map.next_value::<de::IgnoredAny>()?; }
+                        _ => {
+                            let _ = map.next_value::<de::IgnoredAny>()?;
+                        }
                     }
                 }
 
@@ -74,8 +88,14 @@ pub struct PointConfig {
 
 fn default_point_config() -> PointConfig {
     PointConfig {
-        nt_formula: PointFormula { include_shortage: false, include_length: false },
-        trump_formula: PointFormula { include_shortage: true, include_length: false },
+        nt_formula: PointFormula {
+            include_shortage: false,
+            include_length: false,
+        },
+        trump_formula: PointFormula {
+            include_shortage: true,
+            include_length: false,
+        },
     }
 }
 
@@ -202,7 +222,10 @@ pub struct SystemConfig {
     pub one_nt_response_after_major: OneNtResponseAfterMajorConfig,
     pub opening_requirements: OpeningRequirements,
     pub dont_overcall: DontOvercallConfig,
-    #[serde(default = "default_point_config", skip_serializing_if = "is_default_point_config")]
+    #[serde(
+        default = "default_point_config",
+        skip_serializing_if = "is_default_point_config"
+    )]
     pub point_config: PointConfig,
 }
 
@@ -295,8 +318,14 @@ mod tests {
                 max_hcp: 15,
             },
             point_config: PointConfig {
-                nt_formula: PointFormula { include_shortage: false, include_length: false },
-                trump_formula: PointFormula { include_shortage: true, include_length: false },
+                nt_formula: PointFormula {
+                    include_shortage: false,
+                    include_length: false,
+                },
+                trump_formula: PointFormula {
+                    include_shortage: true,
+                    include_length: false,
+                },
             },
         };
         let json = serde_json::to_string(&config).unwrap();
@@ -306,7 +335,10 @@ mod tests {
 
     #[test]
     fn point_formula_serde_roundtrip() {
-        let formula = PointFormula { include_shortage: true, include_length: false };
+        let formula = PointFormula {
+            include_shortage: true,
+            include_length: false,
+        };
         let json = serde_json::to_string(&formula).unwrap();
         assert_eq!(json, r#"{"includeShortage":true,"includeLength":false}"#);
         let back: PointFormula = serde_json::from_str(&json).unwrap();
@@ -316,13 +348,32 @@ mod tests {
     #[test]
     fn point_formula_legacy_string_deserialization() {
         let hcp_only: PointFormula = serde_json::from_str(r#""hcp-only""#).unwrap();
-        assert_eq!(hcp_only, PointFormula { include_shortage: false, include_length: false });
+        assert_eq!(
+            hcp_only,
+            PointFormula {
+                include_shortage: false,
+                include_length: false
+            }
+        );
 
         let hcp_shortage: PointFormula = serde_json::from_str(r#""hcp-plus-shortage""#).unwrap();
-        assert_eq!(hcp_shortage, PointFormula { include_shortage: true, include_length: false });
+        assert_eq!(
+            hcp_shortage,
+            PointFormula {
+                include_shortage: true,
+                include_length: false
+            }
+        );
 
-        let all_dist: PointFormula = serde_json::from_str(r#""hcp-plus-all-distribution""#).unwrap();
-        assert_eq!(all_dist, PointFormula { include_shortage: true, include_length: true });
+        let all_dist: PointFormula =
+            serde_json::from_str(r#""hcp-plus-all-distribution""#).unwrap();
+        assert_eq!(
+            all_dist,
+            PointFormula {
+                include_shortage: true,
+                include_length: true
+            }
+        );
     }
 
     #[test]
@@ -330,8 +381,20 @@ mod tests {
         // Ensure SystemConfig without pointConfig deserializes with default
         let json = r#"{"systemId":"sayc","displayName":"test","ntOpening":{"minHcp":15,"maxHcp":17},"responderThresholds":{"inviteMin":8,"inviteMax":9,"gameMin":10,"slamMin":15,"inviteMinTp":{"trump":8},"inviteMaxTp":{"trump":10},"gameMinTp":{"trump":10},"slamMinTp":{"trump":16}},"openerRebid":{"notMinimum":16,"notMinimumTp":{"trump":16}},"interference":{"redoubleMin":10},"suitResponse":{"twoLevelMin":10,"twoLevelForcingDuration":"one-round"},"oneNtResponseAfterMajor":{"forcing":"non-forcing","maxHcp":10,"minHcp":6},"openingRequirements":{"majorSuitMinLength":5},"dontOvercall":{"minHcp":8,"maxHcp":15}}"#;
         let config: SystemConfig = serde_json::from_str(json).unwrap();
-        assert_eq!(config.point_config.nt_formula, PointFormula { include_shortage: false, include_length: false });
-        assert_eq!(config.point_config.trump_formula, PointFormula { include_shortage: true, include_length: false });
+        assert_eq!(
+            config.point_config.nt_formula,
+            PointFormula {
+                include_shortage: false,
+                include_length: false
+            }
+        );
+        assert_eq!(
+            config.point_config.trump_formula,
+            PointFormula {
+                include_shortage: true,
+                include_length: false
+            }
+        );
     }
 
     #[test]
@@ -339,7 +402,19 @@ mod tests {
         // Old localStorage format: pointConfig with string formula values
         let json = r#"{"systemId":"sayc","displayName":"test","ntOpening":{"minHcp":15,"maxHcp":17},"responderThresholds":{"inviteMin":8,"inviteMax":9,"gameMin":10,"slamMin":15,"inviteMinTp":{"trump":8},"inviteMaxTp":{"trump":10},"gameMinTp":{"trump":10},"slamMinTp":{"trump":16}},"openerRebid":{"notMinimum":16,"notMinimumTp":{"trump":16}},"interference":{"redoubleMin":10},"suitResponse":{"twoLevelMin":10,"twoLevelForcingDuration":"one-round"},"oneNtResponseAfterMajor":{"forcing":"non-forcing","maxHcp":10,"minHcp":6},"openingRequirements":{"majorSuitMinLength":5},"dontOvercall":{"minHcp":8,"maxHcp":15},"pointConfig":{"ntFormula":"hcp-only","trumpFormula":"hcp-plus-shortage"}}"#;
         let config: SystemConfig = serde_json::from_str(json).unwrap();
-        assert_eq!(config.point_config.nt_formula, PointFormula { include_shortage: false, include_length: false });
-        assert_eq!(config.point_config.trump_formula, PointFormula { include_shortage: true, include_length: false });
+        assert_eq!(
+            config.point_config.nt_formula,
+            PointFormula {
+                include_shortage: false,
+                include_length: false
+            }
+        );
+        assert_eq!(
+            config.point_config.trump_formula,
+            PointFormula {
+                include_shortage: true,
+                include_length: false
+            }
+        );
     }
 }

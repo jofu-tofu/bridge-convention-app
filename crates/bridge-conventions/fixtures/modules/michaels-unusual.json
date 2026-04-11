@@ -6,12 +6,8 @@
   "description": "Michaels Cue Bids and Unusual 2NT: compete over opponent's suit opening with two-suited hands (5-5+)",
   "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
   "references": {
-    "primary": { "url": "https://www.bridgeguys.com/Conventions/MichaelsCueBid.html", "label": "Bridge Guys — comprehensive Michaels coverage with advancer responses and continuations" },
-    "discovery": { "url": "https://www.bridgebum.com/michaels_cue_bid.php" },
-    "secondary": [
-      { "url": "https://www.bridgeguys.com/Conventions/Unusual2NT.html", "label": "Bridge Guys — Unusual 2NT companion convention" },
-      { "url": "https://www.larryco.com/bridge-articles/michaels-cue-bid", "label": "Larry Cohen — practical Michaels guidance" }
-    ]
+    "authority": { "url": "https://www.bridgeguys.com/Conventions/MichaelsCueBid.html", "label": "Bridge Guys — comprehensive Michaels coverage with advancer responses and continuations" },
+    "discovery": { "url": "https://www.bridgebum.com/michaels_cue_bid.php" }
   },
   "teaching": {
     "tradeoff": "Michaels/Unusual 2NT sacrifices the natural meaning of the cue bid and 2NT in exchange for immediately showing a two-suited competitive hand.",
@@ -160,6 +156,32 @@
       "displayText": "3+ diamonds to support partner",
       "contrastiveTemplateKey": "michaels.hasDiamondSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 diamonds to support partner",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.noSpadeSupport",
+      "factId": "module.michaels.noSpadeSupport",
+      "templateKey": "michaels.noSpadeSupport.supporting",
+      "displayText": "Fewer than 3 spades (no spade fit)",
+      "contrastiveTemplateKey": "michaels.noSpadeSupport.whyNot",
+      "contrastiveDisplayText": "3+ spades available",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.noHeartSupport",
+      "factId": "module.michaels.noHeartSupport",
+      "templateKey": "michaels.noHeartSupport.supporting",
+      "displayText": "Fewer than 3 hearts (no heart fit)",
+      "contrastiveTemplateKey": "michaels.noHeartSupport.whyNot",
+      "contrastiveDisplayText": "3+ hearts available",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -468,6 +490,16 @@
       ]
     },
     {
+      "explanationId": "michaels.adv.passOrCorrect3c1h",
+      "meaningId": "michaels:adv-pass-or-correct-3c-1h",
+      "templateKey": "michaels.adv.passOrCorrect3c1h.semantic",
+      "displayText": "3C: Pass-or-correct \u2014 escape to partner's minor (over 1H Michaels)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
       "explanationId": "michaels.adv.pass1h",
       "meaningId": "michaels:adv-pass-1h",
       "templateKey": "michaels.adv.pass1h.semantic",
@@ -502,6 +534,16 @@
       "meaningId": "michaels:adv-game-hearts-4h-1s",
       "templateKey": "michaels.adv.gameHearts4h1s.semantic",
       "displayText": "4H: Game in hearts (over 1S Michaels)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.passOrCorrect3c1s",
+      "meaningId": "michaels:adv-pass-or-correct-3c-1s",
+      "templateKey": "michaels.adv.passOrCorrect3c1s.semantic",
+      "displayText": "3C: Pass-or-correct \u2014 escape to partner's minor (over 1S Michaels)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -1884,6 +1926,50 @@
           }
         },
         {
+          "meaningId": "michaels:adv-pass-or-correct-3c-1h",
+          "semanticClassId": "michaels:adv-pass-or-correct",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.noSpadeSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.noSpadeSupport:boolean:true",
+              "description": "Fewer than 3 spades (no spade fit)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerPassOrCorrect",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3C \u2014 pass-or-correct",
+            "summary": "Bid 3C asking partner to pass with clubs or correct to 3D with diamonds \u2014 escape to the minor with no spade fit"
+          }
+        },
+        {
           "meaningId": "michaels:adv-pass-1h",
           "semanticClassId": "michaels:adv-pass",
           "moduleId": "michaels-unusual",
@@ -1905,7 +1991,7 @@
           "ranking": {
             "recommendationBand": "may",
             "modulePrecedence": 0,
-            "declarationOrder": 4
+            "declarationOrder": 5
           },
           "sourceIntent": {
             "type": "MichaelsAdvancerPass",
@@ -2082,6 +2168,50 @@
           }
         },
         {
+          "meaningId": "michaels:adv-pass-or-correct-3c-1s",
+          "semanticClassId": "michaels:adv-pass-or-correct",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.noHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.noHeartSupport:boolean:true",
+              "description": "Fewer than 3 hearts (no heart fit)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerPassOrCorrect",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3C \u2014 pass-or-correct",
+            "summary": "Bid 3C asking partner to pass with clubs or correct to 3D with diamonds \u2014 escape to the minor with no heart fit"
+          }
+        },
+        {
           "meaningId": "michaels:adv-pass-1s",
           "semanticClassId": "michaels:adv-pass",
           "moduleId": "michaels-unusual",
@@ -2103,7 +2233,7 @@
           "ranking": {
             "recommendationBand": "may",
             "modulePrecedence": 0,
-            "declarationOrder": 4
+            "declarationOrder": 5
           },
           "sourceIntent": {
             "type": "MichaelsAdvancerPass",
@@ -2763,6 +2893,44 @@
             "factId": "hand.suitLength.diamonds",
             "operator": "gte",
             "value": 3
+          }
+        }
+      },
+      {
+        "id": "module.michaels.noSpadeSupport",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Fewer than 3 spades (no spade support)",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.spades",
+            "operator": "lte",
+            "value": 2
+          }
+        }
+      },
+      {
+        "id": "module.michaels.noHeartSupport",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Fewer than 3 hearts (no heart support)",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.hearts",
+            "operator": "lte",
+            "value": 2
           }
         }
       },

@@ -6,11 +6,8 @@
   "description": "Use 3C/3D as artificial raises after 1M to show different strength levels",
   "purpose": "Distinguish between weak, constructive, limit, and game-forcing raises of partner's major so opener can judge the right level",
   "references": {
-    "primary": { "url": "https://www.larryco.com/bridge-articles/bergen-raises", "label": "Larry Cohen — co-inventor of Bergen Raises, authoritative on standard vs reverse variants" },
-    "discovery": { "url": "https://www.bridgebum.com/bergen_raises.php" },
-    "secondary": [
-      { "url": "https://www.bridgeguys.com/Conventions/BergenRaises.html", "label": "Bridge Guys — continuation sequences and help-suit game tries" }
-    ]
+    "authority": { "url": "https://www.larryco.com/bridge-articles/bergen-raises", "label": "Larry Cohen — co-inventor of Bergen Raises, authoritative on standard vs reverse variants" },
+    "discovery": { "url": "https://www.bridgebum.com/bergen_raises.php" }
   },
   "teaching": {
     "tradeoff": "Uses 3C and 3D as conventional raises, giving up natural minor bids over 1M.",

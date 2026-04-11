@@ -6,11 +6,8 @@
   "description": "Open 2C with 22+ HCP (game-forcing), responder bids 2D waiting or shows a positive suit",
   "purpose": "Reserve the 2C opening for very strong hands, establishing a game-forcing auction where opener describes their hand after the initial relay or positive response",
   "references": {
-    "primary": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Strong 2C is the standard SAYC game-forcing opening" },
-    "discovery": { "url": "https://www.bridgebum.com/strong_2_club_opening.php" },
-    "secondary": [
-      { "url": "https://www.bridgeguys.com/Conventions/Strong2Club.html", "label": "Bridge Guys — continuation structures and 2D waiting vs positive" }
-    ]
+    "authority": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Strong 2C is the standard SAYC game-forcing opening" },
+    "discovery": { "url": "https://www.bridgebum.com/strong_2_club_opening.php" }
   },
   "teaching": {
     "tradeoff": "Using 2C as a strong artificial opening means you lose the natural 2C bid — but hands with 22+ HCP are rare enough that the tradeoff is overwhelmingly positive.",

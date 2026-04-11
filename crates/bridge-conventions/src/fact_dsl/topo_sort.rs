@@ -9,10 +9,8 @@ use crate::types::FactDefinition;
 
 /// Sort fact definitions in dependency order (dependencies first).
 pub fn topological_sort(definitions: &[FactDefinition]) -> Vec<&FactDefinition> {
-    let by_id: HashMap<&str, &FactDefinition> = definitions
-        .iter()
-        .map(|d| (d.id.as_str(), d))
-        .collect();
+    let by_id: HashMap<&str, &FactDefinition> =
+        definitions.iter().map(|d| (d.id.as_str(), d)).collect();
 
     let mut visited = HashSet::new();
     let mut sorted = Vec::with_capacity(definitions.len());
@@ -48,7 +46,7 @@ fn visit<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::{FactLayer, EvaluationWorld, FactValueType};
+    use crate::types::{EvaluationWorld, FactLayer, FactValueType};
 
     fn make_def(id: &str, derives_from: Option<Vec<&str>>) -> FactDefinition {
         FactDefinition {
@@ -77,19 +75,14 @@ mod tests {
 
     #[test]
     fn handles_no_dependencies() {
-        let defs = vec![
-            make_def("x", None),
-            make_def("y", None),
-        ];
+        let defs = vec![make_def("x", None), make_def("y", None)];
         let sorted = topological_sort(&defs);
         assert_eq!(sorted.len(), 2);
     }
 
     #[test]
     fn handles_missing_dependency() {
-        let defs = vec![
-            make_def("a", Some(vec!["missing"])),
-        ];
+        let defs = vec![make_def("a", Some(vec!["missing"]))];
         let sorted = topological_sort(&defs);
         assert_eq!(sorted.len(), 1);
         assert_eq!(sorted[0].id, "a");

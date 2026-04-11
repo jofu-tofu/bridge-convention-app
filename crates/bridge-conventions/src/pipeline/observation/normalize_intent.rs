@@ -17,24 +17,32 @@ fn other_major(suit: &str) -> ObsSuit {
 }
 
 fn param_suit(params: &std::collections::HashMap<String, serde_json::Value>) -> Option<ObsSuit> {
-    params.get("suit").and_then(|v| v.as_str()).and_then(|s| match s {
-        "clubs" => Some(ObsSuit::Clubs),
-        "diamonds" => Some(ObsSuit::Diamonds),
-        "hearts" => Some(ObsSuit::Hearts),
-        "spades" => Some(ObsSuit::Spades),
-        _ => None,
-    })
+    params
+        .get("suit")
+        .and_then(|v| v.as_str())
+        .and_then(|s| match s {
+            "clubs" => Some(ObsSuit::Clubs),
+            "diamonds" => Some(ObsSuit::Diamonds),
+            "hearts" => Some(ObsSuit::Hearts),
+            "spades" => Some(ObsSuit::Spades),
+            _ => None,
+        })
 }
 
-fn param_strain(params: &std::collections::HashMap<String, serde_json::Value>) -> Option<BidSuitName> {
-    params.get("suit").and_then(|v| v.as_str()).and_then(|s| match s {
-        "clubs" => Some(BidSuitName::Clubs),
-        "diamonds" => Some(BidSuitName::Diamonds),
-        "hearts" => Some(BidSuitName::Hearts),
-        "spades" => Some(BidSuitName::Spades),
-        "notrump" => Some(BidSuitName::Notrump),
-        _ => None,
-    })
+fn param_strain(
+    params: &std::collections::HashMap<String, serde_json::Value>,
+) -> Option<BidSuitName> {
+    params
+        .get("suit")
+        .and_then(|v| v.as_str())
+        .and_then(|s| match s {
+            "clubs" => Some(BidSuitName::Clubs),
+            "diamonds" => Some(BidSuitName::Diamonds),
+            "hearts" => Some(BidSuitName::Hearts),
+            "spades" => Some(BidSuitName::Spades),
+            "notrump" => Some(BidSuitName::Notrump),
+            _ => None,
+        })
 }
 
 /// Normalize a sourceIntent into canonical bridge observations.
@@ -44,179 +52,710 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
     let p = &intent.params;
     match intent.intent_type.as_str() {
         // ── Natural openings ────────────────────────────────────────
-        "NTOpening" => vec![BidAction::Open { strain: BidSuitName::Notrump, strength: None }],
-        "SuitOpen" => vec![BidAction::Open { strain: param_strain(p).unwrap_or(BidSuitName::Clubs), strength: None }],
-        "NTInvite" => vec![BidAction::Raise { strain: BidSuitName::Notrump, strength: HandStrength::Invitational }],
-        "NTGame" => vec![BidAction::Raise { strain: BidSuitName::Notrump, strength: HandStrength::Game }],
+        "NTOpening" => vec![BidAction::Open {
+            strain: BidSuitName::Notrump,
+            strength: None,
+        }],
+        "SuitOpen" => vec![BidAction::Open {
+            strain: param_strain(p).unwrap_or(BidSuitName::Clubs),
+            strength: None,
+        }],
+        "NTInvite" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::Invitational,
+        }],
+        "NTGame" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::Game,
+        }],
         "TerminalPass" => vec![BidAction::Pass],
 
         // ── Stayman ──────────────────────────────────────────────────
-        "StaymanAsk" => vec![BidAction::Inquire { feature: HandFeature::MajorSuit, suit: None }],
-        "ShowHeldSuit" | "ShowFiveCardMajor" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
-        "DenyMajor" => vec![BidAction::Deny { feature: HandFeature::MajorSuit, suit: None }],
-        "RaiseGame" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Game }],
-        "RaiseInvite" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Invitational }],
-        "StaymanNTGame" => vec![BidAction::Place { strain: BidSuitName::Notrump }],
-        "StaymanNTInvite" => vec![BidAction::Raise { strain: BidSuitName::Notrump, strength: HandStrength::Invitational }],
-        "CrossMajorInvite" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
+        "StaymanAsk" => vec![BidAction::Inquire {
+            feature: HandFeature::MajorSuit,
+            suit: None,
+        }],
+        "ShowHeldSuit" | "ShowFiveCardMajor" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
+        }],
+        "DenyMajor" => vec![BidAction::Deny {
+            feature: HandFeature::MajorSuit,
+            suit: None,
+        }],
+        "RaiseGame" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Game,
+        }],
+        "RaiseInvite" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Invitational,
+        }],
+        "StaymanNTGame" => vec![BidAction::Place {
+            strain: BidSuitName::Notrump,
+        }],
+        "StaymanNTInvite" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::Invitational,
+        }],
+        "CrossMajorInvite" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
+        }],
         "CrossMajorGF" => vec![
-            BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None },
-            BidAction::Force { level: HandStrength::Game },
+            BidAction::Show {
+                feature: HandFeature::HeldSuit,
+                suit: param_suit(p),
+                quality: None,
+                strength: None,
+            },
+            BidAction::Force {
+                level: HandStrength::Game,
+            },
         ],
         "MinorSuitGF" => vec![
-            BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None },
-            BidAction::Force { level: HandStrength::Game },
+            BidAction::Show {
+                feature: HandFeature::HeldSuit,
+                suit: param_suit(p),
+                quality: None,
+                strength: None,
+            },
+            BidAction::Force {
+                level: HandStrength::Game,
+            },
         ],
-        "MajorSignoff64" => vec![BidAction::Signoff { strain: param_strain(p) }],
-        "Quantitative4NT" | "QuantitativeSlam" => vec![BidAction::Raise { strain: BidSuitName::Notrump, strength: HandStrength::SlamInvite }],
-        "RedoubleStrength" => vec![BidAction::Redouble { feature: HandFeature::Strength }],
+        "MajorSignoff64" => vec![BidAction::Signoff {
+            strain: param_strain(p),
+        }],
+        "Quantitative4NT" | "QuantitativeSlam" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::SlamInvite,
+        }],
+        "RedoubleStrength" => vec![BidAction::Redouble {
+            feature: HandFeature::Strength,
+        }],
 
         // ── Jacoby Transfers ─────────────────────────────────────────
-        "TransferToHearts" => vec![BidAction::Transfer { target_suit: ObsSuit::Hearts }],
-        "TransferToSpades" => vec![BidAction::Transfer { target_suit: ObsSuit::Spades }],
-        "AcceptTransfer" => vec![BidAction::Accept { feature: HandFeature::HeldSuit, suit: param_suit(p), strength: None }],
-        "Signoff" | "SignoffWithFit" => vec![BidAction::Signoff { strain: param_strain(p) }],
-        "GameInMajor" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Game }],
-        "TransferNTGame" => vec![BidAction::Place { strain: BidSuitName::Notrump }],
-        "Invite" | "InviteMajorMajor" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Invitational }],
-        "AcceptInvite" => vec![BidAction::Accept { feature: HandFeature::Strength, suit: None, strength: Some(HandStrength::Invitational) }],
-        "DeclineInvite" => vec![BidAction::Decline { feature: HandFeature::Strength, suit: None }],
-        "PlacementCorrection" => vec![BidAction::Place { strain: param_strain(p).unwrap_or(BidSuitName::Notrump) }],
+        "TransferToHearts" => vec![BidAction::Transfer {
+            target_suit: ObsSuit::Hearts,
+        }],
+        "TransferToSpades" => vec![BidAction::Transfer {
+            target_suit: ObsSuit::Spades,
+        }],
+        "AcceptTransfer" => vec![BidAction::Accept {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            strength: None,
+        }],
+        "Signoff" | "SignoffWithFit" => vec![BidAction::Signoff {
+            strain: param_strain(p),
+        }],
+        "GameInMajor" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Game,
+        }],
+        "TransferNTGame" => vec![BidAction::Place {
+            strain: BidSuitName::Notrump,
+        }],
+        "Invite" | "InviteMajorMajor" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Invitational,
+        }],
+        "AcceptInvite" => vec![BidAction::Accept {
+            feature: HandFeature::Strength,
+            suit: None,
+            strength: Some(HandStrength::Invitational),
+        }],
+        "DeclineInvite" => vec![BidAction::Decline {
+            feature: HandFeature::Strength,
+            suit: None,
+        }],
+        "PlacementCorrection" => vec![BidAction::Place {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+        }],
         "PlacementPass" | "WeakPass" | "PostOgustPass" => vec![BidAction::Pass],
 
         // ── Smolen ───────────────────────────────────────────────────
         "Smolen" => {
-            let long_major = p.get("longMajor").and_then(|v| v.as_str()).unwrap_or("spades");
+            let long_major = p
+                .get("longMajor")
+                .and_then(|v| v.as_str())
+                .unwrap_or("spades");
             vec![
-                BidAction::Show { feature: HandFeature::ShortMajor, suit: Some(other_major(long_major)), quality: None, strength: None },
-                BidAction::Force { level: HandStrength::Game },
+                BidAction::Show {
+                    feature: HandFeature::ShortMajor,
+                    suit: Some(other_major(long_major)),
+                    quality: None,
+                    strength: None,
+                },
+                BidAction::Force {
+                    level: HandStrength::Game,
+                },
             ]
         }
-        "SmolenPlacement" => vec![BidAction::Place { strain: param_strain(p).unwrap_or(BidSuitName::Notrump) }],
-        "SmolenAcceptance" => vec![BidAction::Accept { feature: HandFeature::HeldSuit, suit: param_suit(p), strength: None }],
+        "SmolenPlacement" => vec![BidAction::Place {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+        }],
+        "SmolenAcceptance" => vec![BidAction::Accept {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            strength: None,
+        }],
 
         // ── Major Opening ────────────────────────────────────────────
-        "MajorOpen" => vec![BidAction::Open { strain: param_strain(p).unwrap_or(BidSuitName::Spades), strength: None }],
+        "MajorOpen" => vec![BidAction::Open {
+            strain: param_strain(p).unwrap_or(BidSuitName::Spades),
+            strength: None,
+        }],
 
         // ── Bergen ───────────────────────────────────────────────────
         "Splinter" => vec![
-            BidAction::Show { feature: HandFeature::Shortage, suit: param_suit(p), quality: None, strength: None },
-            BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Game },
+            BidAction::Show {
+                feature: HandFeature::Shortage,
+                suit: param_suit(p),
+                quality: None,
+                strength: None,
+            },
+            BidAction::Raise {
+                strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+                strength: HandStrength::Game,
+            },
         ],
-        "GameRaise" | "RaiseToGame" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Game }],
-        "LimitRaise" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Limit }],
-        "ConstructiveRaise" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Constructive }],
-        "PreemptiveRaise" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Preemptive }],
-        "AcceptInvitation" | "GameTry" => vec![BidAction::Accept { feature: HandFeature::Strength, suit: param_suit(p), strength: Some(HandStrength::Invitational) }],
-        "DeclineInvitation" => vec![BidAction::Decline { feature: HandFeature::Strength, suit: param_suit(p) }],
+        "GameRaise" | "RaiseToGame" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Game,
+        }],
+        "LimitRaise" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Limit,
+        }],
+        "ConstructiveRaise" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Constructive,
+        }],
+        "PreemptiveRaise" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Preemptive,
+        }],
+        "AcceptInvitation" | "GameTry" => vec![BidAction::Accept {
+            feature: HandFeature::Strength,
+            suit: param_suit(p),
+            strength: Some(HandStrength::Invitational),
+        }],
+        "DeclineInvitation" => vec![BidAction::Decline {
+            feature: HandFeature::Strength,
+            suit: param_suit(p),
+        }],
         "AcceptPartnerDecision" => vec![BidAction::Pass],
-        "NaturalNtResponse" => vec![BidAction::Place { strain: BidSuitName::Notrump }],
+        "NaturalNtResponse" => vec![BidAction::Place {
+            strain: BidSuitName::Notrump,
+        }],
 
         // ── Weak Twos ────────────────────────────────────────────────
-        "WeakTwoOpen" => vec![BidAction::Open { strain: param_strain(p).unwrap_or(BidSuitName::Diamonds), strength: Some(HandStrength::Weak) }],
-        "OgustAsk" => vec![BidAction::Inquire { feature: HandFeature::SuitQuality, suit: None }],
-        "InviteRaise" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Invitational }],
-        "NewSuitGameForce" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
-        "ShortageSlamTry" => vec![BidAction::Show { feature: HandFeature::Shortage, suit: param_suit(p), quality: None, strength: None }],
-        "SlamTrySecondMajor" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: Some(HandStrength::SlamInvite) }],
-        "GameInOtherMajor" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Game }],
-        "OgustSolid" => vec![BidAction::Show { feature: HandFeature::SuitQuality, suit: None, quality: Some(SuitQuality::Solid), strength: None }],
+        "WeakTwoOpen" => vec![BidAction::Open {
+            strain: param_strain(p).unwrap_or(BidSuitName::Diamonds),
+            strength: Some(HandStrength::Weak),
+        }],
+        "OgustAsk" => vec![BidAction::Inquire {
+            feature: HandFeature::SuitQuality,
+            suit: None,
+        }],
+        "InviteRaise" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Invitational,
+        }],
+        "NewSuitGameForce" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
+        }],
+        "ShortageSlamTry" => vec![BidAction::Show {
+            feature: HandFeature::Shortage,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
+        }],
+        "SlamTrySecondMajor" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            quality: None,
+            strength: Some(HandStrength::SlamInvite),
+        }],
+        "GameInOtherMajor" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Game,
+        }],
+        "OgustSolid" => vec![BidAction::Show {
+            feature: HandFeature::SuitQuality,
+            suit: None,
+            quality: Some(SuitQuality::Solid),
+            strength: None,
+        }],
         "OgustMinBad" => vec![
-            BidAction::Show { feature: HandFeature::Strength, suit: None, quality: None, strength: Some(HandStrength::Minimum) },
-            BidAction::Show { feature: HandFeature::SuitQuality, suit: None, quality: Some(SuitQuality::Bad), strength: None },
+            BidAction::Show {
+                feature: HandFeature::Strength,
+                suit: None,
+                quality: None,
+                strength: Some(HandStrength::Minimum),
+            },
+            BidAction::Show {
+                feature: HandFeature::SuitQuality,
+                suit: None,
+                quality: Some(SuitQuality::Bad),
+                strength: None,
+            },
         ],
         "OgustMinGood" => vec![
-            BidAction::Show { feature: HandFeature::Strength, suit: None, quality: None, strength: Some(HandStrength::Minimum) },
-            BidAction::Show { feature: HandFeature::SuitQuality, suit: None, quality: Some(SuitQuality::Good), strength: None },
+            BidAction::Show {
+                feature: HandFeature::Strength,
+                suit: None,
+                quality: None,
+                strength: Some(HandStrength::Minimum),
+            },
+            BidAction::Show {
+                feature: HandFeature::SuitQuality,
+                suit: None,
+                quality: Some(SuitQuality::Good),
+                strength: None,
+            },
         ],
         "OgustMaxBad" => vec![
-            BidAction::Show { feature: HandFeature::Strength, suit: None, quality: None, strength: Some(HandStrength::Maximum) },
-            BidAction::Show { feature: HandFeature::SuitQuality, suit: None, quality: Some(SuitQuality::Bad), strength: None },
+            BidAction::Show {
+                feature: HandFeature::Strength,
+                suit: None,
+                quality: None,
+                strength: Some(HandStrength::Maximum),
+            },
+            BidAction::Show {
+                feature: HandFeature::SuitQuality,
+                suit: None,
+                quality: Some(SuitQuality::Bad),
+                strength: None,
+            },
         ],
         "OgustMaxGood" => vec![
-            BidAction::Show { feature: HandFeature::Strength, suit: None, quality: None, strength: Some(HandStrength::Maximum) },
-            BidAction::Show { feature: HandFeature::SuitQuality, suit: None, quality: Some(SuitQuality::Good), strength: None },
+            BidAction::Show {
+                feature: HandFeature::Strength,
+                suit: None,
+                quality: None,
+                strength: Some(HandStrength::Maximum),
+            },
+            BidAction::Show {
+                feature: HandFeature::SuitQuality,
+                suit: None,
+                quality: Some(SuitQuality::Good),
+                strength: None,
+            },
         ],
-        "PostOgustGame" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Game }],
-        "PostOgust3NT" => vec![BidAction::Raise { strain: BidSuitName::Notrump, strength: HandStrength::Game }],
-        "PostOgustSignoff" => vec![BidAction::Signoff { strain: param_strain(p) }],
-        "NewSuitForcing" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: None, quality: None, strength: None }],
-        "NsfSupport" => vec![BidAction::Raise { strain: BidSuitName::Notrump, strength: HandStrength::Minimum }],
-        "NsfRebid" => vec![BidAction::Signoff { strain: param_strain(p) }],
+        "PostOgustGame" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Game,
+        }],
+        "PostOgust3NT" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::Game,
+        }],
+        "PostOgustSignoff" => vec![BidAction::Signoff {
+            strain: param_strain(p),
+        }],
+        "NewSuitForcing" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: None,
+            quality: None,
+            strength: None,
+        }],
+        "NsfSupport" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::Minimum,
+        }],
+        "NsfRebid" => vec![BidAction::Signoff {
+            strain: param_strain(p),
+        }],
 
         // ── DONT ─────────────────────────────────────────────────────
         "DONTBothMajors" => vec![
-            BidAction::Overcall { feature: HandFeature::TwoSuited, suit: None },
-            BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Hearts), quality: None, strength: None },
-            BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Spades), quality: None, strength: None },
+            BidAction::Overcall {
+                feature: HandFeature::TwoSuited,
+                suit: None,
+            },
+            BidAction::Show {
+                feature: HandFeature::HeldSuit,
+                suit: Some(ObsSuit::Hearts),
+                quality: None,
+                strength: None,
+            },
+            BidAction::Show {
+                feature: HandFeature::HeldSuit,
+                suit: Some(ObsSuit::Spades),
+                quality: None,
+                strength: None,
+            },
         ],
         "DONTDiamondsMajor" => vec![
-            BidAction::Overcall { feature: HandFeature::TwoSuited, suit: None },
-            BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Diamonds), quality: None, strength: None },
+            BidAction::Overcall {
+                feature: HandFeature::TwoSuited,
+                suit: None,
+            },
+            BidAction::Show {
+                feature: HandFeature::HeldSuit,
+                suit: Some(ObsSuit::Diamonds),
+                quality: None,
+                strength: None,
+            },
         ],
         "DONTClubsHigher" => vec![
-            BidAction::Overcall { feature: HandFeature::TwoSuited, suit: None },
-            BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Clubs), quality: None, strength: None },
+            BidAction::Overcall {
+                feature: HandFeature::TwoSuited,
+                suit: None,
+            },
+            BidAction::Show {
+                feature: HandFeature::HeldSuit,
+                suit: Some(ObsSuit::Clubs),
+                quality: None,
+                strength: None,
+            },
         ],
-        "DONTNaturalSpades" => vec![BidAction::Overcall { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Spades) }],
-        "DONTSingleSuited" => vec![BidAction::Overcall { feature: HandFeature::HeldSuit, suit: None }],
+        "DONTNaturalSpades" => vec![BidAction::Overcall {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+        }],
+        "DONTSingleSuited" => vec![BidAction::Overcall {
+            feature: HandFeature::HeldSuit,
+            suit: None,
+        }],
         "DONTPass" => vec![BidAction::Pass],
-        "DONTAcceptHearts" => vec![BidAction::Accept { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Hearts), strength: None }],
-        "DONTPreferSpades" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Spades), quality: None, strength: None }],
-        "DONTEscapeClubs" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Clubs), quality: None, strength: None }],
-        "DONTEscapeDiamonds" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Diamonds), quality: None, strength: None }],
-        "DONTAcceptDiamonds" => vec![BidAction::Accept { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Diamonds), strength: None }],
-        "DONTRelayAskMajor" => vec![BidAction::Inquire { feature: HandFeature::MajorSuit, suit: None }],
-        "DONTAcceptClubs" => vec![BidAction::Accept { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Clubs), strength: None }],
-        "DONTRelayAskHigher" => vec![BidAction::Inquire { feature: HandFeature::HeldSuit, suit: None }],
-        "DONTAcceptSpades" | "DONTAcceptSpadesFallback" => vec![BidAction::Accept { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Spades), strength: None }],
+        "DONTAcceptHearts" => vec![BidAction::Accept {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+            strength: None,
+        }],
+        "DONTPreferSpades" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+            quality: None,
+            strength: None,
+        }],
+        "DONTEscapeClubs" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+            quality: None,
+            strength: None,
+        }],
+        "DONTEscapeDiamonds" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Diamonds),
+            quality: None,
+            strength: None,
+        }],
+        "DONTAcceptDiamonds" => vec![BidAction::Accept {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Diamonds),
+            strength: None,
+        }],
+        "DONTRelayAskMajor" => vec![BidAction::Inquire {
+            feature: HandFeature::MajorSuit,
+            suit: None,
+        }],
+        "DONTAcceptClubs" => vec![BidAction::Accept {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+            strength: None,
+        }],
+        "DONTRelayAskHigher" => vec![BidAction::Inquire {
+            feature: HandFeature::HeldSuit,
+            suit: None,
+        }],
+        "DONTAcceptSpades" | "DONTAcceptSpadesFallback" => vec![BidAction::Accept {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+            strength: None,
+        }],
         "DONTForcedRelay" => vec![BidAction::Relay { forced: true }],
-        "DONTRevealClubs" | "DONTShowClubs" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Clubs), quality: None, strength: None }],
-        "DONTRevealDiamonds" | "DONTShowDiamonds" | "DONTBypassDiamonds" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Diamonds), quality: None, strength: None }],
-        "DONTRevealHearts" | "DONTShowHearts" | "DONTBypassHearts" | "DONTBypassHeartsAfter2C" | "DONTShowHeartsFromDiamonds" => {
-            vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Hearts), quality: None, strength: None }]
+        "DONTRevealClubs" | "DONTShowClubs" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+            quality: None,
+            strength: None,
+        }],
+        "DONTRevealDiamonds" | "DONTShowDiamonds" | "DONTBypassDiamonds" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Diamonds),
+            quality: None,
+            strength: None,
+        }],
+        "DONTRevealHearts"
+        | "DONTShowHearts"
+        | "DONTBypassHearts"
+        | "DONTBypassHeartsAfter2C"
+        | "DONTShowHeartsFromDiamonds" => {
+            vec![BidAction::Show {
+                feature: HandFeature::HeldSuit,
+                suit: Some(ObsSuit::Hearts),
+                quality: None,
+                strength: None,
+            }]
         }
-        "DONTShowSpades" | "DONTBypassSpades" | "DONTBypassSpadesAfter2C" | "DONTBypassSpadesAfter2D" | "DONTShowSpadesFromDiamonds" => {
-            vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Spades), quality: None, strength: None }]
+        "DONTShowSpades"
+        | "DONTBypassSpades"
+        | "DONTBypassSpadesAfter2C"
+        | "DONTBypassSpadesAfter2D"
+        | "DONTShowSpadesFromDiamonds" => {
+            vec![BidAction::Show {
+                feature: HandFeature::HeldSuit,
+                suit: Some(ObsSuit::Spades),
+                quality: None,
+                strength: None,
+            }]
         }
-        "DONTEscape3CAfter2S" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Clubs), quality: None, strength: None }],
-        "DONTEscape3DAfter2S" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Diamonds), quality: None, strength: None }],
-        "DONTEscape3HAfter2S" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Hearts), quality: None, strength: None }],
+        "DONTEscape3CAfter2S" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+            quality: None,
+            strength: None,
+        }],
+        "DONTEscape3DAfter2S" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Diamonds),
+            quality: None,
+            strength: None,
+        }],
+        "DONTEscape3HAfter2S" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+            quality: None,
+            strength: None,
+        }],
+
+        // ── Michaels / Unusual 2NT ──────────────────────────────
+        "MichaelsCueBidBothMajors" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+            quality: None,
+            strength: None,
+        }, BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+            quality: None,
+            strength: None,
+        }],
+        "MichaelsCueBidSpadesMinor" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+            quality: None,
+            strength: None,
+        }],
+        "MichaelsCueBidHeartsMinor" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+            quality: None,
+            strength: None,
+        }],
+        "UnusualBothMinors" => vec![BidAction::Show {
+            feature: HandFeature::TwoSuited,
+            suit: None,
+            quality: None,
+            strength: None,
+        }],
+        "MichaelsPass" => vec![BidAction::Pass],
+        "MichaelsAdvancerPreferHearts" | "MichaelsAdvancerAcceptHearts" => vec![BidAction::Accept {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+            strength: None,
+        }],
+        "MichaelsAdvancerPreferSpades" | "MichaelsAdvancerAcceptSpades" => vec![BidAction::Accept {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+            strength: None,
+        }],
+        "MichaelsAdvancerInviteHearts" => vec![BidAction::Raise {
+            strain: BidSuitName::Hearts,
+            strength: HandStrength::Invitational,
+        }],
+        "MichaelsAdvancerInviteSpades" => vec![BidAction::Raise {
+            strain: BidSuitName::Spades,
+            strength: HandStrength::Invitational,
+        }],
+        "MichaelsAdvancerGameHearts" => vec![BidAction::Raise {
+            strain: BidSuitName::Hearts,
+            strength: HandStrength::Game,
+        }],
+        "MichaelsAdvancerGameSpades" => vec![BidAction::Raise {
+            strain: BidSuitName::Spades,
+            strength: HandStrength::Game,
+        }],
+        "MichaelsAdvancerPass" | "UnusualAdvancerPass" => vec![BidAction::Pass],
+        "MichaelsAdvancerAskMinor" => vec![BidAction::Inquire {
+            feature: HandFeature::HeldSuit,
+            suit: None,
+        }],
+        "MichaelsAdvancerPassOrCorrect" => vec![BidAction::Accept {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+            strength: None,
+        }],
+        "UnusualAdvancerPreferClubs" => vec![BidAction::Accept {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+            strength: None,
+        }],
+        "UnusualAdvancerPreferDiamonds" => vec![BidAction::Accept {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Diamonds),
+            strength: None,
+        }],
+        "UnusualAdvancerGameClubs" => vec![BidAction::Raise {
+            strain: BidSuitName::Clubs,
+            strength: HandStrength::Game,
+        }],
+        "UnusualAdvancerGameDiamonds" => vec![BidAction::Raise {
+            strain: BidSuitName::Diamonds,
+            strength: HandStrength::Game,
+        }],
+        "MichaelsRevealClubs" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+            quality: None,
+            strength: None,
+        }],
+        "MichaelsRevealDiamonds" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Diamonds),
+            quality: None,
+            strength: None,
+        }],
 
         // ── Negative Doubles ─────────────────────────────────────
-        "NegDblOpponentOvercall" => vec![BidAction::Overcall { feature: HandFeature::HeldSuit, suit: param_suit(p) }],
-        "NegativeDouble" => vec![BidAction::Double { feature: HandFeature::HeldSuit }],
+        "NegDblOpponentOvercall" => vec![BidAction::Overcall {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+        }],
+        "NegativeDouble" => vec![BidAction::Double {
+            feature: HandFeature::HeldSuit,
+        }],
         "NegDblResponderPass" => vec![BidAction::Pass],
-        "NegDblResponderNewSuit" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
-        "NegDblOpenerRaise" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Constructive }],
-        "NegDblOpenerJumpRaise" => vec![BidAction::Raise { strain: param_strain(p).unwrap_or(BidSuitName::Notrump), strength: HandStrength::Game }],
-        "NegDblOpenerRebid" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
-        "NegDblOpenerNT" => vec![BidAction::Place { strain: BidSuitName::Notrump }],
-        "NegDblOpenerNewSuit" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
+        "NegDblResponderNewSuit" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
+        }],
+        "NegDblOpenerRaise" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Constructive,
+        }],
+        "NegDblOpenerJumpRaise" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Game,
+        }],
+        "NegDblOpenerRebid" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
+        }],
+        "NegDblOpenerNT" => vec![BidAction::Place {
+            strain: BidSuitName::Notrump,
+        }],
+        "NegDblOpenerNewSuit" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
+        }],
         "NegDblOpenerPass" => vec![BidAction::Pass],
 
         // ── New Minor Forcing ────────────────────────────────────
-        "NMFAsk" => vec![BidAction::Inquire { feature: HandFeature::MajorSuit, suit: None }],
-        "NMFResponderSignoff" => vec![BidAction::Signoff { strain: param_strain(p) }],
-        "NMFResponderNTInvite" => vec![BidAction::Raise { strain: BidSuitName::Notrump, strength: HandStrength::Invitational }],
-        "NMFResponderNTGame" => vec![BidAction::Place { strain: BidSuitName::Notrump }],
+        "NMFAsk" => vec![BidAction::Inquire {
+            feature: HandFeature::MajorSuit,
+            suit: None,
+        }],
+        "NMFResponderSignoff" => vec![BidAction::Signoff {
+            strain: param_strain(p),
+        }],
+        "NMFResponderNTInvite" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::Invitational,
+        }],
+        "NMFResponderNTGame" => vec![BidAction::Place {
+            strain: BidSuitName::Notrump,
+        }],
         "NMFResponderPass" => vec![BidAction::Pass],
-        "NMFOpenerShowSupport" => vec![BidAction::Show { feature: HandFeature::Fit, suit: param_suit(p), quality: None, strength: None }],
-        "NMFOpenerShowOtherMajor" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
-        "NMFOpenerNTMin" => vec![BidAction::Place { strain: BidSuitName::Notrump }],
-        "NMFOpenerNTMax" => vec![BidAction::Raise { strain: BidSuitName::Notrump, strength: HandStrength::Game }],
-        "OpenerRebid1NT" => vec![BidAction::Show { feature: HandFeature::Balanced, suit: None, quality: None, strength: None }],
-        "ResponderShowMajor" => vec![BidAction::Show { feature: HandFeature::HeldSuit, suit: param_suit(p), quality: None, strength: None }],
+        "NMFOpenerShowSupport" => vec![BidAction::Show {
+            feature: HandFeature::Fit,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
+        }],
+        "NMFOpenerJumpSupport" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Game,
+        }],
+        "NMFOpenerShowOtherMajor" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
+        }],
+        "NMFOpenerJumpOtherMajor" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
+            strength: HandStrength::Game,
+        }],
+        "NMFOpenerNTMin" => vec![BidAction::Place {
+            strain: BidSuitName::Notrump,
+        }],
+        "NMFOpenerNTMax" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::Game,
+        }],
+        "OpenerRebid1NT" => vec![BidAction::Show {
+            feature: HandFeature::Balanced,
+            suit: None,
+            quality: None,
+            strength: None,
+        }],
+        "ResponderShowMajor" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
+        }],
 
         // ── Blackwood ──────────────────────────────────────────────
         "BlackwoodAsk" => {
-            let feature_str = p.get("feature").and_then(|v| v.as_str()).unwrap_or("keyCards");
-            let feature = if feature_str == "kings" { HandFeature::Control } else { HandFeature::KeyCards };
-            vec![BidAction::Inquire { feature, suit: None }]
+            let feature_str = p
+                .get("feature")
+                .and_then(|v| v.as_str())
+                .unwrap_or("keyCards");
+            let feature = if feature_str == "kings" {
+                HandFeature::Control
+            } else {
+                HandFeature::KeyCards
+            };
+            vec![BidAction::Inquire {
+                feature,
+                suit: None,
+            }]
         }
-        "ShowAceCount" => vec![BidAction::Show { feature: HandFeature::KeyCards, suit: None, quality: None, strength: None }],
-        "ShowKingCount" => vec![BidAction::Show { feature: HandFeature::Control, suit: None, quality: None, strength: None }],
-        "BlackwoodSignoff" => vec![BidAction::Signoff { strain: Some(BidSuitName::Notrump) }],
+        "ShowAceCount" => vec![BidAction::Show {
+            feature: HandFeature::KeyCards,
+            suit: None,
+            quality: None,
+            strength: None,
+        }],
+        "ShowKingCount" => vec![BidAction::Show {
+            feature: HandFeature::Control,
+            suit: None,
+            quality: None,
+            strength: None,
+        }],
+        "BlackwoodSignoff" => vec![BidAction::Signoff {
+            strain: Some(BidSuitName::Notrump),
+        }],
 
         // Unknown intent — graceful degradation
         _ => Vec::new(),
@@ -282,8 +821,14 @@ mod tests {
     #[test]
     fn smolen() {
         let mut params = HashMap::new();
-        params.insert("longMajor".into(), serde_json::Value::String("hearts".into()));
-        let intent = SourceIntent { intent_type: "Smolen".into(), params };
+        params.insert(
+            "longMajor".into(),
+            serde_json::Value::String("hearts".into()),
+        );
+        let intent = SourceIntent {
+            intent_type: "Smolen".into(),
+            params,
+        };
         let result = normalize_intent(&intent);
         assert_eq!(result.len(), 2);
         assert_eq!(*result[0].act(), BidActionType::Show);

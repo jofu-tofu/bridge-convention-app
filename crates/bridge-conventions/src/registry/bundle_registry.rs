@@ -12,30 +12,21 @@ use crate::types::system_config::BaseSystemId;
 use super::module_registry::get_module;
 
 // Embedded bundle-input manifest (all 8 bundles)
-const BUNDLE_MANIFESTS_JSON: &str =
-    include_str!("../../fixtures/bundle-manifests.json");
+const BUNDLE_MANIFESTS_JSON: &str = include_str!("../../fixtures/bundle-manifests.json");
 
 // Embedded full resolved bundles (SAYC)
-const NT_BUNDLE_JSON: &str =
-    include_str!("../../fixtures/nt-bundle.json");
-const NT_STAYMAN_JSON: &str =
-    include_str!("../../fixtures/nt-stayman.json");
-const NT_TRANSFERS_JSON: &str =
-    include_str!("../../fixtures/nt-transfers.json");
-const BERGEN_BUNDLE_JSON: &str =
-    include_str!("../../fixtures/bergen-bundle.json");
-const WEAK_TWOS_BUNDLE_JSON: &str =
-    include_str!("../../fixtures/weak-twos-bundle.json");
-const DONT_BUNDLE_JSON: &str =
-    include_str!("../../fixtures/dont-bundle.json");
+const NT_BUNDLE_JSON: &str = include_str!("../../fixtures/nt-bundle.json");
+const NT_STAYMAN_JSON: &str = include_str!("../../fixtures/nt-stayman.json");
+const NT_TRANSFERS_JSON: &str = include_str!("../../fixtures/nt-transfers.json");
+const BERGEN_BUNDLE_JSON: &str = include_str!("../../fixtures/bergen-bundle.json");
+const WEAK_TWOS_BUNDLE_JSON: &str = include_str!("../../fixtures/weak-twos-bundle.json");
+const DONT_BUNDLE_JSON: &str = include_str!("../../fixtures/dont-bundle.json");
 const MICHAELS_UNUSUAL_BUNDLE_JSON: &str =
     include_str!("../../fixtures/michaels-unusual-bundle.json");
-const STRONG_2C_BUNDLE_JSON: &str =
-    include_str!("../../fixtures/strong-2c-bundle.json");
+const STRONG_2C_BUNDLE_JSON: &str = include_str!("../../fixtures/strong-2c-bundle.json");
 const NEGATIVE_DOUBLES_BUNDLE_JSON: &str =
     include_str!("../../fixtures/negative-doubles-bundle.json");
-const NMF_BUNDLE_JSON: &str =
-    include_str!("../../fixtures/nmf-bundle.json");
+const NMF_BUNDLE_JSON: &str = include_str!("../../fixtures/nmf-bundle.json");
 
 fn json_for_bundle(id: &str) -> Option<&'static str> {
     match id {
@@ -109,13 +100,18 @@ fn bundle_cache() -> &'static HashMap<String, ConventionBundle> {
                         // Populate modules from module registry (single source of truth).
                         // Uses Sayc — multi-system support is deferred (get_module ignores system).
                         if bundle.modules.is_empty() {
-                            bundle.modules = bundle.member_ids.iter()
+                            bundle.modules = bundle
+                                .member_ids
+                                .iter()
                                 .map(|mid| {
-                                    get_module(mid, BaseSystemId::Sayc)
-                                        .cloned()
-                                        .unwrap_or_else(|| panic!(
-                                            "Bundle '{}' references unknown module '{}'", id, mid
-                                        ))
+                                    get_module(mid, BaseSystemId::Sayc).cloned().unwrap_or_else(
+                                        || {
+                                            panic!(
+                                                "Bundle '{}' references unknown module '{}'",
+                                                id, mid
+                                            )
+                                        },
+                                    )
                                 })
                                 .collect();
                         }
@@ -193,11 +189,7 @@ mod tests {
     fn resolve_bundle_all_10() {
         for &id in BUNDLE_IDS {
             let bundle = resolve_bundle(id, BaseSystemId::Sayc);
-            assert!(
-                bundle.is_some(),
-                "Bundle '{}' should resolve",
-                id
-            );
+            assert!(bundle.is_some(), "Bundle '{}' should resolve", id);
         }
     }
 

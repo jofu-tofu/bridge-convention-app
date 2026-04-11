@@ -84,4 +84,3 @@ pub struct ApplicabilityEvidence {
     pub matched_count: usize,
     pub eliminated_count: usize,
 }
-

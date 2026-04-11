@@ -9,9 +9,9 @@
 
 use std::collections::HashMap;
 
-use bridge_engine::{Hand, HandEvaluation, is_balanced};
+use bridge_engine::{is_balanced, Hand, HandEvaluation};
 
-use super::types::{FactValue, fv_num, fv_bool};
+use super::types::{fv_bool, fv_num, FactValue};
 
 /// Fact IDs for suit lengths, indexed as [Spades, Hearts, Diamonds, Clubs].
 pub const SUIT_LENGTH_FACT_IDS: [&str; 4] = [
@@ -54,7 +54,10 @@ pub fn evaluate_primitives(
     // Distribution point components (raw per-hand values, all 4 suits counted)
     facts.insert(
         "hand.shortagePoints".to_string(),
-        fv_num("hand.shortagePoints", evaluation.distribution.shortness as f64),
+        fv_num(
+            "hand.shortagePoints",
+            evaluation.distribution.shortness as f64,
+        ),
     );
     facts.insert(
         "hand.lengthPoints".to_string(),

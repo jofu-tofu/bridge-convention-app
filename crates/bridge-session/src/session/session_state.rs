@@ -25,8 +25,8 @@ use crate::heuristics::{BidResult, BiddingStrategy};
 use crate::types::{GamePhase, PlayPreference, PracticeFocus, PracticeMode};
 
 use super::bid_feedback_builder::{BidFeedbackDTO, BidGrade};
-use super::viewport_types::{AnnotationType, BidAttemptRecord, BidHistoryEntryView};
 use super::build_viewport::format_call;
+use super::viewport_types::{AnnotationType, BidAttemptRecord, BidHistoryEntryView};
 
 // ── Debug log ─────────────────────────────────────────────────────
 
@@ -500,11 +500,22 @@ fn derive_arc_label(
 fn is_game_bid(call: &Call) -> bool {
     matches!(
         call,
-        Call::Bid { level: 3, strain: bridge_engine::types::BidSuit::NoTrump }
-            | Call::Bid { level: 4, strain: bridge_engine::types::BidSuit::Hearts }
-            | Call::Bid { level: 4, strain: bridge_engine::types::BidSuit::Spades }
-            | Call::Bid { level: 5, strain: bridge_engine::types::BidSuit::Clubs }
-            | Call::Bid { level: 5, strain: bridge_engine::types::BidSuit::Diamonds }
+        Call::Bid {
+            level: 3,
+            strain: bridge_engine::types::BidSuit::NoTrump
+        } | Call::Bid {
+            level: 4,
+            strain: bridge_engine::types::BidSuit::Hearts
+        } | Call::Bid {
+            level: 4,
+            strain: bridge_engine::types::BidSuit::Spades
+        } | Call::Bid {
+            level: 5,
+            strain: bridge_engine::types::BidSuit::Clubs
+        } | Call::Bid {
+            level: 5,
+            strain: bridge_engine::types::BidSuit::Diamonds
+        }
     )
 }
 fn card_key(card: &Card) -> (Suit, bridge_engine::types::Rank) {

@@ -37,8 +37,8 @@ struct PipelineSnapshot {
 
 fn load_pipeline_fixtures(bundle_id: &str) -> Vec<PipelineSnapshot> {
     let path = format!("{}/{}.json", PIPELINE_FIXTURE_DIR, bundle_id);
-    let json_str = std::fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("Failed to read {}: {}", path, e));
+    let json_str =
+        std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("Failed to read {}: {}", path, e));
     serde_json::from_str(&json_str)
         .unwrap_or_else(|e| panic!("Failed to deserialize {}: {}", path, e))
 }
@@ -79,8 +79,7 @@ fn validate_bundle_snapshots(bundle_id: &str) {
             assert_eq!(
                 snapshot.bid_grade_if_correct, "correct",
                 "{}/{}: expected correct grade for selected bid",
-                bundle_id,
-                snapshot.label,
+                bundle_id, snapshot.label,
             );
         } else {
             // Off-system: no selected meaning, empty truth set
@@ -93,8 +92,7 @@ fn validate_bundle_snapshots(bundle_id: &str) {
             assert_eq!(
                 snapshot.bid_grade_if_correct, "off-system",
                 "{}/{}: expected off-system grade",
-                bundle_id,
-                snapshot.label,
+                bundle_id, snapshot.label,
             );
         }
 
@@ -116,8 +114,14 @@ fn validate_bundle_snapshots(bundle_id: &str) {
         "{}: {} snapshots validated (selected: {}, off-system: {})",
         bundle_id,
         snapshots.len(),
-        snapshots.iter().filter(|s| s.selected_meaning_id.is_some()).count(),
-        snapshots.iter().filter(|s| s.selected_meaning_id.is_none()).count(),
+        snapshots
+            .iter()
+            .filter(|s| s.selected_meaning_id.is_some())
+            .count(),
+        snapshots
+            .iter()
+            .filter(|s| s.selected_meaning_id.is_none())
+            .count(),
     );
 }
 

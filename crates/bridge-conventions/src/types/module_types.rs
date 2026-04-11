@@ -159,9 +159,7 @@ mod tests {
         let teaching = ModuleTeaching {
             tradeoff: TeachingTradeoff::new("Using 2C as Stayman means you can't play in 2C"),
             principle: TeachingPrinciple::new("Ask before telling — gather information first"),
-            common_mistakes: vec![TeachingItem::new(
-                "Don't use Stayman with 4-3-3-3 shape",
-            )],
+            common_mistakes: vec![TeachingItem::new("Don't use Stayman with 4-3-3-3 shape")],
         };
         let json = serde_json::to_string(&teaching).unwrap();
         let back: ModuleTeaching = serde_json::from_str(&json).unwrap();

@@ -614,12 +614,16 @@ impl From<&DebugLogEntry> for ServiceDebugLogEntryDTO {
                     "ruleName": serde_json::Value::Null,
                 })
             });
-            obj.insert("expectedBid".into(),
-                expected_bid.unwrap_or(serde_json::Value::Null));
+            obj.insert(
+                "expectedBid".into(),
+                expected_bid.unwrap_or(serde_json::Value::Null),
+            );
             Some(serde_json::Value::Object(obj))
         });
 
-        let feedback = entry.bid_feedback.as_ref()
+        let feedback = entry
+            .bid_feedback
+            .as_ref()
             .and_then(|fb| serde_json::to_value(fb).ok());
 
         Self {

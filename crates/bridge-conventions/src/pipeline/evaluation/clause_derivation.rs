@@ -33,14 +33,16 @@ pub fn derive_clause_description(clause: &BidMeaningClause) -> String {
                 format!("{} in range", name)
             }
         }
-        FactOperator::Boolean => {
-            match &clause.value {
-                ConstraintValue::Bool(true) => name.to_string(),
-                ConstraintValue::Bool(false) => format!("not {}", name),
-                _ => name.to_string(),
-            }
-        }
-        FactOperator::In => format!("{} is one of {}", name, constraint_value_to_string(&clause.value)),
+        FactOperator::Boolean => match &clause.value {
+            ConstraintValue::Bool(true) => name.to_string(),
+            ConstraintValue::Bool(false) => format!("not {}", name),
+            _ => name.to_string(),
+        },
+        FactOperator::In => format!(
+            "{} is one of {}",
+            name,
+            constraint_value_to_string(&clause.value)
+        ),
     }
 }
 
@@ -58,11 +60,7 @@ fn display_name(fact_id: &str) -> String {
         "bridge.hasShortage" => "shortage".into(),
         _ => {
             // Extract last segment after the last dot
-            fact_id
-                .rsplit('.')
-                .next()
-                .unwrap_or(fact_id)
-                .to_string()
+            fact_id.rsplit('.').next().unwrap_or(fact_id).to_string()
         }
     }
 }

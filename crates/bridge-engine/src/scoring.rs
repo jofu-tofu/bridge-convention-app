@@ -39,7 +39,11 @@ fn calculate_making_score(contract: &Contract, overtricks: i32, vulnerable: bool
 
     // Game / partscore bonus
     let mut bonus = if trick_points >= 100 {
-        if vulnerable { 500 } else { 300 }
+        if vulnerable {
+            500
+        } else {
+            300
+        }
     } else {
         50
     };
@@ -76,7 +80,13 @@ fn calculate_doubled_penalty(undertricks: i32, vulnerable: bool) -> i32 {
         if vulnerable {
             total += if i == 1 { 200 } else { 300 };
         } else {
-            total += if i == 1 { 100 } else if i <= 3 { 200 } else { 300 };
+            total += if i == 1 {
+                100
+            } else if i <= 3 {
+                200
+            } else {
+                300
+            };
         }
     }
     total

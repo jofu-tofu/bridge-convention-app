@@ -2,11 +2,13 @@
 //!
 //! Mirrors TS from `pipeline/observation/rule-interpreter.ts`.
 
-use bridge_engine::types::Seat;
 use bridge_engine::partner_seat;
+use bridge_engine::types::Seat;
 use std::collections::HashMap;
 
-use crate::pipeline::observation::committed_step::{AuctionContext, CommittedStep, CommittedStepStatus};
+use crate::pipeline::observation::committed_step::{
+    AuctionContext, CommittedStep, CommittedStepStatus,
+};
 use crate::pipeline::observation::local_fsm::advance_local_fsm;
 use crate::pipeline::observation::negotiation_matcher::match_kernel;
 use crate::pipeline::observation::route_matcher::match_route;
@@ -94,7 +96,9 @@ fn check_attachments(
     attachments: &[crate::types::agreement::Attachment],
     context: &AuctionContext,
 ) -> bool {
-    attachments.iter().any(|att| check_single_attachment(att, context))
+    attachments
+        .iter()
+        .any(|att| check_single_attachment(att, context))
 }
 
 /// Check a single attachment predicate against the auction context.
@@ -130,22 +134,32 @@ fn check_auction_pattern(
     match pattern {
         AuctionPattern::Sequence { calls } => {
             // Check if the auction log ends with this call sequence
-            let log_calls: Vec<String> = context.log.iter()
+            let log_calls: Vec<String> = context
+                .log
+                .iter()
                 .map(|step| format!("{:?}", step.call))
                 .collect();
             if log_calls.len() < calls.len() {
                 return false;
             }
             let start = log_calls.len() - calls.len();
-            log_calls[start..].iter().zip(calls.iter()).all(|(a, b)| a == b)
+            log_calls[start..]
+                .iter()
+                .zip(calls.iter())
+                .all(|(a, b)| a == b)
         }
         AuctionPattern::Contains { call, by_role: _ } => {
             // Check if any call in the log matches
-            context.log.iter().any(|step| format!("{:?}", step.call) == *call)
+            context
+                .log
+                .iter()
+                .any(|step| format!("{:?}", step.call) == *call)
         }
         AuctionPattern::ByRole { role: _, last_call } => {
             // Check if the last call in the log matches
-            context.log.last()
+            context
+                .log
+                .last()
                 .map(|step| format!("{:?}", step.call) == *last_call)
                 .unwrap_or(false)
         }
@@ -161,9 +175,13 @@ fn check_public_guard(
 
     // Extract field value from the current kernel/negotiation state
     let field_value = match guard.field.as_str() {
-        "forcingState" => context.log.last()
+        "forcingState" => context
+            .log
+            .last()
             .map(|step| format!("{:?}", step.state_after.forcing)),
-        "fitAgreed" => context.log.last()
+        "fitAgreed" => context
+            .log
+            .last()
             .and_then(|step| step.state_after.fit_agreed.as_ref())
             .map(|f| format!("{:?}", f)),
         _ => None,
@@ -171,24 +189,24 @@ fn check_public_guard(
 
     match guard.operator {
         GuardOperator::Exists => field_value.is_some(),
-        GuardOperator::Eq => {
-            match (&field_value, &guard.value) {
-                (Some(actual), Some(crate::types::agreement::GuardValue::Scalar(expected))) => actual == expected,
-                _ => false,
+        GuardOperator::Eq => match (&field_value, &guard.value) {
+            (Some(actual), Some(crate::types::agreement::GuardValue::Scalar(expected))) => {
+                actual == expected
             }
-        }
-        GuardOperator::Neq => {
-            match (&field_value, &guard.value) {
-                (Some(actual), Some(crate::types::agreement::GuardValue::Scalar(expected))) => actual != expected,
-                _ => true,
+            _ => false,
+        },
+        GuardOperator::Neq => match (&field_value, &guard.value) {
+            (Some(actual), Some(crate::types::agreement::GuardValue::Scalar(expected))) => {
+                actual != expected
             }
-        }
-        GuardOperator::In => {
-            match (&field_value, &guard.value) {
-                (Some(actual), Some(crate::types::agreement::GuardValue::List(list))) => list.contains(actual),
-                _ => false,
+            _ => true,
+        },
+        GuardOperator::In => match (&field_value, &guard.value) {
+            (Some(actual), Some(crate::types::agreement::GuardValue::List(list))) => {
+                list.contains(actual)
             }
-        }
+            _ => false,
+        },
     }
 }
 
@@ -269,7 +287,14 @@ fn collect_module_surfaces(
     let mut resolved = Vec::new();
     if let Some(ref states) = module.states {
         for entry in states {
-            if !state_entry_matches(entry, current_phase, current_kernel, context, turn_role, opener_seat) {
+            if !state_entry_matches(
+                entry,
+                current_phase,
+                current_kernel,
+                context,
+                turn_role,
+                opener_seat,
+            ) {
                 continue;
             }
             for surface in &entry.surfaces {

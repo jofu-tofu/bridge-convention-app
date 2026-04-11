@@ -1,7 +1,6 @@
 /// BiddingStrategy trait and supporting types live in bridge-engine (not bridge-session
 /// or bridge-conventions) so both crates can depend on it without circular deps.
 /// bridge-session uses the trait; bridge-conventions/bridge-service implement it.
-
 use serde::{Deserialize, Serialize};
 
 use crate::{Auction, Call, Hand, HandEvaluation, Seat, Vulnerability};

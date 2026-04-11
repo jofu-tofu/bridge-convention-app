@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::types::{ConfidenceLevel, FactOperator, ConstraintValue};
+use crate::types::{ConfidenceLevel, ConstraintValue, FactOperator};
 
 /// A fact's evaluated value — number, boolean, or string.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -132,4 +132,3 @@ pub fn get_bool(facts: &HashMap<String, FactValue>, fact_id: &str) -> bool {
         .map(|fv| fv.value.as_bool())
         .unwrap_or(false)
 }
-

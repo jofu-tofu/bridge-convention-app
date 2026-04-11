@@ -9,9 +9,7 @@ use crate::adapter::tree_evaluation::{
     PedagogicalEligibility, SiblingConditionDetail,
 };
 use crate::pipeline::evaluation::encoder_resolver::resolve_encoding;
-use crate::pipeline::evaluation::provenance::{
-    EliminationTrace, LegalityTrace,
-};
+use crate::pipeline::evaluation::provenance::{EliminationTrace, LegalityTrace};
 use crate::pipeline::evaluation::types::MeaningProposal;
 use crate::pipeline::types::{CarrierTraces, EncodedProposal, PipelineCarrier};
 
@@ -105,9 +103,7 @@ pub fn classify_into_sets(
 ) -> (Vec<PipelineCarrier>, Vec<PipelineCarrier>) {
     let truth_set: Vec<PipelineCarrier> = carriers
         .iter()
-        .filter(|c| {
-            c.encoded.eligibility.hand.satisfied && c.encoded.eligibility.encoding.legal
-        })
+        .filter(|c| c.encoded.eligibility.hand.satisfied && c.encoded.eligibility.encoding.legal)
         .cloned()
         .collect();
 
@@ -164,12 +160,11 @@ mod tests {
     use super::*;
     use crate::pipeline::evaluation::provenance::{EncoderKind, EncodingTrace};
     use crate::pipeline::evaluation::types::{MeaningClause, RankingMetadata};
+    use crate::teaching::teaching_types::{SurfaceGroup, SurfaceGroupRelationship};
     use crate::types::authored_text::{BidName, BidSummary};
     use crate::types::meaning::{
-        BidEncoding, ConstraintValue, Disclosure, FactOperator,
-        RecommendationBand, SourceIntent,
+        BidEncoding, ConstraintValue, Disclosure, FactOperator, RecommendationBand, SourceIntent,
     };
-    use crate::teaching::teaching_types::{SurfaceGroup, SurfaceGroupRelationship};
     use bridge_engine::types::BidSuit;
 
     fn make_carrier(
@@ -281,8 +276,26 @@ mod tests {
     #[test]
     fn truth_set_includes_fully_satisfied_legal_carriers() {
         let carriers = vec![
-            make_carrier("stayman", Call::Bid { level: 2, strain: BidSuit::Clubs }, true, true, vec![]),
-            make_carrier("transfer", Call::Bid { level: 2, strain: BidSuit::Hearts }, true, true, vec![]),
+            make_carrier(
+                "stayman",
+                Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Clubs,
+                },
+                true,
+                true,
+                vec![],
+            ),
+            make_carrier(
+                "transfer",
+                Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Hearts,
+                },
+                true,
+                true,
+                vec![],
+            ),
         ];
         let (truth, acceptable) = classify_into_sets(&carriers);
         assert_eq!(truth.len(), 2);
@@ -292,12 +305,34 @@ mod tests {
     #[test]
     fn hand_failed_carrier_excluded_from_both_sets() {
         let carriers = vec![
-            make_carrier("stayman", Call::Bid { level: 2, strain: BidSuit::Clubs }, true, true, vec![]),
-            make_carrier("transfer", Call::Bid { level: 2, strain: BidSuit::Hearts }, false, true, vec![]),
+            make_carrier(
+                "stayman",
+                Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Clubs,
+                },
+                true,
+                true,
+                vec![],
+            ),
+            make_carrier(
+                "transfer",
+                Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Hearts,
+                },
+                false,
+                true,
+                vec![],
+            ),
         ];
         let (truth, acceptable) = classify_into_sets(&carriers);
         assert_eq!(truth.len(), 1, "hand-failed should not be in truth set");
-        assert_eq!(acceptable.len(), 1, "hand-failed should not be in acceptable set");
+        assert_eq!(
+            acceptable.len(),
+            1,
+            "hand-failed should not be in acceptable set"
+        );
         assert_eq!(truth[0].proposal().meaning_id, "stayman");
         assert_eq!(acceptable[0].proposal().meaning_id, "stayman");
     }
@@ -305,8 +340,26 @@ mod tests {
     #[test]
     fn encoding_illegal_excluded_from_both_sets() {
         let carriers = vec![
-            make_carrier("stayman", Call::Bid { level: 2, strain: BidSuit::Clubs }, true, true, vec![]),
-            make_carrier("blackwood", Call::Bid { level: 4, strain: BidSuit::NoTrump }, true, false, vec![]),
+            make_carrier(
+                "stayman",
+                Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Clubs,
+                },
+                true,
+                true,
+                vec![],
+            ),
+            make_carrier(
+                "blackwood",
+                Call::Bid {
+                    level: 4,
+                    strain: BidSuit::NoTrump,
+                },
+                true,
+                false,
+                vec![],
+            ),
         ];
         let (truth, acceptable) = classify_into_sets(&carriers);
         assert_eq!(truth.len(), 1);
@@ -323,8 +376,26 @@ mod tests {
     #[test]
     fn all_failed_produces_empty_sets() {
         let carriers = vec![
-            make_carrier("a", Call::Bid { level: 2, strain: BidSuit::Clubs }, false, true, vec![]),
-            make_carrier("b", Call::Bid { level: 3, strain: BidSuit::Clubs }, false, false, vec![]),
+            make_carrier(
+                "a",
+                Call::Bid {
+                    level: 2,
+                    strain: BidSuit::Clubs,
+                },
+                false,
+                true,
+                vec![],
+            ),
+            make_carrier(
+                "b",
+                Call::Bid {
+                    level: 3,
+                    strain: BidSuit::Clubs,
+                },
+                false,
+                false,
+                vec![],
+            ),
         ];
         let (truth, acceptable) = classify_into_sets(&carriers);
         assert!(truth.is_empty());
@@ -343,7 +414,8 @@ mod tests {
             acceptable_set: Vec::new(),
             recommended: Vec::new(),
             eliminated,
-            applicability: crate::pipeline::evaluation::provenance::ApplicabilityEvidence::default(),
+            applicability: crate::pipeline::evaluation::provenance::ApplicabilityEvidence::default(
+            ),
             activation: Vec::new(),
             arbitration: Vec::new(),
             handoffs: Vec::new(),
@@ -355,69 +427,114 @@ mod tests {
     fn near_miss_with_one_failed_clause_in_same_group() {
         let selected = make_carrier(
             "bergen:limit-raise",
-            Call::Bid { level: 3, strain: BidSuit::Hearts },
-            true, true,
+            Call::Bid {
+                level: 3,
+                strain: BidSuit::Hearts,
+            },
+            true,
+            true,
             vec![satisfied_clause("hcp"), satisfied_clause("trump-length")],
         );
         let eliminated = make_carrier(
             "bergen:constructive-raise",
-            Call::Bid { level: 2, strain: BidSuit::Hearts },
-            false, true,
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Hearts,
+            },
+            false,
+            true,
             vec![satisfied_clause("hcp"), failed_clause("trump-length")],
         );
         let pr = make_pipeline_result_with_eliminated(selected, vec![eliminated]);
         let groups = vec![SurfaceGroup {
             id: "bergen-raises".into(),
             label: "Bergen Raises".into(),
-            members: vec!["bergen:limit-raise".into(), "bergen:constructive-raise".into()],
+            members: vec![
+                "bergen:limit-raise".into(),
+                "bergen:constructive-raise".into(),
+            ],
             relationship: SurfaceGroupRelationship::MutuallyExclusive,
             description: String::new(),
         }];
-        let selected_call = Call::Bid { level: 3, strain: BidSuit::Hearts };
+        let selected_call = Call::Bid {
+            level: 3,
+            strain: BidSuit::Hearts,
+        };
         let near = extract_near_miss_calls(&pr, &groups, &selected_call);
         assert_eq!(near.len(), 1);
-        assert_eq!(near[0], Call::Bid { level: 2, strain: BidSuit::Hearts });
+        assert_eq!(
+            near[0],
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Hearts
+            }
+        );
     }
 
     #[test]
     fn no_near_miss_with_two_failed_clauses() {
         let selected = make_carrier(
             "bergen:limit-raise",
-            Call::Bid { level: 3, strain: BidSuit::Hearts },
-            true, true,
+            Call::Bid {
+                level: 3,
+                strain: BidSuit::Hearts,
+            },
+            true,
+            true,
             vec![satisfied_clause("hcp")],
         );
         let eliminated = make_carrier(
             "bergen:constructive-raise",
-            Call::Bid { level: 2, strain: BidSuit::Hearts },
-            false, true,
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Hearts,
+            },
+            false,
+            true,
             vec![failed_clause("hcp"), failed_clause("trump-length")],
         );
         let pr = make_pipeline_result_with_eliminated(selected, vec![eliminated]);
         let groups = vec![SurfaceGroup {
             id: "bergen-raises".into(),
             label: "Bergen Raises".into(),
-            members: vec!["bergen:limit-raise".into(), "bergen:constructive-raise".into()],
+            members: vec![
+                "bergen:limit-raise".into(),
+                "bergen:constructive-raise".into(),
+            ],
             relationship: SurfaceGroupRelationship::MutuallyExclusive,
             description: String::new(),
         }];
-        let selected_call = Call::Bid { level: 3, strain: BidSuit::Hearts };
+        let selected_call = Call::Bid {
+            level: 3,
+            strain: BidSuit::Hearts,
+        };
         let near = extract_near_miss_calls(&pr, &groups, &selected_call);
-        assert!(near.is_empty(), "two failed clauses should not be a near miss");
+        assert!(
+            near.is_empty(),
+            "two failed clauses should not be a near miss"
+        );
     }
 
     #[test]
     fn no_near_miss_from_different_surface_group() {
         let selected = make_carrier(
             "bergen:limit-raise",
-            Call::Bid { level: 3, strain: BidSuit::Hearts },
-            true, true,
+            Call::Bid {
+                level: 3,
+                strain: BidSuit::Hearts,
+            },
+            true,
+            true,
             vec![satisfied_clause("hcp")],
         );
         let eliminated = make_carrier(
             "stayman:ask",
-            Call::Bid { level: 2, strain: BidSuit::Clubs },
-            false, true,
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Clubs,
+            },
+            false,
+            true,
             vec![failed_clause("four-card-major")],
         );
         let pr = make_pipeline_result_with_eliminated(selected, vec![eliminated]);
@@ -437,23 +554,37 @@ mod tests {
                 description: String::new(),
             },
         ];
-        let selected_call = Call::Bid { level: 3, strain: BidSuit::Hearts };
+        let selected_call = Call::Bid {
+            level: 3,
+            strain: BidSuit::Hearts,
+        };
         let near = extract_near_miss_calls(&pr, &groups, &selected_call);
-        assert!(near.is_empty(), "different surface group should not be a near miss");
+        assert!(
+            near.is_empty(),
+            "different surface group should not be a near miss"
+        );
     }
 
     #[test]
     fn near_miss_excludes_selected_call() {
         let selected = make_carrier(
             "bergen:limit-raise",
-            Call::Bid { level: 3, strain: BidSuit::Hearts },
-            true, true,
+            Call::Bid {
+                level: 3,
+                strain: BidSuit::Hearts,
+            },
+            true,
+            true,
             vec![satisfied_clause("hcp")],
         );
         let eliminated = make_carrier(
             "bergen:game-raise",
-            Call::Bid { level: 3, strain: BidSuit::Hearts },
-            false, true,
+            Call::Bid {
+                level: 3,
+                strain: BidSuit::Hearts,
+            },
+            false,
+            true,
             vec![failed_clause("hcp")],
         );
         let pr = make_pipeline_result_with_eliminated(selected, vec![eliminated]);
@@ -464,9 +595,15 @@ mod tests {
             relationship: SurfaceGroupRelationship::MutuallyExclusive,
             description: String::new(),
         }];
-        let selected_call = Call::Bid { level: 3, strain: BidSuit::Hearts };
+        let selected_call = Call::Bid {
+            level: 3,
+            strain: BidSuit::Hearts,
+        };
         let near = extract_near_miss_calls(&pr, &groups, &selected_call);
-        assert!(near.is_empty(), "selected call should be excluded from near misses");
+        assert!(
+            near.is_empty(),
+            "selected call should be excluded from near misses"
+        );
     }
 
     #[test]

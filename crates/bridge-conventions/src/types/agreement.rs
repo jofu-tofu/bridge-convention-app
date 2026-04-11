@@ -62,13 +62,9 @@ pub enum GuardOperator {
 #[serde(tag = "kind")]
 pub enum DealConstraint {
     #[serde(rename = "fit-check")]
-    FitCheck {
-        params: FitCheckParams,
-    },
+    FitCheck { params: FitCheckParams },
     #[serde(rename = "combined-hcp")]
-    CombinedHcp {
-        params: CombinedHcpParams,
-    },
+    CombinedHcp { params: CombinedHcpParams },
     #[serde(rename = "custom")]
     Custom {
         params: HashMap<String, serde_json::Value>,

@@ -4,7 +4,6 @@
 
 use serde::{Deserialize, Serialize};
 
-
 /// Evidence for a single condition evaluation.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

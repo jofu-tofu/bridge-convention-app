@@ -82,7 +82,10 @@ pub enum ConstraintValue {
     Number(serde_json::Number),
     Bool(bool),
     String(String),
-    Range { min: serde_json::Number, max: serde_json::Number },
+    Range {
+        min: serde_json::Number,
+        max: serde_json::Number,
+    },
     List(Vec<String>),
 }
 
@@ -203,10 +206,7 @@ mod tests {
             serde_json::to_string(&FactOperator::Gte).unwrap(),
             "\"gte\""
         );
-        assert_eq!(
-            serde_json::to_string(&FactOperator::In).unwrap(),
-            "\"in\""
-        );
+        assert_eq!(serde_json::to_string(&FactOperator::In).unwrap(), "\"in\"");
     }
 
     #[test]

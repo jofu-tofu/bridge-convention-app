@@ -118,7 +118,11 @@ mod tests {
 
     #[test]
     fn hcp_contributes_point_range() {
-        let clauses = vec![clause("hand.hcp", FactOperator::Gte, ConstraintValue::int(8))];
+        let clauses = vec![clause(
+            "hand.hcp",
+            FactOperator::Gte,
+            ConstraintValue::int(8),
+        )];
         let spec = derive_specificity(&clauses, &HashMap::new(), &[]);
         assert!(spec >= 1.0);
     }
@@ -137,7 +141,11 @@ mod tests {
 
     #[test]
     fn inherited_dimensions_included() {
-        let clauses = vec![clause("hand.hcp", FactOperator::Gte, ConstraintValue::int(8))];
+        let clauses = vec![clause(
+            "hand.hcp",
+            FactOperator::Gte,
+            ConstraintValue::int(8),
+        )];
         let spec = derive_specificity(
             &clauses,
             &HashMap::new(),

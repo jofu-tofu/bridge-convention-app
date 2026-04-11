@@ -3,10 +3,10 @@
 //! Mirrors the TS constants in `conventions/definitions/system-config.ts`.
 
 use crate::types::system_config::{
-    BaseSystemId, DontOvercallConfig, InterferenceThresholds, NtOpeningConfig,
-    OneNtForcingStatus, OneNtResponseAfterMajorConfig, OpeningRequirements,
-    OpenerRebidThresholds, PointConfig, PointFormula, ResponderThresholds,
-    SuitResponseConfig, SuitResponseForcingDuration, SystemConfig, TotalPointEquivalent,
+    BaseSystemId, DontOvercallConfig, InterferenceThresholds, NtOpeningConfig, OneNtForcingStatus,
+    OneNtResponseAfterMajorConfig, OpenerRebidThresholds, OpeningRequirements, PointConfig,
+    PointFormula, ResponderThresholds, SuitResponseConfig, SuitResponseForcingDuration,
+    SystemConfig, TotalPointEquivalent,
 };
 
 /// Standard American Yellow Card (SAYC) system configuration.
@@ -50,8 +50,14 @@ pub fn sayc_system_config() -> SystemConfig {
             max_hcp: 15,
         },
         point_config: PointConfig {
-            nt_formula: PointFormula { include_shortage: false, include_length: false },
-            trump_formula: PointFormula { include_shortage: true, include_length: false },
+            nt_formula: PointFormula {
+                include_shortage: false,
+                include_length: false,
+            },
+            trump_formula: PointFormula {
+                include_shortage: true,
+                include_length: false,
+            },
         },
     }
 }
@@ -97,8 +103,14 @@ pub fn two_over_one_system_config() -> SystemConfig {
             max_hcp: 15,
         },
         point_config: PointConfig {
-            nt_formula: PointFormula { include_shortage: false, include_length: false },
-            trump_formula: PointFormula { include_shortage: true, include_length: false },
+            nt_formula: PointFormula {
+                include_shortage: false,
+                include_length: false,
+            },
+            trump_formula: PointFormula {
+                include_shortage: true,
+                include_length: false,
+            },
         },
     }
 }
@@ -144,8 +156,14 @@ pub fn acol_system_config() -> SystemConfig {
             max_hcp: 15,
         },
         point_config: PointConfig {
-            nt_formula: PointFormula { include_shortage: false, include_length: false },
-            trump_formula: PointFormula { include_shortage: true, include_length: false },
+            nt_formula: PointFormula {
+                include_shortage: false,
+                include_length: false,
+            },
+            trump_formula: PointFormula {
+                include_shortage: true,
+                include_length: false,
+            },
         },
     }
 }

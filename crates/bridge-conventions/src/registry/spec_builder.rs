@@ -56,7 +56,10 @@ pub fn spec_from_bundle(
     let mut all_ids: Vec<&str> = Vec::new();
 
     for id in &input.member_ids {
-        let effective_id = replacements.get(id.as_str()).copied().unwrap_or(id.as_str());
+        let effective_id = replacements
+            .get(id.as_str())
+            .copied()
+            .unwrap_or(id.as_str());
         if seen.insert(effective_id) {
             all_ids.push(effective_id);
         }

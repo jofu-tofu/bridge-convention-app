@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 
 use bridge_engine::types::{
-    Card, Call, Contract, DistributionPoints, Hand, PlayedCard, Seat, Suit, SuitLength, Trick,
+    Call, Card, Contract, DistributionPoints, Hand, PlayedCard, Seat, Suit, SuitLength, Trick,
     Vulnerability,
 };
 use serde::{Deserialize, Serialize};

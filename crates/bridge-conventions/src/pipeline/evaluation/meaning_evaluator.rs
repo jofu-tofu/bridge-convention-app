@@ -9,12 +9,12 @@ use bridge_engine::types::Hand;
 use crate::fact_dsl::bridge_derived::evaluate_bridge_relational;
 use crate::fact_dsl::system_facts::evaluate_system_relational;
 use crate::fact_dsl::types::{EvaluatedFacts, FactData, RelationalFactContext};
-use crate::types::system_config::SystemConfig;
 use crate::pipeline::evaluation::binding_resolver::resolve_clause;
 use crate::pipeline::evaluation::specificity_deriver::derive_specificity;
 use crate::pipeline::evaluation::types::{MeaningClause, MeaningProposal, RankingMetadata};
-use crate::types::meaning::{BidMeaning, BidMeaningClause, ConstraintValue, FactOperator};
 use crate::types::meaning::ConstraintDimension;
+use crate::types::meaning::{BidMeaning, BidMeaningClause, ConstraintValue, FactOperator};
+use crate::types::system_config::SystemConfig;
 
 /// Evaluate a single clause against evaluated facts.
 pub fn evaluate_clause(
@@ -113,9 +113,7 @@ pub fn evaluate_all_bid_meanings(
         .iter()
         .map(|s| {
             let binding_key = binding_cache_key(&s.surface_bindings);
-            let effective_facts = binding_cache
-                .get(&binding_key)
-                .unwrap_or(facts);
+            let effective_facts = binding_cache.get(&binding_key).unwrap_or(facts);
             evaluate_bid_meaning_with_facts(s, effective_facts, inherited_dimensions)
         })
         .collect()
@@ -124,7 +122,8 @@ pub fn evaluate_all_bid_meanings(
 /// Cache key for a surface's bindings — None for no bindings, Some(sorted pairs) otherwise.
 fn binding_cache_key(bindings: &Option<HashMap<String, String>>) -> Option<Vec<(String, String)>> {
     bindings.as_ref().map(|b| {
-        let mut pairs: Vec<(String, String)> = b.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+        let mut pairs: Vec<(String, String)> =
+            b.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
         pairs.sort();
         pairs
     })
@@ -152,12 +151,13 @@ fn precompute_binding_facts(
 
         let bindings = surface.surface_bindings.as_ref().unwrap();
         let mut cloned = facts.clone();
-        let fit_agreed = bindings.get("suit").map(|suit| {
-            crate::fact_dsl::types::FitAgreedContext {
-                strain: suit.clone(),
-                confidence: crate::types::ConfidenceLevel::Tentative,
-            }
-        });
+        let fit_agreed =
+            bindings
+                .get("suit")
+                .map(|suit| crate::fact_dsl::types::FitAgreedContext {
+                    strain: suit.clone(),
+                    confidence: crate::types::ConfidenceLevel::Tentative,
+                });
         let ctx = RelationalFactContext {
             bindings: Some(bindings.clone()),
             public_commitments: None,
@@ -175,41 +175,50 @@ fn precompute_binding_facts(
 }
 
 /// Check if a fact value satisfies a constraint.
-fn check_satisfaction(operator: &FactOperator, constraint: &ConstraintValue, actual: &FactData) -> bool {
+fn check_satisfaction(
+    operator: &FactOperator,
+    constraint: &ConstraintValue,
+    actual: &FactData,
+) -> bool {
     match operator {
         FactOperator::Gte => {
-            if let (ConstraintValue::Number(threshold), FactData::Number(val)) = (constraint, actual) {
+            if let (ConstraintValue::Number(threshold), FactData::Number(val)) =
+                (constraint, actual)
+            {
                 *val >= threshold.as_f64().unwrap_or(0.0)
             } else {
                 false
             }
         }
         FactOperator::Lte => {
-            if let (ConstraintValue::Number(threshold), FactData::Number(val)) = (constraint, actual) {
+            if let (ConstraintValue::Number(threshold), FactData::Number(val)) =
+                (constraint, actual)
+            {
                 *val <= threshold.as_f64().unwrap_or(0.0)
             } else {
                 false
             }
         }
-        FactOperator::Eq => {
-            match (constraint, actual) {
-                (ConstraintValue::Number(n), FactData::Number(val)) => {
-                    (*val - n.as_f64().unwrap_or(0.0)).abs() < f64::EPSILON
-                }
-                (ConstraintValue::String(s), FactData::Text(t)) => s == t,
-                (ConstraintValue::Bool(b), FactData::Boolean(v)) => b == v,
-                _ => false,
+        FactOperator::Eq => match (constraint, actual) {
+            (ConstraintValue::Number(n), FactData::Number(val)) => {
+                (*val - n.as_f64().unwrap_or(0.0)).abs() < f64::EPSILON
             }
-        }
+            (ConstraintValue::String(s), FactData::Text(t)) => s == t,
+            (ConstraintValue::Bool(b), FactData::Boolean(v)) => b == v,
+            _ => false,
+        },
         FactOperator::Range => {
-            if let (ConstraintValue::Range { min, max }, FactData::Number(val)) = (constraint, actual) {
+            if let (ConstraintValue::Range { min, max }, FactData::Number(val)) =
+                (constraint, actual)
+            {
                 *val >= min.as_f64().unwrap_or(0.0) && *val <= max.as_f64().unwrap_or(0.0)
             } else {
                 false
             }
         }
         FactOperator::Boolean => {
-            if let (ConstraintValue::Bool(expected), FactData::Boolean(val)) = (constraint, actual) {
+            if let (ConstraintValue::Bool(expected), FactData::Boolean(val)) = (constraint, actual)
+            {
                 expected == val
             } else {
                 false

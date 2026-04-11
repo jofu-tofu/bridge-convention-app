@@ -8,12 +8,12 @@ use std::collections::HashMap;
 use bridge_engine::{Hand, Rank, Suit};
 
 use crate::types::{
-    CompareOp, ComputeExpr, ExtendedClause, FactComposition, FactOutput,
-    PrimitiveClause, PrimitiveClauseOperator, PrimitiveClauseValue,
+    CompareOp, ComputeExpr, ExtendedClause, FactComposition, FactOutput, PrimitiveClause,
+    PrimitiveClauseOperator, PrimitiveClauseValue,
 };
 
 use super::primitives::{suit_name_to_index, SUIT_LENGTH_FACT_IDS};
-use super::types::{FactData, FactValue, get_bool, get_num};
+use super::types::{get_bool, get_num, FactData, FactValue};
 
 /// Evaluate a composition tree, returning the computed value.
 ///
@@ -64,10 +64,7 @@ pub fn evaluate_composition(
 }
 
 /// Evaluate a JSON-serializable primitive clause against the fact map.
-fn evaluate_primitive_clause(
-    clause: &PrimitiveClause,
-    facts: &HashMap<String, FactValue>,
-) -> bool {
+fn evaluate_primitive_clause(clause: &PrimitiveClause, facts: &HashMap<String, FactValue>) -> bool {
     let fact_value = match facts.get(&clause.fact_id) {
         Some(fv) => fv.value.as_number(),
         None => {
@@ -76,7 +73,11 @@ fn evaluate_primitive_clause(
                 return match &clause.operator {
                     PrimitiveClauseOperator::Eq => {
                         let expected = clause_value_as_f64(&clause.value);
-                        if fv.value.as_bool() { expected == 1.0 } else { expected == 0.0 }
+                        if fv.value.as_bool() {
+                            expected == 1.0
+                        } else {
+                            expected == 0.0
+                        }
                     }
                     _ => fv.value.as_bool(),
                 };
@@ -88,7 +89,9 @@ fn evaluate_primitive_clause(
     match &clause.operator {
         PrimitiveClauseOperator::Gte => fact_value >= clause_value_as_f64(&clause.value),
         PrimitiveClauseOperator::Lte => fact_value <= clause_value_as_f64(&clause.value),
-        PrimitiveClauseOperator::Eq => (fact_value - clause_value_as_f64(&clause.value)).abs() < f64::EPSILON,
+        PrimitiveClauseOperator::Eq => {
+            (fact_value - clause_value_as_f64(&clause.value)).abs() < f64::EPSILON
+        }
         PrimitiveClauseOperator::Range => {
             if let PrimitiveClauseValue::Range { min, max } = &clause.value {
                 let min_f = number_to_f64(min);
@@ -155,9 +158,7 @@ fn evaluate_extended_clause(
             let is_vul = get_bool(facts, "bridge.isVulnerable");
             is_vul == *vulnerable
         }
-        ExtendedClause::BooleanFact { fact_id, expected } => {
-            get_bool(facts, fact_id) == *expected
-        }
+        ExtendedClause::BooleanFact { fact_id, expected } => get_bool(facts, fact_id) == *expected,
         ExtendedClause::NumericFact { fact_id, min, max } => {
             let val = get_num(facts, fact_id);
             let above_min = min.map_or(true, |m| val >= m);
@@ -171,10 +172,7 @@ fn evaluate_extended_clause(
 fn count_top_honors(hand: &Hand, suit: Suit) -> u8 {
     hand.cards
         .iter()
-        .filter(|c| {
-            c.suit == suit
-                && matches!(c.rank, Rank::Ace | Rank::King | Rank::Queen)
-        })
+        .filter(|c| c.suit == suit && matches!(c.rank, Rank::Ace | Rank::King | Rank::Queen))
         .count() as u8
 }
 
@@ -210,7 +208,11 @@ fn evaluate_compute_expr(
         ComputeExpr::ShortagePoints { trump_suit_binding } => {
             let trump_suit_name = bindings
                 .and_then(|b| b.get(trump_suit_binding.as_str()))
-                .or_else(|| bindings.and_then(|b| b.get(&trump_suit_binding.trim_start_matches('$').to_string())))
+                .or_else(|| {
+                    bindings.and_then(|b| {
+                        b.get(&trump_suit_binding.trim_start_matches('$').to_string())
+                    })
+                })
                 .map(|s| s.as_str());
 
             let trump_idx = trump_suit_name.and_then(suit_name_to_index);
@@ -418,10 +420,22 @@ mod tests {
     fn top_honor_count() {
         let hand = Hand {
             cards: vec![
-                Card { suit: Suit::Spades, rank: Rank::Ace },
-                Card { suit: Suit::Spades, rank: Rank::King },
-                Card { suit: Suit::Spades, rank: Rank::Five },
-                Card { suit: Suit::Hearts, rank: Rank::Queen },
+                Card {
+                    suit: Suit::Spades,
+                    rank: Rank::Ace,
+                },
+                Card {
+                    suit: Suit::Spades,
+                    rank: Rank::King,
+                },
+                Card {
+                    suit: Suit::Spades,
+                    rank: Rank::Five,
+                },
+                Card {
+                    suit: Suit::Hearts,
+                    rank: Rank::Queen,
+                },
             ],
         };
         let facts = HashMap::new();
@@ -459,8 +473,12 @@ mod tests {
         let comp = FactComposition::Compute {
             expr: ComputeExpr::Add {
                 operands: vec![
-                    ComputeExpr::FactRef { fact_id: "hand.hcp".to_string() },
-                    ComputeExpr::ShortagePoints { trump_suit_binding: "suit".to_string() },
+                    ComputeExpr::FactRef {
+                        fact_id: "hand.hcp".to_string(),
+                    },
+                    ComputeExpr::ShortagePoints {
+                        trump_suit_binding: "suit".to_string(),
+                    },
                 ],
             },
         };
@@ -469,7 +487,7 @@ mod tests {
             ("hand.suitLength.spades", 5.0),
             ("hand.suitLength.hearts", 4.0),
             ("hand.suitLength.diamonds", 3.0),
-            ("hand.suitLength.clubs", 1.0),   // singleton = 2 pts
+            ("hand.suitLength.clubs", 1.0), // singleton = 2 pts
         ]);
         let mut bindings = HashMap::new();
         bindings.insert("suit".to_string(), "hearts".to_string());

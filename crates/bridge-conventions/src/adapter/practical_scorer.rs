@@ -110,9 +110,7 @@ pub fn score_candidate_practically(
                         .iter()
                         .find_map(|c| {
                             if c.fact_id == suit_fact_id {
-                                c.observed_value
-                                    .as_ref()
-                                    .and_then(|v| v.as_f64())
+                                c.observed_value.as_ref().and_then(|v| v.as_f64())
                             } else {
                                 None
                             }

@@ -103,4 +103,3 @@ pub struct EncodingOptionDTO {
     pub call: Call,
     pub legal: bool,
 }
-

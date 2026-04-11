@@ -1,15 +1,14 @@
 # Bridge Practice App
 
-Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). WASM browser (VPS via Docker/Caddy). Svelte 5 (runes) + TypeScript strict. Uses meaning-centric pipeline exclusively (old tree/protocol/overlay pipeline removed).
+Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). WASM browser (VPS via Docker/Caddy). SvelteKit + Svelte 5 (runes) + TypeScript strict. Uses meaning-centric pipeline exclusively (old tree/protocol/overlay pipeline removed). SvelteKit with `adapter-static` (`fallback: 'index.html'`) — two layout groups: `(app)/` (ssr=false, client-only WASM) and `(content)/` (prerender=true, SEO pages).
 
 ## Commands
 
 | Command                                          | Purpose                                                  |
 | ------------------------------------------------ | -------------------------------------------------------- |
 | `npm run dev`                                    | Build WASM (if needed) + start dev server (port 1420)    |
-| `npm run build`                                  | Build WASM + production bundle + static learn pages      |
-| `npm run static:extract`                         | Build bridge-static binary + extract learn JSON          |
-| `npm run build:learn`                            | Generate static HTML learn pages from JSON               |
+| `npm run build`                                  | Build WASM + SvelteKit production build (includes prerendered SEO pages) |
+| `npm run static:extract`                         | Build bridge-static binary + extract learn JSON to `static/.static/learn-data.json` (run before vite build) |
 | `npm run wasm:build`                             | Build WASM (release)                                     |
 | `npm run wasm:dev`                               | Build WASM (debug, faster)                               |
 | `npm run check`                                  | Svelte type-check                                        |
@@ -33,7 +32,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). W
 
 **Deploy = tag and push.** `git tag v<version> && git push origin v<version>` triggers the full pipeline:
 
-1. GitHub Actions builds a Docker image (Rust/WASM → Vite → Caddy)
+1. GitHub Actions builds a Docker image (Rust/WASM → SvelteKit/Vite → Caddy)
 2. Pushes to GHCR (`ghcr.io/jofu-tofu/bridge-convention-app`)
 3. SSHs into VPS, pins the version in `docker-compose.yml`, pulls, and restarts
 
@@ -68,8 +67,8 @@ Backward compat alias: `?profiles=true` → `/workshop`.
 ?convention=nt-bundle&seed=42                          # Deterministic game
 ?convention=nt-bundle&seed=42&phase=review             # Instant review screen
 ?convention=nt-bundle&dev=debug,expanded,autoDismiss   # Max debug, friction-free probing
-?screen=coverage&convention=nt-bundle                  # Coverage screen
-?screen=settings                                       # Settings screen
+/coverage?convention=nt-bundle                          # Coverage screen
+/settings                                              # Settings screen
 ```
 
 - **CLI evaluation:** `npx tsx src/cli/main.ts play --bundle=nt-bundle --seed=42` runs session-based playthrough. Subcommands: `bundles` (list bundles), `modules` (list modules), `describe` (inspect bundle), `play` (session-based playthrough), `selftest` (strategy self-consistency). Same seed = same deal. Uses the same session API as the UI.
@@ -128,13 +127,18 @@ UI layers (`components/`, `stores/`) import ONLY from `service/`. `service/` is 
 
 ```
 src/
+  routes/          SvelteKit file-based routing
+    (app)/         Client-only layout group (ssr=false) — WASM game routes
+    (content)/     Prerendered layout group — SEO pages (guides/[slug], learn/[moduleId])
+  app.html         SvelteKit HTML template (replaces index.html)
+  AppReady.svelte  Root app shell — creates engine/stores, sets context (replaces App.svelte + AppShell.svelte)
   engine/          Pure TS engine types + DDS browser support (types, constants, hand-evaluator, scoring/isVulnerable, call-helpers, dds-*)
   service/         WASM proxy: ServicePort, BridgeService, barrel, session-types, display/, util/, auth
     display/       Call/contract/card formatting, hand summary, convention card builder
     util/          Pure utilities: delay
     auth.ts        AuthClient — DataPort boundary for /api/auth/* calls
   cli/             Session-based convention evaluation CLI (main.ts + shared.ts + commands/)
-  test-support/    Shared test factories (engine stub, deal/session fixtures)
+  test-support/    Shared test factories (engine stub, deal/session fixtures, sveltekit-mocks/)
   stores/          Svelte stores (app, game coordinator, custom-systems, context DI, dev-params, feature-flags, entitlements)
   components/      Svelte UI components
     navigation/    NavRail (desktop left rail), BottomTabBar (mobile)
@@ -188,8 +192,9 @@ See `docs/architecture/migration/index.md` for the phase tracker and architectur
 - WASM must be built via `wasm-pack` (not `cargo build`), because `wasm-pack` handles `--target web`, `.wasm` packaging, and JS glue generation
 - Read a subsystem's CLAUDE.md before working in that directory
 - Full testing playbook is in **TESTING.md**, not here
-- Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before svelte() in `vite.config.ts`
-- `vitest.config.ts` has `resolve.conditions: ["browser"]` so Svelte 5 `mount()` works in jsdom tests — don't use `require()` in tests, use ES imports
+- Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before sveltekit() in `vite.config.ts`
+- `svelte.config.js` uses `adapter-static` with `fallback: 'index.html'` for SPA fallback. `tsconfig.json` extends `.svelte-kit/tsconfig.json`.
+- `vitest.config.ts` has `resolve.conditions: ["browser"]` so Svelte 5 `mount()` works in jsdom tests — don't use `require()` in tests, use ES imports. Also aliases `$app/navigation` and `$app/state` to mock modules in `src/test-support/sveltekit-mocks/`.
 - Component tests use `@testing-library/svelte` — components needing context (stores/engine) need wrapper setup in test-helpers.ts
 - Svelte `{#each}` blocks require keyed iteration (`{#each items as item (item.id)}`) per ESLint rule `svelte/require-each-key`
 - See `docs/guides/gotchas.md` for detailed technical notes (DDS browser, vendor/dds, convention system details, CLI enumeration, deal generation)
@@ -309,4 +314,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-11 | version=24 | dir-commits-at-audit=67 | tree-sig=dirs:16,files:100+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-11 | version=25 | dir-commits-at-audit=67 | tree-sig=dirs:18,files:100+ -->

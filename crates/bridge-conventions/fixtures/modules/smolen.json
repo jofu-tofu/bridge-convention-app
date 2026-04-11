@@ -6,9 +6,8 @@
   "description": "Jump to 3H/3S after Stayman denial to show 5-4 in majors, game-forcing",
   "purpose": "Handle the 5-4 major hand with game values after Stayman gets a 2D denial — let opener choose the fit while keeping the strong hand as declarer",
   "references": {
-    "primary": { "url": "https://www.bridgeguys.com/Conventions/Smolen.html", "label": "Bridge Guys — Smolen convention with opener's rebids after the game-forcing jump" },
-    "discovery": { "url": "https://www.bridgebum.com/smolen.php" },
-    "secondary": []
+    "authority": { "url": "https://www.bridgeguys.com/Conventions/Smolen.html", "label": "Bridge Guys — Smolen convention with opener's rebids after the game-forcing jump" },
+    "discovery": { "url": "https://www.bridgebum.com/smolen.php" }
   },
   "teaching": {
     "tradeoff": "Smolen uses jump bids (3H/3S) that could otherwise be used as natural invitational bids.",
@@ -798,7 +797,14 @@
           "suitIdentity",
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.hearts",
+            "operator": "gte",
+            "value": 5
+          }
+        }
       },
       {
         "id": "module.smolen.hasFiveSpades",
@@ -813,7 +819,14 @@
           "suitIdentity",
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.spades",
+            "operator": "gte",
+            "value": 5
+          }
+        }
       },
       {
         "id": "module.smolen.hasFourSpades",
@@ -828,7 +841,14 @@
           "suitIdentity",
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 4 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.spades",
+            "operator": "gte",
+            "value": 4
+          }
+        }
       },
       {
         "id": "module.smolen.hasFourHearts",
@@ -843,7 +863,14 @@
           "suitIdentity",
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 4 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.hearts",
+            "operator": "gte",
+            "value": 4
+          }
+        }
       },
       {
         "id": "module.smolen.openerHasHeartFit",
@@ -858,7 +885,14 @@
           "suitIdentity",
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 3 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.hearts",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       },
       {
         "id": "module.smolen.openerHasSpadesFit",
@@ -873,7 +907,14 @@
           "suitIdentity",
           "suitLength"
         ],
-        "composition": { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 3 } }
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.spades",
+            "operator": "gte",
+            "value": 3
+          }
+        }
       }
     ]
   }

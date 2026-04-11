@@ -340,15 +340,30 @@ mod tests {
 
     #[test]
     fn vulnerability_serializes_correctly() {
-        assert_eq!(serde_json::to_string(&Vulnerability::None).unwrap(), "\"None\"");
-        assert_eq!(serde_json::to_string(&Vulnerability::NorthSouth).unwrap(), "\"NS\"");
-        assert_eq!(serde_json::to_string(&Vulnerability::EastWest).unwrap(), "\"EW\"");
-        assert_eq!(serde_json::to_string(&Vulnerability::Both).unwrap(), "\"Both\"");
+        assert_eq!(
+            serde_json::to_string(&Vulnerability::None).unwrap(),
+            "\"None\""
+        );
+        assert_eq!(
+            serde_json::to_string(&Vulnerability::NorthSouth).unwrap(),
+            "\"NS\""
+        );
+        assert_eq!(
+            serde_json::to_string(&Vulnerability::EastWest).unwrap(),
+            "\"EW\""
+        );
+        assert_eq!(
+            serde_json::to_string(&Vulnerability::Both).unwrap(),
+            "\"Both\""
+        );
     }
 
     #[test]
     fn call_bid_internally_tagged() {
-        let call = Call::Bid { level: 1, strain: BidSuit::Clubs };
+        let call = Call::Bid {
+            level: 1,
+            strain: BidSuit::Clubs,
+        };
         let json = serde_json::to_string(&call).unwrap();
         assert_eq!(json, r#"{"type":"bid","level":1,"strain":"C"}"#);
     }
@@ -375,7 +390,10 @@ mod tests {
     #[test]
     fn call_roundtrip() {
         let calls = vec![
-            Call::Bid { level: 3, strain: BidSuit::NoTrump },
+            Call::Bid {
+                level: 3,
+                strain: BidSuit::NoTrump,
+            },
             Call::Pass,
             Call::Double,
             Call::Redouble,
@@ -389,7 +407,10 @@ mod tests {
 
     #[test]
     fn card_serializes() {
-        let card = Card { suit: Suit::Spades, rank: Rank::Ace };
+        let card = Card {
+            suit: Suit::Spades,
+            rank: Rank::Ace,
+        };
         let json = serde_json::to_string(&card).unwrap();
         assert_eq!(json, r#"{"suit":"S","rank":"A"}"#);
     }
@@ -453,7 +474,11 @@ mod tests {
     fn hand_evaluation_serde_roundtrip() {
         let he = HandEvaluation {
             hcp: 10,
-            distribution: DistributionPoints { shortness: 0, length: 0, total: 0 },
+            distribution: DistributionPoints {
+                shortness: 0,
+                length: 0,
+                total: 0,
+            },
             shape: [4, 3, 3, 3],
             strategy: "HCP".to_string(),
         };
@@ -491,7 +516,13 @@ mod tests {
     fn deserialize_call_from_ts_format() {
         let bid_json = r#"{"type":"bid","level":2,"strain":"H"}"#;
         let call: Call = serde_json::from_str(bid_json).unwrap();
-        assert_eq!(call, Call::Bid { level: 2, strain: BidSuit::Hearts });
+        assert_eq!(
+            call,
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Hearts
+            }
+        );
 
         let pass_json = r#"{"type":"pass"}"#;
         let call: Call = serde_json::from_str(pass_json).unwrap();
@@ -577,19 +608,58 @@ mod tests {
             Seat::North,
             Hand {
                 cards: vec![
-                    Card { suit: Suit::Spades, rank: Rank::Ace },
-                    Card { suit: Suit::Spades, rank: Rank::King },
-                    Card { suit: Suit::Spades, rank: Rank::Queen },
-                    Card { suit: Suit::Hearts, rank: Rank::Jack },
-                    Card { suit: Suit::Hearts, rank: Rank::Ten },
-                    Card { suit: Suit::Hearts, rank: Rank::Nine },
-                    Card { suit: Suit::Hearts, rank: Rank::Eight },
-                    Card { suit: Suit::Diamonds, rank: Rank::Seven },
-                    Card { suit: Suit::Diamonds, rank: Rank::Six },
-                    Card { suit: Suit::Diamonds, rank: Rank::Five },
-                    Card { suit: Suit::Clubs, rank: Rank::Four },
-                    Card { suit: Suit::Clubs, rank: Rank::Three },
-                    Card { suit: Suit::Clubs, rank: Rank::Two },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::King,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Queen,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Jack,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Ten,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Nine,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Eight,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Seven,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Six,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Five,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Four,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Three,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Two,
+                    },
                 ],
             },
         );
@@ -597,19 +667,58 @@ mod tests {
             Seat::East,
             Hand {
                 cards: vec![
-                    Card { suit: Suit::Spades, rank: Rank::Jack },
-                    Card { suit: Suit::Spades, rank: Rank::Ten },
-                    Card { suit: Suit::Hearts, rank: Rank::Ace },
-                    Card { suit: Suit::Hearts, rank: Rank::King },
-                    Card { suit: Suit::Hearts, rank: Rank::Queen },
-                    Card { suit: Suit::Diamonds, rank: Rank::Ace },
-                    Card { suit: Suit::Diamonds, rank: Rank::King },
-                    Card { suit: Suit::Diamonds, rank: Rank::Queen },
-                    Card { suit: Suit::Diamonds, rank: Rank::Jack },
-                    Card { suit: Suit::Clubs, rank: Rank::Ace },
-                    Card { suit: Suit::Clubs, rank: Rank::King },
-                    Card { suit: Suit::Clubs, rank: Rank::Queen },
-                    Card { suit: Suit::Clubs, rank: Rank::Jack },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Jack,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Ten,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::King,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Queen,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::King,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Queen,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Jack,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Ace,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::King,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Queen,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Jack,
+                    },
                 ],
             },
         );
@@ -617,19 +726,58 @@ mod tests {
             Seat::South,
             Hand {
                 cards: vec![
-                    Card { suit: Suit::Spades, rank: Rank::Nine },
-                    Card { suit: Suit::Spades, rank: Rank::Eight },
-                    Card { suit: Suit::Spades, rank: Rank::Seven },
-                    Card { suit: Suit::Spades, rank: Rank::Six },
-                    Card { suit: Suit::Hearts, rank: Rank::Seven },
-                    Card { suit: Suit::Hearts, rank: Rank::Six },
-                    Card { suit: Suit::Diamonds, rank: Rank::Ten },
-                    Card { suit: Suit::Diamonds, rank: Rank::Nine },
-                    Card { suit: Suit::Diamonds, rank: Rank::Eight },
-                    Card { suit: Suit::Clubs, rank: Rank::Ten },
-                    Card { suit: Suit::Clubs, rank: Rank::Nine },
-                    Card { suit: Suit::Clubs, rank: Rank::Eight },
-                    Card { suit: Suit::Clubs, rank: Rank::Seven },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Nine,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Eight,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Seven,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Six,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Seven,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Six,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Ten,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Nine,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Eight,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Ten,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Nine,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Eight,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Seven,
+                    },
                 ],
             },
         );
@@ -637,19 +785,58 @@ mod tests {
             Seat::West,
             Hand {
                 cards: vec![
-                    Card { suit: Suit::Spades, rank: Rank::Five },
-                    Card { suit: Suit::Spades, rank: Rank::Four },
-                    Card { suit: Suit::Spades, rank: Rank::Three },
-                    Card { suit: Suit::Spades, rank: Rank::Two },
-                    Card { suit: Suit::Hearts, rank: Rank::Five },
-                    Card { suit: Suit::Hearts, rank: Rank::Four },
-                    Card { suit: Suit::Hearts, rank: Rank::Three },
-                    Card { suit: Suit::Hearts, rank: Rank::Two },
-                    Card { suit: Suit::Diamonds, rank: Rank::Four },
-                    Card { suit: Suit::Diamonds, rank: Rank::Three },
-                    Card { suit: Suit::Diamonds, rank: Rank::Two },
-                    Card { suit: Suit::Clubs, rank: Rank::Six },
-                    Card { suit: Suit::Clubs, rank: Rank::Five },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Five,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Four,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Three,
+                    },
+                    Card {
+                        suit: Suit::Spades,
+                        rank: Rank::Two,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Five,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Four,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Three,
+                    },
+                    Card {
+                        suit: Suit::Hearts,
+                        rank: Rank::Two,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Four,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Three,
+                    },
+                    Card {
+                        suit: Suit::Diamonds,
+                        rank: Rank::Two,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Six,
+                    },
+                    Card {
+                        suit: Suit::Clubs,
+                        rank: Rank::Five,
+                    },
                 ],
             },
         );

@@ -264,25 +264,44 @@ fn extract_attempt_record(
     seat_strategies: &HashMap<Seat, SeatStrategy>,
 ) -> BidAttemptRecord {
     let evaluation = clone_strategy_evaluation(seat, seat_strategies);
-    let tp = evaluation.as_ref().and_then(|e| e.teaching_projection.as_ref());
+    let tp = evaluation
+        .as_ref()
+        .and_then(|e| e.teaching_projection.as_ref());
     let wrong_bid_meaning = tp.and_then(|p| {
-        p.call_views.iter().find(|cv| cv.call == feedback.user_call).and_then(|cv| cv.primary_meaning.clone())
+        p.call_views
+            .iter()
+            .find(|cv| cv.call == feedback.user_call)
+            .and_then(|cv| cv.primary_meaning.clone())
     });
-    let conditions = tp.map(|p| {
-        p.primary_explanation.iter()
-            .filter(|n| n.kind == ExplanationKind::Condition)
-            .map(|n| ReviewCondition {
-                description: n.content.clone(),
-                passed: n.passed.unwrap_or(false),
-                observed_value: hand.and_then(|h| n.explanation_id.as_deref().and_then(|id| observed_value_for_condition(id, h))),
-                explanation_id: n.explanation_id.clone(),
-            }).collect()
-    }).unwrap_or_default();
+    let conditions = tp
+        .map(|p| {
+            p.primary_explanation
+                .iter()
+                .filter(|n| n.kind == ExplanationKind::Condition)
+                .map(|n| ReviewCondition {
+                    description: n.content.clone(),
+                    passed: n.passed.unwrap_or(false),
+                    observed_value: hand.and_then(|h| {
+                        n.explanation_id
+                            .as_deref()
+                            .and_then(|id| observed_value_for_condition(id, h))
+                    }),
+                    explanation_id: n.explanation_id.clone(),
+                })
+                .collect()
+        })
+        .unwrap_or_default();
     let correct_bid_label = tp.and_then(|p| {
-        p.meaning_views.iter().find(|mv| mv.status == MeaningStatus::Live).map(|mv| mv.display_label.clone())
+        p.meaning_views
+            .iter()
+            .find(|mv| mv.status == MeaningStatus::Live)
+            .map(|mv| mv.display_label.clone())
     });
     BidAttemptRecord {
-        user_call: feedback.user_call.clone(), grade: feedback.grade, wrong_bid_meaning, conditions,
+        user_call: feedback.user_call.clone(),
+        grade: feedback.grade,
+        wrong_bid_meaning,
+        conditions,
         expected_call: feedback.expected_call.clone(),
         expected_explanation: expected_result.map(|r| r.explanation.clone()),
         correct_bid_label,

@@ -3,7 +3,7 @@
 //! Protocol adapter, meaning strategy, practical scorer,
 //! strategy evaluation container.
 
-pub mod protocol_adapter;
 pub mod practical_scorer;
+pub mod protocol_adapter;
 pub mod strategy_evaluation;
 pub mod tree_evaluation;

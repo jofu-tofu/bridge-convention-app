@@ -204,8 +204,8 @@ pub fn build_explanation_viewport(input: BuildExplanationViewportInput) -> Expla
 mod tests {
     use super::super::viewport_types::AnnotationType;
     use super::*;
-    use bridge_engine::types::{AuctionEntry, Card, Contract, Hand, Rank, Suit, Vulnerability};
     use crate::types::PromptMode;
+    use bridge_engine::types::{AuctionEntry, Card, Contract, Hand, Rank, Suit, Vulnerability};
 
     fn make_hand_13() -> Hand {
         Hand {

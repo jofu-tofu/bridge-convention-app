@@ -128,7 +128,10 @@ pub enum BidAction {
         suit: Option<ObsSuit>,
     },
     #[serde(rename = "transfer")]
-    Transfer { #[serde(rename = "targetSuit")] target_suit: ObsSuit },
+    Transfer {
+        #[serde(rename = "targetSuit")]
+        target_suit: ObsSuit,
+    },
     #[serde(rename = "accept")]
     Accept {
         feature: HandFeature,

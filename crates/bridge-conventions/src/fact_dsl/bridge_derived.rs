@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use bridge_engine::Hand;
 
 use crate::types::{
-    FactComposition, FactOutput, FactOperator, MatchCase,
-    PrimitiveClause, PrimitiveClauseOperator, PrimitiveClauseValue,
+    FactComposition, FactOperator, FactOutput, MatchCase, PrimitiveClause, PrimitiveClauseOperator,
+    PrimitiveClauseValue,
 };
 
 use crate::types::system_config::PointFormula;
@@ -17,9 +17,7 @@ use crate::types::system_config::PointFormula;
 use super::composition::evaluate_composition;
 use super::point_helpers::compute_total_points;
 use super::primitives::suit_name_to_fact_id;
-use super::types::{
-    fv_bool, fv_num, get_num, FactValue, RelationalFactContext,
-};
+use super::types::{fv_bool, fv_num, get_num, FactValue, RelationalFactContext};
 
 // --- Standard bridge-derived compositions (layer 2) ---
 
@@ -126,10 +124,7 @@ fn major_pattern_composition() -> FactComposition {
 
 /// Evaluate standard bridge-derived facts (layer 2).
 /// Adds 4 facts to the map using Rust-constructed composition trees.
-pub fn evaluate_bridge_derived(
-    hand: &Hand,
-    facts: &mut HashMap<String, FactValue>,
-) {
+pub fn evaluate_bridge_derived(hand: &Hand, facts: &mut HashMap<String, FactValue>) {
     let comps: &[(&str, FactComposition)] = &[
         ("bridge.hasFourCardMajor", four_card_major_composition()),
         ("bridge.hasFiveCardMajor", five_card_major_composition()),
@@ -205,7 +200,10 @@ pub fn evaluate_bridge_relational(
     // bridge.totalPointsForRaise — HCP + shortage points excluding bound suit.
     // Intentionally hardcoded: raise evaluation always uses HCP+shortage regardless
     // of the user's PointConfig. This is a convention-level concept, not user-configurable.
-    const RAISE_FORMULA: PointFormula = PointFormula { include_shortage: true, include_length: false };
+    const RAISE_FORMULA: PointFormula = PointFormula {
+        include_shortage: true,
+        include_length: false,
+    };
     let tp = if let Some(suit_name) = bound_suit_name {
         compute_total_points(facts, RAISE_FORMULA, Some(suit_name))
     } else {

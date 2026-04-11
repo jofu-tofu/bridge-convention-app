@@ -60,7 +60,10 @@ pub enum PrimitiveClauseOperator {
 #[serde(untagged)]
 pub enum PrimitiveClauseValue {
     Single(serde_json::Number),
-    Range { min: serde_json::Number, max: serde_json::Number },
+    Range {
+        min: serde_json::Number,
+        max: serde_json::Number,
+    },
 }
 
 /// A primitive clause that maps to a fact compiler call.
@@ -126,10 +129,7 @@ pub enum ExtendedClause {
     VulnerabilityIs { vulnerable: bool },
     /// Boolean fact lookup — checks a previously evaluated boolean fact.
     #[serde(rename = "booleanFact")]
-    BooleanFact {
-        fact_id: String,
-        expected: bool,
-    },
+    BooleanFact { fact_id: String, expected: bool },
     /// Numeric fact comparison — checks a previously evaluated numeric fact.
     #[serde(rename = "numericFact")]
     NumericFact {
