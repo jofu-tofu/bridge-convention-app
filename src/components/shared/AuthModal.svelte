@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { getAppStore, getAuthStore } from "../../stores/context";
+  import { goto } from "$app/navigation";
+  import { getAuthStore } from "../../stores/context";
 
-  const appStore = getAppStore();
   const auth = getAuthStore();
 
   let dialogRef = $state<HTMLDialogElement>();
@@ -53,7 +53,7 @@
         <div class="flex flex-col gap-2">
           <button
             class="w-full py-2 rounded-[--radius-md] text-sm font-medium transition-colors cursor-pointer border border-border-subtle text-text-secondary hover:text-text-primary hover:border-border-prominent"
-            onclick={() => { appStore.navigateToSettings(); close(); }}
+            onclick={() => { void goto("/settings"); close(); }}
             data-testid="auth-modal-settings"
           >
             Go to Settings

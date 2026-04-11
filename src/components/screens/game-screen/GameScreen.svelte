@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
+  import { goto } from "$app/navigation";
   import { Seat, PracticeMode, PromptMode } from "../../../service";
   import type { Call } from "../../../service";
   import { buildConventionCardPanel, buildAcblCardPanel } from "../../../service";
@@ -15,6 +16,7 @@
   import DeclarerPromptPhase from "./DeclarerPromptPhase.svelte";
   import PlayingPhase from "./PlayingPhase.svelte";
   import ExplanationPhase from "./ExplanationPhase.svelte";
+  import LearnPhase from "./LearnPhase.svelte";
   import ConventionCardPanel from "../../game/ConventionCardPanel.svelte";
   import DebugDrawer from "../../game/DebugDrawer.svelte";
 
@@ -137,6 +139,13 @@
       gameStore.retryBid();
     }, 100);
     return () => clearTimeout(timer);
+  });
+
+  // Learn mode: auto-skip bidding to review when initialized
+  $effect(() => {
+    if (gameStore.practiceMode !== PracticeMode.Learn) return;
+    if (gameStore.phase !== "BIDDING" || !gameStore.isInitialized) return;
+    void gameStore.skipToPhase("review");
   });
 
   // Sync play profile changes to the active session — swaps PlayStrategyProvider mid-game
@@ -287,7 +296,8 @@
 
   function handleBackToMenu() {
     gameStore.reset();
-    appStore.navigateToConventions();
+    appStore.clearSelection();
+    void goto("/");
   }
 </script>
 
@@ -319,6 +329,10 @@
           <span class="text-[--text-annotation] text-text-muted" data-testid="practice-mode-label">
             Full Auction
           </span>
+        {:else if gameStore.practiceMode === PracticeMode.Learn}
+          <span class="text-[--text-annotation] text-text-muted" data-testid="practice-mode-label">
+            Learn
+          </span>
         {/if}
         <span class="sr-only" aria-live="polite">Phase: {phaseInfo.label}</span>
         <button
@@ -339,7 +353,7 @@
       <div class="flex items-center gap-3 shrink-0">
         <span class="text-text-secondary text-[--text-body]">
           Deal #{dealNumber}
-          {#if gameStore.sessionStats.correct + gameStore.sessionStats.incorrect > 0}
+          {#if gameStore.practiceMode !== PracticeMode.Learn && gameStore.sessionStats.correct + gameStore.sessionStats.incorrect > 0}
             <span class="text-text-muted mx-1">&middot;</span>
             <span class="text-fb-correct-text">{gameStore.sessionStats.correct}</span><!--
             -->/<span class="text-text-muted">{gameStore.sessionStats.correct + gameStore.sessionStats.incorrect}</span>
@@ -384,6 +398,13 @@
         onPlayCard={(card, seat) => gameStore.userPlayCard(card, seat)}
         onSkipToReview={() => gameStore.skipToReview()}
         onRestartPlay={() => gameStore.restartPlay()}
+      />
+    {:else if gameStore.phase === "EXPLANATION" && gameStore.practiceMode === PracticeMode.Learn && gameStore.explanationViewport}
+      <LearnPhase
+        viewport={gameStore.explanationViewport}
+        {dealNumber}
+        onNextDeal={handleNextDeal}
+        onBackToMenu={handleBackToMenu}
       />
     {:else if gameStore.phase === "EXPLANATION" && gameStore.explanationViewport}
       <ExplanationPhase

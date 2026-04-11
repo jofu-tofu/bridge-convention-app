@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { getAppStore, getPracticePacksStore, getUserModuleStore } from "../../stores/context";
   import { listModules, listConventions } from "../../service/service-helpers";
   import { type CatalogModule, mergeModules } from "../shared/module-catalog";
@@ -111,17 +112,17 @@
       });
     }
 
-    appStore.navigateToWorkshop();
+    void goto("/workshop");
   }
 
   function handleCancel(): void {
-    appStore.navigateToWorkshop();
+    void goto("/workshop");
   }
 
   function handleDelete(): void {
     if (!packId) return;
     packsStore.deletePack(packId);
-    appStore.navigateToWorkshop();
+    void goto("/workshop");
   }
 </script>
 

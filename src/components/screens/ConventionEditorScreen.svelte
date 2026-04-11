@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import type { ConfigurableSurfaceView, ModuleConfigSchemaView } from "../../service";
   import { getAppStore, getUserModuleStore } from "../../stores/context";
   import { getModuleConfigSchemaSync } from "../../service/service-helpers";
@@ -116,20 +117,20 @@
       });
     }
 
-    appStore.navigateToWorkshop();
+    void goto("/workshop");
   }
 
   function handleCancel(): void {
     if (appStore.editingModuleIsNew && moduleId) {
       userModules.deleteModule(moduleId);
     }
-    appStore.navigateToWorkshop();
+    void goto("/workshop");
   }
 
   function handleDelete(): void {
     if (!moduleId) return;
     userModules.deleteModule(moduleId);
-    appStore.navigateToWorkshop();
+    void goto("/workshop");
   }
 </script>
 

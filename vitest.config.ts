@@ -11,6 +11,14 @@ export default defineConfig({
         __dirname,
         "crates/bridge-wasm/pkg",
       ),
+      "$app/navigation": path.resolve(
+        __dirname,
+        "src/test-support/sveltekit-mocks/navigation.ts",
+      ),
+      "$app/state": path.resolve(
+        __dirname,
+        "src/test-support/sveltekit-mocks/state.ts",
+      ),
     },
   },
   test: {

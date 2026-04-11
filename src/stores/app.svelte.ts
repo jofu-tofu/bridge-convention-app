@@ -1,9 +1,6 @@
 import type { ConventionInfo, SystemSelectionId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
 import { OpponentMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 import { loadFromStorage, saveToStorage } from "./local-storage";
-import { FEATURES } from "./feature-flags";
-
-export type Screen = "conventions" | "game" | "learning" | "settings" | "coverage" | "workshop" | "convention-editor" | "practice-pack-editor" | "guides";
 
 // ─── Persistence ────────────────────────────────────────────
 
@@ -89,7 +86,6 @@ function savePreferences(prefs: PracticePreferences) {
 // ─── Store ──────────────────────────────────────────────────
 
 export function createAppStore() {
-  let currentScreen = $state<Screen>("conventions");
   let selectedConvention = $state<ConventionInfo | null>(null);
   let lastPracticedId = $state<string | null>(loadLastConvention());
 
@@ -141,9 +137,6 @@ export function createAppStore() {
   }
 
   return {
-    get screen() {
-      return currentScreen;
-    },
     get selectedConvention() {
       return selectedConvention;
     },
@@ -170,14 +163,15 @@ export function createAppStore() {
       return devDealCount;
     },
 
+    /** Set selected convention and record it as last practiced. Does NOT navigate. */
     selectConvention(config: ConventionInfo) {
       selectedConvention = config;
       saveLastConvention(config.id);
       learningConvention = null;
-      currentScreen = "game";
     },
 
-    navigateToLearning(config: ConventionInfo) {
+    /** Set learning state for a bundle. Does NOT navigate. */
+    setLearningFromBundle(config: ConventionInfo) {
       learningConvention = config;
       selectedConvention = null;
       learningBundleFilter = config.id;
@@ -185,17 +179,15 @@ export function createAppStore() {
       // Auto-select first module from the bundle's member ordering
       const firstModuleId = config.moduleDescriptions?.keys().next().value ?? null;
       learningModuleId = firstModuleId ?? null;
-      currentScreen = "learning";
     },
 
-    /** Navigate directly to a specific module's learning page. */
-    navigateToLearningModule(moduleId: string, bundleFilter?: string, bundleFilterName?: string) {
+    /** Set learning state for a specific module. Does NOT navigate. */
+    setLearningModule(moduleId: string, bundleFilter?: string, bundleFilterName?: string) {
       learningModuleId = moduleId;
       learningBundleFilter = bundleFilter ?? null;
       learningBundleFilterName = bundleFilterName ?? null;
       learningConvention = null;
       selectedConvention = null;
-      currentScreen = "learning";
     },
 
     selectLearningModule(moduleId: string) {
@@ -207,16 +199,16 @@ export function createAppStore() {
       learningBundleFilterName = null;
     },
 
-    /** Navigate to learning screen showing all modules, auto-selecting first if none selected. */
-    navigateToLearningHome() {
+    /** Clear learning state for a fresh learning home view. Does NOT navigate. */
+    clearLearningState() {
       learningConvention = null;
       selectedConvention = null;
       learningBundleFilter = null;
       learningBundleFilterName = null;
-      currentScreen = "learning";
     },
 
-    navigateToConventions() {
+    /** Clear all ephemeral state (selection, learning, editing). Does NOT navigate. */
+    clearSelection() {
       selectedConvention = null;
       learningConvention = null;
       learningModuleId = null;
@@ -225,28 +217,14 @@ export function createAppStore() {
       editingModuleId = null;
       editingPackId = null;
       editingPackBasedOn = null;
-      currentScreen = "conventions";
     },
 
-    navigateToSettings() {
-      currentScreen = "settings";
-    },
-
-    navigateToGuides() {
-      currentScreen = "guides";
-    },
-
-    navigateToCoverage() {
-      currentScreen = "coverage";
-    },
-
-    navigateToWorkshop() {
-      if (!FEATURES.workshop) return;
+    /** Clear workshop editing state. Does NOT navigate. */
+    clearWorkshopState() {
       editingModuleId = null;
       editingModuleIsNew = false;
       editingPackId = null;
       editingPackBasedOn = null;
-      currentScreen = "workshop";
     },
 
     get editingModuleId() {
@@ -257,10 +235,10 @@ export function createAppStore() {
       return editingModuleIsNew;
     },
 
-    navigateToConventionEditor(moduleId: string | null, isNew = false) {
+    /** Set convention editor state. Does NOT navigate. */
+    setEditingModule(moduleId: string | null, isNew = false) {
       editingModuleId = moduleId;
       editingModuleIsNew = isNew;
-      currentScreen = "convention-editor";
     },
 
     get editingPackId() {
@@ -271,10 +249,10 @@ export function createAppStore() {
       return editingPackBasedOn;
     },
 
-    navigateToPackEditor(packId: string | null, basedOn?: string | null) {
+    /** Set practice pack editor state. Does NOT navigate. */
+    setEditingPack(packId: string | null, basedOn?: string | null) {
       editingPackId = packId;
       editingPackBasedOn = basedOn ?? null;
-      currentScreen = "practice-pack-editor";
     },
 
     setDevSeed(seed: number | null) {

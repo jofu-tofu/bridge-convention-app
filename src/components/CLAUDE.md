@@ -8,7 +8,7 @@ Svelte 5 UI components for the drill workflow. Consumer of stores, lib, and engi
 - **Named exports only.** No `export default` in any `.ts` file. Svelte components are the exception (implicit default).
 - **Keyed `{#each}` blocks.** Every `{#each}` must have a key expression: `{#each items as item (item.id)}`
 - **EnginePort boundary.** Components never import engine internals (`hand-evaluator`, `deal-generator`, `auction`, `scoring`, `play`). Import types from `engine/types.ts` and constants from `engine/constants.ts` only. Engine access goes through `EnginePort` via context.
-- **Context for DI.** Engine, game store, and app store provided via Svelte context (set in App.svelte, retrieved via `src/stores/context.ts` helpers).
+- **Context for DI.** Engine, game store, and app store provided via Svelte context (set in AppReady.svelte, retrieved via `src/stores/context.ts` helpers).
 - **Tailwind CSS + design tokens.** Tailwind utility classes augmented with CSS custom properties defined via `@theme` in `src/app.css`. Midnight Table dark theme. No `<style>` blocks in new components except for CSS that Tailwind can't express (e.g., HandFan overlap/rotation).
 - **Typography tokens for game screens.** All text sizing in game-screen components uses `--text-*` CSS custom properties (via `text-[--text-label]` Tailwind syntax or `font-size: var(--text-label)`) instead of hardcoded Tailwind size classes (`text-xs`, `text-sm`, etc.). Token names defined in `app.css :root`.
 - **Pure function extraction.** Complex logic extracted to `src/components/shared/` and `src/service/` for testability: `sortCards`, `computeTableScale` (shared/), `startDrill` (service/). `filterConventions` lives in `src/components/screens/filter-conventions.ts`.
@@ -21,7 +21,10 @@ Game components MUST use `--text-*` tokens (ESLint enforced) and `--color-*` tok
 ## Architecture
 
 ```
-App.svelte                           Root — creates engine/stores, sets context, routes screens
+(routing via SvelteKit src/routes/)
+  (app)/+layout.svelte               Client-only layout (ssr=false) — loads WASM, renders AppReady
+  (content)/+layout.svelte            Prerendered layout for SEO pages (guides, learn)
+AppReady.svelte                      Root app shell — creates engine/stores, sets context, nav chrome
 components/
   screens/
     ConventionSelectScreen.svelte    Convention picker with search + category filter + 2-column responsive card grid. Practice buttons show lock state for non-premium bundles; PaywallOverlay opens on locked practice attempt.
@@ -49,6 +52,8 @@ components/
       DeclarerPromptPhase.svelte     Declarer/defender prompt (pure — data via props)
       PlayingPhase.svelte            Play phase template (pure — data via props, legal plays from parent)
       ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping, auction step-through. Defines tab content snippets (bidding/play/analysis) + action buttons passed to ReviewSidePanel.
+      LearnPhase.svelte              Learn mode: step-through completed auction with all 4 hands visible. Uses ExplanationViewport data. BidAnnotationPopup shows meaning per bid. Keyboard nav (arrows/space/home/end).
+      LearnSidePanel.svelte          Learn mode side panel: step indicator + prev/next/first/last nav buttons + New Deal + Back to Menu
       layout-props.ts                (moved to src/components/shared/layout-props.ts)
       BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
       PlaySidePanel.svelte           Contract, trick counts, restart play, skip-to-review
@@ -58,6 +63,7 @@ components/
       ContractDisplay.svelte         Formatted contract with doubled/redoubled indicators
       ScaledTableArea.svelte         Responsive table wrapper with transform-origin
   game/
+    BidAnnotationPopup.svelte        Floating annotation card for Learn mode — shows seat + call + meaning/alert for the current bid step
     BridgeTable.svelte               800x650 table with 4 seats, absolute positioning
     HandFan.svelte                   Overlapping visual card fan (horizontal/vertical)
     TrickArea.svelte                 Center trick display with NSEW card positions and trick count
@@ -126,7 +132,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** AppShell owns the full app layout — context setup + nav chrome + screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop (dev only)/Settings icons. Learn navigates directly to Learning screen. Mobile: bottom tab bar (BottomTabBar) with Home/Learn/Workshop (dev only)/Settings tabs (3 tabs in production, 4 in dev). Workshop tab is the home for system/convention/practice pack management, gated behind `FEATURES.workshop`. `?profiles=true` backward compat alias redirects to Workshop. Conventions tab shows an inline flow editor (ConventionFlowEditor): left sidebar with module picker, center flow tree (shared ConversationFlowTree in interactive mode), right slide-out panel for node parameter editing. Workshop = management (fork, edit, delete, configure). Learn = study (teaching content, flow trees, surfaces).
+**Screen flow:** SvelteKit `(app)/+layout.svelte` owns the full app layout — loads WASM, renders `AppReady.svelte` which provides context setup + nav chrome. File-based routing replaces store-driven screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop (dev only)/Settings icons. Learn navigates directly to Learning screen. Mobile: bottom tab bar (BottomTabBar) with Home/Learn/Workshop (dev only)/Settings tabs (3 tabs in production, 4 in dev). Workshop tab is the home for system/convention/practice pack management, gated behind `FEATURES.workshop`. `?profiles=true` backward compat alias redirects to `/workshop`. Conventions tab shows an inline flow editor (ConventionFlowEditor): left sidebar with module picker, center flow tree (shared ConversationFlowTree in interactive mode), right slide-out panel for node parameter editing. Workshop = management (fork, edit, delete, configure). Learn = study (teaching content, flow trees, surfaces).
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 
@@ -142,7 +148,8 @@ components/
 - **Store methods:** `userBid`, `userPlayCard`, `retryBid`, `skipToReview` return `void` (safe for onclick). `startDrillFromHandle` returns a Promise. `startNewDrill` returns void (fire-and-forget, guarded).
 - **Never construct Tailwind class names via string interpolation** — JIT purges dynamically built strings. Use complete literal class strings in lookup Records (see BidFeedbackShell.svelte and ToggleGroup.svelte).
 - **Lifecycle action buttons** must bind `disabled` to `gameStore.isTransitioning`. Primary action per phase shows a spinner when transitioning (Next Deal in review, Restart Play in playing, New Deal in bidding).
-- GameScreen routes phases to extracted pure components (BiddingPhase, DeclarerPromptPhase, PlayingPhase, ExplanationPhase). GameScreen owns the legal-plays `$effect`.
+- **Learn mode auto-skip lifecycle:** GameScreen has a `$effect` that calls `skipToPhase("review")` when `practiceMode === Learn && phase === BIDDING && isInitialized`. This fires on mount and after each New Deal. Do NOT add Learn mode logic to the existing onMount block.
+- GameScreen routes phases to extracted pure components (BiddingPhase, DeclarerPromptPhase, PlayingPhase, ExplanationPhase, LearnPhase). GameScreen owns the legal-plays `$effect`.
 - BiddingPhase receives `BiddingViewport` as prop — never accesses raw `Deal` or engine internals. Viewport builders live in `src/service/`.
 - DeclarerPromptPhase receives `DeclarerPromptViewport` as prop — never accesses raw `Deal`. Hands filtered through faceUpSeats.
 - PlayingPhase receives `PlayingViewport` as prop — never accesses raw `Deal`. Hands filtered through faceUpSeats.
@@ -170,7 +177,7 @@ the codebase wins — update this file, do not work around it. Prune aggressivel
 **Track follow-up work:** After modifying files, evaluate whether changes create incomplete
 work or break an assumption tracked elsewhere. If so, create a task or update tracking before ending.
 
-**Staleness anchor:** This file assumes `App.svelte` exists in `src/`. If it doesn't, this file
+**Staleness anchor:** This file assumes `AppReady.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-05 | version=13 | dir-commits-at-audit=20 | tree-sig=dirs:10,files:50,exts:svelte:34,ts:15,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-11 | version=14 | dir-commits-at-audit=20 | tree-sig=dirs:10,files:50,exts:svelte:34,ts:15,md:1 -->

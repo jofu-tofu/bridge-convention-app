@@ -2,7 +2,7 @@ import type { createAppStore } from "./app.svelte";
 import { ConventionCategory, PracticeMode, PracticeRole, SubscriptionTier } from "../service";
 import type { ConventionInfo } from "../service";
 import { listConventions } from "../service/service-helpers";
-import { FEATURES } from "./feature-flags";
+import { goto } from "$app/navigation";
 
 /**
  * Consolidated URL parameter API for deep-linking and dev/test workflows.
@@ -11,7 +11,6 @@ import { FEATURES } from "./feature-flags";
  *   ?convention=<id>       Select convention → game screen
  *   ?learn=<id>            Module or bundle → learning screen
  *   ?seed=<number>         Deterministic PRNG seed
- *   ?screen=<name>         Direct screen nav: settings | coverage | workshop
  *   ?phase=<name>          Skip to game phase: review | playing | declarer
  *   ?targetState=<id>      FSM state targeting (coverage)
  *   ?targetSurface=<id>    Meaning surface targeting (coverage)
@@ -19,37 +18,11 @@ import { FEATURES } from "./feature-flags";
  * Dev-only params (DEV build):
  *   ?dev=<flags>           Comma-separated: debug, expanded, autoplay, autoDismiss
  *
- * Backward compat alias:
- *   ?profiles=true         → ?screen=workshop
+ * SvelteKit routes handle screen-level navigation:
+ *   /coverage, /settings, /workshop, /guides — accessed directly via URL
  */
 export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const params = new URLSearchParams(window.location.search);
-
-  // ── Screen navigation ──────────────────────────────────────
-  // ?screen= is the canonical param; ?profiles=true is a backward compat alias
-  const screenParam = params.get("screen")
-    ?? (params.get("profiles") === "true" ? "workshop" : null);
-
-  if (screenParam === "coverage") {
-    const coverageConvention = params.get("convention");
-    if (coverageConvention) {
-      store.setCoverageBundle(coverageConvention);
-    }
-    store.navigateToCoverage();
-    return;
-  }
-  if (screenParam === "workshop" && FEATURES.workshop) {
-    store.navigateToWorkshop();
-    return;
-  }
-  if (screenParam === "settings") {
-    store.navigateToSettings();
-    return;
-  }
-  if (screenParam === "guides") {
-    store.navigateToGuides();
-    return;
-  }
 
   // ── Seed (universal) ───────────────────────────────────────
   const seedParam = params.get("seed");
@@ -68,7 +41,7 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const phaseParam = params.get("phase");
   const practiceModeParam = params.get("practiceMode")
     ?? ((phaseParam || conventionParam) ? PracticeMode.DecisionDrill : null);
-  if (practiceModeParam === PracticeMode.DecisionDrill || practiceModeParam === PracticeMode.FullAuction) {
+  if (practiceModeParam === PracticeMode.DecisionDrill || practiceModeParam === PracticeMode.FullAuction || practiceModeParam === PracticeMode.Learn) {
     store.setPracticeMode(practiceModeParam);
   }
 
@@ -81,9 +54,9 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const learnParam = params.get("learn");
 
   if (learnParam) {
-    // Module-first resolution: navigate by module ID
-    // Convention catalog is now in Rust/WASM — resolve via store methods
-    store.navigateToLearningModule(learnParam);
+    // Module-first resolution: set learning state and navigate
+    store.setLearningModule(learnParam);
+    void goto("/learning");
   } else if (conventionParam) {
     // Resolve from catalog for proper display name; fall back to stub for unknown IDs
     const conventions = listConventions();
@@ -99,6 +72,7 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
       };
       store.selectConvention(fallbackConvention);
     }
+    void goto("/game");
   }
 
   // ── Coverage targeting ─────────────────────────────────────

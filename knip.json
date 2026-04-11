@@ -1,5 +1,5 @@
 {
-  "entry": ["src/cli/main.ts"],
+  "entry": ["src/cli/main.ts", "src/routes/**/*.svelte", "src/routes/**/*.ts"],
   "ignore": [
     "static/dds/dds.js",
     "src/components/screens/convention-canvas/ConventionFlowEditor.svelte",

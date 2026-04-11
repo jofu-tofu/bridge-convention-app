@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { listConventions, ConventionCategory, displayConventionName } from "../../service";
   import type { ConventionInfo } from "../../service";
   import { getAppStore, getAuthStore } from "../../stores/context";
@@ -43,10 +44,12 @@
       return;
     }
     appStore.selectConvention(config);
+    void goto("/game");
   }
 
   function handleLearn(config: ConventionInfo) {
-    appStore.navigateToLearning(config);
+    appStore.setLearningFromBundle(config);
+    void goto("/learning");
   }
 
   const lastPracticedConvention = $derived(

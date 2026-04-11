@@ -15,7 +15,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 | File                 | Role                                                                                               |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
-| `app.svelte.ts`      | `createAppStore()` — screen navigation, selected convention, learning state, coverage state, dev seed, dev flags (`autoplay`, `debugExpanded`, `autoDismissFeedback`, `skipToPhase`), drill tuning (persisted to localStorage). Workshop navigation gated by `FEATURES.workshop` (silent no-op in production). |
+| `app.svelte.ts`      | `createAppStore()` — selected convention, learning state, coverage state, dev seed, dev flags (`autoplay`, `debugExpanded`, `autoDismissFeedback`, `skipToPhase`), drill tuning (persisted to localStorage). Screen navigation handled by SvelteKit file-based routing (`goto()` from `$app/navigation`), not store-driven. No `Screen` type or `navigateToX` methods. |
 | `game.svelte.ts`     | `createGameStore(service)` — coordinator/facade, drill lifecycle, user action handlers, thin reactive cache over service viewports. Delegates to sub-modules for bidding, play, phase transitions, viewport caching, and DDS |
 | `bidding-phase.svelte.ts` | `createBiddingPhase(deps)` — bidding state, AI bid animation, user bid submission, feedback, session stats |
 | `play-phase.svelte.ts` | `createPlayPhase(deps)` — play state, AI play animation, user card play, trick display |
@@ -30,7 +30,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 | `custom-systems.svelte.ts` | `createCustomSystemsStore()` — CRUD for custom systems, localStorage persistence. `resolveSystemForSession()` maps `SystemSelectionId` to `{systemConfig, baseModuleIds}` for session creation. Healing allows `user:*` module IDs through without validation. |
 | `user-modules.svelte.ts` | `createUserModuleStore()` — CRUD for user-owned convention modules (forked/created), localStorage persistence (`bridge-app:user-modules`). Full-copy fork model, no deltas. |
 | `practice-packs.svelte.ts` | `createPracticePacksStore()` — CRUD for custom practice packs, localStorage persistence (`bridge-app:practice-packs`). Each pack is a named, ordered list of convention module IDs. |
-| `dev-params.ts`      | `applyDevParams()` — consolidated URL param API (9 params: `?convention=`, `?learn=`, `?seed=`, `?screen=`, `?phase=`, `?dev=`, `?practiceMode=`, `?practiceRole=`, `?targetState=/targetSurface=`). Convention deep links default to `decision-drill` unless `practiceMode` is explicit, so `?convention=` lands directly in-game. `?screen=workshop` loads Workshop (gated by `FEATURES.workshop`); `?profiles=true` backward compat alias also loads Workshop. `?dev=auth:<tier>` overrides subscription tier for paywall testing. Called from `App.svelte` at startup |
+| `dev-params.ts`      | `applyDevParams()` — consolidated URL param API (params: `?convention=`, `?learn=`, `?seed=`, `?phase=`, `?dev=`, `?practiceMode=`, `?practiceRole=`, `?targetState=/targetSurface=`). Convention deep links default to `decision-drill` unless `practiceMode` is explicit, so `?convention=` lands directly in-game. Screen navigation uses SvelteKit routes (`/settings`, `/coverage`, `/workshop`) via `goto()` from `$app/navigation`; `?profiles=true` backward compat alias redirects to `/workshop`. `?dev=auth:<tier>` overrides subscription tier for paywall testing. Called from `AppReady.svelte` at startup. |
 | `types.ts`           | `GameStore` interface — explicit facade interface for context DI consumers |
 
 **Game store key methods:** `startNewDrill`, `startDrillFromHandle`, `userBid`, `retryBid`, `dismissFeedback`, `getExpectedBid` (bidding); `acceptPrompt()`, `declinePrompt()` (declarer prompt — route through `acceptPromptAction`/`declinePromptAction`); `userPlayCard`, `skipToReview`, `skipToPhase`, `playThisHand`, `restartPlay` (play). **Internally**, all phase transitions route through `executeTransition(handle, event)` which enforces the pipeline: service actions → viewport fetch → phase transition → side effects. `dispatchPlayTransition` wraps `executeTransition` + AI play animation for events that produce `aiPlays`. See `game.svelte.ts` for signatures.
@@ -86,7 +86,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 - `EnginePort` methods are async. Rust backend (WasmEngine) wraps sync calls in Promises.
 - `BiddingContext` constructed via `createBiddingContext()` factory from `conventions/core/context-factory.ts` (includes optional `vulnerability`/`dealer` with safe defaults)
-- `context.ts` provides Svelte context DI helpers (`setGameStore`, `setAppStore`, `setService`, `setCustomSystemsStore`, `setUserModuleStore`, `setPracticePacksStore` + matching getters) — used by `AppShell.svelte` and components
+- `context.ts` provides Svelte context DI helpers (`setGameStore`, `setAppStore`, `setService`, `setCustomSystemsStore`, `setUserModuleStore`, `setPracticePacksStore` + matching getters) — used by `AppReady.svelte` and components
 - `BidHistoryEntry` maps directly from `BidResult` fields (`call`, `ruleName`, `explanation`, `meaning`) + `seat` and `isUser`
 - Default auction entries get generic explanations (e.g., "Opening 1NT bid") — richer explanations deferred to V2
 - `isUserTurn` — derived from `!biddingProcessing && !biddingAnim && phase === "BIDDING" && cachedBiddingViewport?.isUserTurn`. Bidding animation keeps `biddingProcessing` true, so buttons are disabled throughout.
@@ -112,4 +112,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `game.svelte.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-08 | version=14 | dir-commits-at-audit=15 | tree-sig=dirs:2,files:23,exts:ts:22,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-11 | version=15 | dir-commits-at-audit=15 | tree-sig=dirs:2,files:23,exts:ts:22,md:1 -->

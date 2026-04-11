@@ -729,6 +729,8 @@ export default tseslint.config(
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": UNUSED_IMPORTS_VAR_RULE,
       "svelte/require-each-key": "error",
+      // adapter-static with no base path — resolve() is unnecessary
+      "svelte/no-navigation-without-resolve": "off",
       eqeqeq: ["error", "always"],
       "no-console": "warn",
       "no-restricted-syntax": [

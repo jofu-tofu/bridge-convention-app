@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { OpponentMode } from "../../service";
   import type { PlayProfileId, VulnerabilityDistribution, BaseModuleInfo, SystemSelectionId } from "../../service";
   import { AVAILABLE_BASE_SYSTEMS, DEFAULT_DRILL_TUNING, PLAY_PROFILES, buildBaseModuleInfos } from "../../service";
@@ -136,7 +137,7 @@
 
       <button
         class="mt-2 text-xs text-accent-primary hover:underline cursor-pointer"
-        onclick={() => appStore.navigateToWorkshop()}
+        onclick={() => void goto("/workshop")}
       >
         + Create custom system
       </button>

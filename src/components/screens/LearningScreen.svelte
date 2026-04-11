@@ -1,7 +1,8 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
+  import { goto } from "$app/navigation";
   import { getAppStore, getService } from "../../stores/context";
-  import { listConventions } from "../../service";
+  import { listConventions, PracticeMode } from "../../service";
   import type { ModuleCatalogEntry, ModuleLearningViewport, ClauseSystemVariant, ModuleFlowTreeViewport } from "../../service";
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
   import ConversationFlowTree from "./ConversationFlowTree.svelte";
@@ -125,7 +126,23 @@
     const bundleId = viewport.bundleIds[0];
     if (bundleId) {
       const config = allConventions.find(c => c.id === bundleId);
-      if (config) appStore.selectConvention(config);
+      if (config) {
+        appStore.selectConvention(config);
+        void goto("/game");
+      }
+    }
+  }
+
+  function handleLearn() {
+    if (!viewport) return;
+    const bundleId = viewport.bundleIds[0];
+    if (bundleId) {
+      const config = allConventions.find(c => c.id === bundleId);
+      if (config) {
+        appStore.setUserPracticeMode(PracticeMode.Learn);
+        appStore.selectConvention(config);
+        void goto("/game");
+      }
     }
   }
 
@@ -245,12 +262,21 @@
                 <p class="text-base text-text-secondary leading-relaxed">{viewport.description}</p>
                 <p class="text-sm text-text-muted mt-2 italic">{viewport.purpose}</p>
               </div>
-              <button
-                class="shrink-0 px-5 py-2.5 bg-accent-primary text-text-on-accent rounded-[--radius-md] text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer min-h-[--size-touch-target]"
-                onclick={handlePractice}
-              >
-                Practice
-              </button>
+              <div class="flex gap-2 shrink-0">
+                <button
+                  class="px-5 py-2.5 bg-bg-elevated hover:bg-bg-hover text-text-primary border border-border-default rounded-[--radius-md] text-sm font-medium transition-colors cursor-pointer min-h-[--size-touch-target]"
+                  onclick={handleLearn}
+                  data-testid="learn-try-hands"
+                >
+                  Try with Hands
+                </button>
+                <button
+                  class="px-5 py-2.5 bg-accent-primary text-text-on-accent rounded-[--radius-md] text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer min-h-[--size-touch-target]"
+                  onclick={handlePractice}
+                >
+                  Practice
+                </button>
+              </div>
             </div>
           </div>
 

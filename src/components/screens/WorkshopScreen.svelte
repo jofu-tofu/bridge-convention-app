@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import type { BaseSystemId, CustomSystem, ConventionInfo } from "../../service";
   import { AVAILABLE_BASE_SYSTEMS } from "../../service";
   import { getAppStore, getCustomSystemsStore, getPracticePacksStore } from "../../stores/context";
@@ -86,7 +87,8 @@
         content,
       };
       userModules.saveModule(userModule);
-      appStore.navigateToConventionEditor(forkedModuleId, true);
+      appStore.setEditingModule(forkedModuleId, true);
+      void goto("/convention-editor");
     } finally {
       forkingModuleId = null;
     }
@@ -196,7 +198,7 @@
               {@const sourceName = getSourceDisplayName(um.metadata.forkedFrom?.moduleId ?? null)}
               {@const categoryName = getCategoryDisplayName(um)}
               <ItemCard
-                onclick={() => appStore.navigateToConventionEditor(um.metadata.moduleId)}
+                onclick={() => { appStore.setEditingModule(um.metadata.moduleId); void goto("/convention-editor"); }}
                 testId="workshop-convention-{um.metadata.moduleId}"
               >
                 <div class="flex items-center justify-between">
@@ -212,7 +214,7 @@
                   <div class="flex gap-2 shrink-0">
                     <button
                       class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-border-prominent transition-colors cursor-pointer"
-                      onclick={(e) => { e.stopPropagation(); appStore.navigateToConventionEditor(um.metadata.moduleId); }}
+                      onclick={(e) => { e.stopPropagation(); { appStore.setEditingModule(um.metadata.moduleId); void goto("/convention-editor"); }; }}
                     >Edit</button>
                     <button
                       class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-red-400 hover:text-red-300 border border-border-subtle hover:border-red-400/50 transition-colors cursor-pointer"
@@ -262,7 +264,7 @@
                   <div class="flex gap-2">
                     <button
                       class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-border-prominent transition-colors cursor-pointer"
-                      onclick={() => appStore.navigateToPackEditor(pack.id)}
+                      onclick={() => { appStore.setEditingPack(pack.id); void goto("/practice-pack-editor"); }}
                     >Edit</button>
                     <button
                       class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-red-400 hover:text-red-300 border border-border-subtle hover:border-red-400/50 transition-colors cursor-pointer"
@@ -309,6 +311,6 @@
   title="New Practice Pack"
   categories={buildPracticePackPickerCategories(builtInBundles)}
   scratchLabel="Start from scratch"
-  onSelect={(bundleId) => appStore.navigateToPackEditor(null, bundleId)}
-  onScratch={() => appStore.navigateToPackEditor(null)}
+  onSelect={(bundleId) => { appStore.setEditingPack(null, bundleId); void goto("/practice-pack-editor"); }}
+  onScratch={() => { appStore.setEditingPack(null); void goto("/practice-pack-editor"); }}
 />

@@ -3,6 +3,7 @@ import { ConventionCategory, PracticeMode } from "../../service";
 import { setWasmModule } from "../../service/service-helpers";
 import { createAppStore } from "../app.svelte";
 import { applyDevParams } from "../dev-params";
+import * as navigation from "$app/navigation";
 
 class TestWasmServicePort {
   list_conventions() {
@@ -35,6 +36,7 @@ class TestWasmServicePort {
 
 describe("applyDevParams", () => {
   beforeEach(() => {
+    vi.spyOn(navigation, "goto");
     setWasmModule({
       WasmServicePort: TestWasmServicePort,
     });
@@ -51,18 +53,19 @@ describe("applyDevParams", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
-  it("defaults ?convention deep links to decision-drill and opens the game", () => {
+  it("defaults ?convention deep links to decision-drill and navigates to /game", () => {
     window.history.replaceState({}, "", "/?convention=nt-bundle&seed=42");
     const store = createAppStore();
 
     applyDevParams(store);
 
-    expect(store.screen).toBe("game");
     expect(store.selectedConvention?.id).toBe("nt-bundle");
     expect(store.devPracticeMode).toBe(PracticeMode.DecisionDrill);
     expect(store.devSeed).toBe(42);
+    expect(navigation.goto).toHaveBeenCalledWith("/game");
   });
 
   it("preserves an explicit practiceMode override from the URL", () => {
@@ -75,7 +78,7 @@ describe("applyDevParams", () => {
 
     applyDevParams(store);
 
-    expect(store.screen).toBe("game");
     expect(store.devPracticeMode).toBe(PracticeMode.FullAuction);
+    expect(navigation.goto).toHaveBeenCalledWith("/game");
   });
 });
