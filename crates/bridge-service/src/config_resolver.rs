@@ -9,7 +9,7 @@ use bridge_conventions::types::system_config::SystemConfig;
 use bridge_engine::constants::{next_seat, partner_seat};
 use bridge_engine::types::Seat;
 use bridge_session::session::start_drill::StartDrillOptions;
-use bridge_session::session::{DrillConfig, SeatStrategy};
+use bridge_session::session::SeatStrategy;
 use bridge_session::types::{OpponentMode, PracticeMode, PracticeRole};
 
 use crate::request_types::SessionConfig;
@@ -22,7 +22,6 @@ pub(crate) struct ResolvedConfig {
     pub base_module_ids: Vec<String>,
     pub user_seat: Seat,
     pub opponent_mode: OpponentMode,
-    pub drill_config: DrillConfig,
     pub options: StartDrillOptions,
 }
 
@@ -34,12 +33,6 @@ pub(crate) fn resolve_config(config: &SessionConfig) -> ResolvedConfig {
     let practice_mode = config.practice_mode.unwrap_or(PracticeMode::DecisionDrill);
     let practice_role = config.practice_role.unwrap_or(PracticeRole::Responder);
     let opponent_mode = config.opponent_mode.unwrap_or(OpponentMode::Natural);
-
-    let drill_config = DrillConfig {
-        convention_id: config.convention_id.clone(),
-        user_seat,
-        seat_strategies: HashMap::new(),
-    };
 
     let options = StartDrillOptions {
         practice_mode,
@@ -55,7 +48,6 @@ pub(crate) fn resolve_config(config: &SessionConfig) -> ResolvedConfig {
         base_module_ids: config.base_module_ids.clone(),
         user_seat,
         opponent_mode,
-        drill_config,
         options,
     }
 }

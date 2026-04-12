@@ -83,10 +83,14 @@ crates/
                        pass) AND the user-turn pipeline selection's `module_id`/`meaning_id` equal the
                        witness target. Injected as `Arc<DealAcceptancePredicate>` into
                        `StartDrillOptions`; budget `NORMAL_DEAL_ATTEMPTS = 32`. On exhaustion,
-                       `start_drill` returns `Err`, which `drill_setup` maps to
-                       `ServiceError::DealGenerationExhausted { witness_summary }` — UI retries with a
-                       new seed. The negative-doubles bundle retains its own custom predicate +
-                       budget and skips witness selection entirely.
+                       `start_drill` returns `Err`; `drill_setup::build_drill_setup` catches it and
+                       retries internally up to `MAX_DRILL_SETUP_RETRIES = 8` times, shifting the
+                       seed (splitmix-style XOR/rotate via `shift_seed`) each attempt to diversify
+                       both witness selection and deal sampling. Only if all 8 attempts exhaust
+                       does it return `ServiceError::DealGenerationExhausted { witness_summary }`
+                       — that path now indicates a genuine bug, not routine UI churn. The
+                       negative-doubles bundle retains its own custom predicate + budget and skips
+                       witness selection entirely.
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
                        for browser deployment. All 20 ServicePort methods + async DDS play
                        methods (play_card_dds, needs_dds_play, set_dds_solver) +
