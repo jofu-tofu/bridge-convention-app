@@ -7,7 +7,7 @@
 
 <dialog
   bind:this={dialogRef}
-  class="bg-bg-card border border-border-subtle rounded-[--radius-lg] shadow-xl p-0 w-[calc(100%-2rem)] max-w-sm"
+  class="m-auto bg-bg-card border border-border-subtle rounded-[--radius-lg] shadow-xl p-0 w-[calc(100%-2rem)] max-w-sm"
   onclick={(e) => { if (e.target === e.currentTarget) close(); }}
   data-testid="paywall-overlay"
 >

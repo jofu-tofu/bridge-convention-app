@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { DevServicePort, DataPort } from "../../service";
-  import { BridgeService, DataPortClient, DevDataPort } from "../../service";
+  import { BridgeService, DataPortClient, DevDataPort, SubscriptionTier } from "../../service";
   import { applyDevParams, getDevAuthOverride } from "../../stores/dev-params";
   import { createGameStore } from "../../stores/game.svelte";
   import { createAppStore } from "../../stores/app.svelte";
@@ -31,7 +31,7 @@
     const svc = new BridgeService();
 
     // Auth store created immediately (non-blocking, parallel with WASM init)
-    const devAuthTier = getDevAuthOverride();
+    const devAuthTier = getDevAuthOverride() ?? (import.meta.env.DEV ? SubscriptionTier.Premium : null);
     const dataPort: DataPort = devAuthTier
       ? new DevDataPort(devAuthTier)
       : new DataPortClient();
