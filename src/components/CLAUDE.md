@@ -28,6 +28,7 @@ AppReady.svelte                      Root app shell — creates engine/stores, s
 components/
   screens/
     ConventionSelectScreen.svelte    Convention picker with search + category filter + 2-column responsive card grid. Practice buttons show lock state for non-premium bundles; PaywallOverlay opens on locked practice attempt.
+    landing/                          Landing-page components for `/`. MarketingHero (anonymous). LoggedInLanding + ContinueCard + QuickActions + YourSystems + YourPacks (client-hydrated, read localStorage directly via landing-helpers.ts — no WASM dependency, since (content) route doesn't init service).
     LearningScreen.svelte            Three-tab learning screen (Lessons | Conventions | Bidding Systems). Conventions tab = current reference view (sidebar lists modules filterable by bundle, main content shows conversation flow tree + module teaching + surfaces). Lessons and Bidding Systems are placeholders.
     MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible card, recursive snippet, tap-to-expand accordion for detail (recommendation/disclosure/explanation/clauses)
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors, self-contained auto-scaling. Optional interactive mode (selectedNodeId + onNodeSelect props) for Workshop click-to-select.
