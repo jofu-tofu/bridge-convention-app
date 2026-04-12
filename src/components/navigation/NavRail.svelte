@@ -38,7 +38,47 @@
   </a>
   {#each items as item (item.href)}
     {@const active = isItemActive(item, pathname)}
-    {#if item.href === "/learning"}
+    {#if item.href === "/practice"}
+      <div class="relative w-full group">
+        <a
+          href={item.href}
+          class="flex flex-col items-center gap-0.5 py-2 w-full transition-colors no-underline
+            {active ? 'text-accent-primary' : 'text-text-muted hover:text-text-primary'}"
+          aria-label={item.label}
+          aria-current={active ? "page" : undefined}
+          onclick={() => handleClear(item)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted static icon markup -->
+            {@html item.iconSvg}
+          </svg>
+          <span class="text-[10px] font-medium leading-none">{item.label}</span>
+        </a>
+        <div
+          class="absolute left-full top-0
+                 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible
+                 transition-opacity z-[var(--z-modal)]"
+          role="menu"
+          aria-label="Practice sections"
+        >
+          <div class="min-w-[180px] bg-bg-elevated border border-border-default rounded-[--radius-md] shadow-lg py-1">
+            {#each [
+              { href: "/practice", label: "Preconfigured" },
+              { href: "/practice/drill", label: "Drills" },
+            ] as const as sub (sub.href)}
+              <a
+                href={sub.href}
+                class="block px-3 py-2 text-sm text-text-primary hover:bg-bg-hover no-underline"
+                role="menuitem"
+                onclick={() => handleClear(item)}
+              >
+                {sub.label}
+              </a>
+            {/each}
+          </div>
+        </div>
+      </div>
+    {:else if item.href === "/learning"}
       <div class="relative w-full group">
         <a
           href={item.href}

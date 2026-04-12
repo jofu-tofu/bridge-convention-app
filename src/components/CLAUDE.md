@@ -27,9 +27,10 @@ Game components MUST use `--text-*` tokens (ESLint enforced) and `--color-*` tok
 AppReady.svelte                      Root app shell — creates engine/stores, sets context, nav chrome
 components/
   screens/
-    ConventionSelectScreen.svelte    search + category-sectioned card grid (sections derived from `ConventionCategory` enum order). Practice-only surface: no Learn buttons, no Continue strip (those live on the logged-in landing). Practice buttons show lock state for non-premium bundles; PaywallOverlay opens on locked practice attempt. Renders `SavedDrillsShelf` above category sections; each card exposes a `⋯` configure action that opens `DrillPresetDialog` in create mode.
+    ConventionSelectScreen.svelte    search + category-sectioned card grid (sections derived from `ConventionCategory` enum order). Practice-only surface: no Learn buttons, no Continue strip (those live on the logged-in landing). Practice buttons show lock state for non-paid bundles; PaywallOverlay opens on locked practice attempt. Renders `SavedDrillsShelf` above category sections; each card exposes a `⋯` configure action that opens `DrillPresetDialog` in create mode.
     SavedDrillsShelf.svelte          Horizontal chip strip of saved drill presets (MRU). Hidden when empty. Each chip: click to launch (`onLaunch`), `⋯` opens menu (Launch / Rename / Edit configuration / Delete). Data from `getDrillPresetsStore()`.
     DrillPresetDialog.svelte         Native `<dialog>` with four fields (mode / role / system / name) + three actions (Cancel / Save / Save & Launch). `open({ mode: "create", convention })` or `open({ mode: "edit", presetId })`. Convention field read-only in edit mode. Launch runs via parent-provided `onLaunch` callback.
+    CustomDrillForm.svelte           Full-page create/edit form for custom drills (name + convention + system + role). Props: `mode: "create" | "edit"`, optional `drill`. Save writes to `customDrillsStore` then `goto("/practice/drill")`. No launch button this phase.
     LearningScreen.svelte            Three-tab learning screen (Lessons | Conventions | Bidding Systems). Conventions tab = current reference view (sidebar lists modules filterable by bundle, main content shows conversation flow tree + module teaching + surfaces). Lessons and Bidding Systems are placeholders.
     MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible card, recursive snippet, tap-to-expand accordion for detail (recommendation/disclosure/explanation/clauses)
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors, self-contained auto-scaling. Optional interactive mode (selectedNodeId + onNodeSelect props) for Workshop click-to-select.
@@ -104,7 +105,7 @@ components/
       DebugPlayLog.svelte            Card play history by trick
       debug-helpers.ts               Formatting utilities (formatCall re-export, formatSuitCards, fmtFactValue, truncate)
   navigation/
-    NavRail.svelte                   Thin left rail (~80px) — Home/Learn/Workshop (dev only)/Settings icons. Desktop only. Workshop gated behind FEATURES.workshop. Learn is direct navigation (no flyout).
+    NavRail.svelte                   Thin left rail (~80px) — Home/Learn/Workshop (dev only)/Settings icons. Desktop only. Workshop gated behind FEATURES.workshop. Practice and Learn items each have a hover flyout (group-hover/focus-within). Practice flyout: Preconfigured (`/practice`) / Drills (`/practice/drill`). Learn flyout: Lessons / Conventions / Bidding Systems.
     BottomTabBar.svelte              Mobile bottom tab bar — Home + Learn + Workshop (dev only) + Settings tabs. Mobile only. Workshop tab gated behind FEATURES.workshop.
   shared/
     Button.svelte                    Primary/secondary/ghost variants
@@ -121,7 +122,8 @@ components/
     NumberStepper.ts                 Pure helpers: clamp(), createAutoRepeat() for NumberStepper testability
     RangeStepper.svelte              Composes two NumberStepper instances with "to" separator and shared suffix
     AuthModal.svelte                 Native <dialog> auth modal — login (OAuth buttons) when logged out, account info (sign out, settings link) when logged in. Exports open()/close().
-    PaywallOverlay.svelte            Native <dialog> upgrade prompt — shown when user tries to practice a locked bundle. Exports open()/close(). Subscribe button is a placeholder (no payment integration yet).
+    ManageSubscriptionButton.svelte  Shared account action — opens Stripe Billing Portal through the DataPort and shows inline errors if the portal request fails.
+    PaywallOverlay.svelte            Native <dialog> upgrade prompt — shown when user tries to practice a locked bundle. Exports open()/close(); Subscribe starts Stripe Checkout through the DataPort and shows inline errors on failure.
     module-catalog.ts                Single source of truth for module categorization: MODULE_CATEGORIES, CATEGORY_DISPLAY, CatalogModule, mergeModules(), groupByCategory(), filterModules(). Pure functions — no store/Svelte imports. All screens import from here.
     ModuleChecklist.svelte           Shared collapsible checkbox grid for module selection: search, collapsible category sections, count badges. User modules shown under "My Conventions" section separated from system modules. Used by SystemEditor and PracticePackEditorScreen.
     reference/                       Reference-page building blocks for `/learn/[moduleId]`: `BidCode`, `SummaryCard`, `WhenNotTable`, `ResponseTable`, `ContinuationTree`, `DecisionGrid`, `WorkedAuction`, `InterferenceSection`, `SystemCompatRow`, `RelatedLinks`, `QuickRefCard`, and the shared TS section types. Anchors must route through `slugifyMeaningId()` from `src/service/`; all non-summary/non-response sections hide themselves in print via co-located `@media print` rules.
@@ -184,4 +186,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `AppReady.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-12 | version=15 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-12 | version=16 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->

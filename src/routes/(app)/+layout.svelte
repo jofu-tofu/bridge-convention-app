@@ -8,6 +8,7 @@
   import { createUserModuleStore } from "../../stores/user-modules.svelte";
   import { createPracticePacksStore } from "../../stores/practice-packs.svelte";
   import { createDrillPresetsStore } from "../../stores/drill-presets.svelte";
+  import { createCustomDrillsStore } from "../../stores/custom-drills.svelte";
   import { getAuthStore } from "../../stores/context";
   import AppShell from "../../components/navigation/AppShell.svelte";
   import AppReady from "../../AppReady.svelte";
@@ -23,6 +24,7 @@
   let userModuleStore = $state<ReturnType<typeof createUserModuleStore> | null>(null);
   let practicePacksStore = $state<ReturnType<typeof createPracticePacksStore> | null>(null);
   let drillPresetsStore = $state<ReturnType<typeof createDrillPresetsStore> | null>(null);
+  let customDrillsStore = $state<ReturnType<typeof createCustomDrillsStore> | null>(null);
   const authStore = getAuthStore();
 
   function init(): void {
@@ -39,6 +41,7 @@
         userModuleStore = createUserModuleStore();
         practicePacksStore = createPracticePacksStore();
         drillPresetsStore = createDrillPresetsStore();
+        customDrillsStore = createCustomDrillsStore();
         // Validate stored custom system selection still exists
         if (!customSystemsStore.isValidSelection(store.baseSystemId)) {
           store.setBaseSystemId("sayc");
@@ -63,7 +66,7 @@
       onclick={() => init()}
     >Retry</button>
   </div>
-{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore || !customSystemsStore || !userModuleStore || !practicePacksStore || !drillPresetsStore || !authStore}
+{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore || !customSystemsStore || !userModuleStore || !practicePacksStore || !drillPresetsStore || !customDrillsStore || !authStore}
   <div class="bg-bg-deepest text-text-primary flex h-screen items-center justify-center">
     Loading engine...
   </div>
@@ -76,6 +79,7 @@
     {userModuleStore}
     {practicePacksStore}
     {drillPresetsStore}
+    {customDrillsStore}
     {authStore}
   >
     <div class="bg-bg-deepest text-text-primary h-screen overflow-hidden font-sans">

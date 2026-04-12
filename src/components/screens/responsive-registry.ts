@@ -65,6 +65,12 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "Modal dialog with stacked radio/select/input controls; max-w-md and viewport-constrained width on mobile",
   },
   {
+    path: "CustomDrillForm.svelte",
+    mobileStrategy: "centered",
+    minWidth: 320,
+    mobileNotes: "max-w-2xl centered form; name/convention/system/role inputs stack naturally",
+  },
+  {
     path: "SavedDrillsShelf.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,

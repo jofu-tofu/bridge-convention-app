@@ -22,7 +22,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 | `phase-transitions.svelte.ts` | `createPhaseTransitions(deps)` — phase state machine (`transitionTo`), unified lifecycle executor (`executeTransition`), `dispatchPlayTransition`, `handlePostAuction`, `guarded()` wrapper, prompt mode |
 | `viewport-cache.svelte.ts` | `createViewportCache(deps)` — reactive viewport cache (`ViewportCache`), `fetchAndCache`, `viewportNeededForPhase` pure helper |
 | `dds-solver.svelte.ts` | `createDDSSolver(deps)` — DDS solution/solving/error state, `triggerSolve` |
-| `entitlements.ts`    | `canPractice(user, bundleId)`, `isPremium(user)` — resolves what bundles the user can access based on subscription tier. Free tier gets one bundle (`nt-bundle`), premium gets all. Plain module, no runes. |
+| `entitlements.ts`    | `canPractice(user, bundleId)`, `isPaid(user)` — resolves what bundles the user can access based on subscription tier. Free tier gets one bundle (`nt-bundle`), paid gets all; expired collapses to free behavior. Plain module, no runes. |
 | `feature-flags.ts`   | `FEATURES` const registry — build-time feature flags (`workshop`, etc.). Plain module, no runes. `import.meta.env.DEV`-gated flags are dead-code-eliminated in prod. Use `FEATURES.flagName` at gate points. |
 | `local-storage.ts`   | Shared `loadFromStorage` / `saveToStorage` helpers — all stores use these instead of inlining try/catch JSON read/write |
 | `prompt-logic.ts`    | Pure functions: `computePromptMode`, `computeFaceUpSeats` |
@@ -31,6 +31,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 | `user-modules.svelte.ts` | `createUserModuleStore()` — CRUD for user-owned convention modules (forked/created), localStorage persistence (`bridge-app:user-modules`). Full-copy fork model, no deltas. |
 | `practice-packs.svelte.ts` | `createPracticePacksStore()` — CRUD for custom practice packs, localStorage persistence (`bridge-app:practice-packs`). Each pack is a named, ordered list of convention module IDs. |
 | `drill-presets.svelte.ts` | `createDrillPresetsStore()` — CRUD for named drill presets (conventionId + practiceMode + practiceRole + `SystemSelectionId` + name). MRU sort (`lastUsedAt` DESC, nulls last, `createdAt` tiebreaker). Soft cap 20. localStorage key `bridge-app:drill-presets`. Persists `SystemSelectionId` only, never `SystemConfig` — stored shape survives system-internal changes. |
+| `custom-drills.svelte.ts` | `createCustomDrillsStore()` — CRUD for user-authored custom drills (name + conventionId + practiceRole + `SystemSelectionId`). Sorted by `updatedAt` DESC. localStorage key `bridge-app:custom-drills`. No soft cap / MRU — distinct from `drill-presets`; intended to grow richer configurable fields (auction prefix, hand constraints, etc.) as Phase 1 expands. Launch wiring deferred. |
 | `dev-params.ts`      | `applyDevParams()` — consolidated URL param API (params: `?convention=`, `?learn=`, `?seed=`, `?phase=`, `?dev=`, `?practiceMode=`, `?practiceRole=`, `?targetState=/targetSurface=`). Convention deep links default to `decision-drill` unless `practiceMode` is explicit, so `?convention=` lands directly in-game. Screen navigation uses SvelteKit routes (`/settings`, `/coverage`, `/workshop`) via `goto()` from `$app/navigation`; `?profiles=true` backward compat alias redirects to `/workshop`. `?dev=auth:<tier>` overrides subscription tier for paywall testing. Called from `AppReady.svelte` at startup. |
 | `types.ts`           | `GameStore` interface — explicit facade interface for context DI consumers |
 
@@ -87,7 +88,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 - `EnginePort` methods are async. Rust backend (WasmEngine) wraps sync calls in Promises.
 - `BiddingContext` constructed via `createBiddingContext()` factory from `conventions/core/context-factory.ts` (includes optional `vulnerability`/`dealer` with safe defaults)
-- `context.ts` provides Svelte context DI helpers (`setGameStore`, `setAppStore`, `setService`, `setCustomSystemsStore`, `setUserModuleStore`, `setPracticePacksStore`, `setDrillPresetsStore` + matching getters) — used by `AppReady.svelte` and components
+- `context.ts` provides Svelte context DI helpers (`setGameStore`, `setAppStore`, `setService`, `setAuthStore`, `setDataPort`, `setCustomSystemsStore`, `setUserModuleStore`, `setPracticePacksStore`, `setDrillPresetsStore` + matching getters) — used by `AppReady.svelte`, root layouts, and components
 - `BidHistoryEntry` maps directly from `BidResult` fields (`call`, `ruleName`, `explanation`, `meaning`) + `seat` and `isUser`
 - Default auction entries get generic explanations (e.g., "Opening 1NT bid") — richer explanations deferred to V2
 - `isUserTurn` — derived from `!biddingProcessing && !biddingAnim && phase === "BIDDING" && cachedBiddingViewport?.isUserTurn`. Bidding animation keeps `biddingProcessing` true, so buttons are disabled throughout.
@@ -113,4 +114,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `game.svelte.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-11 | version=15 | dir-commits-at-audit=15 | tree-sig=dirs:2,files:23,exts:ts:22,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-12 | version=16 | dir-commits-at-audit=15 | tree-sig=dirs:2,files:23,exts:ts:22,md:1 -->

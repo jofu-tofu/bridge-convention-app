@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import { listConventions, ConventionCategory, displayConventionName } from "../../service";
   import type { ConventionInfo } from "../../service";
   import { getAppStore, getAuthStore, getDrillPresetsStore } from "../../stores/context";
@@ -30,6 +31,8 @@
   );
 
   let searchQuery = $state("");
+
+  const showMyDrillsLink = $derived(page.url.pathname === "/practice");
 
   const allConventions = $derived(listConventions());
 
@@ -110,6 +113,15 @@
         </button>
       {/if}
     </div>
+
+    {#if showMyDrillsLink}
+      <div class="mb-2 flex justify-end">
+        <a
+          href="/practice/drill"
+          class="text-xs font-medium text-accent-primary hover:underline"
+        >My drills →</a>
+      </div>
+    {/if}
 
     <!-- Search -->
     <div class="mb-4">

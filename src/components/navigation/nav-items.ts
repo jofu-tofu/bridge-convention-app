@@ -21,7 +21,7 @@ const SETTINGS_ICON = '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73
 
 export function getNavItems(): NavItem[] {
   const items: NavItem[] = [
-    { href: "/practice", label: "Practice", iconSvg: PRACTICE_ICON, activePaths: ["/practice", "/game"], clearAction: "selection" },
+    { href: "/practice", label: "Practice", iconSvg: PRACTICE_ICON, activePaths: ["/practice", "/practice/drill", "/game"], clearAction: "selection" },
     { href: "/learning", label: "Learn", iconSvg: LEARN_ICON, activePaths: ["/learning", "/coverage"], clearAction: "learning" },
     { href: "/guides", label: "Guides", iconSvg: GUIDES_ICON, activePaths: ["/guides"] },
   ];
@@ -41,6 +41,9 @@ export function getNavItems(): NavItem[] {
 export function isItemActive(item: NavItem, pathname: string): boolean {
   if (item.href === "/guides") {
     return pathname === "/guides" || pathname.startsWith("/guides/");
+  }
+  if (item.href === "/practice") {
+    return pathname === "/practice" || pathname.startsWith("/practice/") || pathname === "/game";
   }
   return item.activePaths.includes(pathname);
 }

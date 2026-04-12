@@ -6,8 +6,9 @@ import type { createUserModuleStore } from "../stores/user-modules.svelte";
 import type { createAuthStore } from "../stores/auth.svelte";
 import type { createPracticePacksStore } from "../stores/practice-packs.svelte";
 import type { createDrillPresetsStore } from "../stores/drill-presets.svelte";
+import type { createCustomDrillsStore } from "../stores/custom-drills.svelte";
 import type { LayoutProps } from "../components/shared/layout-props";
-import type { DevServicePort } from "../service";
+import type { DataPort, DevServicePort } from "../service";
 
 type AppStore = ReturnType<typeof createAppStore>;
 type CustomSystemsStore = ReturnType<typeof createCustomSystemsStore>;
@@ -15,6 +16,7 @@ type UserModuleStore = ReturnType<typeof createUserModuleStore>;
 type AuthStore = ReturnType<typeof createAuthStore>;
 type PracticePacksStore = ReturnType<typeof createPracticePacksStore>;
 type DrillPresetsStore = ReturnType<typeof createDrillPresetsStore>;
+type CustomDrillsStore = ReturnType<typeof createCustomDrillsStore>;
 
 const GAME_STORE_KEY = Symbol("game-store");
 const APP_STORE_KEY = Symbol("app-store");
@@ -23,8 +25,10 @@ const LAYOUT_KEY = Symbol("layout");
 const CUSTOM_SYSTEMS_KEY = Symbol("custom-systems");
 const USER_MODULES_KEY = Symbol("user-modules");
 const AUTH_STORE_KEY = Symbol("auth-store");
+const DATA_PORT_KEY = Symbol("data-port");
 const PRACTICE_PACKS_KEY = Symbol("practice-packs");
 const DRILL_PRESETS_KEY = Symbol("drill-presets");
+const CUSTOM_DRILLS_KEY = Symbol("custom-drills");
 
 // Game store context
 export function setGameStore(store: GameStore): void {
@@ -99,6 +103,15 @@ export function getAuthStoreOptional(): AuthStore | undefined {
   return getContext<AuthStore | undefined>(AUTH_STORE_KEY);
 }
 
+// DataPort context
+export function setDataPort(dataPort: DataPort): void {
+  setContext(DATA_PORT_KEY, dataPort);
+}
+
+export function getDataPort(): DataPort {
+  return getContext<DataPort>(DATA_PORT_KEY);
+}
+
 // Practice packs store context
 export function setPracticePacksStore(store: PracticePacksStore): void {
   setContext(PRACTICE_PACKS_KEY, store);
@@ -115,4 +128,13 @@ export function setDrillPresetsStore(store: DrillPresetsStore): void {
 
 export function getDrillPresetsStore(): DrillPresetsStore {
   return getContext<DrillPresetsStore>(DRILL_PRESETS_KEY);
+}
+
+// Custom drills store context
+export function setCustomDrillsStore(store: CustomDrillsStore): void {
+  setContext(CUSTOM_DRILLS_KEY, store);
+}
+
+export function getCustomDrillsStore(): CustomDrillsStore {
+  return getContext<CustomDrillsStore>(CUSTOM_DRILLS_KEY);
 }
