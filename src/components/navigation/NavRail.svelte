@@ -34,7 +34,7 @@
     class="flex items-center justify-center py-2 mb-1 w-full"
     aria-label="BridgeLab home"
   >
-    <img src="/favicon.svg" alt="" class="w-9 h-9" />
+    <img src="/brand/logo.svg" alt="" class="w-9 h-9" />
   </a>
   {#each items as item (item.href)}
     {@const active = isItemActive(item, pathname)}

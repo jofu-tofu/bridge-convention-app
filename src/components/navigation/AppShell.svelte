@@ -10,7 +10,7 @@
   <div class="shell-main">
     <header class="shell-topbar">
       <a href="/" aria-label="BridgeLab home" class="shell-logo">
-        <img src="/favicon.svg" alt="" />
+        <img src="/brand/logo.svg" alt="" />
       </a>
     </header>
     {@render children()}
