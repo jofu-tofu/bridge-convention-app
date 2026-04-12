@@ -18,6 +18,7 @@
 14. Decision Model Audit Gap Resolution (8a-8f)
 15. Teaching Resolution Layer (9a-9b)
 16. Practical Bidder Layer (Phases 0-5)
+17. Subscription Billing + Paid Content Access (2026-04-12)
 
 **Additional completions:** Practice-tab redesign Phase 1 (`dcc0e79…`) and Phase 2 (drill presets — named `(conventionId, practiceMode, practiceRole, systemSelectionId)` tuples; see `docs/product/practice-tab.md`). Continuation Composition Phases 4-6. Posterior Engine Consumer Migration (Phase 4B) — deprecated types removed. All 4 bundles (NT, Bergen, Weak Twos, DONT) on unified ConventionModule with per-step kernel threading. Old tree/protocol/overlay pipeline and FSM infrastructure fully removed. Dead CandidateTransform system removed. Multi-system backend wired (SAYC, 2/1, Acol base profiles). CLI `--system` flag live.
 

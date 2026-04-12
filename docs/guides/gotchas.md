@@ -107,3 +107,32 @@ System facts (`system.responder.inviteValues`, etc.) use `fitAgreed` from the ne
 ## Routing / Layout Groups
 
 SEO content pages (`/guides`, `/guides/[slug]`, `/learn/[moduleId]`) live under `src/routes/(content)/` and are prerendered to static HTML with a minimal "BridgeLab" header and no WASM boot. WASM app screens (the game, settings, coverage, workshop) live under `src/routes/(app)/` with `ssr=false` and full app chrome (NavRail / BottomTabBar). Moving a route between these groups is a user-visible chrome change — the navigation across groups is a full document load, not a SvelteKit client-side transition. Treat `(content)` as the home for anything that needs to be crawlable or linkable from outside the app.
+
+## Billing
+
+### Stripe Webhook Requires Raw Request Body
+`/api/billing/webhook` verifies Stripe signatures against the raw request bytes.
+The handler uses Axum's `Bytes` extractor on purpose. Do not add JSON body parsing
+or global body middleware in front of this route. If future middleware needs to
+inspect request bodies, exclude `/api/billing/webhook` or signature verification
+will fail.
+
+### Subscription Tier Uses An Access Window, Not Just Status
+`past_due` and `canceled` still count as paid access until
+`subscription_current_period_end`. This is intentional in
+`crates/bridge-api/src/billing/entitlements.rs::tier_for()`:
+
+- `past_due`: Stripe is retrying payment; downgrading immediately would create avoidable churn.
+- `canceled`: the user already paid for the current period and keeps access until it ends.
+
+Only `now >= current_period_end` flips the user to `Expired`. Do not simplify this
+to a status-only check without product sign-off.
+
+### Free Bundle Allowlist Is Mirrored In Rust And TypeScript
+The free practice bundle ID lives in two places and they must stay synchronized:
+
+- Rust: `FREE_BUNDLE_IDS` in `crates/bridge-api/src/billing/entitlements.rs`
+- TypeScript: `FREE_PRACTICE_BUNDLE` in `src/stores/entitlements.ts`
+
+Both files point at the other with comments. If the free bundle ever changes,
+update both in the same patch.

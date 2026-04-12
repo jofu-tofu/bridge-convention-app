@@ -37,8 +37,14 @@ Operational release and rollback steps live in `docs/guides/deployment.md`.
 - Configuration depth (modes, roles, systems) is premium — free users get a curated, opinionated experience
 
 ### Pricing
-- One-time purchase initially (~$15-25)
-- Subscription when content volume justifies it (15+ bundles, progress tracking, spaced repetition)
+Bridge Lab is now sold as a subscription at **$5.99/month**. Practice access for
+paid bundles, role/system selection, and future progress features all sit behind
+the recurring plan rather than a one-time unlock.
+
+The rationale is operational, not cosmetic: recurring revenue fits ongoing
+content authoring better than one-time sales, Stripe handles payment retries and
+dunning automatically, and the Customer Portal reduces support load for cancel /
+payment-method changes.
 
 ## SEO Strategy
 
