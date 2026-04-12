@@ -17,13 +17,18 @@ export function createAuthStore(dataPort: DataPort) {
     get isLoggedIn() { return user !== null; },
     get loading() { return loading; },
 
-    login(provider: "google" | "github") {
+    login(provider: "google") {
       window.location.href = dataPort.getLoginUrl(provider);
     },
 
     async logout() {
       await dataPort.logout();
       user = null;
+    },
+
+    async refresh() {
+      user = await dataPort.fetchCurrentUser();
+      return user;
     },
 
     get canDevLogin() { return typeof dataPort.devLogin === "function"; },

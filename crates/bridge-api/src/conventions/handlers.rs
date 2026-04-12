@@ -322,8 +322,6 @@ mod tests {
             base_url: "http://localhost:1420".to_string(),
             google_client_id: String::new(),
             google_client_secret: String::new(),
-            github_client_id: String::new(),
-            github_client_secret: String::new(),
             stripe_secret_key: String::new(),
             stripe_webhook_secret: String::new(),
             stripe_price_id_monthly: String::new(),

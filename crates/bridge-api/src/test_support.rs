@@ -162,8 +162,6 @@ pub fn test_config(fixtures_dir: &Path) -> Config {
         base_url: "http://localhost:1420".to_string(),
         google_client_id: String::new(),
         google_client_secret: String::new(),
-        github_client_id: String::new(),
-        github_client_secret: String::new(),
         stripe_secret_key: "sk_test_unused".to_string(),
         stripe_webhook_secret: "whsec_test_secret".to_string(),
         stripe_price_id_monthly: "price_monthly_test".to_string(),

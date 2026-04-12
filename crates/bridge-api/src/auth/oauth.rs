@@ -7,7 +7,6 @@ use crate::config::Config;
 #[derive(Debug, Clone, Copy)]
 pub enum OAuthProvider {
     Google,
-    GitHub,
 }
 
 impl FromStr for OAuthProvider {
@@ -16,7 +15,6 @@ impl FromStr for OAuthProvider {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "google" => Ok(Self::Google),
-            "github" => Ok(Self::GitHub),
             _ => Err(()),
         }
     }
@@ -48,15 +46,6 @@ pub fn authorization_url(provider: OAuthProvider, config: &Config, state: &str) 
                 urlencoding::encode(state),
             )
         }
-        OAuthProvider::GitHub => {
-            format!(
-                "https://github.com/login/oauth/authorize?\
-                 client_id={}&redirect_uri={}&scope=read:user%20user:email&state={}",
-                urlencoding::encode(&config.github_client_id),
-                urlencoding::encode(&callback_url),
-                urlencoding::encode(state),
-            )
-        }
     }
 }
 
@@ -75,14 +64,12 @@ pub async fn exchange_code(
 
     match provider {
         OAuthProvider::Google => exchange_google(&client, config, code, &callback_url).await,
-        OAuthProvider::GitHub => exchange_github(&client, config, code, &callback_url).await,
     }
 }
 
 fn provider_slug(provider: OAuthProvider) -> &'static str {
     match provider {
         OAuthProvider::Google => "google",
-        OAuthProvider::GitHub => "github",
     }
 }
 
@@ -134,79 +121,5 @@ async fn exchange_google(
         email: user_info.email,
         name: user_info.name.unwrap_or_else(|| "User".to_string()),
         avatar_url: user_info.picture,
-    })
-}
-
-// ── GitHub ──────────────────────────────────────────────────────────────
-
-#[derive(Deserialize)]
-struct GitHubTokenResponse {
-    access_token: String,
-}
-
-#[derive(Deserialize)]
-struct GitHubUser {
-    id: u64,
-    login: String,
-    name: Option<String>,
-    avatar_url: Option<String>,
-}
-
-#[derive(Deserialize)]
-struct GitHubEmail {
-    email: String,
-    primary: bool,
-    verified: bool,
-}
-
-async fn exchange_github(
-    client: &reqwest::Client,
-    config: &Config,
-    code: &str,
-    redirect_uri: &str,
-) -> Result<OAuthProfile, reqwest::Error> {
-    let token_resp: GitHubTokenResponse = client
-        .post("https://github.com/login/oauth/access_token")
-        .header("Accept", "application/json")
-        .form(&[
-            ("code", code),
-            ("client_id", &config.github_client_id),
-            ("client_secret", &config.github_client_secret),
-            ("redirect_uri", redirect_uri),
-        ])
-        .send()
-        .await?
-        .json()
-        .await?;
-
-    let user: GitHubUser = client
-        .get("https://api.github.com/user")
-        .header("User-Agent", "bridge-app")
-        .bearer_auth(&token_resp.access_token)
-        .send()
-        .await?
-        .json()
-        .await?;
-
-    // Fetch primary verified email (GitHub may have private email)
-    let emails: Vec<GitHubEmail> = client
-        .get("https://api.github.com/user/emails")
-        .header("User-Agent", "bridge-app")
-        .bearer_auth(&token_resp.access_token)
-        .send()
-        .await?
-        .json()
-        .await?;
-
-    let primary_email = emails
-        .into_iter()
-        .find(|e| e.primary && e.verified)
-        .map(|e| e.email);
-
-    Ok(OAuthProfile {
-        provider_user_id: user.id.to_string(),
-        email: primary_email,
-        name: user.name.unwrap_or(user.login),
-        avatar_url: user.avatar_url,
     })
 }

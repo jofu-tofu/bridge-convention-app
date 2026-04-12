@@ -32,7 +32,7 @@ export enum SubscriptionTier {
  */
 export interface DataPort extends DataPortBilling {
   fetchCurrentUser(): Promise<AuthUser | null>;
-  getLoginUrl(provider: "google" | "github"): string;
+  getLoginUrl(provider: "google"): string;
   logout(): Promise<void>;
   /** Dev-only: re-authenticate as the dev user without OAuth. Only set on DevDataPort. */
   devLogin?(): Promise<void>;
@@ -59,7 +59,7 @@ export class DataPortClient implements DataPort {
   }
 
   /** Get the login URL for the given OAuth provider. */
-  getLoginUrl(provider: "google" | "github"): string {
+  getLoginUrl(provider: "google"): string {
     return `/api/auth/login/${provider}`;
   }
 
@@ -158,7 +158,7 @@ export class DevDataPort implements DataPort {
     });
   }
 
-  getLoginUrl(provider: "google" | "github"): string {
+  getLoginUrl(provider: "google"): string {
     return this.inner.getLoginUrl(provider);
   }
 
