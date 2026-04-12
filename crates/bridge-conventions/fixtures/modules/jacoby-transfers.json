@@ -120,6 +120,26 @@
       ]
     },
     {
+      "explanationId": "nt.transfer.superAcceptHearts",
+      "meaningId": "transfer:super-accept-hearts",
+      "templateKey": "nt.transfer.superAcceptHearts.semantic",
+      "displayText": "Jump to 3♥: maximum notrump with four-card heart support",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.superAcceptSpades",
+      "meaningId": "transfer:super-accept-spades",
+      "templateKey": "nt.transfer.superAcceptSpades.semantic",
+      "displayText": "Jump to 3♠: maximum notrump with four-card spade support",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
       "explanationId": "nt.transfer.signoffHearts",
       "meaningId": "transfer:signoff-hearts",
       "templateKey": "nt.transfer.signoffHearts.semantic",
@@ -314,6 +334,166 @@
       "meaningId": "transfer:quantitative-spades",
       "templateKey": "nt.transfer.quantitativeSpades.semantic",
       "displayText": "Bid 4NT: quantitative slam invite in spades or notrump",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.chooseHeartsInviteMajors",
+      "meaningId": "transfer:choose-hearts-invite-majors",
+      "templateKey": "nt.transfer.chooseHeartsInviteMajors.semantic",
+      "displayText": "Bid 3♥: choose hearts with a minimum after the 5-5 invitational relay",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.acceptHeartsInviteMajors",
+      "meaningId": "transfer:accept-hearts-invite-majors",
+      "templateKey": "nt.transfer.acceptHeartsInviteMajors.semantic",
+      "displayText": "Bid 4♥: accept the 5-5 invitational relay by choosing hearts",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.chooseSpadesInviteMajors",
+      "meaningId": "transfer:choose-spades-invite-majors",
+      "templateKey": "nt.transfer.chooseSpadesInviteMajors.semantic",
+      "displayText": "Bid 3♠: choose spades with a minimum and a spade fit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.acceptSpadesInviteMajors",
+      "meaningId": "transfer:accept-spades-invite-majors",
+      "templateKey": "nt.transfer.acceptSpadesInviteMajors.semantic",
+      "displayText": "Bid 4♠: accept the 5-5 invitational relay by choosing spades",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.place3NTOverNewSuitHearts",
+      "meaningId": "transfer:place-3nt-over-new-suit-hearts",
+      "templateKey": "nt.transfer.place3NTOverNewSuitHearts.semantic",
+      "displayText": "Bid 3NT: no heart fit after responder's game-forcing side suit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.place4HOverNewSuit",
+      "meaningId": "transfer:place-4h-over-new-suit",
+      "templateKey": "nt.transfer.place4HOverNewSuit.semantic",
+      "displayText": "Bid 4♥: take the known heart fit after responder's game-forcing side suit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.place3NTOverNewSuitSpades",
+      "meaningId": "transfer:place-3nt-over-new-suit-spades",
+      "templateKey": "nt.transfer.place3NTOverNewSuitSpades.semantic",
+      "displayText": "Bid 3NT: no spade fit after responder's game-forcing side suit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.place4SOverNewSuit",
+      "meaningId": "transfer:place-4s-over-new-suit",
+      "templateKey": "nt.transfer.place4SOverNewSuit.semantic",
+      "displayText": "Bid 4♠: take the known spade fit after responder's game-forcing side suit",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.signoff4HOverSplinter",
+      "meaningId": "transfer:signoff-4h-over-splinter",
+      "templateKey": "nt.transfer.signoff4HOverSplinter.semantic",
+      "displayText": "Bid 4♥: sign off opposite the splinter without enough extra strength for slam",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.place6HOverSplinter",
+      "meaningId": "transfer:place-6h-over-splinter",
+      "templateKey": "nt.transfer.place6HOverSplinter.semantic",
+      "displayText": "Bid 6♥: accept the splinter and place the contract in small slam",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.signoff4SOverSlamTry",
+      "meaningId": "transfer:signoff-4s-over-slam-try",
+      "templateKey": "nt.transfer.signoff4SOverSlamTry.semantic",
+      "displayText": "Bid 4♠: sign off opposite the 5-5 slam try",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.place6SOverSlamTry",
+      "meaningId": "transfer:place-6s-over-slam-try",
+      "templateKey": "nt.transfer.place6SOverSlamTry.semantic",
+      "displayText": "Bid 6♠: accept the 5-5 slam try and place the contract in small slam",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.pass4NTQuantitativeHearts",
+      "meaningId": "transfer:pass-4nt-quantitative-hearts",
+      "templateKey": "nt.transfer.pass4NTQuantitativeHearts.semantic",
+      "displayText": "Pass 4NT: decline the quantitative invitation with a non-maximum notrump",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.accept4NTQuantitativeHearts",
+      "meaningId": "transfer:accept-4nt-quantitative-hearts",
+      "templateKey": "nt.transfer.accept4NTQuantitativeHearts.semantic",
+      "displayText": "Bid 6NT: accept the quantitative invitation with a maximum notrump",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.pass4NTQuantitativeSpades",
+      "meaningId": "transfer:pass-4nt-quantitative-spades",
+      "templateKey": "nt.transfer.pass4NTQuantitativeSpades.semantic",
+      "displayText": "Pass 4NT: decline the quantitative invitation after the spade transfer",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.transfer.accept4NTQuantitativeSpades",
+      "meaningId": "transfer:accept-4nt-quantitative-spades",
+      "templateKey": "nt.transfer.accept4NTQuantitativeSpades.semantic",
+      "displayText": "Bid 6NT: accept the quantitative invitation after the spade transfer",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -571,6 +751,15 @@
         }
       },
       {
+        "from": "accepted-hearts",
+        "to": "invite-majors-hearts",
+        "on": {
+          "act": "raise",
+          "strength": "invitational",
+          "strain": "spades"
+        }
+      },
+      {
         "from": "accepted-spades",
         "to": "invite-raised-spades",
         "on": {
@@ -706,7 +895,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 0
+            "declarationOrder": 1
           },
           "sourceIntent": {
             "type": "AcceptTransfer",
@@ -718,6 +907,63 @@
           "teachingLabel": {
             "name": "Accept transfer to hearts",
             "summary": "Complete the transfer by bidding 2H as requested"
+          }
+        },
+        {
+          "meaningId": "transfer:super-accept-hearts",
+          "semanticClassId": "transfer:super-accept",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 17,
+              "clauseId": "hand.hcp:gte:17",
+              "description": "17+ HCP",
+              "rationale": "top of the 1NT range for a super-accept",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 19,
+              "clauseId": "hand.hcp:lte:19",
+              "description": "At most 19 HCP",
+              "rationale": "stay within the notrump super-accept range",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "Four-card heart support",
+              "rationale": "super-accept with four-card support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "AcceptTransfer",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3H super-accept",
+            "summary": "Jump to 3H with a maximum notrump and four-card heart support"
           }
         }
       ]
@@ -748,7 +994,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 0
+            "declarationOrder": 1
           },
           "sourceIntent": {
             "type": "AcceptTransfer",
@@ -760,6 +1006,63 @@
           "teachingLabel": {
             "name": "Accept transfer to spades",
             "summary": "Complete the transfer by bidding 2S as requested"
+          }
+        },
+        {
+          "meaningId": "transfer:super-accept-spades",
+          "semanticClassId": "transfer:super-accept",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 17,
+              "clauseId": "hand.hcp:gte:17",
+              "description": "17+ HCP",
+              "rationale": "top of the 1NT range for a super-accept",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 19,
+              "clauseId": "hand.hcp:lte:19",
+              "description": "At most 19 HCP",
+              "rationale": "stay within the notrump super-accept range",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "Four-card spade support",
+              "rationale": "super-accept with four-card support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "AcceptTransfer",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3S super-accept",
+            "summary": "Jump to 3S with a maximum notrump and four-card spade support"
           }
         }
       ]
@@ -1770,6 +2073,829 @@
           "teachingLabel": {
             "name": "4NT quantitative",
             "summary": "Invite slam with balanced slam values after a spade transfer"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "invite-majors-hearts",
+      "turn": "opener",
+      "surfaces": [
+        {
+          "meaningId": "transfer:accept-spades-invite-majors",
+          "semanticClassId": "transfer:invite-majors-choice",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.opener.notMinimum",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.opener.notMinimum:boolean:true",
+              "description": "Above-minimum opening",
+              "rationale": "accept the invite with extra strength",
+              "isPublic": true
+            },
+            {
+              "factId": "module.transfer.openerHasSpadesFit",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.transfer.openerHasSpadesFit:boolean:true",
+              "description": "Spade fit available",
+              "rationale": "choose the spade fit with extras",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4S choose spades",
+            "summary": "Accept the 5-5 invitational sequence and choose spades with extra values"
+          }
+        },
+        {
+          "meaningId": "transfer:choose-spades-invite-majors",
+          "semanticClassId": "transfer:invite-majors-choice",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.opener.notMinimum",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "system.opener.notMinimum:boolean:false",
+              "description": "Minimum opening",
+              "rationale": "choose the best partscore with a minimum",
+              "isPublic": true
+            },
+            {
+              "factId": "module.transfer.openerHasSpadesFit",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.transfer.openerHasSpadesFit:boolean:true",
+              "description": "Spade fit available",
+              "rationale": "prefer spades when opener has support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3S choose spades",
+            "summary": "Choose spades at the three level with a minimum and a spade fit"
+          }
+        },
+        {
+          "meaningId": "transfer:accept-hearts-invite-majors",
+          "semanticClassId": "transfer:invite-majors-choice",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.opener.notMinimum",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.opener.notMinimum:boolean:true",
+              "description": "Above-minimum opening",
+              "rationale": "accept the invite with extra strength",
+              "isPublic": true
+            },
+            {
+              "factId": "module.transfer.openerHasSpadesFit",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.transfer.openerHasSpadesFit:boolean:false",
+              "description": "No spade fit",
+              "rationale": "default back to hearts when spades do not fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4H choose hearts",
+            "summary": "Accept the 5-5 invitational sequence and choose hearts with extra values"
+          }
+        },
+        {
+          "meaningId": "transfer:choose-hearts-invite-majors",
+          "semanticClassId": "transfer:invite-majors-choice",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.opener.notMinimum",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "system.opener.notMinimum:boolean:false",
+              "description": "Minimum opening",
+              "rationale": "choose the best partscore with a minimum",
+              "isPublic": true
+            },
+            {
+              "factId": "module.transfer.openerHasSpadesFit",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.transfer.openerHasSpadesFit:boolean:false",
+              "description": "No spade fit",
+              "rationale": "fall back to hearts when opener lacks spade support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3H choose hearts",
+            "summary": "Choose hearts at the three level with a minimum when spades do not fit"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "accepted-hearts",
+      "turn": "opener",
+      "route": {
+        "kind": "or",
+        "exprs": [
+          {
+            "kind": "last",
+            "pattern": {
+              "act": "show",
+              "feature": "heldSuit",
+              "suit": "clubs",
+              "actor": "responder",
+              "level": 3
+            }
+          },
+          {
+            "kind": "last",
+            "pattern": {
+              "act": "show",
+              "feature": "heldSuit",
+              "suit": "diamonds",
+              "actor": "responder",
+              "level": 3
+            }
+          }
+        ]
+      },
+      "surfaces": [
+        {
+          "meaningId": "transfer:place-4h-over-new-suit",
+          "semanticClassId": "transfer:new-suit-gf-placement",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.transfer.openerHasHeartFit",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.transfer.openerHasHeartFit:boolean:true",
+              "description": "Heart fit available",
+              "rationale": "take the major fit once responder shows game force",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4H place the major",
+            "summary": "Choose 4H once responder's side-suit game force confirms hearts is still the best game"
+          }
+        },
+        {
+          "meaningId": "transfer:place-3nt-over-new-suit-hearts",
+          "semanticClassId": "transfer:new-suit-gf-placement",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.transfer.openerHasHeartFit",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.transfer.openerHasHeartFit:boolean:false",
+              "description": "No heart fit",
+              "rationale": "stay in notrump without a heart fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "notrump"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3NT no major fit",
+            "summary": "Place the contract in 3NT when responder's side-suit force does not uncover a heart fit"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "accepted-hearts",
+      "turn": "opener",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "show",
+          "feature": "shortage",
+          "suit": "spades",
+          "actor": "responder",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "transfer:place-6h-over-splinter",
+          "semanticClassId": "transfer:slam-try-resolution",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 17,
+              "clauseId": "hand.hcp:gte:17",
+              "description": "17+ HCP",
+              "rationale": "enough extra strength to accept the slam try",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 19,
+              "clauseId": "hand.hcp:lte:19",
+              "description": "At most 19 HCP",
+              "rationale": "top of the notrump range",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "Four-card heart support",
+              "rationale": "accept the splinter with strong trump support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "6H accept the splinter",
+            "summary": "Bid 6H with a maximum and strong trump support opposite the heart splinter sequence"
+          }
+        },
+        {
+          "meaningId": "transfer:signoff-4h-over-splinter",
+          "semanticClassId": "transfer:slam-try-resolution",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "Signoff",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4H sign off",
+            "summary": "Settle for game when opener is not strong enough to cooperate toward slam"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "accepted-hearts",
+      "turn": "opener",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "raise",
+          "strain": "notrump",
+          "strength": "slam-invite",
+          "actor": "responder",
+          "level": 4
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "transfer:accept-4nt-quantitative-hearts",
+          "semanticClassId": "transfer:quantitative-resolution",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 17,
+              "clauseId": "hand.hcp:gte:17",
+              "description": "17+ HCP",
+              "rationale": "maximum notrump accepts the quantitative invite",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 19,
+              "clauseId": "hand.hcp:lte:19",
+              "description": "At most 19 HCP",
+              "rationale": "stay inside the notrump range",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "notrump"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "6NT accept quantitative",
+            "summary": "Raise to 6NT with the top of the 1NT range"
+          }
+        },
+        {
+          "meaningId": "transfer:pass-4nt-quantitative-hearts",
+          "semanticClassId": "transfer:quantitative-resolution",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 16,
+              "clauseId": "hand.hcp:lte:16",
+              "description": "At most 16 HCP",
+              "rationale": "non-maximum notrump declines the quantitative invite",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "PlacementPass",
+            "params": {
+              "suit": "notrump"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Pass 4NT quantitative",
+            "summary": "Decline the quantitative invite with the lower end of the range"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "accepted-spades",
+      "turn": "opener",
+      "route": {
+        "kind": "or",
+        "exprs": [
+          {
+            "kind": "last",
+            "pattern": {
+              "act": "show",
+              "feature": "heldSuit",
+              "suit": "clubs",
+              "actor": "responder",
+              "level": 3
+            }
+          },
+          {
+            "kind": "last",
+            "pattern": {
+              "act": "show",
+              "feature": "heldSuit",
+              "suit": "diamonds",
+              "actor": "responder",
+              "level": 3
+            }
+          }
+        ]
+      },
+      "surfaces": [
+        {
+          "meaningId": "transfer:place-4s-over-new-suit",
+          "semanticClassId": "transfer:new-suit-gf-placement",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.transfer.openerHasSpadesFit",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.transfer.openerHasSpadesFit:boolean:true",
+              "description": "Spade fit available",
+              "rationale": "take the major fit once responder shows game force",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4S place the major",
+            "summary": "Choose 4S once responder's side-suit game force confirms spades is still the best game"
+          }
+        },
+        {
+          "meaningId": "transfer:place-3nt-over-new-suit-spades",
+          "semanticClassId": "transfer:new-suit-gf-placement",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.transfer.openerHasSpadesFit",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.transfer.openerHasSpadesFit:boolean:false",
+              "description": "No spade fit",
+              "rationale": "stay in notrump without a spade fit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "notrump"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3NT no major fit",
+            "summary": "Place the contract in 3NT when responder's side-suit force does not uncover a spade fit"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "accepted-spades",
+      "turn": "opener",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "hearts",
+          "strength": "slam-invite",
+          "actor": "responder",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "transfer:place-6s-over-slam-try",
+          "semanticClassId": "transfer:slam-try-resolution",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 17,
+              "clauseId": "hand.hcp:gte:17",
+              "description": "17+ HCP",
+              "rationale": "enough extra strength to accept the slam try",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 19,
+              "clauseId": "hand.hcp:lte:19",
+              "description": "At most 19 HCP",
+              "rationale": "top of the notrump range",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "Four-card spade support",
+              "rationale": "accept the slam try with strong trump support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "6S accept the slam try",
+            "summary": "Bid 6S with a maximum and strong trump support opposite the 5-5 slam try"
+          }
+        },
+        {
+          "meaningId": "transfer:signoff-4s-over-slam-try",
+          "semanticClassId": "transfer:slam-try-resolution",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "Signoff",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4S sign off",
+            "summary": "Settle for game when opener is not strong enough to cooperate toward slam"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "accepted-spades",
+      "turn": "opener",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "raise",
+          "strain": "notrump",
+          "strength": "slam-invite",
+          "actor": "responder",
+          "level": 4
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "transfer:accept-4nt-quantitative-spades",
+          "semanticClassId": "transfer:quantitative-resolution",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 17,
+              "clauseId": "hand.hcp:gte:17",
+              "description": "17+ HCP",
+              "rationale": "maximum notrump accepts the quantitative invite",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 19,
+              "clauseId": "hand.hcp:lte:19",
+              "description": "At most 19 HCP",
+              "rationale": "stay inside the notrump range",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "PlacementCorrection",
+            "params": {
+              "suit": "notrump"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "6NT accept quantitative",
+            "summary": "Raise to 6NT with the top of the 1NT range after the spade transfer"
+          }
+        },
+        {
+          "meaningId": "transfer:pass-4nt-quantitative-spades",
+          "semanticClassId": "transfer:quantitative-resolution",
+          "moduleId": "jacoby-transfers",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 16,
+              "clauseId": "hand.hcp:lte:16",
+              "description": "At most 16 HCP",
+              "rationale": "non-maximum notrump declines the quantitative invite",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "PlacementPass",
+            "params": {
+              "suit": "notrump"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Pass 4NT quantitative",
+            "summary": "Decline the quantitative invite with the lower end of the range after the spade transfer"
           }
         }
       ]

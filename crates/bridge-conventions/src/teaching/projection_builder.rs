@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use crate::pipeline::evaluation::types::MeaningClause;
 use crate::pipeline::types::{PipelineCarrier, PipelineResult};
 use crate::teaching::teaching_types::*;
+use bridge_engine::types::{BidSuit, Call};
 
 /// Build a TeachingProjection from a PipelineResult.
 pub fn project_teaching(
@@ -91,7 +92,7 @@ fn build_meaning_views(result: &PipelineResult) -> Vec<MeaningView> {
         views.push(MeaningView {
             meaning_id: carrier.proposal().meaning_id.clone(),
             semantic_class_id: Some(carrier.proposal().semantic_class_id.clone()),
-            display_label: carrier.proposal().teaching_label.name.to_string(),
+            display_label: format_feedback_label(carrier.call()),
             status: MeaningStatus::Live,
             elimination_reason: None,
             supporting_evidence: Vec::new(),
@@ -108,7 +109,7 @@ fn build_meaning_views(result: &PipelineResult) -> Vec<MeaningView> {
         views.push(MeaningView {
             meaning_id: carrier.proposal().meaning_id.clone(),
             semantic_class_id: Some(carrier.proposal().semantic_class_id.clone()),
-            display_label: carrier.proposal().teaching_label.name.to_string(),
+            display_label: format_feedback_label(carrier.call()),
             status: MeaningStatus::Eliminated,
             elimination_reason,
             supporting_evidence: Vec::new(),
@@ -141,7 +142,11 @@ fn build_primary_explanation(result: &PipelineResult) -> Vec<ExplanationNode> {
             if satisfied_desc.is_empty() {
                 summary.to_string()
             } else {
-                format!("{} — your hand has {}.", summary, join_clauses(&satisfied_desc))
+                format!(
+                    "{} — your hand has {}.",
+                    summary,
+                    join_clauses(&satisfied_desc)
+                )
             }
         } else if !satisfied_desc.is_empty() {
             format!("Your hand fits: {}.", join_clauses(&satisfied_desc))
@@ -177,6 +182,25 @@ fn join_clauses(items: &[String]) -> String {
             let (last, head) = items.split_last().unwrap();
             format!("{}, and {}", head.join(", "), last)
         }
+    }
+}
+
+pub fn format_feedback_label(call: &Call) -> String {
+    match call {
+        Call::Pass => "Pass".to_string(),
+        Call::Double => "Double".to_string(),
+        Call::Redouble => "Redouble".to_string(),
+        Call::Bid { level, strain } => format!("Bid {}{}", level, format_strain(strain)),
+    }
+}
+
+fn format_strain(strain: &BidSuit) -> &'static str {
+    match strain {
+        BidSuit::Clubs => "C",
+        BidSuit::Diamonds => "D",
+        BidSuit::Hearts => "H",
+        BidSuit::Spades => "S",
+        BidSuit::NoTrump => "NT",
     }
 }
 
@@ -311,5 +335,122 @@ fn build_hand_space(_result: &PipelineResult) -> HandSpaceSummary {
         hcp_range: (0.0, 40.0),
         shape_description: "any".into(),
         partner_summary: None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::project_teaching;
+    use crate::adapter::tree_evaluation::{
+        CandidateEligibility, EncodingEligibility, HandEligibility, PedagogicalEligibility,
+    };
+    use crate::pipeline::evaluation::provenance::{
+        ApplicabilityEvidence, EncoderKind, EncodingTrace, LegalityTrace,
+    };
+    use crate::pipeline::evaluation::types::{MeaningProposal, RankingMetadata};
+    use crate::pipeline::types::{CarrierTraces, EncodedProposal, PipelineCarrier, PipelineResult};
+    use crate::types::authored_text::{BidName, BidSummary, TeachingLabel};
+    use crate::types::meaning::{BidEncoding, Disclosure, RecommendationBand, SourceIntent};
+    use bridge_engine::types::{BidSuit, Call};
+
+    fn make_call_2c() -> Call {
+        Call::Bid {
+            level: 2,
+            strain: BidSuit::Clubs,
+        }
+    }
+
+    fn make_result(label_name: &str, summary: &str) -> PipelineResult {
+        let proposal = MeaningProposal {
+            meaning_id: "dont:clubs-and-higher".to_string(),
+            semantic_class_id: "dont:clubs-and-higher".to_string(),
+            module_id: "dont".to_string(),
+            ranking: RankingMetadata {
+                recommendation_band: RecommendationBand::Must,
+                module_precedence: Some(0),
+                declaration_order: 0,
+                specificity: 1.0,
+            },
+            clauses: vec![],
+            all_satisfied: true,
+            disclosure: Disclosure::Standard,
+            source_intent: SourceIntent {
+                intent_type: "artificial".to_string(),
+                params: std::collections::HashMap::new(),
+            },
+            teaching_label: TeachingLabel {
+                name: BidName::new(label_name),
+                summary: BidSummary::new(summary),
+            },
+            surface_bindings: None,
+            encoding: BidEncoding {
+                default_call: make_call_2c(),
+                alternate_encodings: None,
+            },
+            evidence: None,
+        };
+        let carrier = PipelineCarrier {
+            encoded: EncodedProposal {
+                proposal,
+                call: make_call_2c(),
+                is_default_encoding: true,
+                legal: true,
+                all_encodings: vec![],
+                eligibility: CandidateEligibility {
+                    hand: HandEligibility {
+                        satisfied: true,
+                        failed_conditions: vec![],
+                    },
+                    encoding: EncodingEligibility {
+                        legal: true,
+                        reason: None,
+                    },
+                    pedagogical: PedagogicalEligibility {
+                        acceptable: true,
+                        reasons: vec![],
+                    },
+                },
+            },
+            traces: CarrierTraces {
+                encoding: EncodingTrace {
+                    encoder_kind: EncoderKind::DefaultCall,
+                    considered_calls: None,
+                    blocked_calls: None,
+                },
+                legality: LegalityTrace {
+                    legal: true,
+                    reason: None,
+                },
+                elimination: None,
+            },
+        };
+
+        PipelineResult {
+            selected: Some(carrier.clone()),
+            truth_set: vec![carrier],
+            acceptable_set: vec![],
+            recommended: vec![],
+            eliminated: vec![],
+            applicability: ApplicabilityEvidence {
+                total_surfaces: 1,
+                matched_count: 1,
+                eliminated_count: 0,
+            },
+            activation: vec![],
+            arbitration: vec![],
+            handoffs: vec![],
+            evidence_bundle: None,
+        }
+    }
+
+    #[test]
+    fn meaning_view_display_label_uses_safe_call_label_not_anchor_name() {
+        let projection = project_teaching(
+            &make_result("Opponent's 1NT", "Shows clubs plus a higher suit"),
+            None,
+        );
+
+        assert_eq!(projection.meaning_views.len(), 1);
+        assert_eq!(projection.meaning_views[0].display_label, "Bid 2C");
     }
 }

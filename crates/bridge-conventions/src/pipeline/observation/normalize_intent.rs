@@ -496,12 +496,27 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
             feature: HandFeature::HeldSuit,
             suit: None,
         }],
+        "DONTForcingInquiry" => vec![
+            BidAction::Inquire {
+                feature: HandFeature::HeldSuit,
+                suit: None,
+            },
+            BidAction::Force {
+                level: HandStrength::Game,
+            },
+        ],
         "DONTAcceptSpades" | "DONTAcceptSpadesFallback" => vec![BidAction::Accept {
             feature: HandFeature::HeldSuit,
             suit: Some(ObsSuit::Spades),
             strength: None,
         }],
         "DONTForcedRelay" => vec![BidAction::Relay { forced: true }],
+        "DONTSOSRedouble" => vec![BidAction::Redouble {
+            feature: HandFeature::HeldSuit,
+        }],
+        "DONTTakeoutDouble" => vec![BidAction::Double {
+            feature: HandFeature::HeldSuit,
+        }],
         "DONTRevealClubs" | "DONTShowClubs" => vec![BidAction::Show {
             feature: HandFeature::HeldSuit,
             suit: Some(ObsSuit::Clubs),
@@ -605,6 +620,18 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
                 strength: None,
             }]
         }
+        "MichaelsAdvancerInvite2NT" => vec![BidAction::Inquire {
+            feature: HandFeature::HeldSuit,
+            suit: None,
+        }],
+        "MichaelsAdvancerPreemptHearts" => vec![BidAction::Raise {
+            strain: BidSuitName::Hearts,
+            strength: HandStrength::Preemptive,
+        }],
+        "MichaelsAdvancerPreemptSpades" => vec![BidAction::Raise {
+            strain: BidSuitName::Spades,
+            strength: HandStrength::Preemptive,
+        }],
         "MichaelsAdvancerInviteHearts" => vec![BidAction::Raise {
             strain: BidSuitName::Hearts,
             strength: HandStrength::Invitational,
@@ -612,6 +639,9 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
         "MichaelsAdvancerInviteSpades" => vec![BidAction::Raise {
             strain: BidSuitName::Spades,
             strength: HandStrength::Invitational,
+        }],
+        "MichaelsAdvancerForceAsk" => vec![BidAction::Force {
+            level: HandStrength::Game,
         }],
         "MichaelsAdvancerGameHearts" => vec![BidAction::Raise {
             strain: BidSuitName::Hearts,

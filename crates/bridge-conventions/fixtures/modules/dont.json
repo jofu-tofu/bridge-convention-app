@@ -756,6 +756,27 @@
         }
       },
       {
+        "from": "after-2h",
+        "to": "wait-2h-2nt",
+        "on": {
+          "act": "force"
+        }
+      },
+      {
+        "from": "after-2h",
+        "to": "after-2x-dbl",
+        "on": {
+          "act": "double"
+        }
+      },
+      {
+        "from": "after-2h",
+        "to": "after-2x-bid",
+        "on": {
+          "act": "overcall"
+        }
+      },
+      {
         "from": "after-2d",
         "to": "done",
         "on": {
@@ -778,6 +799,27 @@
         }
       },
       {
+        "from": "after-2d",
+        "to": "wait-2d-2nt",
+        "on": {
+          "act": "force"
+        }
+      },
+      {
+        "from": "after-2d",
+        "to": "after-2x-dbl",
+        "on": {
+          "act": "double"
+        }
+      },
+      {
+        "from": "after-2d",
+        "to": "after-2x-bid",
+        "on": {
+          "act": "overcall"
+        }
+      },
+      {
         "from": "after-2c",
         "to": "done",
         "on": {
@@ -797,6 +839,27 @@
         "on": {
           "act": "inquire",
           "feature": "heldSuit"
+        }
+      },
+      {
+        "from": "after-2c",
+        "to": "wait-2c-2nt",
+        "on": {
+          "act": "force"
+        }
+      },
+      {
+        "from": "after-2c",
+        "to": "after-2x-dbl",
+        "on": {
+          "act": "double"
+        }
+      },
+      {
+        "from": "after-2c",
+        "to": "after-2x-bid",
+        "on": {
+          "act": "overcall"
         }
       },
       {
@@ -835,6 +898,20 @@
         }
       },
       {
+        "from": "after-double",
+        "to": "after-double-redbl",
+        "on": {
+          "act": "redouble"
+        }
+      },
+      {
+        "from": "after-double",
+        "to": "after-double-bid",
+        "on": {
+          "act": "overcall"
+        }
+      },
+      {
         "from": "wait-reveal",
         "to": "done",
         "on": {
@@ -850,6 +927,27 @@
       },
       {
         "from": "wait-2c-relay",
+        "to": "done",
+        "on": {
+          "act": "show"
+        }
+      },
+      {
+        "from": "wait-2c-2nt",
+        "to": "done",
+        "on": {
+          "act": "show"
+        }
+      },
+      {
+        "from": "wait-2d-2nt",
+        "to": "done",
+        "on": {
+          "act": "show"
+        }
+      },
+      {
+        "from": "wait-2h-2nt",
         "to": "done",
         "on": {
           "act": "show"
@@ -1198,6 +1296,42 @@
           }
         },
         {
+          "meaningId": "dont:forcing-inquiry-2nt-after-2h",
+          "semanticClassId": "dont:forcing-inquiry",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 13,
+              "clauseId": "hand.hcp:gte:13",
+              "description": "13+ HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTForcingInquiry",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — forcing inquiry",
+            "summary": "Force to game and ask overcaller to clarify whether spades are longer than hearts"
+          }
+        },
+        {
           "meaningId": "dont:escape-clubs-3c",
           "semanticClassId": "dont:escape-minor",
           "moduleId": "dont",
@@ -1230,7 +1364,7 @@
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 2
+            "declarationOrder": 3
           },
           "sourceIntent": {
             "type": "DONTEscapeClubs",
@@ -1275,7 +1409,7 @@
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 3
+            "declarationOrder": 4
           },
           "sourceIntent": {
             "type": "DONTEscapeDiamonds",
@@ -1387,6 +1521,186 @@
           "teachingLabel": {
             "name": "2H — relay (ask for major)",
             "summary": "Ask overcaller to reveal which major they hold alongside diamonds"
+          }
+        },
+        {
+          "meaningId": "dont:forcing-inquiry-2nt-after-2d",
+          "semanticClassId": "dont:forcing-inquiry",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 13,
+              "clauseId": "hand.hcp:gte:13",
+              "description": "13+ HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTForcingInquiry",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — forcing inquiry",
+            "summary": "Force to game and ask whether overcaller's major is longer than diamonds"
+          }
+        },
+        {
+          "meaningId": "dont:escape-3c-after-2d",
+          "semanticClassId": "dont:escape-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.longClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longClubs:boolean:true",
+              "description": "Long clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3C — escape (6+ clubs)",
+            "summary": "Escape to clubs with a 6+ card suit when diamonds is not the resting spot"
+          }
+        },
+        {
+          "meaningId": "dont:escape-3d-after-2d",
+          "semanticClassId": "dont:escape-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.longDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longDiamonds:boolean:true",
+              "description": "Long diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3D — escape (6+ diamonds)",
+            "summary": "Compete to 3D with a long diamond suit and no better descriptive action"
+          }
+        },
+        {
+          "meaningId": "dont:escape-3h-after-2d",
+          "semanticClassId": "dont:escape-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.longHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longHearts:boolean:true",
+              "description": "Long hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "DONTBypassHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H — escape (6+ hearts)",
+            "summary": "Bid hearts naturally at the 3-level with a self-sufficient suit"
+          }
+        },
+        {
+          "meaningId": "dont:escape-3s-after-2d",
+          "semanticClassId": "dont:escape-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.longSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longSpades:boolean:true",
+              "description": "Long spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "DONTBypassSpadesAfter2D",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3S — escape (6+ spades)",
+            "summary": "Bid spades naturally at the 3-level when the hand is better described by a long suit"
           }
         }
       ]
@@ -1525,6 +1839,186 @@
           "teachingLabel": {
             "name": "2D — relay (ask for higher suit)",
             "summary": "Ask overcaller to reveal which higher suit they hold alongside clubs"
+          }
+        },
+        {
+          "meaningId": "dont:forcing-inquiry-2nt-after-2c",
+          "semanticClassId": "dont:forcing-inquiry",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 13,
+              "clauseId": "hand.hcp:gte:13",
+              "description": "13+ HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "DONTForcingInquiry",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — forcing inquiry",
+            "summary": "Force to game and ask overcaller to clarify strength and the higher suit"
+          }
+        },
+        {
+          "meaningId": "dont:escape-3c-after-2c",
+          "semanticClassId": "dont:escape-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.longClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longClubs:boolean:true",
+              "description": "Long clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3C — escape (6+ clubs)",
+            "summary": "Compete to 3C with a self-sufficient club suit"
+          }
+        },
+        {
+          "meaningId": "dont:escape-3d-after-2c",
+          "semanticClassId": "dont:escape-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.longDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longDiamonds:boolean:true",
+              "description": "Long diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3D — escape (6+ diamonds)",
+            "summary": "Bid diamonds naturally at the 3-level to avoid defending clubs"
+          }
+        },
+        {
+          "meaningId": "dont:escape-3h-after-2c",
+          "semanticClassId": "dont:escape-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.longHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longHearts:boolean:true",
+              "description": "Long hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "DONTBypassHeartsAfter2C",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H — escape (6+ hearts)",
+            "summary": "Bid hearts naturally at the 3-level with a long self-sufficient suit"
+          }
+        },
+        {
+          "meaningId": "dont:escape-3s-after-2c",
+          "semanticClassId": "dont:escape-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.longSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longSpades:boolean:true",
+              "description": "Long spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 8
+          },
+          "sourceIntent": {
+            "type": "DONTBypassSpadesAfter2C",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3S — escape (6+ spades)",
+            "summary": "Bid spades naturally at the 3-level with a long self-sufficient suit"
           }
         }
       ]
@@ -2137,6 +2631,1439 @@
           }
         }
       ]
+    },
+    {
+      "phase": "wait-2c-2nt",
+      "surfaces": [
+        {
+          "meaningId": "dont:reply-3c-minimum-after-2c-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.minimumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.minimumRange:boolean:true",
+              "description": "Minimum DONT range"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTShowClubs",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3C — minimum",
+            "summary": "Show a minimum hand after the forcing 2NT inquiry"
+          }
+        },
+        {
+          "meaningId": "dont:reply-3d-diamonds-max-after-2c-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.maximumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.maximumRange:boolean:true",
+              "description": "Maximum DONT range"
+            },
+            {
+              "factId": "module.dont.clubsHigherDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.clubsHigherDiamonds:boolean:true",
+              "description": "Clubs plus diamonds"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTShowDiamonds",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3D — diamonds and maximum",
+            "summary": "Show diamonds as the higher suit and a maximum-range overcall"
+          }
+        },
+        {
+          "meaningId": "dont:reply-3h-hearts-max-after-2c-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.maximumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.maximumRange:boolean:true",
+              "description": "Maximum DONT range"
+            },
+            {
+              "factId": "module.dont.clubsHigherHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.clubsHigherHearts:boolean:true",
+              "description": "Clubs plus hearts"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTShowHearts",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3H — hearts and maximum",
+            "summary": "Show hearts as the higher suit and a maximum-range overcall"
+          }
+        },
+        {
+          "meaningId": "dont:reply-3s-spades-max-after-2c-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.maximumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.maximumRange:boolean:true",
+              "description": "Maximum DONT range"
+            },
+            {
+              "factId": "module.dont.clubsHigherSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.clubsHigherSpades:boolean:true",
+              "description": "Clubs plus spades"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTShowSpades",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3S — spades and maximum",
+            "summary": "Show spades as the higher suit and a maximum-range overcall"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "wait-2d-2nt",
+      "surfaces": [
+        {
+          "meaningId": "dont:reply-3c-min-shorter-major-after-2d-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.minimumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.minimumRange:boolean:true",
+              "description": "Minimum DONT range"
+            },
+            {
+              "factId": "module.dont.majorLongerThanDiamonds",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.dont.majorLongerThanDiamonds:boolean:false",
+              "description": "Major is not longer than diamonds"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTShowClubs",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3C — minimum, shorter or equal major",
+            "summary": "Show a minimum hand with a major no longer than diamonds"
+          }
+        },
+        {
+          "meaningId": "dont:reply-3d-min-longer-major-after-2d-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.minimumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.minimumRange:boolean:true",
+              "description": "Minimum DONT range"
+            },
+            {
+              "factId": "module.dont.majorLongerThanDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.majorLongerThanDiamonds:boolean:true",
+              "description": "Major is longer than diamonds"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTShowDiamonds",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3D — minimum, longer major",
+            "summary": "Show a minimum hand with a major longer than diamonds"
+          }
+        },
+        {
+          "meaningId": "dont:reply-3h-hearts-max-after-2d-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.maximumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.maximumRange:boolean:true",
+              "description": "Maximum DONT range"
+            },
+            {
+              "factId": "module.dont.diamondsMajorHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.diamondsMajorHearts:boolean:true",
+              "description": "Diamonds plus hearts"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTShowHeartsFromDiamonds",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3H — hearts and maximum",
+            "summary": "Show hearts as the major with a maximum-range overcall"
+          }
+        },
+        {
+          "meaningId": "dont:reply-3s-spades-max-after-2d-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.maximumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.maximumRange:boolean:true",
+              "description": "Maximum DONT range"
+            },
+            {
+              "factId": "module.dont.diamondsMajorSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.diamondsMajorSpades:boolean:true",
+              "description": "Diamonds plus spades"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTShowSpadesFromDiamonds",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3S — spades and maximum",
+            "summary": "Show spades as the major with a maximum-range overcall"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "wait-2h-2nt",
+      "surfaces": [
+        {
+          "meaningId": "dont:reply-3c-min-shorter-spades-after-2h-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.minimumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.minimumRange:boolean:true",
+              "description": "Minimum DONT range"
+            },
+            {
+              "factId": "module.dont.spadesLongerThanHearts",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.dont.spadesLongerThanHearts:boolean:false",
+              "description": "Spades are not longer than hearts"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTShowClubs",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3C — minimum, shorter or equal spades",
+            "summary": "Show a minimum hand with spades no longer than hearts"
+          }
+        },
+        {
+          "meaningId": "dont:reply-3d-min-longer-spades-after-2h-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.minimumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.minimumRange:boolean:true",
+              "description": "Minimum DONT range"
+            },
+            {
+              "factId": "module.dont.spadesLongerThanHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.spadesLongerThanHearts:boolean:true",
+              "description": "Spades are longer than hearts"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTShowDiamonds",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3D — minimum, longer spades",
+            "summary": "Show a minimum hand with spades longer than hearts"
+          }
+        },
+        {
+          "meaningId": "dont:reply-3h-max-shorter-spades-after-2h-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.maximumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.maximumRange:boolean:true",
+              "description": "Maximum DONT range"
+            },
+            {
+              "factId": "module.dont.spadesLongerThanHearts",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.dont.spadesLongerThanHearts:boolean:false",
+              "description": "Spades are not longer than hearts"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTShowHearts",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3H — maximum, shorter or equal spades",
+            "summary": "Show a maximum hand with spades no longer than hearts"
+          }
+        },
+        {
+          "meaningId": "dont:reply-3s-max-longer-spades-after-2h-2nt",
+          "semanticClassId": "dont:forcing-reply",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.maximumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.maximumRange:boolean:true",
+              "description": "Maximum DONT range"
+            },
+            {
+              "factId": "module.dont.spadesLongerThanHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.spadesLongerThanHearts:boolean:true",
+              "description": "Spades are longer than hearts"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTShowSpades",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3S — maximum, longer spades",
+            "summary": "Show a maximum hand with spades longer than hearts"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-2x-dbl",
+      "route": {
+        "kind": "contains",
+        "pattern": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "clubs",
+          "actor": "opponent"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "dont:comp-pass-after-2c-dbl",
+          "semanticClassId": "dont:competition-pass",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "pass" } },
+          "clauses": [
+            {
+              "factId": "module.dont.hasClubSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasClubSupport:boolean:true",
+              "description": "Club support",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
+          "sourceIntent": { "type": "DONTAcceptClubs", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass — tolerate clubs",
+            "summary": "Pass with tolerance for clubs after the opponents double the 2C overcall"
+          }
+        },
+        {
+          "meaningId": "dont:comp-redouble-after-2c-dbl",
+          "semanticClassId": "dont:competition-redouble",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "redouble" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 1 },
+          "sourceIntent": { "type": "DONTSOSRedouble", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "XX — SOS redouble",
+            "summary": "Ask overcaller to bid the other suit after the double"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2nt-after-2c-dbl",
+          "semanticClassId": "dont:forcing-inquiry",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 2 },
+          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — forcing inquiry",
+            "summary": "The artificial ask is still available, though rarely used after a double"
+          }
+        },
+        {
+          "meaningId": "dont:comp-3d-after-2c-dbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "D" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longDiamonds:boolean:true",
+              "description": "Long diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
+          "sourceIntent": { "type": "DONTEscapeDiamonds", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3D — natural",
+            "summary": "Compete naturally with a long diamond suit after the double"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2h-after-2c-dbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "H" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longHearts:boolean:true",
+              "description": "Long hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
+          "sourceIntent": { "type": "DONTBypassHeartsAfter2C", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2H — natural",
+            "summary": "Bid a long heart suit naturally after the double"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2s-after-2c-dbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longSpades:boolean:true",
+              "description": "Long spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 5 },
+          "sourceIntent": { "type": "DONTBypassSpadesAfter2C", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2S — natural",
+            "summary": "Bid a long spade suit naturally after the double"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-2x-dbl",
+      "route": {
+        "kind": "contains",
+        "pattern": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "diamonds",
+          "actor": "opponent"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "dont:comp-pass-after-2d-dbl",
+          "semanticClassId": "dont:competition-pass",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "pass" } },
+          "clauses": [
+            {
+              "factId": "module.dont.hasDiamondSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasDiamondSupport:boolean:true",
+              "description": "Diamond support",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
+          "sourceIntent": { "type": "DONTAcceptDiamonds", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass — tolerate diamonds",
+            "summary": "Pass with tolerance for diamonds after the opponents double the 2D overcall"
+          }
+        },
+        {
+          "meaningId": "dont:comp-redouble-after-2d-dbl",
+          "semanticClassId": "dont:competition-redouble",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "redouble" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 1 },
+          "sourceIntent": { "type": "DONTSOSRedouble", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "XX — SOS redouble",
+            "summary": "Ask overcaller to bid the major after the double"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2nt-after-2d-dbl",
+          "semanticClassId": "dont:forcing-inquiry",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 2 },
+          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — forcing inquiry",
+            "summary": "The artificial ask is still available, though rarely used after a double"
+          }
+        },
+        {
+          "meaningId": "dont:comp-3c-after-2d-dbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "C" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longClubs:boolean:true",
+              "description": "Long clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
+          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3C — natural",
+            "summary": "Compete naturally with a long club suit after the double"
+          }
+        },
+        {
+          "meaningId": "dont:comp-3h-after-2d-dbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "H" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longHearts:boolean:true",
+              "description": "Long hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
+          "sourceIntent": { "type": "DONTBypassHearts", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H — natural",
+            "summary": "Bid a long heart suit naturally after the double"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2s-after-2d-dbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longSpades:boolean:true",
+              "description": "Long spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 5 },
+          "sourceIntent": { "type": "DONTBypassSpadesAfter2D", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2S — natural",
+            "summary": "Bid a long spade suit naturally after the double"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-2x-dbl",
+      "route": {
+        "kind": "contains",
+        "pattern": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "spades",
+          "actor": "opponent"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "dont:comp-pass-after-2h-dbl",
+          "semanticClassId": "dont:competition-pass",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "pass" } },
+          "clauses": [
+            {
+              "factId": "module.dont.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasHeartSupport:boolean:true",
+              "description": "Heart support",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
+          "sourceIntent": { "type": "DONTAcceptHearts", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass — tolerate hearts",
+            "summary": "Pass with tolerance for partner's suit after the opponents double the 2H overcall"
+          }
+        },
+        {
+          "meaningId": "dont:comp-redouble-after-2h-dbl",
+          "semanticClassId": "dont:competition-redouble",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "redouble" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 1 },
+          "sourceIntent": { "type": "DONTSOSRedouble", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "XX — SOS redouble",
+            "summary": "Ask overcaller to bid the other major after the double"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2s-after-2h-dbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
+          "sourceIntent": { "type": "DONTPreferSpades", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2S — to play",
+            "summary": "Run to spades when hearts is not the right strain"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2nt-after-2h-dbl",
+          "semanticClassId": "dont:forcing-inquiry",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 3 },
+          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — forcing inquiry",
+            "summary": "The artificial ask is still available, though rarely used after a double"
+          }
+        },
+        {
+          "meaningId": "dont:comp-3c-after-2h-dbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "C" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longClubs:boolean:true",
+              "description": "Long clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
+          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3C — natural",
+            "summary": "Compete naturally with a long club suit after the double"
+          }
+        },
+        {
+          "meaningId": "dont:comp-3d-after-2h-dbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "D" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longDiamonds:boolean:true",
+              "description": "Long diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 5 },
+          "sourceIntent": { "type": "DONTEscapeDiamonds", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3D — natural",
+            "summary": "Compete naturally with a long diamond suit after the double"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-2x-bid",
+      "route": {
+        "kind": "contains",
+        "pattern": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "clubs",
+          "actor": "opponent"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "dont:comp-double-after-2c-bid",
+          "semanticClassId": "dont:competition-double",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "double" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
+          "sourceIntent": { "type": "DONTTakeoutDouble", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "X — takeout",
+            "summary": "Ask overcaller to pass with the enemy suit stopped or bid the other suit"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2nt-after-2c-bid",
+          "semanticClassId": "dont:forcing-inquiry",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 1 },
+          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — forcing inquiry",
+            "summary": "The artificial ask is still available, though rarely used after enemy bidding"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2h-after-2c-bid",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "H" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longHearts:boolean:true",
+              "description": "Long hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
+          "sourceIntent": { "type": "DONTBypassHeartsAfter2C", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2H — natural",
+            "summary": "Bid a long heart suit naturally after enemy interference"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2s-after-2c-bid",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longSpades:boolean:true",
+              "description": "Long spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
+          "sourceIntent": { "type": "DONTBypassSpadesAfter2C", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2S — natural",
+            "summary": "Bid a long spade suit naturally after enemy interference"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-2x-bid",
+      "route": {
+        "kind": "contains",
+        "pattern": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "diamonds",
+          "actor": "opponent"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "dont:comp-double-after-2d-bid",
+          "semanticClassId": "dont:competition-double",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "double" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
+          "sourceIntent": { "type": "DONTTakeoutDouble", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "X — takeout",
+            "summary": "Ask overcaller to pass with the enemy suit stopped or bid the major"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2nt-after-2d-bid",
+          "semanticClassId": "dont:forcing-inquiry",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 1 },
+          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — forcing inquiry",
+            "summary": "The artificial ask is still available, though rarely used after enemy bidding"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2s-after-2d-bid",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longSpades:boolean:true",
+              "description": "Long spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
+          "sourceIntent": { "type": "DONTBypassSpadesAfter2D", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2S — natural",
+            "summary": "Bid a long spade suit naturally after enemy interference"
+          }
+        },
+        {
+          "meaningId": "dont:comp-3c-after-2d-bid",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "C" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longClubs:boolean:true",
+              "description": "Long clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
+          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3C — natural",
+            "summary": "Bid a long club suit naturally after enemy interference"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-2x-bid",
+      "route": {
+        "kind": "contains",
+        "pattern": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "spades",
+          "actor": "opponent"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "dont:comp-double-after-2h-bid",
+          "semanticClassId": "dont:competition-double",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "double" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
+          "sourceIntent": { "type": "DONTTakeoutDouble", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "X — takeout",
+            "summary": "Ask overcaller to bid the other major after enemy interference"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2nt-after-2h-bid",
+          "semanticClassId": "dont:forcing-inquiry",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 1 },
+          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — forcing inquiry",
+            "summary": "The artificial ask is still available, though rarely used after enemy bidding"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2s-after-2h-bid",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
+          "sourceIntent": { "type": "DONTPreferSpades", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2S — to play",
+            "summary": "Run to spades when hearts is not the right strain after enemy bidding"
+          }
+        },
+        {
+          "meaningId": "dont:comp-3c-after-2h-bid",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "C" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longClubs:boolean:true",
+              "description": "Long clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
+          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3C — natural",
+            "summary": "Bid a long club suit naturally after enemy interference"
+          }
+        },
+        {
+          "meaningId": "dont:comp-3d-after-2h-bid",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "D" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longDiamonds:boolean:true",
+              "description": "Long diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
+          "sourceIntent": { "type": "DONTEscapeDiamonds", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3D — natural",
+            "summary": "Bid a long diamond suit naturally after enemy interference"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-double-redbl",
+      "surfaces": [
+        {
+          "meaningId": "dont:comp-pass-after-double-redbl",
+          "semanticClassId": "dont:competition-pass",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "pass" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
+          "sourceIntent": { "type": "DONTPass", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass — let partner run",
+            "summary": "Stay quiet and let overcaller choose a suit after the redouble"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2c-after-double-redbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "C" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longClubs:boolean:true",
+              "description": "Long clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 1 },
+          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2C — natural",
+            "summary": "Bid a long club suit naturally after the redouble"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2d-after-double-redbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "D" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longDiamonds:boolean:true",
+              "description": "Long diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
+          "sourceIntent": { "type": "DONTBypassDiamonds", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2D — natural",
+            "summary": "Bid a long diamond suit naturally after the redouble"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2h-after-double-redbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "H" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longHearts:boolean:true",
+              "description": "Long hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
+          "sourceIntent": { "type": "DONTBypassHearts", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2H — natural",
+            "summary": "Bid a long heart suit naturally after the redouble"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2s-after-double-redbl",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longSpades:boolean:true",
+              "description": "Long spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
+          "sourceIntent": { "type": "DONTBypassSpades", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2S — natural",
+            "summary": "Bid a long spade suit naturally after the redouble"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2nt-after-double-redbl",
+          "semanticClassId": "dont:forcing-inquiry",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 5 },
+          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — forcing inquiry",
+            "summary": "The artificial ask is still available, though highly unusual after a redouble"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-double-bid",
+      "surfaces": [
+        {
+          "meaningId": "dont:comp-double-after-double-bid",
+          "semanticClassId": "dont:competition-double",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "double" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
+          "sourceIntent": { "type": "DONTTakeoutDouble", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "X — takeout",
+            "summary": "Ask overcaller to pass with the enemy suit or bid their own"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2c-after-double-bid",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "C" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longClubs:boolean:true",
+              "description": "Long clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 1 },
+          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2C — natural",
+            "summary": "Bid a long club suit naturally after enemy bidding"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2d-after-double-bid",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "D" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longDiamonds:boolean:true",
+              "description": "Long diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
+          "sourceIntent": { "type": "DONTBypassDiamonds", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2D — natural",
+            "summary": "Bid a long diamond suit naturally after enemy bidding"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2h-after-double-bid",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "H" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longHearts:boolean:true",
+              "description": "Long hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
+          "sourceIntent": { "type": "DONTBypassHearts", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2H — natural",
+            "summary": "Bid a long heart suit naturally after enemy bidding"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2s-after-double-bid",
+          "semanticClassId": "dont:competition-natural",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "clauses": [
+            {
+              "factId": "module.dont.longSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.longSpades:boolean:true",
+              "description": "Long spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
+          "sourceIntent": { "type": "DONTBypassSpades", "params": {} },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2S — natural",
+            "summary": "Bid a long spade suit naturally after enemy bidding"
+          }
+        },
+        {
+          "meaningId": "dont:comp-2nt-after-double-bid",
+          "semanticClassId": "dont:forcing-inquiry",
+          "moduleId": "dont",
+          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "clauses": [],
+          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 5 },
+          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — forcing inquiry",
+            "summary": "The artificial ask is still available, though highly unusual after enemy bidding"
+          }
+        }
+      ]
     }
   ],
   "facts": {
@@ -2437,6 +4364,98 @@
             "operator": "gte",
             "value": 6
           }
+        }
+      },
+      {
+        "id": "module.dont.minimumRange",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "8-10 HCP — minimum DONT range for forcing-inquiry replies",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 8 } },
+            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 10 } }
+          ]
+        }
+      },
+      {
+        "id": "module.dont.maximumRange",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "11-15 HCP — maximum DONT range for forcing-inquiry replies",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 11 } },
+            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 15 } }
+          ]
+        }
+      },
+      {
+        "id": "module.dont.majorLongerThanDiamonds",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "With diamonds and a major, the major is longer than diamonds",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "module.dont.diamondsAndMajor"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength",
+          "suitRelation"
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "and",
+              "operands": [
+                { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.diamondsMajorHearts", "expected": true } },
+                { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "H", "op": "gt", "b": "D" } }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.diamondsMajorSpades", "expected": true } },
+                { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "S", "op": "gt", "b": "D" } }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.dont.spadesLongerThanHearts",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "With both majors, spades are longer than hearts",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "module.dont.bothMajors"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength",
+          "suitRelation"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.bothMajors", "expected": true } },
+            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "S", "op": "gt", "b": "H" } }
+          ]
         }
       },
       {

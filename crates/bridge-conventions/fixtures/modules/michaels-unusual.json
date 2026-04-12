@@ -189,6 +189,45 @@
       ]
     },
     {
+      "explanationId": "michaels.hasMajorSupport",
+      "factId": "module.michaels.hasMajorSupport",
+      "templateKey": "michaels.hasMajorSupport.supporting",
+      "displayText": "Support for at least one major",
+      "contrastiveTemplateKey": "michaels.hasMajorSupport.whyNot",
+      "contrastiveDisplayText": "No support for either major",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.preferredMajorIsHearts",
+      "factId": "module.michaels.preferredMajorIsHearts",
+      "templateKey": "michaels.preferredMajorIsHearts.supporting",
+      "displayText": "Hearts rank as the better or equal major",
+      "contrastiveTemplateKey": "michaels.preferredMajorIsHearts.whyNot",
+      "contrastiveDisplayText": "Hearts are not the better major",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "michaels.preferredMajorIsSpades",
+      "factId": "module.michaels.preferredMajorIsSpades",
+      "templateKey": "michaels.preferredMajorIsSpades.supporting",
+      "displayText": "Spades rank as the better major",
+      "contrastiveTemplateKey": "michaels.preferredMajorIsSpades.whyNot",
+      "contrastiveDisplayText": "Spades are not the better major",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
       "explanationId": "michaels.advancerGameValues",
       "factId": "module.michaels.advancerGameValues",
       "templateKey": "michaels.advancerGameValues.supporting",
@@ -400,20 +439,60 @@
       ]
     },
     {
-      "explanationId": "michaels.adv.inviteHearts3h",
-      "meaningId": "michaels:adv-invite-hearts-3h",
-      "templateKey": "michaels.adv.inviteHearts3h.semantic",
-      "displayText": "3H: Invitational raise in hearts",
+      "explanationId": "michaels.adv.preemptHearts3h",
+      "meaningId": "michaels:adv-preempt-hearts-3h",
+      "templateKey": "michaels.adv.preemptHearts3h.semantic",
+      "displayText": "3H: Preemptive raise in hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
       ]
     },
     {
-      "explanationId": "michaels.adv.inviteSpades3s",
-      "meaningId": "michaels:adv-invite-spades-3s",
-      "templateKey": "michaels.adv.inviteSpades3s.semantic",
-      "displayText": "3S: Invitational raise in spades",
+      "explanationId": "michaels.adv.preemptSpades3s",
+      "meaningId": "michaels:adv-preempt-spades-3s",
+      "templateKey": "michaels.adv.preemptSpades3s.semantic",
+      "displayText": "3S: Preemptive raise in spades",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.invite2ntMinorCue",
+      "meaningId": "michaels:adv-invite-2nt-minor-cue",
+      "templateKey": "michaels.adv.invite2ntMinorCue.semantic",
+      "displayText": "2NT: Invitational ask for the better major",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.force3cMinorCue",
+      "meaningId": "michaels:adv-force-3c-minor-cue",
+      "templateKey": "michaels.adv.force3cMinorCue.semantic",
+      "displayText": "3C: Artificial game-force asking partner to clarify",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.showHeartsAfter2nt",
+      "meaningId": "michaels:show-hearts-3h-after-2nt-invite",
+      "templateKey": "michaels.adv.showHeartsAfter2nt.semantic",
+      "displayText": "3H: Show hearts as the better major after 2NT",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.showSpadesAfter2nt",
+      "meaningId": "michaels:show-spades-3s-after-2nt-invite",
+      "templateKey": "michaels.adv.showSpadesAfter2nt.semantic",
+      "displayText": "3S: Show spades as the better major after 2NT",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -773,9 +852,33 @@
       },
       {
         "from": "after-michaels-minor",
+        "to": "after-2nt-invite",
+        "on": {
+          "act": "inquire",
+          "feature": "heldSuit"
+        }
+      },
+      {
+        "from": "after-michaels-minor",
+        "to": "done",
+        "on": {
+          "act": "force",
+          "strength": "game"
+        }
+      },
+      {
+        "from": "after-michaels-minor",
         "to": "done",
         "on": {
           "act": "pass"
+        }
+      },
+      {
+        "from": "after-2nt-invite",
+        "to": "done",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit"
         }
       },
       {
@@ -1552,8 +1655,99 @@
           }
         },
         {
-          "meaningId": "michaels:adv-invite-hearts-3h",
-          "semanticClassId": "michaels:adv-invite-major",
+          "meaningId": "michaels:adv-invite-2nt-minor-cue",
+          "semanticClassId": "michaels:adv-invite-2nt",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasMajorSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasMajorSupport:boolean:true",
+              "description": "Support for at least one major",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "10+ HCP for an invitational try",
+              "rationale": "enough strength to invite but not force",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 11,
+              "clauseId": "hand.hcp:lte:11",
+              "description": "At most 11 HCP for the invitational 2NT route",
+              "rationale": "12+ HCP starts with the forcing 3C ask",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerInvite2NT",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT \u2014 invitational ask",
+            "summary": "Invite game with 10-11 HCP and ask partner to show the better major"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-force-3c-minor-cue",
+          "semanticClassId": "michaels:adv-force-ask",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP for a game-forcing advance",
+              "rationale": "game-forcing values ask overcaller to clarify hand type",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerForceAsk",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3C \u2014 artificial force",
+            "summary": "Use 3C as an artificial game-force asking partner to clarify the Michaels hand"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-preempt-hearts-3h",
+          "semanticClassId": "michaels:adv-preempt-major",
           "moduleId": "michaels-unusual",
           "encoding": {
             "defaultCall": {
@@ -1564,40 +1758,41 @@
           },
           "clauses": [
             {
-              "factId": "module.michaels.hasHeartSupport",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
-              "description": "3+ hearts to support partner",
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts for the weak jump raise",
+              "rationale": "preemptive raises need extra trump length",
               "isPublic": true
             },
             {
-              "factId": "module.michaels.advancerInviteValues",
+              "factId": "module.michaels.advancerWeak",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.advancerInviteValues:boolean:true",
-              "description": "8-9 HCP (invitational values)",
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
               "isPublic": true
             }
           ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 2
+            "declarationOrder": 4
           },
           "sourceIntent": {
-            "type": "MichaelsAdvancerInviteHearts",
+            "type": "MichaelsAdvancerPreemptHearts",
             "params": {}
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 invitational hearts",
-            "summary": "Invite game in hearts with 8-9 HCP and 3+ heart support"
+            "name": "3H \u2014 preemptive hearts",
+            "summary": "Make a weak jump raise in hearts with 4+ support and 0-7 HCP"
           }
         },
         {
-          "meaningId": "michaels:adv-invite-spades-3s",
-          "semanticClassId": "michaels:adv-invite-major",
+          "meaningId": "michaels:adv-preempt-spades-3s",
+          "semanticClassId": "michaels:adv-preempt-major",
           "moduleId": "michaels-unusual",
           "encoding": {
             "defaultCall": {
@@ -1608,35 +1803,36 @@
           },
           "clauses": [
             {
-              "factId": "module.michaels.hasSpadeSupport",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
-              "description": "3+ spades to support partner",
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades for the weak jump raise",
+              "rationale": "preemptive raises need extra trump length",
               "isPublic": true
             },
             {
-              "factId": "module.michaels.advancerInviteValues",
+              "factId": "module.michaels.advancerWeak",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.advancerInviteValues:boolean:true",
-              "description": "8-9 HCP (invitational values)",
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
               "isPublic": true
             }
           ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 3
+            "declarationOrder": 5
           },
           "sourceIntent": {
-            "type": "MichaelsAdvancerInviteSpades",
+            "type": "MichaelsAdvancerPreemptSpades",
             "params": {}
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 invitational spades",
-            "summary": "Invite game in spades with 8-9 HCP and 3+ spade support"
+            "name": "3S \u2014 preemptive spades",
+            "summary": "Make a weak jump raise in spades with 4+ support and 0-7 HCP"
           }
         },
         {
@@ -1660,18 +1856,19 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.advancerGameValues",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerGameValues:boolean:true",
-              "description": "10+ HCP (game-forcing values)",
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP to commit directly to game",
+              "rationale": "with enough strength to bid game immediately",
               "isPublic": true
             }
           ],
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 4
+            "declarationOrder": 6
           },
           "sourceIntent": {
             "type": "MichaelsAdvancerGameHearts",
@@ -1680,7 +1877,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "4H \u2014 game in hearts",
-            "summary": "Bid game in hearts with 10+ HCP and 3+ heart support"
+            "summary": "Bid game in hearts directly with 12+ HCP and 3+ heart support"
           }
         },
         {
@@ -1704,18 +1901,19 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.advancerGameValues",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerGameValues:boolean:true",
-              "description": "10+ HCP (game-forcing values)",
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP to commit directly to game",
+              "rationale": "with enough strength to bid game immediately",
               "isPublic": true
             }
           ],
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 5
+            "declarationOrder": 7
           },
           "sourceIntent": {
             "type": "MichaelsAdvancerGameSpades",
@@ -1724,7 +1922,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "4S \u2014 game in spades",
-            "summary": "Bid game in spades with 10+ HCP and 3+ spade support"
+            "summary": "Bid game in spades directly with 12+ HCP and 3+ spade support"
           }
         },
         {
@@ -1749,7 +1947,7 @@
           "ranking": {
             "recommendationBand": "may",
             "modulePrecedence": 0,
-            "declarationOrder": 6
+            "declarationOrder": 8
           },
           "sourceIntent": {
             "type": "MichaelsAdvancerPass",
@@ -1759,6 +1957,87 @@
           "teachingLabel": {
             "name": "Pass (no major preference)",
             "summary": "Pass with a weak hand and no clear preference between the majors"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-2nt-invite",
+      "surfaces": [
+        {
+          "meaningId": "michaels:show-hearts-3h-after-2nt-invite",
+          "semanticClassId": "michaels:show-major-after-2nt-invite",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.preferredMajorIsHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.preferredMajorIsHearts:boolean:true",
+              "description": "Hearts rank as the better or equal major",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "ShowHeldSuit",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H \u2014 show hearts",
+            "summary": "After the invitational 2NT ask, show hearts as the better or equal major"
+          }
+        },
+        {
+          "meaningId": "michaels:show-spades-3s-after-2nt-invite",
+          "semanticClassId": "michaels:show-major-after-2nt-invite",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.preferredMajorIsSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.preferredMajorIsSpades:boolean:true",
+              "description": "Spades rank as the better major",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "ShowHeldSuit",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3S \u2014 show spades",
+            "summary": "After the invitational 2NT ask, show spades as the better major"
           }
         }
       ]
@@ -2931,6 +3210,80 @@
             "factId": "hand.suitLength.hearts",
             "operator": "lte",
             "value": 2
+          }
+        }
+      },
+      {
+        "id": "module.michaels.hasMajorSupport",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Support for at least one major",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 3
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.michaels.preferredMajorIsHearts",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Hearts are the better or equal major",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength",
+          "suitRelation"
+        ],
+        "composition": {
+          "kind": "extended",
+          "clause": {
+            "clauseKind": "suitCompare",
+            "a": "H",
+            "op": "gte",
+            "b": "S"
+          }
+        }
+      },
+      {
+        "id": "module.michaels.preferredMajorIsSpades",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Spades are the better major",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": [
+          "suitLength",
+          "suitRelation"
+        ],
+        "composition": {
+          "kind": "extended",
+          "clause": {
+            "clauseKind": "suitCompare",
+            "a": "S",
+            "op": "gt",
+            "b": "H"
           }
         }
       },
