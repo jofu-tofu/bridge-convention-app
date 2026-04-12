@@ -78,20 +78,7 @@
     presetDialog?.open({ mode: "edit", presetId });
   }
 
-  function handleLearn(config: ConventionInfo) {
-    appStore.setLearningFromBundle(config);
-    void goto("/learning");
-  }
-
-  const lastPracticedConvention = $derived(
-    allConventions.find((c) => c.id === appStore.lastPracticedId) ?? null,
-  );
-
   const displayName = displayConventionName;
-
-  const lastPracticedLocked = $derived(
-    lastPracticedConvention ? !canPractice(auth.user, lastPracticedConvention.id) : false,
-  );
 </script>
 
 <svelte:window bind:innerWidth={innerW} />
@@ -157,50 +144,6 @@
 
   <!-- Scrollable convention grid -->
   <div class="min-h-0 flex-1 overflow-y-auto pb-6">
-    {#if lastPracticedConvention && !searchQuery}
-      <!-- Continue Practicing card -->
-      <div
-        class="flex items-center justify-between gap-4 px-3 py-2 mb-3 rounded-[--radius-lg]
-          bg-accent-primary/8 border border-accent-primary/20"
-        data-testid="continue-practicing"
-      >
-        <div class="min-w-0">
-          <p class="text-xs font-medium text-accent-primary uppercase tracking-wide mb-0.5">Continue Practicing</p>
-          <p class="text-base font-semibold text-text-primary truncate">
-            {displayName(lastPracticedConvention.name)}
-          </p>
-        </div>
-        <div class="flex items-center gap-1.5 shrink-0">
-          <button
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
-              text-text-secondary bg-bg-elevated hover:text-accent-primary hover:bg-accent-primary/10
-              transition-all cursor-pointer border border-transparent hover:border-accent-primary/20"
-            aria-label="Learn {displayName(lastPracticedConvention.name)}"
-            onclick={() => handleLearn(lastPracticedConvention)}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
-            <span class="hidden sm:inline">Learn</span>
-          </button>
-          <button
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
-              transition-all shadow-sm
-              {lastPracticedLocked
-                ? 'text-text-muted bg-bg-elevated cursor-pointer border border-border-subtle'
-                : 'text-text-on-accent bg-accent-primary hover:bg-accent-primary-hover cursor-pointer'}"
-            aria-label="{lastPracticedLocked ? 'Unlock' : 'Practice'} {displayName(lastPracticedConvention.name)}"
-            onclick={() => handleSelect(lastPracticedConvention)}
-          >
-            {#if lastPracticedLocked}
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            {:else}
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-            {/if}
-            <span class="hidden sm:inline">{lastPracticedLocked ? "Locked" : "Practice"}</span>
-          </button>
-        </div>
-      </div>
-    {/if}
-
     {#if !searchQuery}
       <SavedDrillsShelf onLaunch={launchPreset} onEdit={openEditDialog} />
     {/if}
@@ -229,17 +172,6 @@
                 </p>
                 {@const locked = !canPractice(auth.user, convention.id)}
                 <div class="flex items-center justify-end gap-1.5 mt-2">
-                  <button
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
-                      text-text-secondary bg-bg-elevated hover:text-accent-primary hover:bg-accent-primary/10
-                      transition-all cursor-pointer border border-transparent hover:border-accent-primary/20"
-                    data-testid="learn-{convention.id}"
-                    aria-label="Learn {displayName(convention.name)}"
-                    onclick={() => handleLearn(convention)}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
-                    <span class="hidden sm:inline">Learn</span>
-                  </button>
                   <button
                     class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
                       transition-all shadow-sm

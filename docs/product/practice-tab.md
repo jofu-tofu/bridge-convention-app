@@ -6,17 +6,24 @@ affordances layered on top.
 
 ## Shipped surfaces
 
-1. **Continue strip** (Phase 1). One-row reminder of the most recently practiced
-   convention, with a one-click Practice button. Hidden while the user is
-   searching.
-2. **Saved drills shelf** (Phase 2). Horizontal chip strip above the category
+1. **Saved drills shelf** (Phase 2). Horizontal chip strip above the category
    sections. Each chip is a named preset — a saved
    `(conventionId, practiceMode, practiceRole, systemSelectionId)` tuple —
    launchable in one tap. Hidden when the user has zero presets. MRU-sorted
    (`lastUsedAt` DESC, nulls last, `createdAt` tiebreaker). No manual reorder.
-3. **Category-sectioned catalog** (Phase 1). All conventions, grouped by
-   `ConventionCategory` enum order. Each card offers Learn, one-click Practice,
-   and a `⋯` configure-and-save action that opens the preset dialog.
+2. **Category-sectioned catalog** (Phase 1). All conventions, grouped by
+   `ConventionCategory` enum order. Each card offers one-click Practice and a
+   `⋯` configure-and-save action that opens the preset dialog.
+
+## Phase 3 scope refinement (2026-04-12)
+
+Practice is now a single-purpose surface: **launch a practice drill**. Resume,
+Learn, and orientation affordances moved to the logged-in landing page, which
+owns the multipurpose home. Removed from Practice:
+
+- **Continue-practicing strip.** Landing owns resume.
+- **Learn buttons on cards.** Learn is reachable via NavRail / BottomTabBar and
+  the landing only. No Learn entry point on Practice.
 
 ## Deferred to Phase 3
 
