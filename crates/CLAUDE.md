@@ -75,7 +75,7 @@ crates/
   bridge-api/          Axum API server — auth, user data (DataPort). Standalone binary
                        (:3001). Independent of game crates (no bridge-engine/conventions/
                        session/service deps). SQLite via sqlx, OAuth (Google + GitHub),
-                       server-side sessions. See Dockerfile.api for container build.
+                       server-side sessions. See infra/Dockerfile.api for container build.
   bridge-static/       Static data extractor — outputs convention JSON for build-time
                        HTML generation. Thin binary that calls bridge-session viewport
                        builders — MUST NOT contain convention logic or data.

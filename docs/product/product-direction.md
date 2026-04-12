@@ -98,7 +98,7 @@ Browser ──fetch──► Caddy ──/api/*──► Axum (bridge-api :3001)
 
 **Cookie-based CSRF:** OAuth `state` parameter stored in short-lived httpOnly cookie (10-min TTL), verified on callback.
 
-**Crate:** `crates/bridge-api/` — standalone binary, independent of game crates (no bridge-engine/conventions/session/service deps). See `Dockerfile.api` for container build.
+**Crate:** `crates/bridge-api/` — standalone binary, independent of game crates (no bridge-engine/conventions/session/service deps). See `infra/Dockerfile.api` for container build.
 
 **Frontend:** `src/service/auth.ts` (AuthClient) → `src/stores/auth.svelte.ts` (auth store via DI) → components. Same service boundary pattern as ServicePort.
 

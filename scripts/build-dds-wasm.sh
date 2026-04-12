@@ -2,6 +2,14 @@
 # Build DDS (double dummy solver) C++ source to WASM via Emscripten.
 # Produces static/dds/dds.js + static/dds/dds.wasm.
 #
+# Lifecycle:
+#   vendor/dds/      = vendored C++ source snapshot used only for rebuilds
+#   scripts/*.sh     = maintenance/build helpers
+#   static/dds/*     = committed browser runtime artifacts served by the app
+#
+# The vendored DDS source already includes the Emscripten-specific changes this
+# build needs. There is no separate patch-apply step in the normal build flow.
+#
 # Prerequisites: Emscripten SDK (emcc) must be on PATH.
 # Usage: bash scripts/build-dds-wasm.sh
 

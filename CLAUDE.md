@@ -34,12 +34,14 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). W
 
 1. GitHub Actions builds a Docker image (Rust/WASM → SvelteKit/Vite → Caddy)
 2. Pushes to GHCR (`ghcr.io/jofu-tofu/bridge-convention-app`)
-3. SSHs into VPS, pins the version in `docker-compose.yml`, pulls, and restarts
+3. SSHs into VPS, pins the version in `/opt/bridge-app/docker-compose.yml`, pulls, and restarts
 
 **CI (`deploy.yml`)** runs on every push/PR: type-check, unit tests, lint, production build.
 **Release (`release.yml`)** runs on `v*` tags: Docker build → GHCR push → VPS deploy.
 
 **Rollback:** SSH to VPS, edit `/opt/bridge-app/docker-compose.yml` to a previous version tag, `docker compose pull && docker compose up -d`.
+
+**Repo deployment assets:** repo-local Docker/Caddy files live under `infra/`. The VPS still uses `/opt/bridge-app/docker-compose.yml` at deploy time.
 
 **Required GitHub Secrets:** `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`.
 
@@ -79,7 +81,7 @@ Backward compat alias: `?profiles=true` → `/workshop`.
 - **Fix all lint errors and warnings you encounter** — even if they weren't caused by your changes. If `npm run lint` or a hook reports errors/warnings in files you touched, fix them before finishing.
 - **Remove dead code after every change.** When a change makes code unreachable, unused, or semantically dead (reachable but its result is never consumed), delete it immediately — don't leave it for a follow-up. This includes: unused imports, functions, types, struct fields, enum variants, variables, parameters, feature flags that always resolve one way, and code behind conditions that are always true/false. Run `npm run lint:dead` (Knip) for TS and `cargo test --workspace` + compiler warnings for Rust. Do not comment out dead code or rename it with `_` prefixes — delete it.
 - **Lint is scoped to app code, tests, and root JS/TS config files.** `npm run lint` is not a workspace-wide sweep; it excludes generated/tooling directories outside the app surface.
-- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `stores/`, `cli/`, `components/`), the UI/backend boundary (components/ cannot import from any backend module -- must use service/), design token usage in game components (`no-hardcoded-style-classes`), and protocol trigger scope (`no-full-scope-trigger`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is loaded by the DDS worker via `importScripts()`.
+- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `stores/`, `cli/`, `components/`), the UI/backend boundary (components/ cannot import from any backend module -- must use service/), design token usage in game components (`no-hardcoded-style-classes`), and protocol trigger scope (`no-full-scope-trigger`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is fetched by the DDS worker at runtime.
 
 ## Conventions
 
@@ -138,6 +140,7 @@ src/
     util/          Pure utilities: delay
     auth.ts        AuthClient — DataPort boundary for /api/auth/* calls
   cli/             Session-based convention evaluation CLI (main.ts + shared.ts + commands/)
+  skills/          Project-local AI skills (BridgeExpertReview, ConventionForge)
   test-support/    Shared test factories (engine stub, deal/session fixtures, sveltekit-mocks/)
   stores/          Svelte stores (app, game coordinator, custom-systems, context DI, dev-params, feature-flags, entitlements)
   components/      Svelte UI components
@@ -168,6 +171,7 @@ tests/
 | Service (Rust)     | `crates/bridge-service/`     | ServicePort impl, viewport builders                     |
 | Service (TS)       | `src/service/index.ts`                 | WASM proxy + barrel + session-types + display/ + util/  |
 | CLI                | `src/cli/main.ts`                      | Session-based convention evaluation CLI                 |
+| Project Skills     | `skills/`                              | Repo-local AI skills linked into `.claude/`, `.codex/`, and `.devin/` |
 | Test Support       | `src/test-support/engine-stub.ts`      | Shared test factories                                   |
 | Stores             | `src/stores/app.svelte.ts`             | Svelte stores, game coordinator, feature flags, entitlements |
 | Components         | —                                      | Svelte UI (screens/game/shared)                         |
@@ -198,6 +202,7 @@ See `docs/architecture/migration/index.md` for the phase tracker and architectur
 - Component tests use `@testing-library/svelte` — components needing context (stores/engine) need wrapper setup in test-helpers.ts
 - Svelte `{#each}` blocks require keyed iteration (`{#each items as item (item.id)}`) per ESLint rule `svelte/require-each-key`
 - See `docs/guides/gotchas.md` for detailed technical notes (DDS browser, vendor/dds, convention system details, CLI enumeration, deal generation)
+- Project-local skills live in `skills/`. `npm install` / `npm ci` runs `scripts/link-project-skills.sh` to mirror them into `.claude/skills`, `.codex/skills`, and `.devin/skills`; rerun `npm run skills:link` after adding or renaming a project skill.
 - **MC+DDS play runs entirely in Rust/WASM.** The DDS Worker callback is injected at service init via `wireDdsSolver()`. The store calls `playCard` and receives all AI plays regardless of profile — Expert/WorldClass use MC+DDS (async DDS via injected JS solver in `bridge-wasm`), Beginner/ClubPlayer use synchronous heuristic chain. MC sampling, evaluation, and suggest logic live in `bridge-session/src/dds/`. Expert samples randomly (no beliefs); WorldClass adds belief-constraint filtering (`PlayProfile.use_posterior`). Posterior inference (`PosteriorEngine` in `bridge-session/src/inference/posterior.rs`) uses rejection sampling against L1 `DerivedRanges`, 200-sample budget, wired into heuristics via `PlayBeliefs`.
 
 **Context tree** (read the relevant one before working in that directory):
@@ -206,7 +211,7 @@ See `docs/architecture/migration/index.md` for the phase tracker and architectur
 - `src/service/CLAUDE.md` — WASM proxy, display/, util/, session-types
 - `crates/CLAUDE.md` — Rust workspace: 7 crates, serde contract, commands
 - `crates/bridge-static/CLAUDE.md` — static data extractor, JSON contract, architectural constraints
-- `src/cli/CLAUDE.md` — headless coverage test runner
+- `src/cli/CLAUDE.md` — session-based convention CLI
 - `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns
 - `src/stores/CLAUDE.md` — factory DI pattern, game store methods, race condition handling
 - `src/test-support/CLAUDE.md` — shared test factories, dependency rules
@@ -314,4 +319,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-11 | version=25 | dir-commits-at-audit=67 | tree-sig=dirs:18,files:100+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-12 | version=27 | dir-commits-at-audit=67 | tree-sig=dirs:19,files:100+ -->

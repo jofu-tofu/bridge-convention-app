@@ -46,6 +46,6 @@ RUN mkdir -p static/.static && bridge-static --output static/.static/learn-data.
 
 # Stage 5 — production: serve static files with Caddy
 FROM caddy:2-alpine AS production
-COPY Caddyfile /etc/caddy/Caddyfile
+COPY infra/Caddyfile /etc/caddy/Caddyfile
 COPY --from=node-build /build/build/ /srv/
 EXPOSE 80

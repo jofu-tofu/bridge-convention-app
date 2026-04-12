@@ -18,3 +18,8 @@ npm run test:all
 ## Recommended IDE Setup
 
 [VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+
+## Repo Layout
+
+Core app/toolchain config stays at the repo root. Deployment assets live under
+[`infra/`](./infra/README.md).

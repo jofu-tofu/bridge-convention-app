@@ -28,7 +28,7 @@ types.ts → constants.ts → hand-evaluator.ts
 | `scoring.ts`          | `isVulnerable()` utility only — all other scoring logic runs in Rust                      |
 | `call-helpers.ts`     | Canonical `callsMatch()` — call equality check shared by stores and inference             |
 | `dds-wasm.ts`         | DDS PBN conversion, struct pack/unpack, `solveFromPBN()` (PBN-based table solve), `solveWithModule()` (Deal-based wrapper), `solveBoardWithModule()` (per-card) — pure logic, no DOM/Worker. Exports `handsToPBN()`, `cardsToPBNHand()`, `unpackTricksTable()` (shared 5×4 tricks unpacker with pluggable readInt32 callback), DDS index helpers (`trumpToDdsIndex`, `seatToDdsIndex`, `rankToDdsValue`), and index mapping constants (`DDS_STRAIN_MAP`, `DDS_SEAT_MAP`, `DDS_SUIT_MAP_PLAY`, `DDS_RANK_MAP`). |
-| `dds-worker.ts`       | Classic Web Worker — loads DDS WASM via `importScripts`, handles `CalcAllTablesPBN` (Deal or PBN) and `SolveBoardPBN` requests |
+| `dds-worker.ts`       | Module Worker — loads DDS WASM by fetching `/dds/dds.js` and `eval`ing the Emscripten factory, handles `CalcAllTablesPBN` (Deal or PBN) and `SolveBoardPBN` requests |
 | `dds-client.ts`       | Main thread API — `initDDS()`, `isDDSAvailable()`, `solveDealFromPBN()`, `solveBoardWasm()` via Worker messages |
 
 ## Gotchas
@@ -67,4 +67,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `types.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-03-29 | version=8 | dir-commits-at-audit=25 | tree-sig=dirs:1,files:19,exts:ts:18,md:1 -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-12 | version=9 | dir-commits-at-audit=25 | tree-sig=dirs:1,files:19,exts:ts:18,md:1 -->

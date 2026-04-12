@@ -5,13 +5,25 @@ Detailed technical notes, historical context, and non-obvious decisions. Read wh
 ## Engine & WASM
 
 ### WASM Required for Browser
-All game logic runs in Rust via WASM (`WasmService`). If WASM init fails, the app shows an error screen — there is no fallback. TS `engine/` contains types, constants, hand evaluation, `isVulnerable()`, and DDS browser support — no auction, deal generation, or scoring logic. Vercel deploys install Rust + wasm-pack via `scripts/vercel-build.sh` and produce a real WASM build. Stub files (`scripts/ensure-wasm-stubs.sh`) are retained as a fallback if the WASM toolchain is unavailable.
+All game logic runs in Rust via WASM (`WasmService`). If WASM init fails, the app shows an error screen — there is no fallback. TS `engine/` contains types, constants, hand evaluation, `isVulnerable()`, and DDS browser support — no auction, deal generation, or scoring logic.
 
 ### DDS Browser Implementation
 DDS table analysis works via Emscripten-compiled C++ DDS in a Web Worker (`dds-client.ts`). The deal is extracted from the Rust service as a PBN string (`getDealPBN`), then sent to the worker for solving. `initDDS()` fires at app startup (fire-and-forget); `isDDSAvailable()` gates calls. Par is always null (mode=-1). DDS WASM artifacts (`static/dds/`) are committed; rebuild with `npm run dds:build` (requires Emscripten).
 
 ### vendor/dds
-`vendor/dds/` is an upstream DDS C++ source checkout and `vendor/dds-patches/` holds local Emscripten/build patches for producing the browser double-dummy WASM bundle (`static/dds/`); app-level bridge logic in `src/` and `crates/` remains clean-room.
+`vendor/dds/` is the vendored upstream DDS C++ source snapshot used only when rebuilding the browser DDS bundle. The Emscripten-specific edits needed by this repo are already baked into the vendored source; there is no separate patch-apply step in the normal build. App-level bridge logic in `src/` and `crates/` remains clean-room.
+
+### DDS Asset Lifecycle
+Keep the DDS layers mentally separate:
+
+1. `vendor/dds/`
+   Third-party source code snapshot. Maintenance-only. The app never serves this directory.
+2. `scripts/build-dds-wasm.sh`
+   Manual rebuild entry point. Compiles `vendor/dds/` with Emscripten.
+3. `static/dds/`
+   Browser runtime artifacts (`dds.js`, `dds.wasm`, `BUILD_HASH`). These are what the worker actually fetches at runtime.
+
+Normal app startup and deploy use `static/dds/`. `vendor/dds/` matters only when you intentionally rebuild those runtime artifacts.
 
 ## DDS Architecture (Post-Migration)
 
