@@ -93,36 +93,6 @@
     "principle": "2D transfers to hearts, 2H transfers to spades — opener always accepts, making the strong hand declarer",
     "roles": "Responder initiates the transfer; opener mechanically accepts; responder then decides the final contract level"
   },
-  "dealConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 15,
-        "maxHcp": 17,
-        "balanced": true
-      },
-      {
-        "seat": "S",
-        "minLengthAny": {
-          "H": 5,
-          "S": 5
-        }
-      }
-    ]
-  },
-  "offConventionConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 15,
-        "maxHcp": 17,
-        "balanced": true
-      },
-      {
-        "seat": "S"
-      }
-    ]
-  },
   "derivedTeaching": {
     "surfaceGroups": [
       {

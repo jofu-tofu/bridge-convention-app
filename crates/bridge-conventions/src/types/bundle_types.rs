@@ -3,7 +3,7 @@
 //! Mirrors TS types from `conventions/core/bundle/bundle-types.ts`
 //! and `conventions/core/convention-types.ts`.
 
-use bridge_engine::types::{DealConstraints, Seat};
+use bridge_engine::types::Seat;
 use serde::{Deserialize, Serialize};
 
 use super::agreement::SystemProfile;
@@ -87,9 +87,6 @@ pub struct ConventionBundle {
     #[serde(default)]
     pub modules: Vec<ConventionModule>,
     pub derived_teaching: DerivedTeachingContent,
-    pub deal_constraints: DealConstraints,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub off_convention_constraints: Option<DealConstraints>,
     // defaultAuction omitted — function field
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allowed_dealers: Option<Vec<Seat>>,

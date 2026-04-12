@@ -92,40 +92,6 @@
     "principle": "DONT uses conventional overcalls to describe shape (not strength), enabling partner to judge fit and level quickly. The double shows an unknown single suit via a relay mechanism.",
     "roles": "Overcaller describes shape; advancer evaluates fit. After double, advancer must relay 2C to discover the suit."
   },
-  "dealConstraints": {
-    "seats": [
-      {
-        "seat": "E",
-        "minHcp": 15,
-        "maxHcp": 17
-      },
-      {
-        "seat": "S",
-        "minHcp": 8,
-        "maxHcp": 15,
-        "minLengthAny": {
-          "H": 4,
-          "S": 4,
-          "D": 4,
-          "C": 4
-        }
-      }
-    ],
-    "dealer": "E"
-  },
-  "offConventionConstraints": {
-    "seats": [
-      {
-        "seat": "E",
-        "minHcp": 15,
-        "maxHcp": 17
-      },
-      {
-        "seat": "S"
-      }
-    ],
-    "dealer": "E"
-  },
   "allowedDealers": [
     "E"
   ],

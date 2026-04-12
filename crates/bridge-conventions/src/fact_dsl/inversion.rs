@@ -5,10 +5,14 @@
 
 use std::collections::HashMap;
 
+use bridge_engine::types::{DealConstraints, Seat, SeatConstraint};
 use bridge_engine::Suit;
 
+use crate::registry::module_registry::{get_base_module_ids, get_module};
 use crate::types::{
-    FactComposition, PrimitiveClause, PrimitiveClauseOperator, PrimitiveClauseValue,
+    BaseSystemId, BidMeaningClause, ConstraintValue, ConventionBundle, ConventionModule,
+    FactComposition, FactOperator, PrimitiveClause, PrimitiveClauseOperator, PrimitiveClauseValue,
+    TurnRole,
 };
 
 /// Inverted constraint bounds extracted from a composition tree.
@@ -264,6 +268,144 @@ fn clause_value_as_u8(value: &PrimitiveClauseValue) -> u8 {
     clause_value_as_u32(value) as u8
 }
 
+// --- Surface clause → composition ---
+
+/// Map a `BidMeaningClause` (which uses the richer `FactOperator`/`ConstraintValue`
+/// from the surface vocabulary) into a `PrimitiveClause` suitable for inversion.
+/// Returns `None` when the operator/value does not fit the primitive shape
+/// (e.g. `In`, string/list values); the caller is expected to drop these.
+fn clause_to_primitive(clause: &BidMeaningClause) -> Option<PrimitiveClause> {
+    let (op, value) = match (&clause.operator, &clause.value) {
+        (FactOperator::Gte, ConstraintValue::Number(n)) => (
+            PrimitiveClauseOperator::Gte,
+            PrimitiveClauseValue::Single(n.clone()),
+        ),
+        (FactOperator::Lte, ConstraintValue::Number(n)) => (
+            PrimitiveClauseOperator::Lte,
+            PrimitiveClauseValue::Single(n.clone()),
+        ),
+        (FactOperator::Eq, ConstraintValue::Number(n)) => (
+            PrimitiveClauseOperator::Eq,
+            PrimitiveClauseValue::Single(n.clone()),
+        ),
+        (FactOperator::Range, ConstraintValue::Range { min, max }) => (
+            PrimitiveClauseOperator::Range,
+            PrimitiveClauseValue::Range {
+                min: min.clone(),
+                max: max.clone(),
+            },
+        ),
+        // Boolean: encode as Eq with 1/0 so the downstream inverter still sees a
+        // numeric clause. `invert_primitive` dispatches by fact_id, so unknown
+        // boolean facts (e.g. `bridge.hasFiveCardMajor`) are silently dropped.
+        (FactOperator::Boolean, ConstraintValue::Bool(b)) => (
+            PrimitiveClauseOperator::Eq,
+            PrimitiveClauseValue::Single(serde_json::Number::from(if *b { 1 } else { 0 })),
+        ),
+        _ => return None,
+    };
+    Some(PrimitiveClause {
+        fact_id: clause.fact_id.clone(),
+        operator: op,
+        value,
+    })
+}
+
+/// Build an `And`-composition from a list of surface clauses. Non-primitive
+/// clauses (unmappable operators/values) are skipped. Empty input yields an
+/// empty `And`, which `invert_composition` handles as an unconstrained result.
+pub fn compose_surface_clauses(clauses: &[BidMeaningClause]) -> FactComposition {
+    let operands: Vec<FactComposition> = clauses
+        .iter()
+        .filter_map(|c| clause_to_primitive(c).map(|p| FactComposition::Primitive { clause: p }))
+        .collect();
+    FactComposition::And { operands }
+}
+
+// --- Seat-level deal constraint derivation ---
+
+fn seat_from_turn(turn: TurnRole) -> Option<Seat> {
+    match turn {
+        TurnRole::Opener => Some(Seat::North),
+        TurnRole::Responder => Some(Seat::South),
+        TurnRole::Opponent => None,
+    }
+}
+
+fn inverted_to_seat_constraint(seat: Seat, c: &InvertedConstraint) -> SeatConstraint {
+    SeatConstraint {
+        seat,
+        min_hcp: c.min_hcp,
+        max_hcp: c.max_hcp,
+        balanced: c.balanced,
+        min_length: c.min_length.clone(),
+        max_length: c.max_length.clone(),
+        min_length_any: c.min_length_any.clone(),
+    }
+}
+
+/// Derive deal-generation constraints by inverting every surface clause across
+/// the bundle's modules plus the system's base modules.
+///
+/// Lives in `bridge-conventions` (not `bridge-service`) because the module
+/// registry is in-crate; callers pass a `BaseSystemId` and we resolve base
+/// modules via `get_module`. The plan's `SystemConfig` signature was relaxed
+/// to `BaseSystemId` since `SystemConfig` carries no `base_module_ids`.
+pub fn derive_deal_constraints(bundle: &ConventionBundle, system: BaseSystemId) -> DealConstraints {
+    // Collect candidate modules: bundle.modules + base modules resolved via registry.
+    let mut candidates: Vec<&ConventionModule> = bundle.modules.iter().collect();
+    for base_id in get_base_module_ids(system) {
+        if let Some(m) = get_module(base_id, system) {
+            // Avoid double-counting if a base module is also in bundle.modules.
+            if !candidates.iter().any(|c| c.module_id == m.module_id) {
+                candidates.push(m);
+            }
+        }
+    }
+
+    // Bucket inverted constraints per partnership seat, then union (OR) across
+    // alternative surfaces within the same seat (different surfaces are
+    // alternative meanings, not conjunctions).
+    let mut per_seat: HashMap<Seat, Vec<InvertedConstraint>> = HashMap::new();
+
+    for module in candidates {
+        let Some(states) = module.states.as_ref() else {
+            continue;
+        };
+        for state_entry in states {
+            let Some(turn) = state_entry.turn else {
+                continue;
+            };
+            let Some(seat) = seat_from_turn(turn) else {
+                continue;
+            };
+            for surface in &state_entry.surfaces {
+                let comp = compose_surface_clauses(&surface.clauses);
+                let inverted = invert_composition(&comp);
+                per_seat.entry(seat).or_default().push(inverted);
+            }
+        }
+    }
+
+    let mut seats: Vec<SeatConstraint> = per_seat
+        .into_iter()
+        .map(|(seat, constraints)| {
+            let merged = union_all(&constraints);
+            inverted_to_seat_constraint(seat, &merged)
+        })
+        .collect();
+    // Deterministic order.
+    seats.sort_by_key(|s| format!("{:?}", s.seat));
+
+    DealConstraints {
+        seats,
+        dealer: Some(Seat::North),
+        vulnerability: None,
+        max_attempts: Some(50_000),
+        seed: None,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -369,5 +511,146 @@ mod tests {
         };
         let result = invert_composition(&comp);
         assert_eq!(result.balanced, Some(true));
+    }
+
+    // --- compose_surface_clauses ---
+
+    fn clause(fact_id: &str, op: FactOperator, value: ConstraintValue) -> BidMeaningClause {
+        BidMeaningClause {
+            fact_id: fact_id.to_string(),
+            operator: op,
+            value,
+            clause_id: None,
+            description: None,
+            rationale: None,
+            is_public: None,
+        }
+    }
+
+    #[test]
+    fn compose_surface_clauses_simple() {
+        let clauses = vec![
+            clause("hand.hcp", FactOperator::Gte, ConstraintValue::int(8)),
+            clause(
+                "hand.suitLength.hearts",
+                FactOperator::Gte,
+                ConstraintValue::int(4),
+            ),
+        ];
+        let comp = compose_surface_clauses(&clauses);
+        match comp {
+            FactComposition::And { operands } => {
+                assert_eq!(operands.len(), 2);
+                match &operands[0] {
+                    FactComposition::Primitive { clause } => {
+                        assert_eq!(clause.fact_id, "hand.hcp");
+                        assert_eq!(clause.operator, PrimitiveClauseOperator::Gte);
+                        assert_eq!(
+                            clause.value,
+                            PrimitiveClauseValue::Single(serde_json::Number::from(8))
+                        );
+                    }
+                    _ => panic!("expected Primitive"),
+                }
+                match &operands[1] {
+                    FactComposition::Primitive { clause } => {
+                        assert_eq!(clause.fact_id, "hand.suitLength.hearts");
+                        assert_eq!(clause.operator, PrimitiveClauseOperator::Gte);
+                    }
+                    _ => panic!("expected Primitive"),
+                }
+            }
+            _ => panic!("expected And"),
+        }
+    }
+
+    #[test]
+    fn compose_surface_clauses_empty() {
+        let comp = compose_surface_clauses(&[]);
+        match comp {
+            FactComposition::And { operands } => assert!(operands.is_empty()),
+            _ => panic!("expected And"),
+        }
+    }
+
+    #[test]
+    fn invert_stayman_eligible_clauses() {
+        // Stayman's `module.stayman.eligible` activation-like clauses:
+        // hcp >= 8, hearts >= 4 OR spades >= 4 (we encode as two min-length entries
+        // flowing through OR-style inversion), plus a hasFiveCardMajor:false that
+        // must be silently dropped.
+        //
+        // Per plan: wrapping all in And is fine — the point is confirming that
+        // `bridge.hasFiveCardMajor` doesn't leak into the result.
+        let clauses = vec![
+            clause("hand.hcp", FactOperator::Gte, ConstraintValue::int(8)),
+            clause(
+                "hand.suitLength.hearts",
+                FactOperator::Gte,
+                ConstraintValue::int(4),
+            ),
+            clause(
+                "hand.suitLength.spades",
+                FactOperator::Gte,
+                ConstraintValue::int(4),
+            ),
+            clause(
+                "bridge.hasFiveCardMajor",
+                FactOperator::Boolean,
+                ConstraintValue::Bool(false),
+            ),
+        ];
+        // To mirror "4+ hearts OR 4+ spades" semantics for eligibility, invert
+        // the AND here — this test is about the primitive mapping, not the
+        // logical shape. We just need to confirm inversion runs cleanly and
+        // the Boolean clause for hasFiveCardMajor was silently dropped.
+        let comp = compose_surface_clauses(&clauses);
+        let inv = invert_composition(&comp);
+
+        // HCP lower bound survived.
+        assert_eq!(inv.min_hcp, Some(8));
+        // Heart and spade min lengths survived (under AND semantics: both min 4).
+        let mls = inv.min_length.as_ref().expect("min_length populated");
+        assert_eq!(mls.get(&Suit::Hearts), Some(&4));
+        assert_eq!(mls.get(&Suit::Spades), Some(&4));
+        // No field corresponds to hasFiveCardMajor — balanced stays None because
+        // the Boolean clause mapped to Eq(0) on an unrecognized fact_id and was
+        // dropped by `invert_primitive`.
+        assert_eq!(inv.balanced, None);
+    }
+
+    #[test]
+    fn derive_deal_constraints_nt_stayman() {
+        use crate::registry::resolve_bundle;
+
+        let bundle = resolve_bundle("nt-stayman", BaseSystemId::Sayc)
+            .expect("nt-stayman bundle should resolve");
+        let constraints = derive_deal_constraints(bundle, BaseSystemId::Sayc);
+
+        // Dealer + max_attempts are fixed at the function level.
+        assert_eq!(constraints.dealer, Some(Seat::North));
+        assert_eq!(constraints.max_attempts, Some(50_000));
+
+        // Both opener (N) and responder (S) seats populated.
+        let seats: std::collections::HashMap<Seat, &SeatConstraint> =
+            constraints.seats.iter().map(|s| (s.seat, s)).collect();
+        assert!(seats.contains_key(&Seat::North), "N seat should be present");
+        let south = seats.get(&Seat::South).expect("S seat should be present");
+
+        // Responder's Stayman eligibility surface promises 4+ hearts OR 4+ spades,
+        // so the unioned responder constraint should expose at least one of those
+        // through `min_length_any` with value >= 4. Base-module responder surfaces
+        // with looser length bounds may also contribute, so accept either entry.
+        let any = south
+            .min_length_any
+            .as_ref()
+            .expect("S min_length_any should be populated from Stayman surfaces");
+        let hearts_ok = any.get(&Suit::Hearts).copied().unwrap_or(0) >= 4;
+        let spades_ok = any.get(&Suit::Spades).copied().unwrap_or(0) >= 4;
+        assert!(
+            hearts_ok || spades_ok,
+            "expected H or S min_length_any >= 4, got {:?}",
+            any
+        );
     }
 }

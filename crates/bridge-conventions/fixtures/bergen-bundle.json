@@ -100,46 +100,6 @@
     "principle": "With a known trump fit, bid to the level your combined strength supports — preempt with weakness, invite with middle values, bid game with strength",
     "roles": "Opener evaluates whether the partnership has game after responder's Bergen bid"
   },
-  "dealConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 12,
-        "maxHcp": 21,
-        "minLengthAny": {
-          "H": 5,
-          "S": 5
-        }
-      },
-      {
-        "seat": "S",
-        "minLengthAny": {
-          "H": 4,
-          "S": 4
-        },
-        "maxLength": {
-          "H": 4,
-          "S": 4
-        }
-      }
-    ]
-  },
-  "offConventionConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 12,
-        "maxHcp": 21,
-        "minLengthAny": {
-          "H": 5,
-          "S": 5
-        }
-      },
-      {
-        "seat": "S"
-      }
-    ]
-  },
   "derivedTeaching": {
     "surfaceGroups": [
       {

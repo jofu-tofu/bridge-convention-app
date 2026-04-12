@@ -78,56 +78,6 @@
     "principle": "After an overcall, double shows the unbid suits (especially unbid majors) with competitive values. The specific suits shown depend on which suits are already bid.",
     "roles": "Responder describes shape via double; opener evaluates fit and rebids accordingly"
   },
-  "dealConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 12,
-        "maxHcp": 21,
-        "minLengthAny": {
-          "C": 5,
-          "D": 5,
-          "H": 5,
-          "S": 5
-        }
-      },
-      {
-        "seat": "W",
-        "minHcp": 8,
-        "maxHcp": 16,
-        "minLengthAny": {
-          "C": 5,
-          "D": 5,
-          "H": 5,
-          "S": 5
-        }
-      },
-      {
-        "seat": "S",
-        "minHcp": 6,
-        "maxHcp": 15
-      }
-    ],
-    "dealer": "N"
-  },
-  "offConventionConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 12,
-        "maxHcp": 21
-      },
-      {
-        "seat": "W",
-        "minHcp": 8,
-        "maxHcp": 16
-      },
-      {
-        "seat": "S"
-      }
-    ],
-    "dealer": "N"
-  },
   "allowedDealers": [
     "N"
   ],

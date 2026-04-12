@@ -108,48 +108,6 @@
     "principle": "Weak twos simultaneously obstruct opponents and describe a narrow hand type (6-card suit, limited strength) that partner can evaluate precisely",
     "roles": "Opener describes; responder captains. After Ogust 2NT, opener further classifies along strength and quality dimensions"
   },
-  "dealConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 5,
-        "maxHcp": 10,
-        "minLengthAny": {
-          "D": 6,
-          "H": 6,
-          "S": 6
-        }
-      },
-      {
-        "seat": "S",
-        "minHcp": 4,
-        "minLengthAny": {
-          "H": 2,
-          "S": 2,
-          "D": 2
-        }
-      }
-    ],
-    "dealer": "N"
-  },
-  "offConventionConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 5,
-        "maxHcp": 10,
-        "minLengthAny": {
-          "D": 6,
-          "H": 6,
-          "S": 6
-        }
-      },
-      {
-        "seat": "S"
-      }
-    ],
-    "dealer": "N"
-  },
   "allowedDealers": [
     "N"
   ],

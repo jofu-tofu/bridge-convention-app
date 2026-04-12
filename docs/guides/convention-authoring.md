@@ -11,10 +11,12 @@ Priority chain for resolving ambiguity:
 
 ## Convention Quick Reference
 
-- **NT Bundle (1NT Responses):** Stayman (2C ask) + Jacoby Transfers (2D→H, 2H→S) + Smolen (3H/3S game-forcing after denial with 5-4 majors). 35 surfaces, 4 fact extensions. Deal: opener 15–17 HCP balanced, responder 6+ HCP with 4+ major.
-- **Bergen Bundle:** Standard Bergen (3C=constructive 7–10, 3D=limit 10–12, 3M=preemptive 0–6, splinter 12+). `$suit` binding for DRY heart/spade parameterization. Deal: opener 12–21 HCP with 5+ major, responder 0+ HCP with 4+ major.
-- **Weak Two Bundle:** Weak Two openings (2D/2H/2S) with Ogust responses. Ogust: 3C=min/bad, 3D=min/good, 3H=max/bad, 3S=max/good, 3NT=solid. Deal: opener 5–10 HCP with 6+, responder 12+ HCP.
-- **DONT Bundle:** Competitive overcalls after opponent's 1NT. No `match.turn` — uses phase + route scoping. 24 surfaces, 21 facts. Deal: East 15–17 HCP (NT opener), South 8–15 HCP with 5+ suit.
+- **NT Bundle (1NT Responses):** Stayman (2C ask) + Jacoby Transfers (2D→H, 2H→S) + Smolen (3H/3S game-forcing after denial with 5-4 majors). 35 surfaces, 4 fact extensions.
+- **Bergen Bundle:** Standard Bergen (3C=constructive 7–10, 3D=limit 10–12, 3M=preemptive 0–6, splinter 12+). `$suit` binding for DRY heart/spade parameterization.
+- **Weak Two Bundle:** Weak Two openings (2D/2H/2S) with Ogust responses. Ogust: 3C=min/bad, 3D=min/good, 3H=max/bad, 3S=max/good, 3NT=solid.
+- **DONT Bundle:** Competitive overcalls after opponent's 1NT. No `match.turn` — uses phase + route scoping. 24 surfaces, 21 facts.
+
+Deal constraints are never listed per bundle here because they are auto-derived from surface preconditions at runtime — add a surface and the generator will find hands. See `docs/architecture/teaching-architecture.md` § Deal Generation.
 
 ## Completeness Checklist
 
@@ -24,7 +26,7 @@ Every convention bundle must satisfy all items:
 2. **`factExtensions` for module-derived facts.** Facts not in shared `BRIDGE_DERIVED_FACTS` must be defined in `facts.ts`. Use factory helpers (`defineBooleanFact`, `definePerSuitFacts`, `defineHcpRangeFact`, `buildExtension`) from `conventions/pipeline/fact-factory.ts`.
 3. **`modules` for surface selection.** `ConventionModule[]` with `local` (LocalFsm) and `states` (StateEntry[]).
 4. **`systemProfile` for activation.**
-5. **`declaredCapabilities` for deal constraint derivation.** Deal constraints are NOT hand-authored — derived from capabilities + R1 surface analysis.
+5. **Deal constraints are auto-derived, not authored.** The runtime unions surface preconditions across target-bundle + base-system modules (`fact_dsl::inversion::derive_deal_constraints`) and rejection-samples deals until the user's expected bid lands on a target-module surface. Never add `dealConstraints` / `offConventionConstraints` to a bundle fixture — those fields no longer exist. Your only input is the surface clauses themselves; make them tight enough to describe the lesson and the generator will find hands.
 6. **`category` and `description`** required on `ConventionBundle`.
 7. **`explanationCatalog` entries.** Template-keyed explanations for teaching projections.
 8. **`semantic-classes.ts` constants.** Module-local, not in central registry.
@@ -141,6 +143,129 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 - **Template-form factIds are module-owned.** Platform catalog covers only concrete shared/system fact IDs.
 - **Non-pedagogical facts use `displayText: 'internal'`.**
 
+## Reference Block Authoring
+
+Fixture-backed learn pages can now carry a hand-authored `reference` block. This is the source of truth for the prerendered `/learn/[moduleId]` reference page. Treat it as editorial copy: concise, reference-first, and stable enough for deep links and print.
+
+### Reference block example
+
+```json
+"reference": {
+  "summaryCard": {
+    "trigger": "Partner opens 1NT, you respond",
+    "bid": { "type": "bid", "level": 2, "strain": "C" },
+    "promises": "Usually invitational-or-better values with at least one 4-card major.",
+    "denies": "A natural club suit and any promise that a major fit already exists.",
+    "guidingIdea": "Ask first, then place the contract: find the 4-4 major if it exists; otherwise return to the right notrump level.",
+    "partnership": "Core SAYC agreement. Opener shows hearts first with both 4-card majors."
+  },
+  "whenToUse": [
+    "Use Stayman with 8-9 HCP and a 4-card major when you want to invite game."
+  ],
+  "whenNotToUse": [
+    {
+      "text": "Do not use Stayman with no 4-card major and a clear notrump action already available.",
+      "reason": "Bid 2NT or 3NT directly when your question is level, not strain."
+    }
+  ],
+  "workedAuctions": [
+    {
+      "label": "Main line: find the 4-4 fit",
+      "calls": [
+        {
+          "seat": "Responder",
+          "call": { "type": "bid", "level": 2, "strain": "C" },
+          "rationale": "Asks for a 4-card major with game interest."
+        }
+      ],
+      "outcomeNote": "A known 8-card major fit usually beats 3NT when both contracts are available."
+    }
+  ],
+  "interference": [
+    {
+      "opponentAction": "Double of 2♣ or a 2♦ overcall",
+      "ourAction": "Keep normal Stayman structure unless the opponents bid again.",
+      "note": "Responder's 2♦ after a double is to play."
+    }
+  ],
+  "decisionGrid": {
+    "rows": ["0-7 HCP", "8-9 HCP", "10+ HCP"],
+    "cols": ["No 4-card major", "One 4-card major"],
+    "cells": [
+      ["Pass", "Pass"],
+      ["2NT", "2♣ then invite"],
+      ["3NT", "2♣ then bid game"]
+    ]
+  },
+  "systemCompat": {
+    "sayc": "Standard over a 15-17 1NT.",
+    "twoOverOne": "Core ask unchanged; confirm GF continuations.",
+    "acol": "Thresholds shift with the NT range.",
+    "customNote": "Confirm your range, both-major treatment, and interference agreements."
+  },
+  "relatedLinks": [
+    {
+      "moduleId": "jacoby-transfers",
+      "discriminator": "Show a 5-card major immediately instead of asking opener to choose."
+    }
+  ],
+  "responseTableOverrides": {
+    "stayman:show-hearts": {
+      "shape": "4+ hearts",
+      "hcp": "15-17",
+      "forcing": "INV"
+    }
+  }
+}
+```
+
+### Field guide
+
+- `summaryCard.trigger`: Exact auction slot. Keep it concrete and short.
+- `summaryCard.bid`: The convention call. Use the standard call object shape so the page can format it consistently.
+- `summaryCard.promises`: One line for what the call shows.
+- `summaryCard.denies`: One line for what the call rules out.
+- `summaryCard.guidingIdea`: One sentence the reader can regenerate the rest of the page from.
+- `summaryCard.partnership`: Agreement note such as "on by default in SAYC" or "requires partnership discussion".
+- `whenToUse[]`: Positive retrieval cues. Keep each item to one line.
+- `whenNotToUse[].text`: The negative-space rule.
+- `whenNotToUse[].reason`: Parenthesized reason explaining why the action is wrong or inferior.
+- `workedAuctions[].label`: Short title for the example line, alternative line, or non-example.
+- `workedAuctions[].calls[].seat`: Seat label shown in small caps, typically `Opener` / `Responder`.
+- `workedAuctions[].calls[].call`: Bid object or rendered bid string.
+- `workedAuctions[].calls[].rationale`: One-line reason for that bid. No paragraph narration.
+- `workedAuctions[].outcomeNote`: Optional short result note under the auction title.
+- `interference[].opponentAction`: The opponent action that changes your treatment.
+- `interference[].ourAction`: Your default practical response. This may be prose or a bid.
+- `interference[].note`: Clarifying follow-up detail.
+- `decisionGrid`: Optional. Use only when the decision is genuinely two-dimensional.
+- `decisionGrid.rows[]`: Row labels, usually HCP bands or strength classes.
+- `decisionGrid.cols[]`: Column labels, usually shape classes or fit classes.
+- `decisionGrid.cells[][]`: Short cell copy. Prefer an action first (`2♣ then invite`, `3NT`, `Pass`), with minimal prose.
+- `systemCompat.sayc`: SAYC treatment.
+- `systemCompat.twoOverOne`: 2/1 treatment.
+- `systemCompat.acol`: Acol treatment.
+- `systemCompat.customNote`: What a custom partnership must agree explicitly.
+- `relatedLinks[].moduleId`: Target learn-page module id.
+- `relatedLinks[].discriminator`: The scent text that tells the reader why this other page is different or adjacent.
+- `responseTableOverrides`: Optional per-meaning editorial overrides for the response-table spine when the derived row needs different `shape`, `hcp`, or `forcing` copy.
+
+### Reference-page authoring checklist
+
+- [ ] Summary card is <=6 lines, includes a one-sentence Guiding Idea.
+- [ ] "When NOT to use" has at least as many items as "When to use", each with a parenthesized reason.
+- [ ] Response table uses the exact fixed column schema.
+- [ ] Every response row and continuation sub-line has a stable anchor id.
+- [ ] At least one decision grid if the decision space is 2-D.
+- [ ] >=3 worked auctions, each annotated inline (no paragraph narration).
+- [ ] At least one non-example included.
+- [ ] Dedicated interference section (not buried elsewhere).
+- [ ] System compatibility row present and correct.
+- [ ] Cross-links are labelled with discriminators, not just target names.
+- [ ] No history, no re-motivation, no preamble.
+- [ ] All bids render in monospace, all seats in small-caps.
+- [ ] Zero ambiguous pronouns in response-table rows.
+
 ## Common Pitfalls
 
 1. **Surface clause `factId` not in catalog.** Missing facts cause clauses to fail closed.
@@ -217,11 +342,12 @@ When a convention has symmetric paths (hearts vs spades, 1C vs 1D opening), one 
 
 ### 8. Deal Constraint / Envelope Errors (2 occurrences)
 
-The deal generator produces hands that don't match the convention's intended practice scenario. Stayman envelope was too loose (allowed transfer hands). Michaels only generated major-suit openings.
+Historically, hand-authored `dealConstraints` drifted from surface semantics — Stayman envelope was too loose (allowed transfer hands); Michaels only generated major-suit openings. Constraints are now auto-derived from surface preconditions, so this class of error surfaces as **too-loose surface clauses** or **too-loose opening surfaces in the base system** rather than envelope mismatches.
 
 **Prevention:**
-- After authoring, run `selftest` with multiple seeds and check that generated hands are appropriate
-- Verify deal constraints cover ALL opening types the convention handles
+- After authoring, run `selftest` with multiple seeds and check that generated hands hit the intended surfaces (not fallback/escape surfaces)
+- Tighten surface clauses rather than reaching for a deal-constraint override — the override no longer exists
+- If rejection sampling exhausts (`tracing::warn` in `start_drill` logs), the derived envelope is too loose relative to the target surfaces — see Known Limitations in `docs/architecture/teaching-architecture.md`
 
 ### 9. Serde / Cross-Boundary Mismatches (2 occurrences)
 

@@ -92,26 +92,6 @@
     "principle": "The strongest hands need a forcing opening to ensure the auction continues. 2C → 2D (waiting) is the universal relay; opener then describes shape and strength through rebids.",
     "roles": "Opener describes; responder evaluates. After 2D waiting, the auction is game-forcing (except after 2NT rebid with 0-2 HCP)."
   },
-  "dealConstraints": {
-    "seats": [
-      {
-        "seat": "S",
-        "minHcp": 22,
-        "maxHcp": 37
-      }
-    ],
-    "dealer": "S"
-  },
-  "offConventionConstraints": {
-    "seats": [
-      {
-        "seat": "S",
-        "minHcp": 22,
-        "maxHcp": 37
-      }
-    ],
-    "dealer": "S"
-  },
   "allowedDealers": [
     "S"
   ],

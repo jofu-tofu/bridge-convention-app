@@ -53,6 +53,12 @@ crates/
                        which prefers the clause's `rationale` field and falls back to `display_name()`.
                        Editing system fact descriptions in fixture JSON has no UI effect — edit
                        `rationale` or `display_name()` instead.
+                       **Deal constraints are runtime-derived, not authored:** bundle JSON fixtures
+                       carry no `dealConstraints` / `offConventionConstraints` fields.
+                       `fact_dsl::inversion::derive_deal_constraints(bundle, BaseSystemId)` unions
+                       surface preconditions across `bundle.modules` + base-system modules (via
+                       `compose_surface_clauses`), inverts each composition to an
+                       `InvertedConstraint`, unions within each seat, and maps to `SeatConstraint`.
   bridge-session/      Rust session logic: inference, heuristics, controllers, viewports.
                        Phase 4 of the migration. Depends on bridge-engine + bridge-conventions.
                        Inference: natural inference + Monte Carlo posterior (rejection sampling)
@@ -68,6 +74,13 @@ crates/
   bridge-service/      Service layer — ServicePort trait + ServicePortImpl wrapping SessionManager.
                        Thin hexagonal port between UI/WASM/CLI and game logic. Depends on
                        bridge-engine, bridge-conventions, bridge-session.
+                       `deal_gating::build_deal_acceptance_predicate` builds the rejection-sampling
+                       predicate that gates deal generation on "user's expected bid matches a
+                       target-module surface." Injected as `Arc<DealAcceptancePredicate>` into
+                       `StartDrillOptions`; budget `NORMAL_DEAL_ATTEMPTS = 32`. On exhaustion,
+                       `tracing::warn` fires and the last deal is used (no panic, no Err). The
+                       negative-doubles bundle retains its own custom predicate with a separate
+                       budget.
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
                        for browser deployment. All 20 ServicePort methods + async DDS play
                        methods (play_card_dds, needs_dds_play, set_dds_solver) +
@@ -149,4 +162,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-12 | version=8 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:42 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-12 | version=9 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:42 -->

@@ -40,6 +40,16 @@ pub struct DrillBundle {
 
 const NEGATIVE_DOUBLES_BUNDLE_ID: &str = "negative-doubles-bundle";
 const NEGATIVE_DOUBLES_DEAL_ATTEMPTS: u64 = 256;
+/// Maximum rejection-sampling attempts for "normal" (non-negdbl) bundles when
+/// an acceptance predicate is supplied. Without a predicate, start_drill still
+/// accepts the first deal (budget = 1).
+pub const NORMAL_DEAL_ATTEMPTS: u64 = 32;
+
+/// Deal-acceptance predicate invoked once per candidate deal during rejection
+/// sampling. Returns true iff the deal should be accepted. Threaded in via
+/// `StartDrillOptions::deal_acceptance_predicate` by the service layer (which
+/// has access to the convention adapter + target module ids).
+pub type DealAcceptancePredicate = dyn Fn(&Deal, Seat) -> bool + Send + Sync;
 
 // ── Rotation utilities ──────────────────────────────────────────────
 
@@ -537,6 +547,11 @@ pub struct StartDrillOptions {
     pub target_module_id: Option<String>,
     pub bundle_member_ids: Option<Vec<String>>,
     pub bundle_deal_constraints: Option<DealConstraints>,
+    /// Optional deal-acceptance predicate. When present, non-negdbl bundles
+    /// loop up to `NORMAL_DEAL_ATTEMPTS` generating fresh deals and break on
+    /// the first one the predicate accepts. When absent, non-negdbl bundles
+    /// accept the first deal (legacy behavior).
+    pub deal_acceptance_predicate: Option<std::sync::Arc<DealAcceptancePredicate>>,
 }
 
 impl Default for StartDrillOptions {
@@ -551,6 +566,7 @@ impl Default for StartDrillOptions {
             target_module_id: None,
             bundle_member_ids: None,
             bundle_deal_constraints: None,
+            deal_acceptance_predicate: None,
         }
     }
 }
@@ -564,7 +580,6 @@ pub struct ConventionConfig {
     pub id: String,
     pub deal_constraints: DealConstraints,
     pub allowed_dealers: Option<Vec<Seat>>,
-    pub off_convention_constraints: Option<DealConstraints>,
 }
 
 // ── start_drill ─────────────────────────────────────────────────────
@@ -599,7 +614,6 @@ pub fn start_drill(
 
     // ── Dealer randomization ────────────────────────────────────
     let mut resolved_constraints = convention.deal_constraints.clone();
-    let mut dealer_rotated = false;
 
     if let Some(ref allowed_dealers) = convention.allowed_dealers {
         if allowed_dealers.len() > 1 {
@@ -610,7 +624,6 @@ pub fn start_drill(
             if Some(chosen_dealer) != convention.deal_constraints.dealer {
                 resolved_constraints =
                     rotate_deal_constraints(&convention.deal_constraints, chosen_dealer);
-                dealer_rotated = true;
             }
         }
     }
@@ -622,26 +635,6 @@ pub fn start_drill(
         user_seat,
         vul_roll,
     );
-
-    // ── Off-convention ──────────────────────────────────────────
-    let mut is_off_convention = false;
-    if options.tuning.include_off_convention == Some(true) {
-        let off_rate = options.tuning.off_convention_rate.unwrap_or(0.3);
-        let off_roll = rng();
-        if off_roll < off_rate {
-            if let Some(ref off_constraints) = convention.off_convention_constraints {
-                resolved_constraints = if dealer_rotated {
-                    rotate_deal_constraints(
-                        off_constraints,
-                        resolved_constraints.dealer.unwrap_or(Seat::North),
-                    )
-                } else {
-                    off_constraints.clone()
-                };
-                is_off_convention = true;
-            }
-        }
-    }
 
     // ── Role-based constraint swapping ──────────────────────────
     if resolved_role == PracticeRole::Opener {
@@ -664,15 +657,26 @@ pub fn start_drill(
     }
 
     // ── Deal generation ─────────────────────────────────────────
-    let mut chosen_deal = None;
-    let mut chosen_initial_auction = None;
-    let deal_attempts = if is_negative_doubles_bundle(&convention.id) {
+    let is_negdbl = is_negative_doubles_bundle(&convention.id);
+    let predicate = options.deal_acceptance_predicate.as_ref();
+    let deal_attempts = if is_negdbl {
         NEGATIVE_DOUBLES_DEAL_ATTEMPTS
+    } else if predicate.is_some() {
+        NORMAL_DEAL_ATTEMPTS
     } else {
         1
     };
 
+    let mut chosen_deal: Option<Deal> = None;
+    let mut chosen_initial_auction: Option<Auction> = None;
+    // Fallback state for exhaustion: keep the last generated deal so we can
+    // fall through with a warning instead of panicking.
+    let mut last_deal: Option<Deal> = None;
+    let mut last_initial_auction: Option<Auction> = None;
+    let mut _attempts_used: u64 = 0;
+
     for attempt in 0..deal_attempts {
+        _attempts_used = attempt + 1;
         let constraints = DealConstraints {
             vulnerability: Some(vulnerability),
             seed: options.seed.map(|seed| seed + attempt),
@@ -683,18 +687,16 @@ pub fn start_drill(
             generate_deal(&constraints).map_err(|e| format!("Deal generation failed: {e}"))?;
         let dealer = deal_result.deal.dealer;
 
-        let negdbl_sequence = if is_negative_doubles_bundle(&convention.id) {
+        let negdbl_sequence = if is_negdbl {
             negative_doubles_sequence(&deal_result.deal, dealer)
         } else {
             None
         };
 
-        let initial_auction = if is_negative_doubles_bundle(&convention.id) {
+        let initial_auction = if is_negdbl {
             match resolved_role {
                 PracticeRole::Responder => negdbl_sequence.clone(),
-                PracticeRole::Opener => {
-                    negative_doubles_opener_sequence(&deal_result.deal, dealer)
-                }
+                PracticeRole::Opener => negative_doubles_opener_sequence(&deal_result.deal, dealer),
                 _ => negdbl_sequence.clone(),
             }
         } else {
@@ -706,7 +708,12 @@ pub fn start_drill(
             )
         };
 
-        let acceptable = if is_negative_doubles_bundle(&convention.id) {
+        // Preserve the most recent candidate as the exhaustion fallback.
+        last_deal = Some(deal_result.deal.clone());
+        last_initial_auction = initial_auction.clone();
+
+        let acceptable = if is_negdbl {
+            // Negative-doubles branch retains its bespoke predicate exactly.
             match resolved_role {
                 PracticeRole::Responder => negdbl_sequence
                     .as_ref()
@@ -717,6 +724,8 @@ pub fn start_drill(
                 PracticeRole::Opener => initial_auction.is_some(),
                 _ => negdbl_sequence.is_some(),
             }
+        } else if let Some(pred) = predicate {
+            pred(&deal_result.deal, user_seat)
         } else {
             true
         };
@@ -728,12 +737,28 @@ pub fn start_drill(
         }
     }
 
-    let deal = chosen_deal.ok_or_else(|| {
-        format!(
-            "Deal generation failed: no negative-double-compatible auction found in {} attempts",
-            NEGATIVE_DOUBLES_DEAL_ATTEMPTS
-        )
-    })?;
+    let deal = match chosen_deal {
+        Some(d) => d,
+        None => {
+            if is_negdbl {
+                // Negdbl exhaustion retains the original error surface.
+                return Err(format!(
+                    "Deal generation failed: no negative-double-compatible auction found in {} attempts",
+                    NEGATIVE_DOUBLES_DEAL_ATTEMPTS
+                ));
+            }
+            // Rejection-sampling exhaustion: warn + fall through.
+            tracing::warn!(
+                bundle_id = %convention.id,
+                attempts = NORMAL_DEAL_ATTEMPTS,
+                "deal attempt budget exhausted; falling through with last generated deal"
+            );
+            chosen_initial_auction = last_initial_auction;
+            last_deal.ok_or_else(|| {
+                "Deal generation failed: no candidate deals were produced".to_string()
+            })?
+        }
+    };
 
     // ── Inference engines ───────────────────────────────────────
     let ns_inference_engine = Some(InferenceEngine::new(
@@ -776,7 +801,7 @@ pub fn start_drill(
         initial_auction: chosen_initial_auction,
         ns_inference_engine,
         ew_inference_engine,
-        is_off_convention,
+        is_off_convention: false,
         practice_mode,
         practice_focus,
         play_preference,
@@ -1006,7 +1031,6 @@ mod tests {
                 seed: None,
             },
             allowed_dealers: None,
-            off_convention_constraints: None,
         };
 
         let config = DrillConfig {
@@ -1057,7 +1081,6 @@ mod tests {
                 seed: None,
             },
             allowed_dealers: None,
-            off_convention_constraints: None,
         };
 
         let config = DrillConfig {
@@ -1097,7 +1120,6 @@ mod tests {
                 seed: None,
             },
             allowed_dealers: None,
-            off_convention_constraints: None,
         };
 
         let config = DrillConfig {
@@ -1139,7 +1161,6 @@ mod tests {
                 seed: None,
             },
             allowed_dealers: None,
-            off_convention_constraints: None,
         };
 
         let config = DrillConfig {
@@ -1185,7 +1206,6 @@ mod tests {
                 seed: None,
             },
             allowed_dealers: None,
-            off_convention_constraints: None,
         };
 
         let config = DrillConfig {
@@ -1295,7 +1315,6 @@ mod tests {
                 seed: None,
             },
             allowed_dealers: None,
-            off_convention_constraints: None,
         };
 
         let config = DrillConfig {
@@ -1358,7 +1377,6 @@ mod tests {
                 seed: None,
             },
             allowed_dealers: None,
-            off_convention_constraints: None,
         };
 
         let config = DrillConfig {

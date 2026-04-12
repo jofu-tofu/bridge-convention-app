@@ -1226,6 +1226,9 @@ mod tests {
         }
     }
 
+    // Phase 3: rejection sampling in start_drill re-establishes the 1NT
+    // guarantee by rejecting candidate deals whose user-turn suggestion isn't
+    // produced by a target-bundle module.
     #[test]
     fn nt_session_has_1nt_opening_in_viewport() {
         let mut service = ServicePortImpl::new();

@@ -61,13 +61,33 @@ Module-authored explanation entries live on each `ConventionModule` and are cons
 
 These entries should be kept coverage-complete for authored meanings/facts because the learning viewport and teaching surfaces depend on them for readable explanations.
 
-## Off-Convention Drills
+## Deal Generation
 
-Bundles can define `offConventionConstraints` so the drill generator sometimes produces deals where the target convention does not apply. This trains recognition, not just execution.
+Deals for drills are generated in two coupled steps:
 
-- Bundle-level anti-constraints live in convention fixtures.
-- `DrillTuning.includeOffConvention` and `offConventionRate` control frequency.
-- Service responses mark the result with `isOffConvention`.
+1. **Derivation.** `bridge_conventions::fact_dsl::inversion::derive_deal_constraints(&bundle, BaseSystemId)` unions the surface preconditions across `bundle.modules` + base-system modules (via `compose_surface_clauses`), inverts each surface composition into an `InvertedConstraint`, unions constraints within each seat, and maps the result to the engine's `SeatConstraint` shape. Authors never write `dealConstraints` by hand — adding a surface is the only input the generator needs. Fixture JSON carries no `dealConstraints` field.
+2. **Rejection gate.** `bridge-service::deal_gating::build_deal_acceptance_predicate` produces a `DealAcceptancePredicate` that is injected into `StartDrillOptions`. A deal is accepted only if `suggest()` at the user's turn returns `Some(BidResult)` whose matched `ResolvedCandidateDTO.module_id` is in the bundle's `member_ids`. A match in a base module only, or a heuristic bid with no `module_id`, or no match at all → reject and resample. Budget is `NORMAL_DEAL_ATTEMPTS = 32`. On exhaustion, `tracing::warn` fires and `start_drill` falls through with the last deal (no panic, no error).
+
+Authored Pass surfaces on target modules are first-class lesson material: when the generator lands a deal where the target module's own Pass surface matches, that counts as a valid on-convention drill.
+
+The negative-doubles bundle retains a separate custom acceptance predicate (`NEGATIVE_DOUBLES_DEAL_ATTEMPTS`) because its pedagogy requires opener-shape constraints the derivation cannot yet infer.
+
+### Known Limitations
+
+**1. Target-surface granularity.**
+Rationale: any member-module surface accepts — we don't distinguish "drill-worthy" headline surfaces from fallback/escape surfaces.
+Failure mode: occasional technically-on-convention deals that hit a corner surface rather than the headline lesson.
+Upgrade trigger: user complaints or drill-quality dip. Fix: add `drill_worthy: bool` to `AuthoredRankingMetadata` and filter.
+
+**2. Base-module surface union is loose (no reachability filter).**
+Rationale: we union ALL surfaces from base-system modules into the derivation, not just those reachable from target-module entries.
+Failure mode: slightly looser derived constraints, marginally higher rejection-sampling attempt counts.
+Upgrade trigger: `tracing::warn` budget-exhaustion logs in normal use OR sampling cost noticeably impacts `start_drill` latency. Fix: FSM reachability analysis over base→target paths.
+
+**3. Union does not propagate `balanced`.**
+Rationale: `invert_composition`'s union branch drops `balanced` bounds when any branch lacks them. Bundles whose only "balanced" signal comes from the SAYC 1NT-opening surface (e.g. `nt-transfers`) end up with no `balanced` constraint on the opener seat.
+Failure mode: for NT-family bundles, the opener is rarely 15-17 balanced, so rejection sampling works harder or exhausts. The `nt-transfers` e2e test is currently `#[ignore]` pending fix.
+Upgrade trigger: `nt-transfers` / NT-bundle budget-exhaustion warnings in prod, or a bundle where 1NT opening is the only path. Fix: either (a) `union_all` preserves `balanced=Some(true)` when at least one branch asserts it and others are silent, or (b) the inverter treats "surface is unreachable under current branch" differently from "surface is reachable but has no balanced opinion."
 
 ## Opponent Modes
 

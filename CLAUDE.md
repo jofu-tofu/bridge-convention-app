@@ -85,6 +85,7 @@ pairing, or UI test IDs.
 - `SystemSelectionId` is TS-only and never crosses the WASM boundary.
 - UI displays HCP only; formula-composed point totals stay in decision logic.
 - Base modules merge into `spec_from_bundle()` only, not `resolve_bundle()`.
+- Deal constraints for drill generation are auto-derived from the union of surface preconditions across target-bundle modules + base-system modules (`bridge_conventions::fact_dsl::inversion::derive_deal_constraints`). Never hand-author `dealConstraints` in bundle fixtures. Deals are rejection-sampled (budget 32) until the user's expected bid matches a target-module surface; on exhaustion, `tracing::warn` fires and the last deal is used.
 
 ## Architecture
 

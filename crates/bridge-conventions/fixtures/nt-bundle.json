@@ -132,36 +132,6 @@
     "principle": "Finding an 8-card major fit is worth more than notrump; Stayman, transfers, and Smolen are tools to find that fit while keeping the strong hand as declarer",
     "roles": "Responder is captain after 1NT — opener describes, responder decides the final contract"
   },
-  "dealConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 15,
-        "maxHcp": 17,
-        "balanced": true
-      },
-      {
-        "seat": "S",
-        "minLengthAny": {
-          "H": 4,
-          "S": 4
-        }
-      }
-    ]
-  },
-  "offConventionConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 15,
-        "maxHcp": 17,
-        "balanced": true
-      },
-      {
-        "seat": "S"
-      }
-    ]
-  },
   "derivedTeaching": {
     "surfaceGroups": [
       {

@@ -27,12 +27,11 @@ fn roundtrip_fixture(name: &str) {
     let reserialized = serde_json::to_string(&bundle).unwrap();
     let mut original_value: serde_json::Value = serde_json::from_str(&json_str).unwrap();
     let mut reserialized_value: serde_json::Value = serde_json::from_str(&reserialized).unwrap();
-    // Strip modules — runtime-derived from module registry, not in fixture JSON
-    original_value.as_object_mut().unwrap().remove("modules");
-    reserialized_value
-        .as_object_mut()
-        .unwrap()
-        .remove("modules");
+    // Strip modules — runtime-derived from module registry, not in fixture JSON.
+    for v in [&mut original_value, &mut reserialized_value] {
+        let obj = v.as_object_mut().unwrap();
+        obj.remove("modules");
+    }
     assert_eq!(
         original_value, reserialized_value,
         "Round-trip mismatch for {}.json",

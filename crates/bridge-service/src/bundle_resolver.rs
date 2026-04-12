@@ -5,6 +5,7 @@
 
 use std::collections::HashMap;
 
+use bridge_conventions::fact_dsl::derive_deal_constraints;
 use bridge_conventions::registry::bundle_registry::{list_bundle_inputs, resolve_bundle};
 use bridge_conventions::teaching::teaching_types::{SurfaceGroup, SurfaceGroupRelationship};
 use bridge_conventions::types::teaching::SurfaceGroupRelationship as BundleSGRelationship;
@@ -73,7 +74,7 @@ pub(crate) fn build_convention_config(
     let resolved = resolve_bundle(convention_id, system);
 
     let bundle_constraints = resolved
-        .map(|b| b.deal_constraints.clone())
+        .map(|b| derive_deal_constraints(b, system))
         .unwrap_or_else(|| DealConstraints {
             seats: vec![],
             dealer: Some(Seat::North),
@@ -91,7 +92,6 @@ pub(crate) fn build_convention_config(
             ..bundle_constraints
         },
         allowed_dealers: resolved.and_then(|b| b.allowed_dealers.clone()),
-        off_convention_constraints: resolved.and_then(|b| b.off_convention_constraints.clone()),
     }
 }
 

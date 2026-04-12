@@ -12,8 +12,6 @@
 
   const appStore = getAppStore();
 
-  const OFF_CONVENTION_RATE = { MIN: 0.1, MAX: 0.7, STEP: 0.05, DEFAULT: 0.3 } as const;
-
   const PROFILE_OPTIONS: { id: PlayProfileId; label: string }[] = [
     { id: "beginner", label: "Beginner" },
     { id: "club-player", label: "Club" },
@@ -111,39 +109,6 @@
       <p class="text-[--text-annotation] text-text-muted mt-1 px-1">
         {PLAY_PROFILES[appStore.playProfileId ?? "world-class"].description}
       </p>
-    </div>
-
-    <!-- Off-Convention -->
-    <div class={isReadonly ? 'opacity-50' : ''}>
-      <label class="flex items-center gap-2 px-1 {isReadonly ? 'cursor-not-allowed' : 'cursor-pointer'}">
-        <input
-          type="checkbox"
-          class="w-3.5 h-3.5 rounded-[--radius-sm] accent-accent-primary"
-          checked={appStore.drillTuning.includeOffConvention ?? false}
-          onchange={(e) => appStore.setIncludeOffConvention(e.currentTarget.checked)}
-          disabled={isReadonly}
-          data-testid="settings-off-conv"
-        />
-        <span class="text-[--text-detail] text-text-primary">Off-convention deals</span>
-      </label>
-      {#if appStore.drillTuning.includeOffConvention}
-        <div class="mt-1 px-1">
-          <input
-            type="range"
-            min={OFF_CONVENTION_RATE.MIN}
-            max={OFF_CONVENTION_RATE.MAX}
-            step={OFF_CONVENTION_RATE.STEP}
-            value={appStore.drillTuning.offConventionRate ?? OFF_CONVENTION_RATE.DEFAULT}
-            oninput={(e) => appStore.setOffConventionRate(parseFloat(e.currentTarget.value))}
-            class="w-full accent-accent-primary {isReadonly ? 'cursor-not-allowed' : 'cursor-pointer'}"
-            disabled={isReadonly}
-            data-testid="settings-off-conv-rate"
-          />
-          <p class="text-[--text-annotation] text-text-muted">
-            {Math.round((appStore.drillTuning.offConventionRate ?? OFF_CONVENTION_RATE.DEFAULT) * 100)}% off-convention
-          </p>
-        </div>
-      {/if}
     </div>
 
     <!-- Display settings (UI-only, do not affect deal generation) -->

@@ -136,16 +136,6 @@ describe("setter behavior", () => {
     expect(store.drillTuning.vulnerabilityDistribution).toEqual(dist);
   });
 
-  it("setOffConventionRate clamps to [0, 1]", () => {
-    const store = createAppStore();
-    store.setOffConventionRate(-0.5);
-    expect(store.drillTuning.offConventionRate).toBe(0);
-    store.setOffConventionRate(1.5);
-    expect(store.drillTuning.offConventionRate).toBe(1);
-    store.setOffConventionRate(0.4);
-    expect(store.drillTuning.offConventionRate).toBe(0.4);
-  });
-
   it("setShowEducationalAnnotations changes display preference", () => {
     const store = createAppStore();
     expect(store.displaySettings.showEducationalAnnotations).toBe(true);
@@ -153,14 +143,6 @@ describe("setter behavior", () => {
     expect(store.displaySettings.showEducationalAnnotations).toBe(false);
     const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY)!);
     expect(saved.display.showEducationalAnnotations).toBe(false);
-  });
-
-  it("setIncludeOffConvention changes flag and persists", () => {
-    const store = createAppStore();
-    store.setIncludeOffConvention(true);
-    expect(store.drillTuning.includeOffConvention).toBe(true);
-    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY)!);
-    expect(saved.drill.tuning.includeOffConvention).toBe(true);
   });
 });
 

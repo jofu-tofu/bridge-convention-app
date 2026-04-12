@@ -378,14 +378,6 @@ export function createAppStore() {
       updateDrill({ tuning: { ...prefs.drill.tuning, vulnerabilityDistribution: dist } });
     },
 
-    setIncludeOffConvention(include: boolean) {
-      updateDrill({ tuning: { ...prefs.drill.tuning, includeOffConvention: include } });
-    },
-
-    setOffConventionRate(rate: number) {
-      updateDrill({ tuning: { ...prefs.drill.tuning, offConventionRate: Math.max(0, Math.min(1, rate)) } });
-    },
-
     get displaySettings() {
       return prefs.display;
     },

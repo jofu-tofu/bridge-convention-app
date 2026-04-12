@@ -34,7 +34,6 @@ export interface ConventionConfig {
   readonly category: ConventionCategory;
   readonly teaching?: ConventionTeaching;
   readonly dealConstraints: DealConstraints;
-  readonly offConventionConstraints?: DealConstraints;
   readonly defaultAuction?: (seat: Seat, deal?: Deal) => Auction | undefined;
   readonly internal?: boolean;
   readonly allowedDealers?: readonly Seat[];
@@ -346,8 +345,6 @@ export interface VulnerabilityDistribution {
 export interface DrillTuning {
   readonly vulnerabilityDistribution: VulnerabilityDistribution;
   readonly moduleWeights?: Readonly<Record<string, number>>;
-  readonly includeOffConvention?: boolean;
-  readonly offConventionRate?: number;
 }
 
 export const DEFAULT_DRILL_TUNING: DrillTuning = {

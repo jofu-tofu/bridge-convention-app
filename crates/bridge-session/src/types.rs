@@ -106,10 +106,6 @@ pub struct DrillTuning {
     pub vulnerability_distribution: VulnerabilityDistribution,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub module_weights: Option<std::collections::HashMap<String, f64>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub include_off_convention: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub off_convention_rate: Option<f64>,
 }
 
 // ── Drill settings ────────────────────────────────────────────────

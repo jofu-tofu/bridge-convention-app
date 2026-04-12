@@ -76,40 +76,6 @@
     "principle": "After 1NT rebid, responder may need more information to choose between partscore, invite, and game. NMF provides a one-round force that asks opener to show 3-card major support, the other major, or NT range.",
     "roles": "Responder initiates NMF to gather information; opener describes hand further (major support → other major → NT min/max)"
   },
-  "dealConstraints": {
-    "seats": [
-      {
-        "seat": "S",
-        "minHcp": 12,
-        "maxHcp": 14,
-        "balanced": true
-      },
-      {
-        "seat": "N",
-        "minHcp": 6,
-        "maxHcp": 15,
-        "minLengthAny": {
-          "H": 4,
-          "S": 4
-        }
-      }
-    ],
-    "dealer": "S"
-  },
-  "offConventionConstraints": {
-    "seats": [
-      {
-        "seat": "S",
-        "minHcp": 12,
-        "maxHcp": 14,
-        "balanced": true
-      },
-      {
-        "seat": "N"
-      }
-    ],
-    "dealer": "S"
-  },
   "allowedDealers": [
     "S"
   ],

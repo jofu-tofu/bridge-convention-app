@@ -27,6 +27,8 @@ pub mod types;
 
 // Re-export primary public API
 pub use evaluator::evaluate_facts;
-pub use inversion::{invert_composition, InvertedConstraint};
+pub use inversion::{
+    compose_surface_clauses, derive_deal_constraints, invert_composition, InvertedConstraint,
+};
 pub use point_helpers::compute_total_points;
 pub use types::{EvaluatedFacts, FactData, FactValue, FitAgreedContext, RelationalFactContext};

@@ -94,37 +94,6 @@
     "principle": "2C asks opener to show a 4-card major; responder then places the contract based on fit",
     "roles": "Responder is captain — asks opener to describe, then decides the final contract"
   },
-  "dealConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 15,
-        "maxHcp": 17,
-        "balanced": true
-      },
-      {
-        "seat": "S",
-        "minHcp": 8,
-        "minLengthAny": {
-          "H": 4,
-          "S": 4
-        }
-      }
-    ]
-  },
-  "offConventionConstraints": {
-    "seats": [
-      {
-        "seat": "N",
-        "minHcp": 15,
-        "maxHcp": 17,
-        "balanced": true
-      },
-      {
-        "seat": "S"
-      }
-    ]
-  },
   "derivedTeaching": {
     "surfaceGroups": [
       {

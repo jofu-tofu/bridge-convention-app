@@ -65,11 +65,24 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(seed);
     let mut rng_fn = move || -> f64 { rng.gen() };
 
+    // Build rejection-sampling predicate from adapter + bundle member ids.
+    // Uses the exact spec/surface_groups the live session will use, so the
+    // adapter's run_pipeline (with FSM replay) is faithfully reproduced for
+    // each candidate deal at the user's turn.
+    let mut options = resolved.options;
+    options.deal_acceptance_predicate = crate::deal_gating::build_deal_acceptance_predicate(
+        &spec,
+        &surface_groups,
+        &bundle_input.member_ids,
+        options.practice_role,
+        Some(convention_config.deal_constraints.clone()),
+    );
+
     let drill_bundle = start_drill(
         &convention_config,
         resolved.user_seat,
         resolved.drill_config,
-        &resolved.options,
+        &options,
         &mut rng_fn,
     )
     .map_err(ServiceError::Internal)?;

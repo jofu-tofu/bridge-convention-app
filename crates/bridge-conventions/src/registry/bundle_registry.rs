@@ -195,11 +195,13 @@ mod tests {
 
     #[test]
     fn resolve_bundle_has_deal_constraints() {
+        use crate::fact_dsl::derive_deal_constraints;
         let bundle = resolve_bundle("nt-bundle", BaseSystemId::Sayc).unwrap();
-        // NT bundle should have deal constraints (opener needs 15-17 HCP)
+        // NT bundle should derive deal constraints (opener needs 15-17 HCP).
+        let constraints = derive_deal_constraints(bundle, BaseSystemId::Sayc);
         assert!(
-            !bundle.deal_constraints.seats.is_empty(),
-            "NT bundle should have seat constraints"
+            !constraints.seats.is_empty(),
+            "NT bundle should derive seat constraints"
         );
     }
 
