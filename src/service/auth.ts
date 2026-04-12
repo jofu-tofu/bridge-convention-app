@@ -1,31 +1,48 @@
 // ── DataPort client ─────────────────────────────────────────────────
-// Client-side boundary for all /api/* calls (auth, entitlements, sync).
+// Client-side boundary for all /api/* calls (auth, billing, entitlements, sync).
 // Mirrors the contract defined by bridge-api (Axum server).
+
+import {
+  AuthRequiredError,
+  SubscriptionRequiredError,
+  type BillingPlan,
+  type DataPortBilling,
+} from "./billing";
 
 export interface AuthUser {
   id: string;
   display_name: string;
   email: string | null;
   avatar_url: string | null;
-  subscription?: SubscriptionTier;
+  created_at: string;
+  updated_at: string;
+  subscription_tier: SubscriptionTier;
+  subscription_current_period_end: number | null;
 }
 
 export enum SubscriptionTier {
   Free = "free",
-  Premium = "premium",
+  Paid = "paid",
   Expired = "expired",
 }
 
 /**
  * Client-side DataPort interface — the boundary between UI/stores and the
- * bridge-api server. Auth today; entitlements, progress sync, etc. later.
+ * bridge-api server. Auth, billing, entitlements, progress sync, etc.
  */
-export interface DataPort {
+export interface DataPort extends DataPortBilling {
   fetchCurrentUser(): Promise<AuthUser | null>;
   getLoginUrl(provider: "google" | "github"): string;
   logout(): Promise<void>;
   /** Dev-only: re-authenticate as the dev user without OAuth. Only set on DevDataPort. */
   devLogin?(): Promise<void>;
+}
+
+async function parseJsonResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+  return (await response.json()) as T;
 }
 
 /** Production DataPort — real HTTP calls to bridge-api. */
@@ -52,6 +69,41 @@ export class DataPortClient implements DataPort {
       method: "POST",
       credentials: "same-origin",
     });
+  }
+
+  async startCheckout(plan: BillingPlan): Promise<{ url: string }> {
+    const response = await fetch("/api/billing/checkout", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ plan }),
+    });
+    return parseJsonResponse<{ url: string }>(response);
+  }
+
+  async openBillingPortal(): Promise<{ url: string }> {
+    const response = await fetch("/api/billing/portal", {
+      method: "POST",
+      credentials: "same-origin",
+    });
+    return parseJsonResponse<{ url: string }>(response);
+  }
+
+  async fetchConventionDefinition(bundleId: string): Promise<unknown> {
+    const response = await fetch(`/api/conventions/${encodeURIComponent(bundleId)}/definition`, {
+      credentials: "same-origin",
+    });
+
+    if (response.status === 401) {
+      throw new AuthRequiredError();
+    }
+    if (response.status === 402) {
+      throw new SubscriptionRequiredError();
+    }
+
+    return parseJsonResponse<unknown>(response);
   }
 }
 
@@ -93,12 +145,16 @@ export class DevDataPort implements DataPort {
 
   fetchCurrentUser(): Promise<AuthUser | null> {
     if (readDevLoggedOut()) return Promise.resolve(null);
+    const now = new Date().toISOString();
     return Promise.resolve({
       id: "dev-user",
       display_name: "Dev User",
       email: "dev@localhost",
       avatar_url: null,
-      subscription: this.tier,
+      created_at: now,
+      updated_at: now,
+      subscription_tier: this.tier,
+      subscription_current_period_end: null,
     });
   }
 
@@ -114,5 +170,21 @@ export class DevDataPort implements DataPort {
   devLogin(): Promise<void> {
     writeDevLoggedOut(false);
     return Promise.resolve();
+  }
+
+  startCheckout(_plan: BillingPlan): Promise<{ url: string }> {
+    // eslint-disable-next-line no-console -- explicit dev-only billing stub for local UI wiring
+    console.warn("[DevDataPort] billing disabled in dev");
+    return Promise.resolve({ url: "" });
+  }
+
+  openBillingPortal(): Promise<{ url: string }> {
+    // eslint-disable-next-line no-console -- explicit dev-only billing stub for local UI wiring
+    console.warn("[DevDataPort] billing disabled in dev");
+    return Promise.resolve({ url: "" });
+  }
+
+  fetchConventionDefinition(bundleId: string): Promise<unknown> {
+    return this.inner.fetchConventionDefinition(bundleId);
   }
 }

@@ -125,13 +125,16 @@ export { listConventions, listModules, buildBaseModuleInfos } from "./service-he
 // ── 6. Display & Formatting ─────────────────────────────────────────
 export { displayConventionName, formatCall, formatContractWithDeclarer, formatRuleName, displayRank, formatCardLabel, SUIT_SYMBOLS, STRAIN_SYMBOLS } from "./display/format";
 export { buildConventionCardPanel, buildAcblCardPanel } from "./display/convention-card";
+export { slugifyMeaningId } from "./display/util/slugify-meaning-id";
 
 // ── 7. Cross-cutting ────────────────────────────────────────────────
 export { delay } from "./util/delay";
 
-// ── 8. Auth (DataPort) ─────────────────────────────────────────────
+// ── 8. Auth & Billing (DataPort) ───────────────────────────────────
 export { DataPortClient, DevDataPort, SubscriptionTier } from "./auth";
 export type { DataPort, AuthUser } from "./auth";
+export { AuthRequiredError, SubscriptionRequiredError } from "./billing";
+export type { BillingPlan, DataPortBilling } from "./billing";
 
 // ── Debug-only types — import from service/debug-types instead ──
 // StrategyEvaluation, BidFeedbackDTO, EvaluatedFacts, PipelineResult, MachineDebugSnapshot

@@ -1,4 +1,4 @@
-<!-- context-layer: service | version: 10 | last-audited: 2026-04-10 -->
+<!-- context-layer: service | version: 11 | last-audited: 2026-04-12 -->
 
 # Service
 
@@ -32,7 +32,8 @@ WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend 
 | `service-helpers.ts` | Sync WASM wrappers for UI components: `listConventions()`, `listModules()`, `buildBaseModuleInfos()`, `getModuleLearningViewportSync()` |
 | `display/` | Call/contract/card formatting, convention card builders (`convention-card.ts` — `buildConventionCardPanel` for App format, `buildAcblCardPanel` for ACBL format, wired to WASM via service-helpers) |
 | `util/delay.ts` | Pure delay utility |
-| `auth.ts` | DataPort boundary for `/api/*` calls. `DataPort` interface (auth today; entitlements, sync later), `DataPortClient` (production HTTP), `DevDataPort` (dev-only fake with `SubscriptionTier`). Exports `AuthUser`, `SubscriptionTier`. |
+| `auth.ts` | DataPort boundary for `/api/*` calls. `DataPort` interface now covers auth + billing methods, `DataPortClient` (production HTTP), `DevDataPort` (dev-only auth fake with billing no-ops and paid-content fetch delegation). Exports `AuthUser`, `SubscriptionTier`. |
+| `billing.ts` | DataPort billing types and typed server-gate errors (`AuthRequiredError`, `SubscriptionRequiredError`) shared by `auth.ts` callers. |
 
 ## Hexagonal Boundary Rules
 
@@ -67,7 +68,7 @@ Nothing imports from `service/` except `stores/`, `components/`, and `cli/comman
 ## Two-Port Model
 
 - **ServicePort** (compute, WASM, client-side) — all game logic runs locally after initial load
-- **DataPort** (auth/entitlements/progress, server) — implemented as `bridge-api` (Axum :3001, SQLite). `auth.ts` is the TS client.
+- **DataPort** (auth/billing/entitlements/progress, server) — implemented as `bridge-api` (Axum :3001, SQLite). `auth.ts` is the TS client and `billing.ts` carries the shared billing boundary types/errors.
 
 They don't mix. See `docs/product/product-direction.md`.
 
