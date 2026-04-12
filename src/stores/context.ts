@@ -41,6 +41,11 @@ export function getAppStore(): AppStore {
   return getContext<AppStore>(APP_STORE_KEY);
 }
 
+/** Returns the app store if set, or undefined. Used by nav chrome shared across layouts. */
+export function getAppStoreOptional(): AppStore | undefined {
+  return getContext<AppStore | undefined>(APP_STORE_KEY);
+}
+
 // Service context
 export function setService(service: DevServicePort): void {
   setContext(SERVICE_KEY, service);
@@ -84,6 +89,11 @@ export function setAuthStore(store: AuthStore): void {
 
 export function getAuthStore(): AuthStore {
   return getContext<AuthStore>(AUTH_STORE_KEY);
+}
+
+/** Returns the auth store if set, or undefined. Used by shared nav chrome during SSR/prerender. */
+export function getAuthStoreOptional(): AuthStore | undefined {
+  return getContext<AuthStore | undefined>(AUTH_STORE_KEY);
 }
 
 // Practice packs store context

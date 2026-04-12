@@ -1,5 +1,18 @@
 <script lang="ts">
+  import { browser } from "$app/environment";
+  import { createAuthStore } from "../../stores/auth.svelte";
+  import { DataPortClient, DevDataPort, SubscriptionTier, type DataPort } from "../../service";
+  import { getDevAuthOverride } from "../../stores/dev-params";
+  import { setAuthStore } from "../../stores/context";
+  import AppShell from "../../components/navigation/AppShell.svelte";
+
   const { children } = $props();
+
+  if (browser) {
+    const devAuthTier = getDevAuthOverride() ?? (import.meta.env.DEV ? SubscriptionTier.Premium : null);
+    const dataPort: DataPort = devAuthTier ? new DevDataPort(devAuthTier) : new DataPortClient();
+    setAuthStore(createAuthStore(dataPort));
+  }
 </script>
 
 <svelte:head>
@@ -11,20 +24,19 @@
   />
 </svelte:head>
 
-<div class="content-layout">
-  <header class="site-header">
-    <a href="https://bridgelab.net">BridgeLab</a>
-  </header>
-  {@render children()}
-</div>
+<AppShell>
+  <div class="content-layout">
+    {@render children()}
+  </div>
+</AppShell>
 
 <style>
   :global(body) {
     margin: 0;
     padding: 0;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background: #0a0f1a;
-    color: #94a3b8;
+    background: var(--color-bg-deepest);
+    color: var(--color-text-secondary);
     line-height: 1.7;
     font-size: 16px;
   }
@@ -34,21 +46,15 @@
   }
 
   .content-layout {
-    max-width: 780px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 3rem 1.5rem;
+    width: 100%;
   }
 
-  .site-header {
-    margin-bottom: 2.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid #1e293b;
-  }
-
-  .site-header a {
-    color: #38bdf8;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.875rem;
+  @media (max-width: 1023px) {
+    .content-layout {
+      padding: 2rem 1rem;
+    }
   }
 </style>

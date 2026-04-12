@@ -10,6 +10,9 @@
   <meta property="og:type" content="article" />
 </svelte:head>
 
+<div class="article-wrap">
+<a class="back-link" href="/guides/">← All Guides</a>
+
 <header class="guide-header">
   <h1>{data.guide.title}</h1>
   <p class="meta">{data.guide.date}</p>
@@ -35,14 +38,32 @@
     </ul>
   </div>
 {/if}
+</div>
 
 <style>
+  .article-wrap {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .back-link {
+    display: inline-block;
+    color: var(--color-accent-primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+
   .guide-header {
     margin-bottom: 2rem;
   }
 
   h1 {
-    color: #e8edf5;
+    color: var(--color-text-primary);
     font-size: 1.75rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
@@ -50,12 +71,12 @@
   }
 
   .meta {
-    color: #64748b;
+    color: var(--color-text-muted);
     font-size: 0.8rem;
   }
 
   .guide-prose :global(h2) {
-    color: #e8edf5;
+    color: var(--color-text-primary);
     font-size: 1.25rem;
     font-weight: 600;
     margin-top: 2em;
@@ -63,7 +84,7 @@
   }
 
   .guide-prose :global(h3) {
-    color: #e8edf5;
+    color: var(--color-text-primary);
     font-size: 1.1rem;
     font-weight: 600;
     margin-top: 1.5em;
@@ -76,12 +97,12 @@
   }
 
   .guide-prose :global(strong) {
-    color: #e8edf5;
+    color: var(--color-text-primary);
     font-weight: 600;
   }
 
   .guide-prose :global(a) {
-    color: #38bdf8;
+    color: var(--color-accent-primary);
     text-decoration: underline;
   }
 
@@ -96,22 +117,22 @@
   }
 
   .guide-prose :global(blockquote) {
-    border-left: 3px solid #1e293b;
+    border-left: 3px solid var(--color-border-subtle);
     padding-left: 1em;
-    color: #64748b;
+    color: var(--color-text-muted);
     font-style: italic;
     margin-bottom: 1em;
   }
 
   .guide-prose :global(code) {
-    background: #141b2d;
+    background: var(--color-bg-card);
     padding: 0.15em 0.4em;
     border-radius: 4px;
     font-size: 0.85em;
   }
 
   .guide-prose :global(pre) {
-    background: #141b2d;
+    background: var(--color-bg-card);
     padding: 1em;
     border-radius: 8px;
     overflow-x: auto;
@@ -126,8 +147,8 @@
   .cta {
     margin-top: 3rem;
     padding: 1.5rem;
-    background: #141b2d;
-    border: 1px solid #1e293b;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-subtle);
     border-radius: 12px;
     text-align: center;
   }
@@ -138,13 +159,13 @@
   }
 
   .cta strong {
-    color: #e8edf5;
+    color: var(--color-text-primary);
   }
 
   .cta a {
     display: inline-block;
-    background: #38bdf8;
-    color: #0a0f1a;
+    background: var(--color-accent-primary);
+    color: var(--color-text-inverse);
     font-weight: 600;
     font-size: 0.875rem;
     padding: 0.625rem 1.5rem;
@@ -155,11 +176,11 @@
   .more-guides {
     margin-top: 2.5rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #1e293b;
+    border-top: 1px solid var(--color-border-subtle);
   }
 
   .more-guides h3 {
-    color: #64748b;
+    color: var(--color-text-muted);
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -177,7 +198,7 @@
   }
 
   .more-guides a {
-    color: #38bdf8;
+    color: var(--color-accent-primary);
     text-decoration: none;
     font-size: 0.875rem;
   }

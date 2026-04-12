@@ -8,9 +8,7 @@
   import { createUserModuleStore } from "../../stores/user-modules.svelte";
   import { createPracticePacksStore } from "../../stores/practice-packs.svelte";
   import { createAuthStore } from "../../stores/auth.svelte";
-  import { DESKTOP_MIN } from "../../components/shared/breakpoints.svelte";
-  import NavRail from "../../components/navigation/NavRail.svelte";
-  import BottomTabBar from "../../components/navigation/BottomTabBar.svelte";
+  import AppShell from "../../components/navigation/AppShell.svelte";
   import AppReady from "../../AppReady.svelte";
 
   const { children } = $props();
@@ -59,12 +57,7 @@
   }
 
   init();
-
-  let innerW = $state(1024);
-  const isDesktop = $derived(innerW >= DESKTOP_MIN);
 </script>
-
-<svelte:window bind:innerWidth={innerW} />
 
 {#if initError}
   <div class="bg-bg-deepest text-red-400 flex h-screen flex-col items-center justify-center gap-4">
@@ -89,21 +82,9 @@
     {authStore}
   >
     <div class="bg-bg-deepest text-text-primary h-screen overflow-hidden font-sans">
-      {#if isDesktop}
-        <div class="flex h-full">
-          <NavRail />
-          <div class="flex-1 min-w-0 h-full overflow-hidden">
-            {@render children()}
-          </div>
-        </div>
-      {:else}
-        <div class="flex flex-col h-full">
-          <div class="flex-1 min-w-0 min-h-0 overflow-hidden">
-            {@render children()}
-          </div>
-          <BottomTabBar />
-        </div>
-      {/if}
+      <AppShell>
+        {@render children()}
+      </AppShell>
     </div>
   </AppReady>
 {/if}

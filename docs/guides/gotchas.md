@@ -91,3 +91,7 @@ Game-forcing behavior (e.g., Strong 2C after 2D waiting) is enforced by **omitti
 
 ### System facts auto-detect HCP vs trump TP via `fitAgreed`
 System facts (`system.responder.inviteValues`, etc.) use `fitAgreed` from the negotiation kernel to detect trump context — not `bindings.suit`. `bindings.suit` means "parameterized suit" (not "agreed suit"). Using it for system facts would mis-detect non-support modules (e.g., a future "New Suit Response" module parameterized with `$suit` is not a fit agreement). Both standard (HCP-only) and relational (fitAgreed-aware) evaluators exist for these facts — the standard evaluator runs as baseline, and the relational evaluator overrides when relational context is provided.
+
+## Routing / Layout Groups
+
+SEO content pages (`/guides`, `/guides/[slug]`, `/learn/[moduleId]`) live under `src/routes/(content)/` and are prerendered to static HTML with a minimal "BridgeLab" header and no WASM boot. WASM app screens (the game, settings, coverage, workshop) live under `src/routes/(app)/` with `ssr=false` and full app chrome (NavRail / BottomTabBar). Moving a route between these groups is a user-visible chrome change — the navigation across groups is a full document load, not a SvelteKit client-side transition. Treat `(content)` as the home for anything that needs to be crawlable or linkable from outside the app.

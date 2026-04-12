@@ -28,7 +28,7 @@ AppReady.svelte                      Root app shell — creates engine/stores, s
 components/
   screens/
     ConventionSelectScreen.svelte    Convention picker with search + category filter + 2-column responsive card grid. Practice buttons show lock state for non-premium bundles; PaywallOverlay opens on locked practice attempt.
-    LearningScreen.svelte            Module-centric learning screen: sidebar lists modules (filterable by bundle), main content shows conversation flow tree (desktop) + module teaching (principle/tradeoff/mistakes) + surfaces grouped by conversation phase
+    LearningScreen.svelte            Three-tab learning screen (Lessons | Conventions | Bidding Systems). Conventions tab = current reference view (sidebar lists modules filterable by bundle, main content shows conversation flow tree + module teaching + surfaces). Lessons and Bidding Systems are placeholders.
     MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible card, recursive snippet, tap-to-expand accordion for detail (recommendation/disclosure/explanation/clauses)
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors, self-contained auto-scaling. Optional interactive mode (selectedNodeId + onNodeSelect props) for Workshop click-to-select.
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
@@ -42,9 +42,7 @@ components/
     SystemEditor.svelte              Custom system editor — two-tab layout (Parameters | Modules). Parameters tab: 2-column grid (Bidding Structure+Competitive | Strength) with strength bars, point formulas, thresholds. Modules tab: full-width ModuleChecklist with search, category grouping, mutual exclusion in toggleModule(). Header with name input, preset select, error badge, save/cancel. Tab badge shows active module count.
     StrengthBar.svelte               Side-by-side NT/Trump strength bars showing weak/invite/game/slam zones with threshold labels and formula suffixes. Reactive to threshold prop changes.
     strength-bar.ts                  Companion: zone types, color constants, thresholdPct() pure function.
-    SystemDetailView.svelte          Single-system detail view — iterates profile categories as cards. TP-enabled categories render 3-column mini-table (NT / HCP, Suit / TP).
-    SystemCompareView.svelte         Side-by-side comparison table with diff highlighting. TP-enabled fields render 2 sub-rows (NT / HCP, Suit / TP) with independent diff highlighting per metric.
-    profile-display.ts               Pure display logic: category definitions, value formatting (formatFieldValue, formatTrumpTpValue), comparison helpers. FieldFormat includes rangeWithTp/thresholdWithTp variants for TP-enabled categories.
+    profile-display.ts               Pure display logic for base-system reference: category definitions, value formatting (formatFieldValue, formatTrumpTpValue), comparison helpers. View components were removed; this module is currently only consumed by tests and will be revived when the Bidding Systems tab on LearningScreen is implemented.
     game-screen/
       GameScreen.svelte              Phase router + responsive layout + drill lifecycle (~280 LOC)
       BiddingPhase.svelte            Bidding phase template (pure — data via props). Shows context banner in Decision Drill mode.

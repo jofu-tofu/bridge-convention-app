@@ -17,6 +17,9 @@ export default defineConfig({
     watch: {
       ignored: ["**/crates/**"],
     },
+    fs: {
+      allow: ["."],
+    },
     proxy: {
       "/api": "http://localhost:3001",
     },

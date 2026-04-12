@@ -1,6 +1,7 @@
 <script lang="ts">
   import { SvelteSet } from "svelte/reactivity";
   import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import { getAppStore, getService } from "../../stores/context";
   import { listConventions, PracticeMode } from "../../service";
   import type { ModuleCatalogEntry, ModuleLearningViewport, ClauseSystemVariant, ModuleFlowTreeViewport } from "../../service";
@@ -12,6 +13,18 @@
   const appStore = getAppStore();
   const service = getService();
   const allConventions = listConventions();
+
+  type LearnTab = "lessons" | "conventions" | "systems";
+  function parseTab(v: string | null): LearnTab {
+    return v === "lessons" || v === "systems" ? v : "conventions";
+  }
+  const activeTab = $derived<LearnTab>(parseTab(page.url.searchParams.get("tab")));
+  function setTab(tab: LearnTab) {
+    const url = new URL(page.url);
+    if (tab === "conventions") url.searchParams.delete("tab");
+    else url.searchParams.set("tab", tab);
+    void goto(url.pathname + url.search, { replaceState: true, noScroll: true, keepFocus: true });
+  }
 
   let searchQuery = $state("");
   let innerW = $state(1024);
@@ -172,21 +185,65 @@
 <svelte:window bind:innerWidth={innerW} />
 
 <main class="h-full flex flex-col bg-bg-base" aria-label="Convention learning">
-  <!-- Header breadcrumb -->
-  <header class="shrink-0 px-6 py-4 border-b border-border-subtle flex items-center gap-3">
-    {#if !isDesktop}
-      <button
-        data-testid="sidebar-toggle"
-        class="shrink-0 p-1 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
-        aria-label="Toggle sidebar"
-        onclick={() => sidebarOpen = !sidebarOpen}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg>
-      </button>
-    {/if}
-    <h2 class="text-sm font-medium text-text-secondary">Learn</h2>
+  <!-- Header -->
+  <header class="shrink-0 border-b border-border-subtle">
+    <div class="px-6 pt-4 pb-2 flex items-center gap-3">
+      {#if !isDesktop && activeTab === "conventions"}
+        <button
+          data-testid="sidebar-toggle"
+          class="shrink-0 p-1 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+          aria-label="Toggle sidebar"
+          onclick={() => sidebarOpen = !sidebarOpen}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg>
+        </button>
+      {/if}
+      <h2 class="text-sm font-medium text-text-secondary">Learn</h2>
+    </div>
+    <!-- Tab bar -->
+    <nav class="px-6 flex gap-1" aria-label="Learn sections">
+      {#each [
+        { id: "lessons", label: "Lessons" },
+        { id: "conventions", label: "Conventions" },
+        { id: "systems", label: "Bidding Systems" },
+      ] as const as tab (tab.id)}
+        <button
+          class="px-4 py-2 text-sm font-medium transition-colors cursor-pointer border-b-2 -mb-px
+            {activeTab === tab.id
+              ? 'text-accent-primary border-accent-primary'
+              : 'text-text-muted border-transparent hover:text-text-primary'}"
+          aria-current={activeTab === tab.id ? "page" : undefined}
+          onclick={() => setTab(tab.id)}
+        >
+          {tab.label}
+        </button>
+      {/each}
+    </nav>
   </header>
 
+  {#if activeTab === "lessons"}
+    <section class="flex-1 overflow-y-auto px-6 py-12 flex items-center justify-center">
+      <div class="max-w-md text-center">
+        <h3 class="text-lg font-semibold text-text-primary mb-2">Lessons — coming soon</h3>
+        <p class="text-sm text-text-secondary leading-relaxed">
+          Short, guided walkthroughs that teach one convention at a time using canonical
+          example hands. Each lesson shows an auction up to a decision point and asks you
+          to choose the next bid.
+        </p>
+      </div>
+    </section>
+  {:else if activeTab === "systems"}
+    <section class="flex-1 overflow-y-auto px-6 py-12 flex items-center justify-center">
+      <div class="max-w-md text-center">
+        <h3 class="text-lg font-semibold text-text-primary mb-2">Bidding Systems — coming soon</h3>
+        <p class="text-sm text-text-secondary leading-relaxed">
+          Read-only reference for SAYC, 2/1, and Acol: side-by-side comparison of
+          thresholds, point formulas, and convention defaults, so you can see how systems
+          differ before picking one.
+        </p>
+      </div>
+    </section>
+  {:else}
   <div class="flex flex-1 min-h-0 relative">
     <!-- Sidebar overlay backdrop (mobile only) -->
     {#if !isDesktop && sidebarOpen}
@@ -439,5 +496,6 @@
         </span>
       {/each}
     </div>
+  {/if}
   {/if}
 </main>
