@@ -4,6 +4,7 @@
   import { listModules, listConventions } from "../../service/service-helpers";
   import { type CatalogModule, mergeModules } from "../shared/module-catalog";
   import ModuleChecklist from "../shared/ModuleChecklist.svelte";
+  import AppScreen from "../shared/AppScreen.svelte";
 
   const appStore = getAppStore();
   const packsStore = getPracticePacksStore();
@@ -126,55 +127,52 @@
   }
 </script>
 
-<main class="max-w-3xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Practice Pack Editor">
-  <div class="shrink-0">
-    <!-- Header with name + actions -->
-    <div class="flex items-start gap-3 mb-4">
-      <div class="flex-1">
-        <label for="pack-name" class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1 block">Practice Pack Name</label>
-        <input
-          id="pack-name"
-          type="text"
-          bind:value={editName}
-          oninput={() => { nameError = null; }}
-          class="w-full px-3 py-2 text-lg font-semibold bg-bg-card border rounded-[--radius-md] text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary
-            {nameError ? 'border-red-400' : 'border-border-subtle'}"
-          placeholder="Practice pack name"
-        />
-        {#if nameError}
-          <p class="text-xs text-red-400 mt-1">{nameError}</p>
-        {/if}
-      </div>
-      <div class="flex gap-2 pt-6">
-        <button
-          class="px-4 py-2 rounded-[--radius-md] text-sm font-medium bg-accent-primary text-text-on-accent hover:bg-accent-primary/90 transition-colors cursor-pointer"
-          onclick={handleSave}
-        >
-          Save
-        </button>
-        <button
-          class="px-4 py-2 rounded-[--radius-md] text-sm font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-border-prominent transition-colors cursor-pointer"
-          onclick={handleCancel}
-        >
-          Cancel
-        </button>
-      </div>
+<AppScreen title={packId ? "Edit Practice Pack" : "New Practice Pack"} width="custom" contentClass="space-y-6">
+  {#snippet actions()}
+    <div class="flex gap-2">
+      <button
+        class="px-4 py-2 rounded-[--radius-md] text-sm font-medium bg-accent-primary text-text-on-accent hover:bg-accent-primary/90 transition-colors cursor-pointer"
+        onclick={handleSave}
+      >
+        Save
+      </button>
+      <button
+        class="px-4 py-2 rounded-[--radius-md] text-sm font-medium text-text-muted hover:text-text-primary border border-border-subtle hover:border-border-prominent transition-colors cursor-pointer"
+        onclick={handleCancel}
+      >
+        Cancel
+      </button>
     </div>
+  {/snippet}
 
-    <!-- Description -->
-    <div class="mb-6">
-      <label for="pack-description" class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1 block">Description</label>
-      <textarea
-        id="pack-description"
-        bind:value={editDescription}
-        class="w-full px-3 py-2 text-sm bg-bg-card border border-border-subtle rounded-[--radius-md] text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary resize-none"
-        rows="2"
-        placeholder="Optional description for this practice pack"
-      ></textarea>
-    </div>
-  </div>
+  <section>
+    <label for="pack-name" class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1 block">Practice Pack Name</label>
+    <input
+      id="pack-name"
+      type="text"
+      bind:value={editName}
+      oninput={() => { nameError = null; }}
+      class="w-full px-3 py-2 text-lg font-semibold bg-bg-card border rounded-[--radius-md] text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary
+        {nameError ? 'border-red-400' : 'border-border-subtle'}"
+      placeholder="Practice pack name"
+    />
+    {#if nameError}
+      <p class="text-xs text-red-400 mt-1">{nameError}</p>
+    {/if}
+  </section>
 
-  <div class="flex-1 overflow-y-auto pb-6 space-y-6">
+  <section>
+    <label for="pack-description" class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-1 block">Description</label>
+    <textarea
+      id="pack-description"
+      bind:value={editDescription}
+      class="w-full px-3 py-2 text-sm bg-bg-card border border-border-subtle rounded-[--radius-md] text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary resize-none"
+      rows="2"
+      placeholder="Optional description for this practice pack"
+    ></textarea>
+  </section>
+
+  <div class="space-y-6">
     <!-- Selected conventions (ordered list) -->
     <section>
       <h2 class="text-sm font-semibold text-text-primary mb-3">
@@ -252,4 +250,4 @@
       </section>
     {/if}
   </div>
-</main>
+</AppScreen>

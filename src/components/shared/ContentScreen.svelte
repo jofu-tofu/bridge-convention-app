@@ -73,25 +73,6 @@
     }
   }
 
-  @media (min-width: 1024px) {
-    .content-screen {
-      margin-left: calc(var(--rail-width, 80px) + 1rem);
-      margin-right: auto;
-      max-width: calc(100vw - var(--rail-width, 80px) - 2rem);
-    }
-    .content-screen[data-width="narrow"] {
-      max-width: min(
-        var(--screen-max-content-narrow),
-        calc(100vw - var(--rail-width, 80px) - 2rem)
-      );
-    }
-    .content-screen[data-width="wide"] {
-      max-width: min(
-        var(--screen-max-content),
-        calc(100vw - var(--rail-width, 80px) - 2rem)
-      );
-    }
-  }
 
   .content-screen__header {
     display: flex;

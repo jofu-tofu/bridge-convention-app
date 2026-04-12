@@ -44,6 +44,12 @@
     overflow-y: auto;
   }
 
+  @media (min-width: 1024px) {
+    .shell-main {
+      padding-inline-start: calc(var(--rail-width) + 1rem);
+    }
+  }
+
   .shell-tabs {
     display: none;
   }

@@ -5,7 +5,7 @@
   import QuickActions from "./QuickActions.svelte";
   import YourSystems from "./YourSystems.svelte";
   import YourPacks from "./YourPacks.svelte";
-  import ContentScreen from "../../shared/ContentScreen.svelte";
+  import AppScreen from "../../shared/AppScreen.svelte";
 
   const auth = getAuthStore();
   const user = $derived(auth.user);
@@ -23,7 +23,7 @@
   <title>BridgeLab — Home</title>
 </svelte:head>
 
-<ContentScreen title={`Welcome back${user?.display_name ? `, ${user.display_name}` : ""}`}>
+<AppScreen title={`Welcome back${user?.display_name ? `, ${user.display_name}` : ""}`}>
   {#snippet actions()}
     <span class="tier" class:paid={isPaid}>{tierLabel}</span>
   {/snippet}
@@ -37,7 +37,7 @@
       <YourPacks />
     </aside>
   </div>
-</ContentScreen>
+</AppScreen>
 
 <style>
   .tier {

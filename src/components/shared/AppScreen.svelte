@@ -53,8 +53,6 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    max-width: var(--screen-max-app);
-    margin: 0 auto;
     padding: var(--screen-gutter-y) var(--screen-gutter-x) 0;
   }
 
@@ -62,13 +60,6 @@
     .app-screen {
       padding: var(--screen-gutter-y-md) var(--screen-gutter-x-md) 0;
     }
-  }
-
-  .app-screen[data-width="form"] {
-    max-width: var(--screen-max-form);
-  }
-  .app-screen[data-width="custom"] {
-    max-width: none;
   }
 
   .app-screen__header {
@@ -119,5 +110,6 @@
 
   .app-screen__body[data-scroll="true"] {
     overflow-y: auto;
+    overflow-x: hidden;
   }
 </style>

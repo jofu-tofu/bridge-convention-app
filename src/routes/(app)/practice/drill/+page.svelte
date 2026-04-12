@@ -2,6 +2,7 @@
   import { AVAILABLE_BASE_SYSTEMS, PracticeRole, displayConventionName, listConventions } from "../../../../service";
   import type { SystemSelectionId } from "../../../../service";
   import { getCustomDrillsStore, getCustomSystemsStore } from "../../../../stores/context";
+  import AppScreen from "../../../../components/shared/AppScreen.svelte";
 
   const drillsStore = getCustomDrillsStore();
   const customSystems = getCustomSystemsStore();
@@ -30,17 +31,17 @@
   }
 </script>
 
-<main class="max-w-3xl mx-auto h-full overflow-y-auto p-4">
-  <header class="flex items-start justify-between mb-6">
-    <div>
-      <h1 class="text-xl font-semibold text-text-primary">My drills</h1>
-      <p class="text-sm text-text-muted mt-1">Drills you've configured. Launching lands in a later update.</p>
-    </div>
+<AppScreen
+  title="My drills"
+  subtitle="Drills you've configured. Launching lands in a later update."
+  width="custom"
+>
+  {#snippet actions()}
     <a
       href="/practice/drill/new"
       class="px-3 py-1.5 rounded-[--radius-md] text-sm font-medium bg-accent-primary text-text-on-accent hover:bg-accent-primary-hover no-underline"
     >New drill</a>
-  </header>
+  {/snippet}
 
   {#if drillsStore.drills.length === 0}
     <div class="text-center py-16 border border-dashed border-border-subtle rounded-[--radius-lg]">
@@ -75,4 +76,4 @@
       {/each}
     </ul>
   {/if}
-</main>
+</AppScreen>
