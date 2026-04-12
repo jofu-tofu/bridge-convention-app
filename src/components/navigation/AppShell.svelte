@@ -22,7 +22,7 @@
   .shell {
     display: flex;
     width: 100%;
-    min-height: 100vh;
+    height: 100%;
   }
 
   .shell-rail {
@@ -35,6 +35,7 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
   }
 
   .shell-tabs {

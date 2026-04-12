@@ -178,7 +178,6 @@ html {
 html,
 body {
   height: 100%;
-  overflow: clip;
 }
 body {
   font-family: var(--font-sans);
@@ -189,7 +188,6 @@ body {
 }
 #app {
   height: 100%;
-  overflow: clip;
 }
 button {
   font-family: inherit;
