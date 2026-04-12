@@ -6,6 +6,7 @@
   import type { createCustomSystemsStore } from "./stores/custom-systems.svelte";
   import type { createUserModuleStore } from "./stores/user-modules.svelte";
   import type { createPracticePacksStore } from "./stores/practice-packs.svelte";
+  import type { createDrillPresetsStore } from "./stores/drill-presets.svelte";
   import type { createAuthStore } from "./stores/auth.svelte";
   import {
     setService,
@@ -14,6 +15,7 @@
     setCustomSystemsStore,
     setUserModuleStore,
     setPracticePacksStore,
+    setDrillPresetsStore,
     setAuthStore,
   } from "./stores/context";
 
@@ -24,6 +26,7 @@
     customSystemsStore: ReturnType<typeof createCustomSystemsStore>;
     userModuleStore: ReturnType<typeof createUserModuleStore>;
     practicePacksStore: ReturnType<typeof createPracticePacksStore>;
+    drillPresetsStore: ReturnType<typeof createDrillPresetsStore>;
     authStore: ReturnType<typeof createAuthStore>;
     children: Snippet;
   }
@@ -37,6 +40,7 @@
   setCustomSystemsStore(props.customSystemsStore);
   setUserModuleStore(props.userModuleStore);
   setPracticePacksStore(props.practicePacksStore);
+  setDrillPresetsStore(props.drillPresetsStore);
   setAuthStore(props.authStore);
 </script>
 

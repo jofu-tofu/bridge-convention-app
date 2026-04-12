@@ -2,19 +2,25 @@
   import { goto } from "$app/navigation";
   import { listConventions, ConventionCategory, displayConventionName } from "../../service";
   import type { ConventionInfo } from "../../service";
-  import { getAppStore, getAuthStore } from "../../stores/context";
+  import { getAppStore, getAuthStore, getDrillPresetsStore } from "../../stores/context";
   import { canPractice } from "../../stores/entitlements";
+  import type { DrillPreset } from "../../stores/drill-presets.svelte";
   import AuthModal from "../shared/AuthModal.svelte";
   import PaywallOverlay from "../shared/PaywallOverlay.svelte";
   import { filterConventions } from "./filter-conventions";
   import ItemCard from "../shared/ItemCard.svelte";
+  import SectionHeader from "../shared/SectionHeader.svelte";
+  import SavedDrillsShelf from "./SavedDrillsShelf.svelte";
+  import DrillPresetDialog from "./DrillPresetDialog.svelte";
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
 
   const appStore = getAppStore();
   const auth = getAuthStore();
+  const presetsStore = getDrillPresetsStore();
 
   let authModal = $state<ReturnType<typeof AuthModal>>();
   let paywallOverlay = $state<ReturnType<typeof PaywallOverlay>>();
+  let presetDialog = $state<ReturnType<typeof DrillPresetDialog>>();
 
   let innerW = $state(window.innerWidth);
   const isMobile = $derived(innerW < DESKTOP_MIN);
@@ -24,18 +30,20 @@
   );
 
   let searchQuery = $state("");
-  let activeCategory = $state<ConventionCategory | null>(null);
 
   const allConventions = $derived(listConventions());
 
   const filteredConventions = $derived(
-    filterConventions(allConventions, searchQuery, activeCategory),
+    filterConventions(allConventions, searchQuery, null),
   );
 
-  const categories = $derived(
-    Object.values(ConventionCategory).filter(
-      (cat) => allConventions.some((c) => c.category === cat),
-    ),
+  const groupedConventions = $derived(
+    Object.values(ConventionCategory)
+      .map((category) => ({
+        category,
+        items: filteredConventions.filter((c) => c.category === category),
+      }))
+      .filter((group) => group.items.length > 0),
   );
 
   function handleSelect(config: ConventionInfo) {
@@ -47,6 +55,29 @@
     void goto("/game");
   }
 
+  function launchPreset(preset: DrillPreset) {
+    const convention = allConventions.find((c) => c.id === preset.conventionId);
+    if (!convention) return;
+    if (!canPractice(auth.user, convention.id)) {
+      paywallOverlay?.open();
+      return;
+    }
+    presetsStore.markLaunched(preset.id);
+    appStore.setPracticeMode(preset.practiceMode);
+    appStore.setDevPracticeRole(preset.practiceRole);
+    appStore.setBaseSystemId(preset.systemSelectionId);
+    appStore.selectConvention(convention);
+    void goto("/game");
+  }
+
+  function openConfigureDialog(convention: ConventionInfo) {
+    presetDialog?.open({ mode: "create", convention });
+  }
+
+  function openEditDialog(presetId: string) {
+    presetDialog?.open({ mode: "edit", presetId });
+  }
+
   function handleLearn(config: ConventionInfo) {
     appStore.setLearningFromBundle(config);
     void goto("/learning");
@@ -55,10 +86,6 @@
   const lastPracticedConvention = $derived(
     allConventions.find((c) => c.id === appStore.lastPracticedId) ?? null,
   );
-
-  function toggleCategory(cat: ConventionCategory) {
-    activeCategory = activeCategory === cat ? null : cat;
-  }
 
   const displayName = displayConventionName;
 
@@ -69,14 +96,11 @@
 
 <svelte:window bind:innerWidth={innerW} />
 
-<main class="max-w-5xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Convention selection">
-  <!-- Fixed header: title + search + filters -->
+<main class="max-w-5xl mx-auto h-full flex flex-col p-4 pb-0" aria-label="Convention selection">
+  <!-- Fixed header: search -->
   <div class="shrink-0">
     <div class="flex items-start justify-between">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight text-text-primary mb-1">Bridge Practice</h1>
-        <p class="text-text-secondary mb-5">Select a convention to learn or practice.</p>
-      </div>
+      <h1 class="sr-only">Practice</h1>
       {#if isMobile}
         <button
           class="shrink-0 ml-4 mt-1 transition-colors cursor-pointer text-text-muted hover:text-text-primary"
@@ -129,39 +153,14 @@
       </div>
     </div>
 
-    <!-- Category filters -->
-    <div class="flex gap-2 mb-5 overflow-x-auto pb-1 scrollbar-none">
-      <button
-        class="shrink-0 px-4 py-1.5 min-h-[--size-touch-target] rounded-full text-sm font-semibold transition-all cursor-pointer
-          {activeCategory === null
-          ? 'bg-accent-primary text-text-on-accent shadow-sm'
-          : 'bg-bg-card text-text-secondary hover:text-text-primary hover:bg-bg-elevated border border-border-subtle'}"
-        aria-pressed={activeCategory === null}
-        onclick={() => (activeCategory = null)}
-      >
-        All
-      </button>
-      {#each categories as cat (cat)}
-        <button
-          class="shrink-0 px-4 py-1.5 min-h-[--size-touch-target] rounded-full text-sm font-semibold transition-all cursor-pointer
-            {activeCategory === cat
-            ? 'bg-accent-primary text-text-on-accent shadow-sm'
-            : 'bg-bg-card text-text-secondary hover:text-text-primary hover:bg-bg-elevated border border-border-subtle'}"
-          aria-pressed={activeCategory === cat}
-          onclick={() => toggleCategory(cat)}
-        >
-          {cat}
-        </button>
-      {/each}
-    </div>
   </div>
 
   <!-- Scrollable convention grid -->
   <div class="min-h-0 flex-1 overflow-y-auto pb-6">
-    {#if lastPracticedConvention && !searchQuery && !activeCategory}
+    {#if lastPracticedConvention && !searchQuery}
       <!-- Continue Practicing card -->
       <div
-        class="flex items-center justify-between gap-4 p-4 mb-4 rounded-[--radius-lg]
+        class="flex items-center justify-between gap-4 px-3 py-2 mb-3 rounded-[--radius-lg]
           bg-accent-primary/8 border border-accent-primary/20"
         data-testid="continue-practicing"
       >
@@ -180,7 +179,7 @@
             onclick={() => handleLearn(lastPracticedConvention)}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
-            Learn
+            <span class="hidden sm:inline">Learn</span>
           </button>
           <button
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
@@ -196,68 +195,85 @@
             {:else}
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" /></svg>
             {/if}
-            {lastPracticedLocked ? "Locked" : "Practice"}
+            <span class="hidden sm:inline">{lastPracticedLocked ? "Locked" : "Practice"}</span>
           </button>
         </div>
       </div>
     {/if}
 
+    {#if !searchQuery}
+      <SavedDrillsShelf onLaunch={launchPreset} onEdit={openEditDialog} />
+    {/if}
+
     {#if filteredConventions.length > 0}
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {#each filteredConventions as convention (convention.id)}
-          <ItemCard testId="convention-{convention.id}" interactive={false}>
-            <div class="flex items-start justify-between gap-2">
-              <h2 class="text-lg font-semibold text-text-primary leading-tight">
-                {displayName(convention.name)}
-              </h2>
-              <div class="flex items-center gap-1.5 shrink-0">
-                {#if convention.variesBySystem}
-                  <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
-                    Varies by system
-                  </span>
-                {/if}
-                <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
-                  {convention.category}
-                </span>
-              </div>
-            </div>
-            <p class="text-sm text-text-secondary mt-1 leading-relaxed line-clamp-2">
-              {convention.description}
-            </p>
-            {@const locked = !canPractice(auth.user, convention.id)}
-            <div class="flex items-center justify-end gap-1.5 mt-2">
-              <button
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
-                  text-text-secondary bg-bg-elevated hover:text-accent-primary hover:bg-accent-primary/10
-                  transition-all cursor-pointer border border-transparent hover:border-accent-primary/20"
-                data-testid="learn-{convention.id}"
-                aria-label="Learn {displayName(convention.name)}"
-                onclick={() => handleLearn(convention)}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
-                Learn
-              </button>
-              <button
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
-                  transition-all shadow-sm
-                  {locked
-                    ? 'text-text-muted bg-bg-elevated cursor-pointer border border-border-subtle'
-                    : 'text-text-on-accent bg-accent-primary hover:bg-accent-primary-hover cursor-pointer'}"
-                data-testid="practice-{convention.id}"
-                aria-label="{locked ? 'Unlock' : 'Practice'} {displayName(convention.name)}"
-                onclick={() => handleSelect(convention)}
-              >
-                {#if locked}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                {:else}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                {/if}
-                {locked ? "Locked" : "Practice"}
-              </button>
-            </div>
-          </ItemCard>
-        {/each}
-      </div>
+      {#each groupedConventions as group (group.category)}
+        <section class="mb-6">
+          <SectionHeader level="h2">{group.category}</SectionHeader>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+            {#each group.items as convention (convention.id)}
+              <ItemCard testId="convention-{convention.id}" interactive={false}>
+                <div class="flex items-start justify-between gap-2">
+                  <h2 class="text-lg font-semibold text-text-primary leading-tight">
+                    {displayName(convention.name)}
+                  </h2>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    {#if convention.variesBySystem}
+                      <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
+                        Varies by system
+                      </span>
+                    {/if}
+                  </div>
+                </div>
+                <p class="text-sm text-text-secondary mt-1 leading-relaxed line-clamp-2">
+                  {convention.description}
+                </p>
+                {@const locked = !canPractice(auth.user, convention.id)}
+                <div class="flex items-center justify-end gap-1.5 mt-2">
+                  <button
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
+                      text-text-secondary bg-bg-elevated hover:text-accent-primary hover:bg-accent-primary/10
+                      transition-all cursor-pointer border border-transparent hover:border-accent-primary/20"
+                    data-testid="learn-{convention.id}"
+                    aria-label="Learn {displayName(convention.name)}"
+                    onclick={() => handleLearn(convention)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
+                    <span class="hidden sm:inline">Learn</span>
+                  </button>
+                  <button
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
+                      transition-all shadow-sm
+                      {locked
+                        ? 'text-text-muted bg-bg-elevated cursor-pointer border border-border-subtle'
+                        : 'text-text-on-accent bg-accent-primary hover:bg-accent-primary-hover cursor-pointer'}"
+                    data-testid="practice-{convention.id}"
+                    aria-label="{locked ? 'Unlock' : 'Practice'} {displayName(convention.name)}"
+                    onclick={() => handleSelect(convention)}
+                  >
+                    {#if locked}
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    {:else}
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                    {/if}
+                    <span class="hidden sm:inline">{locked ? "Locked" : "Practice"}</span>
+                  </button>
+                  <button
+                    class="flex items-center justify-center p-1.5 rounded-[--radius-md] text-xs font-medium
+                      text-text-secondary bg-bg-elevated hover:text-accent-primary hover:bg-accent-primary/10
+                      transition-all cursor-pointer border border-transparent hover:border-accent-primary/20
+                      min-w-[--size-touch-target] min-h-[--size-touch-target]"
+                    data-testid="configure-{convention.id}"
+                    aria-label="Configure and save drill for {displayName(convention.name)}"
+                    onclick={() => openConfigureDialog(convention)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+                  </button>
+                </div>
+              </ItemCard>
+            {/each}
+          </div>
+        </section>
+      {/each}
     {:else}
       <div class="text-center py-12">
         <p class="text-text-muted">No conventions match your search.</p>
@@ -266,13 +282,5 @@
   </div>
   <AuthModal bind:this={authModal} />
   <PaywallOverlay bind:this={paywallOverlay} />
+  <DrillPresetDialog bind:this={presetDialog} onLaunch={launchPreset} />
 </main>
-
-<style>
-  .scrollbar-none {
-    scrollbar-width: none;
-  }
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-  }
-</style>

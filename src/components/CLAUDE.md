@@ -27,8 +27,9 @@ Game components MUST use `--text-*` tokens (ESLint enforced) and `--color-*` tok
 AppReady.svelte                      Root app shell — creates engine/stores, sets context, nav chrome
 components/
   screens/
-    ConventionSelectScreen.svelte    Convention picker with search + category filter + 2-column responsive card grid. Practice buttons show lock state for non-premium bundles; PaywallOverlay opens on locked practice attempt.
-    landing/                          Landing-page components for `/`. MarketingHero (anonymous). LoggedInLanding + ContinueCard + QuickActions + YourSystems + YourPacks (client-hydrated, read localStorage directly via landing-helpers.ts — no WASM dependency, since (content) route doesn't init service).
+    ConventionSelectScreen.svelte    search + category-sectioned card grid (sections derived from `ConventionCategory` enum order). Practice buttons show lock state for non-premium bundles; PaywallOverlay opens on locked practice attempt. Renders `SavedDrillsShelf` between Continue strip and category sections; each card exposes a `⋯` configure action that opens `DrillPresetDialog` in create mode.
+    SavedDrillsShelf.svelte          Horizontal chip strip of saved drill presets (MRU). Hidden when empty. Each chip: click to launch (`onLaunch`), `⋯` opens menu (Launch / Rename / Edit configuration / Delete). Data from `getDrillPresetsStore()`.
+    DrillPresetDialog.svelte         Native `<dialog>` with four fields (mode / role / system / name) + three actions (Cancel / Save / Save & Launch). `open({ mode: "create", convention })` or `open({ mode: "edit", presetId })`. Convention field read-only in edit mode. Launch runs via parent-provided `onLaunch` callback.
     LearningScreen.svelte            Three-tab learning screen (Lessons | Conventions | Bidding Systems). Conventions tab = current reference view (sidebar lists modules filterable by bundle, main content shows conversation flow tree + module teaching + surfaces). Lessons and Bidding Systems are placeholders.
     MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible card, recursive snippet, tap-to-expand accordion for detail (recommendation/disclosure/explanation/clauses)
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors, self-contained auto-scaling. Optional interactive mode (selectedNodeId + onNodeSelect props) for Workshop click-to-select.
@@ -123,10 +124,12 @@ components/
     PaywallOverlay.svelte            Native <dialog> upgrade prompt — shown when user tries to practice a locked bundle. Exports open()/close(). Subscribe button is a placeholder (no payment integration yet).
     module-catalog.ts                Single source of truth for module categorization: MODULE_CATEGORIES, CATEGORY_DISPLAY, CatalogModule, mergeModules(), groupByCategory(), filterModules(). Pure functions — no store/Svelte imports. All screens import from here.
     ModuleChecklist.svelte           Shared collapsible checkbox grid for module selection: search, collapsible category sections, count badges. User modules shown under "My Conventions" section separated from system modules. Used by SystemEditor and PracticePackEditorScreen.
+    reference/                       Reference-page building blocks for `/learn/[moduleId]`: `BidCode`, `SummaryCard`, `WhenNotTable`, `ResponseTable`, `ContinuationTree`, `DecisionGrid`, `WorkedAuction`, `InterferenceSection`, `SystemCompatRow`, `RelatedLinks`, `QuickRefCard`, and the shared TS section types. Anchors must route through `slugifyMeaningId()` from `src/service/`; all non-summary/non-response sections hide themselves in print via co-located `@media print` rules.
   __tests__/
     ButtonTestWrapper.svelte         Snippet wrapper for Button tests
     BridgeTableTestWrapper.svelte    Snippet wrapper for BridgeTable tests
     shared/                          Shared component tests
+      reference/                     Behavior tests for the reference-page components (schema, anchor ids, null/print contracts)
     game/                            Game component tests
     screens/                         Screen component tests
 ```
@@ -157,6 +160,8 @@ components/
 - `BidPanel` renders all 35 bids + 3 specials; unavailable bids disabled, not hidden. `data-testid="bid-{callKey}"` on all.
 - User seat hardcoded to `Seat.South` — future: configurable.
 - Dev-mode seeded RNG via `appStore.devSeed`; seed advances per deal.
+- **Practice picker: no mastery/progress affordances on convention cards.** Do not add mastery bars, streak counters, "X of Y" progress strings, or completion badges to `ConventionSelectScreen` cards. Research (see `docs/research/practice-page-redesign/evidence-map.md` §6 + finding #4) shows these harm intrinsic motivation for adult voluntary learners (Hanus & Fox 2015 RCT; overjustification effect). A descriptive "Last practiced: N days ago" line is acceptable; evaluative progress indicators are not. Progress/coverage belongs in a dedicated opt-in surface (e.g., `/coverage`), not the picker.
+- **Practice picker: category section order is coupled to the `ConventionCategory` enum.** `ConventionCategory` is re-exported from `src/service/` (Rust-origin, via WASM). The Practice picker renders category sections in `Object.values(ConventionCategory)` declaration order. Reordering or renaming values in the Rust enum silently changes the Practice-tab section order. If order matters, encode it explicitly rather than relying on enum declaration.
 
 ---
 
@@ -179,4 +184,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `AppReady.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-11 | version=14 | dir-commits-at-audit=20 | tree-sig=dirs:10,files:50,exts:svelte:34,ts:15,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-12 | version=15 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->

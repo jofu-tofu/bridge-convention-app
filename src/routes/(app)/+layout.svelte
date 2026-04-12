@@ -1,13 +1,14 @@
 <script lang="ts">
-  import type { DevServicePort, DataPort } from "../../service";
-  import { BridgeService, DataPortClient, DevDataPort, SubscriptionTier } from "../../service";
-  import { applyDevParams, getDevAuthOverride } from "../../stores/dev-params";
+  import type { DevServicePort } from "../../service";
+  import { BridgeService } from "../../service";
+  import { applyDevParams } from "../../stores/dev-params";
   import { createGameStore } from "../../stores/game.svelte";
   import { createAppStore } from "../../stores/app.svelte";
   import { createCustomSystemsStore } from "../../stores/custom-systems.svelte";
   import { createUserModuleStore } from "../../stores/user-modules.svelte";
   import { createPracticePacksStore } from "../../stores/practice-packs.svelte";
-  import { createAuthStore } from "../../stores/auth.svelte";
+  import { createDrillPresetsStore } from "../../stores/drill-presets.svelte";
+  import { getAuthStore } from "../../stores/context";
   import AppShell from "../../components/navigation/AppShell.svelte";
   import AppReady from "../../AppReady.svelte";
 
@@ -21,19 +22,13 @@
   let customSystemsStore = $state<ReturnType<typeof createCustomSystemsStore> | null>(null);
   let userModuleStore = $state<ReturnType<typeof createUserModuleStore> | null>(null);
   let practicePacksStore = $state<ReturnType<typeof createPracticePacksStore> | null>(null);
-  let authStore = $state<ReturnType<typeof createAuthStore> | null>(null);
+  let drillPresetsStore = $state<ReturnType<typeof createDrillPresetsStore> | null>(null);
+  const authStore = getAuthStore();
 
   function init(): void {
     engineReady = false;
     initError = null;
     const svc = new BridgeService();
-
-    // Auth store created immediately (non-blocking, parallel with WASM init)
-    const devAuthTier = getDevAuthOverride() ?? (import.meta.env.DEV ? SubscriptionTier.Premium : null);
-    const dataPort: DataPort = devAuthTier
-      ? new DevDataPort(devAuthTier)
-      : new DataPortClient();
-    authStore = createAuthStore(dataPort);
 
     svc.init()
       .then(() => {
@@ -43,6 +38,7 @@
         customSystemsStore = createCustomSystemsStore();
         userModuleStore = createUserModuleStore();
         practicePacksStore = createPracticePacksStore();
+        drillPresetsStore = createDrillPresetsStore();
         // Validate stored custom system selection still exists
         if (!customSystemsStore.isValidSelection(store.baseSystemId)) {
           store.setBaseSystemId("sayc");
@@ -67,7 +63,7 @@
       onclick={() => init()}
     >Retry</button>
   </div>
-{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore || !customSystemsStore || !userModuleStore || !practicePacksStore || !authStore}
+{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore || !customSystemsStore || !userModuleStore || !practicePacksStore || !drillPresetsStore || !authStore}
   <div class="bg-bg-deepest text-text-primary flex h-screen items-center justify-center">
     Loading engine...
   </div>
@@ -79,6 +75,7 @@
     {customSystemsStore}
     {userModuleStore}
     {practicePacksStore}
+    {drillPresetsStore}
     {authStore}
   >
     <div class="bg-bg-deepest text-text-primary h-screen overflow-hidden font-sans">
