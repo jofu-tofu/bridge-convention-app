@@ -81,12 +81,11 @@ interface FlowTreeNode {
   clauses: SurfaceClauseView[];
 }
 
-// Try multiple locations for the learn data
+// Try multiple locations for the generated learn data
 function loadLearnData(): StaticLearnData | null {
   const candidates = [
-    path.resolve("static/.static/learn-data.json"),
-    path.resolve("dist/.static/learn-data.json"),
-    path.resolve(".static/learn-data.json"),
+    path.resolve(".generated/learn-data.json"),
+    path.resolve("dist/.generated/learn-data.json"),
   ];
 
   for (const p of candidates) {

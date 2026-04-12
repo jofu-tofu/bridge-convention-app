@@ -41,7 +41,7 @@ COPY svelte.config.js vite.config.ts tsconfig.json ./
 COPY scripts/ scripts/
 COPY content/ content/
 COPY --from=static-build /build/target/release/bridge-static /usr/local/bin/bridge-static
-RUN mkdir -p static/.static && bridge-static --output static/.static/learn-data.json && \
+RUN mkdir -p .generated && bridge-static --output .generated/learn-data.json && \
     npm run dds:ensure && npx vite build
 
 # Stage 5 — production: serve static files with Caddy

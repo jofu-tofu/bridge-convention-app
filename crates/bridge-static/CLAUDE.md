@@ -4,7 +4,7 @@ Static data extractor — outputs convention viewport JSON consumed by prerender
 
 ## Purpose
 
-Thin binary that calls `bridge-session` viewport builders (`build_module_catalog`, `build_module_learning_viewport`, `build_module_flow_tree`) for all modules and serializes the output as a single JSON file. SvelteKit content routes load this JSON from `static/.static/learn-data.json` during prerender to build static `/learn/*` pages for SEO.
+Thin binary that calls `bridge-session` viewport builders (`build_module_catalog`, `build_module_learning_viewport`, `build_module_flow_tree`) for all modules and serializes the output as a single JSON file. SvelteKit content routes load this JSON from `.generated/learn-data.json` during prerender to build static `/learn/*` pages for SEO.
 
 ## Architectural Constraint
 
@@ -29,4 +29,4 @@ src/main.rs    Binary entry point (~80 LOC)
 Cargo.toml     Dependencies: bridge-conventions, bridge-session, serde, serde_json
 ```
 
-<!-- context-layer: generated=2026-04-11 | last-audited=2026-04-12 | version=2 | dir-commits-at-audit=0 | tree-sig=dirs:1,files:3 -->
+<!-- context-layer: generated=2026-04-11 | last-audited=2026-04-12 | version=3 | dir-commits-at-audit=0 | tree-sig=dirs:1,files:3 -->

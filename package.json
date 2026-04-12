@@ -14,7 +14,7 @@
     "dev": "npm run wasm:ensure && npm run dds:ensure && vite dev",
     "og:build": "node scripts/build-og.mjs",
     "build": "npm run wasm:build && npm run dds:ensure && npm run static:extract && npm run og:build && vite build",
-    "static:extract": "cargo build --release -p bridge-static && mkdir -p static/.static && ./target/release/bridge-static --output static/.static/learn-data.json",
+    "static:extract": "cargo build --release -p bridge-static && mkdir -p .generated && ./target/release/bridge-static --output .generated/learn-data.json",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",

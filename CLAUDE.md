@@ -8,7 +8,7 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). W
 | ------------------------------------------------ | -------------------------------------------------------- |
 | `npm run dev`                                    | Build WASM (if needed) + start dev server (port 1420)    |
 | `npm run build`                                  | Build WASM + SvelteKit production build (includes prerendered SEO pages) |
-| `npm run static:extract`                         | Build bridge-static binary + extract learn JSON to `static/.static/learn-data.json` (run before vite build) |
+| `npm run static:extract`                         | Build bridge-static binary + extract learn JSON to `.generated/learn-data.json` (run before vite build) |
 | `npm run wasm:build`                             | Build WASM (release)                                     |
 | `npm run wasm:dev`                               | Build WASM (debug, faster)                               |
 | `npm run check`                                  | Svelte type-check                                        |
@@ -319,4 +319,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-12 | version=27 | dir-commits-at-audit=67 | tree-sig=dirs:19,files:100+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-12 | version=28 | dir-commits-at-audit=67 | tree-sig=dirs:19,files:100+ -->

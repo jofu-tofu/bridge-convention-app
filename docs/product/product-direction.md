@@ -42,7 +42,7 @@ Stable product decisions and rationale. Reference this for "why" questions about
 
 Hybrid architecture: static content ring around the WASM interactive core. Learn pages (`/learn/<moduleId>/`) are pre-rendered as static HTML at build time — crawlable by search engines and AI crawlers without JS execution. Practice and game screens remain client-side WASM (no SEO needed for interactive features). The static pages serve as the primary discovery and conversion surface, linking users into the SPA for hands-on practice.
 
-**Pipeline:** `bridge-static` (Rust binary) extracts viewport JSON from `bridge-session` into `static/.static/learn-data.json` → SvelteKit content routes under `src/routes/(content)/learn/**` read that JSON during prerender → the final static HTML ships in the production image. Guide pages (`/guides/*`) are prerendered from their own route sources during the same build.
+**Pipeline:** `bridge-static` (Rust binary) extracts viewport JSON from `bridge-session` into `.generated/learn-data.json` → SvelteKit content routes under `src/routes/(content)/learn/**` read that JSON during prerender → the final static HTML ships in the production image. Guide pages (`/guides/*`) are prerendered from their own route sources during the same build.
 
 ## What Users Value (Test User Feedback)
 

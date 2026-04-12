@@ -21,8 +21,8 @@ target/
 # WASM build output
 crates/bridge-wasm/pkg/
 
-# Static data extracted at build time (learn-data.json)
-static/.static/
+# Generated build-time data (learn-data.json)
+.generated/
 
 # Generated reports, screenshots, and test artifacts
 .artifacts/

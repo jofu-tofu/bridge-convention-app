@@ -10,9 +10,8 @@ interface ModuleCatalogEntry {
 
 function loadModules(): ModuleCatalogEntry[] {
   const candidates = [
-    path.resolve("static/.static/learn-data.json"),
-    path.resolve("dist/.static/learn-data.json"),
-    path.resolve(".static/learn-data.json"),
+    path.resolve(".generated/learn-data.json"),
+    path.resolve("dist/.generated/learn-data.json"),
   ];
 
   for (const p of candidates) {
