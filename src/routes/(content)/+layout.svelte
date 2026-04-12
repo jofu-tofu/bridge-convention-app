@@ -1,18 +1,7 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { createAuthStore } from "../../stores/auth.svelte";
-  import { DataPortClient, DevDataPort, SubscriptionTier, type DataPort } from "../../service";
-  import { getDevAuthOverride } from "../../stores/dev-params";
-  import { setAuthStore } from "../../stores/context";
   import AppShell from "../../components/navigation/AppShell.svelte";
 
   const { children } = $props();
-
-  if (browser) {
-    const devAuthTier = getDevAuthOverride() ?? (import.meta.env.DEV ? SubscriptionTier.Premium : null);
-    const dataPort: DataPort = devAuthTier ? new DevDataPort(devAuthTier) : new DataPortClient();
-    setAuthStore(createAuthStore(dataPort));
-  }
 </script>
 
 <svelte:head>
