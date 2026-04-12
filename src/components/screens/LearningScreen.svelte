@@ -9,6 +9,7 @@
   import ConversationFlowTree from "./ConversationFlowTree.svelte";
   import MobileFlowTree from "./MobileFlowTree.svelte";
   import CardSurface from "../shared/CardSurface.svelte";
+  import AppScreen from "../shared/AppScreen.svelte";
 
   const appStore = getAppStore();
   const service = getService();
@@ -184,43 +185,48 @@
 
 <svelte:window bind:innerWidth={innerW} />
 
-<main class="h-full flex flex-col bg-bg-base" aria-label="Convention learning">
-  <!-- Header -->
-  <header class="shrink-0 border-b border-border-subtle">
-    <div class="px-6 pt-4 pb-2 flex items-center gap-3">
-      {#if !isDesktop && activeTab === "conventions"}
-        <button
-          data-testid="sidebar-toggle"
-          class="shrink-0 p-1 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
-          aria-label="Toggle sidebar"
-          onclick={() => sidebarOpen = !sidebarOpen}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg>
-        </button>
-      {/if}
-      <h2 class="text-sm font-medium text-text-secondary">Learn</h2>
-    </div>
-    <!-- Tab bar -->
-    <nav class="px-6 flex gap-1" aria-label="Learn sections">
-      {#each [
-        { id: "lessons", label: "Lessons" },
-        { id: "conventions", label: "Conventions" },
-        { id: "systems", label: "Bidding Systems" },
-      ] as const as tab (tab.id)}
-        <button
-          class="px-4 py-2 text-sm font-medium transition-colors cursor-pointer border-b-2 -mb-px
-            {activeTab === tab.id
-              ? 'text-accent-primary border-accent-primary'
-              : 'text-text-muted border-transparent hover:text-text-primary'}"
-          aria-current={activeTab === tab.id ? "page" : undefined}
-          onclick={() => setTab(tab.id)}
-        >
-          {tab.label}
-        </button>
-      {/each}
-    </nav>
-  </header>
+{#snippet tabsSnippet()}
+  <nav class="flex gap-1 border-b border-border-subtle" aria-label="Learn sections">
+    {#each [
+      { id: "lessons", label: "Lessons" },
+      { id: "conventions", label: "Conventions" },
+      { id: "systems", label: "Bidding Systems" },
+    ] as const as tab (tab.id)}
+      <button
+        class="px-4 py-2 text-sm font-medium transition-colors cursor-pointer border-b-2 -mb-px
+          {activeTab === tab.id
+            ? 'text-accent-primary border-accent-primary'
+            : 'text-text-muted border-transparent hover:text-text-primary'}"
+        aria-current={activeTab === tab.id ? "page" : undefined}
+        onclick={() => setTab(tab.id)}
+      >
+        {tab.label}
+      </button>
+    {/each}
+  </nav>
+{/snippet}
 
+{#snippet actionsSnippet()}
+  {#if !isDesktop && activeTab === "conventions"}
+    <button
+      data-testid="sidebar-toggle"
+      class="shrink-0 p-1 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+      aria-label="Toggle sidebar"
+      onclick={() => sidebarOpen = !sidebarOpen}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></svg>
+    </button>
+  {/if}
+{/snippet}
+
+<AppScreen
+  title="Learn"
+  width="custom"
+  scroll={false}
+  tabs={tabsSnippet}
+  actions={actionsSnippet}
+  contentClass="flex flex-col !pb-0 -mx-[var(--screen-gutter-x)] sm:-mx-[var(--screen-gutter-x-md)]"
+>
   {#if activeTab === "lessons"}
     <section class="flex-1 overflow-y-auto px-6 py-12 flex items-center justify-center">
       <div class="max-w-md text-center">
@@ -498,4 +504,4 @@
     </div>
   {/if}
   {/if}
-</main>
+</AppScreen>
