@@ -59,9 +59,9 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
     );
 
     // 6. Generate deal via start_drill
-    let seed = config.seed.unwrap_or(0);
     use rand::Rng;
     use rand::SeedableRng;
+    let seed = config.seed.unwrap_or_else(|| rand::thread_rng().gen());
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(seed);
     let mut rng_fn = move || -> f64 { rng.gen() };
 

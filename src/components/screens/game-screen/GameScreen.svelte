@@ -25,6 +25,7 @@
   const service = getService();
   const gameStore = getGameStore();
   const appStore = getAppStore();
+  const customSystemsStore = getCustomSystemsStore();
 
   const userSeat = Seat.South;
 
@@ -104,7 +105,6 @@
     const practiceMode = appStore.devPracticeMode ?? appStore.userPracticeMode;
     const practiceRole = appStore.devPracticeRole ?? appStore.userPracticeRole;
     const drill = appStore.drillSettings;
-    const customSystemsStore = getCustomSystemsStore();
     const { systemConfig, baseModuleIds } = resolveSystemForSession(
       appStore.baseSystemId,
       customSystemsStore.systems,
@@ -288,7 +288,7 @@
   // Convention card panel — structured sections from system config + active modules
   const resolvedSystem = $derived(resolveSystemForSession(
     appStore.baseSystemId,
-    getCustomSystemsStore().systems,
+    customSystemsStore.systems,
   ));
   const ccPanelView = $derived(buildConventionCardPanel(resolvedSystem.systemConfig, appStore.selectedConvention?.id));
   const acblPanelView = $derived(buildAcblCardPanel(resolvedSystem.systemConfig, appStore.selectedConvention?.id));
