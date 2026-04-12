@@ -1,4 +1,20 @@
 <script lang="ts">
+  import ContinuationTree from "../../../../components/shared/reference/ContinuationTree.svelte";
+  import DecisionGrid from "../../../../components/shared/reference/DecisionGrid.svelte";
+  import InterferenceSection from "../../../../components/shared/reference/InterferenceSection.svelte";
+  import QuickRefCard from "../../../../components/shared/reference/QuickRefCard.svelte";
+  import RelatedLinks from "../../../../components/shared/reference/RelatedLinks.svelte";
+  import ResponseTable from "../../../../components/shared/reference/ResponseTable.svelte";
+  import SummaryCard from "../../../../components/shared/reference/SummaryCard.svelte";
+  import SystemCompatRow from "../../../../components/shared/reference/SystemCompatRow.svelte";
+  import WhenNotTable from "../../../../components/shared/reference/WhenNotTable.svelte";
+  import WorkedAuction from "../../../../components/shared/reference/WorkedAuction.svelte";
+  import {
+    buildPracticeUrl,
+    normalizeContinuationPhases,
+    normalizeReferenceView,
+  } from "./reference-page";
+
   const { data } = $props();
   const viewport = data.viewport;
 
@@ -10,6 +26,10 @@
     url: `https://bridgelab.net/learn/${viewport.moduleId}/`,
     publisher: { "@type": "Organization", name: "BridgeLab", url: "https://bridgelab.net" },
   });
+
+  const reference = viewport.reference ? normalizeReferenceView(viewport.reference) : null;
+  const continuationPhases = normalizeContinuationPhases(viewport.phases);
+  const practiceHref = buildPracticeUrl(viewport.bundleIds, viewport.moduleId);
 
   const disclosureLabels: Record<string, string> = {
     alert: "Alert",
@@ -24,11 +44,6 @@
     may: "background: #854d0e; color: #fef08a;",
     avoid: "background: #991b1b; color: #fecaca;",
   };
-
-  function practiceUrl(): string {
-    const bundle = viewport.bundleIds[0] ?? "nt-bundle";
-    return `/?convention=${encodeURIComponent(bundle)}&learn=${encodeURIComponent(viewport.moduleId)}`;
-  }
 </script>
 
 <svelte:head>
@@ -42,109 +57,307 @@
   {@html `<script type="application/ld+json">${jsonLd}<\/script>`}
 </svelte:head>
 
-<div class="hero">
-  <h1>{viewport.displayName}</h1>
-  <p class="description">{viewport.description}</p>
-  <p class="purpose">{viewport.purpose}</p>
-  <a class="cta-button" href={practiceUrl()}>Practice this convention</a>
+<div class="sticky-top">
+  <div class="sticky-inner">
+    <a class="back-link" href="/learn/">← All Conventions</a>
+  </div>
 </div>
 
-<!-- Teaching section -->
-{#if viewport.teaching.principle || viewport.teaching.tradeoff || viewport.teaching.commonMistakes.length > 0}
-  <section>
-    <h2>Key Concepts</h2>
-    {#if viewport.teaching.principle}
-      <div class="teaching-card">
-        <h3 class="teaching-label principle">Principle</h3>
-        <p>{viewport.teaching.principle}</p>
+<div class="page-wrap">
+  {#if reference}
+    <nav class="toc" aria-label="On this page">
+      <p class="toc-title">On this page</p>
+      <ol>
+        <li><a href="#summary-card">Summary</a></li>
+        <li><a href="#when-to-use">When to use</a></li>
+        <li><a href="#response-table">Responses</a></li>
+        <li><a href="#continuation-tree">Continuations</a></li>
+        {#if reference.decisionGrid}<li><a href="#decision-grid">Decision grid</a></li>{/if}
+        {#if reference.workedAuctions.length > 0}<li><a href="#worked-auctions">Worked auctions</a></li>{/if}
+        {#if reference.interference.length > 0}<li><a href="#interference">Interference</a></li>{/if}
+        <li><a href="#system-compatibility">System compatibility</a></li>
+        {#if reference.relatedLinks.length > 0}<li><a href="#related-conventions">Related</a></li>{/if}
+      </ol>
+    </nav>
+  {/if}
+  <div class="screen-only">
+
+    {#if reference}
+      <header class="reference-header">
+        <p class="eyebrow">Convention Reference</p>
+        <h1>{viewport.displayName}</h1>
+        <p class="description">{viewport.description}</p>
+      </header>
+
+      <div class="reference-stack">
+        <div id="summary-card" class="scroll-target">
+          <SummaryCard moduleId={viewport.moduleId} summaryCard={reference.summaryCard} />
+        </div>
+
+        <div id="when-to-use" class="scroll-target">
+          <WhenNotTable whenToUse={reference.whenToUse} whenNotToUse={reference.whenNotToUse} />
+        </div>
+
+        <div id="response-table" class="scroll-target">
+          <ResponseTable moduleId={viewport.moduleId} rows={reference.responseTableRows} />
+        </div>
+
+        <div id="continuation-tree" class="scroll-target">
+          <ContinuationTree moduleId={viewport.moduleId} phases={continuationPhases} />
+        </div>
+
+        {#if reference.decisionGrid}
+          <div id="decision-grid" class="scroll-target">
+            <DecisionGrid decisionGrid={reference.decisionGrid} />
+          </div>
+        {/if}
+
+        {#if reference.workedAuctions.length > 0}
+          <div id="worked-auctions" class="scroll-target space-y-4" aria-label="Worked auctions">
+            {#each reference.workedAuctions as auction (auction.label)}
+              <WorkedAuction moduleId={viewport.moduleId} {auction} />
+            {/each}
+          </div>
+        {/if}
+
+        {#if reference.interference.length > 0}
+          <div id="interference" class="scroll-target">
+            <InterferenceSection items={reference.interference} />
+          </div>
+        {/if}
+
+        <div id="system-compatibility" class="scroll-target">
+          <SystemCompatRow systemCompat={reference.systemCompat} />
+        </div>
+
+        {#if reference.relatedLinks.length > 0}
+          <div id="related-conventions" class="scroll-target">
+            <RelatedLinks links={reference.relatedLinks} />
+          </div>
+        {/if}
       </div>
-    {/if}
-    {#if viewport.teaching.tradeoff}
-      <div class="teaching-card">
-        <h3 class="teaching-label tradeoff">Tradeoff</h3>
-        <p>{viewport.teaching.tradeoff}</p>
+    {:else}
+      <div class="hero">
+        <h1>{viewport.displayName}</h1>
+        <p class="description">{viewport.description}</p>
+        <p class="purpose">{viewport.purpose}</p>
+        <a class="cta-button" href={practiceHref}>Practice this convention</a>
       </div>
+
+      {#if viewport.teaching.principle || viewport.teaching.tradeoff || viewport.teaching.commonMistakes.length > 0}
+        <section>
+          <h2>Key Concepts</h2>
+          {#if viewport.teaching.principle}
+            <div class="teaching-card">
+              <h3 class="teaching-label principle">Principle</h3>
+              <p>{viewport.teaching.principle}</p>
+            </div>
+          {/if}
+          {#if viewport.teaching.tradeoff}
+            <div class="teaching-card">
+              <h3 class="teaching-label tradeoff">Tradeoff</h3>
+              <p>{viewport.teaching.tradeoff}</p>
+            </div>
+          {/if}
+          {#if viewport.teaching.commonMistakes.length > 0}
+            <div class="teaching-card">
+              <h3 class="teaching-label mistakes">Common Mistakes</h3>
+              <ul class="mistakes-list">
+                {#each viewport.teaching.commonMistakes as mistake, i (i)}
+                  <li>{mistake}</li>
+                {/each}
+              </ul>
+            </div>
+          {/if}
+        </section>
+      {/if}
+
+      {#if viewport.phases.length > 0}
+        <section>
+          <h2>Bidding Conversation</h2>
+          {#each viewport.phases as phase (phase.phase)}
+            <div class="phase-card">
+              <div class="phase-header">
+                <h3>{phase.phaseDisplay}</h3>
+                {#if phase.transitionLabel}
+                  <p class="transition-label">{phase.transitionLabel}</p>
+                {/if}
+              </div>
+              <div class="surface-list">
+                {#each phase.surfaces as surface (surface.meaningId)}
+                  <div class="surface-row">
+                    <div class="surface-header">
+                      <span class="call-display">{surface.callDisplay}</span>
+                      <span class="surface-name">{surface.teachingLabel.name}</span>
+                      {#if surface.recommendation}
+                        <span class="rec-badge" style={recColors[surface.recommendation] ?? "background: #374151; color: #d1d5db;"}>
+                          {surface.recommendation}
+                        </span>
+                      {/if}
+                      <span class="disclosure">{disclosureLabels[surface.disclosure] ?? surface.disclosure}</span>
+                    </div>
+                    {#if surface.explanationText && surface.explanationText !== "internal"}
+                      <p class="explanation">{surface.explanationText}</p>
+                    {/if}
+                    {#if surface.clauses.length > 0}
+                      <ul class="clause-list">
+                        {#each surface.clauses as clause (clause.factId)}
+                          <li class={clause.isPublic ? "clause-public" : "clause-private"}>
+                            {clause.description}
+                          </li>
+                        {/each}
+                      </ul>
+                    {/if}
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/each}
+        </section>
+      {/if}
     {/if}
-    {#if viewport.teaching.commonMistakes.length > 0}
-      <div class="teaching-card">
-        <h3 class="teaching-label mistakes">Common Mistakes</h3>
-        <ul class="mistakes-list">
-          {#each viewport.teaching.commonMistakes as mistake, i (i)}
-            <li>{mistake}</li>
+
+    <div class="cta utility-chrome">
+      <p><strong>Ready to practice?</strong> Drill {viewport.displayName} with instant feedback.</p>
+      <a class="cta-button" href={practiceHref}>Practice {viewport.displayName}</a>
+    </div>
+
+    {#if data.otherModules.length > 0}
+      <div class="more-modules utility-chrome">
+        <h3>More Conventions</h3>
+        <ul>
+          {#each data.otherModules as mod (mod.moduleId)}
+            <li>
+              <a href="/learn/{mod.moduleId}/">
+                <strong>{mod.displayName}</strong>
+                <span>{mod.description}</span>
+              </a>
+            </li>
           {/each}
         </ul>
       </div>
     {/if}
-  </section>
-{/if}
+  </div>
 
-<!-- Phases / surfaces -->
-{#if viewport.phases.length > 0}
-  <section>
-    <h2>Bidding Conversation</h2>
-    {#each viewport.phases as phase (phase.phase)}
-      <div class="phase-card">
-        <div class="phase-header">
-          <h3>{phase.phaseDisplay}</h3>
-          {#if phase.transitionLabel}
-            <p class="transition-label">{phase.transitionLabel}</p>
-          {/if}
-        </div>
-        <div class="surface-list">
-          {#each phase.surfaces as surface (surface.meaningId)}
-            <div class="surface-row">
-              <div class="surface-header">
-                <span class="call-display">{surface.callDisplay}</span>
-                <span class="surface-name">{surface.teachingLabel.name}</span>
-                {#if surface.recommendation}
-                  <span class="rec-badge" style={recColors[surface.recommendation] ?? "background: #374151; color: #d1d5db;"}>
-                    {surface.recommendation}
-                  </span>
-                {/if}
-                <span class="disclosure">{disclosureLabels[surface.disclosure] ?? surface.disclosure}</span>
-              </div>
-              {#if surface.explanationText && surface.explanationText !== "internal"}
-                <p class="explanation">{surface.explanationText}</p>
-              {/if}
-              {#if surface.clauses.length > 0}
-                <ul class="clause-list">
-                  {#each surface.clauses as clause (clause.factId)}
-                    <li class={clause.isPublic ? "clause-public" : "clause-private"}>
-                      {clause.description}
-                    </li>
-                  {/each}
-                </ul>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      </div>
-    {/each}
-  </section>
-{/if}
-
-<div class="cta">
-  <p><strong>Ready to practice?</strong> Drill {viewport.displayName} with instant feedback.</p>
-  <a class="cta-button" href={practiceUrl()}>Practice {viewport.displayName}</a>
+  {#if reference}
+    <div id="quick-reference" class="scroll-target">
+      <QuickRefCard
+        moduleId={viewport.moduleId}
+        summaryCard={reference.summaryCard}
+        responseTableRows={reference.responseTableRows}
+      />
+    </div>
+  {/if}
 </div>
 
-{#if data.otherModules.length > 0}
-  <div class="more-modules">
-    <h3>More Conventions</h3>
-    <ul>
-      {#each data.otherModules as mod (mod.moduleId)}
-        <li>
-          <a href="/learn/{mod.moduleId}/">
-            <strong>{mod.displayName}</strong>
-            <span>{mod.description}</span>
-          </a>
-        </li>
-      {/each}
-    </ul>
-  </div>
-{/if}
-
 <style>
+  .page-wrap {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .toc {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .page-wrap {
+      display: grid;
+      grid-template-columns: 200px minmax(0, 1fr);
+      gap: 2.5rem;
+      max-width: none;
+      margin: 0;
+      align-items: start;
+    }
+    .toc {
+      display: block;
+      position: sticky;
+      top: 4rem;
+      font-size: 0.875rem;
+    }
+    .screen-only {
+      min-width: 0;
+      max-width: 760px;
+    }
+    .toc-title {
+      color: var(--color-text-muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin: 0 0 0.75rem;
+    }
+    .toc ol {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .toc a {
+      color: var(--color-text-secondary);
+      text-decoration: none;
+    }
+    .toc a:hover,
+    .toc a:focus-visible {
+      color: var(--color-text-primary);
+      text-decoration: underline;
+    }
+  }
+
+  .sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--color-bg-deepest);
+    border-bottom: 1px solid var(--color-border-subtle);
+    margin: -3rem -1.5rem 1.5rem;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+  }
+
+  .sticky-inner {
+    width: 100%;
+  }
+
+  .screen-only {
+    display: block;
+  }
+
+  .back-link {
+    display: inline-block;
+    color: var(--color-accent-primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+
+  .reference-header {
+    margin-bottom: 2rem;
+  }
+
+  .eyebrow {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  .reference-stack {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .scroll-target {
+    scroll-margin-top: 6rem;
+  }
+
   .hero {
     padding-bottom: 1.5rem;
     margin-bottom: 2rem;
@@ -384,5 +597,16 @@
     display: block;
     color: #64748b;
     font-size: 0.8rem;
+  }
+
+  @media print {
+    .screen-only {
+      display: none;
+    }
+
+    .page-wrap {
+      max-width: none;
+      margin: 0;
+    }
   }
 </style>

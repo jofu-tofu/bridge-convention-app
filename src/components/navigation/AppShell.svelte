@@ -20,17 +20,23 @@
 
 <style>
   .shell {
-    display: flex;
+    --rail-width: 80px;
+    position: relative;
     width: 100%;
     height: 100%;
   }
 
   .shell-rail {
-    flex-shrink: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--rail-width);
+    z-index: 40;
   }
 
   .shell-main {
-    flex: 1;
+    height: 100%;
     min-width: 0;
     min-height: 0;
     display: flex;
@@ -47,9 +53,6 @@
   }
 
   @media (max-width: 1023px) {
-    .shell {
-      flex-direction: column;
-    }
     .shell-rail {
       display: none;
     }

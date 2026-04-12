@@ -59,6 +59,18 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "max-w-4xl centered container, single-column grid",
   },
   {
+    path: "DrillPresetDialog.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Modal dialog with stacked radio/select/input controls; max-w-md and viewport-constrained width on mobile",
+  },
+  {
+    path: "SavedDrillsShelf.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Horizontally scrollable shelf of saved-drill cards with inline overflow menu actions",
+  },
+  {
     path: "WorkshopScreen.svelte",
     mobileStrategy: "centered",
     minWidth: 320,
@@ -105,6 +117,44 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileStrategy: "embedded",
     minWidth: 280,
     mobileNotes: "Compact vertical flow tree for mobile; collapsible, depth-capped",
+  },
+
+  // --- Logged-in landing ---
+  {
+    path: "landing/LoggedInLanding.svelte",
+    mobileStrategy: "centered",
+    minWidth: 320,
+    mobileNotes: "Two-column grid on desktop collapses to single column below 768px",
+  },
+  {
+    path: "landing/ContinueCard.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Embedded resume card inside LoggedInLanding primary column",
+  },
+  {
+    path: "landing/MarketingHero.svelte",
+    mobileStrategy: "centered",
+    minWidth: 320,
+    mobileNotes: "Anonymous landing hero; CTA row stacks below 520px",
+  },
+  {
+    path: "landing/QuickActions.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Embedded quick-action link row inside LoggedInLanding",
+  },
+  {
+    path: "landing/YourSystems.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Embedded systems list inside LoggedInLanding secondary column",
+  },
+  {
+    path: "landing/YourPacks.svelte",
+    mobileStrategy: "embedded",
+    minWidth: 280,
+    mobileNotes: "Embedded packs list inside LoggedInLanding secondary column",
   },
 
   // --- Game screen orchestrator ---
