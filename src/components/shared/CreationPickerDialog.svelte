@@ -59,7 +59,7 @@
 
 <dialog
   bind:this={dialogRef}
-  class="bg-bg-card border border-border-subtle rounded-[--radius-lg] shadow-xl p-0 w-[calc(100%-2rem)] {wide ? 'max-w-lg' : 'max-w-md'}"
+  class="m-auto bg-bg-card border border-border-subtle rounded-[--radius-lg] shadow-xl p-0 w-[calc(100%-2rem)] {wide ? 'max-w-lg' : 'max-w-md'}"
   onclick={(e) => { if (e.target === e.currentTarget) close(); }}
   data-testid="creation-picker-dialog"
 >

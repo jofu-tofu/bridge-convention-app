@@ -212,13 +212,6 @@
 <main class="h-full flex flex-col overflow-hidden" aria-label="System Editor">
   <!-- Header -->
   <div class="shrink-0 flex items-center gap-3 px-5 py-3 border-b border-border-subtle bg-bg-card">
-    <button
-      class="text-sm text-text-muted hover:text-text-primary transition-colors cursor-pointer whitespace-nowrap"
-      onclick={onCancel}
-    >
-      &larr; Workshop
-    </button>
-
     <div class="flex-1 min-w-0 max-w-xs">
       <input
         type="text"
