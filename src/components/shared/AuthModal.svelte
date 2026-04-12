@@ -60,7 +60,7 @@
           </button>
           <button
             class="w-full py-2 rounded-[--radius-md] text-sm font-medium transition-colors cursor-pointer text-text-muted hover:text-text-primary"
-            onclick={() => { auth.logout(); close(); }}
+            onclick={async () => { await auth.logout(); close(); void goto("/"); }}
             data-testid="auth-modal-logout"
           >
             Sign out
@@ -83,6 +83,15 @@
       <div class="px-4 pb-4 space-y-4">
         <p class="text-sm text-text-secondary">Sign in to sync your progress across devices.</p>
         <div class="flex flex-col gap-2">
+          {#if auth.canDevLogin}
+            <button
+              class="w-full py-2.5 text-sm font-medium rounded-[--radius-md] bg-accent-primary text-text-on-accent hover:opacity-90 cursor-pointer transition-opacity"
+              onclick={async () => { await auth.devLogin(); close(); }}
+              data-testid="auth-modal-dev-login"
+            >
+              Sign in as Dev User
+            </button>
+          {/if}
           <button
             class="flex items-center justify-center gap-2 w-full py-2.5 text-sm font-medium rounded-[--radius-md] border border-border-subtle bg-bg-base text-text-primary hover:border-border-prominent cursor-pointer transition-colors"
             onclick={() => auth.login("google")}

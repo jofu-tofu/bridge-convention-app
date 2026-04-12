@@ -25,10 +25,17 @@
 </script>
 
 <nav
-  class="sticky top-0 h-screen bg-bg-base border-r border-border-subtle flex flex-col items-center py-4 gap-1 shrink-0"
+  class="sticky top-0 h-screen bg-bg-base border-r border-border-subtle flex flex-col items-center py-4 gap-1 shrink-0 z-[var(--z-modal)]"
   style="width: 80px;"
   aria-label="Main navigation"
 >
+  <a
+    href="/"
+    class="flex items-center justify-center py-2 mb-1 w-full"
+    aria-label="BridgeLab home"
+  >
+    <img src="/favicon.svg" alt="" class="w-9 h-9" />
+  </a>
   {#each items as item (item.href)}
     {@const active = isItemActive(item, pathname)}
     {#if item.href === "/learning"}
@@ -47,12 +54,12 @@
           </svg>
           <span class="text-[10px] font-medium leading-none">{item.label}</span>
         </a>
-        <!-- Hover flyout: sub-sections of the Learn page. pl-2 creates a transparent
-             bridge so mouse travel from rail to menu doesn't cross dead space. -->
+        <!-- Hover flyout: sits flush against the rail (no gap) so mouse travel
+             from rail to menu never crosses dead space. -->
         <div
-          class="absolute left-full top-0 pl-2
+          class="absolute left-full top-0
                  opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible
-                 transition-opacity z-[--z-modal]"
+                 transition-opacity z-[var(--z-modal)]"
           role="menu"
           aria-label="Learn sections"
         >

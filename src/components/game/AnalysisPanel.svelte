@@ -39,7 +39,7 @@
           </svg>
         </button>
         <div
-          class="absolute left-0 top-full mt-1 w-56 p-2.5 rounded-[--radius-md] bg-bg-elevated border border-border-subtle shadow-lg text-[--text-label] text-text-secondary leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity z-[--z-tooltip]"
+          class="absolute left-0 top-full mt-1 w-56 p-2.5 rounded-[--radius-md] bg-bg-elevated border border-border-subtle shadow-lg text-[--text-label] text-text-secondary leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition-opacity z-[var(--z-tooltip)]"
           role="tooltip"
         >
           Double Dummy Solver (DDS) analysis showing the maximum tricks each seat can take as declarer in each strain, assuming perfect play by all four hands.

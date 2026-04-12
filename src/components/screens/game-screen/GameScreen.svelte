@@ -297,7 +297,7 @@
   function handleBackToMenu() {
     gameStore.reset();
     appStore.clearSelection();
-    void goto("/");
+    void goto("/practice");
   }
 </script>
 
@@ -307,7 +307,7 @@
 {#if gameStore.isInitialized}
   <main class="h-full w-full flex flex-row overflow-hidden" aria-label="Bridge drill" style="--game-scale: {tableScale}; --panel-font: {panelFontPx}px; --width-side-panel: {sidePanelW}px; --width-play-history: {playHistoryW}px;">
     <div class="flex-1 min-w-0 flex flex-col overflow-hidden" style="max-width: {availableW}px;">
-    <a href="#game-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[--z-above-all] focus:p-2 focus:bg-bg-card focus:text-text-primary focus:rounded-[--radius-md]">
+    <a href="#game-content" class="sr-only focus:not-sr-only focus:absolute focus:z-[var(--z-above-all)] focus:p-2 focus:bg-bg-card focus:text-text-primary focus:rounded-[--radius-md]">
       Skip to game
     </a>
     <!-- Header -->

@@ -249,7 +249,7 @@
     {#if !isDesktop && sidebarOpen}
       <button
         data-testid="sidebar-overlay"
-        class="fixed inset-0 bg-black/50 z-[--z-overlay] cursor-default"
+        class="fixed inset-0 bg-black/50 z-[var(--z-overlay)] cursor-default"
         aria-label="Close sidebar"
         onclick={() => sidebarOpen = false}
       ></button>
@@ -259,7 +259,7 @@
     {#if isDesktop || sidebarOpen}
       <aside class="{isDesktop
         ? 'w-[280px] shrink-0 border-r border-border-subtle flex flex-col'
-        : 'fixed inset-y-0 left-0 w-[280px] z-[--z-modal] bg-bg-base border-r border-border-subtle flex flex-col'}">
+        : 'fixed inset-y-0 left-0 w-[280px] z-[var(--z-modal)] bg-bg-base border-r border-border-subtle flex flex-col'}">
         <div class="p-4 border-b border-border-subtle">
           <h2 class="text-sm font-semibold text-text-primary mb-3">Conventions</h2>
           <input
@@ -476,12 +476,12 @@
   <!-- Fixed-position variance popover (escapes overflow containers) -->
   {#if variancePopover}
     <button
-      class="fixed inset-0 z-[--z-overlay] cursor-default"
+      class="fixed inset-0 z-[var(--z-overlay)] cursor-default"
       aria-label="Close popover"
       onclick={hideVariance}
     ></button>
     <div
-      class="fixed z-[--z-modal] rounded-[--radius-md] border border-border-subtle bg-bg-card shadow-lg px-3 py-2 min-w-[140px] w-max max-w-[360px]"
+      class="fixed z-[var(--z-modal)] rounded-[--radius-md] border border-border-subtle bg-bg-card shadow-lg px-3 py-2 min-w-[140px] w-max max-w-[360px]"
       style="left: {variancePopover.x}px; top: {variancePopover.flipUp ? 'auto' : `${variancePopover.y}px`}; bottom: {variancePopover.flipUp ? `${window.innerHeight - variancePopover.y + 4}px` : 'auto'}"
       role="tooltip"
     >

@@ -92,7 +92,7 @@
 >
   <!-- Header -->
   <div
-    class="sticky top-0 bg-bg-elevated border-b border-border-subtle px-3 py-1.5 flex items-center justify-between z-[--z-header] min-w-[420px]"
+    class="sticky top-0 bg-bg-elevated border-b border-border-subtle px-3 py-1.5 flex items-center justify-between z-[var(--z-header)] min-w-[420px]"
   >
     <span class="text-text-primary font-semibold text-xs tracking-wide">DEBUG</span>
     <button

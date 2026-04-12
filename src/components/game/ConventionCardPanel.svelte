@@ -63,7 +63,7 @@
 {#if open}
   <!-- Backdrop -->
   <button
-    class="fixed inset-0 bg-black/40 z-[--z-modal] cursor-default"
+    class="fixed inset-0 bg-black/40 z-[var(--z-modal)] cursor-default"
     onclick={handleBackdropClick}
     aria-label="Close convention card"
     data-testid="cc-panel-backdrop"
@@ -71,7 +71,7 @@
 
   <!-- Panel -->
   <aside
-    class="fixed z-[--z-above-all] bg-bg-base border-border-subtle overflow-y-auto
+    class="fixed z-[var(--z-above-all)] bg-bg-base border-border-subtle overflow-y-auto
            {isDesktop
              ? 'inset-y-0 right-0 w-[380px] border-l'
              : 'inset-x-0 bottom-0 max-h-[70vh] rounded-t-[--radius-lg] border-t'}"
@@ -79,7 +79,7 @@
     data-testid="cc-panel"
   >
     <!-- Header -->
-    <div class="flex items-center justify-between px-4 py-3 border-b border-border-subtle sticky top-0 bg-bg-base z-[--z-overlay]">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-border-subtle sticky top-0 bg-bg-base z-[var(--z-overlay)]">
       <div class="flex items-center gap-2 min-w-0">
         <span class="px-2 py-0.5 rounded-full text-[--text-annotation] font-semibold bg-accent-primary/20 text-accent-primary">
           {format === ConventionCardFormat.App ? panelView.systemName : acblPanelView.systemName}

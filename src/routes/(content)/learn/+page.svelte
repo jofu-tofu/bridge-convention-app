@@ -25,7 +25,7 @@
 
 <div class="cta">
   <p><strong>Ready to practice?</strong> Drill bridge conventions with instant feedback.</p>
-  <a href="/">Open BridgeLab</a>
+  <a href="/practice">Open BridgeLab</a>
 </div>
 
 <style>

@@ -25,5 +25,13 @@ export function createAuthStore(dataPort: DataPort) {
       await dataPort.logout();
       user = null;
     },
+
+    get canDevLogin() { return typeof dataPort.devLogin === "function"; },
+
+    async devLogin() {
+      if (!dataPort.devLogin) return;
+      await dataPort.devLogin();
+      user = await dataPort.fetchCurrentUser();
+    },
   };
 }

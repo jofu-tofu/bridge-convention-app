@@ -24,6 +24,8 @@ export interface DataPort {
   fetchCurrentUser(): Promise<AuthUser | null>;
   getLoginUrl(provider: "google" | "github"): string;
   logout(): Promise<void>;
+  /** Dev-only: re-authenticate as the dev user without OAuth. Only set on DevDataPort. */
+  devLogin?(): Promise<void>;
 }
 
 /** Production DataPort — real HTTP calls to bridge-api. */
@@ -64,15 +66,33 @@ export class DataPortClient implements DataPort {
  *   Rust side: #[cfg(feature = "dev-tools")] — the /api/dev/login-as endpoint won't be
  *              compiled into the production binary, so the route doesn't exist to probe.
  */
+const DEV_LOGGED_OUT_KEY = "bridge-app:dev-logged-out";
+
+function readDevLoggedOut(): boolean {
+  try {
+    return typeof sessionStorage !== "undefined" && sessionStorage.getItem(DEV_LOGGED_OUT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeDevLoggedOut(value: boolean): void {
+  try {
+    if (typeof sessionStorage === "undefined") return;
+    if (value) sessionStorage.setItem(DEV_LOGGED_OUT_KEY, "1");
+    else sessionStorage.removeItem(DEV_LOGGED_OUT_KEY);
+  } catch {
+    // sessionStorage unavailable (private mode, SSR) — fall back to in-memory only
+  }
+}
+
 export class DevDataPort implements DataPort {
   private readonly inner = new DataPortClient();
 
   constructor(private readonly tier: SubscriptionTier) {}
 
-  fetchCurrentUser(): Promise<AuthUser> {
-    // TODO: When bridge-api runs locally, call POST /api/dev/login-as
-    // (Rust: #[cfg(feature = "dev-tools")] only) to get a real session,
-    // then delegate to this.inner for all subsequent calls.
+  fetchCurrentUser(): Promise<AuthUser | null> {
+    if (readDevLoggedOut()) return Promise.resolve(null);
     return Promise.resolve({
       id: "dev-user",
       display_name: "Dev User",
@@ -87,6 +107,11 @@ export class DevDataPort implements DataPort {
   }
 
   async logout(): Promise<void> {
+    writeDevLoggedOut(true);
     await this.inner.logout();
+  }
+
+  async devLogin(): Promise<void> {
+    writeDevLoggedOut(false);
   }
 }

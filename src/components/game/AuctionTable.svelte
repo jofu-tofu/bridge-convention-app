@@ -169,7 +169,7 @@
                           <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
                         </svg>
                         <div
-                          class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-[--z-tooltip]
+                          class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-[var(--z-tooltip)]
                                  bg-bg-card border border-border-default rounded-[--radius-md] shadow-lg
                                  p-2 text-left whitespace-normal w-48
                                  opacity-0 group-hover/tip:opacity-100 pointer-events-none
