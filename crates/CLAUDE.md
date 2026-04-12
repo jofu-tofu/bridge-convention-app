@@ -72,10 +72,14 @@ crates/
                        for browser deployment. All 20 ServicePort methods + async DDS play
                        methods (play_card_dds, needs_dds_play, set_dds_solver) +
                        5 DevServicePort methods (debug_assertions gated).
-  bridge-api/          Axum API server — auth, user data (DataPort). Standalone binary
-                       (:3001). Independent of game crates (no bridge-engine/conventions/
-                       session/service deps). SQLite via sqlx, OAuth (Google + GitHub),
-                       server-side sessions. See infra/Dockerfile.api for container build.
+  bridge-api/          Axum API server library + binary — auth, user data (DataPort).
+                       `src/lib.rs` owns `AppState` + router assembly so integration tests
+                       can drive the full app in-process; `src/test_support.rs` provides the
+                       SQLite/session harness used by crate-level tests. Runtime remains an
+                       independent :3001 service with no game-crate deps
+                       (no bridge-engine/conventions/session/service deps). SQLite via sqlx,
+                       OAuth (Google + GitHub), server-side sessions. See infra/Dockerfile.api
+                       for container build.
   bridge-static/       Static data extractor — outputs convention JSON for build-time
                        HTML generation. Thin binary that calls bridge-session viewport
                        builders — MUST NOT contain convention logic or data.
@@ -145,4 +149,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-11 | version=7 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:41 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-12 | version=8 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:42 -->

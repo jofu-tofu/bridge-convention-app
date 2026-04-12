@@ -28,6 +28,10 @@ crates/bridge-wasm/pkg/
 .artifacts/
 playwright/.cache/
 
+# Local bridge-api SQLite DB (dev)
+dev-bridge.db
+dev-bridge.db-*
+
 # AI workflow tooling (operational, not project source)
 .aiwcli/
 

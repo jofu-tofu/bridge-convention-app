@@ -25,7 +25,9 @@ pub async fn create_session(pool: &SqlitePool, user_id: &str) -> Result<String, 
 
 pub async fn lookup_session(pool: &SqlitePool, token: &str) -> Result<Option<User>, sqlx::Error> {
     let user = sqlx::query_as::<_, User>(
-        "SELECT u.id, u.display_name, u.email, u.avatar_url, u.created_at, u.updated_at \
+        "SELECT u.id, u.display_name, u.email, u.avatar_url, u.stripe_customer_id, \
+                u.subscription_status, u.subscription_current_period_end, u.subscription_price_id, \
+                u.last_stripe_event_created, u.created_at, u.updated_at \
          FROM sessions s JOIN users u ON s.user_id = u.id \
          WHERE s.token = ? AND s.expires_at > datetime('now')",
     )

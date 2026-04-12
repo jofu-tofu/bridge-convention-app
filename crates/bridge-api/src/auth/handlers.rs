@@ -1,14 +1,19 @@
+use std::str::FromStr;
+
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Redirect, Response};
 use axum_extra::extract::cookie::Cookie;
 use axum_extra::extract::CookieJar;
+use chrono::Utc;
 use rand::Rng;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
+use crate::billing::entitlements::{tier_for, SubscriptionTier};
 use crate::error::AppError;
 use crate::AppState;
 
+use super::models::User;
 use super::oauth::{self, OAuthProvider};
 use super::session;
 
@@ -18,6 +23,18 @@ pub struct CallbackQuery {
     state: String,
 }
 
+#[derive(Serialize)]
+struct MeResponse {
+    id: String,
+    display_name: String,
+    email: Option<String>,
+    avatar_url: Option<String>,
+    created_at: String,
+    updated_at: String,
+    subscription_tier: SubscriptionTier,
+    subscription_current_period_end: Option<i64>,
+}
+
 /// GET /api/auth/login/:provider — redirect to OAuth consent screen
 pub async fn login_redirect(
     State(state): State<AppState>,
@@ -25,7 +42,7 @@ pub async fn login_redirect(
     jar: CookieJar,
 ) -> Result<(CookieJar, Redirect), AppError> {
     let provider = OAuthProvider::from_str(&provider_str)
-        .ok_or_else(|| AppError::BadRequest(format!("unknown provider: {provider_str}")))?;
+        .map_err(|_| AppError::BadRequest(format!("unknown provider: {provider_str}")))?;
 
     // Generate CSRF state token
     let mut csrf_bytes = [0u8; 32];
@@ -54,7 +71,7 @@ pub async fn oauth_callback(
     jar: CookieJar,
 ) -> Result<(CookieJar, Redirect), AppError> {
     let provider = OAuthProvider::from_str(&provider_str)
-        .ok_or_else(|| AppError::BadRequest(format!("unknown provider: {provider_str}")))?;
+        .map_err(|_| AppError::BadRequest(format!("unknown provider: {provider_str}")))?;
 
     // Verify CSRF state
     let stored_state = jar
@@ -115,7 +132,9 @@ pub async fn get_me(State(state): State<AppState>, jar: CookieJar) -> Result<Res
         .await?
         .ok_or(AppError::Unauthorized)?;
 
-    Ok(axum::Json(user).into_response())
+    let response = me_response(user);
+
+    Ok(axum::Json(response).into_response())
 }
 
 /// Resolve an OAuth profile to a user ID, creating or linking as needed.
@@ -186,4 +205,21 @@ async fn resolve_user(
     .await?;
 
     Ok(user_id)
+}
+
+fn me_response(user: User) -> MeResponse {
+    MeResponse {
+        id: user.id,
+        display_name: user.display_name,
+        email: user.email,
+        avatar_url: user.avatar_url,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+        subscription_tier: tier_for(
+            user.subscription_status.as_deref(),
+            user.subscription_current_period_end,
+            Utc::now().timestamp(),
+        ),
+        subscription_current_period_end: user.subscription_current_period_end,
+    }
 }

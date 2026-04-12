@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use serde::Deserialize;
 
 use crate::config::Config;
@@ -8,12 +10,14 @@ pub enum OAuthProvider {
     GitHub,
 }
 
-impl OAuthProvider {
-    pub fn from_str(s: &str) -> Option<Self> {
+impl FromStr for OAuthProvider {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "google" => Some(Self::Google),
-            "github" => Some(Self::GitHub),
-            _ => None,
+            "google" => Ok(Self::Google),
+            "github" => Ok(Self::GitHub),
+            _ => Err(()),
         }
     }
 }

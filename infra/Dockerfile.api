@@ -8,6 +8,8 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y ca-certificates wget && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /data && chown nobody:nogroup /data
 COPY --from=builder /build/target/release/bridge-api /usr/local/bin/bridge-api
+COPY --from=builder /build/crates/bridge-conventions/fixtures /app/fixtures
+ENV CONVENTIONS_FIXTURES_DIR=/app/fixtures
 USER nobody
 EXPOSE 3001
 CMD ["bridge-api"]

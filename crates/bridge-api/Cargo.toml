@@ -8,12 +8,15 @@ name = "bridge-api"
 path = "src/main.rs"
 
 [dependencies]
+async-trait = "0.1"
 axum = "0.8"
 tokio = { version = "1", features = ["full"] }
 sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite"] }
 reqwest = { version = "0.12", features = ["json"] }
+async-stripe = { version = "0.40", default-features = false, features = ["runtime-tokio-hyper-rustls", "full", "webhook-events"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+chrono = "0.4"
 uuid = { version = "1", features = ["v4"] }
 rand = "0.8"
 tower-http = { version = "0.6", features = ["cors"] }
@@ -21,5 +24,10 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 axum-extra = { version = "0.10", features = ["cookie"] }
 hex = "0.4"
+hmac = "0.12"
+sha2 = "0.10"
+subtle = "2.6"
 urlencoding = "2"
 time = "0.3"
+dotenvy = "0.15"
+tower = { version = "0.5", features = ["util"] }
