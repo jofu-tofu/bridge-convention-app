@@ -5,6 +5,11 @@ import unusedImports from "eslint-plugin-unused-imports";
 import { rule as noFullScopeTrigger } from "./eslint-rules/no-full-scope-trigger.js";
 import { rule as noHardcodedStyleClasses } from "./eslint-rules/no-hardcoded-style-classes.js";
 
+// ESLint layout:
+// - This file is the source of truth for the repo's enforced lint policy.
+// - Custom local rule implementations live in ./eslint-rules/.
+// - Third-party rule implementations come from imported ESLint plugins/packages.
+
 const UNUSED_VAR_RULE = [
   "warn",
   { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
