@@ -23,5 +23,7 @@ This repo uses `docs/` as a small, predictable knowledge tree. The goal is place
 
 - Architecture work: `docs/architecture/README.md`
 - Implementation how-tos: `docs/guides/`
+- Local debug URL params and route shortcuts: `docs/guides/dev-tools.md`
+- Deployment and release workflow: `docs/guides/deployment.md`
 - Product and UX framing: `docs/product/product-direction.md`
 - Research topics: `docs/research/README.md`

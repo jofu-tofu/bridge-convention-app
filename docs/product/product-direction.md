@@ -4,6 +4,8 @@ Stable product decisions and rationale. Reference this for "why" questions about
 
 ## Deployment
 
+Operational release and rollback steps live in `docs/guides/deployment.md`.
+
 - **Hosting:** Self-hosted VPS (Netcup). Migrated off Vercel (March 2026).
 - **Reverse proxy:** Caddy (port 80 inside container — Cloudflare terminates TLS)
 - **CDN/DNS:** Cloudflare (proxied A record, Full SSL mode)

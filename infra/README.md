@@ -1,7 +1,8 @@
 # Infrastructure
 
 Repo-local deployment assets live here so the project root stays focused on the
-app toolchain.
+app toolchain. For release, rollback, and production workflow details, read
+`docs/guides/deployment.md`.
 
 - `Dockerfile.web`: production web image build
 - `Dockerfile.api`: production API image build

@@ -1,6 +1,21 @@
 # Bridge Practice App
 
-Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). WASM browser (VPS via Docker/Caddy). SvelteKit + Svelte 5 (runes) + TypeScript strict. Uses meaning-centric pipeline exclusively (old tree/protocol/overlay pipeline removed). SvelteKit with `adapter-static` (`fallback: 'index.html'`) — two layout groups: `(app)/` (ssr=false, client-only WASM) and `(content)/` (prerender=true, SEO pages).
+Bridge bidding convention practice app. SvelteKit + Svelte 5 + strict
+TypeScript on the UI; bridge logic runs in Rust/WASM. Two route groups:
+`(app)` is client-only WASM; `(content)` is prerendered SEO content.
+
+## Workflow Routing
+
+Read the narrowest context that matches the task before editing:
+
+- **UI or route work** → `src/components/CLAUDE.md`, `src/stores/CLAUDE.md`, `src/service/CLAUDE.md`
+- **Rust engine/session/convention work** → `crates/CLAUDE.md` and the relevant crate-local docs
+- **Convention authoring or auditing** → `docs/guides/convention-authoring.md`, then `src/cli/CLAUDE.md` for CLI verification
+- **CLI evaluation work** → `src/cli/CLAUDE.md` and `docs/guides/cli-evaluation.md`
+- **Testing work** → `docs/guides/testing-philosophy.md`, `src/test-support/CLAUDE.md`, and `tests/CLAUDE.md`
+- **Local debug params or route shortcuts** → `docs/guides/dev-tools.md`
+- **Deployment or release work** → `docs/guides/deployment.md`, `docs/product/product-direction.md`, and `infra/README.md`
+- **SEO, learn pages, or product framing** → `docs/product/product-direction.md` plus the relevant `docs/research/` topic
 
 ## Commands
 
@@ -30,194 +45,69 @@ Bridge bidding convention practice app (1NT Responses, Bergen Raises bundles). W
 
 ## Deployment
 
-**Deploy = tag and push.** `git tag v<version> && git push origin v<version>` triggers the full pipeline:
+Keep deployment procedure out of always-loaded context. For release, rollback,
+pipeline, and secret details, read `docs/guides/deployment.md`.
 
-1. GitHub Actions builds a Docker image (Rust/WASM → SvelteKit/Vite → Caddy)
-2. Pushes to GHCR (`ghcr.io/jofu-tofu/bridge-convention-app`)
-3. SSHs into VPS, pins the version in `/opt/bridge-app/docker-compose.yml`, pulls, and restarts
+Short version: deploy = tag and push; GitHub Actions builds and publishes the
+image, then updates the VPS runtime. Deployment rationale lives in
+`docs/product/product-direction.md`. Repo-local Docker/Caddy assets live in
+`infra/`.
 
-**CI (`deploy.yml`)** runs on every push/PR: type-check, unit tests, lint, production build.
-**Release (`release.yml`)** runs on `v*` tags: Docker build → GHCR push → VPS deploy.
+## Dev Tools
 
-**Rollback:** SSH to VPS, edit `/opt/bridge-app/docker-compose.yml` to a previous version tag, `docker compose pull && docker compose up -d`.
-
-**Repo deployment assets:** repo-local Docker/Caddy files live under `infra/`. The VPS still uses `/opt/bridge-app/docker-compose.yml` at deploy time.
-
-**Required GitHub Secrets:** `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`.
-
-## Dev Tools (dev server only)
-
-**URL params (9 consolidated params):**
-
-| Param                                      | Values                                                                                                                                       | Effect                                                                                                                                                                                                       |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `?convention=<id>`                         | `nt-bundle`, `nt-stayman`, `nt-transfers`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`, `michaels-unusual-bundle`, `strong-2c-bundle`, `negative-doubles-bundle`, `nmf-bundle` | Select convention → game screen. `?learn=stayman` resolves module-first (direct to Stayman module learning). `?learn=nt-bundle` resolves as bundle filter (shows that bundle's modules, auto-selects first). |
-| `?learn=<id>`                              | module or bundle ID                                                                                                                          | Learning screen — module-first resolution, falls back to bundle filter                                                                                                                                       |
-| `?seed=<n>`                                | number                                                                                                                                       | Deterministic PRNG seed. Advances per deal (42, 43, 44...). Reload resets.                                                                                                                                   |
-| `?screen=<name>`                           | `settings`, `coverage`, `workshop`                                                                                                           | **Replaced by SvelteKit routes:** `/settings`, `/coverage`, `/workshop`, `/guides/[slug]`, `/learn/[moduleId]`. Old `?screen=` param no longer used — navigate directly to routes instead. `workshop` requires `FEATURES.workshop` (dev only). `/coverage?convention=X` for bundle-specific coverage. |
-| `?phase=<name>`                            | `review`, `playing`, `declarer`                                                                                                              | Skip to game phase instantly (auto-completes bidding, no animation). Requires `?convention=`.                                                                                                                |
-| `?dev=<flags>`                             | comma-separated: `debug`, `expanded`, `autoplay`, `autoDismiss`, `auth:free`, `auth:premium`, `auth:expired` | DEV-only flags. `debug` opens debug panel. `expanded` opens panel + expands all sections. `autoplay` animates through phases. `autoDismiss` auto-retries wrong bids. `auth:<tier>` overrides subscription tier for paywall testing. |
-| `?practiceMode=<mode>`                     | `decision-drill`, `full-auction`, `learn`                                                                                                    | Select practice mode (default: `decision-drill`). `learn` shows a step-through walkthrough of a completed auction with all hands visible.                                                                    |
-| `?practiceRole=<role>`                     | `opener`, `responder`, `both`                                                                                                                | Practice as opener, responder, or random per deal (default: `responder`)                                                                                                                                     |
-| `?targetState=<id>`, `?targetSurface=<id>` | FSM state / meaning surface                                                                                                                  | Coverage targeting (used by coverage tests)                                                                                                                                                                  |
-
-Backward compat alias: `?profiles=true` → `/workshop`.
-
-**Example URLs:**
-
-```
-?convention=nt-bundle&seed=42                          # Deterministic game
-?convention=nt-bundle&seed=42&phase=review             # Instant review screen
-?convention=nt-bundle&dev=debug,expanded,autoDismiss   # Max debug, friction-free probing
-/coverage?convention=nt-bundle                          # Coverage screen
-/settings                                              # Settings screen
-```
-
-- **CLI evaluation:** `npx tsx src/cli/main.ts play --bundle=nt-bundle --seed=42` runs session-based playthrough. Subcommands: `bundles` (list bundles), `modules` (list modules), `describe` (inspect bundle), `play` (session-based playthrough), `selftest` (strategy self-consistency). Same seed = same deal. Uses the same session API as the UI.
-- **Bid button test IDs:** `data-testid="bid-{callKey}"` on all bid buttons — e.g., `bid-1C`, `bid-7NT`, `bid-P` (pass), `bid-X` (double), `bid-XX` (redouble). Container test IDs: `level-bids` (contract grid), `special-bids` (pass/dbl/rdbl row).
+Keep local debug params and route shortcuts out of root context. Read
+`docs/guides/dev-tools.md` when you need URL params, route-entry shortcuts, CLI
+pairing, or UI test IDs.
 
 ## Code Hygiene
 
-- **Fix all lint errors and warnings you encounter** — even if they weren't caused by your changes. If `npm run lint` or a hook reports errors/warnings in files you touched, fix them before finishing.
-- **Remove dead code after every change.** When a change makes code unreachable, unused, or semantically dead (reachable but its result is never consumed), delete it immediately — don't leave it for a follow-up. This includes: unused imports, functions, types, struct fields, enum variants, variables, parameters, feature flags that always resolve one way, and code behind conditions that are always true/false. Run `npm run lint:dead` (Knip) for TS and `cargo test --workspace` + compiler warnings for Rust. Do not comment out dead code or rename it with `_` prefixes — delete it.
-- **Lint is scoped to app code, tests, and root JS/TS config files.** `npm run lint` is not a workspace-wide sweep; it excludes generated/tooling directories outside the app surface.
-- **Lint enforces architecture, not just style.** ESLint guards key import boundaries (`engine/`, `stores/`, `cli/`, `components/`), the UI/backend boundary (components/ cannot import from any backend module -- must use service/), design token usage in game components (`no-hardcoded-style-classes`), and protocol trigger scope (`no-full-scope-trigger`). `npm run lint:dead` uses Knip for dead-file detection, with `static/dds/dds.js` ignored because it is fetched by the DDS worker at runtime.
+- Fix lint errors and warnings in files you touch.
+- Delete dead code immediately; do not hide it with `_` prefixes or comments.
+- `npm run lint` is app-scoped, not a whole-workspace sweep.
+- ESLint guards architecture boundaries; Knip handles dead-file checks.
 
 ## Conventions
 
-- **Pure engine.** `src/engine/` has zero imports from svelte, DOM APIs.
-- **Service is the sole interface for UI and CLI.** All UI components (`components/`, `stores/`) and CLI commands (`cli/`) must import exclusively from `service/` — never directly from `engine/`. Backend logic (conventions, inference, session) lives entirely in Rust. When adding new functionality the UI needs, expose it through `ServicePort` in Rust, then add the WASM binding and TS proxy method.
-- **Svelte 5 runes.** Use `$state`, `$derived`, `$effect` — no legacy `$:` reactive statements
-- **Named exports only.** No `export default` — for greppability
-- **No `const enum`** — breaks Vite/isolatedModules; use regular `enum`
-- **No `any` without comment** — annotate with `// any: <reason>`
-- **No mocking own modules** — use dependency injection instead
-- **PlayerViewport boundary.** Game phase components never access raw `Deal`. Everything the player sees flows through viewport types: `BiddingViewport` (bidding), `DeclarerPromptViewport` (declarer prompt), `PlayingViewport` (play), `ExplanationViewport` (review). Viewport builders live in Rust (`bridge-service`).
-- **Callers own their types.** Service defines its own viewport/response types. Engine domain primitives (`Call`, `Card`, `Seat`, `Hand`) are acceptable to re-export since they are universal vocabulary.
-- **Coverage optimization.** Tree LP computes minimal test sessions; two-phase algorithm (leaf sweep + gap fill) covers all (state, surface) pairs efficiently. Module interference detection uses static prefix-overlap analysis.
-- **Test behavior, not implementation.** Tests assert WHAT code does (inputs → outputs), never HOW (internal calls, query strings, data structure choices). Litmus test: would this test pass unchanged if the internals were rewritten with a different algorithm? If no, rewrite the test. No `was_called_with` on internal methods; no asserting internal state.
-- **Characterize before changing.** Before modifying code you don't fully understand, write tests that capture current behavior as-is. These are your safety net — run them after each change. Especially important for convention pipeline and bid-evaluation logic where subtle changes cascade.
-- **No mocks for pure logic.** Engine, conventions, inference, and session logic are pure — pass data in, assert data out. If testing requires mocks, the code mixes logic with side effects; fix the design, don't add mocks. Mocks are acceptable only at system boundaries (WASM init, localStorage, DOM, network).
-- **Red-Green-Refactor for new code.** Write a failing test first, then the minimum code to pass, then refactor with tests green. Do not write implementation first and tests after — tests written after implementation tend to mirror the implementation rather than specify behavior.
-- **Playwright is for smoke, not matrices.** End-to-end coverage is intentionally small: app smoke, session-mode behavior, two representative bundles (Jacoby Transfers and Bergen Raises), and responsive shell checks. Do not add per-convention browser sweeps or seed matrices; put that coverage in service, Rust, or CLI tests instead.
-
-## Design Philosophy
-
-See `docs/architecture/design-philosophy.md` for the full set of 14 design principles and subsystem design rationale. See `TESTING.md` § TDD Philosophy for the decision tree, anti-patterns, and ranked priorities when principles conflict.
+- `src/engine/` stays pure: no Svelte or DOM imports.
+- UI and CLI import only from `service/`; never directly from backend logic.
+- Use Svelte 5 runes; no legacy `$:` reactivity.
+- Use named exports; no `export default`, no `const enum`.
+- Avoid `any`; annotate unavoidable cases with `// any: <reason>`.
+- Do not mock own modules; prefer dependency injection.
+- Game UI reads viewports, not raw `Deal` objects.
+- Test behavior through public interfaces; characterize unknown behavior before changing it.
+- Playwright is for smoke and shell flows, not convention matrices.
 
 ## System Parameterization
 
-Multi-system support (SAYC, 2/1, Acol, Custom). Modules are system-agnostic — differences flow through `SystemConfig` → system facts → surface clause evaluation. `SystemConfig` and system fact vocabulary live in Rust (`bridge-conventions`).
-
-**SessionConfig always carries a full `SystemConfig` + `baseModuleIds`** — same path for presets and custom systems. Rust never looks up configs by ID. The TS layer resolves the selected system via `resolveSystemForSession()` in `src/stores/custom-systems.svelte.ts`. Custom systems stored in localStorage (`bridge-app:custom-systems`). `SystemSelectionId` (`BaseSystemId | \`custom:${string}\``) is TS-only; it never crosses the WASM boundary.
-
-**Point formulas:** `PointConfig` on `SystemConfig` defines point formulas per contract type (NT vs trump). The engine computes raw components (HCP, shortage, length); the fact DSL composes them via `compute_total_points()` in `fact_dsl/point_helpers.rs`. UI shows HCP only — formula-composed totals are for decision logic, not display.
-
-**Base modules:** Presets use 4 always-active modules: `["natural-bids", "stayman", "jacoby-transfers", "blackwood"]`. Custom systems may use any subset (with `natural-bids` required). Base modules are merged into every `spec_from_bundle()` call (strategy layer) but NOT into `resolve_bundle()` (deal generation/teaching). Base modules affect bidding strategy only — inert modules never activate because their FSM triggers never fire.
+- Multi-system support flows through Rust `SystemConfig`; modules stay system-agnostic.
+- `SessionConfig` always carries full `SystemConfig` plus `baseModuleIds`; Rust never resolves config IDs.
+- `SystemSelectionId` is TS-only and never crosses the WASM boundary.
+- UI displays HCP only; formula-composed point totals stay in decision logic.
+- Base modules merge into `spec_from_bundle()` only, not `resolve_bundle()`.
 
 ## Architecture
 
-**Dependency direction (hexagonal boundary):**
-
-```
-components/ → stores/ → service/ (WASM proxy) → [Rust: bridge-service → bridge-session → {bridge-engine, bridge-conventions}]
-                         service/auth.ts → /api/* → [Rust: bridge-api → SQLite]
-cli/commands/ → service/
-```
-
-UI layers (`components/`, `stores/`) import ONLY from `service/`. `service/` is a thin WASM proxy: `ServicePort` interface, `BridgeService` impl, barrel, `display/`, `util/`, `session-types.ts`, `auth.ts`. Nothing imports from `service/` except `stores/`, `components/`, and `cli/commands/`. `bridge-api` is independent of game crates — it handles auth and user data only (DataPort).
-
-```
-src/
-  routes/          SvelteKit file-based routing
-    (app)/         Client-only layout group (ssr=false) — WASM game routes
-    (content)/     Prerendered layout group — SEO pages (guides/[slug], learn/[moduleId])
-  app.html         SvelteKit HTML template (replaces index.html)
-  AppReady.svelte  Root app shell — creates engine/stores, sets context (replaces App.svelte + AppShell.svelte)
-  engine/          Pure TS engine types + DDS browser support (types, constants, hand-evaluator, scoring/isVulnerable, call-helpers, dds-*)
-  service/         WASM proxy: ServicePort, BridgeService, barrel, session-types, display/, util/, auth
-    display/       Call/contract/card formatting, hand summary, convention card builder
-    util/          Pure utilities: delay
-    auth.ts        AuthClient — DataPort boundary for /api/auth/* calls
-  cli/             Session-based convention evaluation CLI (main.ts + shared.ts + commands/)
-  skills/          Project-local AI skills (BridgeExpertReview, ConventionForge)
-  test-support/    Shared test factories (engine stub, deal/session fixtures, sveltekit-mocks/)
-  stores/          Svelte stores (app, game coordinator, custom-systems, context DI, dev-params, feature-flags, entitlements)
-  components/      Svelte UI components
-    navigation/    NavRail (desktop left rail), BottomTabBar (mobile)
-    screens/       Screen-level components (ConventionSelectScreen, LearningScreen, game-screen/GameScreen)
-    game/          Game components + co-located .ts companions (DecisionTree.ts, RoundBidList.ts, BidFeedbackPanel.ts)
-    shared/        Reusable components (Card, Button, ConventionCallout, ModuleChecklist) + display utilities (tokens, sort-cards, seat-mapping, table-scale, breakpoints, vulnerability-labels, layout-props) + module categorization (module-catalog.ts — single source for MODULE_CATEGORIES, all screens import from here)
-crates/            Rust workspace with seven crates
-  bridge-engine/       Pure Rust game logic (types, hand eval, deal gen, auction, scoring, play)
-  bridge-conventions/  Convention types, fact DSL, pipeline, teaching, adapter
-  bridge-session/      Session state, controllers, heuristics, inference
-  bridge-service/      ServicePort impl, viewport builders
-  bridge-wasm/         WASM bindings via wasm-bindgen for browser deployment (full ServicePort)
-  bridge-api/          Axum API server — auth, user data (DataPort). Independent of game crates.
-  bridge-static/       Static data extractor — outputs convention JSON for build-time HTML generation
-tests/
-  e2e/             Playwright E2E tests
-```
-
-**Subsystems:**
-
-| Subsystem          | Entry                                  | Summary                                                 |
-| ------------------ | -------------------------------------- | ------------------------------------------------------- |
-| Engine (TS)        | `src/engine/types.ts`                  | TS engine types, hand eval, isVulnerable, DDS browser   |
-| Engine (Rust)      | `crates/bridge-engine/`      | Pure Rust game logic                                    |
-| Conventions (Rust) | `crates/bridge-conventions/` | Convention types, fact DSL, pipeline, teaching, adapter |
-| Session (Rust)     | `crates/bridge-session/`     | Session state, controllers, heuristics, inference       |
-| Service (Rust)     | `crates/bridge-service/`     | ServicePort impl, viewport builders                     |
-| Service (TS)       | `src/service/index.ts`                 | WASM proxy + barrel + session-types + display/ + util/  |
-| CLI                | `src/cli/main.ts`                      | Session-based convention evaluation CLI                 |
-| Project Skills     | `skills/`                              | Repo-local AI skills linked into `.claude/`, `.codex/`, and `.devin/` |
-| Test Support       | `src/test-support/engine-stub.ts`      | Shared test factories                                   |
-| Stores             | `src/stores/app.svelte.ts`             | Svelte stores, game coordinator, feature flags, entitlements |
-| Components         | —                                      | Svelte UI (screens/game/shared)                         |
-| API (Rust)         | `crates/bridge-api/`         | Axum API server — auth, user data (DataPort)            |
-| Static (Rust)      | `crates/bridge-static/`      | Static data extractor for build-time HTML generation    |
-| Tests              | `tests/e2e/`                           | Vitest + Playwright                                     |
-
-**Game phases:** BIDDING → DECLARER_PROMPT (conditional) → PLAYING (optional) → EXPLANATION. User always bids as South. `playPreference` (from practice mode) controls BIDDING exit: `skip` → EXPLANATION, `always` → PLAYING, `prompt` → DECLARER_PROMPT.
-
-**Storage:** localStorage for user preferences (client-side). SQLite via bridge-api for user accounts, sessions, and server-side data (DataPort).
-
-## Completed: Rust/WASM Migration
-
-Backend modules (conventions/, inference/, session/, service/) have been migrated from TypeScript to Rust/WASM. All 5 phases are complete. TS `service/` is now a thin WASM proxy (~100 LOC). Convention logic, inference, session management, and viewport building all run in Rust.
-See `docs/architecture/migration/index.md` for the phase tracker and architectural decisions. See `docs/product/product-direction.md` for the product decisions that drove this migration.
+- Dependency direction: `components -> stores -> service -> Rust crates`; `cli/commands -> service`; auth flows through `/api/* -> bridge-api`.
+- `service/` is a thin WASM proxy. UI layers should not bypass it.
+- `bridge-api` is independent of game crates and owns auth/user data.
+- Game phases: `BIDDING -> DECLARER_PROMPT -> PLAYING -> EXPLANATION`.
+- Backend convention/session/service logic has already migrated to Rust/WASM.
 
 ## Gotchas
 
-- `npm run dev` builds WASM if `pkg/` missing, then starts Vite with HMR — the dev server stays running and reflects file changes instantly. Do NOT restart the server or browser after editing source files; just save and the page updates automatically
-- WASM must build before Vite (`npm run dev` handles this automatically via `wasm:ensure`)
-- **WASM required for browser.** All game logic runs in Rust via WASM. If WASM init fails, the app shows an error screen — no fallback. See `docs/guides/gotchas.md` for details.
-- WASM must be built via `wasm-pack` (not `cargo build`), because `wasm-pack` handles `--target web`, `.wasm` packaging, and JS glue generation
-- Read a subsystem's CLAUDE.md before working in that directory
-- Full testing playbook is in **TESTING.md**, not here
-- Tailwind v4 uses `@tailwindcss/vite` plugin (no PostCSS config) — plugin goes before sveltekit() in `vite.config.ts`
-- `svelte.config.js` uses `adapter-static` with `fallback: 'index.html'` for SPA fallback. `tsconfig.json` extends `.svelte-kit/tsconfig.json`.
-- `vitest.config.ts` has `resolve.conditions: ["browser"]` so Svelte 5 `mount()` works in jsdom tests — don't use `require()` in tests, use ES imports. Also aliases `$app/navigation` and `$app/state` to mock modules in `src/test-support/sveltekit-mocks/`.
-- Component tests use `@testing-library/svelte` — components needing context (stores/engine) need wrapper setup in test-helpers.ts
-- Svelte `{#each}` blocks require keyed iteration (`{#each items as item (item.id)}`) per ESLint rule `svelte/require-each-key`
-- See `docs/guides/gotchas.md` for detailed technical notes (DDS browser, vendor/dds, convention system details, CLI enumeration, deal generation)
-- Project-local skills live in `skills/`. `npm install` / `npm ci` runs `scripts/link-project-skills.sh` to mirror them into `.claude/skills`, `.codex/skills`, and `.devin/skills`; rerun `npm run skills:link` after adding or renaming a project skill.
-- **MC+DDS play runs entirely in Rust/WASM.** The DDS Worker callback is injected at service init via `wireDdsSolver()`. The store calls `playCard` and receives all AI plays regardless of profile — Expert/WorldClass use MC+DDS (async DDS via injected JS solver in `bridge-wasm`), Beginner/ClubPlayer use synchronous heuristic chain. MC sampling, evaluation, and suggest logic live in `bridge-session/src/dds/`. Expert samples randomly (no beliefs); WorldClass adds belief-constraint filtering (`PlayProfile.use_posterior`). Posterior inference (`PosteriorEngine` in `bridge-session/src/inference/posterior.rs`) uses rejection sampling against L1 `DerivedRanges`, 200-sample budget, wired into heuristics via `PlayBeliefs`.
+- `npm run dev` handles WASM bootstrap and HMR; do not restart it after normal source edits.
+- Browser app requires WASM; no JS fallback exists.
+- Build browser WASM with `wasm-pack`, not plain `cargo build`.
+- Tailwind v4 uses `@tailwindcss/vite` before `sveltekit()` in `vite.config.ts`.
+- `vitest.config.ts` sets browser conditions and SvelteKit mock aliases; use ES imports in tests.
+- Svelte `{#each}` blocks must be keyed.
+- MC+DDS play lives in Rust/WASM; DDS is injected at service init.
+- Detailed edge cases belong in `docs/guides/gotchas.md`.
 
-**Context tree** (read the relevant one before working in that directory):
+**Context tree:** `src/components/`, `src/stores/`, `src/service/`, `src/cli/`, `src/test-support/`, `crates/`, `crates/bridge-static/`, and `tests/` each have their own `CLAUDE.md`.
 
-- `src/engine/CLAUDE.md` — engine types, DDS browser support, module graph
-- `src/service/CLAUDE.md` — WASM proxy, display/, util/, session-types
-- `crates/CLAUDE.md` — Rust workspace: 7 crates, serde contract, commands
-- `crates/bridge-static/CLAUDE.md` — static data extractor, JSON contract, architectural constraints
-- `src/cli/CLAUDE.md` — session-based convention CLI
-- `src/components/CLAUDE.md` — component conventions, screen flow, Svelte 5 patterns
-- `src/stores/CLAUDE.md` — factory DI pattern, game store methods, race condition handling
-- `src/test-support/CLAUDE.md` — shared test factories, dependency rules
-- `tests/CLAUDE.md` — E2E config, test running
-
-**E2E policy:** Playwright exists to prove user-visible stability. Prefer adding browser coverage for routing, practice-mode/session semantics, autoplay/review lifecycle, and responsive shell behavior. If a proposed E2E test is mainly about convention correctness across many bundles or seeds, that is the wrong layer.
+**E2E policy:** Use Playwright for user-visible stability, not per-convention seed matrices.
 
 ## Reference Knowledge (docs/)
 
@@ -233,36 +123,16 @@ docs/
 
 Start with `docs/README.md` when the right home for a topic is unclear. Root `docs/` should stay thin: category indexes only, with topic docs living inside the appropriate subtree.
 
-Agents do not need this context for routine work. **Read from docs/ when:**
+Agents do not need docs for routine work. **Read from docs/ when:**
 
-- **Making a design decision** with multiple viable approaches → read `docs/architecture/README.md`
-  first, then `docs/architecture/design-philosophy.md` to check if a prior principle already resolves it
-- **Wondering "why is it done this way?"** about a non-obvious pattern → read `docs/guides/gotchas.md`
-  or the relevant subsystem doc
-- **Adding a new convention bundle** → read `docs/guides/convention-authoring.md` for the full
-  checklist, templates, and common pitfalls
-- **Working on inference/posterior (Rust)** → read `docs/architecture/README.md` and
-  `docs/architecture/architecture-specs.md` for current boundaries, open questions, and which docs are historical
-- **Planning a large refactor** → read `docs/architecture/README.md`, `docs/architecture/design-philosophy.md`,
-  and `docs/architecture/architecture-specs.md` to avoid violating architectural constraints
-- **Touching CLI evaluation pipeline** → read `docs/guides/cli-evaluation.md` for the two-phase
-  design and known gaps
-- **Modifying typography/layout tokens** → read `docs/guides/typography-and-layout.md` for the
-  full token system
-- **Making UX, onboarding, or prioritization decisions** → read `docs/product/personas/README.md`
-  and the relevant persona in `docs/product/personas/`
-- **Product direction and deployment** → read `docs/product/product-direction.md` for monetization model,
-  deployment architecture, two-port model, content protection strategy, and decision history
-- **Rust/WASM migration** → read `docs/architecture/migration/index.md` for phase tracker, architectural
-  decisions, and per-phase specs. Migration is complete; docs retained as architectural reference.
-- **SEO and discoverability** → read `docs/research/seo-principles-web-apps/evidence-map.md` for
-  the full evidence map on SEO best practices for this app
-- **FTUE or onboarding research** → read `docs/research/ftue-and-seo/README.md` for the first-visit
-  audit and implementation recommendations
-- **Learn-mode pedagogy** → read `docs/research/learn-mode-pedagogy/README.md` for the evidence summary
-  and placement of future learning-design research
+- **Architecture or refactors** → `docs/architecture/README.md` and `docs/architecture/design-philosophy.md`
+- **Conventions or CLI evaluation** → `docs/guides/convention-authoring.md` and `docs/guides/cli-evaluation.md`
+- **Deployment or local debug workflows** → `docs/guides/deployment.md` and `docs/guides/dev-tools.md`
+- **Product, personas, or monetization** → `docs/product/product-direction.md` and `docs/product/personas/README.md`
+- **SEO, FTUE, pedagogy, or reference-page research** → the relevant topic under `docs/research/`
+- **Gotchas or testing policy** → `docs/guides/gotchas.md` and `docs/guides/testing-philosophy.md`
 
-**Read docs/ before working.** If your task touches a topic covered by any doc (architecture, conventions, SEO, product direction, testing, etc.), you MUST read the relevant doc first. Do not rely on memory or assumptions — read the current state before making decisions or writing code.
+**Read docs/ before working.** If your task touches a topic covered by any doc (architecture, conventions, deployment, SEO, product direction, testing, etc.), you MUST read the relevant doc first. Do not rely on memory or assumptions — read the current state before making decisions or writing code.
 
 **Update docs/ after changing things.** If your work makes a design decision, changes behavior documented in docs, invalidates an assumption, or resolves an open question tracked in docs, you MUST update the affected doc in the same session — not as a follow-up. Code changes and doc updates ship together.
 
@@ -319,4 +189,4 @@ is stale — update or regenerate before relying on it.
 - 30+ days without touching this file → Audit
 - Agent mistake caused by this file → fix immediately, then Audit
 
-<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-12 | version=28 | dir-commits-at-audit=67 | tree-sig=dirs:19,files:100+ -->
+<!-- context-layer: generated=2026-02-20 | last-audited=2026-04-12 | version=30 | dir-commits-at-audit=67 | tree-sig=dirs:19,files:100+ -->
