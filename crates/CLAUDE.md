@@ -58,9 +58,13 @@ crates/
                        flow: at drill-creation, `bridge-service::drill_setup` picks a target
                        `(module_id, surface_id)` seeded by `config.seed`, enumerates witnesses via
                        `fact_dsl::witness::enumerate_witnesses`, and projects a chosen witness through
-                       `project_witness` to tight per-seat `DealConstraints`. The v1 loose-union
-                       `derive_deal_constraints` was removed in phase 2; `compose_surface_clauses` +
-                       `invert_composition` primitives remain and are reused by witness projection.
+                       `project_witness` to tight per-seat `DealConstraints`. Opponent pass slots
+                       implied between witness bids now synthesize "no interference" caps from any
+                       loaded `turn=opponent` surfaces that are legal at that auction position,
+                       falling back to `max_hcp=10` when the loaded modules author no such
+                       interference surfaces. The v1 loose-union `derive_deal_constraints` was
+                       removed in phase 2; `compose_surface_clauses` + `invert_composition`
+                       primitives remain and are reused by witness projection.
   bridge-session/      Rust session logic: inference, heuristics, controllers, viewports.
                        Phase 4 of the migration. Depends on bridge-engine + bridge-conventions.
                        Inference: natural inference + Monte Carlo posterior (rejection sampling)
@@ -81,7 +85,11 @@ crates/
                        builds the rejection-sampling predicate that replays the adapter and accepts a
                        deal iff the auto-played prefix matches the witness prefix (opponent seats must
                        pass) AND the user-turn pipeline selection's `module_id`/`meaning_id` equal the
-                       witness target. Injected as `Arc<DealAcceptancePredicate>` into
+                       witness target. Witness-selected drills now derive their startup auction directly
+                       from the witness prefix (inserting opponent passes up to the user turn) for both
+                       live session initialization and rejection-sampling replay; projected deal
+                       constraints remain the fallback only when no witness override exists. Injected as
+                       `Arc<DealAcceptancePredicate>` into
                        `StartDrillOptions`; budget `NORMAL_DEAL_ATTEMPTS = 32`. On exhaustion,
                        `start_drill` returns `Err`; `drill_setup::build_drill_setup` catches it and
                        retries internally up to `MAX_DRILL_SETUP_RETRIES = 8` times, shifting the
@@ -174,4 +182,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-12 | version=9 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:42 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-12 | version=10 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:42 -->

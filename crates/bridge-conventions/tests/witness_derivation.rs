@@ -253,3 +253,52 @@ fn enumerate_witnesses_negative_doubles_via_route_expr_does_not_panic() {
     // carry overcalls without level and are correctly non-reifiable.
     let _ = witnesses;
 }
+
+#[test]
+fn project_witness_nt_stayman_constrains_opponents() {
+    let modules = loaded_modules();
+    let witness = enumerate_witnesses(
+        "stayman",
+        "stayman:ask-major",
+        &modules,
+        Seat::North,
+        Seat::South,
+        64,
+    )
+    .into_iter()
+    .find(|w| {
+        w.prefix.iter().any(|entry| {
+            entry.seat == Seat::North
+                && matches!(
+                    entry.call,
+                    Call::Bid {
+                        level: 1,
+                        strain: BidSuit::NoTrump
+                    }
+                )
+        })
+    })
+    .expect("need a stayman witness with a 1NT opener");
+
+    let projections = project_witness(&witness, &modules);
+    let dc = projections
+        .first()
+        .expect("should produce at least one projected branch");
+
+    let by_seat: std::collections::HashMap<Seat, &bridge_engine::types::SeatConstraint> =
+        dc.seats.iter().map(|s| (s.seat, s)).collect();
+
+    let east = by_seat
+        .get(&Seat::East)
+        .expect("E should be constrained because the witness implies an opponent pass");
+    assert!(
+        east.max_hcp.is_some(),
+        "E should receive a no-interference HCP cap, got {:?}",
+        east
+    );
+    assert!(
+        east.max_hcp.unwrap() <= 14,
+        "E max_hcp should reflect a no-interference cap, got {:?}",
+        east
+    );
+}

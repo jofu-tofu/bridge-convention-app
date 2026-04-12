@@ -24,8 +24,12 @@
 
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use bridge_engine::types::{BidSuit, Call, DealConstraints, Seat, SeatConstraint};
+use bridge_engine::{
+    is_legal_call, partner_seat,
+    types::{Auction, AuctionEntry, BidSuit, Call, DealConstraints, Seat, SeatConstraint, Suit},
+};
 
+use crate::pipeline::evaluation::binding_resolver::resolve_clause;
 use crate::types::bid_action::{BidActionType, BidSuitName};
 use crate::types::meaning::BidMeaning;
 use crate::types::rule_types::{
@@ -687,9 +691,116 @@ fn inverted_to_seat_constraint(seat: Seat, c: &InvertedConstraint) -> SeatConstr
 /// `InvertedConstraint`. Context clauses are silently dropped (they're the
 /// purview of phase-2+ auction/system evaluation).
 fn invert_hand_only(surface: &BidMeaning) -> InvertedConstraint {
-    let (hand_clauses, _ctx) = partition_clauses(&surface.clauses);
+    let resolved_clauses: Vec<BidMeaningClause> =
+        if let Some(bindings) = surface.surface_bindings.as_ref() {
+            surface
+                .clauses
+                .iter()
+                .map(|clause| resolve_clause(clause, bindings))
+                .collect()
+        } else {
+            surface.clauses.clone()
+        };
+    let (hand_clauses, _ctx) = partition_clauses(&resolved_clauses);
     let comp = compose_surface_clauses(&hand_clauses);
     invert_composition(&comp)
+}
+
+fn is_partnership_seat(seat: Seat, dealer: Seat) -> bool {
+    seat == dealer || seat == partner_seat(dealer)
+}
+
+fn is_opponent_seat(seat: Seat, dealer: Seat) -> bool {
+    !is_partnership_seat(seat, dealer)
+}
+
+fn auction_from_position(position: &[WitnessCall]) -> Auction {
+    Auction {
+        entries: position
+            .iter()
+            .map(|entry| AuctionEntry {
+                seat: entry.seat,
+                call: entry.call.clone(),
+            })
+            .collect(),
+        is_complete: false,
+    }
+}
+
+fn candidate_interference_surfaces<'m>(
+    seat: Seat,
+    position: &[WitnessCall],
+    loaded_modules: &[&'m ConventionModule],
+) -> Vec<&'m BidMeaning> {
+    let auction = auction_from_position(position);
+    let mut out = Vec::new();
+
+    for module in loaded_modules {
+        let Some(states) = module.states.as_ref() else {
+            continue;
+        };
+        for state in states {
+            if state.turn != Some(TurnRole::Opponent) {
+                continue;
+            }
+            for surface in &state.surfaces {
+                if matches!(surface.encoding.default_call, Call::Pass) {
+                    continue;
+                }
+                if is_legal_call(&auction, &surface.encoding.default_call, seat) {
+                    out.push(surface);
+                }
+            }
+        }
+    }
+
+    out
+}
+
+pub fn synthesize_no_interference_constraint(
+    seat: Seat,
+    position: &[WitnessCall],
+    loaded_modules: &[&ConventionModule],
+) -> InvertedConstraint {
+    let candidates = candidate_interference_surfaces(seat, position, loaded_modules);
+    if candidates.is_empty() {
+        return InvertedConstraint {
+            max_hcp: Some(10),
+            ..Default::default()
+        };
+    }
+
+    let inverted: Vec<InvertedConstraint> =
+        candidates.iter().map(|s| invert_hand_only(s)).collect();
+    let mut synthesized = InvertedConstraint {
+        max_hcp: Some(
+            inverted
+                .iter()
+                .filter_map(|constraint| constraint.min_hcp)
+                .min()
+                .map_or(10, |min| min.saturating_sub(1)),
+        ),
+        ..Default::default()
+    };
+
+    let mut max_length = HashMap::new();
+    for suit in [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs] {
+        let every_candidate_requires_five_plus = inverted.iter().all(|constraint| {
+            constraint
+                .min_length
+                .as_ref()
+                .and_then(|mins| mins.get(&suit))
+                .is_some_and(|&len| len >= 5)
+        });
+        if every_candidate_requires_five_plus {
+            max_length.insert(suit, 4);
+        }
+    }
+    if !max_length.is_empty() {
+        synthesized.max_length = Some(max_length);
+    }
+
+    synthesized
 }
 
 /// Find all surfaces on the target module matching `target_surface_id`
@@ -728,7 +839,9 @@ fn find_target_surfaces<'m>(
 /// - Each prefix call's matched base-module surfaces contribute to their
 ///   bidder seat; when multiple surfaces match the same call, their
 ///   inverted constraints are intersected (tightest bound wins).
-/// - Seats not mentioned by the witness receive no constraint.
+/// - Opponent pass slots implied between witness calls synthesize a
+///   "no-interference" constraint so drill generation avoids hands where the
+///   live heuristic opponents would overcall before the user's turn.
 pub fn project_witness(
     witness: &Witness,
     loaded_modules: &[&ConventionModule],
@@ -758,10 +871,38 @@ pub fn project_witness(
     }
 
     // Prefix calls → bidder seat via base-module surface lookup.
+    // Any skipped opponent seat before the next authored bid is an implied
+    // pass, so synthesize a no-interference cap from the current position.
+    let mut position: Vec<WitnessCall> = Vec::new();
+    let mut cursor = witness.dealer;
     for entry in &witness.prefix {
+        while cursor != entry.seat {
+            if is_opponent_seat(cursor, witness.dealer) {
+                let synthesized =
+                    synthesize_no_interference_constraint(cursor, &position, loaded_modules);
+                per_seat.entry(cursor).or_default().push(synthesized);
+            }
+            position.push(WitnessCall {
+                seat: cursor,
+                call: Call::Pass,
+            });
+            cursor = step_seat(cursor, 1);
+        }
+
+        if entry.call == Call::Pass && is_opponent_seat(entry.seat, witness.dealer) {
+            let synthesized =
+                synthesize_no_interference_constraint(entry.seat, &position, loaded_modules);
+            per_seat.entry(entry.seat).or_default().push(synthesized);
+            position.push(entry.clone());
+            cursor = step_seat(entry.seat, 1);
+            continue;
+        }
+
         let matches =
             surfaces_emitting_call(loaded_modules, &entry.call, entry.seat, witness.dealer);
         if matches.is_empty() {
+            position.push(entry.clone());
+            cursor = step_seat(entry.seat, 1);
             continue;
         }
         let per_call: Vec<InvertedConstraint> =
@@ -770,6 +911,21 @@ pub fn project_witness(
         // are intersected — they describe the same authored bid.
         let tightened = intersect_inverted(&per_call);
         per_seat.entry(entry.seat).or_default().push(tightened);
+        position.push(entry.clone());
+        cursor = step_seat(entry.seat, 1);
+    }
+
+    while cursor != witness.user_seat {
+        if is_opponent_seat(cursor, witness.dealer) {
+            let synthesized =
+                synthesize_no_interference_constraint(cursor, &position, loaded_modules);
+            per_seat.entry(cursor).or_default().push(synthesized);
+        }
+        position.push(WitnessCall {
+            seat: cursor,
+            call: Call::Pass,
+        });
+        cursor = step_seat(cursor, 1);
     }
 
     let mut seats: Vec<SeatConstraint> = per_seat
