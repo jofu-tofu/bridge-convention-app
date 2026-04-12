@@ -92,7 +92,9 @@ crates/
                        independent :3001 service with no game-crate deps
                        (no bridge-engine/conventions/session/service deps). SQLite via sqlx,
                        OAuth (Google + GitHub), server-side sessions. See infra/Dockerfile.api
-                       for container build.
+                       for container build. Optional `dev-tools` cargo feature mounts
+                       `/api/dev/login` and swaps `LiveStripeOps` for an in-process mock;
+                       absent from release builds, intended for Playwright e2e only.
   bridge-static/       Static data extractor — outputs convention JSON for build-time
                        HTML generation. Thin binary that calls bridge-session viewport
                        builders — MUST NOT contain convention logic or data.

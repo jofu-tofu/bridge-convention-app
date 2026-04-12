@@ -42,6 +42,7 @@ Read the narrowest context that matches the task before editing:
 | `npm run format:check`                           | Prettier check (CI)                                      |
 | `cargo test --workspace`                         | Run all Rust tests                                       |
 | `cargo build --workspace`                        | Build all Rust crates                                    |
+| `cargo run -p bridge-api --features dev-tools`   | e2e only: enables `/api/dev/login` + mock Stripe ops     |
 
 ## Deployment
 
@@ -77,6 +78,7 @@ pairing, or UI test IDs.
 - Game UI reads viewports, not raw `Deal` objects.
 - Test behavior through public interfaces; characterize unknown behavior before changing it.
 - Playwright is for smoke and shell flows, not convention matrices.
+- E2E billing/auth specs require a `dev-tools`-feature bridge-api binary; `npm run test:e2e` starts it automatically via `playwright.config.ts`.
 
 ## System Parameterization
 

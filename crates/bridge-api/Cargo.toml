@@ -7,6 +7,9 @@ edition = "2021"
 name = "bridge-api"
 path = "src/main.rs"
 
+[features]
+dev-tools = []
+
 [dependencies]
 async-trait = "0.1"
 axum = "0.8"

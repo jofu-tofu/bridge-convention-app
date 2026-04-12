@@ -138,6 +138,12 @@ function writeDevLoggedOut(value: boolean): void {
   }
 }
 
+/**
+ * **DevDataPort fakes client state only.** It does NOT mint a server session.
+ * Tests that need real server behavior (entitlements, webhook effects, session
+ * cookies) must call `POST /api/dev/login` on bridge-api (built with the
+ * `dev-tools` cargo feature) instead. See `tests/e2e/helpers.ts:devLogin`.
+ */
 export class DevDataPort implements DataPort {
   private readonly inner = new DataPortClient();
 

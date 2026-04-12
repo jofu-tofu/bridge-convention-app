@@ -60,6 +60,36 @@ Expected behavior:
 6. Confirm the app redirects to `/billing/success`.
 7. Verify the database row now has Stripe customer/subscription fields and the UI unlocks paid practice.
 
+## Playwright e2e
+
+```bash
+npm run test:e2e -- billing.spec.ts
+```
+
+`playwright.config.ts` starts bridge-api with `cargo run -p bridge-api --features dev-tools`.
+The `dev-tools` feature (compile-gated; absent from release binaries) links two
+things into the server:
+
+- `POST /api/dev/login` — upsert a user by id and mint a real session cookie.
+  Subscription fields on the request body flow through to `users` so specs can
+  simulate free / paid / expired users without Google OAuth.
+- `InProcessMockStripe` — replaces `LiveStripeOps` so checkout/portal calls return
+  deterministic `https://dev-stripe.local/...` URLs with no network I/O. Playwright
+  intercepts these navigations via `page.route`.
+
+The e2e webhook secret is `whsec_e2e_test_secret` — deliberately distinct from
+the unit-test secret in `test_support.rs`. Sign + POST webhooks via
+`fireStripeWebhook(page.request, event)` in `tests/e2e/helpers.ts`.
+
+A `globalSetup` deletes `/tmp/bridge-api-e2e.db` before each run so migrations
+run against a clean schema. If bridge-api refuses to start in CI, confirm
+`DATABASE_URL` and the `STRIPE_*` env vars in the webServer config — no env vars
+are strictly required by bridge-api startup, but the specs assert on specific
+prices / URLs.
+
+To extend the fake Stripe ops when a new endpoint is added, edit
+`crates/bridge-api/src/dev/mod.rs`'s `InProcessMockStripe` impl.
+
 ## Useful Test Cards
 
 - Success: `4242 4242 4242 4242`

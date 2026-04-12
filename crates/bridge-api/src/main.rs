@@ -11,6 +11,9 @@ async fn main() {
         )
         .init();
 
+    #[cfg(feature = "dev-tools")]
+    tracing::warn!("dev-tools feature is enabled; this binary must not be used in production");
+
     let config = Config::from_env();
     let pool = db::init_db(&config.database_url).await;
     let state = AppState::new(pool, config);
