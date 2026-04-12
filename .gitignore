@@ -24,15 +24,9 @@ crates/bridge-wasm/pkg/
 # Static data extracted at build time (learn-data.json)
 static/.static/
 
-# Playwright artifacts
-test-results/
-playwright-report/
+# Generated reports, screenshots, and test artifacts
+.artifacts/
 playwright/.cache/
-screenshots-e2e/
-screenshots-edge-cases/
-
-# Coverage output
-coverage/
 
 # AI workflow tooling (operational, not project source)
 .aiwcli/

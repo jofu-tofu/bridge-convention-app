@@ -49,7 +49,7 @@ ServicePort (23 methods) exposed via `wasm-bindgen`. TS `service/` becomes a thi
 
 `FactComposition` trees (`and`/`or`/`not`/`primitive`) interpreted by Rust runtime. No Rust code per convention. Convention definitions are 100% JSON-serializable. Posterior evaluators are a fixed set of built-in Rust functions keyed by ID.
 
-**Rust superset (Phase 2):** Rust `FactComposition` is a superset of TS — includes `Match`, `Compute`, `Extended` node kinds and `TopHonorCount`, `SuitCompare`, `LongestSuitIs`, `AceCount`, `KingCount`, `VulnerabilityIs`, `BooleanFact`, `NumericFact` extended clause types not present in the TS type system. The TS export script (`scripts/export-conventions.ts`) does not emit these node types. Facts using them have Rust-constructed compositions in `fact_dsl/rust_compositions.rs`, not JSON-deserialized ones. Zero built-in evaluator registry — every fact goes through the composition interpreter.
+**Rust superset (Phase 2):** Rust `FactComposition` is a superset of TS — includes `Match`, `Compute`, `Extended` node kinds and `TopHonorCount`, `SuitCompare`, `LongestSuitIs`, `AceCount`, `KingCount`, `VulnerabilityIs`, `BooleanFact`, `NumericFact` extended clause types not present in the TS type system. The old TS export script (`scripts/export-conventions.ts`) was part of the migration scaffolding and has been removed; facts using these node types now live directly in Rust (`fact_dsl/rust_compositions.rs`). Zero built-in evaluator registry — every fact goes through the composition interpreter.
 
 ### 2. Convention Definitions as Data
 

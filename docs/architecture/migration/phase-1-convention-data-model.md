@@ -51,13 +51,7 @@ Each type group with its TS source file:
 
 ## Build Script
 
-Create a TS build script that serializes all convention definitions to JSON:
-
-```bash
-npx tsx scripts/export-conventions.ts > fixtures/conventions.json
-```
-
-This produces the golden-master fixture for round-trip testing.
+Historical note: Phase 1 originally used a TS export script (`scripts/export-conventions.ts`) to serialize convention definitions into migration fixtures. That script was removed after the Rust/WASM migration completed; fixture generation now happens directly from the Rust-side data model and tests.
 
 ## Verification
 

@@ -7,10 +7,7 @@ export default defineConfig({
   resolve: {
     conditions: ["browser"],
     alias: {
-      "bridge-wasm": path.resolve(
-        __dirname,
-        "crates/bridge-wasm/pkg",
-      ),
+      "bridge-wasm": path.resolve(__dirname, "crates/bridge-wasm/pkg"),
       "$app/navigation": path.resolve(
         __dirname,
         "src/test-support/sveltekit-mocks/navigation.ts",
@@ -27,11 +24,8 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: "v8",
-      include: [
-        "src/engine/**",
-        "src/service/**",
-        "src/stores/**",
-      ],
+      reportsDirectory: ".artifacts/coverage",
+      include: ["src/engine/**", "src/service/**", "src/stores/**"],
       thresholds: {
         branches: 90,
         functions: 90,

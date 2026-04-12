@@ -47,11 +47,7 @@ Given an auction context and convention spec, Rust produces the same pipeline re
 
 ## Pre-Phase: Reference Snapshots
 
-**Before writing any Rust code**, capture TS pipeline outputs as a reference:
-
-```bash
-npx tsx scripts/capture-pipeline-snapshots.ts > fixtures/pipeline-snapshots.json
-```
+Historical note: before the Rust port, this phase captured TS pipeline outputs with `scripts/capture-pipeline-snapshots.ts`. That migration scaffolding has been removed. Keep this section as design history, not as a current command to run.
 
 Run all existing pipeline test scenarios through TS. Serialize `PipelineResult` outputs as JSON fixtures. Include edge cases: multi-module arbitration, negotiation states, teaching projections. These snapshots catch unintentional drift — the pipeline has accumulated complexity that may be worth simplifying during the port.
 

@@ -176,11 +176,11 @@ npm run test:all
 
 ## Evidence and Artifacts
 
-| Source               | Location             | Gitignored |
-| -------------------- | -------------------- | ---------- |
-| Playwright artifacts | `test-results/`      | Yes        |
-| Playwright report    | `playwright-report/` | Yes        |
-| Coverage report      | `coverage/`          | Yes        |
+| Source               | Location                              | Gitignored |
+| -------------------- | ------------------------------------- | ---------- |
+| Playwright artifacts | `.artifacts/playwright/test-results/` | Yes        |
+| Playwright report    | `.artifacts/playwright/report/`       | Yes        |
+| Coverage report      | `.artifacts/coverage/`                | Yes        |
 
 ## Mocking Strategy
 

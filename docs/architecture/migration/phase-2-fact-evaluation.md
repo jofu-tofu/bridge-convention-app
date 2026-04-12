@@ -35,11 +35,7 @@ Given a hand and convention context, Rust produces the same fact evaluation resu
 
 ## Pre-Phase: Reference Snapshots
 
-**Before writing any Rust code**, capture TS fact evaluation outputs as a reference:
-
-```bash
-npx tsx scripts/capture-fact-snapshots.ts > fixtures/fact-snapshots.json
-```
+Historical note: before the Rust port, this phase captured TS fact-evaluation outputs with `scripts/capture-fact-snapshots.ts`. That migration scaffolding has been removed. Keep this section as design history, not as a current command to run.
 
 Run all 6 bundles × 100 sample hands through the TS fact evaluator. Serialize outputs as JSON fixtures. These are a safety net for catching unintentional drift — not a rigid spec. The TS fact system has design decisions made early; simplify where appropriate during the port.
 

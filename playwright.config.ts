@@ -3,6 +3,10 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests/e2e",
   retries: process.env.CI ? 2 : 0,
+  outputDir: ".artifacts/playwright/test-results",
+  reporter: [
+    ["html", { outputFolder: ".artifacts/playwright/report", open: "never" }],
+  ],
   webServer: {
     command: "npm run dev",
     port: 1420,

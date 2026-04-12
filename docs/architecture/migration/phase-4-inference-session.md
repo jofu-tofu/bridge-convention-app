@@ -89,11 +89,7 @@ crates/bridge-session/
 
 ## Pre-Phase: Reference Snapshots
 
-**Mandatory before any reimplementation.** This is the largest behavior surface — reference snapshots are essential for catching regressions.
-
-```bash
-npx tsx scripts/capture-session-snapshots.ts > fixtures/session-snapshots.json
-```
+Historical note: before the Rust port, this phase captured TS session snapshots with `scripts/capture-session-snapshots.ts`. That migration scaffolding has been removed. Keep this section as design history, not as a current command to run.
 
 Record complete drill sessions: create → bid through auction → play → explanation. Capture all viewport outputs at each step. These are a safety net, not a rigid spec — session/controller logic is the most likely area to benefit from simplification during the port.
 
