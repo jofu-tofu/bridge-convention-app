@@ -53,12 +53,14 @@ crates/
                        which prefers the clause's `rationale` field and falls back to `display_name()`.
                        Editing system fact descriptions in fixture JSON has no UI effect — edit
                        `rationale` or `display_name()` instead.
-                       **Deal constraints are runtime-derived, not authored:** bundle JSON fixtures
-                       carry no `dealConstraints` / `offConventionConstraints` fields.
-                       `fact_dsl::inversion::derive_deal_constraints(bundle, BaseSystemId)` unions
-                       surface preconditions across `bundle.modules` + base-system modules (via
-                       `compose_surface_clauses`), inverts each composition to an
-                       `InvertedConstraint`, unions within each seat, and maps to `SeatConstraint`.
+                       **Deal constraints are witness-derived, not authored:** bundle JSON fixtures
+                       carry no `dealConstraints` / `offConventionConstraints` fields. Phase 2
+                       flow: at drill-creation, `bridge-service::drill_setup` picks a target
+                       `(module_id, surface_id)` seeded by `config.seed`, enumerates witnesses via
+                       `fact_dsl::witness::enumerate_witnesses`, and projects a chosen witness through
+                       `project_witness` to tight per-seat `DealConstraints`. The v1 loose-union
+                       `derive_deal_constraints` was removed in phase 2; `compose_surface_clauses` +
+                       `invert_composition` primitives remain and are reused by witness projection.
   bridge-session/      Rust session logic: inference, heuristics, controllers, viewports.
                        Phase 4 of the migration. Depends on bridge-engine + bridge-conventions.
                        Inference: natural inference + Monte Carlo posterior (rejection sampling)
@@ -74,13 +76,17 @@ crates/
   bridge-service/      Service layer — ServicePort trait + ServicePortImpl wrapping SessionManager.
                        Thin hexagonal port between UI/WASM/CLI and game logic. Depends on
                        bridge-engine, bridge-conventions, bridge-session.
-                       `deal_gating::build_deal_acceptance_predicate` builds the rejection-sampling
-                       predicate that gates deal generation on "user's expected bid matches a
-                       target-module surface." Injected as `Arc<DealAcceptancePredicate>` into
+                       `witness_selection::select_witness` picks a target `(module, surface)` and
+                       chosen witness at drill creation. `deal_gating::build_witness_acceptance_predicate`
+                       builds the rejection-sampling predicate that replays the adapter and accepts a
+                       deal iff the auto-played prefix matches the witness prefix (opponent seats must
+                       pass) AND the user-turn pipeline selection's `module_id`/`meaning_id` equal the
+                       witness target. Injected as `Arc<DealAcceptancePredicate>` into
                        `StartDrillOptions`; budget `NORMAL_DEAL_ATTEMPTS = 32`. On exhaustion,
-                       `tracing::warn` fires and the last deal is used (no panic, no Err). The
-                       negative-doubles bundle retains its own custom predicate with a separate
-                       budget.
+                       `start_drill` returns `Err`, which `drill_setup` maps to
+                       `ServiceError::DealGenerationExhausted { witness_summary }` — UI retries with a
+                       new seed. The negative-doubles bundle retains its own custom predicate +
+                       budget and skips witness selection entirely.
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
                        for browser deployment. All 20 ServicePort methods + async DDS play
                        methods (play_card_dds, needs_dds_play, set_dds_solver) +

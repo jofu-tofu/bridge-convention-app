@@ -24,11 +24,10 @@ pub mod primitives;
 pub mod system_facts;
 pub mod topo_sort;
 pub mod types;
+pub mod witness;
 
 // Re-export primary public API
 pub use evaluator::evaluate_facts;
-pub use inversion::{
-    compose_surface_clauses, derive_deal_constraints, invert_composition, InvertedConstraint,
-};
+pub use inversion::{compose_surface_clauses, invert_composition, InvertedConstraint};
 pub use point_helpers::compute_total_points;
 pub use types::{EvaluatedFacts, FactData, FactValue, FitAgreedContext, RelationalFactContext};

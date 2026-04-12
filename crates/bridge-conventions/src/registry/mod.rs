@@ -10,6 +10,6 @@ pub mod spec_builder;
 pub mod system_configs;
 
 pub use bundle_registry::{get_bundle_input, list_bundle_inputs, resolve_bundle};
-pub use module_registry::{get_all_modules, get_module};
+pub use module_registry::{get_all_modules, get_base_module_ids, get_module};
 pub use spec_builder::spec_from_bundle;
 pub use system_configs::*;

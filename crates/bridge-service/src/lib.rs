@@ -17,6 +17,7 @@ pub mod response_types;
 pub mod service_impl;
 pub mod session_manager;
 pub(crate) mod validation;
+pub(crate) mod witness_selection;
 
 pub use error::ServiceError;
 pub use port::{DevServicePort, ServicePort};

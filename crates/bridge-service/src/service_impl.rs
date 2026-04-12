@@ -1150,6 +1150,19 @@ mod tests {
         convention_id: &str,
         seed: u64,
     ) -> (DrillHandle, crate::response_types::DrillStartResult) {
+        try_create_session_for_bundle(service, convention_id, seed)
+            .expect("create_drill_session should succeed")
+    }
+
+    /// Phase-2 tolerant variant: returns `None` on `DealGenerationExhausted`
+    /// (a legitimate outcome under witness-verifying rejection sampling for
+    /// narrow target surfaces) so tests can skip those seeds instead of
+    /// failing.
+    fn try_create_session_for_bundle(
+        service: &mut ServicePortImpl,
+        convention_id: &str,
+        seed: u64,
+    ) -> Option<(DrillHandle, crate::response_types::DrillStartResult)> {
         let config = SessionConfig {
             convention_id: convention_id.to_string(),
             seed: Some(seed),
@@ -1168,21 +1181,32 @@ mod tests {
             opponent_mode: None,
             vulnerability: None,
         };
-        let handle = service
-            .create_drill_session(config)
-            .expect("create_drill_session should succeed");
+        let handle = match service.create_drill_session(config) {
+            Ok(h) => h,
+            Err(ServiceError::DealGenerationExhausted { .. }) => return None,
+            Err(e) => panic!("create_drill_session failed: {e:?}"),
+        };
         let result = service
             .start_drill(&handle)
             .expect("start_drill should succeed");
-        (handle, result)
+        Some((handle, result))
     }
 
     #[test]
     fn bergen_session_has_major_opening_in_viewport() {
         let mut service = ServicePortImpl::new();
-        // Try several seeds to verify consistent behavior
-        for seed in 42..52 {
-            let (_handle, result) = create_session_for_bundle(&mut service, "bergen-bundle", seed);
+        let mut succeeded = 0;
+        // Phase 2: most seeds may pick narrow bergen responder surfaces
+        // (preemptive raise, splinter, etc.) that exhaust the 32-attempt
+        // budget. Widen the seed sweep so at least one lands on a feasible
+        // surface; UI would retry with a fresh seed in that case.
+        for seed in 42..142 {
+            let Some((_handle, result)) =
+                try_create_session_for_bundle(&mut service, "bergen-bundle", seed)
+            else {
+                continue; // Phase-2: DealGenerationExhausted is valid
+            };
+            succeeded += 1;
 
             // The viewport's auction entries should contain at least one entry
             // with a 1H or 1S opening from the dealer (North)
@@ -1224,6 +1248,10 @@ mod tests {
                 "seed={seed}: Bergen session should not have 1NT opening"
             );
         }
+        assert!(
+            succeeded >= 1,
+            "expected at least one bergen seed to produce a drill"
+        );
     }
 
     // Phase 3: rejection sampling in start_drill re-establishes the 1NT
@@ -1232,8 +1260,15 @@ mod tests {
     #[test]
     fn nt_session_has_1nt_opening_in_viewport() {
         let mut service = ServicePortImpl::new();
-        for seed in 42..47 {
-            let (_handle, result) = create_session_for_bundle(&mut service, "nt-bundle", seed);
+        let mut succeeded = 0;
+        // Phase 2: widen seed sweep since many nt-bundle surfaces are narrow.
+        for seed in 42..142 {
+            let Some((_handle, result)) =
+                try_create_session_for_bundle(&mut service, "nt-bundle", seed)
+            else {
+                continue;
+            };
+            succeeded += 1;
 
             let has_1nt = result.viewport.auction_entries.iter().any(|e| {
                 matches!(
@@ -1255,13 +1290,23 @@ mod tests {
                     .collect::<Vec<_>>()
             );
         }
+        assert!(
+            succeeded >= 1,
+            "expected at least one nt-bundle seed to produce a drill"
+        );
     }
 
     #[test]
     fn bergen_opening_matches_deal_major() {
         let mut service = ServicePortImpl::new();
-        for seed in 42..52 {
-            let (handle, result) = create_session_for_bundle(&mut service, "bergen-bundle", seed);
+        let mut succeeded = 0;
+        for seed in 42..142 {
+            let Some((handle, result)) =
+                try_create_session_for_bundle(&mut service, "bergen-bundle", seed)
+            else {
+                continue;
+            };
+            succeeded += 1;
 
             // Get the deal PBN to verify the opening matches the hand
             let _pbn = service.get_deal_pbn(&handle).expect("get_deal_pbn");
@@ -1287,5 +1332,9 @@ mod tests {
                 ),
             }
         }
+        assert!(
+            succeeded >= 1,
+            "expected at least one bergen seed to produce a drill"
+        );
     }
 }

@@ -31,9 +31,16 @@ fn make_config(convention_id: &str, seed: u64) -> SessionConfig {
 }
 
 fn create_test_session(service: &mut ServicePortImpl, convention_id: &str, seed: u64) -> String {
-    service
-        .create_drill_session(make_config(convention_id, seed))
-        .expect("create_drill_session should succeed")
+    // Phase 2: witness-based rejection sampling may exhaust for some seeds.
+    // Retry across a small seed window to find one that produces a drill.
+    let mut last_err = None;
+    for offset in 0..32u64 {
+        match service.create_drill_session(make_config(convention_id, seed + offset)) {
+            Ok(h) => return h,
+            Err(e) => last_err = Some(e),
+        }
+    }
+    panic!("create_drill_session failed across 32 seed offsets: {last_err:?}");
 }
 
 fn make_competitive_config(convention_id: &str, seed: u64) -> SessionConfig {

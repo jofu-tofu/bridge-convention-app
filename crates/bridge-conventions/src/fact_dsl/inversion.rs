@@ -5,14 +5,11 @@
 
 use std::collections::HashMap;
 
-use bridge_engine::types::{DealConstraints, Seat, SeatConstraint};
 use bridge_engine::Suit;
 
-use crate::registry::module_registry::{get_base_module_ids, get_module};
 use crate::types::{
-    BaseSystemId, BidMeaningClause, ConstraintValue, ConventionBundle, ConventionModule,
-    FactComposition, FactOperator, PrimitiveClause, PrimitiveClauseOperator, PrimitiveClauseValue,
-    TurnRole,
+    BidMeaningClause, ConstraintValue, FactComposition, FactOperator, PrimitiveClause,
+    PrimitiveClauseOperator, PrimitiveClauseValue,
 };
 
 /// Inverted constraint bounds extracted from a composition tree.
@@ -322,90 +319,6 @@ pub fn compose_surface_clauses(clauses: &[BidMeaningClause]) -> FactComposition 
     FactComposition::And { operands }
 }
 
-// --- Seat-level deal constraint derivation ---
-
-fn seat_from_turn(turn: TurnRole) -> Option<Seat> {
-    match turn {
-        TurnRole::Opener => Some(Seat::North),
-        TurnRole::Responder => Some(Seat::South),
-        TurnRole::Opponent => None,
-    }
-}
-
-fn inverted_to_seat_constraint(seat: Seat, c: &InvertedConstraint) -> SeatConstraint {
-    SeatConstraint {
-        seat,
-        min_hcp: c.min_hcp,
-        max_hcp: c.max_hcp,
-        balanced: c.balanced,
-        min_length: c.min_length.clone(),
-        max_length: c.max_length.clone(),
-        min_length_any: c.min_length_any.clone(),
-    }
-}
-
-/// Derive deal-generation constraints by inverting every surface clause across
-/// the bundle's modules plus the system's base modules.
-///
-/// Lives in `bridge-conventions` (not `bridge-service`) because the module
-/// registry is in-crate; callers pass a `BaseSystemId` and we resolve base
-/// modules via `get_module`. The plan's `SystemConfig` signature was relaxed
-/// to `BaseSystemId` since `SystemConfig` carries no `base_module_ids`.
-pub fn derive_deal_constraints(bundle: &ConventionBundle, system: BaseSystemId) -> DealConstraints {
-    // Collect candidate modules: bundle.modules + base modules resolved via registry.
-    let mut candidates: Vec<&ConventionModule> = bundle.modules.iter().collect();
-    for base_id in get_base_module_ids(system) {
-        if let Some(m) = get_module(base_id, system) {
-            // Avoid double-counting if a base module is also in bundle.modules.
-            if !candidates.iter().any(|c| c.module_id == m.module_id) {
-                candidates.push(m);
-            }
-        }
-    }
-
-    // Bucket inverted constraints per partnership seat, then union (OR) across
-    // alternative surfaces within the same seat (different surfaces are
-    // alternative meanings, not conjunctions).
-    let mut per_seat: HashMap<Seat, Vec<InvertedConstraint>> = HashMap::new();
-
-    for module in candidates {
-        let Some(states) = module.states.as_ref() else {
-            continue;
-        };
-        for state_entry in states {
-            let Some(turn) = state_entry.turn else {
-                continue;
-            };
-            let Some(seat) = seat_from_turn(turn) else {
-                continue;
-            };
-            for surface in &state_entry.surfaces {
-                let comp = compose_surface_clauses(&surface.clauses);
-                let inverted = invert_composition(&comp);
-                per_seat.entry(seat).or_default().push(inverted);
-            }
-        }
-    }
-
-    let mut seats: Vec<SeatConstraint> = per_seat
-        .into_iter()
-        .map(|(seat, constraints)| {
-            let merged = union_all(&constraints);
-            inverted_to_seat_constraint(seat, &merged)
-        })
-        .collect();
-    // Deterministic order.
-    seats.sort_by_key(|s| format!("{:?}", s.seat));
-
-    DealConstraints {
-        seats,
-        dealer: Some(Seat::North),
-        vulnerability: None,
-        max_attempts: Some(50_000),
-        seed: None,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -617,40 +530,5 @@ mod tests {
         // the Boolean clause mapped to Eq(0) on an unrecognized fact_id and was
         // dropped by `invert_primitive`.
         assert_eq!(inv.balanced, None);
-    }
-
-    #[test]
-    fn derive_deal_constraints_nt_stayman() {
-        use crate::registry::resolve_bundle;
-
-        let bundle = resolve_bundle("nt-stayman", BaseSystemId::Sayc)
-            .expect("nt-stayman bundle should resolve");
-        let constraints = derive_deal_constraints(bundle, BaseSystemId::Sayc);
-
-        // Dealer + max_attempts are fixed at the function level.
-        assert_eq!(constraints.dealer, Some(Seat::North));
-        assert_eq!(constraints.max_attempts, Some(50_000));
-
-        // Both opener (N) and responder (S) seats populated.
-        let seats: std::collections::HashMap<Seat, &SeatConstraint> =
-            constraints.seats.iter().map(|s| (s.seat, s)).collect();
-        assert!(seats.contains_key(&Seat::North), "N seat should be present");
-        let south = seats.get(&Seat::South).expect("S seat should be present");
-
-        // Responder's Stayman eligibility surface promises 4+ hearts OR 4+ spades,
-        // so the unioned responder constraint should expose at least one of those
-        // through `min_length_any` with value >= 4. Base-module responder surfaces
-        // with looser length bounds may also contribute, so accept either entry.
-        let any = south
-            .min_length_any
-            .as_ref()
-            .expect("S min_length_any should be populated from Stayman surfaces");
-        let hearts_ok = any.get(&Suit::Hearts).copied().unwrap_or(0) >= 4;
-        let spades_ok = any.get(&Suit::Spades).copied().unwrap_or(0) >= 4;
-        assert!(
-            hearts_ok || spades_ok,
-            "expected H or S min_length_any >= 4, got {:?}",
-            any
-        );
     }
 }

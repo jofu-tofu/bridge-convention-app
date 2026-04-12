@@ -843,16 +843,20 @@ pub fn start_drill(
                     NEGATIVE_DOUBLES_DEAL_ATTEMPTS
                 ));
             }
-            // Rejection-sampling exhaustion: warn + fall through.
+            // Rejection-sampling exhaustion: warn + return Err. The
+            // service layer translates this into
+            // `ServiceError::DealGenerationExhausted` so the UI can retry
+            // with a new seed.
+            let _ = last_initial_auction;
+            let _ = last_deal;
             tracing::warn!(
                 bundle_id = %convention.id,
                 attempts = NORMAL_DEAL_ATTEMPTS,
-                "deal attempt budget exhausted; falling through with last generated deal"
+                "deal attempt budget exhausted; no deal satisfied witness predicate"
             );
-            chosen_initial_auction = last_initial_auction;
-            last_deal.ok_or_else(|| {
-                "Deal generation failed: no candidate deals were produced".to_string()
-            })?
+            return Err(format!(
+                "deal generation exhausted: no deal satisfied witness predicate in {NORMAL_DEAL_ATTEMPTS} attempts"
+            ));
         }
     };
 

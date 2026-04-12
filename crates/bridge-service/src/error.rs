@@ -37,6 +37,11 @@ pub enum ServiceError {
 
     #[error("Internal error: {0}")]
     Internal(String),
+
+    /// Rejection-sampling could not find a deal satisfying the chosen
+    /// witness within the budget. UI treats this as "retry with new seed".
+    #[error("Deal generation exhausted: {witness_summary}")]
+    DealGenerationExhausted { witness_summary: String },
 }
 
 impl ServiceError {
