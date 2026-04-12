@@ -111,7 +111,8 @@ export class DevDataPort implements DataPort {
     await this.inner.logout();
   }
 
-  async devLogin(): Promise<void> {
+  devLogin(): Promise<void> {
     writeDevLoggedOut(false);
+    return Promise.resolve();
   }
 }
