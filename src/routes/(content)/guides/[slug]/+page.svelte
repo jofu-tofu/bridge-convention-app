@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ContentScreen from "../../../../components/shared/ContentScreen.svelte";
   const { data } = $props();
 </script>
 
@@ -10,42 +11,32 @@
   <meta property="og:type" content="article" />
 </svelte:head>
 
-<div class="article-wrap">
-<a class="back-link" href="/guides/">← All Guides</a>
+<ContentScreen width="narrow" title={data.guide.title} subtitle={data.guide.date}>
+  <a class="back-link" href="/guides/">← All Guides</a>
 
-<header class="guide-header">
-  <h1>{data.guide.title}</h1>
-  <p class="meta">{data.guide.date}</p>
-</header>
+  <article class="guide-prose">
+    <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted build-time markdown, not user input -->
+    {@html data.guide.htmlContent}
+  </article>
 
-<article class="guide-prose">
-  <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted build-time markdown, not user input -->
-  {@html data.guide.htmlContent}
-</article>
-
-<div class="cta">
-  <p><strong>Ready to practice?</strong> Drill bridge conventions with instant feedback.</p>
-  <a href="/practice">Open BridgeLab</a>
-</div>
-
-{#if data.otherGuides.length > 0}
-  <div class="more-guides">
-    <h3>More Guides</h3>
-    <ul>
-      {#each data.otherGuides as other (other.slug)}
-        <li><a href="/guides/{other.slug}/">{other.title}</a></li>
-      {/each}
-    </ul>
+  <div class="cta">
+    <p><strong>Ready to practice?</strong> Drill bridge conventions with instant feedback.</p>
+    <a href="/practice">Open BridgeLab</a>
   </div>
-{/if}
-</div>
+
+  {#if data.otherGuides.length > 0}
+    <div class="more-guides">
+      <h3>More Guides</h3>
+      <ul>
+        {#each data.otherGuides as other (other.slug)}
+          <li><a href="/guides/{other.slug}/">{other.title}</a></li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
+</ContentScreen>
 
 <style>
-  .article-wrap {
-    max-width: 780px;
-    margin: 0 auto;
-  }
-
   .back-link {
     display: inline-block;
     color: var(--color-accent-primary);
@@ -56,23 +47,6 @@
 
   .back-link:hover {
     text-decoration: underline;
-  }
-
-  .guide-header {
-    margin-bottom: 2rem;
-  }
-
-  h1 {
-    color: var(--color-text-primary);
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    line-height: 1.3;
-  }
-
-  .meta {
-    color: var(--color-text-muted);
-    font-size: 0.8rem;
   }
 
   .guide-prose :global(h2) {

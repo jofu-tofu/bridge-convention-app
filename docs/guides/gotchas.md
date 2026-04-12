@@ -36,7 +36,10 @@ Normal app startup and deploy use `static/dds/`. `vendor/dds/` matters only when
 Convention logic has been migrated to Rust (`bridge-conventions` crate). TS `src/conventions/` directory is deleted. All convention types, fact DSL, pipeline, teaching, and adapter logic live in Rust. UI components access convention data only through `service/index.ts` which proxies to WASM.
 
 ### All Conventions Use Meaning Pipeline
-No tree/protocol/overlay pipeline remains. Convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. Deal constraints are DERIVED from capabilities + R1 surface analysis — not hand-authored. All teaching content is auto-derived from module structure.
+No tree/protocol/overlay pipeline remains. Convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. Deal constraints are DERIVED from surface preconditions at runtime (`fact_dsl::inversion::derive_deal_constraints`) — never hand-authored. All teaching content is auto-derived from module structure.
+
+### "Pass — no convention applies" appears in drills
+Either the user's target module has no surface matching the generated deal (rejection-sampling budget exhausted — check `tracing::warn` logs from `start_drill`) OR surfaces are missing hand-clause preconditions the inverter can reason about (non-`hand.*` / `bridge.isBalanced` facts are silently ignored during inversion). See `docs/architecture/teaching-architecture.md` § Deal Generation → Known Limitations for the specific failure modes (notably the `balanced` union-drop bug affecting NT-family bundles).
 
 ### Convention-Specific Details
 - Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
@@ -53,13 +56,6 @@ All CLI commands (`list`, `plan`, `selftest`, `describe`, `bundles`) use rule en
 Deal generator uses flat rejection sampling (no relaxation) with configurable `maxAttempts`, `minLengthAny` OR constraints, and `customCheck` escape hatch. `minLengthAny` is OR (any suit meets minimum), not AND.
 
 ## Architecture Reference
-
-### Convention Deal Constraints
-| Convention | Opener Constraints | Responder Constraints |
-|---|---|---|
-| Stayman | North: 15-17 HCP, balanced, no 5-card major | South: 8+ HCP, 4+ card major |
-| DONT | East: 15-17 HCP, balanced (opens 1NT) | South: shape for DONT overcall |
-| Bergen Raises | North: 12-21 HCP, 5+ card major | South: 6-12 HCP, 4+ card support |
 
 ### Screen Flow
 ```
@@ -136,3 +132,19 @@ The free practice bundle ID lives in two places and they must stay synchronized:
 
 Both files point at the other with comments. If the free bundle ever changes,
 update both in the same patch.
+
+## Screen Layout Primitives
+
+`src/components/shared/AppScreen.svelte` (for `(app)` routes) and
+`src/components/shared/ContentScreen.svelte` (for `(content)` routes) are the
+standard outer wrappers for every screen. Tokens they consume live in
+`src/app.css` under `--screen-*`.
+
+- Do not fold `AppScreen` and `ContentScreen` into a single component. Their
+  overflow chains differ: AppScreen owns its inner scroll container; ContentScreen
+  scrolls at the `AppShell` main area. A variant prop branching between the two
+  is harder to reason about than the two small files.
+- Do not remove `ContentScreen`'s rail offset (`margin-inline-start` at
+  `min-width: 1024px`). Prerendered pages slide under the desktop rail without it.
+- `GameScreen` and `LearningScreen` are intentionally exempt — they run custom
+  split-pane/table-scale layouts that don't fit the AppScreen overflow chain.

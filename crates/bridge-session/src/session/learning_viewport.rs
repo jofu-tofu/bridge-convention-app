@@ -7,7 +7,7 @@
 //!
 //! Ported from TS `src/session/learning-viewport.ts`.
 
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 
 use bridge_conventions::pipeline::observation::normalize_intent::normalize_intent;
 use bridge_conventions::pipeline::observation::route_matcher::match_obs;
@@ -16,6 +16,11 @@ use bridge_conventions::registry::module_registry::{
     get_all_modules, get_base_module_ids, get_module,
 };
 use bridge_conventions::rule_types::TurnRole;
+use bridge_conventions::types::module_types::{
+    ModuleReferenceDecisionGrid, ModuleReferenceInterferenceItem, ModuleReferenceRelatedLink,
+    ModuleReferenceResponseTableOverride, ModuleReferenceSummaryCard, ModuleReferenceSystemCompat,
+    ModuleReferenceWhenNotItem, ModuleReferenceWorkedAuction, ModuleReferenceWorkedAuctionCall,
+};
 use bridge_conventions::{BaseSystemId, ConventionModule, LocalFsm, ObsPattern, PhaseRef};
 use bridge_engine::types::{BidSuit, Call};
 
@@ -26,10 +31,12 @@ use super::learning_formatters::{
     map_clauses, module_surfaces,
 };
 use super::learning_types::{
-    BaseModuleInfo, EntryCondition, LearningTeachingView, ModuleCatalogEntry,
-    ModuleLearningViewport, PhaseGroupView, RelevantMetric, ServiceTeachingLabel,
-    SurfaceDetailView,
+    BaseModuleInfo, DecisionGrid, EntryCondition, InterferenceItem, LearningTeachingView,
+    ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView, ReferenceView, RelatedLink,
+    RelevantMetric, ResponseTableOverride, ServiceTeachingLabel, SummaryCard, SurfaceDetailView,
+    SystemCompat, WhenNotItem, WorkedAuction, WorkedAuctionCall,
 };
+use super::response_table::build_response_table_rows;
 
 // ── PhaseRef helpers ─────────────────────────────────────────────────
 
@@ -136,9 +143,176 @@ pub fn build_module_learning_viewport(
                 .map(|item| format_bid_references(item.as_str()))
                 .collect(),
         },
+        reference: build_reference_view(m),
         phases,
         bundle_ids,
     })
+}
+
+fn build_reference_view(module: &ConventionModule) -> Option<ReferenceView> {
+    let reference = module.reference.as_ref()?;
+    let mut response_table_rows = build_response_table_rows(module);
+    apply_response_table_overrides(
+        &mut response_table_rows,
+        &reference.response_table_overrides,
+    );
+
+    Some(ReferenceView {
+        summary_card: map_summary_card(&reference.summary_card),
+        when_to_use: reference
+            .when_to_use
+            .iter()
+            .map(|item| format_bid_references(item))
+            .collect(),
+        when_not_to_use: reference
+            .when_not_to_use
+            .iter()
+            .map(map_when_not_item)
+            .collect(),
+        response_table_rows,
+        worked_auctions: reference
+            .worked_auctions
+            .iter()
+            .map(map_worked_auction)
+            .collect(),
+        interference: reference
+            .interference
+            .iter()
+            .map(map_interference_item)
+            .collect(),
+        decision_grid: reference.decision_grid.as_ref().map(map_decision_grid),
+        system_compat: map_system_compat(&reference.system_compat),
+        related_links: reference
+            .related_links
+            .iter()
+            .map(map_related_link)
+            .collect(),
+        response_table_overrides: reference
+            .response_table_overrides
+            .iter()
+            .map(|(meaning_id, override_row)| {
+                (
+                    meaning_id.clone(),
+                    map_response_table_override(override_row),
+                )
+            })
+            .collect::<BTreeMap<_, _>>(),
+    })
+}
+
+fn apply_response_table_overrides(
+    rows: &mut [super::learning_types::ResponseTableRow],
+    overrides: &BTreeMap<String, ModuleReferenceResponseTableOverride>,
+) {
+    for row in rows {
+        let Some(override_row) = overrides.get(&row.meaning_id) else {
+            continue;
+        };
+
+        if let Some(shape) = &override_row.shape {
+            row.shape = format_bid_references(shape);
+        }
+        if let Some(hcp) = &override_row.hcp {
+            row.hcp = format_bid_references(hcp);
+        }
+        if let Some(forcing) = &override_row.forcing {
+            row.forcing = forcing.clone();
+        }
+    }
+}
+
+fn map_summary_card(summary_card: &ModuleReferenceSummaryCard) -> SummaryCard {
+    SummaryCard {
+        trigger: format_bid_references(&summary_card.trigger),
+        bid: summary_card.bid.clone(),
+        promises: format_bid_references(&summary_card.promises),
+        denies: format_bid_references(&summary_card.denies),
+        guiding_idea: format_bid_references(&summary_card.guiding_idea),
+        partnership: format_bid_references(&summary_card.partnership),
+    }
+}
+
+fn map_when_not_item(item: &ModuleReferenceWhenNotItem) -> WhenNotItem {
+    WhenNotItem {
+        text: format_bid_references(&item.text),
+        reason: format_bid_references(&item.reason),
+    }
+}
+
+fn map_worked_auction(auction: &ModuleReferenceWorkedAuction) -> WorkedAuction {
+    WorkedAuction {
+        label: format_bid_references(&auction.label),
+        calls: auction.calls.iter().map(map_worked_auction_call).collect(),
+        outcome_note: format_bid_references(&auction.outcome_note),
+    }
+}
+
+fn map_worked_auction_call(call: &ModuleReferenceWorkedAuctionCall) -> WorkedAuctionCall {
+    WorkedAuctionCall {
+        seat: call.seat.clone(),
+        call: call.call.clone(),
+        rationale: format_bid_references(&call.rationale),
+    }
+}
+
+fn map_interference_item(item: &ModuleReferenceInterferenceItem) -> InterferenceItem {
+    InterferenceItem {
+        opponent_action: format_bid_references(&item.opponent_action),
+        our_action: format_bid_references(&item.our_action),
+        note: format_bid_references(&item.note),
+    }
+}
+
+fn map_decision_grid(grid: &ModuleReferenceDecisionGrid) -> DecisionGrid {
+    DecisionGrid {
+        rows: grid
+            .rows
+            .iter()
+            .map(|row| format_bid_references(row))
+            .collect(),
+        cols: grid
+            .cols
+            .iter()
+            .map(|col| format_bid_references(col))
+            .collect(),
+        cells: grid
+            .cells
+            .iter()
+            .map(|row| row.iter().map(|cell| format_bid_references(cell)).collect())
+            .collect(),
+    }
+}
+
+fn map_system_compat(system_compat: &ModuleReferenceSystemCompat) -> SystemCompat {
+    SystemCompat {
+        sayc: format_bid_references(&system_compat.sayc),
+        two_over_one: format_bid_references(&system_compat.two_over_one),
+        acol: format_bid_references(&system_compat.acol),
+        custom_note: format_bid_references(&system_compat.custom_note),
+    }
+}
+
+fn map_related_link(link: &ModuleReferenceRelatedLink) -> RelatedLink {
+    RelatedLink {
+        module_id: link.module_id.clone(),
+        discriminator: format_bid_references(&link.discriminator),
+    }
+}
+
+fn map_response_table_override(
+    override_row: &ModuleReferenceResponseTableOverride,
+) -> ResponseTableOverride {
+    ResponseTableOverride {
+        shape: override_row
+            .shape
+            .as_ref()
+            .map(|value| format_bid_references(value)),
+        hcp: override_row
+            .hcp
+            .as_ref()
+            .map(|value| format_bid_references(value)),
+        forcing: override_row.forcing.clone(),
+    }
 }
 
 // ── Phase ordering ───────────────────────────────────────────────────
@@ -488,6 +662,14 @@ mod tests {
         assert_eq!(v.module_id, "stayman");
         assert_eq!(v.display_name, "Stayman");
         assert!(!v.phases.is_empty());
+        let reference = v
+            .reference
+            .expect("stayman should include reference content");
+        assert_eq!(
+            reference.summary_card.trigger,
+            "Partner opens 1NT, you respond"
+        );
+        assert_eq!(reference.response_table_rows.len(), 3);
     }
 
     #[test]

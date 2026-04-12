@@ -14,9 +14,7 @@
 </svelte:head>
 
 <AppShell>
-  <div class="content-layout">
-    {@render children()}
-  </div>
+  {@render children()}
 </AppShell>
 
 <style>
@@ -32,26 +30,5 @@
 
   :global(*) {
     box-sizing: border-box;
-  }
-
-  .content-layout {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 3rem 1.5rem;
-    width: 100%;
-  }
-
-  @media (min-width: 1024px) {
-    .content-layout {
-      margin-left: calc(var(--rail-width, 80px) + 1rem);
-      margin-right: auto;
-      max-width: calc(100vw - var(--rail-width, 80px) - 2rem);
-    }
-  }
-
-  @media (max-width: 1023px) {
-    .content-layout {
-      padding: 2rem 1rem;
-    }
   }
 </style>

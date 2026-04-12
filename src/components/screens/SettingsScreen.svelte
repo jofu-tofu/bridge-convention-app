@@ -1,14 +1,16 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { OpponentMode } from "../../service";
+  import { OpponentMode, SubscriptionTier } from "../../service";
   import type { PlayProfileId, VulnerabilityDistribution, BaseModuleInfo, SystemSelectionId } from "../../service";
   import { AVAILABLE_BASE_SYSTEMS, DEFAULT_DRILL_TUNING, PLAY_PROFILES, buildBaseModuleInfos } from "../../service";
-  import { VULN_KEYS, VULN_LABELS, DEFAULT_OFF_CONVENTION_RATE } from "../shared/vulnerability-labels";
+  import { VULN_KEYS, VULN_LABELS } from "../shared/vulnerability-labels";
   import type { VulnKey } from "../shared/vulnerability-labels";
   import { getAppStore, getCustomSystemsStore, getAuthStore } from "../../stores/context";
   import AuthModal from "../shared/AuthModal.svelte";
+  import ManageSubscriptionButton from "../shared/ManageSubscriptionButton.svelte";
   import ToggleGroup from "../shared/ToggleGroup.svelte";
   import CardSurface from "../shared/CardSurface.svelte";
+  import AppScreen from "../shared/AppScreen.svelte";
 
   type SettingsTab = "gameplay" | "account";
 
@@ -87,11 +89,8 @@
   });
 </script>
 
-<main class="max-w-2xl mx-auto h-full flex flex-col p-4 sm:p-6 pb-0" aria-label="Settings">
-  <div class="shrink-0">
-    <h1 class="text-2xl font-bold text-text-primary mb-1">Settings</h1>
-    <p class="text-text-secondary text-sm mb-4">Configure your practice experience.</p>
-    <div class="mb-4">
+<AppScreen width="form" title="Settings" subtitle="Configure your practice experience.">
+  {#snippet tabs()}
       <ToggleGroup
         items={[
           { id: "gameplay", label: "Gameplay", testId: "settings-tab-gameplay" },
@@ -102,11 +101,10 @@
         ariaLabel="Settings section"
         compact
       />
-    </div>
-  </div>
+  {/snippet}
 
   {#if activeTab === "gameplay"}
-  <div class="flex-1 overflow-y-auto pb-6 space-y-3">
+  <div class="space-y-3">
     <!-- Base System -->
     <CardSurface as="section" class="p-4">
       <h2 class="text-sm font-semibold text-text-primary mb-2">Base System</h2>
@@ -250,77 +248,47 @@
         </div>
         <p class="text-xs text-text-muted mt-1.5">{vulnSummary}</p>
       </div>
-
-      <!-- Off-Convention -->
-      <div class="border-t border-border-subtle mt-3 pt-3">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            class="w-4 h-4 rounded-sm accent-accent-primary"
-            checked={appStore.drillTuning.includeOffConvention ?? false}
-            onchange={(e) => appStore.setIncludeOffConvention(e.currentTarget.checked)}
-            data-testid="off-convention-toggle"
-          />
-          <span class="text-sm text-text-primary">Off-convention deals</span>
-          {#if appStore.drillTuning.includeOffConvention}
-            <span class="text-xs text-text-muted ml-auto">
-              {Math.round((appStore.drillTuning.offConventionRate ?? DEFAULT_OFF_CONVENTION_RATE) * 100)}%
-            </span>
-          {/if}
-        </label>
-        {#if appStore.drillTuning.includeOffConvention}
-          <div class="mt-2 pl-6">
-            <input
-              type="range"
-              min="0.1"
-              max="0.7"
-              step="0.05"
-              value={appStore.drillTuning.offConventionRate ?? DEFAULT_OFF_CONVENTION_RATE}
-              oninput={(e) => appStore.setOffConventionRate(parseFloat(e.currentTarget.value))}
-              class="w-full max-w-xs accent-accent-primary cursor-pointer"
-              data-testid="off-convention-rate"
-            />
-            <p class="text-xs text-text-muted mt-0.5">
-              Higher = more hands where you should just pass.
-            </p>
-          </div>
-        {/if}
-      </div>
     </CardSurface>
   </div>
 
   {:else if activeTab === "account"}
-  <div class="flex-1 overflow-y-auto pb-6 space-y-3">
+  <div class="space-y-3">
     <CardSurface as="section" class="p-4" testId="account-section">
       <h2 class="text-sm font-semibold text-text-primary mb-3">Account</h2>
       {#if auth.loading}
         <p class="text-sm text-text-muted">Checking login status...</p>
       {:else if auth.isLoggedIn && auth.user}
-        <div class="flex items-center gap-3">
-          {#if auth.user.avatar_url}
-            <img
-              src={auth.user.avatar_url}
-              alt=""
-              class="w-8 h-8 rounded-full"
-            />
-          {:else}
-            <div class="w-8 h-8 rounded-full bg-bg-base border border-border-subtle flex items-center justify-center text-text-muted text-xs font-semibold">
-              {auth.user.display_name.charAt(0).toUpperCase()}
-            </div>
-          {/if}
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-text-primary truncate">{auth.user.display_name}</p>
-            {#if auth.user.email}
-              <p class="text-xs text-text-muted truncate">{auth.user.email}</p>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            {#if auth.user.avatar_url}
+              <img
+                src={auth.user.avatar_url}
+                alt=""
+                class="w-8 h-8 rounded-full"
+              />
+            {:else}
+              <div class="w-8 h-8 rounded-full bg-bg-base border border-border-subtle flex items-center justify-center text-text-muted text-xs font-semibold">
+                {auth.user.display_name.charAt(0).toUpperCase()}
+              </div>
             {/if}
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-text-primary truncate">{auth.user.display_name}</p>
+              {#if auth.user.email}
+                <p class="text-xs text-text-muted truncate">{auth.user.email}</p>
+              {/if}
+            </div>
+            <button
+              class="text-xs text-text-muted hover:text-text-primary cursor-pointer transition-colors"
+              onclick={() => auth.logout()}
+              data-testid="logout-button"
+            >
+              Sign out
+            </button>
           </div>
-          <button
-            class="text-xs text-text-muted hover:text-text-primary cursor-pointer transition-colors"
-            onclick={() => auth.logout()}
-            data-testid="logout-button"
-          >
-            Sign out
-          </button>
+
+          {#if auth.user.subscription_tier !== SubscriptionTier.Free}
+            <ManageSubscriptionButton />
+          {/if}
         </div>
       {:else}
         <div class="space-y-3">
@@ -338,4 +306,4 @@
   </div>
   {/if}
   <AuthModal bind:this={authModal} />
-</main>
+</AppScreen>

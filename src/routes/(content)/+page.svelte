@@ -3,6 +3,7 @@
   import { getAuthStoreOptional } from "../../stores/context";
   import AuthModal from "../../components/shared/AuthModal.svelte";
   import LoggedInLanding from "../../components/screens/landing/LoggedInLanding.svelte";
+  import ContentScreen from "../../components/shared/ContentScreen.svelte";
 
   const auth = browser ? getAuthStoreOptional() : undefined;
   let authModal = $state<ReturnType<typeof AuthModal>>();
@@ -46,6 +47,7 @@
 {#if isLoggedIn}
   <LoggedInLanding />
 {:else}
+<ContentScreen>
 <main class="landing">
   <div class="inner">
     <h1>Practice any bridge bidding convention.</h1>
@@ -67,6 +69,7 @@
     </nav>
   </div>
 </main>
+</ContentScreen>
 {/if}
 
 <AuthModal bind:this={authModal} />
@@ -75,7 +78,7 @@
   .landing {
     display: flex;
     justify-content: center;
-    padding: 6rem 0 2rem;
+    padding: 2rem 0;
   }
   .inner {
     width: 100%;

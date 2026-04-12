@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ContentScreen from "../../../components/shared/ContentScreen.svelte";
   const { data } = $props();
 </script>
 
@@ -8,40 +9,29 @@
   <link rel="canonical" href="https://bridgelab.net/learn/" />
 </svelte:head>
 
-<h1>Learn Bridge Conventions</h1>
-<p class="subtitle">Master bridge bidding conventions with detailed explanations and interactive practice drills.</p>
+<ContentScreen
+  title="Learn Bridge Conventions"
+  subtitle="Master bridge bidding conventions with detailed explanations and interactive practice drills."
+>
+  <ul class="module-list">
+    {#each data.modules as mod (mod.moduleId)}
+      <li>
+        <a href="/learn/{mod.moduleId}/">
+          <strong>{mod.displayName}</strong>
+          <span>{mod.description}</span>
+          <span class="surface-count">{mod.surfaceCount} modeled bids</span>
+        </a>
+      </li>
+    {/each}
+  </ul>
 
-<ul class="module-list">
-  {#each data.modules as mod (mod.moduleId)}
-    <li>
-      <a href="/learn/{mod.moduleId}/">
-        <strong>{mod.displayName}</strong>
-        <span>{mod.description}</span>
-        <span class="surface-count">{mod.surfaceCount} modeled bids</span>
-      </a>
-    </li>
-  {/each}
-</ul>
-
-<div class="cta">
-  <p><strong>Ready to practice?</strong> Drill bridge conventions with instant feedback.</p>
-  <a href="/practice">Open BridgeLab</a>
-</div>
+  <div class="cta">
+    <p><strong>Ready to practice?</strong> Drill bridge conventions with instant feedback.</p>
+    <a href="/practice">Open BridgeLab</a>
+  </div>
+</ContentScreen>
 
 <style>
-  h1 {
-    color: #e8edf5;
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-
-  .subtitle {
-    color: #64748b;
-    font-size: 0.9375rem;
-    margin-bottom: 2rem;
-  }
-
   .module-list {
     list-style: none;
     padding: 0;

@@ -15,6 +15,7 @@
   import type { UserModule } from "../../service/session-types";
   import { getService, getUserModuleStore } from "../../stores/context";
   import { MODULE_CATEGORIES } from "../shared/module-catalog";
+  import AppScreen from "../shared/AppScreen.svelte";
 
   const appStore = getAppStore();
   const customSystems = getCustomSystemsStore();
@@ -116,11 +117,8 @@
     onNavigateConventions={() => { editingSystem = null; creatingFrom = null; activeSection = "conventions"; }}
   />
 {:else}
-  <main class="max-w-5xl mx-auto h-full flex flex-col p-6 pb-0" aria-label="Workshop">
-    <div class="shrink-0">
-      <h1 class="text-3xl font-bold tracking-tight text-text-primary mb-1">Workshop</h1>
-      <p class="text-text-secondary mb-5">Manage bidding systems, conventions, and practice packs.</p>
-      <div class="mb-4">
+  <AppScreen title="Workshop" subtitle="Manage bidding systems, conventions, and practice packs.">
+    {#snippet tabs()}
         <ToggleGroup
           items={[
             { id: "systems", label: "Systems" },
@@ -131,11 +129,10 @@
           onSelect={(id) => { activeSection = id as typeof activeSection; }}
           ariaLabel="Workshop section"
         />
-      </div>
-    </div>
+    {/snippet}
 
     {#if activeSection === "systems"}
-    <div class="flex-1 overflow-y-auto pb-6 space-y-8">
+    <div class="space-y-8">
       <ScreenSection title="My Systems">
         <button
           class="flex items-center gap-2 px-4 py-2 rounded-[--radius-md] text-sm font-medium bg-accent-primary text-text-on-accent hover:bg-accent-primary/90 transition-colors cursor-pointer mb-3"
@@ -181,7 +178,7 @@
     </div>
 
     {:else if activeSection === "conventions"}
-    <div class="flex-1 overflow-y-auto pb-6 space-y-8">
+    <div class="space-y-8">
       <ScreenSection title="My Conventions">
         <button
           class="flex items-center gap-2 px-4 py-2 rounded-[--radius-md] text-sm font-medium bg-accent-primary text-text-on-accent hover:bg-accent-primary/90 transition-colors cursor-pointer mb-3"
@@ -232,7 +229,7 @@
     </div>
 
     {:else if activeSection === "practice-packs"}
-    <div class="flex-1 overflow-y-auto pb-6 space-y-8">
+    <div class="space-y-8">
       <ScreenSection title="My Practice Packs">
         <button
           class="flex items-center gap-2 px-4 py-2 rounded-[--radius-md] text-sm font-medium bg-accent-primary text-text-on-accent hover:bg-accent-primary/90 transition-colors cursor-pointer mb-3"
@@ -281,7 +278,7 @@
       </ScreenSection>
     </div>
     {/if}
-  </main>
+  </AppScreen>
 {/if}
 
 <!-- Picker dialogs -->

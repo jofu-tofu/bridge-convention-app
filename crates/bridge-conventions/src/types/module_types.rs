@@ -3,6 +3,9 @@
 //! Mirrors TS types from `conventions/core/convention-module.ts`
 //! and `conventions/core/explanation-catalog.ts`.
 
+use std::collections::BTreeMap;
+
+use bridge_engine::types::Call;
 use serde::{Deserialize, Serialize};
 
 use super::authored_text::{
@@ -89,6 +92,109 @@ pub struct ModuleTeaching {
     pub common_mistakes: Vec<TeachingItem>,
 }
 
+/// Above-the-fold reference summary for a convention module.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleReferenceSummaryCard {
+    pub trigger: String,
+    pub bid: Call,
+    pub promises: String,
+    pub denies: String,
+    pub guiding_idea: String,
+    pub partnership: String,
+}
+
+/// "When not to use" item with a reason shown inline.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleReferenceWhenNotItem {
+    pub text: String,
+    pub reason: String,
+}
+
+/// One call inside an annotated worked auction.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleReferenceWorkedAuctionCall {
+    pub seat: String,
+    pub call: Call,
+    pub rationale: String,
+}
+
+/// Authored worked auction example.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleReferenceWorkedAuction {
+    pub label: String,
+    pub calls: Vec<ModuleReferenceWorkedAuctionCall>,
+    pub outcome_note: String,
+}
+
+/// Interference guidance row.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleReferenceInterferenceItem {
+    pub opponent_action: String,
+    pub our_action: String,
+    pub note: String,
+}
+
+/// Optional 2-D decision grid for quick-reference classification.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleReferenceDecisionGrid {
+    pub rows: Vec<String>,
+    pub cols: Vec<String>,
+    pub cells: Vec<Vec<String>>,
+}
+
+/// Compatibility note across supported bidding systems.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleReferenceSystemCompat {
+    pub sayc: String,
+    pub two_over_one: String,
+    pub acol: String,
+    pub custom_note: String,
+}
+
+/// Cross-link to a related module plus the discriminator users should see.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleReferenceRelatedLink {
+    pub module_id: String,
+    pub discriminator: String,
+}
+
+/// Optional authored override for a derived response-table cell.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleReferenceResponseTableOverride {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub shape: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hcp: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub forcing: Option<String>,
+}
+
+/// Hand-authored reference content attached to a module fixture.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleReference {
+    pub summary_card: ModuleReferenceSummaryCard,
+    pub when_to_use: Vec<String>,
+    pub when_not_to_use: Vec<ModuleReferenceWhenNotItem>,
+    pub worked_auctions: Vec<ModuleReferenceWorkedAuction>,
+    pub interference: Vec<ModuleReferenceInterferenceItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decision_grid: Option<ModuleReferenceDecisionGrid>,
+    pub system_compat: ModuleReferenceSystemCompat,
+    pub related_links: Vec<ModuleReferenceRelatedLink>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub response_table_overrides: BTreeMap<String, ModuleReferenceResponseTableOverride>,
+}
+
 /// A self-contained convention module.
 /// Phase generic is always String at runtime (TS generic is compile-time only).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -102,6 +208,8 @@ pub struct ConventionModule {
     pub description: ModuleDescription,
     pub purpose: ModulePurpose,
     pub teaching: ModuleTeaching,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reference: Option<ModuleReference>,
 
     // Declaration
     pub facts: FactDefinitionSet,
@@ -164,5 +272,21 @@ mod tests {
         let json = serde_json::to_string(&teaching).unwrap();
         let back: ModuleTeaching = serde_json::from_str(&json).unwrap();
         assert_eq!(back, teaching);
+    }
+
+    #[test]
+    fn stayman_fixture_deserializes_with_reference_block() {
+        let json = include_str!("../../fixtures/modules/stayman.json");
+        let back: ConventionModule = serde_json::from_str(json).unwrap();
+        let reference = back
+            .reference
+            .expect("stayman fixture should have reference");
+
+        assert_eq!(
+            reference.summary_card.trigger,
+            "Partner opens 1NT, you respond"
+        );
+        assert_eq!(reference.when_not_to_use.len(), 5);
+        assert!(reference.response_table_overrides.is_empty());
     }
 }

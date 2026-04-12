@@ -9,6 +9,7 @@
   import SystemCompatRow from "../../../../components/shared/reference/SystemCompatRow.svelte";
   import WhenNotTable from "../../../../components/shared/reference/WhenNotTable.svelte";
   import WorkedAuction from "../../../../components/shared/reference/WorkedAuction.svelte";
+  import ContentScreen from "../../../../components/shared/ContentScreen.svelte";
   import {
     buildPracticeUrl,
     normalizeContinuationPhases,
@@ -57,11 +58,12 @@
   {@html `<script type="application/ld+json">${jsonLd}<\/script>`}
 </svelte:head>
 
-<div class="sticky-top">
-  <div class="sticky-inner">
-    <a class="back-link" href="/learn/">← All Conventions</a>
-  </div>
-</div>
+<ContentScreen
+  width="wide"
+  title={viewport.displayName}
+  subtitle={reference ? viewport.description : undefined}
+>
+  <a class="back-link" href="/learn/">← All Conventions</a>
 
 <div class="page-wrap">
   {#if reference}
@@ -81,14 +83,7 @@
     </nav>
   {/if}
   <div class="screen-only">
-
     {#if reference}
-      <header class="reference-header">
-        <p class="eyebrow">Convention Reference</p>
-        <h1>{viewport.displayName}</h1>
-        <p class="description">{viewport.description}</p>
-      </header>
-
       <div class="reference-stack">
         <div id="summary-card" class="scroll-target">
           <SummaryCard moduleId={viewport.moduleId} summaryCard={reference.summaryCard} />
@@ -138,7 +133,6 @@
       </div>
     {:else}
       <div class="hero">
-        <h1>{viewport.displayName}</h1>
         <p class="description">{viewport.description}</p>
         <p class="purpose">{viewport.purpose}</p>
         <a class="cta-button" href={practiceHref}>Practice this convention</a>
@@ -249,6 +243,7 @@
     </div>
   {/if}
 </div>
+</ContentScreen>
 
 <style>
   .page-wrap {
@@ -306,21 +301,6 @@
     }
   }
 
-  .sticky-top {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: var(--color-bg-deepest);
-    border-bottom: 1px solid var(--color-border-subtle);
-    margin: -3rem -1.5rem 1.5rem;
-    padding: 0.75rem 1.5rem;
-    display: flex;
-  }
-
-  .sticky-inner {
-    width: 100%;
-  }
-
   .screen-only {
     display: block;
   }
@@ -336,19 +316,6 @@
     text-decoration: underline;
   }
 
-  .reference-header {
-    margin-bottom: 2rem;
-  }
-
-  .eyebrow {
-    color: var(--color-text-muted);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-  }
-
   .reference-stack {
     display: grid;
     gap: 1.5rem;
@@ -362,13 +329,6 @@
     padding-bottom: 1.5rem;
     margin-bottom: 2rem;
     border-bottom: 1px solid #1e293b;
-  }
-
-  h1 {
-    color: #e8edf5;
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
   }
 
   .description {

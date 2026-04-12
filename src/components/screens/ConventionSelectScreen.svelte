@@ -13,6 +13,7 @@
   import SectionHeader from "../shared/SectionHeader.svelte";
   import SavedDrillsShelf from "./SavedDrillsShelf.svelte";
   import DrillPresetDialog from "./DrillPresetDialog.svelte";
+  import AppScreen from "../shared/AppScreen.svelte";
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
 
   const appStore = getAppStore();
@@ -86,11 +87,8 @@
 
 <svelte:window bind:innerWidth={innerW} />
 
-<main class="max-w-5xl mx-auto h-full flex flex-col p-4 pb-0" aria-label="Convention selection">
-  <!-- Fixed header: search -->
-  <div class="shrink-0">
-    <div class="flex items-start justify-between">
-      <h1 class="sr-only">Practice</h1>
+<AppScreen title="Practice">
+  {#snippet actions()}
       {#if isMobile}
         <button
           class="shrink-0 ml-4 mt-1 transition-colors cursor-pointer text-text-muted hover:text-text-primary"
@@ -112,8 +110,9 @@
           {/if}
         </button>
       {/if}
-    </div>
+  {/snippet}
 
+  <div class="shrink-0">
     {#if showMyDrillsLink}
       <div class="mb-2 flex justify-end">
         <a
@@ -154,8 +153,7 @@
 
   </div>
 
-  <!-- Scrollable convention grid -->
-  <div class="min-h-0 flex-1 overflow-y-auto pb-6">
+  <div>
     {#if !searchQuery}
       <SavedDrillsShelf onLaunch={launchPreset} onEdit={openEditDialog} />
     {/if}
@@ -227,4 +225,4 @@
   <AuthModal bind:this={authModal} />
   <PaywallOverlay bind:this={paywallOverlay} />
   <DrillPresetDialog bind:this={presetDialog} onLaunch={launchPreset} />
-</main>
+</AppScreen>

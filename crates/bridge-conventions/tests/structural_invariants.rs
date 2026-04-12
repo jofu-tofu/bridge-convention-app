@@ -15,6 +15,7 @@
 use std::collections::HashSet;
 use std::path::PathBuf;
 
+use bridge_conventions::fact_dsl::inversion::{compose_surface_clauses, invert_composition};
 use bridge_conventions::types::module_types::ConventionModule;
 use bridge_conventions::types::rule_types::PhaseRef;
 
@@ -72,8 +73,7 @@ fn surface_module_id_matches_top_level() {
                 for surface in &state.surfaces {
                     if let Some(surface_mid) = &surface.module_id {
                         let matches_self = surface_mid == expected;
-                        let matches_parent =
-                            parent.map_or(false, |p| surface_mid == p);
+                        let matches_parent = parent.map_or(false, |p| surface_mid == p);
                         if !matches_self && !matches_parent {
                             failures.push(format!(
                                 "  {filename}: surface '{}' has moduleId '{}', expected '{}'{}",
@@ -285,19 +285,13 @@ fn modules_have_required_references() {
                 // authority: must exist with a non-empty url
                 match refs_obj.get("authority") {
                     None => {
-                        failures.push(format!(
-                            "  {filename}: missing `references.authority`"
-                        ));
+                        failures.push(format!("  {filename}: missing `references.authority`"));
                     }
                     Some(authority) => {
-                        let url = authority
-                            .get("url")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("");
+                        let url = authority.get("url").and_then(|v| v.as_str()).unwrap_or("");
                         if url.is_empty() {
-                            failures.push(format!(
-                                "  {filename}: `references.authority.url` is empty"
-                            ));
+                            failures
+                                .push(format!("  {filename}: `references.authority.url` is empty"));
                         }
                         let label = authority
                             .get("label")
@@ -314,19 +308,13 @@ fn modules_have_required_references() {
                 // discovery: must exist with a non-empty url containing bridgebum.com
                 match refs_obj.get("discovery") {
                     None => {
-                        failures.push(format!(
-                            "  {filename}: missing `references.discovery`"
-                        ));
+                        failures.push(format!("  {filename}: missing `references.discovery`"));
                     }
                     Some(discovery) => {
-                        let url = discovery
-                            .get("url")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("");
+                        let url = discovery.get("url").and_then(|v| v.as_str()).unwrap_or("");
                         if url.is_empty() {
-                            failures.push(format!(
-                                "  {filename}: `references.discovery.url` is empty"
-                            ));
+                            failures
+                                .push(format!("  {filename}: `references.discovery.url` is empty"));
                         } else if !url.contains("bridgebum.com") {
                             failures.push(format!(
                                 "  {filename}: `references.discovery.url` should be a bridgebum.com URL, got '{url}'"
@@ -378,5 +366,25 @@ fn surfaces_have_teaching_labels() {
             failures.len(),
             failures.join("\n")
         );
+    }
+}
+
+/// Every surface across every module must be compose-and-invertible without panic.
+///
+/// Non-hand clauses silently produce default `InvertedConstraint` values; the
+/// test asserts only that invocation does not panic.
+#[test]
+fn all_surface_clauses_are_invertible_without_panic() {
+    let all_modules = load_all_modules();
+    for (_filename, module) in &all_modules {
+        let Some(states) = &module.states else {
+            continue;
+        };
+        for state in states {
+            for surface in &state.surfaces {
+                let comp = compose_surface_clauses(&surface.clauses);
+                let _ = invert_composition(&comp);
+            }
+        }
     }
 }

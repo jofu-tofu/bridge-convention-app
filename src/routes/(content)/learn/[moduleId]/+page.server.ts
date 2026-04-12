@@ -6,7 +6,10 @@ interface StaticLearnData {
   modules: ModuleCatalogEntry[];
   viewports: Record<
     string,
-    { learning: ModuleLearningViewport; flowTree: ModuleFlowTreeViewport | null }
+    {
+      learning: ModuleLearningViewport;
+      flowTree: ModuleFlowTreeViewport | null;
+    }
   >;
 }
 
@@ -29,8 +32,107 @@ interface ModuleLearningViewport {
     principle: string | null;
     commonMistakes: string[];
   };
+  reference: ReferenceView | null;
   phases: PhaseGroupView[];
   bundleIds: string[];
+}
+
+interface ReferenceView {
+  summaryCard: SummaryCard;
+  whenToUse: string[];
+  whenNotToUse: WhenNotItem[];
+  responseTableRows: ResponseTableRow[];
+  workedAuctions: WorkedAuction[];
+  interference: InterferenceItem[];
+  decisionGrid: DecisionGrid | null;
+  systemCompat: SystemCompat;
+  relatedLinks: RelatedLink[];
+  responseTableOverrides: Record<string, ResponseTableOverride>;
+}
+
+interface SummaryCard {
+  trigger: string;
+  bid: Call;
+  promises: string;
+  denies: string;
+  guidingIdea: string;
+  partnership: string;
+}
+
+interface WhenNotItem {
+  text: string;
+  reason: string;
+}
+
+interface ResponseTableRow {
+  meaningId: string;
+  response: Call;
+  meaning: string;
+  shape: string;
+  hcp: string;
+  forcing: string;
+}
+
+interface WorkedAuction {
+  label: string;
+  calls: WorkedAuctionCall[];
+  outcomeNote: string;
+}
+
+interface WorkedAuctionCall {
+  seat: string;
+  call: Call;
+  rationale: string;
+}
+
+interface InterferenceItem {
+  opponentAction: string;
+  ourAction: string;
+  note: string;
+}
+
+interface DecisionGrid {
+  rows: string[];
+  cols: string[];
+  cells: string[][];
+}
+
+interface SystemCompat {
+  sayc: string;
+  twoOverOne: string;
+  acol: string;
+  customNote: string;
+}
+
+interface RelatedLink {
+  moduleId: string;
+  discriminator: string;
+}
+
+interface ResponseTableOverride {
+  shape?: string;
+  hcp?: string;
+  forcing?: string;
+}
+
+type Call = PassCall | DoubleCall | RedoubleCall | BidCall;
+
+interface PassCall {
+  type: "pass";
+}
+
+interface DoubleCall {
+  type: "double";
+}
+
+interface RedoubleCall {
+  type: "redouble";
+}
+
+interface BidCall {
+  type: "bid";
+  level: number;
+  strain: "C" | "D" | "H" | "S" | "NT";
 }
 
 interface PhaseGroupView {

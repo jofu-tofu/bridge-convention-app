@@ -16,6 +16,7 @@ pub mod learning_types;
 pub mod learning_viewport;
 pub mod play_controller;
 pub mod practice_focus;
+pub mod response_table;
 pub mod session_state;
 pub mod start_drill;
 pub mod viewport_types;
@@ -40,9 +41,11 @@ pub use learning_formatters::{
     format_module_name, map_clauses, module_surfaces,
 };
 pub use learning_types::{
-    BaseModuleInfo, ClauseSystemVariant, EntryCondition, LearningTeachingView, ModuleCatalogEntry,
-    ModuleLearningViewport, PhaseGroupView, RelevantMetric, ServiceTeachingLabel,
-    SurfaceClauseView, SurfaceDetailView,
+    BaseModuleInfo, ClauseSystemVariant, DecisionGrid, EntryCondition, InterferenceItem,
+    LearningTeachingView, ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView,
+    ReferenceView, RelatedLink, RelevantMetric, ResponseTableOverride, ResponseTableRow,
+    ServiceTeachingLabel, SummaryCard, SurfaceClauseView, SurfaceDetailView, SystemCompat,
+    WhenNotItem, WorkedAuction, WorkedAuctionCall,
 };
 pub use learning_viewport::{
     build_base_module_infos, build_module_catalog, build_module_learning_viewport,

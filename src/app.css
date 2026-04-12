@@ -170,6 +170,23 @@
   --text-value: 1.2em;       /* prominent: card rank/suit, contract, trick count */
   --text-heading: 1.35em;    /* sub-section headings */
   --text-title: 1.6em;       /* screen titles, hero text */
+
+  /* ── Screen layout primitives (AppScreen / ContentScreen) ── */
+  --screen-max-app: 1280px;
+  --screen-max-content: 1100px;
+  --screen-max-content-narrow: 760px;
+  --screen-max-form: 640px;
+
+  --screen-gutter-x: 1rem;
+  --screen-gutter-x-md: 1.5rem;
+  --screen-gutter-y: 1.5rem;
+  --screen-gutter-y-md: 2rem;
+
+  --screen-header-gap: 1.25rem;
+
+  --screen-title-size: clamp(1.5rem, 2.5vw, 1.875rem);
+  --screen-subtitle-size: 0.9375rem;
+  --screen-subtitle-color: var(--color-text-muted);
 }
 
 html {

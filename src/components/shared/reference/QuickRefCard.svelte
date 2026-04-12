@@ -1,0 +1,28 @@
+<script lang="ts">
+  import SummaryCard from "./SummaryCard.svelte";
+  import ResponseTable from "./ResponseTable.svelte";
+  import type { ReferenceResponseTableRow, ReferenceSummaryCard } from "./types";
+
+  interface Props {
+    moduleId: string;
+    summaryCard: ReferenceSummaryCard;
+    responseTableRows: readonly ReferenceResponseTableRow[];
+  }
+
+  let { moduleId, summaryCard, responseTableRows }: Props = $props();
+</script>
+
+<section class="root" aria-label="Printable quick reference">
+  <div class="space-y-4">
+    <SummaryCard {moduleId} {summaryCard} />
+    <ResponseTable moduleId={moduleId} rows={responseTableRows} />
+  </div>
+</section>
+
+<style>
+  @media screen {
+    .root {
+      display: none;
+    }
+  }
+</style>

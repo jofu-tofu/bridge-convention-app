@@ -18,6 +18,15 @@ Svelte 5 UI components for the drill workflow. Consumer of stores, lib, and engi
 
 Game components MUST use `--text-*` tokens (ESLint enforced) and `--color-*` tokens instead of hardcoded Tailwind classes. See `docs/guides/typography-and-layout.md` for the full token system, responsive sizing, z-index hierarchy, and accessibility guidelines.
 
+## Screen Primitives
+
+Every screen wraps in one of two outer primitives (tokens in `src/app.css` under `--screen-*`):
+
+- `shared/AppScreen.svelte` — for `(app)` routes. Owns its own inner scroll container (`.app-screen__body { overflow-y: auto }`), so individual screens no longer need the `h-full flex flex-col p-4 pb-0` pattern. Props: `title?`, `subtitle?`, `width: "wide" | "form" | "custom"`, `actions?` / `tabs?` snippets, `scroll?`, `contentClass?`.
+- `shared/ContentScreen.svelte` — for `(content)` prerendered routes. Scrolls at the `AppShell` main level (not internally). Preserves the desktop rail offset (`margin-inline-start: calc(var(--rail-width) + 1rem)` at `min-width: 1024px`). Props: `title?`, `subtitle?`, `width: "wide" | "narrow"`, `actions?` / `aside?` snippets.
+
+Two sibling primitives, not one universal wrapper: the overflow chains differ enough that a prop-gated branch would be harder to reason about. See `docs/guides/gotchas.md#screen-layout-primitives`. New `(content)` route authors must wrap the page with `ContentScreen`; new `(app)` screens with `AppScreen`. `GameScreen` and `LearningScreen` are intentional exceptions (custom split-pane / table-scale layouts).
+
 ## Architecture
 
 ```

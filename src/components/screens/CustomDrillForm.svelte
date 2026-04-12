@@ -13,6 +13,7 @@
     getCustomSystemsStore,
   } from "../../stores/context";
   import type { CustomDrill } from "../../stores/custom-drills.svelte";
+  import AppScreen from "../shared/AppScreen.svelte";
 
   interface Props {
     mode: "create" | "edit";
@@ -66,16 +67,11 @@
   }
 </script>
 
-<main class="max-w-2xl mx-auto h-full overflow-y-auto p-4">
-  <header class="mb-6">
-    <h1 class="text-xl font-semibold text-text-primary">
-      {mode === "create" ? "New custom drill" : "Edit custom drill"}
-    </h1>
-    <p class="text-sm text-text-muted mt-1">
-      Configure a drill you can come back to. Launching arrives in a later update.
-    </p>
-  </header>
-
+<AppScreen
+  width="form"
+  title={mode === "create" ? "New custom drill" : "Edit custom drill"}
+  subtitle="Configure a drill you can come back to. Launching arrives in a later update."
+>
   <div class="space-y-5">
     <div>
       <label for="custom-drill-name" class="block text-xs font-medium text-text-muted uppercase tracking-wide mb-1">Name</label>
@@ -145,4 +141,4 @@
       >Save</button>
     </div>
   </div>
-</main>
+</AppScreen>
