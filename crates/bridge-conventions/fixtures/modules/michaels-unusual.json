@@ -7,7 +7,7 @@
   "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
   "references": {
     "authority": { "url": "https://www.bridgeguys.com/Conventions/MichaelsCueBid.html", "label": "Bridge Guys — comprehensive Michaels coverage with advancer responses and continuations" },
-    "discovery": { "url": "https://www.bridgebum.com/michaels_cue_bid.php" }
+    "discovery": { "url": "https://www.bridgebum.com/michaels_cuebid.php" }
   },
   "teaching": {
     "tradeoff": "Michaels/Unusual 2NT sacrifices the natural meaning of the cue bid and 2NT in exchange for immediately showing a two-suited competitive hand.",

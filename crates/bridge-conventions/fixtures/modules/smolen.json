@@ -130,7 +130,17 @@
       "explanationId": "nt.smolen.acceptSpades3s",
       "meaningId": "smolen:accept-spades-3s",
       "templateKey": "nt.smolen.acceptSpades3s.semantic",
-      "displayText": "Accept 3♠: opener confirms spade fit after Smolen 3♥",
+      "displayText": "Accept 3♠: opener confirms spade fit after Smolen 3♥ (slow try)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.placeFourSpades",
+      "meaningId": "smolen:place-four-spades",
+      "templateKey": "nt.smolen.placeFourSpades.semantic",
+      "displayText": "Place 4♠: opener confirms spade fit after Smolen 3♥",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -667,6 +677,45 @@
       },
       "surfaces": [
         {
+          "meaningId": "smolen:place-four-spades",
+          "semanticClassId": "smolen:place-four-spades",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.smolen.openerHasSpadesFit",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.openerHasSpadesFit:boolean:true",
+              "description": "Opener has spade fit",
+              "rationale": "fit with responder's 5",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SmolenPlacement",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4S (spade fit found)",
+            "summary": "Place the contract in 4♠ after confirming a fit with responder's 5-card spade suit"
+          }
+        },
+        {
           "meaningId": "smolen:accept-spades-3s",
           "semanticClassId": "smolen:accept-spades-3s",
           "moduleId": "smolen",
@@ -689,9 +738,9 @@
             }
           ],
           "ranking": {
-            "recommendationBand": "must",
+            "recommendationBand": "may",
             "modulePrecedence": 0,
-            "declarationOrder": 0
+            "declarationOrder": 1
           },
           "sourceIntent": {
             "type": "SmolenAcceptance",
@@ -730,7 +779,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 1
+            "declarationOrder": 2
           },
           "sourceIntent": {
             "type": "SmolenPlacement",
@@ -845,7 +894,7 @@
           "kind": "primitive",
           "clause": {
             "factId": "hand.suitLength.spades",
-            "operator": "gte",
+            "operator": "eq",
             "value": 4
           }
         }
@@ -867,7 +916,7 @@
           "kind": "primitive",
           "clause": {
             "factId": "hand.suitLength.hearts",
-            "operator": "gte",
+            "operator": "eq",
             "value": 4
           }
         }

@@ -73,6 +73,8 @@ mod tests {
                 strain: None,
                 strength: None,
                 actor: None,
+                level: None,
+                jump: None,
             },
         }];
 
@@ -96,6 +98,8 @@ mod tests {
                 strain: None,
                 strength: None,
                 actor: None,
+                level: None,
+                jump: None,
             },
         }];
 
@@ -116,6 +120,8 @@ mod tests {
                 strain: None,
                 strength: None,
                 actor: None,
+                level: None,
+                jump: None,
             },
         }];
 

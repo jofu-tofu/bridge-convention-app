@@ -6,8 +6,8 @@
   "description": "Open 2D/2H/2S with 6+ cards and 5-11 HCP, responses include Ogust",
   "purpose": "Preempt opponents with a descriptive opening while giving partner enough information to judge game prospects via Ogust",
   "references": {
-    "authority": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Weak Twos are standard SAYC, Ogust responses are the common agreement" },
-    "discovery": { "url": "https://www.bridgebum.com/weak_two_bids.php" }
+    "authority": { "url": "https://en.wikipedia.org/wiki/Weak_two_bid", "label": "ACBL SAYC — Weak Twos are standard SAYC, Ogust responses are the common agreement" },
+    "discovery": { "url": "https://www.bridgebum.com/ogust.php" }
   },
   "teaching": {
     "tradeoff": "Using 2D/2H/2S as weak openings means you can't use them for strong two-bids.",
@@ -1021,6 +1021,39 @@
               "description": "In opening HCP range (6-11 vul, 5-11 NV)",
               "rationale": "6-11 vul, 5-11 NV",
               "isPublic": true
+            },
+            {
+              "factId": "module.weakTwo.topHonorCount.hearts",
+              "operator": "gte",
+              "value": 2,
+              "clauseId": "module.weakTwo.topHonorCount.hearts:gte:2",
+              "description": "Reasonable suit quality: 2 of top 3 honors (A/K/Q) in hearts",
+              "rationale": "2 of top 3 honors",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.spades:lte:3",
+              "description": "No 4-card side major (spades)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.diamonds:lte:4",
+              "description": "No 5-card side suit (diamonds)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.clubs:lte:4",
+              "description": "No 5-card side suit (clubs)",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -1070,6 +1103,39 @@
               "clauseId": "module.weakTwo.inOpeningHcpRange:boolean:true",
               "description": "In opening HCP range (6-11 vul, 5-11 NV)",
               "rationale": "6-11 vul, 5-11 NV",
+              "isPublic": true
+            },
+            {
+              "factId": "module.weakTwo.topHonorCount.spades",
+              "operator": "gte",
+              "value": 2,
+              "clauseId": "module.weakTwo.topHonorCount.spades:gte:2",
+              "description": "Reasonable suit quality: 2 of top 3 honors (A/K/Q) in spades",
+              "rationale": "2 of top 3 honors",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.hearts:lte:3",
+              "description": "No 4-card side major (hearts)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.diamonds:lte:4",
+              "description": "No 5-card side suit (diamonds)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.clubs:lte:4",
+              "description": "No 5-card side suit (clubs)",
               "isPublic": true
             }
           ],
@@ -1121,6 +1187,39 @@
               "description": "In opening HCP range (6-11 vul, 5-11 NV)",
               "rationale": "6-11 vul, 5-11 NV",
               "isPublic": true
+            },
+            {
+              "factId": "module.weakTwo.topHonorCount.diamonds",
+              "operator": "gte",
+              "value": 2,
+              "clauseId": "module.weakTwo.topHonorCount.diamonds:gte:2",
+              "description": "Reasonable suit quality: 2 of top 3 honors (A/K/Q) in diamonds",
+              "rationale": "2 of top 3 honors",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.spades:lte:3",
+              "description": "No 4-card side major (spades)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.hearts:lte:3",
+              "description": "No 4-card side major (hearts)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.clubs:lte:4",
+              "description": "No 5-card side suit (clubs)",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -1167,18 +1266,10 @@
             {
               "factId": "bridge.totalPointsForRaise",
               "operator": "gte",
-              "value": 15,
-              "clauseId": "bridge.totalPointsForRaise:gte:15",
-              "description": "15+ total points",
+              "value": 14,
+              "clauseId": "bridge.totalPointsForRaise:gte:14",
+              "description": "14+ total points",
               "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.$suit",
-              "operator": "gte",
-              "value": 2,
-              "clauseId": "hand.suitLength.$suit:gte:2",
-              "description": "2+ hearts (usually shows fit)",
-              "rationale": "usually shows fit"
             }
           ],
           "ranking": {
@@ -1385,11 +1476,11 @@
               "factId": "bridge.totalPointsForRaise",
               "operator": "range",
               "value": {
-                "min": 6,
-                "max": 13
+                "min": 0,
+                "max": 9
               },
-              "clauseId": "bridge.totalPointsForRaise:range:6-13",
-              "description": "6–13 total points (HCP + shortage)",
+              "clauseId": "bridge.totalPointsForRaise:range:0-9",
+              "description": "0–9 total points (HCP + shortage) — weak furtherance of preempt",
               "rationale": "HCP + shortage",
               "isPublic": true
             },
@@ -1476,18 +1567,10 @@
             {
               "factId": "bridge.totalPointsForRaise",
               "operator": "gte",
-              "value": 15,
-              "clauseId": "bridge.totalPointsForRaise:gte:15",
-              "description": "15+ total points",
+              "value": 14,
+              "clauseId": "bridge.totalPointsForRaise:gte:14",
+              "description": "14+ total points",
               "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.$suit",
-              "operator": "gte",
-              "value": 2,
-              "clauseId": "hand.suitLength.$suit:gte:2",
-              "description": "2+ spades (usually shows fit)",
-              "rationale": "usually shows fit"
             }
           ],
           "ranking": {
@@ -1694,11 +1777,11 @@
               "factId": "bridge.totalPointsForRaise",
               "operator": "range",
               "value": {
-                "min": 6,
-                "max": 13
+                "min": 0,
+                "max": 9
               },
-              "clauseId": "bridge.totalPointsForRaise:range:6-13",
-              "description": "6–13 total points (HCP + shortage)",
+              "clauseId": "bridge.totalPointsForRaise:range:0-9",
+              "description": "0–9 total points (HCP + shortage) — weak furtherance of preempt",
               "rationale": "HCP + shortage",
               "isPublic": true
             },
@@ -1785,18 +1868,10 @@
             {
               "factId": "bridge.totalPointsForRaise",
               "operator": "gte",
-              "value": 15,
-              "clauseId": "bridge.totalPointsForRaise:gte:15",
-              "description": "15+ total points",
+              "value": 14,
+              "clauseId": "bridge.totalPointsForRaise:gte:14",
+              "description": "14+ total points",
               "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.$suit",
-              "operator": "gte",
-              "value": 2,
-              "clauseId": "hand.suitLength.$suit:gte:2",
-              "description": "2+ diamonds (usually shows fit)",
-              "rationale": "usually shows fit"
             }
           ],
           "ranking": {
@@ -2003,11 +2078,11 @@
               "factId": "bridge.totalPointsForRaise",
               "operator": "range",
               "value": {
-                "min": 6,
-                "max": 13
+                "min": 0,
+                "max": 9
               },
-              "clauseId": "bridge.totalPointsForRaise:range:6-13",
-              "description": "6–13 total points (HCP + shortage)",
+              "clauseId": "bridge.totalPointsForRaise:range:0-9",
+              "description": "0–9 total points (HCP + shortage) — weak furtherance of preempt",
               "rationale": "HCP + shortage",
               "isPublic": true
             },

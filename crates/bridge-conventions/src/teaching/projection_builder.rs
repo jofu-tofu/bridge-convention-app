@@ -122,23 +122,62 @@ fn build_primary_explanation(result: &PipelineResult) -> Vec<ExplanationNode> {
     let mut nodes = Vec::new();
 
     if let Some(ref selected) = result.selected {
+        let proposal = selected.proposal();
+        let summary = proposal.teaching_label.summary.as_str().trim();
+        let satisfied_desc: Vec<String> = proposal
+            .clauses
+            .iter()
+            .filter(|c| c.satisfied)
+            .filter_map(|c| {
+                c.description
+                    .as_deref()
+                    .map(str::trim)
+                    .filter(|s| !s.is_empty())
+                    .map(|s| s.to_string())
+            })
+            .collect();
+
+        let text = if !summary.is_empty() {
+            if satisfied_desc.is_empty() {
+                summary.to_string()
+            } else {
+                format!("{} — your hand has {}.", summary, join_clauses(&satisfied_desc))
+            }
+        } else if !satisfied_desc.is_empty() {
+            format!("Your hand fits: {}.", join_clauses(&satisfied_desc))
+        } else {
+            // Last-resort fallback. Never surface the raw internal label here —
+            // authored labels (e.g. "Partner opens 1C", "Opponent's 1NT") are
+            // context anchors, not user-facing feedback.
+            "Your hand satisfies every requirement for this call.".to_string()
+        };
+
         nodes.push(ExplanationNode {
             kind: ExplanationKind::Text,
-            content: format!(
-                "Your hand matches {}",
-                selected.proposal().teaching_label.name
-            ),
+            content: text,
             passed: None,
             explanation_id: None,
             template_key: None,
         });
 
-        for clause in &selected.proposal().clauses {
+        for clause in &proposal.clauses {
             nodes.push(clause_to_explanation_node(clause, Some(clause.satisfied)));
         }
     }
 
     nodes
+}
+
+fn join_clauses(items: &[String]) -> String {
+    match items.len() {
+        0 => String::new(),
+        1 => items[0].clone(),
+        2 => format!("{} and {}", items[0], items[1]),
+        _ => {
+            let (last, head) = items.split_last().unwrap();
+            format!("{}, and {}", head.join(", "), last)
+        }
+    }
 }
 
 fn build_why_not(

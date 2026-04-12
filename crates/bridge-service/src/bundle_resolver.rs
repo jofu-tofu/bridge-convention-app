@@ -11,7 +11,7 @@ use bridge_conventions::teaching::teaching_types::{SurfaceGroup, SurfaceGroupRel
 use bridge_conventions::types::teaching::SurfaceGroupRelationship as BundleSGRelationship;
 use bridge_conventions::BaseSystemId;
 use bridge_conventions::BundleInput;
-use bridge_engine::types::{DealConstraints, Seat, Vulnerability};
+use bridge_engine::types::{DealConstraints, Seat, SeatConstraint, Vulnerability};
 use bridge_session::session::start_drill::ConventionConfig;
 
 use crate::error::ServiceError;
@@ -63,6 +63,53 @@ pub(crate) fn resolve_surface_groups(
 
 // ── Convention config ────────────────────────────────────────────
 
+/// Scan bundle module attachments for an auction-start "1NT" trigger and, if
+/// present, synthesize a seat constraint forcing the trigger seat (the single
+/// `allowedDealers` entry) to be a 15-17 HCP balanced hand. Required because
+/// the fact-inverter derives no constraints from attachment-driven activation,
+/// so without this synthesis e.g. DONT would be dealt random RHO hands that
+/// never open 1NT. Returns the synthesized seat (if any) so the caller can
+/// merge it with any existing derived constraints.
+fn synthesize_nt_opener_seat_constraint(
+    bundle: &bridge_conventions::types::ConventionBundle,
+    system: BaseSystemId,
+) -> Option<SeatConstraint> {
+    use bridge_conventions::registry::system_configs::get_system_config;
+    use bridge_conventions::types::agreement::AuctionPattern;
+
+    let profile = bundle.system_profile.as_ref()?;
+    let triggers_on_1nt = profile.modules.iter().flat_map(|m| &m.attachments).any(|a| {
+        matches!(
+            a.when_auction.as_ref(),
+            Some(AuctionPattern::Sequence { calls })
+                if calls.len() == 1 && calls[0] == "1NT"
+        )
+    });
+    if !triggers_on_1nt {
+        return None;
+    }
+
+    // Require exactly one allowed dealer (the opener seat).
+    let seat = match bundle.allowed_dealers.as_deref() {
+        Some([seat]) => *seat,
+        _ => return None,
+    };
+
+    let system_config = get_system_config(system);
+    let nt_min = system_config.nt_opening.min_hcp;
+    let nt_max = system_config.nt_opening.max_hcp;
+
+    Some(SeatConstraint {
+        seat,
+        min_hcp: Some(nt_min),
+        max_hcp: Some(nt_max),
+        balanced: Some(true),
+        min_length: None,
+        max_length: None,
+        min_length_any: None,
+    })
+}
+
 /// Build a `ConventionConfig` from a bundle ID, merging bundle deal constraints
 /// with caller overrides for vulnerability, seed, and max_attempts.
 pub(crate) fn build_convention_config(
@@ -73,7 +120,7 @@ pub(crate) fn build_convention_config(
 ) -> ConventionConfig {
     let resolved = resolve_bundle(convention_id, system);
 
-    let bundle_constraints = resolved
+    let mut bundle_constraints = resolved
         .map(|b| derive_deal_constraints(b, system))
         .unwrap_or_else(|| DealConstraints {
             seats: vec![],
@@ -82,6 +129,17 @@ pub(crate) fn build_convention_config(
             max_attempts: None,
             seed: None,
         });
+
+    // Synthesize the opener seat constraint for attachment-driven bundles like
+    // DONT, where the inverter alone wouldn't force RHO into a 1NT-opening hand.
+    if let Some(bundle) = resolved {
+        if let Some(synth) = synthesize_nt_opener_seat_constraint(bundle, system) {
+            // Replace any existing constraint for the same seat with the
+            // synthesized one (tighter 15-17 balanced beats the loose default).
+            bundle_constraints.seats.retain(|sc| sc.seat != synth.seat);
+            bundle_constraints.seats.push(synth);
+        }
+    }
 
     ConventionConfig {
         id: convention_id.to_string(),

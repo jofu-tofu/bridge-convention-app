@@ -22,7 +22,7 @@ use bridge_engine::hand_evaluator::evaluate_hand_hcp;
 use bridge_engine::types::{Auction, AuctionEntry, Call, Deal, Seat};
 use bridge_session::heuristics::BiddingContext;
 use bridge_session::session::practice_focus::derive_initial_auction;
-use bridge_session::session::start_drill::DealAcceptancePredicate;
+use bridge_session::session::start_drill::{nmf_initial_auction, DealAcceptancePredicate};
 use bridge_session::types::PracticeRole;
 
 use crate::convention_adapter::ConventionStrategyAdapter;
@@ -52,7 +52,9 @@ pub(crate) fn build_deal_acceptance_predicate(
     bundle_member_ids: &[String],
     resolved_role: PracticeRole,
     bundle_deal_constraints: Option<bridge_engine::types::DealConstraints>,
+    convention_id: &str,
 ) -> Option<Arc<DealAcceptancePredicate>> {
+    let convention_id = convention_id.to_string();
     let spec = spec.as_ref()?.clone();
     let target_module_ids: HashSet<String> = bundle_member_ids.iter().cloned().collect();
     if target_module_ids.is_empty() {
@@ -76,16 +78,30 @@ pub(crate) fn build_deal_acceptance_predicate(
         // (e.g., explicit 1NT openings when constraints express balanced 15-17).
         // If that returns None, we replay the adapter from dealer forward,
         // which is what the live session does via run_initial_ai_bids.
-        let mut auction = derive_initial_auction(
-            resolved_role,
-            deal.dealer,
-            bundle_deal_constraints.as_ref(),
-            Some(deal),
-        )
-        .unwrap_or_else(|| Auction {
-            entries: Vec::new(),
-            is_complete: false,
-        });
+        //
+        // Bundle-specific deep-entry prefixes (negative-doubles handled in
+        // start_drill proper, NMF here so rejection sampling faithfully
+        // reaches responder's 2nd bid at `1m-1M-1NT-?`).
+        let nmf_prefix = if convention_id == "nmf-bundle"
+            && resolved_role == PracticeRole::Responder
+        {
+            nmf_initial_auction(deal, deal.dealer)
+        } else {
+            None
+        };
+        let mut auction = nmf_prefix
+            .or_else(|| {
+                derive_initial_auction(
+                    resolved_role,
+                    deal.dealer,
+                    bundle_deal_constraints.as_ref(),
+                    Some(deal),
+                )
+            })
+            .unwrap_or_else(|| Auction {
+                entries: Vec::new(),
+                is_complete: false,
+            });
 
         // Whose turn is next?
         let mut cursor = if auction.entries.is_empty() {
@@ -171,6 +187,53 @@ mod tests {
             user_seat: None,
             vulnerability: None,
             seed: Some(seed),
+        }
+    }
+
+    #[test]
+    fn nmf_bundle_responder_advances_auction_to_1nt_rebid() {
+        // NMF drill must surface responder's 2nd bid at 1m-1M-1NT-?
+        let mut service = ServicePortImpl::new();
+        for seed in 1..=10u64 {
+            let config = SessionConfig {
+                convention_id: "nmf-bundle".to_string(),
+                system_config: get_system_config(BaseSystemId::Sayc),
+                base_module_ids: BASE_MODULE_IDS.iter().map(|s| s.to_string()).collect(),
+                practice_mode: Some(PracticeMode::DecisionDrill),
+                target_module_id: Some("new-minor-forcing".to_string()),
+                practice_role: Some(PracticeRole::Responder),
+                play_preference: Some(PlayPreference::Skip),
+                opponent_mode: None,
+                user_seat: None,
+                vulnerability: None,
+                seed: Some(seed),
+            };
+            let handle = service
+                .create_drill_session(config)
+                .expect("create_drill_session");
+            let result = service.start_drill(&handle).expect("start_drill");
+            let entries = &result.viewport.auction_entries;
+            assert!(
+                entries.len() >= 3,
+                "seed={seed}: NMF drill should start with at least 3 prior calls, got {:?}",
+                entries.iter().map(|e| &e.call).collect::<Vec<_>>()
+            );
+            // Must include a 1m opening, responder 1M, and a 1NT rebid
+            // somewhere among the first 6 prefix calls.
+            let has_1nt = entries.iter().any(|e| {
+                matches!(
+                    &e.call,
+                    bridge_engine::types::Call::Bid {
+                        level: 1,
+                        strain: bridge_engine::types::BidSuit::NoTrump,
+                    }
+                )
+            });
+            assert!(
+                has_1nt,
+                "seed={seed}: NMF prefix should include 1NT rebid, got {:?}",
+                entries.iter().map(|e| &e.call).collect::<Vec<_>>()
+            );
         }
     }
 

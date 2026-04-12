@@ -6,15 +6,17 @@
   "description": "Bid 2C over 1NT to find a 4-4 major-suit fit",
   "purpose": "Discover whether opener holds a 4-card major so the partnership can play in an 8-card major fit instead of notrump",
   "references": {
-    "authority": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Stayman is a core SAYC convention, standardized in the ACBL booklet" },
+    "authority": { "url": "https://en.wikipedia.org/wiki/Stayman_convention", "label": "ACBL SAYC — Stayman is a core SAYC convention, standardized in the ACBL booklet" },
     "discovery": { "url": "https://www.bridgebum.com/stayman.php" }
   },
   "teaching": {
-    "tradeoff": "Using 2C as Stayman means you can't play in a natural 2C contract.",
-    "principle": "Always check for a 4-4 major fit before settling in notrump — majors score better and play easier with a trump suit.",
+    "tradeoff": "Using the ask as Stayman means the partnership cannot play the ask in its natural strain.",
+    "principle": "Always check for a four-card major fit before settling in notrump — majors score better and play easier with a trump suit.",
     "commonMistakes": [
-      "Don't use Stayman with 4-3-3-3 shape — prefer a quantitative raise since you have no ruffing value",
-      "With 5-4 in the majors, start with Stayman to find the 4-4 fit — after a 2D denial, bid your 5-card major at the 2-level (invitational, non-forcing)"
+      { "text": "Do not use Stayman with a flat hand and no ruffing value.", "reason": "A balanced responder gets no extra tricks from the major fit, so notrump usually scores at least as well." },
+      { "text": "Do not use Stayman when your only four-card major is the one opener has already denied.", "reason": "No fit is possible, so the ask only gives the defenders information about responder's shape." },
+      { "text": "Do not launch Stayman without a plan for each possible response.", "reason": "Responder must already know which major to raise, which to sign off, and how to invite before starting the sequence." },
+      { "text": "Do not use Stayman just to escape a weak notrump with a long minor.", "reason": "That is a separate agreement (garbage Stayman), and treating the ask as constructive creates misunderstandings." }
     ]
   },
   "explanationEntries": [
@@ -222,6 +224,26 @@
       "meaningId": "stayman:show-five-spades-after-denial",
       "templateKey": "nt.stayman.showFiveSpadesAfterDenial.semantic",
       "displayText": "Bid 2♠ showing 5 spades and 4 hearts (invitational, non-forcing)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.showFiveHeartsGfAfterDenial",
+      "meaningId": "stayman:show-five-hearts-gf-after-denial",
+      "templateKey": "nt.stayman.showFiveHeartsGfAfterDenial.semantic",
+      "displayText": "Bid 3♥ showing 5 hearts and 4 spades, game-forcing",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.stayman.showFiveSpadesGfAfterDenial",
+      "meaningId": "stayman:show-five-spades-gf-after-denial",
+      "templateKey": "nt.stayman.showFiveSpadesGfAfterDenial.semantic",
+      "displayText": "Bid 3♠ showing 5 spades and 4 hearts, game-forcing",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -1705,6 +1727,120 @@
           }
         },
         {
+          "meaningId": "stayman:show-five-hearts-gf-after-denial",
+          "semanticClassId": "stayman:show-five-card-major",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Game values opposite 1NT",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts (long major)",
+              "rationale": "show the 5-card major, game-forcing",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades (had 5-4 pattern for Stayman entry)",
+              "rationale": "had 5-4 pattern for Stayman entry",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 9
+          },
+          "sourceIntent": {
+            "type": "CrossMajorGF",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♥ GF (5-4 majors)",
+            "summary": "Force to game showing 5 hearts and 4 spades after opener denies a major"
+          }
+        },
+        {
+          "meaningId": "stayman:show-five-spades-gf-after-denial",
+          "semanticClassId": "stayman:show-five-card-major",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Game values opposite 1NT",
+              "rationale": "game values opposite 1NT",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "5+ spades (long major)",
+              "rationale": "show the 5-card major, game-forcing",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts (had 5-4 pattern for Stayman entry)",
+              "rationale": "had 5-4 pattern for Stayman entry",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 10
+          },
+          "sourceIntent": {
+            "type": "CrossMajorGF",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♠ GF (5-4 majors)",
+            "summary": "Force to game showing 5 spades and 4 hearts after opener denies a major"
+          }
+        },
+        {
           "meaningId": "stayman:nt-invite-after-denial",
           "semanticClassId": "stayman:nt-invite-denial",
           "moduleId": "stayman",
@@ -2075,6 +2211,71 @@
         "valueType": "number",
         "constrainsDimensions": []
       }
+    ]
+  },
+  "reference": {
+    "summaryCard": {
+      "trigger": "Partner opens 1NT, you respond",
+      "definingMeaningId": "stayman:ask-major",
+      "partnership": "Available in standard partnerships; confirm with partner before using."
+    },
+    "whenToUse": [
+      "Use Stayman with invitational values and a four-card major, when finding the major fit would push the partnership toward game.",
+      "Use Stayman with game-going values and a four-card major, so the partnership can play game in a major fit instead of notrump.",
+      "Use Stayman with both majors at invitational strength or better, because the ask uncovers either fit before responder has to choose a strain.",
+      "Use Stayman whenever responder would prefer a major game to a notrump game and has the shape to pursue it."
+    ],
+    "workedAuctions": [
+      {
+        "label": "Invitational 4-card spade hand finds a spade fit",
+        "calls": [
+          { "seat": "N", "call": { "type": "bid", "level": 1, "strain": "NT" }, "rationale": "Opener shows a balanced 15-17 HCP hand." },
+          { "seat": "S", "call": { "type": "bid", "level": 2, "strain": "C" }, "rationale": "Responder asks about a 4-card major with invitational values." },
+          { "seat": "N", "call": { "type": "bid", "level": 2, "strain": "S" }, "rationale": "Opener shows 4 spades (and denies 4 hearts or promises shape per partnership style)." },
+          { "seat": "S", "call": { "type": "bid", "level": 3, "strain": "S" }, "rationale": "Responder invites game in the confirmed 4-4 spade fit." }
+        ],
+        "outcomeNote": "Opener accepts with a maximum or declines with a minimum — the ask has already located the major fit."
+      },
+      {
+        "label": "Game-forcing hand with 4 hearts lands in 4H",
+        "calls": [
+          { "seat": "N", "call": { "type": "bid", "level": 1, "strain": "NT" }, "rationale": "Opener shows a balanced 15-17 HCP hand." },
+          { "seat": "S", "call": { "type": "bid", "level": 2, "strain": "C" }, "rationale": "Responder asks about a 4-card major with game-forcing values." },
+          { "seat": "N", "call": { "type": "bid", "level": 2, "strain": "H" }, "rationale": "Opener shows 4 hearts." },
+          { "seat": "S", "call": { "type": "bid", "level": 4, "strain": "H" }, "rationale": "Responder bids game in the confirmed 4-4 heart fit." }
+        ],
+        "outcomeNote": "The partnership plays 4H on an 8-card major fit rather than 3NT on the same values."
+      }
+    ],
+    "interference": {
+      "status": "applicable",
+      "items": [
+        { "opponentAction": "Double of the notrump opening", "ourAction": "Stayman is normally off; systems-on agreements vary, so check with partner.", "note": "Many partnerships play runouts over the double, so the ask is no longer available by default." },
+        { "opponentAction": "Overcall of two of a minor", "ourAction": "A cue of the overcalled minor typically replaces the ask.", "note": "Natural bids of two of a major become available and may be preferred with a real suit." },
+        { "opponentAction": "Overcall at two of a major or higher", "ourAction": "The ask is unavailable; bid naturally or use a partnership-specific gadget such as Lebensohl.", "note": "Interference above two of a minor preempts the room needed for the ask." }
+      ]
+    },
+    "quickReference": {
+      "kind": "grid",
+      "rowAxis": {
+        "kind": "systemFactLadder",
+        "label": "Responder strength",
+        "facts": ["system.responder.weakHand", "system.responder.inviteValues", "system.responder.gameValues"]
+      },
+      "colAxis": {
+        "kind": "qualitative",
+        "label": "Shape",
+        "values": ["No four-card major", "One four-card major", "Five-four in the majors", "Flat hand with a four-card major"]
+      },
+      "cells": [
+        ["Pass", "Pass", "Garbage Stayman only by agreement", "Pass"],
+        ["Invite in notrump", "Ask, then invite", "Ask, then show the longer major", "Invite in notrump"],
+        ["Bid game in notrump", "Ask, then bid game", "Ask, then force to game", "Usually notrump game"]
+      ]
+    },
+    "relatedLinks": [
+      { "moduleId": "jacoby-transfers", "discriminator": "Use transfers when responder has a five-card or longer major and wants opener to declare; use the ask when responder has exactly a four-card major and is looking for a four-four fit." },
+      { "moduleId": "smolen", "discriminator": "Prefer Smolen when responder is five-four in the majors and game-forcing; the ask still starts the auction, but Smolen lets opener declare the major fit." }
     ]
   }
 }

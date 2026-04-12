@@ -6,8 +6,8 @@
   "description": "Standard natural bids: opening bids, natural notrump raises, and other common non-convention sequences",
   "purpose": "Learn the standard natural bids you use when no special convention applies",
   "references": {
-    "authority": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — natural bidding rules are defined by the base system" },
-    "discovery": { "url": "https://www.bridgebum.com/one_notrump_opening.php" }
+    "authority": { "url": "https://en.wikipedia.org/wiki/Standard_American_Yellow_Card", "label": "ACBL SAYC — natural bidding rules are defined by the base system" },
+    "discovery": { "url": "https://www.bridgebum.com/sayc.php" }
   },
   "teaching": {
     "tradeoff": "There is no special tradeoff here — these bids keep their usual natural meanings",

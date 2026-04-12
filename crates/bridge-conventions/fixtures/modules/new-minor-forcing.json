@@ -294,6 +294,86 @@
       "displayText": "3NT maximum (14 HCP) — no major fit after NMF",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.responder1sOver1h",
+      "meaningId": "nmf:responder-1s-over-1h",
+      "templateKey": "nmf.responder1sOver1h.semantic",
+      "displayText": "Respond 1♠ over partner's 1♥ with 4+ spades, 6+ HCP",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.opener1ntRebidAfter1h1s",
+      "meaningId": "nmf:opener-1nt-rebid-after-1h-1s",
+      "templateKey": "nmf.opener1ntRebidAfter1h1s.semantic",
+      "displayText": "Rebid 1NT with 12-14 balanced, denying 4-card spade support",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.responderNmf2cOver1h",
+      "meaningId": "nmf:responder-nmf-2c-over-1h",
+      "templateKey": "nmf.responderNmf2cOver1h.semantic",
+      "displayText": "NMF 2♣: artificial invite+ after 1H-1S-1NT",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.responder2dNaturalOver1h",
+      "meaningId": "nmf:responder-2d-natural-over-1h",
+      "templateKey": "nmf.responder2dNaturalOver1h.semantic",
+      "displayText": "2♦: natural, 5+ diamonds, weak (6-9 HCP)",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.openerSupportSpadesMinFrom1h",
+      "meaningId": "nmf:opener-support-spades-min-from-1h",
+      "templateKey": "nmf.openerSupportSpadesMinFrom1h.semantic",
+      "displayText": "2♠: 3-card spade support, minimum (12-13 HCP)",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.openerSupportSpadesMaxFrom1h",
+      "meaningId": "nmf:opener-support-spades-max-from-1h",
+      "templateKey": "nmf.openerSupportSpadesMaxFrom1h.semantic",
+      "displayText": "3♠: 3-card spade support, maximum (14 HCP)",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.openerNtMinFrom1h",
+      "meaningId": "nmf:opener-nt-min-from-1h",
+      "templateKey": "nmf.openerNtMinFrom1h.semantic",
+      "displayText": "2NT: minimum, no spade support after NMF",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.openerNtMaxFrom1h",
+      "meaningId": "nmf:opener-nt-max-from-1h",
+      "templateKey": "nmf.openerNtMaxFrom1h.semantic",
+      "displayText": "3NT: maximum, no spade support after NMF",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.openerRaiseNmfMinorFrom1h",
+      "meaningId": "nmf:opener-raise-nmf-minor-from-1h",
+      "templateKey": "nmf.openerRaiseNmfMinorFrom1h.semantic",
+      "displayText": "3♣: raise NMF minor with 4-card support (priority 4)",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nmf.openerRebidHeartsFrom1h",
+      "meaningId": "nmf:opener-rebid-hearts-from-1h",
+      "templateKey": "nmf.openerRebidHeartsFrom1h.semantic",
+      "displayText": "2♥: rebid own 6+ hearts (priority 5)",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -313,6 +393,65 @@
         "on": {
           "act": "open",
           "strain": "diamonds"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "after-1h-open",
+        "on": {
+          "act": "open",
+          "strain": "hearts"
+        }
+      },
+      {
+        "from": "after-1h-open",
+        "to": "after-1h-1s",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit"
+        }
+      },
+      {
+        "from": "after-1h-1s",
+        "to": "after-1nt-rebid-from-1h",
+        "on": {
+          "act": "show",
+          "feature": "balanced"
+        }
+      },
+      {
+        "from": "after-1nt-rebid-from-1h",
+        "to": "after-nmf-from-1h",
+        "on": {
+          "act": "inquire"
+        }
+      },
+      {
+        "from": "after-1nt-rebid-from-1h",
+        "to": "done",
+        "on": {
+          "act": "signoff"
+        }
+      },
+      {
+        "from": "after-nmf-from-1h",
+        "to": "done",
+        "on": {
+          "act": "show"
+        }
+      },
+      {
+        "from": "after-nmf-from-1h",
+        "to": "done",
+        "on": {
+          "act": "raise"
+        }
+      },
+      {
+        "from": "after-nmf-from-1h",
+        "to": "done",
+        "on": {
+          "act": "place"
         }
       },
       {
@@ -1926,6 +2065,484 @@
           "teachingLabel": {
             "name": "3NT maximum",
             "summary": "No major fit, maximum hand (14 HCP)"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-1h-open",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "nmf:responder-1s-over-1h",
+          "semanticClassId": "nmf:responder-major",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "ResponderShowMajor",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Respond 1S",
+            "summary": "Show 4+ spades with 6+ HCP over partner's 1H"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-1h-1s",
+      "turn": "opener",
+      "surfaces": [
+        {
+          "meaningId": "nmf:opener-1nt-rebid-after-1h-1s",
+          "semanticClassId": "nmf:opener-1nt-rebid",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "12+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP (minimum balanced)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.spades:lte:3",
+              "description": "No 4-card spade support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NMFOpener1NTRebid",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "1NT rebid",
+            "summary": "Minimum (12-14) balanced rebid, no 4-card spade support"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-1nt-rebid-from-1h",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "nmf:responder-nmf-2c-over-1h",
+          "semanticClassId": "nmf:responder-ask",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "10+ HCP (invite or better)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NMFAsk",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "NMF 2♣",
+            "summary": "Artificial invite+; asks opener to further describe (3-card spade support, hearts, or notrump)"
+          }
+        },
+        {
+          "meaningId": "nmf:responder-2d-natural-over-1h",
+          "semanticClassId": "nmf:responder-natural-minor",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.diamonds:gte:5",
+              "description": "5+ diamonds",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "Weak (at most 9 HCP), natural signoff",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NMFResponderSignoff",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2♦ natural",
+            "summary": "Natural weak signoff showing 5+ diamonds, 6-9 HCP"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-nmf-from-1h",
+      "turn": "opener",
+      "surfaces": [
+        {
+          "meaningId": "nmf:opener-support-spades-min-from-1h",
+          "semanticClassId": "nmf:opener-show-support",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.suitLength.spades:gte:3",
+              "description": "3+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 13,
+              "clauseId": "hand.hcp:lte:13",
+              "description": "At most 13 HCP (minimum)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NMFOpenerShowSupport",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Show spade support (min)",
+            "summary": "Minimum hand (12-13 HCP) with 3-card spade support after 1H-1S-1NT-2C NMF"
+          }
+        },
+        {
+          "meaningId": "nmf:opener-support-spades-max-from-1h",
+          "semanticClassId": "nmf:opener-jump-support",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.suitLength.spades:gte:3",
+              "description": "3+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14 HCP (maximum)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NMFOpenerJumpSupport",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Jump raise spades (max)",
+            "summary": "Maximum hand (14 HCP) with 3+ card spade support"
+          }
+        },
+        {
+          "meaningId": "nmf:opener-nt-min-from-1h",
+          "semanticClassId": "nmf:opener-nt-min",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 13,
+              "clauseId": "hand.hcp:lte:13",
+              "description": "At most 13 HCP (minimum)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.spades:lte:2",
+              "description": "No spade support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "NMFOpenerNTMin",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2NT minimum",
+            "summary": "No major fit, minimum hand after 1H-1S-1NT-2C NMF"
+          }
+        },
+        {
+          "meaningId": "nmf:opener-nt-max-from-1h",
+          "semanticClassId": "nmf:opener-nt-max",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14 HCP (maximum)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.spades:lte:2",
+              "description": "No spade support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "NMFOpenerNTMax",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3NT maximum",
+            "summary": "No major fit, maximum hand after 1H-1S-1NT-2C NMF"
+          }
+        },
+        {
+          "meaningId": "nmf:opener-raise-nmf-minor-from-1h",
+          "semanticClassId": "nmf:opener-raise-nmf",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.clubs:gte:4",
+              "description": "4+ clubs (support for NMF minor)",
+              "rationale": "concentrated values in the NMF minor",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.spades:lte:2",
+              "description": "No spade support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "NMFOpenerRaiseMinor",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3♣ raise NMF minor",
+            "summary": "Priority 4: raise the NMF minor with 4-card support and concentrated values"
+          }
+        },
+        {
+          "meaningId": "nmf:opener-rebid-hearts-from-1h",
+          "semanticClassId": "nmf:opener-rebid-own",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.hearts:gte:6",
+              "description": "6+ hearts (rebiddable suit)",
+              "rationale": "rebid own 6+ card suit",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.spades:lte:2",
+              "description": "No spade support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "NMFOpenerRebidOwn",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2♥ rebid own suit",
+            "summary": "Priority 5: rebid the opened major with 6+ card length"
           }
         }
       ]

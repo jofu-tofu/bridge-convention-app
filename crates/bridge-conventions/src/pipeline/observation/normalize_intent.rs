@@ -225,6 +225,32 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
                 strength: HandStrength::Game,
             },
         ],
+        "Strong2CStaymanOver2NT" => vec![BidAction::Inquire {
+            feature: HandFeature::MajorSuit,
+            suit: None,
+        }],
+        "Strong2CSecondNegative" => vec![BidAction::Show {
+            feature: HandFeature::Strength,
+            suit: None,
+            quality: None,
+            strength: Some(HandStrength::Weak),
+        }],
+        "Strong2CJumpRebid" => vec![BidAction::Show {
+            feature: HandFeature::SuitQuality,
+            suit: param_suit(p),
+            quality: Some(SuitQuality::Solid),
+            strength: None,
+        }],
+        "SplinterRelay" => vec![BidAction::Inquire {
+            feature: HandFeature::Shortage,
+            suit: None,
+        }],
+        "SplinterReveal" => vec![BidAction::Show {
+            feature: HandFeature::Shortage,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
+        }],
         "GameRaise" | "RaiseToGame" => vec![BidAction::Raise {
             strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
             strength: HandStrength::Game,
@@ -532,17 +558,20 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
         }],
 
         // ── Michaels / Unusual 2NT ──────────────────────────────
-        "MichaelsCueBidBothMajors" => vec![BidAction::Show {
-            feature: HandFeature::HeldSuit,
-            suit: Some(ObsSuit::Hearts),
-            quality: None,
-            strength: None,
-        }, BidAction::Show {
-            feature: HandFeature::HeldSuit,
-            suit: Some(ObsSuit::Spades),
-            quality: None,
-            strength: None,
-        }],
+        "MichaelsCueBidBothMajors" => vec![
+            BidAction::Show {
+                feature: HandFeature::HeldSuit,
+                suit: Some(ObsSuit::Hearts),
+                quality: None,
+                strength: None,
+            },
+            BidAction::Show {
+                feature: HandFeature::HeldSuit,
+                suit: Some(ObsSuit::Spades),
+                quality: None,
+                strength: None,
+            },
+        ],
         "MichaelsCueBidSpadesMinor" => vec![BidAction::Show {
             feature: HandFeature::HeldSuit,
             suit: Some(ObsSuit::Spades),
@@ -562,16 +591,20 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
             strength: None,
         }],
         "MichaelsPass" => vec![BidAction::Pass],
-        "MichaelsAdvancerPreferHearts" | "MichaelsAdvancerAcceptHearts" => vec![BidAction::Accept {
-            feature: HandFeature::HeldSuit,
-            suit: Some(ObsSuit::Hearts),
-            strength: None,
-        }],
-        "MichaelsAdvancerPreferSpades" | "MichaelsAdvancerAcceptSpades" => vec![BidAction::Accept {
-            feature: HandFeature::HeldSuit,
-            suit: Some(ObsSuit::Spades),
-            strength: None,
-        }],
+        "MichaelsAdvancerPreferHearts" | "MichaelsAdvancerAcceptHearts" => {
+            vec![BidAction::Accept {
+                feature: HandFeature::HeldSuit,
+                suit: Some(ObsSuit::Hearts),
+                strength: None,
+            }]
+        }
+        "MichaelsAdvancerPreferSpades" | "MichaelsAdvancerAcceptSpades" => {
+            vec![BidAction::Accept {
+                feature: HandFeature::HeldSuit,
+                suit: Some(ObsSuit::Spades),
+                strength: None,
+            }]
+        }
         "MichaelsAdvancerInviteHearts" => vec![BidAction::Raise {
             strain: BidSuitName::Hearts,
             strength: HandStrength::Invitational,
@@ -704,6 +737,22 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
         "NMFOpenerJumpOtherMajor" => vec![BidAction::Raise {
             strain: param_strain(p).unwrap_or(BidSuitName::Notrump),
             strength: HandStrength::Game,
+        }],
+        "NMFOpener1NTRebid" => vec![BidAction::Show {
+            feature: HandFeature::Balanced,
+            suit: None,
+            quality: None,
+            strength: Some(HandStrength::Minimum),
+        }],
+        "NMFOpenerRaiseMinor" => vec![BidAction::Raise {
+            strain: param_strain(p).unwrap_or(BidSuitName::Clubs),
+            strength: HandStrength::Minimum,
+        }],
+        "NMFOpenerRebidOwn" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: param_suit(p),
+            quality: None,
+            strength: None,
         }],
         "NMFOpenerNTMin" => vec![BidAction::Place {
             strain: BidSuitName::Notrump,

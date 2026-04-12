@@ -6,8 +6,8 @@
   "description": "Open 2C with 22+ HCP (game-forcing), responder bids 2D waiting or shows a positive suit",
   "purpose": "Reserve the 2C opening for very strong hands, establishing a game-forcing auction where opener describes their hand after the initial relay or positive response",
   "references": {
-    "authority": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Strong 2C is the standard SAYC game-forcing opening" },
-    "discovery": { "url": "https://www.bridgebum.com/strong_2_club_opening.php" }
+    "authority": { "url": "https://en.wikipedia.org/wiki/Strong_two_clubs", "label": "ACBL SAYC — Strong 2C is the standard SAYC game-forcing opening" },
+    "discovery": { "url": "https://www.bridgebum.com/strong_2c.php" }
   },
   "teaching": {
     "tradeoff": "Using 2C as a strong artificial opening means you lose the natural 2C bid — but hands with 22+ HCP are rare enough that the tradeoff is overwhelmingly positive.",
@@ -264,6 +264,54 @@
       "roles": [
         "pedagogical"
       ]
+    },
+    {
+      "explanationId": "strong2c.r3.rebidJump3h",
+      "meaningId": "strong-2c:rebid-jump-3h",
+      "templateKey": "strong2c.r3.rebidJump3h.semantic",
+      "displayText": "3H jump rebid: solid hearts one-suiter with slam interest",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "strong2c.r3.rebidJump3s",
+      "meaningId": "strong-2c:rebid-jump-3s",
+      "templateKey": "strong2c.r3.rebidJump3s.semantic",
+      "displayText": "3S jump rebid: solid spades one-suiter with slam interest",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "strong2c.r4.secondNegative3c",
+      "meaningId": "strong-2c:second-negative-3c",
+      "templateKey": "strong2c.r4.secondNegative3c.semantic",
+      "displayText": "Second negative 3♣: 0-3 HCP, no values",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "strong2c.r4.staymanOver2nt",
+      "meaningId": "strong-2c:stayman-over-2nt",
+      "templateKey": "strong2c.r4.staymanOver2nt.semantic",
+      "displayText": "Stayman 3♣ over 2NT rebid: asks for a 4-card major",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "strong2c.r4.transferHeartsOver2nt",
+      "meaningId": "strong-2c:transfer-hearts-over-2nt",
+      "templateKey": "strong2c.r4.transferHeartsOver2nt.semantic",
+      "displayText": "Transfer 3♦ over 2NT rebid: 5+ hearts",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "strong2c.r4.transferSpadesOver2nt",
+      "meaningId": "strong-2c:transfer-spades-over-2nt",
+      "templateKey": "strong2c.r4.transferSpadesOver2nt.semantic",
+      "displayText": "Transfer 3♥ over 2NT rebid: 5+ spades",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -335,6 +383,20 @@
         "to": "done",
         "on": {
           "act": "show"
+        }
+      },
+      {
+        "from": "after-2nt-rebid",
+        "to": "done",
+        "on": {
+          "act": "inquire"
+        }
+      },
+      {
+        "from": "after-2nt-rebid",
+        "to": "done",
+        "on": {
+          "act": "transfer"
         }
       },
       {
@@ -867,6 +929,100 @@
           }
         },
         {
+          "meaningId": "strong-2c:rebid-jump-3h",
+          "semanticClassId": "strong-2c:jump-suit-rebid",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.hearts:gte:6",
+              "description": "6+ hearts",
+              "rationale": "long one-suiter",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 22,
+              "clauseId": "hand.hcp:gte:22",
+              "description": "22+ HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "Strong2CJumpRebid",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3H — solid one-suiter jump",
+            "summary": "Jump rebid showing a solid hearts one-suiter with slam interest"
+          }
+        },
+        {
+          "meaningId": "strong-2c:rebid-jump-3s",
+          "semanticClassId": "strong-2c:jump-suit-rebid",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.spades:gte:6",
+              "description": "6+ spades",
+              "rationale": "long one-suiter",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 22,
+              "clauseId": "hand.hcp:gte:22",
+              "description": "22+ HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "Strong2CJumpRebid",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3S — solid one-suiter jump",
+            "summary": "Jump rebid showing a solid spades one-suiter with slam interest"
+          }
+        },
+        {
           "meaningId": "strong-2c:rebid-3nt",
           "semanticClassId": "strong-2c:balanced-rebid",
           "moduleId": "strong-2c",
@@ -916,7 +1072,17 @@
               "type": "pass"
             }
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.hcp:lte:2",
+              "description": "0-2 HCP (too weak to invite game opposite 22-24)",
+              "rationale": "too weak to invite game opposite 22-24",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
@@ -1090,6 +1256,125 @@
           "teachingLabel": {
             "name": "3S — 5+ spades, game values",
             "summary": "Show 5+ spades with game values, looking for a major-suit fit"
+          }
+        },
+        {
+          "meaningId": "strong-2c:stayman-over-2nt",
+          "semanticClassId": "strong-2c:stayman-over-2nt",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.strong2c.responderGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.strong2c.responderGameValues:boolean:true",
+              "description": "Game values opposite 22-24",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.hasFourCardMajor",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "bridge.hasFourCardMajor:boolean:true",
+              "description": "4-card major",
+              "rationale": "asks opener for a 4-card major",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "Strong2CStaymanOver2NT",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♣ Stayman over 2NT",
+            "summary": "Ask opener for a 4-card major after the 2NT (22-24) rebid"
+          }
+        },
+        {
+          "meaningId": "strong-2c:transfer-hearts-over-2nt",
+          "semanticClassId": "strong-2c:transfer-over-2nt",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts",
+              "rationale": "transfer to hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "TransferToHearts",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♦ transfer to hearts",
+            "summary": "Jacoby transfer over opener's 2NT rebid showing 5+ hearts"
+          }
+        },
+        {
+          "meaningId": "strong-2c:transfer-spades-over-2nt",
+          "semanticClassId": "strong-2c:transfer-over-2nt",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "5+ spades",
+              "rationale": "transfer to spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "TransferToSpades",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♥ transfer to spades",
+            "summary": "Jacoby transfer over opener's 2NT rebid showing 5+ spades"
           }
         }
       ]
@@ -1437,6 +1722,43 @@
           "teachingLabel": {
             "name": "3S — own suit",
             "summary": "Show 5+ spades, no fit for opener's suit"
+          }
+        },
+        {
+          "meaningId": "strong-2c:second-negative-3c",
+          "semanticClassId": "strong-2c:second-negative",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.hcp:lte:3",
+              "description": "0-3 HCP (second negative)",
+              "rationale": "double-negative / no values",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 10
+          },
+          "sourceIntent": {
+            "type": "Strong2CSecondNegative",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♣ — second negative",
+            "summary": "Cheapest minor: 0-3 HCP, no fit, truly nothing to contribute"
           }
         }
       ]

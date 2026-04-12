@@ -6,7 +6,7 @@
   "description": "Use 4NT to ask for aces when considering slam",
   "purpose": "Determine whether the partnership has enough aces to bid slam safely",
   "references": {
-    "authority": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Blackwood is a core SAYC convention, fully standardized" },
+    "authority": { "url": "https://en.wikipedia.org/wiki/Blackwood_convention", "label": "ACBL SAYC — Blackwood is a core SAYC convention, fully standardized" },
     "discovery": { "url": "https://www.bridgebum.com/blackwood.php" }
   },
   "teaching": {
@@ -891,7 +891,7 @@
         "id": "module.blackwood.slamInterest",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "Hand has slam-level values (HCP meets system slam threshold)",
+        "description": "Hand has slam-level values (17+ HCP consistent with partnership slam values)",
         "valueType": "boolean",
         "derivesFrom": [
           "hand.hcp"
@@ -904,7 +904,7 @@
           "clause": {
             "factId": "hand.hcp",
             "operator": "gte",
-            "value": 15
+            "value": 17
           }
         }
       },

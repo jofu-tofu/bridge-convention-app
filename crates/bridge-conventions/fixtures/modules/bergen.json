@@ -550,6 +550,70 @@
       "roles": [
         "pedagogical"
       ]
+    },
+    {
+      "explanationId": "bergen.splinter.relayHearts",
+      "meaningId": "bergen:splinter-relay-hearts",
+      "templateKey": "bergen.splinter.relayHearts.semantic",
+      "displayText": "Opener's 3NT relay asks responder to reveal the short suit",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "bergen.splinter.relaySpades",
+      "meaningId": "bergen:splinter-relay-spades",
+      "templateKey": "bergen.splinter.relaySpades.semantic",
+      "displayText": "Opener's 3♠ relay asks responder to reveal the short suit",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "bergen.splinter.revealClubsHearts",
+      "meaningId": "bergen:splinter-reveal-clubs-hearts",
+      "templateKey": "bergen.splinter.revealClubsHearts.semantic",
+      "displayText": "4♣: shortness in clubs",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "bergen.splinter.revealDiamondsHearts",
+      "meaningId": "bergen:splinter-reveal-diamonds-hearts",
+      "templateKey": "bergen.splinter.revealDiamondsHearts.semantic",
+      "displayText": "4♦: shortness in diamonds",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "bergen.splinter.revealSpadesHearts",
+      "meaningId": "bergen:splinter-reveal-spades-hearts",
+      "templateKey": "bergen.splinter.revealSpadesHearts.semantic",
+      "displayText": "4♥: shortness in the other major (spades)",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "bergen.splinter.revealClubsSpades",
+      "meaningId": "bergen:splinter-reveal-clubs-spades",
+      "templateKey": "bergen.splinter.revealClubsSpades.semantic",
+      "displayText": "4♣: shortness in clubs",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "bergen.splinter.revealDiamondsSpades",
+      "meaningId": "bergen:splinter-reveal-diamonds-spades",
+      "templateKey": "bergen.splinter.revealDiamondsSpades.semantic",
+      "displayText": "4♦: shortness in diamonds",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "bergen.splinter.revealHeartsSpades",
+      "meaningId": "bergen:splinter-reveal-hearts-spades",
+      "templateKey": "bergen.splinter.revealHeartsSpades.semantic",
+      "displayText": "4♥: shortness in the other major (hearts)",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -609,6 +673,22 @@
       },
       {
         "from": "opened-hearts",
+        "to": "after-splinter-hearts",
+        "on": {
+          "act": "show",
+          "feature": "shortage"
+        }
+      },
+      {
+        "from": "after-splinter-hearts",
+        "to": "after-splinter-hearts-relay",
+        "on": {
+          "act": "inquire",
+          "feature": "shortage"
+        }
+      },
+      {
+        "from": "after-splinter-hearts-relay",
         "to": "done",
         "on": {
           "act": "show",
@@ -661,6 +741,22 @@
       },
       {
         "from": "opened-spades",
+        "to": "after-splinter-spades",
+        "on": {
+          "act": "show",
+          "feature": "shortage"
+        }
+      },
+      {
+        "from": "after-splinter-spades",
+        "to": "after-splinter-spades-relay",
+        "on": {
+          "act": "inquire",
+          "feature": "shortage"
+        }
+      },
+      {
+        "from": "after-splinter-spades-relay",
         "to": "done",
         "on": {
           "act": "show",
@@ -2504,6 +2600,350 @@
           "teachingLabel": {
             "name": "Accept game try decision → pass",
             "summary": "Pass after responder decides on the game try, accepting their judgment"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-splinter-hearts",
+      "turn": "opener",
+      "negotiationDelta": {
+        "forcing": "game",
+        "captain": "opener",
+        "fitAgreed": {
+          "strain": "hearts",
+          "confidence": "final"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "bergen:splinter-relay-hearts",
+          "semanticClassId": "bergen:splinter-relay",
+          "moduleId": "bergen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SplinterRelay",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3NT relay (ask short suit)",
+            "summary": "Cheapest step over responder's 3♠ ambiguous splinter asks which suit is short"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-splinter-spades",
+      "turn": "opener",
+      "negotiationDelta": {
+        "forcing": "game",
+        "captain": "opener",
+        "fitAgreed": {
+          "strain": "spades",
+          "confidence": "final"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "bergen:splinter-relay-spades",
+          "semanticClassId": "bergen:splinter-relay",
+          "moduleId": "bergen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SplinterRelay",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3♠ relay (ask short suit)",
+            "summary": "Cheapest step over responder's 3♥ ambiguous splinter asks which suit is short"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-splinter-hearts-relay",
+      "turn": "responder",
+      "negotiationDelta": {
+        "forcing": "game",
+        "captain": "opener",
+        "fitAgreed": {
+          "strain": "hearts",
+          "confidence": "final"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "bergen:splinter-reveal-clubs-hearts",
+          "semanticClassId": "bergen:splinter-reveal",
+          "moduleId": "bergen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 1,
+              "clauseId": "hand.suitLength.clubs:lte:1",
+              "description": "Shortness in clubs",
+              "rationale": "shortness in clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SplinterReveal",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4♣ (shortness in clubs)",
+            "summary": "Reveal club shortness after opener's relay"
+          }
+        },
+        {
+          "meaningId": "bergen:splinter-reveal-diamonds-hearts",
+          "semanticClassId": "bergen:splinter-reveal",
+          "moduleId": "bergen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "lte",
+              "value": 1,
+              "clauseId": "hand.suitLength.diamonds:lte:1",
+              "description": "Shortness in diamonds",
+              "rationale": "shortness in diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SplinterReveal",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4♦ (shortness in diamonds)",
+            "summary": "Reveal diamond shortness after opener's relay"
+          }
+        },
+        {
+          "meaningId": "bergen:splinter-reveal-spades-hearts",
+          "semanticClassId": "bergen:splinter-reveal",
+          "moduleId": "bergen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 1,
+              "clauseId": "hand.suitLength.spades:lte:1",
+              "description": "Shortness in spades (other major)",
+              "rationale": "shortness in the other major",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "SplinterReveal",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4♥ (shortness in the other major)",
+            "summary": "Reveal shortness in the other major (spades) after opener's relay"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "after-splinter-spades-relay",
+      "turn": "responder",
+      "negotiationDelta": {
+        "forcing": "game",
+        "captain": "opener",
+        "fitAgreed": {
+          "strain": "spades",
+          "confidence": "final"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "bergen:splinter-reveal-clubs-spades",
+          "semanticClassId": "bergen:splinter-reveal",
+          "moduleId": "bergen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 1,
+              "clauseId": "hand.suitLength.clubs:lte:1",
+              "description": "Shortness in clubs",
+              "rationale": "shortness in clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SplinterReveal",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4♣ (shortness in clubs)",
+            "summary": "Reveal club shortness after opener's relay"
+          }
+        },
+        {
+          "meaningId": "bergen:splinter-reveal-diamonds-spades",
+          "semanticClassId": "bergen:splinter-reveal",
+          "moduleId": "bergen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "lte",
+              "value": 1,
+              "clauseId": "hand.suitLength.diamonds:lte:1",
+              "description": "Shortness in diamonds",
+              "rationale": "shortness in diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SplinterReveal",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4♦ (shortness in diamonds)",
+            "summary": "Reveal diamond shortness after opener's relay"
+          }
+        },
+        {
+          "meaningId": "bergen:splinter-reveal-hearts-spades",
+          "semanticClassId": "bergen:splinter-reveal",
+          "moduleId": "bergen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 1,
+              "clauseId": "hand.suitLength.hearts:lte:1",
+              "description": "Shortness in hearts (other major)",
+              "rationale": "shortness in the other major",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "SplinterReveal",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4♥ (shortness in the other major)",
+            "summary": "Reveal shortness in the other major (hearts) after opener's relay"
           }
         }
       ]

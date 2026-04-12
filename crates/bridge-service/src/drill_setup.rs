@@ -76,6 +76,7 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
         &bundle_input.member_ids,
         options.practice_role,
         Some(convention_config.deal_constraints.clone()),
+        &config.convention_id,
     );
 
     let drill_bundle = start_drill(

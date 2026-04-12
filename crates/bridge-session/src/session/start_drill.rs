@@ -40,6 +40,7 @@ pub struct DrillBundle {
 
 const NEGATIVE_DOUBLES_BUNDLE_ID: &str = "negative-doubles-bundle";
 const NEGATIVE_DOUBLES_DEAL_ATTEMPTS: u64 = 256;
+const NMF_BUNDLE_ID: &str = "nmf-bundle";
 /// Maximum rejection-sampling attempts for "normal" (non-negdbl) bundles when
 /// an acceptance predicate is supplied. Without a predicate, start_drill still
 /// accepts the first deal (budget = 1).
@@ -101,6 +102,87 @@ pub fn rotate_auction(auction: &Auction) -> Auction {
 
 fn is_negative_doubles_bundle(convention_id: &str) -> bool {
     convention_id == NEGATIVE_DOUBLES_BUNDLE_ID
+}
+
+fn is_nmf_bundle(convention_id: &str) -> bool {
+    convention_id == NMF_BUNDLE_ID
+}
+
+/// Build the `1m - 1M - 1NT` prefix auction for the NMF drill decision point.
+///
+/// NMF is defined only on the auction `1m - 1M - 1NT - ?`. The user (South,
+/// responder) faces this decision; dealer is North (opener). We choose:
+///   - Opener's 1m = North's longer minor (1D on ties).
+///   - Responder's 1M = South's longer major (1S on ties). Requires 4+.
+///   - Opener rebids 1NT (non-forcing, 12-14 balanced — assumed by the
+///     rejection-sampling predicate that selected this deal).
+///
+/// Returns None if the deal cannot support the sequence (South lacks a 4+
+/// major, or dealer is not North). Caller falls back to a later attempt.
+pub fn nmf_initial_auction(deal: &Deal, dealer: Seat) -> Option<Auction> {
+    if dealer != Seat::North {
+        return None;
+    }
+    let responder = Seat::South;
+
+    // Opener's 1m — use North's longer minor.
+    let n_clubs = suit_length(deal, dealer, Suit::Clubs);
+    let n_diamonds = suit_length(deal, dealer, Suit::Diamonds);
+    let opener_minor = if n_diamonds > n_clubs {
+        BidSuit::Diamonds
+    } else {
+        BidSuit::Clubs
+    };
+
+    // Responder's 1M — require 4+ in the chosen major (needed for NMF to apply).
+    let s_hearts = suit_length(deal, responder, Suit::Hearts);
+    let s_spades = suit_length(deal, responder, Suit::Spades);
+    let responder_major = if s_spades >= 4 && s_spades >= s_hearts {
+        BidSuit::Spades
+    } else if s_hearts >= 4 {
+        BidSuit::Hearts
+    } else {
+        return None;
+    };
+
+    Some(Auction {
+        entries: vec![
+            AuctionEntry {
+                seat: dealer,
+                call: Call::Bid {
+                    level: 1,
+                    strain: opener_minor,
+                },
+            },
+            AuctionEntry {
+                seat: next_seat(dealer),
+                call: Call::Pass,
+            },
+            AuctionEntry {
+                seat: responder,
+                call: Call::Bid {
+                    level: 1,
+                    strain: responder_major,
+                },
+            },
+            AuctionEntry {
+                seat: next_seat(responder),
+                call: Call::Pass,
+            },
+            AuctionEntry {
+                seat: dealer,
+                call: Call::Bid {
+                    level: 1,
+                    strain: BidSuit::NoTrump,
+                },
+            },
+            AuctionEntry {
+                seat: next_seat(dealer),
+                call: Call::Pass,
+            },
+        ],
+        is_complete: false,
+    })
 }
 
 fn suit_length(deal: &Deal, seat: Seat, suit: Suit) -> usize {
@@ -658,10 +740,11 @@ pub fn start_drill(
 
     // ── Deal generation ─────────────────────────────────────────
     let is_negdbl = is_negative_doubles_bundle(&convention.id);
+    let is_nmf = is_nmf_bundle(&convention.id);
     let predicate = options.deal_acceptance_predicate.as_ref();
     let deal_attempts = if is_negdbl {
         NEGATIVE_DOUBLES_DEAL_ATTEMPTS
-    } else if predicate.is_some() {
+    } else if predicate.is_some() || is_nmf {
         NORMAL_DEAL_ATTEMPTS
     } else {
         1
@@ -699,6 +782,8 @@ pub fn start_drill(
                 PracticeRole::Opener => negative_doubles_opener_sequence(&deal_result.deal, dealer),
                 _ => negdbl_sequence.clone(),
             }
+        } else if is_nmf && resolved_role == PracticeRole::Responder {
+            nmf_initial_auction(&deal_result.deal, dealer)
         } else {
             derive_initial_auction(
                 resolved_role,
@@ -723,6 +808,17 @@ pub fn start_drill(
                     .unwrap_or(false),
                 PracticeRole::Opener => initial_auction.is_some(),
                 _ => negdbl_sequence.is_some(),
+            }
+        } else if is_nmf && resolved_role == PracticeRole::Responder {
+            // Require the NMF prefix to be constructible (responder has 4+
+            // major) AND the adapter predicate accepts the deal at that
+            // decision point.
+            if initial_auction.is_none() {
+                false
+            } else if let Some(pred) = predicate {
+                pred(&deal_result.deal, user_seat)
+            } else {
+                true
             }
         } else if let Some(pred) = predicate {
             pred(&deal_result.deal, user_seat)

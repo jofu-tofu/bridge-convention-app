@@ -33,6 +33,17 @@ pub struct ObsPattern {
     pub strength: Option<HandStrength>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub actor: Option<TurnRole>,
+    /// Bid level (1-7). `None` = match any level. `Some(n)` = exact level match.
+    /// Level is read from the containing step's `Call::Bid`; steps whose call
+    /// is not `Call::Bid` (Pass, Double, Redouble) never match when `Some`.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub level: Option<u8>,
+    /// Jump discriminator. `None` = don't care. `Some(true)` = bid's level
+    /// strictly exceeds the minimum legal bid level for its strain given prior
+    /// calls in the log. `Some(false)` = non-jump (level equals the minimum
+    /// legal level). Non-bid calls never match when `Some`.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub jump: Option<bool>,
 }
 
 /// Act field of an ObsPattern — either a specific action type or "any".
@@ -205,6 +216,8 @@ mod tests {
                 strain: None,
                 strength: None,
                 actor: None,
+                level: None,
+                jump: None,
             }],
         };
         let json = serde_json::to_string(&expr).unwrap();
@@ -251,6 +264,8 @@ mod tests {
                     strain: Some(BidSuitName::Notrump),
                     strength: None,
                     actor: None,
+                    level: None,
+                    jump: None,
                 },
             }],
         };

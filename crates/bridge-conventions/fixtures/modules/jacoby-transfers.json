@@ -6,8 +6,8 @@
   "description": "Bid 2D/2H over 1NT to show a 5+ card major and let opener declare",
   "purpose": "Right-side the contract so the strong 1NT hand stays hidden, while guaranteeing a trump fit when responder has a 5+ card major",
   "references": {
-    "authority": { "url": "https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/", "label": "ACBL SAYC — Jacoby Transfers are a core SAYC convention, standardized" },
-    "discovery": { "url": "https://www.bridgebum.com/jacoby_transfer.php" }
+    "authority": { "url": "https://en.wikipedia.org/wiki/Jacoby_transfer", "label": "ACBL SAYC — Jacoby Transfers are a core SAYC convention, standardized" },
+    "discovery": { "url": "https://www.bridgebum.com/jacoby_transfers.php" }
   },
   "teaching": {
     "tradeoff": "Using 2D and 2H as transfers means you can't play in a natural 2D or 2H contract.",
@@ -951,9 +951,9 @@
             {
               "factId": "hand.suitLength.hearts",
               "operator": "gte",
-              "value": 6,
-              "clauseId": "hand.suitLength.hearts:gte:6",
-              "description": "6+ hearts (game in major with long suit)",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts (game in major with long suit)",
               "rationale": "game in major with long suit",
               "isPublic": true
             }
@@ -1452,9 +1452,9 @@
             {
               "factId": "hand.suitLength.spades",
               "operator": "gte",
-              "value": 6,
-              "clauseId": "hand.suitLength.spades:gte:6",
-              "description": "6+ spades (game in major with long suit)",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "5+ spades (game in major with long suit)",
               "rationale": "game in major with long suit",
               "isPublic": true
             }

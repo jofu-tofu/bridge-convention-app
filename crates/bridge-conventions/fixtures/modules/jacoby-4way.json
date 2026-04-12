@@ -8,7 +8,7 @@
   "purpose": "Use the Jacoby transfer structure for major-suit hands while preserving the usual right-side-the-contract benefits",
   "references": {
     "authority": { "url": "https://www.bridgeguys.com/Conventions/FourWayTransfers.html", "label": "Bridge Guys — Jacoby transfer structure for major suits" },
-    "discovery": { "url": "https://www.bridgebum.com/four_suit_transfer_bids.php" }
+    "discovery": { "url": "https://www.bridgebum.com/four_suit_transfers.php" }
   },
   "teaching": {
     "tradeoff": "This module keeps the standard major-suit transfer structure, so natural invitational 2NT and natural 2S responses remain available.",
