@@ -137,10 +137,14 @@ pub fn run_initial_ai_bids(
     // If it's already the user's turn, just fetch legal calls
     if state.is_user_seat(current_turn) {
         state.legal_calls = get_legal_calls(&state.auction, current_turn);
+        push_pre_bid_snapshot(state, seat_strategies);
         return Vec::new();
     }
 
-    let (ai_bids, _complete) = run_ai_bid_loop(state, current_turn, seat_strategies);
+    let (ai_bids, complete) = run_ai_bid_loop(state, current_turn, seat_strategies);
+    if !complete {
+        push_pre_bid_snapshot(state, seat_strategies);
+    }
     ai_bids
 }
 
@@ -174,6 +178,38 @@ pub fn initialize_auction(
 }
 
 // ── Internal helpers ───────────────────────────────────────────────
+
+/// Push a `pre-bid` debug log entry for the user's upcoming turn.
+///
+/// Runs `get_expected_bid` (which stashes a fresh `StrategyEvaluation` on the
+/// user seat's strategy) then captures the snapshot, so the debug drawer can
+/// show the pipeline state for the user's current decision before they bid.
+/// No-op when it is not the user's turn.
+fn push_pre_bid_snapshot(
+    state: &mut SessionState,
+    seat_strategies: &HashMap<Seat, SeatStrategy>,
+) {
+    let user_seat = match get_current_turn(&state.auction, state.deal.dealer) {
+        Some(s) if state.is_user_seat(s) => s,
+        _ => return,
+    };
+
+    let expected_result = get_expected_bid(state, user_seat, seat_strategies);
+    let evaluation_snapshot = capture_evaluation_snapshot(user_seat, seat_strategies);
+
+    state.debug_log.push(DebugLogEntry {
+        kind: "pre-bid".to_string(),
+        turn_index: state.auction.entries.len(),
+        seat: user_seat,
+        call: None,
+        expected_call: expected_result.as_ref().map(|r| r.call.clone()),
+        expected_explanation: expected_result.as_ref().map(|r| r.explanation.clone()),
+        grade: None,
+        trace: expected_result.as_ref().and_then(|r| r.trace.clone()),
+        evaluation_snapshot,
+        bid_feedback: None,
+    });
+}
 
 /// Capture the stashed StrategyEvaluation for the debug log.
 /// Returns None in release builds or when no evaluation is stashed.
@@ -426,6 +462,10 @@ fn apply_bid_and_run_ai(
     // Run AI bids
     let next_turn = next_seat(seat);
     let (ai_bids, auction_complete) = run_ai_bid_loop(state, next_turn, seat_strategies);
+
+    if !auction_complete {
+        push_pre_bid_snapshot(state, seat_strategies);
+    }
 
     let phase_transition = if auction_complete {
         Some((GamePhase::Bidding, state.phase))
