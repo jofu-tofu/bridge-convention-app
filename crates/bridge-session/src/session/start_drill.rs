@@ -629,6 +629,7 @@ pub struct StartDrillOptions {
     pub target_module_id: Option<String>,
     pub bundle_member_ids: Option<Vec<String>>,
     pub bundle_deal_constraints: Option<DealConstraints>,
+    pub initial_auction_override: Option<Auction>,
     /// Optional deal-acceptance predicate. When present, non-negdbl bundles
     /// loop up to `NORMAL_DEAL_ATTEMPTS` generating fresh deals and break on
     /// the first one the predicate accepts. When absent, non-negdbl bundles
@@ -648,6 +649,7 @@ impl Default for StartDrillOptions {
             target_module_id: None,
             bundle_member_ids: None,
             bundle_deal_constraints: None,
+            initial_auction_override: None,
             deal_acceptance_predicate: None,
         }
     }
@@ -782,6 +784,8 @@ pub fn start_drill(
                 PracticeRole::Opener => negative_doubles_opener_sequence(&deal_result.deal, dealer),
                 _ => negdbl_sequence.clone(),
             }
+        } else if let Some(ref override_auction) = options.initial_auction_override {
+            Some(override_auction.clone())
         } else if is_nmf && resolved_role == PracticeRole::Responder {
             nmf_initial_auction(&deal_result.deal, dealer)
         } else {

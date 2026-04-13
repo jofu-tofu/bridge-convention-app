@@ -17,7 +17,7 @@ use crate::config_resolver;
 use crate::error::ServiceError;
 use crate::request_types::SessionConfig;
 use crate::validation;
-use crate::witness_selection::{select_witness, WitnessSelection};
+use crate::witness_selection::{initial_auction_from_witness, select_witness, WitnessSelection};
 
 /// Maximum number of internal retries on deal-generation exhaustion.
 ///
@@ -163,6 +163,9 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
             } else {
                 None
             };
+            options.initial_auction_override = witness_selection
+                .as_ref()
+                .and_then(|ws| initial_auction_from_witness(&ws.witness));
 
             // Rebuild a fresh DrillConfig each attempt since start_drill
             // consumes it (and DrillConfig isn't Clone due to `dyn` boxes,

@@ -31,6 +31,7 @@ use bridge_session::session::start_drill::{nmf_initial_auction, DealAcceptancePr
 use bridge_session::types::{OpponentMode, PracticeRole};
 
 use crate::convention_adapter::ConventionStrategyAdapter;
+use crate::witness_selection::initial_auction_from_witness;
 
 /// Extract (module_id, meaning_id) from a `StrategyEvaluation`'s selected carrier.
 fn matched_module_and_surface(evaluation: &StrategyEvaluation) -> Option<(String, String)> {
@@ -123,13 +124,15 @@ pub(crate) fn build_witness_acceptance_predicate(
         let seat_strategies = build_predicate_seat_strategies(user_seat, opponent_mode, &adapter);
 
         // Same prefix seeding as v1: either NMF, initial-auction derivation, or empty.
+        let witness_prefix = initial_auction_from_witness(&witness);
         let nmf_prefix =
             if convention_id == "nmf-bundle" && resolved_role == PracticeRole::Responder {
                 nmf_initial_auction(deal, deal.dealer)
             } else {
                 None
             };
-        let mut auction = nmf_prefix
+        let mut auction = witness_prefix
+            .or(nmf_prefix)
             .or_else(|| {
                 derive_initial_auction(
                     resolved_role,
@@ -148,20 +151,21 @@ pub(crate) fn build_witness_acceptance_predicate(
         // witness.prefix; `cursor` is the next seat to act.
         let mut witness_idx = 0usize;
 
-        // First: verify any pre-seeded entries match expectations. Pre-seeded
-        // entries are always partnership bids (opener/responder), aligning with
-        // witness prefix ordering — intervening opponent passes are NOT
-        // pre-seeded by `derive_initial_auction`, so we only match
-        // witness-ordered partnership entries here.
+        // First: verify any pre-seeded entries match expectations. Witness-
+        // derived initial auctions may include inserted opponent passes so the
+        // live drill lands directly on the user's turn; consume witness-prefix
+        // partnership bids in order and tolerate extra seeded passes from seats
+        // that are not the next witness actor.
         for entry in auction.entries.iter() {
-            let expected = match witness.prefix.get(witness_idx) {
-                Some(e) => e,
-                None => return false,
-            };
-            if entry.seat != expected.seat || entry.call != expected.call {
+            if let Some(expected) = witness.prefix.get(witness_idx) {
+                if entry.seat == expected.seat && entry.call == expected.call {
+                    witness_idx += 1;
+                    continue;
+                }
+            }
+            if entry.call != Call::Pass {
                 return false;
             }
-            witness_idx += 1;
         }
 
         let mut cursor = if auction.entries.is_empty() {

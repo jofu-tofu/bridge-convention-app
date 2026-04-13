@@ -84,22 +84,14 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "weak-two:preemptive-raise-hearts",
+    "selectedMeaningId": "weak-two:weak-pass-hearts",
     "selectedCall": {
-      "type": "bid",
-      "level": 3,
-      "strain": "H"
+      "type": "pass"
     },
     "truthSetMeaningIds": [
-      "weak-two:preemptive-raise-hearts",
       "weak-two:weak-pass-hearts"
     ],
     "truthSetCalls": [
-      {
-        "type": "bid",
-        "level": 3,
-        "strain": "H"
-      },
       {
         "type": "pass"
       }

@@ -10,7 +10,8 @@ use bridge_conventions::fact_dsl::witness::{enumerate_witnesses, project_witness
 use bridge_conventions::registry::module_registry::get_module;
 use bridge_conventions::types::system_config::BaseSystemId;
 use bridge_conventions::types::{rule_types::TurnRole, ConventionModule};
-use bridge_engine::types::{DealConstraints, Seat};
+use bridge_engine::constants::next_seat;
+use bridge_engine::types::{Auction, AuctionEntry, Call, DealConstraints, Seat};
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
@@ -24,6 +25,50 @@ pub(crate) struct WitnessSelection {
     pub target_surface_id: String,
     pub witness: Witness,
     pub projected_constraints: DealConstraints,
+}
+
+/// Reconstruct the auction prefix that should be in place when the user is
+/// next to act. Partnership witness calls are taken verbatim; any skipped
+/// seats between them are filled with Pass so startup and deal gating replay
+/// the same authored context.
+pub(crate) fn initial_auction_from_witness(witness: &Witness) -> Option<Auction> {
+    let mut entries: Vec<AuctionEntry> = Vec::new();
+    let mut cursor = witness.dealer;
+    let mut witness_idx = 0usize;
+    let mut guard = 0u32;
+
+    while cursor != witness.user_seat && guard < 16 {
+        guard += 1;
+        if let Some(expected) = witness.prefix.get(witness_idx) {
+            if expected.seat == cursor {
+                entries.push(AuctionEntry {
+                    seat: cursor,
+                    call: expected.call.clone(),
+                });
+                witness_idx += 1;
+            } else {
+                entries.push(AuctionEntry {
+                    seat: cursor,
+                    call: Call::Pass,
+                });
+            }
+        } else {
+            entries.push(AuctionEntry {
+                seat: cursor,
+                call: Call::Pass,
+            });
+        }
+        cursor = next_seat(cursor);
+    }
+
+    if cursor != witness.user_seat || witness_idx != witness.prefix.len() || entries.is_empty() {
+        return None;
+    }
+
+    Some(Auction {
+        entries,
+        is_complete: false,
+    })
 }
 
 /// Map the user's `PracticeRole` to the `TurnRole` that makes a surface

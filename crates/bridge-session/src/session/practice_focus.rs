@@ -6,10 +6,14 @@ use bridge_engine::types::{
 };
 
 fn opening_auction(dealer: Seat, strain: BidSuit) -> Auction {
+    opening_auction_at_level(dealer, 1, strain)
+}
+
+fn opening_auction_at_level(dealer: Seat, level: u8, strain: BidSuit) -> Auction {
     Auction {
         entries: vec![AuctionEntry {
             seat: dealer,
-            call: Call::Bid { level: 1, strain },
+            call: Call::Bid { level, strain },
         }],
         is_complete: false,
     }
@@ -41,6 +45,57 @@ fn natural_suit_opening_for_dealer(dealer: Seat, deal: Option<&Deal>) -> Option<
         BidSuit::Clubs
     };
     Some(opening_auction(dealer, strain))
+}
+
+fn weak_two_opening_for_dealer(
+    dealer: Seat,
+    min_length: &std::collections::HashMap<Suit, u8>,
+    deal: Option<&Deal>,
+) -> Option<Auction> {
+    let candidate_suits = [Suit::Spades, Suit::Hearts, Suit::Diamonds];
+
+    if let Some(hand) = deal.and_then(|d| d.hands.get(&dealer)) {
+        let best = candidate_suits
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, suit)| {
+                let required = min_length.get(suit).copied().unwrap_or(0);
+                if required < 6 {
+                    return None;
+                }
+                let actual = hand.cards.iter().filter(|c| c.suit == *suit).count() as u8;
+                if actual < 6 {
+                    return None;
+                }
+                Some((actual, idx, *suit))
+            })
+            .max_by_key(|(actual, idx, _)| (*actual, std::cmp::Reverse(*idx)));
+
+        if let Some((_, _, suit)) = best {
+            let strain = match suit {
+                Suit::Diamonds => BidSuit::Diamonds,
+                Suit::Hearts => BidSuit::Hearts,
+                Suit::Spades => BidSuit::Spades,
+                Suit::Clubs => return None,
+            };
+            return Some(opening_auction_at_level(dealer, 2, strain));
+        }
+    }
+
+    for suit in candidate_suits {
+        if min_length.get(&suit).copied().unwrap_or(0) < 6 {
+            continue;
+        }
+        let strain = match suit {
+            Suit::Diamonds => BidSuit::Diamonds,
+            Suit::Hearts => BidSuit::Hearts,
+            Suit::Spades => BidSuit::Spades,
+            Suit::Clubs => continue,
+        };
+        return Some(opening_auction_at_level(dealer, 2, strain));
+    }
+
+    None
 }
 
 /// Derive practice focus — which modules are target, prerequisites, follow-up, background.
@@ -139,15 +194,22 @@ pub fn derive_initial_auction(
             }
         }
 
-        // Rule 4: 5+ hearts → 1H
         if let Some(ref min_lengths) = sc.min_length {
+            // Rule 4: weak-two opener shape/value envelope → 2D/2H/2S
+            if sc.max_hcp.unwrap_or(40) <= 10 {
+                if let Some(auction) = weak_two_opening_for_dealer(dealer, min_lengths, deal) {
+                    return Some(auction);
+                }
+            }
+
+            // Rule 5: 5+ hearts → 1H
             if let Some(&hearts_min) = min_lengths.get(&Suit::Hearts) {
                 if hearts_min >= 5 {
                     return Some(opening_auction(dealer, BidSuit::Hearts));
                 }
             }
 
-            // Rule 5: 5+ spades → 1S
+            // Rule 6: 5+ spades → 1S
             if let Some(&spades_min) = min_lengths.get(&Suit::Spades) {
                 if spades_min >= 5 {
                     return Some(opening_auction(dealer, BidSuit::Spades));
@@ -155,7 +217,7 @@ pub fn derive_initial_auction(
             }
         }
 
-        // Rule 6: min_length_any can imply a generic suit opening (e.g. Michaels).
+        // Rule 7: min_length_any can imply a generic suit opening (e.g. Michaels).
         // Use the actual dealer hand to choose a natural one-level suit bid.
         if let Some(ref min_any) = sc.min_length_any {
             let opens_any_suit = min_any.values().any(|&m| m >= 5);
@@ -362,6 +424,80 @@ mod tests {
             Call::Bid {
                 level: 1,
                 strain: BidSuit::Spades
+            }
+        );
+    }
+
+    #[test]
+    fn weak_two_spades_returns_2s() {
+        let mut min_length = HashMap::new();
+        min_length.insert(Suit::Spades, 6);
+
+        let constraints = DealConstraints {
+            seats: vec![SeatConstraint {
+                seat: Seat::North,
+                min_hcp: Some(5),
+                max_hcp: Some(10),
+                balanced: None,
+                min_length: Some(min_length),
+                max_length: None,
+                min_length_any: None,
+            }],
+            dealer: Some(Seat::North),
+            vulnerability: None,
+            max_attempts: None,
+            seed: None,
+        };
+
+        let result = derive_initial_auction(
+            PracticeRole::Responder,
+            Seat::North,
+            Some(&constraints),
+            None,
+        );
+        let auction = result.expect("should produce 2S auction");
+        assert_eq!(
+            auction.entries[0].call,
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Spades
+            }
+        );
+    }
+
+    #[test]
+    fn weak_two_diamonds_returns_2d() {
+        let mut min_length = HashMap::new();
+        min_length.insert(Suit::Diamonds, 6);
+
+        let constraints = DealConstraints {
+            seats: vec![SeatConstraint {
+                seat: Seat::North,
+                min_hcp: Some(5),
+                max_hcp: Some(10),
+                balanced: None,
+                min_length: Some(min_length),
+                max_length: None,
+                min_length_any: None,
+            }],
+            dealer: Some(Seat::North),
+            vulnerability: None,
+            max_attempts: None,
+            seed: None,
+        };
+
+        let result = derive_initial_auction(
+            PracticeRole::Responder,
+            Seat::North,
+            Some(&constraints),
+            None,
+        );
+        let auction = result.expect("should produce 2D auction");
+        assert_eq!(
+            auction.entries[0].call,
+            Call::Bid {
+                level: 2,
+                strain: BidSuit::Diamonds
             }
         );
     }

@@ -119,11 +119,14 @@ fn start_drill_ai_bids_run_until_user_turn() {
         .start_drill(&handle)
         .expect("start_drill should succeed");
 
-    // NT bundle: dealer is typically North (opens 1NT), then East passes.
-    // So at least N+E should have bid before South's turn.
+    // NT bundle responder drills now allow either:
+    // - startup AI bids emitted via `ai_bids`, or
+    // - a witness-derived initial auction already populated in the viewport.
     assert!(
-        !result.ai_bids.is_empty(),
-        "AI should have bid before user's turn (dealer=North for NT bundle)",
+        !result.ai_bids.is_empty() || result.viewport.auction_entries.len() >= 2,
+        "expected prior auction context before South's turn, got ai_bids={:?}, auction={:?}",
+        result.ai_bids,
+        result.viewport.auction_entries,
     );
 }
 
