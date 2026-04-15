@@ -18,7 +18,7 @@
       return undefined;
     }
 
-    const ratios = new Map<string, number>();
+    const ratios: Record<string, number> = {};
     const root = document.querySelector<HTMLElement>(".shell-main");
     const targets = sections
       .map((section) => {
@@ -35,10 +35,10 @@
       (entries) => {
         for (const entry of entries) {
           const id = (entry.target as HTMLElement).id;
-          ratios.set(id, entry.isIntersecting ? entry.intersectionRatio : 0);
+          ratios[id] = entry.isIntersecting ? entry.intersectionRatio : 0;
         }
 
-        const next = [...ratios.entries()]
+        const next = Object.entries(ratios)
           .filter(([, ratio]) => ratio > 0)
           .sort((a, b) => b[1] - a[1])[0]?.[0];
 
