@@ -1,9 +1,9 @@
 //! DTO types for the learning viewport — struct/enum definitions consumed by
 //! `learning_viewport.rs` and `learning_formatters.rs`.
 
-use std::collections::BTreeMap;
-
-use bridge_conventions::{ConstraintValue, Disclosure, FactOperator, RecommendationBand};
+use bridge_conventions::{
+    ConstraintValue, Disclosure, FactComposition, FactOperator, HandSample, RecommendationBand,
+};
 use bridge_engine::types::Call;
 use serde::{Deserialize, Serialize};
 
@@ -30,7 +30,7 @@ pub struct ModuleLearningViewport {
     pub description: String,
     pub purpose: String,
     pub teaching: LearningTeachingView,
-    pub reference: Option<ReferenceView>,
+    pub reference: ReferenceView,
     pub phases: Vec<PhaseGroupView>,
     pub bundle_ids: Vec<String>,
 }
@@ -40,15 +40,13 @@ pub struct ModuleLearningViewport {
 #[serde(rename_all = "camelCase")]
 pub struct ReferenceView {
     pub summary_card: SummaryCard,
-    pub when_to_use: Vec<String>,
+    pub when_to_use: Vec<ReferencePredicateBullet>,
     pub when_not_to_use: Vec<WhenNotItem>,
-    pub response_table_rows: Vec<ResponseTableRow>,
+    pub response_table: ResponseTable,
     pub worked_auctions: Vec<WorkedAuction>,
-    pub interference: Vec<InterferenceItem>,
-    pub decision_grid: Option<DecisionGrid>,
-    pub system_compat: SystemCompat,
+    pub interference: ResolvedInterference,
+    pub quick_reference: ResolvedQuickReference,
     pub related_links: Vec<RelatedLink>,
-    pub response_table_overrides: BTreeMap<String, ResponseTableOverride>,
 }
 
 /// Above-the-fold summary card.
@@ -61,6 +59,24 @@ pub struct SummaryCard {
     pub denies: String,
     pub guiding_idea: String,
     pub partnership: String,
+    /// Derived peer bids for peer-structured conventions. Empty for
+    /// hierarchical conventions (Stayman, Puppet Stayman, Strong 2C).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub peers: Vec<SummaryCardPeer>,
+}
+
+/// One derived peer entry on the summary-card viewport. Derived from the
+/// authored `AuthoredSummaryCardPeer` + the same clause-join pipeline used for
+/// the top-level summary card promises/denies.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SummaryCardPeer {
+    pub meaning_id: String,
+    pub call: Call,
+    pub call_display: String,
+    pub promises: String,
+    pub denies: String,
+    pub discriminator_label: String,
 }
 
 /// Negative-space guidance item.
@@ -71,6 +87,39 @@ pub struct WhenNotItem {
     pub reason: String,
 }
 
+/// Typed "when to use" bullet carried through to the prerendered surface.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReferencePredicateBullet {
+    pub predicate: FactComposition,
+    pub gloss: String,
+}
+
+/// Response table with dynamically discovered columns.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResponseTable {
+    pub columns: Vec<ResponseTableColumn>,
+    pub rows: Vec<ResponseTableRow>,
+}
+
+/// A single column in the derived response table.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResponseTableColumn {
+    pub id: String,
+    pub label: String,
+}
+
+/// A single cell within a response-table row.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResponseTableCell {
+    pub column_id: String,
+    pub column_label: String,
+    pub text: String,
+}
+
 /// One row in the derived response table.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -78,18 +127,26 @@ pub struct ResponseTableRow {
     pub meaning_id: String,
     pub response: Call,
     pub meaning: String,
-    pub shape: String,
-    pub hcp: String,
-    pub forcing: String,
+    pub cells: Vec<ResponseTableCell>,
 }
 
 /// Authored worked auction example.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkedAuction {
+    pub kind: WorkedAuctionKind,
     pub label: String,
     pub calls: Vec<WorkedAuctionCall>,
-    pub outcome_note: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub responder_hand: Option<HandSample>,
+}
+
+/// Worked-auction discriminator for future UI styling.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum WorkedAuctionKind {
+    Positive,
+    Negative,
 }
 
 /// One call inside a worked auction.
@@ -110,23 +167,66 @@ pub struct InterferenceItem {
     pub note: String,
 }
 
-/// Optional 2-D decision grid.
+/// Resolved interference block — mirrors the authored tagged enum shape.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DecisionGrid {
-    pub rows: Vec<String>,
-    pub cols: Vec<String>,
-    pub cells: Vec<Vec<String>>,
+#[serde(tag = "status", rename_all = "camelCase")]
+pub enum ResolvedInterference {
+    Applicable { items: Vec<InterferenceItem> },
+    NotApplicable { reason: String },
 }
 
-/// System compatibility notes.
+/// Resolved axis descriptor used on the viewport side — both authored axis
+/// variants flatten to `{ label, values }` with system facts resolved via
+/// `describe_system_fact_value`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SystemCompat {
-    pub sayc: String,
-    pub two_over_one: String,
-    pub acol: String,
-    pub custom_note: String,
+pub struct ResolvedAxis {
+    pub label: String,
+    pub values: Vec<String>,
+}
+
+/// One row of a quick-reference list variant.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResolvedQuickReferenceListItem {
+    pub recommendation: String,
+    pub note: String,
+}
+
+/// Rendered quick-reference grid cell.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ResolvedCell {
+    pub call: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gloss: Option<String>,
+    pub kind: ResolvedCellKind,
+}
+
+/// Render kind for a quick-reference grid cell.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum ResolvedCellKind {
+    Action,
+    NotApplicable,
+    Empty,
+}
+
+/// Quick-reference viewport payload — either a 2-D grid or a flat list.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+pub enum ResolvedQuickReference {
+    Grid {
+        #[serde(rename = "rowAxis")]
+        row_axis: ResolvedAxis,
+        #[serde(rename = "colAxis")]
+        col_axis: ResolvedAxis,
+        cells: Vec<Vec<ResolvedCell>>,
+    },
+    List {
+        axis: ResolvedAxis,
+        items: Vec<ResolvedQuickReferenceListItem>,
+    },
 }
 
 /// Cross-link to a related module.
@@ -135,18 +235,6 @@ pub struct SystemCompat {
 pub struct RelatedLink {
     pub module_id: String,
     pub discriminator: String,
-}
-
-/// Optional authored override for a derived response-table cell.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ResponseTableOverride {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub shape: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub hcp: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub forcing: Option<String>,
 }
 
 /// Teaching content for learning display.

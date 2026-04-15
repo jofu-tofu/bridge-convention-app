@@ -10,6 +10,17 @@ pub enum SubscriptionTier {
     Expired,
 }
 
+/// Collapse Stripe's subscription status enum into our Free/Paid/Expired tier.
+///
+/// Policy (deliberate):
+/// - `active`, `trialing`: paid until `current_period_end`.
+/// - `past_due`: paid until `current_period_end`. Stripe is retrying a failed
+///   charge; revoking access immediately would punish users over a transient
+///   card failure (expired card, bank decline). Stripe will transition to
+///   `unpaid`/`canceled` after retries exhaust; the user becomes Expired then.
+/// - `canceled`: paid until `current_period_end`. Stripe leaves the period
+///   intact when a user cancels mid-cycle so they keep what they paid for.
+/// - `incomplete`, `incomplete_expired`, `unpaid`, unknown: Expired.
 pub fn tier_for(
     subscription_status: Option<&str>,
     current_period_end: Option<i64>,

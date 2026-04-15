@@ -10,7 +10,18 @@ Concrete, opinionated template for the reference section that sits below the gui
 
 ### 1. Summary card — above the fold, always visible
 
-A boxed block, maximum six lines:
+The summary card has two rendering modes, selected by whether the fixture
+authors `summaryCard.peers[]`:
+
+- **Hero mode (default, hierarchical conventions).** `peers` is absent;
+  current oversized hero-bid layout applies. Use for Stayman, Puppet Stayman,
+  Strong 2♣.
+- **Peer-grid mode (peer-structured conventions).** `peers[]` lists ≥2
+  `{ definingMeaningId, discriminatorLabel }`; the hero glyph is replaced by a
+  row of peer tiles, each anchoring to the peer's row in the response table.
+  See the `multi-bid-presentation/evidence-map.md` §R1 for structure rationale.
+
+A boxed block, maximum six lines (hero mode):
 
 - **Trigger** — the exact auction slot (e.g. *Partner opens 1NT, you respond*).
 - **Convention bid** — the artificial call, in monospace (e.g. `2♣`).
@@ -57,24 +68,19 @@ Each parent bid links to its own anchored row in the response table when the sub
 
 *Why:* high information density, grep-able, matches the indexing order of the reader's memory (§3, §5; exemplar: Pavlicek for density, rulebook doctrine for bid-order sequencing).
 
-### 5. Decision grid — when the decision space is 2-D
+### 5. Quick reference — required tagged-union (`grid` | `list`)
 
-Not every convention has one. Use when the decision is genuinely two-dimensional:
+Every convention's reference block carries a required `quickReference` field. It is a tagged union: **`grid`** when the decision space is genuinely two-dimensional, **`list`** when it is one-dimensional. There is no null-escape — authoring ambiguity ("is my convention 2-D enough?") collapses to a binary choice the author can answer directly.
 
-- *Responder's hand classification* — rows = HCP range, columns = shape class.
-- *Bergen Raises* — rows = support count, columns = HCP class; cells = `3♣` / `3♦` / `3♠` / splinter.
+- *Responder's hand classification* (grid) — row axis = responder strength, col axis = shape class.
+- *Bergen Raises* (grid) — row axis = support count, col axis = HCP class; cells = `3♣` / `3♦` / `3♠` / splinter.
+- *Blackwood / Gerber / Jacoby Transfers* (list) — single axis (keycard count, target suit); `items[]` of `{ recommendation, note }`.
 
-Colour-coded by action family (signoff / invite / force / asking / preempt). Every colour must have a text label for accessibility.
+Colour-coded by action family where appropriate; every colour must have a text label for accessibility.
 
-*Why:* poker-range-chart analog — spatial regularity makes patterns visible faster than prose (§7; exemplar: 13×13 preflop grids).
+*Why:* poker-range-chart analog — spatial regularity makes patterns visible faster than prose (§7; exemplar: 13×13 preflop grids). The `list` variant preserves the same retrieval-cue shape when the decision is genuinely 1-D, without faking a second axis (principles 4 + 7).
 
-#### Proposal (2026-04-12): replace optional `decisionGrid` with required tagged-union `quickReference`
-
-Status: proposed, not yet implemented. Supersedes the optional `decisionGrid` for MVP authoring purposes.
-
-**Problem with the current `decisionGrid: Option<...>`:** the schema tells the author "fill this in if your convention is 2-D, else leave it null" — but an author opening blank JSON cannot answer that question confidently, and optionality silently swallows conventions where the author just didn't try. Making it *required-as-grid*, however, would fake 2-D structure onto Blackwood/Gerber/transfers where the decision space is genuinely 1-D (keycard count, target suit), which would violate principle 7 (coherence) and principle 4 (chunks should reflect the actual schema, not a forced shape).
-
-**Shape** — required on every `reference` block, tagged variant. Axes themselves are also tagged, splitting **threshold** (system-sensitive, derived labels) from **categorical** (system-invariant, authored prose):
+**Shape (canonical):** required on every `reference` block, tagged variant. Authored axes are tagged either as `systemFactLadder` (system-sensitive, labels derived at render time) or `partitionLadder` (fact-catalog-backed partitions). The Rust viewport then flattens both variants into a single `ResolvedAxis = { label, values }` for the frontend, so TS-side rendering stays uniform across systems:
 
 ```jsonc
 "quickReference": {
@@ -91,17 +97,16 @@ Status: proposed, not yet implemented. Supersedes the optional `decisionGrid` fo
     // — automatically correct under SAYC / 2-1 / Acol / custom 1NT range
   },
   "colAxis": {
-    "kind": "qualitative",
+    "kind": "partitionLadder",
     "label": "Shape",
-    "values": ["No 4-card major", "One 4-card major", "5-4 majors", "4-3-3-3"]
+    "fact": "responder.majorShape"
   },
   "cells": [[...], [...], [...]]  // rows.len() × cols.len(), each a short authored recommendation
 }
 // OR
 "quickReference": {
   "kind": "list",
-  "axis": { "kind": "qualitative", "label": "Keycards held",
-            "values": ["0 or 3 keycards", "1 or 4 keycards", "2 without the trump queen", "2 with the trump queen"] },
+  "axis": { "kind": "partitionLadder", "label": "Keycards held", "fact": "slam.keycardCount" },
   "items": [
     { "recommendation": "5♣", "note": "" },
     { "recommendation": "5♦", "note": "" },
@@ -114,8 +119,7 @@ Status: proposed, not yet implemented. Supersedes the optional `decisionGrid` fo
 **Axis variants:**
 
 - `systemFactLadder` — list of fact IDs (typically `system.*`) that partition the axis. Labels are derived per active `SystemConfig` via the same chain the response-table plan uses (`describe_system_fact_value`). Threshold boundaries adjust automatically across systems; the fixture does not change. No authored numeric thresholds means no digit-run leak is even possible — enforced by construction.
-- `qualitative` — authored prose values. Used when the axis is system-invariant (shape class, target suit, keycard count, opponent action). Digit-run lint applies to every value string.
-- Follow-up variant (not MVP): `factPartition` — structured multi-fact partitions for shape/distribution axes, once `FactDefinition` carries category metadata. Qualitative covers this case for now.
+- `partitionLadder` — fact-catalog-backed discriminants whose labels are derived from the active catalog entry. Used when the axis is system-invariant in structure (shape class, target suit, keycard count, opponent action) but should still stay inside the typed reference vocabulary.
 
 **Cells stay authored** in both variants. The grid/list structure is a teaching partition of *recommendations*, not of facts; you cannot regenerate it from rule data. What's derivable is the **threshold-axis labels**, and that's exactly where system-sensitivity leaks otherwise.
 
@@ -132,8 +136,8 @@ Status: proposed, not yet implemented. Supersedes the optional `decisionGrid` fo
 - `kind == "list"` → axis well-formed; `items.len() == axis.length`; each item has non-empty `recommendation`.
 - Axis rules:
   - `systemFactLadder`: `label` non-empty; `facts.len() >= 2`; each fact ID exists in the fact catalog; facts are system-partitioning (checked at render time, not structural — if a label fails to resolve, error loudly rather than render blank).
-  - `qualitative`: `label` non-empty; `values.len() >= 2`; digit-run lint applies to each value.
-- Digit-run lint applies to: axis labels (both variants), qualitative axis values, cell text, item `recommendation` and `note`. Does not apply to `systemFactLadder` facts (they are IDs, not prose) or to fact IDs themselves.
+  - `partitionLadder`: `label` non-empty; referenced fact resolves to a partition entry with at least two discriminants.
+- Digit-run lint applies to: axis labels, cell text, item `recommendation` and `note`. It does not apply to `systemFactLadder` fact IDs or `partitionLadder` fact IDs because those resolve through the catalog.
 
 **Rejected alternative — keep `decisionGrid: Option<...>`.** Fails the "clear what the author fills out" test. Authors either skip it (carries no information) or hand-pick axes inconsistently (UI treatment varies per convention).
 
@@ -155,20 +159,13 @@ Annotations use the established typography (bids monospace, seats small-caps, HC
 
 ### 7. In competition / interference
 
-Dedicated section. Short bullets keyed on opponent action. Interference changes meanings and players forget this first.
+Dedicated section. Required tagged-union: either `{ status: "applicable", items: [...] }` (short bullets keyed on opponent action) or `{ status: "notApplicable", reason: "..." }` (a single sentence explaining why no guidance exists). The empty-items case is illegal — the sentinel forces an explicit authoring choice rather than permitting silent omission. Interference changes meanings and players forget this first.
 
-*Why:* exemplar evidence — bridgebum's failure mode is burying interference in "Other considerations"; it needs its own heading (§3, §10).
+*Why:* exemplar evidence — bridgebum's failure mode is burying interference in "Other considerations"; it needs its own heading (§3, §10). The tagged sentinel mirrors the `quickReference` design: explicit over optional.
 
-### 8. System compatibility
+### 8. Per-system rendering (no dedicated section)
 
-MDN-style compatibility row:
-
-| SAYC | 2/1 | Acol | Custom |
-|------|-----|------|--------|
-
-One cell per base system. If identical across systems, say so in a single line and collapse the table. If divergent, note the delta briefly and link to the per-system entry. Maps directly to `SystemConfig` in this codebase.
-
-*Why:* exemplar pattern from MDN browser-compatibility tables; direct hook into project `SystemConfig` architecture.
+There is no `systemCompat` section on the reference page. Per-system differences are rendered directly from the active `SystemConfig` via the `systemFactLadder → describe_system_fact_value → SystemConfig` chain, so thresholds and system-sensitive labels resolve automatically under SAYC / 2/1 / Acol / custom. A global system picker (letting the reader view the same page under a different system) is deferred. Authors must not hand-duplicate per-system copy in fixture prose.
 
 ### 9. Related conventions — cross-links
 
@@ -201,7 +198,7 @@ A separate artifact: Summary Card + Response Table only. One screen. Rendered as
 These are structural invariants — changing them for a single convention is a bug, not a style choice.
 
 1. **Heading order is fixed.** Sections 1–10 appear in this order on every page. Returners learn the skeleton once.
-2. **Table schemas are fixed.** Response-table columns are exactly `Response | Meaning | Shape | HCP | Forcing?`. System-compatibility columns are exactly `SAYC | 2/1 | Acol | Custom`.
+2. **Response-table columns are auto-discovered per module.** The only fixed columns are `Response | Meaning`. All further constraint columns (e.g. shape, HCP, forcing) are discovered at build time from the fact IDs present in the module's surfaces — authors never spell the column list. Stayman under the current surfaces yields a single `Shape` column; Bergen with richer constraints will yield more. There are no `responseTableOverrides`; authored per-row editorial overrides are removed.
 3. **Colour semantics are fixed across the whole reference.** E.g. green = signoff, yellow = invite, red = force, blue = asking. Never reuse a colour with different meaning in a different section.
 4. **Typographic referent encoding.** Bids in monospace (`2♣`). Seats in small-caps (Opener / Responder). HCP ranges in a fixed pill style. Zero pronouns in response-table rows.
 5. **Stable anchor ids.** Every response row, every continuation sub-line, every section has a stable `#convention-bid-response` anchor. Never rename; only add. The guided-practice flow and coverage reports deep-link by these anchors.
@@ -239,15 +236,15 @@ Do not hand-roll fragments in page code. These anchors are bookmarkable and inte
 
 ---
 
-## Authoring smells — duplication and derivable fields (2026-04-12 audit)
+## Authoring smells — duplication and derivable fields (canonical)
 
-Status: audit notes; fixes not yet in plan. Use this when locking `ModuleReference` to avoid baking duplication into the required schema.
+These rules are locked; they govern what is authored vs. derived. Apply when writing or auditing a `ModuleReference`.
 
-### Large smells
+### Large smells (locked)
 
-**`teaching` block duplicates half of `reference`.** `ConventionModule.teaching` (used by the guided flow) already carries `teaching.principle` (≈ `reference.summaryCard.guidingIdea`) and `teaching.commonMistakes` (≈ `reference.whenNotToUse`). On Stayman both pairs are reworded restatements of the same content. For 30 conventions this is the single largest drift surface between tutorial and reference. Fix: either drop the duplicates from `reference` and render from `teaching` at viewport build time, or mark them as authored-overrides with `teaching` as the default. Research principle 1 (reference is not a tutorial) does not require *different content*, only different treatment — derivation-with-override satisfies both.
+**`teaching` block duplicates half of `reference`.** `ConventionModule.teaching` (used by the guided flow) already carries `teaching.principle` (≈ `reference.summaryCard.guidingIdea`) and `teaching.commonMistakes` (≈ `reference.whenNotToUse`). The rule is now: **author `teaching.commonMistakes` as the single source** (entries are `{ text, reason }[]`, ≥3 entries); `reference.whenNotToUse` is derived at viewport build time. Likewise the guiding idea is sourced from the teaching block when available. Research principle 1 (reference is not a tutorial) does not require *different content*, only different treatment — derivation satisfies both.
 
-**`summaryCard` duplicates rule data in 4 of 6 fields.** `trigger` is the FSM entry condition, `bid` is the defining meaning's `encoding.default_call`, `promises` and `denies` are the defining meaning's public fact clauses reworded as prose. Authoring them separately lets the card contradict the rules silently (e.g. when Stayman is extended to 5-4 majors, the card must be hand-updated). Fix: derive trigger/bid/promises/denies at viewport build time via the same `describe_system_fact_value` / clause-render chain the response-table plan already uses. Only `guidingIdea` (and possibly `partnership`) remain authored. Collapses the required authoring surface from 6 fields to 1–2.
+**`summaryCard` collapsed from 6 fields to 3 authored fields.** `bid`, `promises`, and `denies` are derived from the defining meaning at viewport build time (via `definingMeaningId` + the `describe_system_fact_value` / clause-render chain). The three authored fields are exactly `{ trigger, definingMeaningId, partnership }`; `guidingIdea` is authored only when it needs to differ from `teaching.principle`. Authoring the derivable fields separately lets the card contradict the rules silently — forbidden.
 
 **`workedAuctions[].calls[].rationale` duplicates meaning teaching labels.** Each call's rationale echoes `teaching_label.summary` + clause descriptions on the corresponding rule-data meaning, with no linkage — rationale can drift from rules silently. Fix: each call optionally references a `meaningId`; rationale defaults to the meaning's teaching label; authored rationale becomes a contrastive/pedagogical override (required for non-example auctions where no matching meaning exists). Structural test: when `meaningId` present, the call must equal the meaning's `encoding.default_call`. Also: `seat` is derivable from auction position given the dealer — drop from fixture, render from position.
 
@@ -279,16 +276,14 @@ Items 1–3 together cut the required authoring surface roughly in half and remo
 
 Verify before merging:
 
-- [ ] Summary card is ≤6 lines, includes a one-sentence Guiding Idea.
-- [ ] "When NOT to use" has at least as many items as "When to use", each with a parenthesized reason.
-- [ ] Response table uses the exact fixed column schema.
-- [ ] Every response row and continuation sub-line has a stable anchor id.
-- [ ] At least one decision grid if the decision space is 2-D.
-- [ ] ≥3 worked auctions, each annotated inline (no paragraph narration).
-- [ ] At least one non-example included.
-- [ ] Dedicated interference section (not buried elsewhere).
-- [ ] System compatibility row present and correct.
+- [ ] `summaryCard` authored fields are `{ trigger, definingMeaningId, partnership }` only (bid / promises / denies are derived).
+- [ ] `teaching.commonMistakes` has ≥3 entries, each `{ text, reason }` (this feeds `whenNotToUse`; do not re-author).
+- [ ] `quickReference` is either `kind: "grid"` (both axes tagged `systemFactLadder` / `partitionLadder`) or `kind: "list"` (single tagged axis). No null-escape.
+- [ ] `interference` is either `{ status: "applicable", items: [...] }` (≥1 item) or `{ status: "notApplicable", reason: "..." }`. Empty items is illegal.
+- [ ] Every response row and continuation sub-line has a stable anchor id routed through `slugifyMeaningId`.
+- [ ] ≥3 worked auctions, each annotated inline (no paragraph narration); at least one non-example.
 - [ ] Cross-links are labelled with discriminators, not just target names.
 - [ ] No history, no re-motivation, no preamble.
-- [ ] All bids render in monospace, all seats in small-caps.
-- [ ] Zero ambiguous pronouns in response-table rows.
+- [ ] All bids render in monospace, all seats in small-caps; zero ambiguous pronouns in response-table rows.
+- [ ] No numeric HCP in authored prose outside worked-auction rationales (derived via `describe_system_fact_value`).
+- [ ] No system names (SAYC / 2-1 / Acol / Precision) in authored prose (per-system rendering is derived from active `SystemConfig`).

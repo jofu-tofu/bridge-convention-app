@@ -5,7 +5,7 @@ const DECISION_CONTEXT = "Partner opened 1NT. RHO passed. Your turn to respond."
 
 test.describe("session modes", () => {
   test("convention deep links default to decision drill context", async ({ page }) => {
-    await page.goto("/?convention=nt-transfers&seed=42");
+    await page.goto("/practice?convention=nt-transfers&seed=42");
     await waitForPhase(page, "Bidding");
 
     await expect(page.getByTestId("practice-mode-label")).toHaveCount(0);
@@ -13,7 +13,7 @@ test.describe("session modes", () => {
   });
 
   test("practice picker can start full auction mode", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/practice");
     await page.getByTestId("practice-nt-transfers").click();
     await page.getByTestId("mode-full-auction").click({ timeout: 5_000 });
 
@@ -23,7 +23,7 @@ test.describe("session modes", () => {
   });
 
   test("autoplay reaches review and next deal restarts bidding", async ({ page }) => {
-    await page.goto("/?convention=nt-bundle&seed=42&autoplay=true");
+    await page.goto("/practice?convention=nt-bundle&seed=42&dev=autoplay");
     await waitForPhase(page, "Review", 30_000);
 
     await expect(page.getByRole("heading", { name: "Bidding Review" })).toBeVisible();
@@ -43,7 +43,7 @@ test.describe("session modes", () => {
   });
 
   test("review analysis tab renders after autoplay", async ({ page }) => {
-    await page.goto("/?convention=nt-bundle&seed=42&autoplay=true");
+    await page.goto("/practice?convention=nt-bundle&seed=42&dev=autoplay");
     await waitForPhase(page, "Review", 30_000);
 
     const analysisTab = page.getByRole("tab", { name: "Analysis" });

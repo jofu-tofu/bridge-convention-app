@@ -7,15 +7,30 @@
   "description": "Bid 2C over 1NT as Garbage Stayman — a weak-hand escape with 4-4 majors and short clubs",
   "purpose": "Use Stayman as an escape mechanism with weak hands containing both majors and at most one club, planning to pass any response",
   "references": {
-    "authority": { "url": "https://www.bridgeguys.com/Conventions/GarbageStayman.html", "label": "Bridge Guys — Garbage Stayman as a 4-4 majors, short-club escape variant" },
-    "discovery": { "url": "https://www.bridgebum.com/garbage_stayman.php" }
+    "authority": {
+      "url": "https://www.bridgeguys.com/Conventions/GarbageStayman.html",
+      "label": "Bridge Guys — Garbage Stayman as a 4-4 majors, short-club escape variant"
+    },
+    "discovery": {
+      "url": "https://www.bridgebum.com/garbage_stayman.php"
+    }
   },
   "teaching": {
     "tradeoff": "Garbage Stayman sacrifices the standard HCP requirement for Stayman to allow weak hands with short clubs to escape 1NT.",
     "principle": "With a weak hand, both majors, and short clubs, bid 2C planning to pass any response — you will land in a better contract than 1NT.",
     "commonMistakes": [
-      "Don't use Garbage Stayman without at least 4-4 in both majors and short clubs — you need to be happy passing any 2-level response",
-      "Remember that partner may jump to game if maximum — be prepared for this possibility even with a weak hand"
+      {
+        "text": "Do not use Garbage Stayman without both majors.",
+        "reason": "The ask only works when every likely major reply is a safe resting place."
+      },
+      {
+        "text": "Do not use Garbage Stayman without short clubs.",
+        "reason": "A diamond denial is the escape hatch, so extra clubs make the fallback unsafe."
+      },
+      {
+        "text": "Do not treat Garbage Stayman as constructive.",
+        "reason": "The weak-hand escape and the value-asking version solve different problems."
+      }
     ]
   },
   "explanationEntries": [
@@ -27,11 +42,7 @@
       "contrastiveTemplateKey": "nt.stayman.eligible.whyNot",
       "contrastiveDisplayText": "Not eligible for Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking",
-        "pedagogical"
-      ]
+      "roles": ["supporting", "blocking", "pedagogical"]
     },
     {
       "explanationId": "nt.stayman.preferred",
@@ -39,10 +50,7 @@
       "templateKey": "nt.stayman.preferred.supporting",
       "displayText": "Stayman is the preferred convention",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "inferential"
-      ]
+      "roles": ["supporting", "inferential"]
     },
     {
       "explanationId": "nt.stayman.nsHaveEightCardFitLikely",
@@ -74,9 +82,7 @@
       "templateKey": "nt.stayman.askMajor.semantic",
       "displayText": "Stayman 2♣: asks opener for a 4-card major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showHearts",
@@ -84,9 +90,7 @@
       "templateKey": "nt.stayman.showHearts.semantic",
       "displayText": "Opener shows 4+ hearts in response to Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showSpades",
@@ -94,9 +98,7 @@
       "templateKey": "nt.stayman.showSpades.semantic",
       "displayText": "Opener shows 4+ spades in response to Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.denyMajor",
@@ -104,9 +106,7 @@
       "templateKey": "nt.stayman.denyMajor.semantic",
       "displayText": "Opener bids 2♦ to deny holding a 4-card major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseGameHearts",
@@ -114,9 +114,7 @@
       "templateKey": "nt.stayman.raiseGameHearts.semantic",
       "displayText": "Raise to 4♥ with game values and a heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseInviteHearts",
@@ -124,9 +122,7 @@
       "templateKey": "nt.stayman.raiseInviteHearts.semantic",
       "displayText": "Invite in hearts (3♥) with invitational values and a heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntGameNoFit",
@@ -134,9 +130,7 @@
       "templateKey": "nt.stayman.ntGameNoFit.semantic",
       "displayText": "Bid 3NT with game values but no heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntInviteNoFit",
@@ -144,9 +138,7 @@
       "templateKey": "nt.stayman.ntInviteNoFit.semantic",
       "displayText": "Bid 2NT to invite game with no heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseGameSpades",
@@ -154,9 +146,7 @@
       "templateKey": "nt.stayman.raiseGameSpades.semantic",
       "displayText": "Raise to 4♠ with game values and a spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseInviteSpades",
@@ -164,9 +154,7 @@
       "templateKey": "nt.stayman.raiseInviteSpades.semantic",
       "displayText": "Invite in spades (3♠) with invitational values and a spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntGameNoFit2S",
@@ -174,9 +162,7 @@
       "templateKey": "nt.stayman.ntGameNoFit2S.semantic",
       "displayText": "Bid 3NT with game values but no spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntInviteNoFit2S",
@@ -184,9 +170,7 @@
       "templateKey": "nt.stayman.ntInviteNoFit2S.semantic",
       "displayText": "Bid 2NT to invite game with no spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntGameAfterDenial",
@@ -194,9 +178,7 @@
       "templateKey": "nt.stayman.ntGameAfterDenial.semantic",
       "displayText": "Bid 3NT with game values after opener denies a major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntInviteAfterDenial",
@@ -204,9 +186,7 @@
       "templateKey": "nt.stayman.ntInviteAfterDenial.semantic",
       "displayText": "Bid 2NT to invite game after opener denies a major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showFiveHeartsAfterDenial",
@@ -214,9 +194,7 @@
       "templateKey": "nt.stayman.showFiveHeartsAfterDenial.semantic",
       "displayText": "Bid 2♥ showing 5 hearts and 4 spades (invitational, non-forcing)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showFiveSpadesAfterDenial",
@@ -224,9 +202,7 @@
       "templateKey": "nt.stayman.showFiveSpadesAfterDenial.semantic",
       "displayText": "Bid 2♠ showing 5 spades and 4 hearts (invitational, non-forcing)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crossMajorInvite2SAfter2H",
@@ -234,9 +210,7 @@
       "templateKey": "nt.stayman.crossMajorInvite2SAfter2H.semantic",
       "displayText": "Bid 2♠ showing 5 spades and 4 hearts (invitational, non-forcing)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2H",
@@ -244,9 +218,7 @@
       "templateKey": "nt.stayman.minorGF3CAfter2H.semantic",
       "displayText": "Bid 3♣ showing 5+ clubs, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2H",
@@ -254,9 +226,7 @@
       "templateKey": "nt.stayman.minorGF3DAfter2H.semantic",
       "displayText": "Bid 3♦ showing 5+ diamonds, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crossMajorGF3SAfter2H",
@@ -264,9 +234,7 @@
       "templateKey": "nt.stayman.crossMajorGF3SAfter2H.semantic",
       "displayText": "Bid 3♠ showing 5+ spades and 4 hearts, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2H",
@@ -274,9 +242,7 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2H.semantic",
       "displayText": "Bid 4NT quantitative, inviting 6NT with no heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2S",
@@ -284,9 +250,7 @@
       "templateKey": "nt.stayman.minorGF3CAfter2S.semantic",
       "displayText": "Bid 3♣ showing 5+ clubs, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2S",
@@ -294,9 +258,7 @@
       "templateKey": "nt.stayman.minorGF3DAfter2S.semantic",
       "displayText": "Bid 3♦ showing 5+ diamonds, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crossMajorGF3HAfter2S",
@@ -304,9 +266,7 @@
       "templateKey": "nt.stayman.crossMajorGF3HAfter2S.semantic",
       "displayText": "Bid 3♥ showing 5+ hearts and 4 spades, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2S",
@@ -314,9 +274,7 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2S.semantic",
       "displayText": "Bid 4NT quantitative, inviting 6NT with no spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2D",
@@ -324,9 +282,7 @@
       "templateKey": "nt.stayman.minorGF3CAfter2D.semantic",
       "displayText": "Bid 3♣ showing 5+ clubs, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2D",
@@ -334,9 +290,7 @@
       "templateKey": "nt.stayman.minorGF3DAfter2D.semantic",
       "displayText": "Bid 3♦ showing 5+ diamonds, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.majorSignoff4HAfter2D",
@@ -344,9 +298,7 @@
       "templateKey": "nt.stayman.majorSignoff4HAfter2D.semantic",
       "displayText": "Bid 4♥ to play with 6 hearts and 4 spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.majorSignoff4SAfter2D",
@@ -354,9 +306,7 @@
       "templateKey": "nt.stayman.majorSignoff4SAfter2D.semantic",
       "displayText": "Bid 4♠ to play with 6 spades and 4 hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2D",
@@ -364,9 +314,7 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2D.semantic",
       "displayText": "Bid 4NT quantitative, inviting 6NT after denial",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.garbagePassAfterHearts",
@@ -374,9 +322,7 @@
       "templateKey": "nt.stayman.garbagePassAfterHearts.semantic",
       "displayText": "Pass opener's 2♥ — Garbage Stayman escape with a weak hand",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.garbagePassAfterSpades",
@@ -384,9 +330,7 @@
       "templateKey": "nt.stayman.garbagePassAfterSpades.semantic",
       "displayText": "Pass opener's 2♠ — Garbage Stayman escape with a weak hand",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.garbagePassAfterDenial",
@@ -394,9 +338,7 @@
       "templateKey": "nt.stayman.garbagePassAfterDenial.semantic",
       "displayText": "Pass opener's 2♦ denial — Garbage Stayman escape to diamonds with a weak hand",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -487,6 +429,14 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 0,
+              "clauseId": "hand.hcp:gte:0",
+              "description": "At least 0 HCP",
+              "isPublic": true
+            },
             {
               "factId": "hand.hcp",
               "operator": "lte",
@@ -605,7 +555,10 @@
             "summary": "Seek a 4-4 major fit with 5-4 in both majors at invite strength"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "asked",
@@ -734,7 +687,10 @@
             "summary": "Deny holding a 4-card major in response to Stayman"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "shown-hearts",
@@ -1208,6 +1164,15 @@
               "description": "Weak hand (0–7 HCP)",
               "rationale": "Garbage Stayman: pass any response with a weak hand",
               "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.clubs:lte:2",
+              "description": "Short clubs (garbage Stayman shape premise)",
+              "rationale": "Garbage Stayman asks only with short clubs; passing 2H is safe with the same shape",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -1227,7 +1192,10 @@
             "summary": "Pass opener's 2♥ response — with a weak hand and 4+ hearts, this is a safe partscore"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "shown-spades",
@@ -1644,6 +1612,15 @@
               "description": "Weak hand (0–7 HCP)",
               "rationale": "Garbage Stayman: pass any response with a weak hand",
               "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.clubs:lte:2",
+              "description": "Short clubs (garbage Stayman shape premise)",
+              "rationale": "Garbage Stayman asks only with short clubs; passing 2S is safe with the same shape",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -1663,7 +1640,10 @@
             "summary": "Pass opener's 2♠ response — with a weak hand and 4+ spades, this is a safe partscore"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "denied",
@@ -2128,6 +2108,24 @@
               "description": "Weak hand (0–7 HCP)",
               "rationale": "Garbage Stayman: pass any response with a weak hand",
               "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.clubs:lte:2",
+              "description": "Short clubs (garbage Stayman shape premise)",
+              "rationale": "Garbage Stayman asks only with short clubs",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.diamonds:gte:4",
+              "description": "4+ diamonds (safe escape to 2D)",
+              "rationale": "Passing 2D needs a diamond length to make the contract playable",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -2147,9 +2145,295 @@
             "summary": "Pass opener's 2♦ denial — with a weak hand and 4+ diamonds (from short clubs shape), this is a safe partscore"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
+  "reference": {
+    "summaryCard": {
+      "trigger": "Partner opens one notrump and responder is escaping",
+      "definingMeaningId": "stayman:ask-major",
+      "partnership": "Requires an explicit partnership agreement that Stayman can be non-forcing here; responder uses the two-club ask as a weak escape and plans to pass any reply."
+    },
+    "whenToUse": [
+      {
+        "predicate": {
+          "kind": "extended",
+          "clause": {
+            "clauseKind": "booleanFact",
+            "fact_id": "system.responder.weakHand",
+            "expected": true
+          }
+        },
+        "gloss": "Use it only with a weak hand."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 4
+              }
+            }
+          ]
+        },
+        "gloss": "Use it when both majors can absorb any forced partscore."
+      },
+      {
+        "predicate": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.clubs",
+            "operator": "lte",
+            "value": 1
+          }
+        },
+        "gloss": "Use it when short clubs make a diamond escape safe."
+      }
+    ],
+    "workedAuctions": [
+      {
+        "kind": "positive",
+        "label": "Heart reply becomes a safe signoff",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener shows a balanced notrump opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder uses Garbage Stayman with a weak hand, both majors, and short clubs."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            },
+            "rationale": "Opener shows hearts, giving responder the expected escape hatch."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "pass"
+            },
+            "rationale": "Responder passes because the whole point was to escape one notrump into a playable major partscore."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "Spade reply still lands in safety",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener starts with the balanced notrump opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder asks with the weak escape hand, planning to pass any answer."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            },
+            "rationale": "Opener denies hearts first and then shows the four-card spade suit."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "pass"
+            },
+            "rationale": "Responder signs off immediately because the spade fit is already located."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "Diamond denial supplies the fallback partscore",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener begins with the notrump opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder uses the artificial ask as an escape route, not as a value ask."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            },
+            "rationale": "Opener denies a four-card major."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "pass"
+            },
+            "rationale": "Short clubs imply enough diamonds to tolerate the denial as the final spot."
+          }
+        ]
+      },
+      {
+        "kind": "negative",
+        "label": "Counter-example: both-four-card majors with only two diamonds gets trapped in a thin diamond fit",
+        "responderHand": {
+          "spades": "K J 8 4",
+          "hearts": "Q 9 7 2",
+          "diamonds": "8 4",
+          "clubs": "J 6 3"
+        },
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener starts with the balanced notrump opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder misuses Garbage Stayman with a 4-4-2-3 hand that lacks the short-club, long-diamond escape pattern."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            },
+            "rationale": "Opener denies a four-card major, which is the danger case."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "pass"
+            },
+            "rationale": "Passing strands the partnership in a 4-2 diamond fit, exactly the failure mode Garbage Stayman is supposed to avoid."
+          }
+        ]
+      }
+    ],
+    "interference": {
+      "status": "applicable",
+      "items": [
+        {
+          "opponentAction": "Double of the notrump opening",
+          "ourAction": "Garbage Stayman is often off while rescue methods take over.",
+          "note": "Confirm whether the partnership keeps systems on before using the artificial ask."
+        },
+        {
+          "opponentAction": "Overcall of a minor",
+          "ourAction": "The escape may survive through a cue bid if the partnership keeps systems on.",
+          "note": "Without that agreement, compete naturally and keep the weak hand simple."
+        },
+        {
+          "opponentAction": "Major-suit interference or heavier pressure",
+          "ourAction": "The garbage route is off and responder competes naturally.",
+          "note": "Once the room for the ask disappears, there is no artificial escape left to show."
+        }
+      ]
+    },
+    "quickReference": {
+      "kind": "list",
+      "axis": {
+        "kind": "partitionLadder",
+        "label": "Major-suit shape",
+        "fact": "responder.majorShape"
+      },
+      "items": [
+        {
+          "recommendation": "Not Garbage Stayman",
+          "note": "There is no major escape to look for."
+        },
+        {
+          "recommendation": "Not Garbage Stayman",
+          "note": "A single major does not justify the ask."
+        },
+        {
+          "recommendation": "Use Jacoby Transfers instead",
+          "note": "With five-four majors, show the five-card major immediately; Garbage Stayman is for the weak both-majors escape, not the transfer hand."
+        },
+        {
+          "recommendation": "Stay in notrump",
+          "note": "Flat shape offers no trump gain."
+        }
+      ]
+    },
+    "relatedLinks": [
+      {
+        "moduleId": "stayman",
+        "discriminator": "Standard Stayman promises invitational-plus values; Garbage Stayman escapes a weak hand with both four-card majors."
+      },
+      {
+        "moduleId": "smolen",
+        "discriminator": "Smolen starts from the same ask but continues with game-forcing five-four majors."
+      },
+      {
+        "moduleId": "jacoby-transfers",
+        "discriminator": "Transfers handle weak hands with a real five-card major, including the five-four major patterns that should not start with Garbage Stayman."
+      }
+    ]
+  },
   "facts": {
     "definitions": [
       {
@@ -2158,13 +2442,9 @@
         "world": "acting-hand",
         "description": "Eligible for Stayman (4+ card major AND 8+ HCP)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "bridge.hasFourCardMajor",
-          "hand.hcp"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity"
-        ],
+        "forTeachingOnly": true,
+        "derivesFrom": ["bridge.hasFourCardMajor", "hand.hcp"],
+        "constrainsDimensions": ["suitIdentity"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2193,15 +2473,14 @@
         "world": "acting-hand",
         "description": "Stayman preferred (eligible AND either no 5-card major OR 5-4 in both majors)",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": [
           "module.stayman.eligible",
           "bridge.hasFiveCardMajor",
           "hand.suitLength.hearts",
           "hand.suitLength.spades"
         ],
-        "constrainsDimensions": [
-          "suitIdentity"
-        ],
+        "constrainsDimensions": ["suitIdentity"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2277,6 +2556,7 @@
         "world": "acting-hand",
         "description": "Posterior probability that N/S have an 8+ card major fit",
         "valueType": "number",
+        "forTeachingOnly": true,
         "constrainsDimensions": []
       },
       {
@@ -2285,6 +2565,7 @@
         "world": "acting-hand",
         "description": "Posterior probability that opener has balanced shape",
         "valueType": "number",
+        "forTeachingOnly": true,
         "constrainsDimensions": []
       },
       {
@@ -2293,6 +2574,7 @@
         "world": "acting-hand",
         "description": "Posterior probability that opener has a second 4-card major",
         "valueType": "number",
+        "forTeachingOnly": true,
         "constrainsDimensions": []
       }
     ]

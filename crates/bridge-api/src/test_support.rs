@@ -169,6 +169,7 @@ pub fn test_config(fixtures_dir: &Path) -> Config {
         billing_success_url: "https://bridge.local/success".to_string(),
         billing_cancel_url: "https://bridge.local/cancel".to_string(),
         conventions_fixtures_dir: fixtures_dir.to_path_buf(),
+        cors_allowed_origins: vec!["http://localhost:1420".to_string()],
     }
 }
 

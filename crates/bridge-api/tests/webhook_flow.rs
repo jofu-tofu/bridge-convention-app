@@ -207,6 +207,45 @@ async fn unknown_customer_webhook_is_ignored() {
 }
 
 #[tokio::test]
+async fn replayed_webhook_event_is_deduped_by_event_id() {
+    let harness = TestHarness::new().await;
+    harness
+        .insert_user(UserSeed {
+            id: "u1",
+            stripe_customer_id: Some("cus_test_123"),
+            ..UserSeed::new("u1")
+        })
+        .await;
+
+    let payload = webhook_event(
+        "customer.subscription.updated",
+        1_500,
+        subscription_object("cus_test_123", "active", 4_592_000, "price_A"),
+    );
+    let signature = sign_payload(&payload);
+
+    let first = post_webhook(&harness, &payload, &signature).await;
+    assert_eq!(first.status(), StatusCode::OK);
+
+    // Manually roll the DB back so we can detect whether the second delivery
+    // reached the subscription-update handler. If dedup works, nothing changes.
+    sqlx::query("UPDATE users SET subscription_status = 'tampered' WHERE id = 'u1'")
+        .execute(&harness.state.pool)
+        .await
+        .expect("tamper update should succeed");
+
+    let second = post_webhook(&harness, &payload, &signature).await;
+    assert_eq!(second.status(), StatusCode::OK);
+
+    let user = harness.fetch_user("u1").await;
+    assert_eq!(
+        user.subscription_status.as_deref(),
+        Some("tampered"),
+        "second delivery must be skipped by event-id dedup"
+    );
+}
+
+#[tokio::test]
 async fn invalid_webhook_signature_returns_bad_request_without_db_changes() {
     let harness = TestHarness::new().await;
     harness

@@ -6,8 +6,9 @@ Evidence base for redesigning the post-practice reference page that appears belo
 
 - `evidence-summary.md` — synthesis of three parallel research waves (reference-manual design, learning science, bridge/game exemplars) into a single set of actionable principles
 - `reference-page-template.md` — concrete template for every convention reference page: section order, visual treatments, consistency rules, what is deliberately omitted
+- `multi-bid-presentation/` — follow-up research pass on conventions with multiple peer entry-point bids (Jacoby transfers, Bergen, DONT, Two-way NMF, Unusual NT). Start with `evidence-map.md`; `question.md`, `seed-papers.md`, and `evaluation.md` are the supporting artifacts.
 
-Raw per-wave reports (sources, per-topic notes, full citation lists) live in the session's context folder at `_output/contexts/260412-0935-research-reference-manuals-best-research-regarding-r/notes/`.
+Raw per-wave reports for the original pass live at `_output/contexts/260412-0935-research-reference-manuals-best-research-regarding-r/notes/`. Raw per-wave reports for the multi-bid pass (landscape-keyword/semantic/reviews, expansion-backward/forward/crossdomain/adversarial) live at `_output/research/20260414-210905-bridge-multi-bid-conventions/`.
 
 ## Use This When
 

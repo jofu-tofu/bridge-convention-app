@@ -194,8 +194,8 @@ export interface ServiceFactConstraint {
   readonly isPublic?: boolean;
 }
 
-/** Qualitative constraint — service-owned mirror of inference/inference-types QualitativeConstraint. */
-interface ServiceQualitativeConstraint {
+/** Descriptive constraint — service-owned mirror of inference/inference-types DescriptiveConstraint. */
+interface ServiceDescriptiveConstraint {
   readonly factId: string;
   readonly label: string;
   readonly operator: string;
@@ -214,7 +214,7 @@ export interface ServicePublicBeliefs {
   readonly seat: Seat;
   readonly constraints: readonly ServiceFactConstraint[];
   readonly ranges: ServiceDerivedRanges;
-  readonly qualitative: readonly ServiceQualitativeConstraint[];
+  readonly qualitative: readonly ServiceDescriptiveConstraint[];
 }
 
 /** Bid annotation — service-owned mirror of inference/types BidAnnotation. */

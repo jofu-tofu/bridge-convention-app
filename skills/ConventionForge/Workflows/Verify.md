@@ -24,6 +24,14 @@ npx tsx src/cli/main.ts modules
 npx tsx src/cli/main.ts describe --bundle={bundle-id}
 ```
 
+### Step 0.5: Structural Invariants
+
+Always run the structural-invariants suite before anything else; it catches fixture shape regressions quickly:
+
+```bash
+cargo test -p bridge-conventions structural_invariants
+```
+
 ### Step 1: Phase 1 — Fixture vs Authority
 
 Read the target module fixture:

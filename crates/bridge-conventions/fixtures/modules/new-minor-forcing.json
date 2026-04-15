@@ -6,16 +6,30 @@
   "description": "After 1m-1M-1NT, bid the other minor as an artificial checkback to find major-suit fits or determine strength",
   "purpose": "After opener rebids 1NT, responder may need to explore for an 8-card major fit or determine whether to invite or bid game. NMF provides a one-round forcing mechanism to extract more information from opener.",
   "references": {
-    "authority": { "url": "https://www.bridgeguys.com/Conventions/NewMinorForcing.html", "label": "Bridge Guys — comprehensive NMF coverage with opener's rebid structure" },
-    "discovery": { "url": "https://www.bridgebum.com/new_minor_forcing.php" }
+    "authority": {
+      "url": "https://www.bridgeguys.com/Conventions/NewMinorForcing.html",
+      "label": "Bridge Guys — comprehensive NMF coverage with opener's rebid structure"
+    },
+    "discovery": {
+      "url": "https://www.bridgebum.com/new_minor_forcing.php"
+    }
   },
   "teaching": {
     "tradeoff": "After 1m-1M-1NT, the bid of the other minor loses its natural meaning in exchange for an artificial forcing checkback bid.",
     "principle": "After a 1NT rebid by opener, responder may still need to explore for an 8-card major fit or determine whether to invite or bid game. NMF provides a one-round forcing mechanism to extract more information.",
     "commonMistakes": [
-      "NMF is the OTHER minor — if opener opened 1C, NMF is 2D; if opener opened 1D, NMF is 2C",
-      "You need 10+ HCP to use NMF — with a weak hand, either sign off in 2M or pass 1NT",
-      "After NMF, opener's first priority is showing 3-card support for responder's major, not rebidding NT"
+      {
+        "text": "Do not rebid opener's minor and call it NMF.",
+        "reason": "The convention is always the other minor, because the opened minor stays available as a natural rebid."
+      },
+      {
+        "text": "Do not use NMF without invitational-or-better values.",
+        "reason": "The checkback is forcing, so weak hands should sign off in responder's suit or pass one notrump instead of creating a one-round force."
+      },
+      {
+        "text": "Do not rebid notrump before checking for three-card support.",
+        "reason": "Opener's first job after NMF is to show support for responder's major before defaulting to notrump."
+      }
     ]
   },
   "explanationEntries": [
@@ -781,7 +795,10 @@
             "summary": "Open 1D with no 5-card major when diamonds are at least as long as clubs"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-1m-open",
@@ -879,7 +896,10 @@
             "summary": "Show 4+ spades with 6+ HCP"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-1m-1M",
@@ -1016,7 +1036,10 @@
             "summary": "12-14 HCP balanced, denies 4-card support for responder's major"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-1m-1M",
@@ -1091,7 +1114,10 @@
             "summary": "12-14 HCP balanced, denies a 4-card heart suit to show naturally"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-1nt-rebid",
@@ -1140,7 +1166,10 @@
             "summary": "Artificial checkback — asks opener to further describe their hand"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-1nt-rebid",
@@ -1189,7 +1218,10 @@
             "summary": "Artificial checkback — asks opener to further describe their hand"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-1nt-rebid",
@@ -1395,6 +1427,14 @@
           "clauses": [
             {
               "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "At least 6 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
               "operator": "lte",
               "value": 9,
               "clauseId": "hand.hcp:lte:9",
@@ -1417,7 +1457,10 @@
             "summary": "Weak hand (6-9 HCP) with no 5-card major — play in 1NT"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-nmf",
@@ -1742,7 +1785,10 @@
             "summary": "No major fit, maximum hand (14 HCP)"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-nmf",
@@ -2067,7 +2113,10 @@
             "summary": "No major fit, maximum hand (14 HCP)"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-1h-open",
@@ -2119,7 +2168,10 @@
             "summary": "Show 4+ spades with 6+ HCP over partner's 1H"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-1h-1s",
@@ -2177,7 +2229,10 @@
             "summary": "Minimum (12-14) balanced rebid, no 4-card spade support"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-1nt-rebid-from-1h",
@@ -2241,6 +2296,14 @@
             },
             {
               "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "At least 6 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
               "operator": "lte",
               "value": 9,
               "clauseId": "hand.hcp:lte:9",
@@ -2265,7 +2328,10 @@
             "summary": "Natural weak signoff showing 5+ diamonds, 6-9 HCP"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-nmf-from-1h",
@@ -2289,6 +2355,14 @@
               "value": 3,
               "clauseId": "hand.suitLength.spades:gte:3",
               "description": "3+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "At least 12 HCP (minimum)",
               "isPublic": true
             },
             {
@@ -2545,9 +2619,364 @@
             "summary": "Priority 5: rebid the opened major with 6+ card length"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
+  "reference": {
+    "summaryCard": {
+      "trigger": "After one minor, one major, and one notrump, responder checks back with the other minor.",
+      "definingMeaningId": "nmf:ask-after-1c",
+      "partnership": "The new minor is whichever minor responder has not bid. In SAYC it is invitational-or-better by default; in two-way NMF or XYZ styles it may be strictly game-forcing, so confirm the partnership agreement. The summary card shows the one-club branch."
+    },
+    "whenToUse": [
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.nmf.responderInviteOrBetter",
+                "expected": true
+              }
+            },
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gloss": "Use NMF when invite-or-better values still need major support checked."
+      },
+      {
+        "predicate": {
+          "kind": "extended",
+          "clause": {
+            "clauseKind": "booleanFact",
+            "fact_id": "module.nmf.responderGameValues",
+            "expected": true
+          }
+        },
+        "gloss": "Use NMF with game-going values before choosing notrump or a major."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.nmf.responderInviteOrBetter",
+                "expected": true
+              }
+            },
+            {
+              "kind": "not",
+              "operand": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "booleanFact",
+                  "fact_id": "module.nmf.responderGameValues",
+                  "expected": true
+                }
+              }
+            }
+          ]
+        },
+        "gloss": "Use NMF with invitational values when a direct notrump invite is too blunt."
+      }
+    ],
+    "workedAuctions": [
+      {
+        "kind": "positive",
+        "label": "Club opening branch uncovers a heart fit",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "C"
+            },
+            "rationale": "Opener starts with the minor opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            },
+            "rationale": "Responder shows hearts first."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener rebids notrump instead of raising hearts immediately."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            },
+            "rationale": "Responder uses the other minor as NMF to ask for more detail."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            },
+            "rationale": "Opener shows three-card heart support with a minimum."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            },
+            "rationale": "Responder places the contract in the newly discovered heart fit."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "Diamond opening branch signs off in invitational notrump",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "D"
+            },
+            "rationale": "Opener begins with the diamond opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            },
+            "rationale": "Responder shows spades."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener rebids notrump, denying immediate spade support."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder checks back in the new minor."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            },
+            "rationale": "Opener shows a minimum without a major fit."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "pass"
+            },
+            "rationale": "Responder invited by asking and now signs off in two notrump."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "One-heart start uses the two-club checkback to find spades",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            },
+            "rationale": "Opener starts with hearts."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            },
+            "rationale": "Responder shows spades."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener limits the hand with the notrump rebid."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder uses the artificial two-club NMF call."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            },
+            "rationale": "Opener jumps to show maximum values with three-card spade support."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            },
+            "rationale": "Responder places the contract in the spade fit."
+          }
+        ]
+      },
+      {
+        "kind": "negative",
+        "label": "Counter-example: weak values do not justify the forcing checkback",
+        "responderHand": {
+          "spades": "8 4",
+          "hearts": "K J 9 7 3",
+          "diamonds": "Q 8 5",
+          "clubs": "9 4 2"
+        },
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "C"
+            },
+            "rationale": "Opener begins with one club."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            },
+            "rationale": "Responder shows the heart suit."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener rebids notrump."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            },
+            "rationale": "Responder launches NMF anyway, even though the hand lacks the values to force."
+          }
+        ]
+      }
+    ],
+    "interference": {
+      "status": "notApplicable",
+      "reason": "Opponent interference over 2♣/2♦ checkback is a partnership agreement — systems-on or penalty double; not covered here."
+    },
+    "quickReference": {
+      "kind": "list",
+      "axis": {
+        "kind": "systemFactLadder",
+        "label": "Responder strength",
+        "facts": [
+          "system.responder.inviteValues",
+          "system.responder.gameValues",
+          "system.responder.slamValues"
+        ]
+      },
+      "items": [
+        {
+          "recommendation": "Check back, then decide between two notrump and a partscore in the major.",
+          "note": "Opener first shows three-card support, then the other major, then clarifies minimum notrump."
+        },
+        {
+          "recommendation": "Check back before placing game in three notrump or the major.",
+          "note": "A discovered fit takes priority; without one, opener's notrump range tells responder whether to bid game."
+        },
+        {
+          "recommendation": "Check back before any serious slam move.",
+          "note": "The convention confirms support or shape first, then the partnership can launch natural slam exploration."
+        }
+      ]
+    },
+    "relatedLinks": [
+      {
+        "moduleId": "stayman",
+        "discriminator": "NMF is the post-one-notrump-rebid analog of Stayman's four-card-major ask."
+      },
+      {
+        "moduleId": "bergen",
+        "discriminator": "Bergen shows support immediately after a major opening, while NMF checks back only after opener limits the hand with one notrump."
+      }
+    ]
+  },
   "facts": {
     "definitions": [
       {
@@ -2655,6 +3084,7 @@
         "world": "acting-hand",
         "description": "Responder has invitational+ values (10+ HCP)",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": ["hand.hcp"],
         "constrainsDimensions": ["pointRange"],
         "composition": {
@@ -2672,6 +3102,7 @@
         "world": "acting-hand",
         "description": "Responder has game values (12+ HCP)",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": ["hand.hcp"],
         "constrainsDimensions": ["pointRange"],
         "composition": {
@@ -2689,6 +3120,7 @@
         "world": "acting-hand",
         "description": "Opener has 3+ hearts",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": ["hand.suitLength.hearts"],
         "constrainsDimensions": ["suitLength"],
         "composition": {
@@ -2706,6 +3138,7 @@
         "world": "acting-hand",
         "description": "Opener has 3+ spades",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": ["hand.suitLength.spades"],
         "constrainsDimensions": ["suitLength"],
         "composition": {
@@ -2723,6 +3156,7 @@
         "world": "acting-hand",
         "description": "Opener has minimum values (12-13 HCP)",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": ["hand.hcp"],
         "constrainsDimensions": ["pointRange"],
         "composition": {
@@ -2753,6 +3187,7 @@
         "world": "acting-hand",
         "description": "Opener has maximum values (14 HCP)",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": ["hand.hcp"],
         "constrainsDimensions": ["pointRange"],
         "composition": {

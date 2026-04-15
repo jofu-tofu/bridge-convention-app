@@ -51,9 +51,7 @@ async fn dev_login(
     jar: CookieJar,
     Json(req): Json<DevLoginRequest>,
 ) -> Result<(CookieJar, Response), AppError> {
-    let user_id = req
-        .id
-        .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+    let user_id = req.id.unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
     let display_name = req.display_name.unwrap_or_else(|| "Dev User".to_string());
 
     sqlx::query(
@@ -144,9 +142,8 @@ impl StripeOps for InProcessMockStripe {
         let mut counter = self.next_customer.lock().expect("mutex poisoned");
         let id = format!("cus_devmock_{:06}", *counter);
         *counter += 1;
-        id.parse().map_err(|err| {
-            AppError::Internal(format!("mock customer id parse error: {err}"))
-        })
+        id.parse()
+            .map_err(|err| AppError::Internal(format!("mock customer id parse error: {err}")))
     }
 
     async fn create_checkout_session(

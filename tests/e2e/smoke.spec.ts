@@ -3,7 +3,7 @@ import { startPracticeFromHome, waitForPhase } from "./helpers";
 
 test.describe("app smoke", () => {
   test("home search narrows the convention list", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/practice");
 
     await expect(page.getByTestId("practice-nt-transfers")).toBeVisible();
     await expect(page.getByTestId("practice-bergen-bundle")).toBeVisible();
@@ -20,17 +20,17 @@ test.describe("app smoke", () => {
   });
 
   test("convention and learning deep links load their target screens directly", async ({ page }) => {
-    await page.goto("/?convention=bergen-bundle&seed=1");
+    await page.goto("/practice?convention=bergen-bundle&seed=1");
     await waitForPhase(page, "Bidding");
     await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
 
-    await page.goto("/?learn=nt-stayman");
+    await page.goto("/learning?learn=nt-stayman");
     await expect(page.getByRole("main", { name: "Convention learning" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Stayman/ })).toBeVisible();
   });
 
   test("wrong bid feedback is blocking and retry restores the bid panel", async ({ page }) => {
-    await page.goto("/?convention=bergen-bundle&seed=1");
+    await page.goto("/practice?convention=bergen-bundle&seed=1");
     await waitForPhase(page, "Bidding");
 
     await page.getByTestId("bid-P").click();
@@ -46,12 +46,12 @@ test.describe("app smoke", () => {
   });
 
   test("settings and home navigation remain reachable", async ({ page }) => {
-    await page.goto("/");
-    await page.getByRole("button", { name: "Settings" }).first().click();
+    await page.goto("/practice");
+    await page.getByRole("link", { name: "Settings" }).first().click();
 
     await expect(page.locator("h1")).toHaveText("Settings", { timeout: 5_000 });
 
-    await page.getByRole("button", { name: "Home" }).first().click();
-    await expect(page.locator("h1")).toHaveText("Bridge Practice", { timeout: 5_000 });
+    await page.getByRole("link", { name: "Practice" }).first().click();
+    await expect(page.locator("h1")).toHaveText("Practice", { timeout: 5_000 });
   });
 });

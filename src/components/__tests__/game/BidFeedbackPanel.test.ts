@@ -37,7 +37,9 @@ describe("BidFeedbackPanel", () => {
     const showBtn = screen.getByLabelText("Show answer");
     await fireEvent.click(showBtn);
 
-    const conditionList = container.querySelector("[aria-label='Bid conditions']");
+    const conditionList = container.querySelector(
+      "[aria-label='Bid conditions']",
+    );
     expect(conditionList).toBeNull();
   });
 
@@ -169,5 +171,40 @@ describe("BidFeedbackPanel", () => {
     const note = container.querySelector("[data-testid='practical-note']");
     expect(note).not.toBeNull();
     expect(note!.textContent).toContain("Experienced players might prefer");
+  });
+
+  test("suppresses duplicated synthetic bid label in incorrect answer hero", async () => {
+    const feedback: ViewportBidFeedback = {
+      grade: ViewportBidGrade.Incorrect,
+      userCall: { type: "pass" },
+      userCallDisplay: "Pass",
+      correctCall: { type: "bid", level: 2, strain: "C" as never },
+      correctCallDisplay: "2C",
+      correctBidLabel: {
+        name: "Bid 2C",
+        summary: "Asks opener for a 4-card major",
+      },
+      requiresRetry: true,
+    };
+    const teaching: TeachingDetail = {
+      primaryBid: { type: "bid", level: 2, strain: "C" as never },
+      meaningViews: [
+        {
+          meaningId: "stayman:ask",
+          displayLabel: "Bid 2C",
+          status: "live",
+          supportingEvidence: [],
+        },
+      ],
+    };
+    const { container } = render(BidFeedbackPanel, {
+      props: { feedback, teaching, onRetry: noop },
+    });
+
+    await fireEvent.click(screen.getByLabelText("Show answer"));
+
+    expect(container.textContent).toContain("2C");
+    expect(container.textContent).not.toContain("2C — Bid 2C");
+    expect(screen.queryByText("Bid 2C")).toBeNull();
   });
 });

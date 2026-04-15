@@ -103,6 +103,20 @@ fn is_default_point_config(config: &PointConfig) -> bool {
     *config == default_point_config()
 }
 
+fn default_opening_config() -> OpeningConfig {
+    OpeningConfig {
+        weak_two: OpeningHcpRange {
+            min_hcp: 6,
+            max_hcp: 11,
+        },
+        strong_2c_min: 22,
+    }
+}
+
+fn is_default_opening_config(config: &OpeningConfig) -> bool {
+    *config == default_opening_config()
+}
+
 /// Base bidding system identifiers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BaseSystemId {
@@ -201,11 +215,27 @@ pub struct DontOvercallConfig {
     pub max_hcp: u32,
 }
 
+/// HCP range for a conventional opening.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OpeningHcpRange {
+    pub min_hcp: u32,
+    pub max_hcp: u32,
+}
+
 /// Structural opening bid requirements.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpeningRequirements {
     pub major_suit_min_length: u8,
+}
+
+/// System-dependent conventional opening thresholds.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OpeningConfig {
+    pub weak_two: OpeningHcpRange,
+    pub strong_2c_min: u32,
 }
 
 /// Top-level system configuration.
@@ -221,6 +251,11 @@ pub struct SystemConfig {
     pub suit_response: SuitResponseConfig,
     pub one_nt_response_after_major: OneNtResponseAfterMajorConfig,
     pub opening_requirements: OpeningRequirements,
+    #[serde(
+        default = "default_opening_config",
+        skip_serializing_if = "is_default_opening_config"
+    )]
+    pub opening: OpeningConfig,
     pub dont_overcall: DontOvercallConfig,
     #[serde(
         default = "default_point_config",
@@ -312,6 +347,13 @@ mod tests {
             },
             opening_requirements: OpeningRequirements {
                 major_suit_min_length: 5,
+            },
+            opening: OpeningConfig {
+                weak_two: OpeningHcpRange {
+                    min_hcp: 6,
+                    max_hcp: 11,
+                },
+                strong_2c_min: 22,
             },
             dont_overcall: DontOvercallConfig {
                 min_hcp: 8,

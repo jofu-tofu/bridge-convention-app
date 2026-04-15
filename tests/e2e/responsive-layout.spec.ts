@@ -3,7 +3,7 @@ import { waitForPhase } from "./helpers";
 
 test.describe("responsive layout", () => {
   test("home screen stays visible without horizontal overflow", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/practice");
 
     const main = page.locator("main");
     await expect(main).toBeVisible();
@@ -16,7 +16,7 @@ test.describe("responsive layout", () => {
   });
 
   test("game screen shows the phase badge and a usable bid panel", async ({ page }) => {
-    await page.goto("/?convention=nt-bundle&seed=42");
+    await page.goto("/practice?convention=nt-bundle&seed=42");
     await waitForPhase(page, "Bidding");
 
     const passButton = page.getByTestId("bid-P");
@@ -30,8 +30,8 @@ test.describe("responsive layout", () => {
   });
 
   test("settings screen remains reachable from the responsive shell", async ({ page }) => {
-    await page.goto("/");
-    await page.getByRole("button", { name: "Settings" }).first().click();
+    await page.goto("/practice");
+    await page.getByRole("link", { name: "Settings" }).first().click();
 
     await expect(page.locator("h1")).toHaveText("Settings", { timeout: 5_000 });
   });

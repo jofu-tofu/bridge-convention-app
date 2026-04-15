@@ -16,7 +16,7 @@ use crate::types::meaning::{
 };
 use crate::types::module_types::ConventionModule;
 use crate::types::rule_types::{
-    ObsPattern, ObsPatternAct, PhaseRef, RouteExpr, StateEntry, TurnRole,
+    default_scope, ObsPattern, ObsPatternAct, PhaseRef, RouteExpr, StateEntry, TurnRole,
 };
 use crate::types::system_config::BaseSystemId;
 
@@ -256,6 +256,8 @@ fn negdbl_route_expr(open: &str, overcall: &str) -> RouteExpr {
                 strain: Some(bid_suit_name(open)),
                 strength: None,
                 actor: None,
+                level: None,
+                jump: None,
             },
             ObsPattern {
                 act: ObsPatternAct::Specific(BidActionType::Overcall),
@@ -264,6 +266,8 @@ fn negdbl_route_expr(open: &str, overcall: &str) -> RouteExpr {
                 strain: None,
                 strength: None,
                 actor: None,
+                level: None,
+                jump: None,
             },
             ObsPattern {
                 act: ObsPatternAct::Specific(BidActionType::Double),
@@ -272,6 +276,8 @@ fn negdbl_route_expr(open: &str, overcall: &str) -> RouteExpr {
                 strain: None,
                 strength: None,
                 actor: None,
+                level: None,
+                jump: None,
             },
         ],
     }
@@ -712,6 +718,7 @@ fn build_negative_doubles_after_negdbl_states() -> Vec<StateEntry> {
 
             StateEntry {
                 phase: PhaseRef::Single("after-neg-dbl".to_string()),
+                scope: default_scope(),
                 turn: Some(TurnRole::Opener),
                 kernel: None,
                 route: Some(negdbl_route_expr(route.open, route.overcall)),

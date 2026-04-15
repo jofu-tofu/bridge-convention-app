@@ -5,6 +5,7 @@ Complete guide for writing new convention bundles. Covers the full lifecycle fro
 ## Authoritative Bridge Rules Sources
 
 Priority chain for resolving ambiguity:
+
 1. **WBF Laws of Duplicate Bridge 2017** — https://www.worldbridge.org/rules-regulations/laws/
 2. **ACBL SAYC Booklet** — https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/
 3. **bridgebum.com** — Convention encyclopedia (stayman.php, bergen_raises.php, dont.php, etc.)
@@ -50,11 +51,13 @@ Every convention bundle must satisfy all items:
 ## File Templates
 
 ### config.ts
+
 ```ts
 export { {name}Bundle } from "../system-registry";
 ```
 
 ### meaning-surfaces.ts
+
 ```ts
 import { BidSuit } from "../../../engine/types";
 import { bid } from "../../core/surface-helpers";
@@ -82,6 +85,7 @@ export const {NAME}_SURFACES: readonly BidMeaning[] = [
 ```
 
 ### facts.ts
+
 ```ts
 import type { FactCatalogExtension } from "../../../core/contracts/fact-catalog";
 import { defineBooleanFact, defineHcpRangeFact, buildExtension } from "../../core/pipeline/fact-factory";
@@ -102,6 +106,7 @@ export const {name}Facts: FactCatalogExtension = {
 ```
 
 ### semantic-classes.ts
+
 ```ts
 export const {NAME}_SEMANTIC = {
   MY_CLASS: "{name}:my-class",
@@ -109,6 +114,7 @@ export const {NAME}_SEMANTIC = {
 ```
 
 ### explanation-catalog.ts
+
 ```ts
 import type { ExplanationCatalog } from "../../../core/contracts/explanation-catalog";
 import { createExplanationCatalog } from "../../../core/contracts/explanation-catalog";
@@ -145,126 +151,166 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 
 ## Reference Block Authoring
 
-Fixture-backed learn pages can now carry a hand-authored `reference` block. This is the source of truth for the prerendered `/learn/[moduleId]` reference page. Treat it as editorial copy: concise, reference-first, and stable enough for deep links and print.
+Every fixture-backed learn page must carry a hand-authored `reference` block. It is the source of truth for the prerendered `/learn/[moduleId]` reference page, and fixture deserialization now fails if the block is missing. Treat it as editorial copy: concise, reference-first, and stable enough for deep links and print.
+
+The fixture's top-level `displayName` is also authoritative for the learn-page H1 and catalog card title. If you rename a module for reference-page presentation, update `displayName` in the fixture and rerun `npm run static:extract` so `.generated/learn-data.json` picks up the new title.
 
 ### Reference block example
 
 ```json
 "reference": {
   "summaryCard": {
-    "trigger": "Partner opens 1NT, you respond",
-    "bid": { "type": "bid", "level": 2, "strain": "C" },
-    "promises": "Usually invitational-or-better values with at least one 4-card major.",
-    "denies": "A natural club suit and any promise that a major fit already exists.",
-    "guidingIdea": "Ask first, then place the contract: find the 4-4 major if it exists; otherwise return to the right notrump level.",
-    "partnership": "Core SAYC agreement. Opener shows hearts first with both 4-card majors."
+    "trigger": "Partner opens one notrump, you respond",
+    "definingMeaningId": "stayman:ask",
+    "partnership": "Common agreement."
   },
   "whenToUse": [
-    "Use Stayman with 8-9 HCP and a 4-card major when you want to invite game."
-  ],
-  "whenNotToUse": [
     {
-      "text": "Do not use Stayman with no 4-card major and a clear notrump action already available.",
-      "reason": "Bid 2NT or 3NT directly when your question is level, not strain."
+      "predicate": {
+        "kind": "and",
+        "operands": [
+          { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "system.responder.inviteValues", "expected": true } },
+          { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "bridge.hasFourCardMajor", "expected": true } }
+        ]
+      },
+      "gloss": "Use Stayman with invitational values and a four-card major."
     }
   ],
   "workedAuctions": [
     {
-      "label": "Main line: find the 4-4 fit",
+      "kind": "positive",
+      "label": "Main line: find the fit",
       "calls": [
         {
           "seat": "Responder",
           "call": { "type": "bid", "level": 2, "strain": "C" },
           "rationale": "Asks for a 4-card major with game interest."
         }
-      ],
-      "outcomeNote": "A known 8-card major fit usually beats 3NT when both contracts are available."
-    }
-  ],
-  "interference": [
+      ]
+    },
     {
-      "opponentAction": "Double of 2♣ or a 2♦ overcall",
-      "ourAction": "Keep normal Stayman structure unless the opponents bid again.",
-      "note": "Responder's 2♦ after a double is to play."
+      "kind": "negative",
+      "label": "Counter-example: flat shape reaches the wrong game",
+      "responderHand": {
+        "spades": "K J 3",
+        "hearts": "Q 8 4 2",
+        "diamonds": "K 7 4",
+        "clubs": "Q 8 5"
+      },
+      "calls": [
+        {
+          "seat": "Responder",
+          "call": { "type": "bid", "level": 4, "strain": "H" },
+          "rationale": "The fit exists, but 3NT was cold while 4♥ needed a finesse and went down."
+        }
+      ]
     }
   ],
-  "decisionGrid": {
-    "rows": ["0-7 HCP", "8-9 HCP", "10+ HCP"],
-    "cols": ["No 4-card major", "One 4-card major"],
-    "cells": [
-      ["Pass", "Pass"],
-      ["2NT", "2♣ then invite"],
-      ["3NT", "2♣ then bid game"]
+  "interference": {
+    "status": "applicable",
+    "items": [
+      {
+        "opponentAction": "Double of 2♣ or a 2♦ overcall",
+        "ourAction": "Keep normal Stayman structure unless the opponents bid again.",
+        "note": "Responder's 2♦ after a double is to play."
+      }
     ]
   },
-  "systemCompat": {
-    "sayc": "Standard over a 15-17 1NT.",
-    "twoOverOne": "Core ask unchanged; confirm GF continuations.",
-    "acol": "Thresholds shift with the NT range.",
-    "customNote": "Confirm your range, both-major treatment, and interference agreements."
+  "quickReference": {
+    "kind": "grid",
+    "rowAxis": {
+      "kind": "systemFactLadder",
+      "label": "Responder strength",
+      "facts": [
+        "system.responder.weakHand",
+        "system.responder.inviteValues",
+        "system.responder.gameValues"
+      ]
+    },
+    "colAxis": {
+      "kind": "partitionLadder",
+      "label": "Major-suit shape",
+      "fact": "responder.majorShape"
+    },
+    "cells": [
+      [
+        { "kind": "notApplicable", "reason": { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "bridge.hasFourCardMajor", "expected": false } } },
+        { "kind": "auto" },
+        { "kind": "surface", "id": "stayman:ask-major" },
+        { "kind": "notApplicable", "reason": { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "hand.isBalanced", "expected": true } } }
+      ],
+      [
+        { "kind": "notApplicable", "reason": { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "bridge.hasFourCardMajor", "expected": false } } },
+        { "kind": "auto" },
+        { "kind": "surface", "id": "stayman:ask-major" },
+        { "kind": "notApplicable", "reason": { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "hand.isBalanced", "expected": true } } }
+      ],
+      [
+        { "kind": "notApplicable", "reason": { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "bridge.hasFourCardMajor", "expected": false } } },
+        { "kind": "auto" },
+        { "kind": "surface", "id": "stayman:ask-major" },
+        { "kind": "notApplicable", "reason": { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "hand.isBalanced", "expected": true } } }
+      ]
+    ]
   },
   "relatedLinks": [
     {
       "moduleId": "jacoby-transfers",
       "discriminator": "Show a 5-card major immediately instead of asking opener to choose."
     }
-  ],
-  "responseTableOverrides": {
-    "stayman:show-hearts": {
-      "shape": "4+ hearts",
-      "hcp": "15-17",
-      "forcing": "INV"
-    }
-  }
+  ]
 }
 ```
+
+**What is NOT authored in `reference`:**
+
+- `summaryCard.bid`, `summaryCard.promises`, `summaryCard.denies` — derived from `definingMeaningId` (`encoding.default_call` + public fact clauses).
+- `summaryCard.guidingIdea` — defaults to `teaching.principle`; author only to override.
+- `whenNotToUse` — derived from `teaching.commonMistakes` (`{ text, reason }[]`, ≥3 entries).
+- `responseTable` — auto-discovered per module. Fixed columns are only `Response | Meaning`; further constraint columns come from the fact IDs present in the module's surfaces. There are no `responseTableOverrides`.
+- `systemCompat` — removed; per-system differences render automatically from the active `SystemConfig` via the `systemFactLadder → describe_system_fact_value` chain.
+- Worked-auction closing narration — remove `outcomeNote`; if the takeaway matters, put it on the final call's `rationale`.
 
 ### Field guide
 
 - `summaryCard.trigger`: Exact auction slot. Keep it concrete and short.
-- `summaryCard.bid`: The convention call. Use the standard call object shape so the page can format it consistently.
-- `summaryCard.promises`: One line for what the call shows.
-- `summaryCard.denies`: One line for what the call rules out.
-- `summaryCard.guidingIdea`: One sentence the reader can regenerate the rest of the page from.
-- `summaryCard.partnership`: Agreement note such as "on by default in SAYC" or "requires partnership discussion".
-- `whenToUse[]`: Positive retrieval cues. Keep each item to one line.
-- `whenNotToUse[].text`: The negative-space rule.
-- `whenNotToUse[].reason`: Parenthesized reason explaining why the action is wrong or inferior.
+- `summaryCard.definingMeaningId`: ID of the module meaning that defines the convention. Bid / promises / denies render from this meaning's `encoding.default_call` and public fact clauses — do not hand-author them.
+- `summaryCard.partnership`: Agreement note such as "requires partnership discussion". Do not name systems (SAYC / 2-1 / Acol / Precision) in this prose; per-system nuance is rendered from the active `SystemConfig`.
+- `summaryCard.peers[]` (optional): Authored peer list for peer-structured conventions (Bergen, Jacoby transfers, DONT, Two-way NMF, Unusual NT). When absent the hero layout renders. When present the learn page renders a peer grid. Each entry is `{ definingMeaningId, discriminatorLabel }`; bid / promises / denies derive from `definingMeaningId` via the same pipeline as the top-level summary card. Authoring invariants (enforced by `summary_card_peers_are_well_formed` + `reference_prose_invariants`):
+  - `peers.length >= 2` when authored.
+  - Every `peers[i].definingMeaningId` resolves to a surface on the same module.
+  - The top-level `summaryCard.definingMeaningId` must appear in `peers[]` (the canonical hero within the peer set, used by fallback contexts).
+  - `discriminatorLabel` is short authored prose subject to the standard reference-prose invariants (no digits, no system names).
+  - Hierarchical conventions (Stayman, Puppet Stayman, Strong 2♣) omit `peers`.
+- `whenToUse[]`: Authored `PredicateBullet { predicate, gloss }`. `predicate` is the typed structural condition; `gloss` is the reader-facing bullet text. Prefer existing fact-catalog thresholds and partition predicates over ad-hoc prose conditions.
+- `workedAuctions[].kind`: Optional `"positive" | "negative"` discriminator. Omit only when the default positive example is obvious; use `"negative"` for counter-examples you may want to style differently later.
 - `workedAuctions[].label`: Short title for the example line, alternative line, or non-example.
+- `workedAuctions[].responderHand`: Optional compact hand sample (`{ spades, hearts, diamonds, clubs }`). Use when the worked auction needs a concrete visual counter-example. The current learn page carries this through the payload; a parallel UI pass may still need to render it.
 - `workedAuctions[].calls[].seat`: Seat label shown in small caps, typically `Opener` / `Responder`.
 - `workedAuctions[].calls[].call`: Bid object or rendered bid string.
 - `workedAuctions[].calls[].rationale`: One-line reason for that bid. No paragraph narration.
-- `workedAuctions[].outcomeNote`: Optional short result note under the auction title.
-- `interference[].opponentAction`: The opponent action that changes your treatment.
-- `interference[].ourAction`: Your default practical response. This may be prose or a bid.
-- `interference[].note`: Clarifying follow-up detail.
-- `decisionGrid`: Optional. Use only when the decision is genuinely two-dimensional.
-- `decisionGrid.rows[]`: Row labels, usually HCP bands or strength classes.
-- `decisionGrid.cols[]`: Column labels, usually shape classes or fit classes.
-- `decisionGrid.cells[][]`: Short cell copy. Prefer an action first (`2♣ then invite`, `3NT`, `Pass`), with minimal prose.
-- `systemCompat.sayc`: SAYC treatment.
-- `systemCompat.twoOverOne`: 2/1 treatment.
-- `systemCompat.acol`: Acol treatment.
-- `systemCompat.customNote`: What a custom partnership must agree explicitly.
+- `interference`: Tagged union. `{ status: "applicable", items: [{ opponentAction, ourAction, note }] }` with ≥1 item, or `{ status: "notApplicable", reason }`. Empty `items` is illegal.
+- `quickReference`: Tagged union. `{ kind: "grid", rowAxis, colAxis, cells }` for 2-D decisions; `{ kind: "list", axis, items: [{ recommendation, note }] }` for 1-D. Grid `cells` are typed bindings: `{"kind":"auto"}`, `{"kind":"surface","id":"..."}`, or `{"kind":"notApplicable","reason":<FactComposition>}`.
+- `quickReference.*Axis`: Tagged either `systemFactLadder` (labels derived from active `SystemConfig`) or `partitionLadder` (labels derived from the fact catalog). There is no prose-axis fallback.
 - `relatedLinks[].moduleId`: Target learn-page module id.
 - `relatedLinks[].discriminator`: The scent text that tells the reader why this other page is different or adjacent.
-- `responseTableOverrides`: Optional per-meaning editorial overrides for the response-table spine when the derived row needs different `shape`, `hcp`, or `forcing` copy.
+- Reference prose digit rule: authored strings under `reference.*` must not contain ASCII digits, except in `workedAuctions[].calls[].rationale`, `workedAuctions[].calls[].call`, and `workedAuctions[].responderHand.*`. Spell out auction slots in prose (`"one notrump"`, not `"1NT"`).
 
 ### Reference-page authoring checklist
 
-- [ ] Summary card is <=6 lines, includes a one-sentence Guiding Idea.
-- [ ] "When NOT to use" has at least as many items as "When to use", each with a parenthesized reason.
-- [ ] Response table uses the exact fixed column schema.
-- [ ] Every response row and continuation sub-line has a stable anchor id.
-- [ ] At least one decision grid if the decision space is 2-D.
-- [ ] >=3 worked auctions, each annotated inline (no paragraph narration).
-- [ ] At least one non-example included.
-- [ ] Dedicated interference section (not buried elsewhere).
-- [ ] System compatibility row present and correct.
+- [ ] `summaryCard` authored fields are `{ trigger, definingMeaningId, partnership }` only.
+- [ ] `reference` is present on the fixture; omission is a deserialize error.
+- [ ] `whenToUse` is authored as typed `PredicateBullet` entries with non-empty `gloss`.
+- [ ] `teaching.commonMistakes` has >=3 entries, each `{ text, reason }` (feeds `whenNotToUse`; do not re-author).
+- [ ] `quickReference` is `kind: "grid"` or `kind: "list"`; use `CellBinding` cells and `partitionLadder` / `systemFactLadder` axes only; no null-escape or legacy prose-axis branch.
+- [ ] `interference` is either applicable-with-items or notApplicable-with-reason. Empty items is illegal.
+- [ ] Every response row and continuation sub-line has a stable anchor id routed through `slugifyMeaningId`.
+- [ ] > =3 worked auctions, each annotated inline (no paragraph narration); at least one non-example.
 - [ ] Cross-links are labelled with discriminators, not just target names.
 - [ ] No history, no re-motivation, no preamble.
-- [ ] All bids render in monospace, all seats in small-caps.
-- [ ] Zero ambiguous pronouns in response-table rows.
+- [ ] All bids render in monospace, all seats in small-caps; zero ambiguous pronouns in response-table rows.
+- [ ] No ASCII digits in authored `reference.*` prose outside worked-auction rationales, raw worked-auction call fields, and hand-sample strings.
+- [ ] No system names (SAYC / 2-1 / Acol / Precision) in authored prose.
 
 ## Common Pitfalls
 
@@ -285,6 +331,7 @@ Recurring errors observed across 18 convention fix commits (2025–2026). Ranked
 Authors implement happy-path surfaces and miss edge cases at HCP boundaries or after less common responses. Examples: Bergen had no surface for 14-16 HCP after constructive raise (hands fell to Pass); Blackwood only handled 0 aces, not 4; Stayman was missing 15 continuation surfaces.
 
 **Prevention checklist:**
+
 - For every opener response, ask: "what does responder do with weak / invite / game / slam values?"
 - For every HCP range in a surface, check: "what happens to hands just above and just below this range?"
 - Walk through BridgeBum line by line and check off each bid sequence against a surface
@@ -295,6 +342,7 @@ Authors implement happy-path surfaces and miss edge cases at HCP boundaries or a
 After copy-paste or rename, string IDs are not updated. `SuitOpening` vs `SuitOpen` in Michaels. `weak-two` vs `weak-twos` moduleId in 13 surfaces. `bergen-raises` missing from memberIds. The pipeline uses string matching, so typos cause silent breakage.
 
 **Prevention:** The `structural_invariants` test suite checks:
+
 - Every surface `moduleId` matches the file's top-level `moduleId` (or `variant_of` parent)
 - Module fixture filename matches the top-level `moduleId`
 - Every clause `factId` uses a valid namespace prefix (`hand.`, `system.`, `module.`, `bridge.`)
@@ -304,6 +352,7 @@ After copy-paste or rename, string IDs are not updated. `SuitOpening` vs `SuitOp
 Numeric boundaries don't match BridgeBum. Ogust min/max boundary was 8/9 split (should be 7/8). N/S deal constraints were swapped in Negative Doubles. These require domain knowledge to catch.
 
 **Prevention:**
+
 - Always have the BridgeBum page open while authoring
 - Cross-check teaching text (`commonMistakes`, `principle`) against clause thresholds — if the teaching text says "6+ HCP" but the clause says 8, one of them is wrong
 - Run BridgeBum verification (dispatch verification agents or use BridgeExpertReview skill)
@@ -313,6 +362,7 @@ Numeric boundaries don't match BridgeBum. Ogust min/max boundary was 8/9 split (
 More specific surfaces (with shape requirements) must rank higher than broader HCP-only surfaces. Bergen splinter (12+ HCP with shortage) was evaluated after game-raise (13+ HCP), so shortage hands matched the broader surface first.
 
 **Prevention:**
+
 - Surfaces with additional shape constraints should have lower `declarationOrder` (higher priority) than broader surfaces in the same state
 - Use `recommendationBand: "must"` for the most specific surface when it should always win
 
@@ -321,6 +371,7 @@ More specific surfaces (with shape requirements) must rank higher than broader H
 When opponent passes after a response, the FSM walks the ancestor chain back, resetting the convention. Bergen R2 states routed to wrong R3 states. NT Bundle had 4 states with empty transition arrays.
 
 **Prevention:**
+
 - Every non-terminal FSM state needs a pass self-loop (transition that keeps the machine in the same state when an opponent passes)
 - The `all_state_phases_reachable_from_fsm` structural invariant test catches orphaned states with no inbound transition **[TESTED]**
 
@@ -329,6 +380,7 @@ When opponent passes after a response, the FSM walks the ancestor chain back, re
 HCP-only clauses are insufficient for balanced/unbalanced decisions. Jacoby Transfers 3NT surface had no `bridge.hasShortage` clause — recommended 3NT with 5-1-2-5 shape where a new suit is preferred. 2NT invite lacked shortage guard.
 
 **Prevention:**
+
 - Any surface recommending NT (2NT, 3NT) after a suit transfer should have `bridge.hasShortage: false` or equivalent balanced-shape clause
 - Ask: "would this bid be wrong for any hand shape that satisfies these HCP clauses?"
 
@@ -337,6 +389,7 @@ HCP-only clauses are insufficient for balanced/unbalanced decisions. Jacoby Tran
 When a convention has symmetric paths (hearts vs spades, 1C vs 1D opening), one path has surfaces that the other lacks. Michaels `after-michaels-1s` was missing an invitational heart raise that existed in `after-michaels-1h`.
 
 **Prevention:**
+
 - When authoring symmetric states, count surfaces in each and verify they match
 - Copy-paste the symmetric state and swap suits — don't author from scratch
 
@@ -345,6 +398,7 @@ When a convention has symmetric paths (hearts vs spades, 1C vs 1D opening), one 
 Historically, hand-authored `dealConstraints` drifted from surface semantics — Stayman envelope was too loose (allowed transfer hands); Michaels only generated major-suit openings. Constraints are now auto-derived from surface preconditions, so this class of error surfaces as **too-loose surface clauses** or **too-loose opening surfaces in the base system** rather than envelope mismatches.
 
 **Prevention:**
+
 - After authoring, run `selftest` with multiple seeds and check that generated hands hit the intended surfaces (not fallback/escape surfaces)
 - Tighten surface clauses rather than reaching for a deal-constraint override — the override no longer exists
 - If rejection sampling exhausts (`tracing::warn` in `start_drill` logs), the derived envelope is too loose relative to the target surfaces — see Known Limitations in `docs/architecture/teaching-architecture.md`
@@ -354,12 +408,14 @@ Historically, hand-authored `dealConstraints` drifted from surface semantics —
 Data shape on TS side doesn't match Rust expectations. BidGrade used SCREAMING_SNAKE_CASE but TS used kebab-case. TS nested fields inside a `drill` object but Rust expected top-level. All silent — wrong defaults, no runtime error.
 
 **Prevention:**
+
 - When adding new fields that cross the WASM boundary, test the round-trip immediately
 - Check `#[serde(rename_all = "...")]` attributes match the TS serialization format
 
 ## Convention-Specific Edge Cases
 
 ### Bergen Raises
+
 - Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
 - Reverse Bergen variant not implemented
 - Passed hand: Bergen OFF
@@ -367,24 +423,28 @@ Data shape on TS side doesn't match Rust expectations. BidGrade used SCREAMING_S
 - Help-suit game tries: opener bids weakest side suit after constructive raise
 
 ### DONT
+
 - Standard DONT (original Marty Bergen), Modified/Meckwell not implemented
 - 6-4 hand → two-suited bid, NOT double (rule ordering)
 - Only direct seat overcall; balancing seat not implemented
 - 2NT inquiry rebid system: min/max split at 11 HCP
 
 ### Stayman
+
 - Standard Stayman; Puppet Stayman not implemented
 - Both 4-card majors → opener shows hearts first
 - Smolen requires 5-4 shape (not 4-4)
 - Competitive sequences not handled
 
 ### Weak Twos
+
 - Standard Ogust responses (3C=min/bad through 3NT=solid)
 - 2C excluded (reserved for strong conventional opening)
 - Hearts priority > Spades > Diamonds
 - Responder 10-13 HCP gap (no action in this range without fit)
 
 ### Michaels / Unusual 2NT
+
 - Cue bid over minor opening = both majors (5-5+); cue bid over major = other major + unknown minor (5-5+)
 - Unusual 2NT = both minors (5-5+)
 - Vulnerability-gated HCP: NV 6-15, Vul 8-15
@@ -394,6 +454,7 @@ Data shape on TS side doesn't match Rust expectations. BidGrade used SCREAMING_S
 - Game-forcing sequences: none (all levels are invitational at most)
 
 ### Strong 2C Opening
+
 - Artificial game-forcing 2C opening with 22+ HCP
 - 2D = waiting/negative (0-7 HCP), positive = 8+ HCP with suit or balanced 2NT
 - After 2D waiting: opener rebids suit (5+), 2NT (22-24 balanced), or 3NT (25-27 balanced)
@@ -402,12 +463,14 @@ Data shape on TS side doesn't match Rust expectations. BidGrade used SCREAMING_S
 - Multi-phase opener: the FSM has 8 phases to cover different response paths
 
 ### Lebensohl (Lite)
+
 - Only handles overcalls in D/H/S — no 2C overcall
 - "Slow shows" implemented, "fast denies" not
 - Simplified stopper check: any single top honor (A, K, Q)
 - Direct 3-level suit bids are game-forcing (10+ HCP)
 
 ### SAYC
+
 - Full bidding system, not just a convention treatment
 - 5-card majors in all seats, strong 1NT (15-17)
 - Transfer priority over Stayman with 5+ major AND 4-card major
@@ -415,12 +478,14 @@ Data shape on TS side doesn't match Rust expectations. BidGrade used SCREAMING_S
 - Known gaps: no minor raises, limited opener rebid coverage
 
 ### Negative Doubles
+
 - **Opponent overcall observations:** The module includes its own surfaces for opponent overcalls (5+ card suit, 8-16 HCP) to produce committed observations that advance the FSM. These are real surfaces with clauses, not stubs.
 - **Per-opening phase pattern:** Each opening suit gets its own `r1-after-1x` → `after-oc-1x` phase pair. The meaning of a negative double depends on which suits are unbid, so encoding the opening suit in the phase name makes surfaces self-contained. Route matching within the `after-oc-1x` phase further distinguishes by overcall suit.
 - **Level-dependent HCP thresholds:** 1-level negative doubles require 6+ HCP; 2-level require 8+ HCP. Surfaces use direct `hand.hcp` clauses, not module-derived facts, since the threshold depends on the specific overcall level.
 - **2-level shape requirements:** At the 2-level, a negative double promises the unbid major(s), NOT all unbid suits. For example, 1H-(2C)-Dbl shows 4+ spades but does NOT promise 4+ diamonds. Exception: 1S-(2H)-Dbl requires both minors since there is no unbid major.
 
 ### New Minor Forcing (NMF)
+
 - **3-round auction prefix:** NMF fires after 1m - 1M - 1NT, which is 3 bids before the convention's main decision point. The FSM tracks this with idle → after-1m-open → after-1m-1M → after-1nt-rebid progression.
 - **Route-dependent NMF minor:** The NMF bid itself depends on which minor was opened — 2D after 1C opening, 2C after 1D opening. Route matching on `{"act": "open", "strain": "clubs"}` vs `"diamonds"` selects the correct encoding.
 - **Inquire reuse:** Both NMF and Stayman produce `Inquire { feature: MajorSuit }`. This is safe because they occupy different FSM phases — Stayman is in `idle` (after 1NT opening), NMF is in `after-1nt-rebid` (after 1m-1M-1NT). Modules sharing the same `BidAction` shape are safe as long as they occupy different FSM phases.

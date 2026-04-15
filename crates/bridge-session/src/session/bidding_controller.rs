@@ -185,10 +185,7 @@ pub fn initialize_auction(
 /// user seat's strategy) then captures the snapshot, so the debug drawer can
 /// show the pipeline state for the user's current decision before they bid.
 /// No-op when it is not the user's turn.
-fn push_pre_bid_snapshot(
-    state: &mut SessionState,
-    seat_strategies: &HashMap<Seat, SeatStrategy>,
-) {
+fn push_pre_bid_snapshot(state: &mut SessionState, seat_strategies: &HashMap<Seat, SeatStrategy>) {
     let user_seat = match get_current_turn(&state.auction, state.deal.dealer) {
         Some(s) if state.is_user_seat(s) => s,
         _ => return,

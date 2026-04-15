@@ -41,11 +41,12 @@ pub use learning_formatters::{
     format_module_name, map_clauses, module_surfaces,
 };
 pub use learning_types::{
-    BaseModuleInfo, ClauseSystemVariant, DecisionGrid, EntryCondition, InterferenceItem,
-    LearningTeachingView, ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView,
-    ReferenceView, RelatedLink, RelevantMetric, ResponseTableOverride, ResponseTableRow,
-    ServiceTeachingLabel, SummaryCard, SurfaceClauseView, SurfaceDetailView, SystemCompat,
-    WhenNotItem, WorkedAuction, WorkedAuctionCall,
+    BaseModuleInfo, ClauseSystemVariant, EntryCondition, InterferenceItem, LearningTeachingView,
+    ModuleCatalogEntry, ModuleLearningViewport, PhaseGroupView, ReferenceView, RelatedLink,
+    RelevantMetric, ResolvedAxis, ResolvedCell, ResolvedCellKind, ResolvedInterference,
+    ResolvedQuickReference, ResolvedQuickReferenceListItem, ResponseTable, ResponseTableCell,
+    ResponseTableColumn, ResponseTableRow, ServiceTeachingLabel, SummaryCard, SurfaceClauseView,
+    SurfaceDetailView, WhenNotItem, WorkedAuction, WorkedAuctionCall,
 };
 pub use learning_viewport::{
     build_base_module_infos, build_module_catalog, build_module_learning_viewport,

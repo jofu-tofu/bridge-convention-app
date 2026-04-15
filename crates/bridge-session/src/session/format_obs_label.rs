@@ -192,6 +192,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         }
     }
 
@@ -216,6 +218,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         assert_eq!(format_obs_action(&o), "opening spades");
     }
@@ -234,6 +238,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         assert_eq!(format_obs_action(&o), "showing balanced hand");
     }
@@ -247,6 +253,8 @@ mod tests {
             strain: Some(BidSuitName::Hearts),
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         assert_eq!(format_obs_action(&o), "transferring to hearts");
     }
@@ -260,6 +268,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         assert_eq!(format_obs_action(&o), "any action");
     }

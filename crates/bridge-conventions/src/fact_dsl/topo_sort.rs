@@ -58,6 +58,7 @@ mod tests {
             derives_from: derives_from.map(|v| v.into_iter().map(String::from).collect()),
             constrains_dimensions: vec![],
             composition: None,
+            for_teaching_only: false,
         }
     }
 

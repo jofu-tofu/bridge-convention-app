@@ -58,6 +58,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         let step = ObsPattern {
             act: ObsPatternAct::Any,
@@ -66,6 +68,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         assert!(obs_matches_step(Some(&obs), &step));
     }
@@ -79,6 +83,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         let step = ObsPattern {
             act: ObsPatternAct::Specific(BidActionType::Inquire),
@@ -87,6 +93,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         assert!(obs_matches_step(Some(&obs), &step));
     }
@@ -100,6 +108,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         let step = ObsPattern {
             act: ObsPatternAct::Specific(BidActionType::Inquire),
@@ -108,6 +118,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         assert!(!obs_matches_step(Some(&obs), &step));
     }
@@ -121,6 +133,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         assert!(!obs_matches_step(None, &step));
     }
@@ -134,6 +148,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         let step = ObsPattern {
             act: ObsPatternAct::Specific(BidActionType::Show),
@@ -142,6 +158,8 @@ mod tests {
             strain: None,
             strength: None,
             actor: None,
+            level: None,
+            jump: None,
         };
         assert!(!obs_matches_step(Some(&obs), &step));
     }

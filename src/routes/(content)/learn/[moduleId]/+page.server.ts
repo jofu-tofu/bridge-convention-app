@@ -32,22 +32,29 @@ interface ModuleLearningViewport {
     principle: string | null;
     commonMistakes: string[];
   };
-  reference: ReferenceView | null;
+  reference: ReferenceView;
   phases: PhaseGroupView[];
   bundleIds: string[];
 }
 
 interface ReferenceView {
   summaryCard: SummaryCard;
-  whenToUse: string[];
+  whenToUse: { predicate: unknown; gloss: string }[];
   whenNotToUse: WhenNotItem[];
-  responseTableRows: ResponseTableRow[];
+  responseTable: ResponseTable;
   workedAuctions: WorkedAuction[];
-  interference: InterferenceItem[];
-  decisionGrid: DecisionGrid | null;
-  systemCompat: SystemCompat;
+  interference: Interference;
+  quickReference: QuickReference;
   relatedLinks: RelatedLink[];
-  responseTableOverrides: Record<string, ResponseTableOverride>;
+}
+
+interface SummaryCardPeer {
+  meaningId: string;
+  call: Call;
+  callDisplay: string;
+  promises: string;
+  denies: string;
+  discriminatorLabel: string;
 }
 
 interface SummaryCard {
@@ -57,6 +64,7 @@ interface SummaryCard {
   denies: string;
   guidingIdea: string;
   partnership: string;
+  peers?: SummaryCardPeer[];
 }
 
 interface WhenNotItem {
@@ -64,19 +72,23 @@ interface WhenNotItem {
   reason: string;
 }
 
+interface ResponseTable {
+  columns: { id: string; label: string }[];
+  rows: ResponseTableRow[];
+}
+
 interface ResponseTableRow {
   meaningId: string;
   response: Call;
   meaning: string;
-  shape: string;
-  hcp: string;
-  forcing: string;
+  cells: { columnId: string; columnLabel: string; text: string }[];
 }
 
 interface WorkedAuction {
+  kind: "positive" | "negative";
   label: string;
   calls: WorkedAuctionCall[];
-  outcomeNote: string;
+  responderHand?: HandSample | null;
 }
 
 interface WorkedAuctionCall {
@@ -85,34 +97,50 @@ interface WorkedAuctionCall {
   rationale: string;
 }
 
+interface HandSample {
+  spades: string;
+  hearts: string;
+  diamonds: string;
+  clubs: string;
+}
+
 interface InterferenceItem {
   opponentAction: string;
   ourAction: string;
   note: string;
 }
 
-interface DecisionGrid {
-  rows: string[];
-  cols: string[];
-  cells: string[][];
+type Interference =
+  | { status: "applicable"; items: InterferenceItem[] }
+  | { status: "notApplicable"; reason: string };
+
+interface ResolvedAxis {
+  label: string;
+  values: string[];
 }
 
-interface SystemCompat {
-  sayc: string;
-  twoOverOne: string;
-  acol: string;
-  customNote: string;
+interface ResolvedCell {
+  call: string;
+  gloss?: string;
+  kind: "action" | "notApplicable" | "empty";
 }
+
+type QuickReference =
+  | {
+      kind: "grid";
+      rowAxis: ResolvedAxis;
+      colAxis: ResolvedAxis;
+      cells: ResolvedCell[][];
+    }
+  | {
+      kind: "list";
+      axis: ResolvedAxis;
+      items: { recommendation: string; note: string }[];
+    };
 
 interface RelatedLink {
   moduleId: string;
   discriminator: string;
-}
-
-interface ResponseTableOverride {
-  shape?: string;
-  hcp?: string;
-  forcing?: string;
 }
 
 type Call = PassCall | DoubleCall | RedoubleCall | BidCall;
@@ -131,7 +159,7 @@ interface RedoubleCall {
 
 interface BidCall {
   type: "bid";
-  level: number;
+  level: 1 | 2 | 3 | 4 | 5 | 6 | 7;
   strain: "C" | "D" | "H" | "S" | "NT";
 }
 
@@ -170,15 +198,17 @@ interface ModuleFlowTreeViewport {
 
 interface FlowTreeNode {
   id: string;
+  call: Call | null;
   callDisplay: string | null;
-  turn: string | null;
+  turn: "opener" | "responder" | null;
   label: string;
   moduleId: string | null;
+  moduleDisplayName: string | null;
   meaningId: string | null;
   children: FlowTreeNode[];
   depth: number;
-  recommendation: string | null;
-  disclosure: string | null;
+  recommendation: "must" | "should" | "may" | "avoid" | null;
+  disclosure: "alert" | "announcement" | "natural" | "standard" | null;
   explanationText: string | null;
   clauses: SurfaceClauseView[];
 }

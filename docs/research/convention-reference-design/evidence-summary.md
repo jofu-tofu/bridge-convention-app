@@ -92,11 +92,14 @@ Places where a reasonable-sounding instinct is wrong:
 ## Open Questions
 
 - Does a printable quick-reference card (MtG-style Basic Rules split) have enough uptake in a web-only practice app to be worth the authoring cost, or does an on-screen condensed mode suffice?
-- How should the **System Compatibility** row (SAYC / 2/1 / Acol / Custom) be rendered when divergences are deep (different response trees) vs. shallow (same tree, one rebid differs)? MDN's browser-compat table is the model, but the semantics don't fully match.
 - Retrieval-practice prompts ("what would you bid with ♠KJ52 ♥Q4 ♦KQT4 ♣932?") embedded in the static reference add authoring cost per convention. Worth the cognitive benefit, or is it better to rely on the guided flow for retrieval and keep the reference purely normative?
 - Named-chunk vocabulary: how many canonical sequence names does the intermediate reader need to carry, and what is the authoring process for introducing them? Naming too many patterns inflates the document; too few leaves expertise implicit.
 
 ---
+
+## Resolved Questions
+
+- **System Compatibility row (rendering under SAYC / 2/1 / Acol / Custom).** *Resolved 2026-04-12.* A dedicated per-system compatibility row is rejected. Per-system differences are rendered automatically from the active `SystemConfig` via the `systemFactLadder → describe_system_fact_value → SystemConfig` chain, which is the single system-awareness chokepoint. Authors never spell per-system prose. A global system picker (letting the reader view the same page under a different system) is deferred until a concrete need emerges. See `reference-page-template.md` §8.
 
 ## Applied Output
 

@@ -117,7 +117,7 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
  * Parse dev auth override from URL params. Returns null in production builds
  * or when no auth override is specified.
  *
- * Usage: ?dev=auth:free | ?dev=auth:premium | ?dev=auth:expired
+ * Usage: ?dev=auth:free | ?dev=auth:paid | ?dev=auth:expired
  */
 export function getDevAuthOverride(): SubscriptionTier | null {
   if (!import.meta.env.DEV) return null;
@@ -131,9 +131,10 @@ export function getDevAuthOverride(): SubscriptionTier | null {
   if (!authFlag) return null;
 
   const tier = authFlag.slice(5);
+  const normalizedTier = tier === "premium" ? SubscriptionTier.Paid : tier;
   const validTiers: string[] = Object.values(SubscriptionTier);
-  if (validTiers.includes(tier)) {
-    return tier as SubscriptionTier;
+  if (validTiers.includes(normalizedTier)) {
+    return normalizedTier as SubscriptionTier;
   }
   return null;
 }

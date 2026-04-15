@@ -1,46 +1,98 @@
 <script lang="ts">
   import BidCode from "./BidCode.svelte";
-  import type { ReferenceInterferenceItem } from "./types";
+  import type { ReferenceInterference } from "./types";
 
   interface Props {
-    items: readonly ReferenceInterferenceItem[];
+    interference: ReferenceInterference;
   }
 
-  let { items }: Props = $props();
+  let { interference }: Props = $props();
 </script>
 
-<section class="root rounded-[--radius-lg] border border-border-default bg-bg-card p-4" aria-labelledby="interference-heading">
+<section
+  class="root rounded-[--radius-lg] border border-border-default bg-bg-card p-4"
+  aria-labelledby="interference-heading"
+>
   <h2 id="interference-heading" class="mb-4 text-[--text-heading] font-semibold text-text-primary">
     In Competition / Interference
   </h2>
 
-  <div class="space-y-3">
-    {#each items as item (`${item.opponentAction}-${item.note}`)}
-      <div class="rounded-[--radius-md] border border-border-subtle bg-bg-base/70 p-4">
-        <div class="grid gap-3 lg:grid-cols-[minmax(0,12rem)_minmax(0,12rem)_minmax(0,1fr)] lg:items-start">
-          <div>
-            <p class="text-[--text-label] uppercase tracking-[0.12em] text-text-muted">Opponent action</p>
-            <p class="mt-2 text-[--text-body] text-text-primary">
-              <BidCode value={item.opponentAction} />
-            </p>
-          </div>
-          <div>
-            <p class="text-[--text-label] uppercase tracking-[0.12em] text-text-muted">Our action</p>
-            <p class="mt-2 text-[--text-body] text-text-primary">
-              <BidCode value={item.ourAction} />
-            </p>
-          </div>
-          <div>
-            <p class="text-[--text-label] uppercase tracking-[0.12em] text-text-muted">Note</p>
-            <p class="mt-2 break-words text-[--text-body] leading-6 text-text-secondary">{item.note}</p>
-          </div>
-        </div>
-      </div>
-    {/each}
-  </div>
+  {#if interference.status === "notApplicable"}
+    <p class="text-[--text-body] leading-6 text-text-secondary">
+      No interference guidance for this convention ({interference.reason}).
+    </p>
+  {:else}
+    <table class="interference-table">
+      <colgroup>
+        <col class="col-bid" />
+        <col class="col-bid" />
+        <col class="col-note" />
+      </colgroup>
+      <thead>
+        <tr>
+          <th scope="col">Opponent action</th>
+          <th scope="col">Our action</th>
+          <th scope="col">Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each interference.items as item (`${item.opponentAction}-${item.note}`)}
+          <tr>
+            <td><BidCode value={item.opponentAction} /></td>
+            <td><BidCode value={item.ourAction} /></td>
+            <td class="note-cell">{item.note}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {/if}
 </section>
 
 <style>
+  .interference-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+  }
+
+  .col-bid {
+    width: 1%;
+  }
+
+  .col-note {
+    width: auto;
+  }
+
+  .interference-table thead th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    font-size: var(--text-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border-subtle);
+    white-space: nowrap;
+  }
+
+  .interference-table tbody td {
+    padding: 0.75rem;
+    font-size: var(--text-body);
+    color: var(--color-text-primary);
+    vertical-align: top;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .interference-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .interference-table .note-cell {
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    overflow-wrap: break-word;
+  }
+
   @media print {
     .root {
       display: none;

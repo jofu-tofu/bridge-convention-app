@@ -10,6 +10,7 @@ Use this folder for repo-owned architectural context. It should answer two quest
 - `design-philosophy.md` — cross-cutting principles and decision rules
 - `architecture-specs.md` — current architecture snapshot plus active unresolved questions
 - `teaching-architecture.md` — current meaning-pipeline, teaching, grading, and practice-model architecture
+- `authored-input/` — design specs for the authored-input substrate (what authors write into fixtures, what must be inferred). Start with `authored-input/README.md`.
 
 ## Historical Reference
 

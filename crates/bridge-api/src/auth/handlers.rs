@@ -156,9 +156,12 @@ async fn resolve_user(
         return Ok(user_id);
     }
 
-    // 2. Auto-merge by email (only if email is non-null and non-empty)
+    // 2. Auto-merge by email (only if the provider verified ownership).
+    //    Linking on an unverified address would let an attacker take over an
+    //    existing account by signing up with the victim's email at a provider
+    //    that doesn't enforce verification.
     if let Some(ref email) = profile.email {
-        if !email.is_empty() {
+        if profile.email_verified && !email.is_empty() {
             let by_email: Option<(String,)> =
                 sqlx::query_as("SELECT id FROM users WHERE email = ?")
                     .bind(email)

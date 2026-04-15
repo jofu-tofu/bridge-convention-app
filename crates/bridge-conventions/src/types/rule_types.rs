@@ -165,6 +165,32 @@ pub struct LocalFsm {
     pub transitions: Vec<PhaseTransition>,
 }
 
+/// Declares whether a reachable FSM state is fully authored, delegated, or
+/// intentionally outside this module's scope.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum StateScope {
+    /// Authored surfaces handle all intended cases for this state.
+    Enumerated,
+    /// Auction continues in another module.
+    DelegateTo {
+        #[serde(rename = "moduleId")]
+        module_id: String,
+    },
+    /// Falls to natural bidding; intentionally outside this module.
+    OutOfScope { reason: String },
+}
+
+impl Default for StateScope {
+    fn default() -> Self {
+        default_scope()
+    }
+}
+
+pub fn default_scope() -> StateScope {
+    StateScope::Enumerated
+}
+
 /// One resolved surface from a matched state entry.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -179,6 +205,8 @@ pub struct ResolvedSurface {
 #[serde(rename_all = "camelCase")]
 pub struct StateEntry {
     pub phase: PhaseRef,
+    #[serde(default = "default_scope")]
+    pub scope: StateScope,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub turn: Option<TurnRole>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -272,6 +300,19 @@ mod tests {
         let json = serde_json::to_string(&fsm).unwrap();
         let back: LocalFsm = serde_json::from_str(&json).unwrap();
         assert_eq!(back, fsm);
+    }
+
+    #[test]
+    fn state_scope_default_is_enumerated() {
+        let entry: StateEntry = serde_json::from_str(
+            r#"{
+                "phase": "idle",
+                "turn": "responder",
+                "surfaces": []
+            }"#,
+        )
+        .unwrap();
+        assert_eq!(entry.scope, StateScope::Enumerated);
     }
 
     #[test]

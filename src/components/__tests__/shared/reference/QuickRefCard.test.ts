@@ -9,7 +9,7 @@ describe("QuickRefCard", () => {
       props: {
         moduleId: "stayman",
         summaryCard: summaryCardFixture,
-        responseTableRows: responseTableFixture,
+        responseTable: responseTableFixture,
       },
     });
 

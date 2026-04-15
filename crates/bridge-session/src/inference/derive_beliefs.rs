@@ -9,7 +9,7 @@ use bridge_engine::types::{Seat, Suit};
 use std::collections::HashMap;
 
 use super::types::{
-    DerivedRanges, HandInference, NumberRange, PublicBeliefs, QualitativeConstraint,
+    DerivedRanges, DescriptiveConstraint, HandInference, NumberRange, PublicBeliefs,
 };
 
 const ALL_SUITS: [Suit; 4] = [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs];
@@ -174,7 +174,7 @@ fn derive_ranges(constraints: &[FactConstraint]) -> DerivedRanges {
 }
 
 /// Extract qualitative constraints -- those that don't reduce to flat per-suit ranges.
-fn derive_qualitative(constraints: &[FactConstraint]) -> Vec<QualitativeConstraint> {
+fn derive_qualitative(constraints: &[FactConstraint]) -> Vec<DescriptiveConstraint> {
     let mut result = Vec::new();
 
     for c in constraints {
@@ -185,9 +185,9 @@ fn derive_qualitative(constraints: &[FactConstraint]) -> Vec<QualitativeConstrai
                     // Deduplicate
                     if !result
                         .iter()
-                        .any(|q: &QualitativeConstraint| q.fact_id == c.fact_id)
+                        .any(|q: &DescriptiveConstraint| q.fact_id == c.fact_id)
                     {
-                        result.push(QualitativeConstraint {
+                        result.push(DescriptiveConstraint {
                             fact_id: c.fact_id.clone(),
                             label: label.to_string(),
                             operator: "boolean".to_string(),

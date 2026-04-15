@@ -41,6 +41,38 @@ crates/
                        `registry/module_registry.rs` replaces the coarse `after-neg-dbl` opener states
                        with route-specific states keyed to the exact opening + overcall sequence. Edit
                        that synthesis table when changing opener rebid behavior or legal rebid levels.
+                       **Authored reference facts are now catalog-backed:** `types/fact_id.rs`
+                       validates authored `FactId`s at deserialize time against the closed
+                       `fact_catalog/` static. Quick-reference axes are now `SystemFactLadder` or
+                       `PartitionLadder` only; add new renderable facts there, not as ad-hoc
+                       strings in fixtures.
+                       **Static learn pages now use authored module display names:** the
+                       bridge-static extractor and learning viewport preserve each fixture's
+                       `displayName` for catalog cards and page titles instead of deriving names
+                       from `moduleId`. Rename modules in the fixture, then rerun
+                       `npm run static:extract`.
+                       The catalog now covers responder slam values, weak-two / strong-2C opening ranges,
+                       classic ace/king-count partitions, and transfer-target suit labels for reference work.
+                       **Positive usage bullets are typed:** `ModuleReference.when_to_use` stores
+                       `PredicateBullet { predicate, gloss }`. The viewport currently renders the
+                       gloss, while the predicate remains available for validation/preview work.
+                       **Quick-reference grids now bind surfaces, not prose:** `ModuleReferenceQuickReference::Grid`
+                       stores `CellBinding`s (`Auto | Surface { id } | NotApplicable { reason }`).
+                       The learning viewport projects `Auto` against the module's entry surfaces; if
+                       more than one surface survives for a cell, static extraction fails and the
+                       fixture author must promote that cell to an explicit `Surface { id }`.
+                       **State scope is explicit in fixture JSON:** `StateEntry` now carries a
+                       `scope` field (`enumerated | delegate_to | out_of_scope`). Deserialization
+                       defaults missing values to `enumerated` only for migration, but structural
+                       invariants require every reachable fixture state to spell the field out in
+                       source JSON. Modules may also opt into `symmetricPairs` checks, and fact
+                       definitions can be marked `forTeachingOnly` to exempt them from the
+                       "every fact must back a surface clause" invariant.
+                       **Authority canaries live in an integration test:** `bridge-conventions/tests/canary_authority.rs`
+                       encodes authority-backed `(auction, hand, expected call)` regressions. Keep
+                       current engine mismatches as explicit `#[ignore]` canaries with a short
+                       blocker reason rather than deleting them; the file is meant to document the
+                       audit queue as well as fixed behavior.
                        **Bundle modules are runtime-derived:** Bundle JSON fixtures (`fixtures/*.json`)
                        do not contain a `modules` array. The `bundle_registry` populates
                        `ConventionBundle.modules` at cache-init time by looking up each `member_id`
@@ -182,4 +214,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-12 | version=10 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:42 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-14 | version=17 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:42 -->

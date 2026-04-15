@@ -121,6 +121,19 @@ pub async fn handle_webhook(
         }
     };
 
+    // Event-ID dedup: Stripe retries webhooks; the HMAC replay window alone
+    // does not stop a captured event from being re-delivered later. A unique
+    // insert on event.id gives true idempotency independent of `created`.
+    let insert = sqlx::query("INSERT OR IGNORE INTO stripe_events (id) VALUES (?)")
+        .bind(&event.id)
+        .execute(&state.pool)
+        .await?;
+
+    if insert.rows_affected() == 0 {
+        tracing::debug!(event_id = %event.id, "stripe webhook already processed; skipping");
+        return Ok(StatusCode::OK.into_response());
+    }
+
     process_webhook_event(&state, event).await?;
 
     Ok(StatusCode::OK.into_response())

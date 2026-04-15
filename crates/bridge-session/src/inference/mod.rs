@@ -26,6 +26,6 @@ pub use inference_engine::InferenceEngine;
 pub use natural_inference::NaturalInferenceProvider;
 pub use posterior::{Posterior, PosteriorEngine, UniformPosterior};
 pub use types::{
-    BidAnnotation, DerivedRanges, HandInference, InferenceConfig, InferenceExtractorInput,
-    InferenceSnapshot, PublicBeliefState, PublicBeliefs, QualitativeConstraint, SuitInference,
+    BidAnnotation, DerivedRanges, DescriptiveConstraint, HandInference, InferenceConfig,
+    InferenceExtractorInput, InferenceSnapshot, PublicBeliefState, PublicBeliefs, SuitInference,
 };

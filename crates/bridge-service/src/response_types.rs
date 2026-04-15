@@ -5,8 +5,8 @@ use bridge_conventions::types::meaning::FactConstraint;
 use bridge_engine::strategy::ChainTrace;
 use bridge_engine::types::{Call, Seat, Suit};
 use bridge_session::inference::types::{
-    BidAnnotation, DerivedRanges, NumberRange, PublicBeliefState, PublicBeliefs,
-    QualitativeConstraint,
+    BidAnnotation, DerivedRanges, DescriptiveConstraint, NumberRange, PublicBeliefState,
+    PublicBeliefs,
 };
 use bridge_session::session::{
     AiBidEntry, AiPlayEntry, BidGrade, BidHistoryEntryView, BiddingViewport, DebugLogEntry,
@@ -111,7 +111,7 @@ pub struct ServicePublicBeliefsDTO {
     pub seat: Seat,
     pub constraints: Vec<ServiceFactConstraintDTO>,
     pub ranges: ServiceDerivedRangesDTO,
-    pub qualitative: Vec<ServiceQualitativeConstraintDTO>,
+    pub qualitative: Vec<ServiceDescriptiveConstraintDTO>,
 }
 
 /// Fact constraint DTO.
@@ -142,10 +142,10 @@ pub struct NumberRangeDTO {
     pub max: u32,
 }
 
-/// Qualitative constraint DTO.
+/// Descriptive constraint DTO.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ServiceQualitativeConstraintDTO {
+pub struct ServiceDescriptiveConstraintDTO {
     pub fact_id: String,
     pub label: String,
     pub operator: String,
@@ -200,8 +200,8 @@ impl From<&DerivedRanges> for ServiceDerivedRangesDTO {
     }
 }
 
-impl From<&QualitativeConstraint> for ServiceQualitativeConstraintDTO {
-    fn from(qc: &QualitativeConstraint) -> Self {
+impl From<&DescriptiveConstraint> for ServiceDescriptiveConstraintDTO {
+    fn from(qc: &DescriptiveConstraint) -> Self {
         Self {
             fact_id: qc.fact_id.clone(),
             label: qc.label.clone(),
@@ -224,7 +224,7 @@ impl From<&PublicBeliefs> for ServicePublicBeliefsDTO {
             qualitative: pb
                 .qualitative
                 .iter()
-                .map(ServiceQualitativeConstraintDTO::from)
+                .map(ServiceDescriptiveConstraintDTO::from)
                 .collect(),
         }
     }

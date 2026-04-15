@@ -65,12 +65,58 @@ Follow the existing fixture patterns for:
 - `teaching`
 - explanation entries
 
+#### `ModuleReference` authoring shape (shrunken canonical form)
+
+The `reference` block is intentionally small: most fields are derived at viewport-build time. Author only these fields:
+
+```jsonc
+"reference": {
+  "summaryCard": {
+    "trigger": "Partner opens 1NT, you respond",
+    "definingMeaningId": "stayman:ask",
+    "partnership": "Confirm both-major treatment before using."
+    // bid / promises / denies are DERIVED from definingMeaningId;
+    // guidingIdea defaults to teaching.principle if omitted.
+  },
+  "workedAuctions": [ /* label + calls[{seat, call, rationale, meaningId?}] + outcomeNote */ ],
+  "interference": {
+    // Tagged union — empty items is illegal.
+    "status": "applicable",
+    "items": [{ "opponentAction": "...", "ourAction": "...", "note": "..." }]
+    // OR: { "status": "notApplicable", "reason": "..." }
+  },
+  "quickReference": {
+    // Tagged union — no null-escape.
+    "kind": "grid",
+    "rowAxis": { "kind": "systemFactLadder", "label": "...", "facts": ["system...", ...] },
+    "colAxis": { "kind": "qualitative",     "label": "...", "values": ["...", "..."] },
+    "cells": [["...", "..."], ["...", "..."]]
+    // OR: { "kind": "list", "axis": {...}, "items": [{"recommendation": "...", "note": ""}] }
+  },
+  "relatedLinks": [{ "moduleId": "...", "discriminator": "..." }]
+}
+```
+
+**Derivation rules (do NOT duplicate in `reference`):**
+
+- `whenNotToUse` is derived from `teaching.commonMistakes` (entries are `{ text, reason }`, ≥3 required). Author what-not-to-do in the teaching block; never re-author into `reference`.
+- `summaryCard.bid` / `promises` / `denies` render from the defining meaning's `encoding.default_call` and public fact clauses via `describe_system_fact_value`.
+- `responseTable` columns are auto-discovered from fact IDs in the module's surfaces. Fixed columns are only `Response | Meaning`. There are no `responseTableOverrides`, no `systemCompat`, no `decisionGrid` — all three are retired.
+
+**Authoring smells to avoid:**
+
+- Duplicating `teaching.commonMistakes` into `reference.whenNotToUse` — the single source is `teaching`.
+- Naming systems (SAYC / 2-1 / Acol / Precision) in authored prose — per-system rendering comes from the active `SystemConfig` via the `systemFactLadder → describe_system_fact_value → SystemConfig` chain.
+- Numeric HCP in authored prose outside worked-auction rationales — let the ladder derive threshold labels.
+- Empty `interference.items` — use the `notApplicable` status with a reason instead.
+
 ### Step 4: Validate
 
 Run the narrowest useful verification:
 
 ```bash
 cargo test --workspace
+cargo test -p bridge-conventions structural_invariants
 npx tsx src/cli/main.ts selftest --bundle={bundle-id} --seed=42 --count=20 --system=sayc
 ```
 

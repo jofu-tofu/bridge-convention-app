@@ -7,6 +7,7 @@ Evidence and exploratory work live here. Each topic should have one folder so fu
 - `seo-principles-web-apps/` — literature-backed SEO evidence base and supporting research waves
 - `ftue-and-seo/` — first-visit UX audit plus SEO/content strategy recommendations
 - `learn-mode-pedagogy/` — learning-science evidence summary for Learn mode design
+- `convention-reference-design/` — evidence base and template for the post-practice convention reference page (reference-manual design + learning science + bridge/game exemplars)
 
 ## Conventions
 

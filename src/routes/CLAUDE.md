@@ -19,6 +19,8 @@ All three are reachable without an entitlement (entitlement gating is per-action
 ## Learn Reference Surface
 
 - `/learn/[moduleId]` is the convention reference surface. Keep it reference-first and scan-friendly; step-by-step tutorial content belongs in guided practice / in-app learning flows, not on this prerendered page.
+- **Authoring-field-driven, no per-module hardcoding.** Every field the page renders must come from authored module/bundle data or be derived (e.g. from `definingMeaningId`, surfaces, or `systemFactLadder`). Do not branch on module id, hardcode per-convention prose, or override derived values in the page component. The learn page now has one render path: every module ships a populated `reference` block, and `ModuleLearningViewport.reference` is non-optional. If a convention needs to say something new, add a required authored field on the module data model — do not special-case the renderer. See `docs/guides/convention-authoring.md` for the authoring-eligible field list and the "derive, don't author" rules.
+- **Scalability check before adding a field.** Anything system-specific (HCP, total points, losing-trick count, suit-quality thresholds, etc.) must resolve through `SystemConfig` / fact-catalog-driven axes, not hardcoded prose. Before adding a new authored field, ask: will every convention in every system need to answer this? If yes, it belongs on the module data model as **required** — authors write explicit applicability states rather than leaving it null, so every reference page is complete by construction.
 
 ## Auth store
 

@@ -22,6 +22,8 @@ pub const SYSTEM_SUIT_RESPONSE_IS_GAME_FORCING: &str = "system.suitResponseIsGam
 pub const SYSTEM_ONE_NT_FORCING_AFTER_MAJOR: &str = "system.oneNtForcingAfterMajor";
 pub const SYSTEM_RESPONDER_ONE_NT_RANGE: &str = "system.responder.oneNtRange";
 pub const SYSTEM_DONT_OVERCALL_IN_RANGE: &str = "system.dontOvercall.inRange";
+pub const SYSTEM_OPENING_WEAK_TWO_RANGE: &str = "system.opening.weakTwoRange";
+pub const SYSTEM_OPENING_STRONG_2C_RANGE: &str = "system.opening.strong2cRange";
 
 /// Evaluate standard system facts (layer 3) from HCP and SystemConfig.
 pub fn evaluate_system_facts(sys: &SystemConfig, facts: &mut HashMap<String, FactValue>) {
@@ -112,6 +114,22 @@ pub fn evaluate_system_facts(sys: &SystemConfig, facts: &mut HashMap<String, Fac
         fv_bool(
             SYSTEM_DONT_OVERCALL_IN_RANGE,
             hcp >= sys.dont_overcall.min_hcp as f64 && hcp <= sys.dont_overcall.max_hcp as f64,
+        ),
+    );
+
+    facts.insert(
+        SYSTEM_OPENING_WEAK_TWO_RANGE.to_string(),
+        fv_bool(
+            SYSTEM_OPENING_WEAK_TWO_RANGE,
+            hcp >= sys.opening.weak_two.min_hcp as f64
+                && hcp <= sys.opening.weak_two.max_hcp as f64,
+        ),
+    );
+    facts.insert(
+        SYSTEM_OPENING_STRONG_2C_RANGE.to_string(),
+        fv_bool(
+            SYSTEM_OPENING_STRONG_2C_RANGE,
+            hcp >= sys.opening.strong_2c_min as f64,
         ),
     );
 }

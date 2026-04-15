@@ -4,7 +4,11 @@ export type ReferenceBid = Call | string;
 export type ReferenceSeat = Seat | string;
 export type ReferenceForcingToken = "NF" | "INV" | "F1" | "GF";
 export type ReferenceRecommendation = "must" | "should" | "may" | "avoid";
-export type ReferenceDisclosure = "alert" | "announcement" | "natural" | "standard";
+export type ReferenceDisclosure =
+  | "alert"
+  | "announcement"
+  | "natural"
+  | "standard";
 export type ReferenceActionFamily =
   | "signoff"
   | "invite"
@@ -13,6 +17,15 @@ export type ReferenceActionFamily =
   | "competitive"
   | "other";
 
+export interface ReferenceSummaryCardPeer {
+  readonly meaningId: string;
+  readonly call: ReferenceBid;
+  readonly callDisplay: string;
+  readonly promises: string;
+  readonly denies: string;
+  readonly discriminatorLabel: string;
+}
+
 export interface ReferenceSummaryCard {
   readonly trigger: string;
   readonly bid: ReferenceBid;
@@ -20,6 +33,7 @@ export interface ReferenceSummaryCard {
   readonly denies: string;
   readonly guidingIdea: string;
   readonly partnership: string;
+  readonly peers: readonly ReferenceSummaryCardPeer[];
 }
 
 export interface ReferenceWhenNotItem {
@@ -27,13 +41,33 @@ export interface ReferenceWhenNotItem {
   readonly reason: string;
 }
 
+export interface ReferencePredicateBullet {
+  readonly predicate: unknown;
+  readonly gloss: string;
+  readonly predicateText?: string | null;
+}
+
+export interface ReferenceResponseTableColumn {
+  readonly id: string;
+  readonly label: string;
+}
+
+export interface ReferenceResponseTableCell {
+  readonly columnId: string;
+  readonly columnLabel: string;
+  readonly text: string;
+}
+
 export interface ReferenceResponseTableRow {
   readonly meaningId: string;
   readonly response: ReferenceBid;
   readonly meaning: string;
-  readonly shape: string;
-  readonly hcp: string;
-  readonly forcing: ReferenceForcingToken | null;
+  readonly cells: readonly ReferenceResponseTableCell[];
+}
+
+export interface ReferenceResponseTable {
+  readonly columns: readonly ReferenceResponseTableColumn[];
+  readonly rows: readonly ReferenceResponseTableRow[];
 }
 
 export interface ReferenceClauseSystemVariant {
@@ -56,41 +90,39 @@ export interface ReferenceTeachingLabel {
   readonly summary: string;
 }
 
-export interface ReferenceContinuationSurface {
-  readonly meaningId: string;
-  readonly teachingLabel: ReferenceTeachingLabel;
-  readonly call: ReferenceBid;
-  readonly recommendation: ReferenceRecommendation | null;
-  readonly disclosure: ReferenceDisclosure | null;
-  readonly explanationText: string | null;
-  readonly clauses: readonly ReferenceClause[];
-}
-
-export interface ReferenceContinuationPhase {
-  readonly phase: string;
-  readonly phaseDisplay: string;
-  readonly turn: string | null;
-  readonly transitionLabel: string | null;
-  readonly surfaces: readonly ReferenceContinuationSurface[];
-}
-
-export interface ReferenceDecisionAxis {
+// ResolvedAxis: Rust flattens authored axis variants into this single
+// build-time shape. Labels are already rendered strings.
+export interface ReferenceResolvedAxis {
   readonly label: string;
-  readonly description?: string;
+  readonly values: readonly string[];
 }
 
-export interface ReferenceDecisionCell {
-  readonly bid: ReferenceBid;
-  readonly meaning: string;
-  readonly note?: string;
-  readonly family?: ReferenceActionFamily;
+export interface ReferenceQuickReferenceListItem {
+  readonly recommendation: string;
+  readonly note: string;
 }
 
-export interface ReferenceDecisionGrid {
-  readonly rows: readonly ReferenceDecisionAxis[];
-  readonly cols: readonly ReferenceDecisionAxis[];
-  readonly cells: readonly (readonly (ReferenceDecisionCell | null)[])[];
+export type ReferenceResolvedCellKind = "action" | "notApplicable" | "empty";
+
+export interface ReferenceResolvedCell {
+  readonly call: string;
+  readonly gloss?: string;
+  readonly kind: ReferenceResolvedCellKind;
+  readonly notApplicableReasonText?: string | null;
 }
+
+export type ReferenceQuickReference =
+  | {
+      readonly kind: "grid";
+      readonly rowAxis: ReferenceResolvedAxis;
+      readonly colAxis: ReferenceResolvedAxis;
+      readonly cells: readonly (readonly ReferenceResolvedCell[])[];
+    }
+  | {
+      readonly kind: "list";
+      readonly axis: ReferenceResolvedAxis;
+      readonly items: readonly ReferenceQuickReferenceListItem[];
+    };
 
 export interface ReferenceWorkedAuctionCall {
   readonly seat: ReferenceSeat;
@@ -99,10 +131,20 @@ export interface ReferenceWorkedAuctionCall {
   readonly meaningId?: string | null;
 }
 
+export type ReferenceWorkedAuctionKind = "positive" | "negative";
+
+export interface ReferenceHandSample {
+  readonly spades: string;
+  readonly hearts: string;
+  readonly diamonds: string;
+  readonly clubs: string;
+}
+
 export interface ReferenceWorkedAuction {
+  readonly kind: ReferenceWorkedAuctionKind;
   readonly label: string;
   readonly calls: readonly ReferenceWorkedAuctionCall[];
-  readonly outcomeNote?: string | null;
+  readonly responderHand?: ReferenceHandSample | null;
 }
 
 export interface ReferenceInterferenceItem {
@@ -111,12 +153,12 @@ export interface ReferenceInterferenceItem {
   readonly note: string;
 }
 
-export interface ReferenceSystemCompat {
-  readonly sayc: string;
-  readonly twoOverOne: string;
-  readonly acol: string;
-  readonly customNote: string;
-}
+export type ReferenceInterference =
+  | {
+      readonly status: "applicable";
+      readonly items: readonly ReferenceInterferenceItem[];
+    }
+  | { readonly status: "notApplicable"; readonly reason: string };
 
 export interface ReferenceRelatedLink {
   readonly moduleId: string;
@@ -125,12 +167,11 @@ export interface ReferenceRelatedLink {
 
 export interface ReferenceView {
   readonly summaryCard: ReferenceSummaryCard;
-  readonly whenToUse: readonly string[];
+  readonly whenToUse: readonly ReferencePredicateBullet[];
   readonly whenNotToUse: readonly ReferenceWhenNotItem[];
-  readonly responseTableRows: readonly ReferenceResponseTableRow[];
+  readonly responseTable: ReferenceResponseTable;
   readonly workedAuctions: readonly ReferenceWorkedAuction[];
-  readonly interference: readonly ReferenceInterferenceItem[];
-  readonly decisionGrid: ReferenceDecisionGrid | null;
-  readonly systemCompat: ReferenceSystemCompat;
+  readonly interference: ReferenceInterference;
+  readonly quickReference: ReferenceQuickReference;
   readonly relatedLinks: readonly ReferenceRelatedLink[];
 }

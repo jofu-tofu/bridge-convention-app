@@ -44,11 +44,11 @@ pub struct NumberRange {
 
 // ── Public beliefs (constraint-first representation) ───────────────
 
-/// Qualitative constraint that doesn't reduce to a flat per-suit range.
+/// Descriptive constraint that doesn't reduce to a flat per-suit range.
 /// Displayed as-is in the UI (e.g. "Has 4-card major").
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct QualitativeConstraint {
+pub struct DescriptiveConstraint {
     pub fact_id: String,
     pub label: String,
     pub operator: String,
@@ -76,7 +76,7 @@ pub struct PublicBeliefs {
     /// Derived display-friendly ranges (computed from constraints).
     pub ranges: DerivedRanges,
     /// Constraints that don't reduce to flat ranges -- displayed as-is.
-    pub qualitative: Vec<QualitativeConstraint>,
+    pub qualitative: Vec<DescriptiveConstraint>,
 }
 
 // ── Inference provider trait ───────────────────────────────────────

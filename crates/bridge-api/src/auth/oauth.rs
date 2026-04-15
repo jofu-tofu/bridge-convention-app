@@ -24,6 +24,11 @@ impl FromStr for OAuthProvider {
 pub struct OAuthProfile {
     pub provider_user_id: String,
     pub email: Option<String>,
+    /// Whether the provider has verified ownership of `email`.
+    /// Email-based auto-merge in `resolve_user` MUST refuse to link accounts
+    /// when this is false — otherwise an attacker with an unverified address
+    /// at a future provider could take over an existing user.
+    pub email_verified: bool,
     pub name: String,
     pub avatar_url: Option<String>,
 }
@@ -84,6 +89,8 @@ struct GoogleTokenResponse {
 struct GoogleUserInfo {
     sub: String,
     email: Option<String>,
+    #[serde(default)]
+    email_verified: bool,
     name: Option<String>,
     picture: Option<String>,
 }
@@ -119,6 +126,7 @@ async fn exchange_google(
     Ok(OAuthProfile {
         provider_user_id: user_info.sub,
         email: user_info.email,
+        email_verified: user_info.email_verified,
         name: user_info.name.unwrap_or_else(|| "User".to_string()),
         avatar_url: user_info.picture,
     })

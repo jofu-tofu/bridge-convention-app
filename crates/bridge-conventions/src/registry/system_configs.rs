@@ -4,9 +4,9 @@
 
 use crate::types::system_config::{
     BaseSystemId, DontOvercallConfig, InterferenceThresholds, NtOpeningConfig, OneNtForcingStatus,
-    OneNtResponseAfterMajorConfig, OpenerRebidThresholds, OpeningRequirements, PointConfig,
-    PointFormula, ResponderThresholds, SuitResponseConfig, SuitResponseForcingDuration,
-    SystemConfig, TotalPointEquivalent,
+    OneNtResponseAfterMajorConfig, OpenerRebidThresholds, OpeningConfig, OpeningHcpRange,
+    OpeningRequirements, PointConfig, PointFormula, ResponderThresholds, SuitResponseConfig,
+    SuitResponseForcingDuration, SystemConfig, TotalPointEquivalent,
 };
 
 /// Standard American Yellow Card (SAYC) system configuration.
@@ -44,6 +44,13 @@ pub fn sayc_system_config() -> SystemConfig {
         },
         opening_requirements: OpeningRequirements {
             major_suit_min_length: 5,
+        },
+        opening: OpeningConfig {
+            weak_two: OpeningHcpRange {
+                min_hcp: 6,
+                max_hcp: 11,
+            },
+            strong_2c_min: 22,
         },
         dont_overcall: DontOvercallConfig {
             min_hcp: 8,
@@ -98,6 +105,13 @@ pub fn two_over_one_system_config() -> SystemConfig {
         opening_requirements: OpeningRequirements {
             major_suit_min_length: 5,
         },
+        opening: OpeningConfig {
+            weak_two: OpeningHcpRange {
+                min_hcp: 5,
+                max_hcp: 10,
+            },
+            strong_2c_min: 22,
+        },
         dont_overcall: DontOvercallConfig {
             min_hcp: 8,
             max_hcp: 15,
@@ -150,6 +164,13 @@ pub fn acol_system_config() -> SystemConfig {
         },
         opening_requirements: OpeningRequirements {
             major_suit_min_length: 4,
+        },
+        opening: OpeningConfig {
+            weak_two: OpeningHcpRange {
+                min_hcp: 6,
+                max_hcp: 10,
+            },
+            strong_2c_min: 22,
         },
         dont_overcall: DontOvercallConfig {
             min_hcp: 8,

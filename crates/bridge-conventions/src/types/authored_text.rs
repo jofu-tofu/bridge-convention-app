@@ -61,10 +61,56 @@ newtype_string!(
     /// The broader bridge principle a module embodies.
     TeachingPrinciple
 );
-newtype_string!(
-    /// A common mistake or misconception item.
-    TeachingItem
-);
+/// A common mistake or misconception item — structured as `{ text, reason }`.
+///
+/// Accepts legacy JSON shape (a bare string) on deserialize for fixture
+/// back-compat; serializes only in the new object shape.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct TeachingItem {
+    pub text: String,
+    pub reason: String,
+}
+
+impl TeachingItem {
+    pub fn new(text: impl Into<String>, reason: impl Into<String>) -> Self {
+        Self {
+            text: text.into(),
+            reason: reason.into(),
+        }
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.text
+    }
+}
+
+impl<'de> Deserialize<'de> for TeachingItem {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::de::Error;
+
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Raw {
+            Legacy(String),
+            Structured {
+                text: String,
+                #[serde(default)]
+                reason: String,
+            },
+        }
+
+        match Raw::deserialize(deserializer).map_err(D::Error::custom)? {
+            Raw::Legacy(text) => Ok(TeachingItem {
+                text,
+                reason: String::new(),
+            }),
+            Raw::Structured { text, reason } => Ok(TeachingItem { text, reason }),
+        }
+    }
+}
 
 /// Structured teaching label for a bid meaning surface.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

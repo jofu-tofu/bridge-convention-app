@@ -3,6 +3,7 @@
 //! Pure transformation functions — no state, no side effects.
 
 use bridge_conventions::adapter::strategy_evaluation::StrategyEvaluation;
+use bridge_conventions::teaching::projection_builder::format_feedback_label;
 use bridge_conventions::teaching::teaching_types::{
     ContributionRole, ExplanationKind, WhyNotGrade,
 };
@@ -402,13 +403,25 @@ fn extract_viewport_fields(
     let tp = eval.teaching_projection.as_ref();
     let pr = eval.pipeline_result.as_ref();
 
-    // Correct bid label from selected carrier's teaching label
-    let correct_bid_label = pr
-        .and_then(|pr| pr.selected.as_ref())
-        .map(|c| TeachingLabelDTO {
-            name: c.proposal().teaching_label.name.to_string(),
+    // Correct bid label must be user-facing, never the authored anchor name.
+    let correct_bid_label = pr.and_then(|pr| pr.selected.as_ref()).map(|c| {
+        let name = tp
+            .and_then(|tp| {
+                tp.meaning_views
+                    .iter()
+                    .find(|mv| {
+                        mv.status
+                            == bridge_conventions::teaching::teaching_types::MeaningStatus::Live
+                    })
+                    .map(|mv| mv.display_label.clone())
+            })
+            .unwrap_or_else(|| format_feedback_label(c.call()));
+
+        TeachingLabelDTO {
+            name,
             summary: c.proposal().teaching_label.summary.to_string(),
-        });
+        }
+    });
 
     // Correct bid explanation from primary explanation text nodes
     let correct_bid_explanation = tp
@@ -698,7 +711,7 @@ mod tests {
             meaning_views: vec![MeaningView {
                 meaning_id: "stayman:ask".to_string(),
                 semantic_class_id: Some("stayman:stayman:ask".to_string()),
-                display_label: "Stayman 2C".to_string(),
+                display_label: "Bid 2C".to_string(),
                 status: MeaningStatus::Live,
                 elimination_reason: None,
                 supporting_evidence: vec![],
@@ -816,7 +829,7 @@ mod tests {
         let result = assemble_viewport_feedback(&feedback, Some(&eval));
 
         let label = result.correct_bid_label.unwrap();
-        assert_eq!(label.name, "Stayman");
+        assert_eq!(label.name, "Bid 2C");
         assert_eq!(label.summary, "Asks opener for a 4-card major");
     }
 
@@ -1107,7 +1120,7 @@ mod tests {
         let views = result.meaning_views.unwrap();
         assert_eq!(views.len(), 1);
         assert_eq!(views[0].meaning_id, "stayman:ask");
-        assert_eq!(views[0].display_label, "Stayman 2C");
+        assert_eq!(views[0].display_label, "Bid 2C");
         assert_eq!(views[0].status, "live");
     }
 

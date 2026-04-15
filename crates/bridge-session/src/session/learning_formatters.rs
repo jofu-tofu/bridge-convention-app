@@ -4,9 +4,13 @@
 
 use std::collections::HashSet;
 
+use bridge_conventions::fact_catalog::{
+    get_fact_catalog_entry, partition_discriminants, FactKind, FactValue,
+};
 use bridge_conventions::registry::system_configs::get_system_config;
 use bridge_conventions::{
-    BaseSystemId, BidMeaning, BidMeaningClause, ConventionModule, ExplanationEntry, SystemConfig,
+    BaseSystemId, BidMeaning, BidMeaningClause, ConventionModule, ExplanationEntry, FactId,
+    SystemConfig,
 };
 use bridge_engine::types::{BidSuit, Call};
 
@@ -168,91 +172,132 @@ fn all_systems() -> Vec<SystemWithLabel> {
 }
 
 /// Result of describing a system fact value.
-struct SystemFactDescription {
-    hcp: String,
-    trump_tp: Option<String>,
+pub(crate) struct SystemFactDescription {
+    pub hcp: String,
+    pub trump_tp: Option<String>,
+}
+
+/// Locale-ready label wrapper for rendered fact values.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(transparent)]
+pub struct LocalizedLabel {
+    pub en: String,
+}
+
+pub(crate) fn describe_fact_value(
+    fact: &FactId,
+    value: &FactValue,
+    sys: &SystemConfig,
+) -> Option<LocalizedLabel> {
+    let entry = get_fact_catalog_entry(fact.as_str())?;
+
+    match (&entry.kind, value) {
+        (FactKind::Threshold, FactValue::Threshold) => {
+            let hcp = describe_system_fact_hcp(fact.as_str(), sys)?;
+            Some(LocalizedLabel { en: hcp })
+        }
+        (FactKind::Partition, FactValue::Partition(discriminant_id)) => {
+            partition_discriminants(fact)
+                .and_then(|discriminants| {
+                    discriminants
+                        .iter()
+                        .find(|discriminant| discriminant.id == discriminant_id.as_str())
+                })
+                .map(|discriminant| LocalizedLabel {
+                    en: discriminant.display_name.to_string(),
+                })
+        }
+        _ => None,
+    }
 }
 
 /// Describe what a system-derived fact concretely means for a given SystemConfig.
-fn describe_system_fact_value(fact_id: &str, sys: &SystemConfig) -> Option<SystemFactDescription> {
+pub(crate) fn describe_system_fact_value(
+    fact_id: &str,
+    sys: &SystemConfig,
+) -> Option<SystemFactDescription> {
+    let hcp = FactId::parse(fact_id)
+        .ok()
+        .and_then(|fact| describe_fact_value(&fact, &FactValue::Threshold, sys))
+        .map(|label| label.en)
+        .or_else(|| describe_system_fact_hcp(fact_id, sys))?;
+
+    Some(SystemFactDescription {
+        hcp,
+        trump_tp: describe_system_fact_trump_tp(fact_id, sys),
+    })
+}
+
+fn describe_system_fact_hcp(fact_id: &str, sys: &SystemConfig) -> Option<String> {
     match fact_id {
         "system.responder.weakHand" => {
-            let t = &sys.responder_thresholds;
-            Some(SystemFactDescription {
-                hcp: format!("< {} HCP", t.invite_min),
-                trump_tp: Some(format!("< {}", t.invite_min_tp.trump)),
-            })
+            Some(format!("< {} HCP", sys.responder_thresholds.invite_min))
         }
-        "system.responder.inviteValues" => {
-            let t = &sys.responder_thresholds;
-            Some(SystemFactDescription {
-                hcp: format!("{}\u{2013}{} HCP", t.invite_min, t.invite_max),
-                trump_tp: Some(format!(
-                    "{}\u{2013}{}",
-                    t.invite_min_tp.trump, t.invite_max_tp.trump
-                )),
-            })
-        }
+        "system.responder.inviteValues" => Some(format!(
+            "{}\u{2013}{} HCP",
+            sys.responder_thresholds.invite_min, sys.responder_thresholds.invite_max
+        )),
         "system.responder.gameValues" => {
-            let t = &sys.responder_thresholds;
-            Some(SystemFactDescription {
-                hcp: format!("{}+ HCP", t.game_min),
-                trump_tp: Some(format!("{}+", t.game_min_tp.trump)),
-            })
+            Some(format!("{}+ HCP", sys.responder_thresholds.game_min))
         }
         "system.responder.slamValues" => {
-            let t = &sys.responder_thresholds;
-            Some(SystemFactDescription {
-                hcp: format!("{}+ HCP", t.slam_min),
-                trump_tp: Some(format!("{}+", t.slam_min_tp.trump)),
-            })
+            Some(format!("{}+ HCP", sys.responder_thresholds.slam_min))
         }
-        "system.opener.notMinimum" => {
-            let r = &sys.opener_rebid;
-            Some(SystemFactDescription {
-                hcp: format!("{}+ HCP", r.not_minimum),
-                trump_tp: Some(format!("{}+", r.not_minimum_tp.trump)),
-            })
+        "system.opening.weakTwoRange" => Some(format!(
+            "{}\u{2013}{} HCP",
+            sys.opening.weak_two.min_hcp, sys.opening.weak_two.max_hcp
+        )),
+        "system.opening.strong2cRange" => Some(format!("{}+ HCP", sys.opening.strong_2c_min)),
+        "system.opener.notMinimum" => Some(format!("{}+ HCP", sys.opener_rebid.not_minimum)),
+        "system.responder.twoLevelNewSuit" => {
+            Some(format!("{}+ HCP", sys.suit_response.two_level_min))
         }
-        "system.responder.twoLevelNewSuit" => Some(SystemFactDescription {
-            hcp: format!("{}+ HCP", sys.suit_response.two_level_min),
-            trump_tp: None,
-        }),
         "system.suitResponse.isGameForcing" => {
-            let desc = match sys.suit_response.two_level_forcing_duration {
-                bridge_conventions::SuitResponseForcingDuration::Game => "Game-forcing",
-                bridge_conventions::SuitResponseForcingDuration::OneRound => "One-round forcing",
-            };
-            Some(SystemFactDescription {
-                hcp: desc.to_string(),
-                trump_tp: None,
+            Some(match sys.suit_response.two_level_forcing_duration {
+                bridge_conventions::SuitResponseForcingDuration::Game => "Game-forcing".to_string(),
+                bridge_conventions::SuitResponseForcingDuration::OneRound => {
+                    "One-round forcing".to_string()
+                }
             })
         }
-        "system.oneNtResponseAfterMajor.forcing" => {
-            let forcing_str = match sys.one_nt_response_after_major.forcing {
+        "system.oneNtResponseAfterMajor.forcing" => Some(format!(
+            "1NT is {}",
+            match sys.one_nt_response_after_major.forcing {
                 bridge_conventions::OneNtForcingStatus::NonForcing => "non-forcing",
                 bridge_conventions::OneNtForcingStatus::Forcing => "forcing",
                 bridge_conventions::OneNtForcingStatus::SemiForcing => "semi-forcing",
-            };
-            Some(SystemFactDescription {
-                hcp: format!("1NT is {}", forcing_str),
-                trump_tp: None,
-            })
+            }
+        )),
+        "system.responder.oneNtRange" => Some(format!(
+            "{}\u{2013}{} HCP",
+            sys.one_nt_response_after_major.min_hcp, sys.one_nt_response_after_major.max_hcp
+        )),
+        "system.dontOvercall.inRange" => Some(format!(
+            "{}\u{2013}{} HCP",
+            sys.dont_overcall.min_hcp, sys.dont_overcall.max_hcp
+        )),
+        _ => None,
+    }
+}
+
+fn describe_system_fact_trump_tp(fact_id: &str, sys: &SystemConfig) -> Option<String> {
+    match fact_id {
+        "system.responder.weakHand" => Some(format!(
+            "< {}",
+            sys.responder_thresholds.invite_min_tp.trump
+        )),
+        "system.responder.inviteValues" => Some(format!(
+            "{}\u{2013}{}",
+            sys.responder_thresholds.invite_min_tp.trump,
+            sys.responder_thresholds.invite_max_tp.trump
+        )),
+        "system.responder.gameValues" => {
+            Some(format!("{}+", sys.responder_thresholds.game_min_tp.trump))
         }
-        "system.responder.oneNtRange" => Some(SystemFactDescription {
-            hcp: format!(
-                "{}\u{2013}{} HCP",
-                sys.one_nt_response_after_major.min_hcp, sys.one_nt_response_after_major.max_hcp
-            ),
-            trump_tp: None,
-        }),
-        "system.dontOvercall.inRange" => Some(SystemFactDescription {
-            hcp: format!(
-                "{}\u{2013}{} HCP",
-                sys.dont_overcall.min_hcp, sys.dont_overcall.max_hcp
-            ),
-            trump_tp: None,
-        }),
+        "system.responder.slamValues" => {
+            Some(format!("{}+", sys.responder_thresholds.slam_min_tp.trump))
+        }
+        "system.opener.notMinimum" => Some(format!("{}+", sys.opener_rebid.not_minimum_tp.trump)),
         _ => None,
     }
 }
@@ -293,6 +338,8 @@ fn display_name(fact_id: &str) -> String {
         "bridge.totalPointsForRaise" => return "total points".to_string(),
         "system.dontOvercall.inRange" => return "HCP in overcall range".to_string(),
         "system.responder.oneNtRange" => return "1NT response range".to_string(),
+        "system.opening.weakTwoRange" => return "weak two opening range".to_string(),
+        "system.opening.strong2cRange" => return "strong 2C opening range".to_string(),
         _ => {}
     }
 
@@ -572,5 +619,41 @@ mod tests {
         let variants = build_system_variants("system.responder.inviteValues");
         assert_eq!(variants.len(), 3);
         assert_eq!(variants[0].system_label, "SAYC");
+    }
+
+    #[test]
+    fn describe_fact_value_partition_label() {
+        use bridge_conventions::fact_catalog::FactValue;
+        use bridge_conventions::types::FactId;
+
+        let sys = get_system_config(BaseSystemId::Sayc);
+        let fact = FactId::parse("responder.majorShape").unwrap();
+        let label = describe_fact_value(
+            &fact,
+            &FactValue::Partition("flatFourCardMajor".to_string()),
+            &sys,
+        )
+        .unwrap();
+        assert_eq!(label.en, "Flat hand with a four-card major");
+    }
+
+    #[test]
+    fn describe_system_fact_value_weak_two_range() {
+        let sys = get_system_config(BaseSystemId::Sayc);
+        let desc = describe_system_fact_value("system.opening.weakTwoRange", &sys).unwrap();
+        assert_eq!(desc.hcp, "6\u{2013}11 HCP");
+        assert!(desc.trump_tp.is_none());
+    }
+
+    #[test]
+    fn describe_fact_value_classic_ace_count_label() {
+        use bridge_conventions::fact_catalog::FactValue;
+        use bridge_conventions::types::FactId;
+
+        let sys = get_system_config(BaseSystemId::Sayc);
+        let fact = FactId::parse("responder.classicAceCount").unwrap();
+        let label =
+            describe_fact_value(&fact, &FactValue::Partition("two".to_string()), &sys).unwrap();
+        assert_eq!(label.en, "2 aces");
     }
 }

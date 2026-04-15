@@ -1,4 +1,5 @@
 pub mod adapter;
+pub mod fact_catalog;
 pub mod fact_dsl;
 pub mod pipeline;
 pub mod registry;

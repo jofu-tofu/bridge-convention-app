@@ -6,16 +6,30 @@
   "description": "Michaels Cue Bids and Unusual 2NT: compete over opponent's suit opening with two-suited hands (5-5+)",
   "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
   "references": {
-    "authority": { "url": "https://www.bridgeguys.com/Conventions/MichaelsCueBid.html", "label": "Bridge Guys — comprehensive Michaels coverage with advancer responses and continuations" },
-    "discovery": { "url": "https://www.bridgebum.com/michaels_cuebid.php" }
+    "authority": {
+      "url": "https://www.bridgeguys.com/Conventions/MichaelsCueBid.html",
+      "label": "Bridge Guys — comprehensive Michaels coverage with advancer responses and continuations"
+    },
+    "discovery": {
+      "url": "https://www.bridgebum.com/michaels_cuebid.php"
+    }
   },
   "teaching": {
     "tradeoff": "Michaels/Unusual 2NT sacrifices the natural meaning of the cue bid and 2NT in exchange for immediately showing a two-suited competitive hand.",
     "principle": "Against a suit opening, showing two suits at once lets partner judge fit quickly. The specific cue bid varies by opening suit to encode which suits you hold.",
     "commonMistakes": [
-      "A cue bid of opponent's minor shows BOTH MAJORS, not a strong hand \u2014 don't confuse with a Western Cue Bid",
-      "After Michaels over a major, 2NT asks partner to show the minor \u2014 it's a relay, not a natural bid",
-      "You need 5-5 shape (or better) \u2014 5-4 is not enough for Michaels"
+      {
+        "text": "Do not confuse a cue-bid of opener's suit with a Western Cue Bid.",
+        "reason": "Michaels uses the cue-bid to show a two-suiter, while a Western Cue asks partner for a stopper for notrump."
+      },
+      {
+        "text": "Do not forget that 2NT over major-opening Michaels is a relay.",
+        "reason": "After Michaels over a major, advancer's 2NT asks overcaller to name the hidden minor rather than playing as a natural notrump bid."
+      },
+      {
+        "text": "Do not bid Michaels with only 5-4 shape.",
+        "reason": "The convention promises at least 5-5 shape, so stretching on 5-4 gives partner a false picture of the hand."
+      }
     ]
   },
   "explanationEntries": [
@@ -27,10 +41,7 @@
       "contrastiveTemplateKey": "michaels.inOvercallRange.whyNot",
       "contrastiveDisplayText": "HCP not in overcall range",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.bothMajorsFiveFive",
@@ -40,10 +51,7 @@
       "contrastiveTemplateKey": "michaels.bothMajorsFiveFive.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ cards in both majors",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.bothMinorsFiveFive",
@@ -53,10 +61,7 @@
       "contrastiveTemplateKey": "michaels.bothMinorsFiveFive.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ cards in both minors",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.spadesAndMinor",
@@ -66,10 +71,7 @@
       "contrastiveTemplateKey": "michaels.spadesAndMinor.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ spades with a 5+ minor",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.heartsAndMinor",
@@ -79,10 +81,7 @@
       "contrastiveTemplateKey": "michaels.heartsAndMinor.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ hearts with a 5+ minor",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.minorIsClubs",
@@ -92,10 +91,7 @@
       "contrastiveTemplateKey": "michaels.minorIsClubs.whyNot",
       "contrastiveDisplayText": "The minor suit is not clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.minorIsDiamonds",
@@ -105,10 +101,7 @@
       "contrastiveTemplateKey": "michaels.minorIsDiamonds.whyNot",
       "contrastiveDisplayText": "The minor suit is not diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.hasHeartSupport",
@@ -118,10 +111,7 @@
       "contrastiveTemplateKey": "michaels.hasHeartSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 hearts to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.hasSpadeSupport",
@@ -131,10 +121,7 @@
       "contrastiveTemplateKey": "michaels.hasSpadeSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 spades to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.hasClubSupport",
@@ -144,10 +131,7 @@
       "contrastiveTemplateKey": "michaels.hasClubSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 clubs to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.hasDiamondSupport",
@@ -157,10 +141,7 @@
       "contrastiveTemplateKey": "michaels.hasDiamondSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 diamonds to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.noSpadeSupport",
@@ -170,10 +151,7 @@
       "contrastiveTemplateKey": "michaels.noSpadeSupport.whyNot",
       "contrastiveDisplayText": "3+ spades available",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.noHeartSupport",
@@ -183,10 +161,7 @@
       "contrastiveTemplateKey": "michaels.noHeartSupport.whyNot",
       "contrastiveDisplayText": "3+ hearts available",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.hasMajorSupport",
@@ -196,10 +171,7 @@
       "contrastiveTemplateKey": "michaels.hasMajorSupport.whyNot",
       "contrastiveDisplayText": "No support for either major",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.preferredMajorIsHearts",
@@ -209,10 +181,7 @@
       "contrastiveTemplateKey": "michaels.preferredMajorIsHearts.whyNot",
       "contrastiveDisplayText": "Hearts are not the better major",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.preferredMajorIsSpades",
@@ -222,10 +191,7 @@
       "contrastiveTemplateKey": "michaels.preferredMajorIsSpades.whyNot",
       "contrastiveDisplayText": "Spades are not the better major",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.advancerGameValues",
@@ -235,10 +201,7 @@
       "contrastiveTemplateKey": "michaels.advancerGameValues.whyNot",
       "contrastiveDisplayText": "Fewer than 10 HCP",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.advancerInviteValues",
@@ -248,10 +211,7 @@
       "contrastiveTemplateKey": "michaels.advancerInviteValues.whyNot",
       "contrastiveDisplayText": "HCP not in invitational range (8-9)",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.advancerWeak",
@@ -261,10 +221,7 @@
       "contrastiveTemplateKey": "michaels.advancerWeak.whyNot",
       "contrastiveDisplayText": "More than 7 HCP",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.stub.opponent1c",
@@ -304,9 +261,7 @@
       "templateKey": "michaels.r1.cueBid1c.semantic",
       "displayText": "2C: Both majors over 1C opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.cueBid1d",
@@ -314,9 +269,7 @@
       "templateKey": "michaels.r1.cueBid1d.semantic",
       "displayText": "2D: Both majors over 1D opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.cueBid1h",
@@ -324,9 +277,7 @@
       "templateKey": "michaels.r1.cueBid1h.semantic",
       "displayText": "2H: Spades + a minor over 1H opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.cueBid1s",
@@ -334,9 +285,7 @@
       "templateKey": "michaels.r1.cueBid1s.semantic",
       "displayText": "2S: Hearts + a minor over 1S opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.unusual2nt1c",
@@ -344,9 +293,7 @@
       "templateKey": "michaels.r1.unusual2nt1c.semantic",
       "displayText": "2NT: Both minors over 1C opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.unusual2nt1d",
@@ -354,9 +301,7 @@
       "templateKey": "michaels.r1.unusual2nt1d.semantic",
       "displayText": "2NT: Both minors over 1D opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.unusual2nt1h",
@@ -364,9 +309,7 @@
       "templateKey": "michaels.r1.unusual2nt1h.semantic",
       "displayText": "2NT: Both minors over 1H opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.unusual2nt1s",
@@ -374,9 +317,7 @@
       "templateKey": "michaels.r1.unusual2nt1s.semantic",
       "displayText": "2NT: Both minors over 1S opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.pass1c",
@@ -384,9 +325,7 @@
       "templateKey": "michaels.r1.pass1c.semantic",
       "displayText": "Pass: No Michaels/Unusual action over 1C",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.pass1d",
@@ -394,9 +333,7 @@
       "templateKey": "michaels.r1.pass1d.semantic",
       "displayText": "Pass: No Michaels/Unusual action over 1D",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.pass1h",
@@ -404,9 +341,7 @@
       "templateKey": "michaels.r1.pass1h.semantic",
       "displayText": "Pass: No Michaels/Unusual action over 1H",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.pass1s",
@@ -414,9 +349,7 @@
       "templateKey": "michaels.r1.pass1s.semantic",
       "displayText": "Pass: No Michaels/Unusual action over 1S",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preferHearts2h",
@@ -424,9 +357,7 @@
       "templateKey": "michaels.adv.preferHearts2h.semantic",
       "displayText": "2H: Prefer hearts (weak hand)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preferSpades2s",
@@ -434,9 +365,7 @@
       "templateKey": "michaels.adv.preferSpades2s.semantic",
       "displayText": "2S: Prefer spades (weak hand)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preemptHearts3h",
@@ -444,9 +373,7 @@
       "templateKey": "michaels.adv.preemptHearts3h.semantic",
       "displayText": "3H: Preemptive raise in hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preemptSpades3s",
@@ -454,9 +381,7 @@
       "templateKey": "michaels.adv.preemptSpades3s.semantic",
       "displayText": "3S: Preemptive raise in spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.invite2ntMinorCue",
@@ -464,9 +389,7 @@
       "templateKey": "michaels.adv.invite2ntMinorCue.semantic",
       "displayText": "2NT: Invitational ask for the better major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.force3cMinorCue",
@@ -474,9 +397,7 @@
       "templateKey": "michaels.adv.force3cMinorCue.semantic",
       "displayText": "3C: Artificial game-force asking partner to clarify",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.showHeartsAfter2nt",
@@ -484,9 +405,7 @@
       "templateKey": "michaels.adv.showHeartsAfter2nt.semantic",
       "displayText": "3H: Show hearts as the better major after 2NT",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.showSpadesAfter2nt",
@@ -494,9 +413,7 @@
       "templateKey": "michaels.adv.showSpadesAfter2nt.semantic",
       "displayText": "3S: Show spades as the better major after 2NT",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.gameHearts4h",
@@ -504,9 +421,7 @@
       "templateKey": "michaels.adv.gameHearts4h.semantic",
       "displayText": "4H: Game in hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.gameSpades4s",
@@ -514,9 +429,7 @@
       "templateKey": "michaels.adv.gameSpades4s.semantic",
       "displayText": "4S: Game in spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.passMinor",
@@ -524,9 +437,7 @@
       "templateKey": "michaels.adv.passMinor.semantic",
       "displayText": "Pass: No preference for either major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.acceptSpades2s",
@@ -534,9 +445,7 @@
       "templateKey": "michaels.adv.acceptSpades2s.semantic",
       "displayText": "2S: Accept spades (weak hand)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.relay2nt1h",
@@ -544,9 +453,7 @@
       "templateKey": "michaels.adv.relay2nt1h.semantic",
       "displayText": "2NT: Ask partner to show the minor",
       "preferredLevel": "mechanical",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.inviteSpades3s1h",
@@ -554,9 +461,7 @@
       "templateKey": "michaels.adv.inviteSpades3s1h.semantic",
       "displayText": "3S: Invitational raise in spades (over 1H Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.gameSpades4s1h",
@@ -564,19 +469,15 @@
       "templateKey": "michaels.adv.gameSpades4s1h.semantic",
       "displayText": "4S: Game in spades (over 1H Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.passOrCorrect3c1h",
       "meaningId": "michaels:adv-pass-or-correct-3c-1h",
       "templateKey": "michaels.adv.passOrCorrect3c1h.semantic",
-      "displayText": "3C: Pass-or-correct \u2014 escape to partner's minor (over 1H Michaels)",
+      "displayText": "3C: Pass-or-correct — escape to partner's minor (over 1H Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.pass1h",
@@ -584,9 +485,7 @@
       "templateKey": "michaels.adv.pass1h.semantic",
       "displayText": "Pass: Decline Michaels (over 1H)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.acceptHearts3h",
@@ -594,9 +493,7 @@
       "templateKey": "michaels.adv.acceptHearts3h.semantic",
       "displayText": "3H: Accept hearts (weak hand, over 1S Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.relay2nt1s",
@@ -604,9 +501,7 @@
       "templateKey": "michaels.adv.relay2nt1s.semantic",
       "displayText": "2NT: Ask partner to show the minor (over 1S Michaels)",
       "preferredLevel": "mechanical",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.gameHearts4h1s",
@@ -614,19 +509,15 @@
       "templateKey": "michaels.adv.gameHearts4h1s.semantic",
       "displayText": "4H: Game in hearts (over 1S Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.passOrCorrect3c1s",
       "meaningId": "michaels:adv-pass-or-correct-3c-1s",
       "templateKey": "michaels.adv.passOrCorrect3c1s.semantic",
-      "displayText": "3C: Pass-or-correct \u2014 escape to partner's minor (over 1S Michaels)",
+      "displayText": "3C: Pass-or-correct — escape to partner's minor (over 1S Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.pass1s",
@@ -634,9 +525,7 @@
       "templateKey": "michaels.adv.pass1s.semantic",
       "displayText": "Pass: Decline Michaels (over 1S)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preferClubs3c",
@@ -644,9 +533,7 @@
       "templateKey": "michaels.adv.preferClubs3c.semantic",
       "displayText": "3C: Prefer clubs (Unusual 2NT response)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preferDiamonds3d",
@@ -654,9 +541,7 @@
       "templateKey": "michaels.adv.preferDiamonds3d.semantic",
       "displayText": "3D: Prefer diamonds (Unusual 2NT response)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.game5c",
@@ -664,9 +549,7 @@
       "templateKey": "michaels.adv.game5c.semantic",
       "displayText": "5C: Game in clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.game5d",
@@ -674,9 +557,7 @@
       "templateKey": "michaels.adv.game5d.semantic",
       "displayText": "5D: Game in diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.passUnusual",
@@ -684,9 +565,7 @@
       "templateKey": "michaels.adv.passUnusual.semantic",
       "displayText": "Pass: Decline Unusual 2NT",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.reveal.clubs",
@@ -694,9 +573,7 @@
       "templateKey": "michaels.reveal.clubs.semantic",
       "displayText": "3C: The minor is clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.reveal.diamonds",
@@ -704,9 +581,7 @@
       "templateKey": "michaels.reveal.diamonds.semantic",
       "displayText": "3D: The minor is diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -1089,7 +964,10 @@
             "summary": "Opponent opens 1S, triggering the Michaels/Unusual 2NT convention"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "r1-after-1c",
@@ -1134,7 +1012,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2C \u2014 both majors over 1C",
+            "name": "2C — both majors over 1C",
             "summary": "Cue bid opponent's 1C to show 5-5 or better in both majors"
           }
         },
@@ -1178,7 +1056,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 both minors over 1C",
+            "name": "2NT — both minors over 1C",
             "summary": "Unusual 2NT to show 5-5 or better in both minors"
           }
         },
@@ -1204,10 +1082,13 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (no action over 1C)",
-            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+            "summary": "Decline to compete — hand does not meet Michaels/Unusual 2NT requirements"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "r1-after-1d",
@@ -1252,7 +1133,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2D \u2014 both majors over 1D",
+            "name": "2D — both majors over 1D",
             "summary": "Cue bid opponent's 1D to show 5-5 or better in both majors"
           }
         },
@@ -1296,7 +1177,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 both minors over 1D",
+            "name": "2NT — both minors over 1D",
             "summary": "Unusual 2NT to show 5-5 or better in both minors"
           }
         },
@@ -1322,10 +1203,13 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (no action over 1D)",
-            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+            "summary": "Decline to compete — hand does not meet Michaels/Unusual 2NT requirements"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "r1-after-1h",
@@ -1370,7 +1254,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2H \u2014 spades + a minor over 1H",
+            "name": "2H — spades + a minor over 1H",
             "summary": "Cue bid opponent's 1H to show 5+ spades and 5+ in an unspecified minor"
           }
         },
@@ -1414,7 +1298,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 both minors over 1H",
+            "name": "2NT — both minors over 1H",
             "summary": "Unusual 2NT to show 5-5 or better in both minors"
           }
         },
@@ -1440,10 +1324,13 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (no action over 1H)",
-            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+            "summary": "Decline to compete — hand does not meet Michaels/Unusual 2NT requirements"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "r1-after-1s",
@@ -1488,7 +1375,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2S \u2014 hearts + a minor over 1S",
+            "name": "2S — hearts + a minor over 1S",
             "summary": "Cue bid opponent's 1S to show 5+ hearts and 5+ in an unspecified minor"
           }
         },
@@ -1532,7 +1419,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 both minors over 1S",
+            "name": "2NT — both minors over 1S",
             "summary": "Unusual 2NT to show 5-5 or better in both minors"
           }
         },
@@ -1558,10 +1445,13 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (no action over 1S)",
-            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+            "summary": "Decline to compete — hand does not meet Michaels/Unusual 2NT requirements"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-michaels-minor",
@@ -1606,7 +1496,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 prefer hearts (weak)",
+            "name": "2H — prefer hearts (weak)",
             "summary": "Choose hearts as trump with a weak hand and 3+ heart support"
           }
         },
@@ -1622,6 +1512,22 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "At least 8 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasSpadeSupport",
               "operator": "boolean",
@@ -1650,7 +1556,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 prefer spades (weak)",
+            "name": "2S — prefer spades (weak)",
             "summary": "Choose spades as trump with a weak hand and 3+ spade support"
           }
         },
@@ -1704,7 +1610,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 invitational ask",
+            "name": "2NT — invitational ask",
             "summary": "Invite game with 10-11 HCP and ask partner to show the better major"
           }
         },
@@ -1741,7 +1647,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3C \u2014 artificial force",
+            "name": "3C — artificial force",
             "summary": "Use 3C as an artificial game-force asking partner to clarify the Michaels hand"
           }
         },
@@ -1757,6 +1663,22 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 0,
+              "clauseId": "hand.hcp:gte:0",
+              "description": "At least 0 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 7,
+              "clauseId": "hand.hcp:lte:7",
+              "description": "At most 7 HCP",
+              "isPublic": true
+            },
             {
               "factId": "hand.suitLength.hearts",
               "operator": "gte",
@@ -1786,7 +1708,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 preemptive hearts",
+            "name": "3H — preemptive hearts",
             "summary": "Make a weak jump raise in hearts with 4+ support and 0-7 HCP"
           }
         },
@@ -1802,6 +1724,22 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 0,
+              "clauseId": "hand.hcp:gte:0",
+              "description": "At least 0 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 7,
+              "clauseId": "hand.hcp:lte:7",
+              "description": "At most 7 HCP",
+              "isPublic": true
+            },
             {
               "factId": "hand.suitLength.spades",
               "operator": "gte",
@@ -1831,7 +1769,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 preemptive spades",
+            "name": "3S — preemptive spades",
             "summary": "Make a weak jump raise in spades with 4+ support and 0-7 HCP"
           }
         },
@@ -1876,7 +1814,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4H \u2014 game in hearts",
+            "name": "4H — game in hearts",
             "summary": "Bid game in hearts directly with 12+ HCP and 3+ heart support"
           }
         },
@@ -1892,6 +1830,22 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "At least 8 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasSpadeSupport",
               "operator": "boolean",
@@ -1921,7 +1875,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4S \u2014 game in spades",
+            "name": "4S — game in spades",
             "summary": "Bid game in spades directly with 12+ HCP and 3+ spade support"
           }
         },
@@ -1959,7 +1913,10 @@
             "summary": "Pass with a weak hand and no clear preference between the majors"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-2nt-invite",
@@ -1998,7 +1955,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 show hearts",
+            "name": "3H — show hearts",
             "summary": "After the invitational 2NT ask, show hearts as the better or equal major"
           }
         },
@@ -2036,11 +1993,14 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 show spades",
+            "name": "3S — show spades",
             "summary": "After the invitational 2NT ask, show spades as the better major"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-michaels-1h",
@@ -2057,6 +2017,22 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "At least 8 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasSpadeSupport",
               "operator": "boolean",
@@ -2085,7 +2061,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 accept spades (weak)",
+            "name": "2S — accept spades (weak)",
             "summary": "Accept the known spade suit with a weak hand"
           }
         },
@@ -2112,7 +2088,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 ask for minor",
+            "name": "2NT — ask for minor",
             "summary": "Relay bid asking partner to reveal the unknown minor suit"
           }
         },
@@ -2128,6 +2104,22 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "At least 8 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasSpadeSupport",
               "operator": "boolean",
@@ -2156,7 +2148,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 invitational spades",
+            "name": "3S — invitational spades",
             "summary": "Invite game in spades with 8-9 HCP and 3+ spade support"
           }
         },
@@ -2172,6 +2164,14 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasSpadeSupport",
               "operator": "boolean",
@@ -2200,7 +2200,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4S \u2014 game in spades",
+            "name": "4S — game in spades",
             "summary": "Bid game in spades with 10+ HCP and 3+ spade support"
           }
         },
@@ -2244,8 +2244,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3C \u2014 pass-or-correct",
-            "summary": "Bid 3C asking partner to pass with clubs or correct to 3D with diamonds \u2014 escape to the minor with no spade fit"
+            "name": "3C — pass-or-correct",
+            "summary": "Bid 3C asking partner to pass with clubs or correct to 3D with diamonds — escape to the minor with no spade fit"
           }
         },
         {
@@ -2279,10 +2279,13 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (decline Michaels over 1H)",
-            "summary": "Pass with a weak hand \u2014 no fit for spades and no interest in the minor"
+            "summary": "Pass with a weak hand — no fit for spades and no interest in the minor"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-michaels-1s",
@@ -2299,6 +2302,22 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "At least 8 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasHeartSupport",
               "operator": "boolean",
@@ -2327,7 +2346,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 accept hearts (weak)",
+            "name": "3H — accept hearts (weak)",
             "summary": "Accept the known heart suit with a weak hand (3H needed since 2S was the cue bid)"
           }
         },
@@ -2354,7 +2373,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 ask for minor",
+            "name": "2NT — ask for minor",
             "summary": "Relay bid asking partner to reveal the unknown minor suit"
           }
         },
@@ -2370,6 +2389,22 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "At least 8 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasHeartSupport",
               "operator": "boolean",
@@ -2398,7 +2433,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 invitational hearts",
+            "name": "3H — invitational hearts",
             "summary": "Invite game in hearts with 8-9 HCP and 3+ heart support"
           }
         },
@@ -2414,6 +2449,14 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasHeartSupport",
               "operator": "boolean",
@@ -2442,7 +2485,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4H \u2014 game in hearts",
+            "name": "4H — game in hearts",
             "summary": "Bid game in hearts with 10+ HCP and 3+ heart support"
           }
         },
@@ -2486,8 +2529,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3C \u2014 pass-or-correct",
-            "summary": "Bid 3C asking partner to pass with clubs or correct to 3D with diamonds \u2014 escape to the minor with no heart fit"
+            "name": "3C — pass-or-correct",
+            "summary": "Bid 3C asking partner to pass with clubs or correct to 3D with diamonds — escape to the minor with no heart fit"
           }
         },
         {
@@ -2521,10 +2564,13 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (decline Michaels over 1S)",
-            "summary": "Pass with a weak hand \u2014 no fit for hearts and no interest in the minor"
+            "summary": "Pass with a weak hand — no fit for hearts and no interest in the minor"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-unusual-2nt",
@@ -2541,6 +2587,14 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasClubSupport",
               "operator": "boolean",
@@ -2561,7 +2615,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 prefer clubs",
+            "name": "3C — prefer clubs",
             "summary": "Choose clubs as trump after partner's Unusual 2NT"
           }
         },
@@ -2577,6 +2631,14 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasDiamondSupport",
               "operator": "boolean",
@@ -2597,7 +2659,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 prefer diamonds",
+            "name": "3D — prefer diamonds",
             "summary": "Choose diamonds as trump after partner's Unusual 2NT"
           }
         },
@@ -2613,6 +2675,14 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasClubSupport",
               "operator": "boolean",
@@ -2641,7 +2711,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "5C \u2014 game in clubs",
+            "name": "5C — game in clubs",
             "summary": "Bid game in clubs with 10+ HCP and 3+ club support"
           }
         },
@@ -2657,6 +2727,14 @@
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
             {
               "factId": "module.michaels.hasDiamondSupport",
               "operator": "boolean",
@@ -2685,7 +2763,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "5D \u2014 game in diamonds",
+            "name": "5D — game in diamonds",
             "summary": "Bid game in diamonds with 10+ HCP and 3+ diamond support"
           }
         },
@@ -2723,7 +2801,10 @@
             "summary": "Pass with a weak hand and no clear minor preference"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "ask-minor",
@@ -2760,7 +2841,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 minor is clubs",
+            "name": "3C — minor is clubs",
             "summary": "Reveal the unknown minor as clubs in response to partner's 2NT relay"
           }
         },
@@ -2796,13 +2877,275 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 minor is diamonds",
+            "name": "3D — minor is diamonds",
             "summary": "Reveal the unknown minor as diamonds in response to partner's 2NT relay"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
+  "reference": {
+    "summaryCard": {
+      "trigger": "Opponent opens a suit and you make a conventional two-suited overcall",
+      "definingMeaningId": "michaels:cue-bid-1c-2c",
+      "partnership": "Strength is partnership-dependent. Common styles are weak or preemptive only, roughly six to eleven HCP; weak-or-strong mini-maxi methods where intermediate hands overcall naturally; or strong-only treatments. Confirm the agreement and vulnerability discipline before bidding. Minor openings: cue-bid shows both majors and unusual two notrump shows both minors; major openings: cue-bid shows the other major plus an undisclosed minor."
+    },
+    "whenToUse": [
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 5
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 5
+              }
+            }
+          ]
+        },
+        "gloss": "Against a minor opening, use Michaels to show both majors at once instead of overcalling just one of them."
+      },
+      {
+        "predicate": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "gte",
+                        "value": 5
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "gte",
+                        "value": 5
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "gte",
+                        "value": 5
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "gte",
+                        "value": 5
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gloss": "Against a major opening, use the cue-bid to show the other major plus a minor so partner can choose between the known major and the hidden minor."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 5
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 5
+              }
+            }
+          ]
+        },
+        "gloss": "Use unusual two notrump with both minors when the auction leaves that artificial two-suited call available."
+      }
+    ],
+    "workedAuctions": [
+      {
+        "kind": "positive",
+        "label": "Minor opening: cue-bid shows both majors immediately",
+        "calls": [
+          {
+            "seat": "W",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "D"
+            },
+            "rationale": "The opponents start with a natural diamond opening."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            },
+            "rationale": "Michaels over 1♦ shows both majors with a 5-5 style hand."
+          },
+          {
+            "seat": "E",
+            "call": {
+              "type": "pass"
+            },
+            "rationale": "No immediate action from opener's partner."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            },
+            "rationale": "Advancer prefers spades and places the contract in the known fit."
+          }
+        ]
+      },
+      {
+        "kind": "negative",
+        "label": "Counter-example: a five-four hand should not pretend to be Michaels",
+        "calls": [
+          {
+            "seat": "W",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            },
+            "rationale": "The opponents open 1♥."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            },
+            "rationale": "This call would promise spades plus a minor, so making it on only 5-4 shape would overstate the hand."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            },
+            "rationale": "Partner is entitled to choose spades expecting a full two-suiter, which is why 5-4 is the wrong hand for the convention."
+          }
+        ]
+      }
+    ],
+    "interference": {
+      "status": "applicable",
+      "items": [
+        {
+          "opponentAction": "The opponents double the cue-bid or the unusual two notrump call",
+          "ourAction": "Keep the artificial two-suited meaning and let advancer choose a strain unless your partnership has a specific escape gadget.",
+          "note": "The fixture treats the original call as still conventional; doubles do not turn it natural."
+        },
+        {
+          "opponentAction": "The opener's side raises the opening suit aggressively",
+          "ourAction": "Compete on fit or extra playing strength, usually by choosing the known fit rather than probing further.",
+          "note": "Preemptive raises take away relay room, especially after a major-opening Michaels cue-bid."
+        }
+      ]
+    },
+    "quickReference": {
+      "kind": "list",
+      "axis": {
+        "kind": "systemFactLadder",
+        "label": "Advancer strength (HCP)",
+        "facts": [
+          "system.responder.weakHand",
+          "system.responder.inviteValues",
+          "system.responder.gameValues"
+        ]
+      },
+      "items": [
+        {
+          "recommendation": "With a weak hand, pass or choose the known fit as cheaply as possible.",
+          "note": "This supported ladder replaces the opening-by-opening chart; the lost detail is which cue-bid shape belongs to each opposing suit opening."
+        },
+        {
+          "recommendation": "With invitational values, cue or relay to learn the hidden suit before choosing game or partscore.",
+          "note": "Major-opening Michaels sequences and minor-opening sequences now share one strength bucket."
+        },
+        {
+          "recommendation": "With game values, jump to game in the fit you know or force partner to clarify the second suit first.",
+          "note": "The list keeps the practical continuation plan, but not the exact opening-suit trigger."
+        }
+      ]
+    },
+    "relatedLinks": [
+      {
+        "moduleId": "dont",
+        "discriminator": "Michaels shows five-five two-suiters over a suit opening; DONT is specifically a defense to an opponent's one-notrump opening."
+      },
+      {
+        "moduleId": "natural-bids",
+        "discriminator": "When your hand is too one-suited or too strong for the artificial two-suited overcall, fall back to natural competitive action instead of stretching for the unusual two notrump branch."
+      }
+    ]
+  },
   "facts": {
     "definitions": [
       {
@@ -2812,9 +3155,7 @@
         "description": "5+ hearts and 5+ spades",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2844,9 +3185,7 @@
         "description": "5+ clubs and 5+ diamonds",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2876,9 +3215,7 @@
         "description": "5+ spades and 5+ in a minor",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2921,9 +3258,7 @@
         "description": "5+ hearts and 5+ in a minor",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2966,10 +3301,7 @@
         "description": "The minor suit is clubs (clubs >= diamonds)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitLength", "suitRelation"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3000,10 +3332,7 @@
         "description": "The minor suit is diamonds (diamonds > clubs)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitLength", "suitRelation"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3034,9 +3363,7 @@
         "description": "HCP in overcall range (NV: 6-15, Vul: 8-15)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -3106,9 +3433,7 @@
         "description": "3+ hearts to support partner",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3125,9 +3450,7 @@
         "description": "3+ spades to support partner",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3144,9 +3467,7 @@
         "description": "3+ clubs to support partner",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3163,9 +3484,7 @@
         "description": "3+ diamonds to support partner",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3182,9 +3501,7 @@
         "description": "Fewer than 3 spades (no spade support)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3201,9 +3518,7 @@
         "description": "Fewer than 3 hearts (no heart support)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3220,9 +3535,7 @@
         "description": "Support for at least one major",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -3252,10 +3565,7 @@
         "description": "Hearts are the better or equal major",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitLength", "suitRelation"],
         "composition": {
           "kind": "extended",
           "clause": {
@@ -3273,10 +3583,7 @@
         "description": "Spades are the better major",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitLength", "suitRelation"],
         "composition": {
           "kind": "extended",
           "clause": {
@@ -3294,9 +3601,7 @@
         "description": "10+ HCP (game values as advancer)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3313,9 +3618,7 @@
         "description": "8-9 HCP (invite values as advancer)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3345,9 +3648,7 @@
         "description": "0-7 HCP (weak as advancer)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "primitive",
           "clause": {

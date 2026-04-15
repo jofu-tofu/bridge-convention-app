@@ -84,23 +84,28 @@
         "seat": "E"
       }
     ],
-    "selectedMeaningId": "weak-two:weak-pass-hearts",
+    "selectedMeaningId": "weak-two:preemptive-raise-hearts",
     "selectedCall": {
-      "type": "pass"
+      "type": "bid",
+      "level": 3,
+      "strain": "H"
     },
     "truthSetMeaningIds": [
-      "weak-two:weak-pass-hearts"
+      "weak-two:preemptive-raise-hearts"
     ],
     "truthSetCalls": [
       {
-        "type": "pass"
+        "type": "bid",
+        "level": 3,
+        "strain": "H"
       }
     ],
     "acceptableSetMeaningIds": [
       "weak-two:ogust-ask-hearts",
       "weak-two:new-suit-forcing-hearts",
       "weak-two:game-raise-hearts",
-      "weak-two:invite-raise-hearts"
+      "weak-two:invite-raise-hearts",
+      "weak-two:weak-pass-hearts"
     ],
     "eliminatedCount": 8,
     "bidGradeIfCorrect": "correct",

@@ -329,6 +329,7 @@ mod tests {
             billing_success_url: String::new(),
             billing_cancel_url: String::new(),
             conventions_fixtures_dir: fixtures_dir.to_path_buf(),
+            cors_allowed_origins: vec!["http://localhost:1420".to_string()],
         }
     }
 
