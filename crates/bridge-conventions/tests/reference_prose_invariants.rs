@@ -154,6 +154,100 @@ fn authored_reference_prose_contains_no_digits_outside_whitelisted_fields() {
     }
 }
 
+/// `reference.whenNotToUse` must not be authored — the viewport derives it from
+/// `teaching.commonMistakes`. See reference-page-template.md § "Large smells".
+#[test]
+fn authored_reference_block_does_not_author_when_not_to_use() {
+    let dir = PathBuf::from(MODULE_FIXTURE_DIR);
+    let mut failures: Vec<String> = Vec::new();
+
+    for entry in std::fs::read_dir(&dir).expect("Failed to read module fixture directory") {
+        let entry = entry.expect("Failed to read directory entry");
+        let path = entry.path();
+        if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
+            continue;
+        }
+
+        let filename = path.file_name().unwrap().to_string_lossy().into_owned();
+        let json_str = std::fs::read_to_string(&path)
+            .unwrap_or_else(|err| panic!("Failed to read {filename}: {err}"));
+        let raw: serde_json::Value = serde_json::from_str(&json_str)
+            .unwrap_or_else(|err| panic!("Failed to parse {filename}: {err}"));
+
+        if raw
+            .get("reference")
+            .and_then(|r| r.get("whenNotToUse"))
+            .is_some()
+        {
+            failures.push(filename);
+        }
+    }
+
+    if !failures.is_empty() {
+        panic!(
+            "\n\nFixtures author reference.whenNotToUse (must be derived from teaching.commonMistakes):\n  {}\n",
+            failures.join("\n  ")
+        );
+    }
+}
+
+/// `reference.summaryCard` is authored as `{ trigger, definingMeaningId,
+/// partnership }` (+ optional `peers`, optional `guidingIdea` override). All
+/// other fields — `bid`, `promises`, `denies` — are derived from the defining
+/// meaning. Extra authored keys open a drift channel with the rule data.
+#[test]
+fn authored_summary_card_only_contains_expected_keys() {
+    const ALLOWED: &[&str] = &[
+        "trigger",
+        "definingMeaningId",
+        "partnership",
+        "peers",
+        "guidingIdea",
+    ];
+
+    let dir = PathBuf::from(MODULE_FIXTURE_DIR);
+    let mut failures: Vec<String> = Vec::new();
+
+    for entry in std::fs::read_dir(&dir).expect("Failed to read module fixture directory") {
+        let entry = entry.expect("Failed to read directory entry");
+        let path = entry.path();
+        if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
+            continue;
+        }
+
+        let filename = path.file_name().unwrap().to_string_lossy().into_owned();
+        let json_str = std::fs::read_to_string(&path)
+            .unwrap_or_else(|err| panic!("Failed to read {filename}: {err}"));
+        let raw: serde_json::Value = serde_json::from_str(&json_str)
+            .unwrap_or_else(|err| panic!("Failed to parse {filename}: {err}"));
+
+        let Some(summary_card) = raw
+            .get("reference")
+            .and_then(|r| r.get("summaryCard"))
+            .and_then(|s| s.as_object())
+        else {
+            continue;
+        };
+
+        let unexpected: Vec<&str> = summary_card
+            .keys()
+            .map(String::as_str)
+            .filter(|k| !ALLOWED.contains(k))
+            .collect();
+
+        if !unexpected.is_empty() {
+            failures.push(format!("{filename}: {:?}", unexpected));
+        }
+    }
+
+    if !failures.is_empty() {
+        panic!(
+            "\n\nFixtures author unexpected summaryCard keys (expected a subset of {ALLOWED:?}):\n  {}\nbid/promises/denies are derived from definingMeaningId; do not author them.\n",
+            failures.join("\n  ")
+        );
+    }
+}
+
 #[test]
 fn authored_reference_prose_contains_no_system_names() {
     let dir = PathBuf::from(MODULE_FIXTURE_DIR);
