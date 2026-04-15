@@ -250,7 +250,7 @@ These rules are locked; they govern what is authored vs. derived. Apply when wri
 
 ### Medium smells
 
-**`summaryCard.partnership` leaks system names as prose.** Stayman's card says "Core SAYC agreement…" — the system name is a system-specific leak the digit-run lint does not catch. Fix: extend the structural lint to `/\b(SAYC|2\/1|Acol|Precision)\b/i` across the same fields the digit-run regex covers. Same cheap regex class, same false-positive-via-rephrase escape.
+**~~`summaryCard.partnership` leaks system names as prose.~~** *Resolved.* `authored_reference_prose_contains_no_system_names` in `crates/bridge-conventions/tests/reference_prose_invariants.rs` enforces `/(?i)\b(SAYC|Acol|Precision)\b|2\/1/` across the same fields the digit-run regex covers. Machine-field allowlist is shared between the two walkers.
 
 **`relatedLinks[].discriminator` often duplicates the target's `guidingIdea`.** Stayman's discriminator for Jacoby Transfers essentially restates Jacoby's own one-sentence essence. Fix: default discriminator to the target module's `guidingIdea`; authored override reserved for contrastive framing (which is genuinely different from self-description). Also add a reciprocity structural check — if A links to B, B links to A.
 

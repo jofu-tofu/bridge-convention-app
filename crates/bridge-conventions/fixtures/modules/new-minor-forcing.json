@@ -2629,7 +2629,7 @@
     "summaryCard": {
       "trigger": "After one minor, one major, and one notrump, responder checks back with the other minor.",
       "definingMeaningId": "nmf:ask-after-1c",
-      "partnership": "The new minor is whichever minor responder has not bid. In SAYC it is invitational-or-better by default; in two-way NMF or XYZ styles it may be strictly game-forcing, so confirm the partnership agreement. The summary card shows the one-club branch."
+      "partnership": "The new minor is whichever minor responder has not bid. Some partnerships treat it as invitational-or-better by default; others play strictly game-forcing or a two-way style that splits invitational and game-forcing across the two minors — confirm the agreement. The summary card shows the one-club branch."
     },
     "whenToUse": [
       {
