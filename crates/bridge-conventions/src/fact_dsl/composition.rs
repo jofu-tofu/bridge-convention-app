@@ -8,12 +8,12 @@ use std::collections::HashMap;
 use bridge_engine::{Hand, Rank, Suit};
 
 use crate::types::{
-    CompareOp, ComputeExpr, ExtendedClause, FactComposition, FactOutput, PrimitiveClause,
-    PrimitiveClauseOperator, PrimitiveClauseValue,
+    CompareOp, ComputeExpr, ExtendedClause, FactComposition, FactOperator, FactOutput,
+    PrimitiveClause, PrimitiveClauseOperator, PrimitiveClauseValue,
 };
 
 use super::primitives::{suit_name_to_index, SUIT_LENGTH_FACT_IDS};
-use super::types::{get_bool, get_num, FactData, FactValue};
+use super::types::{get_bool, get_num, FactData, FactValue, RelationalFactContext};
 
 /// Evaluate a composition tree, returning the computed value.
 ///
@@ -24,40 +24,41 @@ pub fn evaluate_composition(
     comp: &FactComposition,
     hand: &Hand,
     facts: &HashMap<String, FactValue>,
-    bindings: Option<&HashMap<String, String>>,
+    ctx: Option<&RelationalFactContext>,
 ) -> FactData {
     match comp {
         FactComposition::Primitive { clause } => {
             FactData::Boolean(evaluate_primitive_clause(clause, facts))
         }
         FactComposition::Extended { clause } => {
-            FactData::Boolean(evaluate_extended_clause(clause, hand, facts))
+            FactData::Boolean(evaluate_extended_clause(clause, hand, facts, ctx))
         }
         FactComposition::And { operands } => {
             let result = operands
                 .iter()
-                .all(|op| evaluate_composition(op, hand, facts, bindings).as_bool());
+                .all(|op| evaluate_composition(op, hand, facts, ctx).as_bool());
             FactData::Boolean(result)
         }
         FactComposition::Or { operands } => {
             let result = operands
                 .iter()
-                .any(|op| evaluate_composition(op, hand, facts, bindings).as_bool());
+                .any(|op| evaluate_composition(op, hand, facts, ctx).as_bool());
             FactData::Boolean(result)
         }
         FactComposition::Not { operand } => {
-            let inner = evaluate_composition(operand, hand, facts, bindings).as_bool();
+            let inner = evaluate_composition(operand, hand, facts, ctx).as_bool();
             FactData::Boolean(!inner)
         }
         FactComposition::Match { cases, default } => {
             for case in cases {
-                if evaluate_composition(&case.when, hand, facts, bindings).as_bool() {
+                if evaluate_composition(&case.when, hand, facts, ctx).as_bool() {
                     return fact_output_to_data(&case.then);
                 }
             }
             fact_output_to_data(default)
         }
         FactComposition::Compute { expr } => {
+            let bindings = ctx.and_then(|c| c.bindings.as_ref());
             FactData::Number(evaluate_compute_expr(expr, facts, bindings))
         }
     }
@@ -109,10 +110,17 @@ fn evaluate_extended_clause(
     clause: &ExtendedClause,
     hand: &Hand,
     facts: &HashMap<String, FactValue>,
+    ctx: Option<&RelationalFactContext>,
 ) -> bool {
     match clause {
-        ExtendedClause::TopHonorCount { suit, min, max } => {
-            let count = count_top_honors(hand, *suit);
+        ExtendedClause::TopHonorCount {
+            suit,
+            min,
+            max,
+            top_n,
+        } => {
+            let n = top_n.unwrap_or(3);
+            let count = count_top_n_honors(hand, *suit, n);
             let above_min = min.map_or(true, |m| count >= m);
             let below_max = max.map_or(true, |m| count <= m);
             above_min && below_max
@@ -165,14 +173,120 @@ fn evaluate_extended_clause(
             let below_max = max.map_or(true, |m| val <= m);
             above_min && below_max
         }
+        ExtendedClause::CombinedAceCount { min, max } => {
+            let own = count_rank(hand, Rank::Ace);
+            let partner = partner_count_from_ctx(ctx, "module.partner.aceCount");
+            let count = own.saturating_add(partner);
+            let above_min = min.map_or(true, |m| count >= m);
+            let below_max = max.map_or(true, |m| count <= m);
+            above_min && below_max
+        }
+        ExtendedClause::CombinedKingCount { min, max } => {
+            let own = count_rank(hand, Rank::King);
+            let partner = partner_count_from_ctx(ctx, "module.partner.kingCount");
+            let count = own.saturating_add(partner);
+            let above_min = min.map_or(true, |m| count >= m);
+            let below_max = max.map_or(true, |m| count <= m);
+            above_min && below_max
+        }
+        ExtendedClause::PlayingTricks { min, max } => {
+            let count = count_playing_tricks(hand);
+            let above_min = min.map_or(true, |m| count >= m);
+            let below_max = max.map_or(true, |m| count <= m);
+            above_min && below_max
+        }
     }
 }
 
-/// Count A/K/Q in a specific suit.
-fn count_top_honors(hand: &Hand, suit: Suit) -> u8 {
+/// Extract partner's disclosed count (eq-constraint) for the given fact_id from
+/// the RelationalFactContext.public_commitments. Returns 0 when missing.
+fn partner_count_from_ctx(ctx: Option<&RelationalFactContext>, fact_id: &str) -> u8 {
+    let commitments = match ctx.and_then(|c| c.public_commitments.as_ref()) {
+        Some(c) => c,
+        None => return 0,
+    };
+    for commitment in commitments {
+        if commitment.subject != "partner" {
+            continue;
+        }
+        if commitment.constraint.fact_id != fact_id {
+            continue;
+        }
+        if commitment.constraint.operator != FactOperator::Eq {
+            continue;
+        }
+        if let crate::types::ConstraintValue::Number(n) = &commitment.constraint.value {
+            if let Some(v) = n.as_u64() {
+                return v.min(u8::MAX as u64) as u8;
+            }
+            if let Some(f) = n.as_f64() {
+                return f.max(0.0).round() as u8;
+            }
+        }
+    }
+    0
+}
+
+/// Count honor tricks + length tricks for a hand, summed across suits.
+///
+/// Honor tricks: A=1, AK=2, AKQ=3; K or Q alone contribute 0 honor tricks and
+/// KQ or KQx etc. also contribute 0 (no A/K promotion is attempted, matching
+/// classic strong-2C authority).
+///
+/// Length tricks: max(length - 3, 0), but only if the suit contains A or K
+/// (Q alone does not gate length).
+fn count_playing_tricks(hand: &Hand) -> u8 {
+    let suits = [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs];
+    let mut total: u32 = 0;
+    for suit in suits {
+        let cards: Vec<&bridge_engine::Card> =
+            hand.cards.iter().filter(|c| c.suit == suit).collect();
+        let has_ace = cards.iter().any(|c| c.rank == Rank::Ace);
+        let has_king = cards.iter().any(|c| c.rank == Rank::King);
+        let has_queen = cards.iter().any(|c| c.rank == Rank::Queen);
+
+        let honor_tricks: u32 = if has_ace && has_king && has_queen {
+            3
+        } else if has_ace && has_king {
+            2
+        } else if has_ace {
+            1
+        } else {
+            0
+        };
+
+        let length = cards.len() as u32;
+        let length_tricks: u32 = if (has_ace || has_king) && length > 3 {
+            length - 3
+        } else {
+            0
+        };
+
+        total += honor_tricks + length_tricks;
+    }
+    total.min(u8::MAX as u32) as u8
+}
+
+/// Count the top-N honors (A, K, Q, J, T ordered highest-first) in a specific
+/// suit. N is clamped to [0, 5]. N=3 counts A/K/Q, N=5 counts A/K/Q/J/T.
+fn count_top_n_honors(hand: &Hand, suit: Suit, top_n: u8) -> u8 {
+    let ranks: &[Rank] = match top_n {
+        0 => &[],
+        1 => &[Rank::Ace],
+        2 => &[Rank::Ace, Rank::King],
+        3 => &[Rank::Ace, Rank::King, Rank::Queen],
+        4 => &[Rank::Ace, Rank::King, Rank::Queen, Rank::Jack],
+        _ => &[
+            Rank::Ace,
+            Rank::King,
+            Rank::Queen,
+            Rank::Jack,
+            Rank::Ten,
+        ],
+    };
     hand.cards
         .iter()
-        .filter(|c| c.suit == suit && matches!(c.rank, Rank::Ace | Rank::King | Rank::Queen))
+        .filter(|c| c.suit == suit && ranks.contains(&c.rank))
         .count() as u8
 }
 
@@ -443,15 +557,17 @@ mod tests {
             suit: Suit::Spades,
             min: Some(2),
             max: None,
+            top_n: None,
         };
-        assert!(evaluate_extended_clause(&clause, &hand, &facts));
+        assert!(evaluate_extended_clause(&clause, &hand, &facts, None));
 
         let clause2 = ExtendedClause::TopHonorCount {
             suit: Suit::Spades,
             min: Some(3),
             max: None,
+            top_n: None,
         };
-        assert!(!evaluate_extended_clause(&clause2, &hand, &facts));
+        assert!(!evaluate_extended_clause(&clause2, &hand, &facts, None));
     }
 
     #[test]
@@ -465,7 +581,7 @@ mod tests {
             op: CompareOp::Gt,
             b: Suit::Hearts,
         };
-        assert!(evaluate_extended_clause(&clause, &empty_hand(), &facts));
+        assert!(evaluate_extended_clause(&clause, &empty_hand(), &facts, None));
     }
 
     #[test]
@@ -491,8 +607,237 @@ mod tests {
         ]);
         let mut bindings = HashMap::new();
         bindings.insert("suit".to_string(), "hearts".to_string());
-        let result = evaluate_composition(&comp, &empty_hand(), &facts, Some(&bindings));
+        let ctx = RelationalFactContext {
+            bindings: Some(bindings),
+            public_commitments: None,
+            fit_agreed: None,
+        };
+        let result = evaluate_composition(&comp, &empty_hand(), &facts, Some(&ctx));
         // HCP 10 + shortage: clubs singleton = 2
         assert_eq!(result, FactData::Number(12.0));
+    }
+
+    // --- Playing-tricks anchor tests ---
+
+    /// Build a hand from a PBN-style string "SPADES.HEARTS.DIAMONDS.CLUBS"
+    /// where each field is concatenated rank chars (or "-" for void).
+    fn pbn(spec: &str) -> Hand {
+        let suits = [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs];
+        let parts: Vec<&str> = spec.split('.').collect();
+        assert_eq!(parts.len(), 4, "pbn string must have 4 suits: {spec}");
+        let mut cards = Vec::new();
+        for (suit, ranks) in suits.iter().zip(parts.iter()) {
+            if *ranks == "-" {
+                continue;
+            }
+            for ch in ranks.chars() {
+                let rank = match ch {
+                    'A' => Rank::Ace,
+                    'K' => Rank::King,
+                    'Q' => Rank::Queen,
+                    'J' => Rank::Jack,
+                    'T' => Rank::Ten,
+                    '9' => Rank::Nine,
+                    '8' => Rank::Eight,
+                    '7' => Rank::Seven,
+                    '6' => Rank::Six,
+                    '5' => Rank::Five,
+                    '4' => Rank::Four,
+                    '3' => Rank::Three,
+                    '2' => Rank::Two,
+                    'x' => Rank::Two, // treat "small" placeholder as a spot card
+                    other => panic!("bad rank {other}"),
+                };
+                cards.push(Card { suit: *suit, rank });
+            }
+        }
+        Hand { cards }
+    }
+
+    fn playing_tricks_for(hand: &Hand) -> u8 {
+        super::count_playing_tricks(hand)
+    }
+
+    #[test]
+    fn playing_tricks_anchor_king_only_long() {
+        // ♠Kxxxxxx ♥xxx ♦xx ♣x -> 4
+        // K alone: 0 honor tricks, length tricks = 7-3 = 4 (K gates).
+        let hand = pbn("K765432.543.32.2");
+        assert_eq!(playing_tricks_for(&hand), 4);
+    }
+
+    #[test]
+    fn playing_tricks_anchor_kq_only_long() {
+        // ♠KQxxxxx ♥xxx ♦xx ♣x -> 4
+        // KQ alone: no A so honor_tricks = 0, but K gates length → 7-3=4.
+        let hand = pbn("KQ54327.543.32.2");
+        // 13 cards total: 7+3+2+1 = 13 ✓
+        assert_eq!(playing_tricks_for(&hand), 4);
+    }
+
+    #[test]
+    fn playing_tricks_anchor_ak_long() {
+        // ♠AKxxxxx ♥xxx ♦xx ♣x -> 6 (AK=2 + length 4)
+        let hand = pbn("AK65432.543.32.2");
+        assert_eq!(playing_tricks_for(&hand), 6);
+    }
+
+    #[test]
+    fn playing_tricks_anchor_qj_no_ak() {
+        // ♠QJxxxxx ♥xxx ♦xx ♣x -> 0 (no A or K anywhere)
+        let hand = pbn("QJ65432.543.32.2");
+        assert_eq!(playing_tricks_for(&hand), 0);
+    }
+
+    #[test]
+    fn playing_tricks_anchor_akqxxxxx_ax() {
+        // ♠AKQxxxxx ♥Axx ♦- ♣xx -> 9 (AKQ=3, length 8-3=5 → 8 spades; hearts A=1 → total 9)
+        let hand = pbn("AKQ54328.A32.-.32");
+        assert_eq!(playing_tricks_for(&hand), 9);
+    }
+
+    #[test]
+    fn playing_tricks_anchor_akqjxx_akq() {
+        // ♠AKQJxx ♥AKQ ♦xx ♣xx -> 9 (spades AKQ=3 + length 6-3=3; hearts AKQ=3, no length since 3<=3) = 9
+        let hand = pbn("AKQJ65.AKQ.32.32");
+        assert_eq!(playing_tricks_for(&hand), 9);
+    }
+
+    #[test]
+    fn playing_tricks_anchor_akqxxxx_akx() {
+        // ♠AKQxxxx ♥AKx ♦x ♣xx -> 9 (spades AKQ=3 + length 7-3=4; hearts AK=2; diamonds/clubs 0) = 9
+        let hand = pbn("AKQ7654.AK3.2.32");
+        assert_eq!(playing_tricks_for(&hand), 9);
+    }
+
+    // --- Combined ace count tests ---
+
+    #[test]
+    fn combined_ace_count_uses_partner_ctx() {
+        // Own 2 aces + partner disclosed 2 → combined 4.
+        let hand = pbn("A32.A32.432.432");
+        use crate::types::{ConstraintValue, FactOperator};
+        use super::super::types::{PublicConstraint, PublicFactConstraint};
+        let ctx = RelationalFactContext {
+            bindings: None,
+            public_commitments: Some(vec![PublicConstraint {
+                subject: "partner".to_string(),
+                constraint: PublicFactConstraint {
+                    fact_id: "module.partner.aceCount".to_string(),
+                    operator: FactOperator::Eq,
+                    value: ConstraintValue::Number(serde_json::Number::from(2)),
+                },
+            }]),
+            fit_agreed: None,
+        };
+        let clause_eq_4 = ExtendedClause::CombinedAceCount {
+            min: Some(4),
+            max: Some(4),
+        };
+        assert!(evaluate_extended_clause(
+            &clause_eq_4,
+            &hand,
+            &HashMap::new(),
+            Some(&ctx)
+        ));
+
+        let clause_gte_5 = ExtendedClause::CombinedAceCount {
+            min: Some(5),
+            max: None,
+        };
+        assert!(!evaluate_extended_clause(
+            &clause_gte_5,
+            &hand,
+            &HashMap::new(),
+            Some(&ctx)
+        ));
+    }
+
+    #[test]
+    fn combined_ace_count_defaults_zero_without_ctx() {
+        // Own 1 ace, no partner ctx → combined 1, not 1+something.
+        let hand = pbn("A32.432.432.4322");
+        let clause = ExtendedClause::CombinedAceCount {
+            min: Some(1),
+            max: Some(1),
+        };
+        assert!(evaluate_extended_clause(
+            &clause,
+            &hand,
+            &HashMap::new(),
+            None
+        ));
+    }
+
+    #[test]
+    fn top_honor_count_top_n_5_includes_jack_ten() {
+        // KQJT2: top-3 = KQ = 2, top-5 = KQJT = 4.
+        let hand = pbn("KQJT2.432.32.2345");
+        let facts = HashMap::new();
+        let top3_gte_3 = ExtendedClause::TopHonorCount {
+            suit: Suit::Spades,
+            min: Some(3),
+            max: None,
+            top_n: Some(3),
+        };
+        assert!(!evaluate_extended_clause(
+            &top3_gte_3,
+            &hand,
+            &facts,
+            None
+        ));
+        let top5_gte_3 = ExtendedClause::TopHonorCount {
+            suit: Suit::Spades,
+            min: Some(3),
+            max: None,
+            top_n: Some(5),
+        };
+        assert!(evaluate_extended_clause(
+            &top5_gte_3,
+            &hand,
+            &facts,
+            None
+        ));
+    }
+
+    #[test]
+    fn or_composition_either_branch_true() {
+        // "2 of top 3 OR 3 of top 5" suit quality: fails top-3 (only KQ=2? min 2 would pass;
+        // use QJT2 where top-3=Q=1 fails, top-5=QJT=3 passes).
+        let hand = pbn("QJT32.432.32.234");
+        let facts = HashMap::new();
+        let comp = FactComposition::Or {
+            operands: vec![
+                FactComposition::Extended {
+                    clause: ExtendedClause::TopHonorCount {
+                        suit: Suit::Spades,
+                        min: Some(2),
+                        max: None,
+                        top_n: Some(3),
+                    },
+                },
+                FactComposition::Extended {
+                    clause: ExtendedClause::TopHonorCount {
+                        suit: Suit::Spades,
+                        min: Some(3),
+                        max: None,
+                        top_n: Some(5),
+                    },
+                },
+            ],
+        };
+        assert_eq!(
+            evaluate_composition(&comp, &hand, &facts, None),
+            FactData::Boolean(true)
+        );
+    }
+
+    #[test]
+    fn top_honor_count_backcompat_no_top_n() {
+        // Omitting top_n defaults to 3 (matches pre-existing fixture behavior).
+        let json = r#"{"clauseKind":"topHonorCount","suit":"S","min":2}"#;
+        let clause: ExtendedClause = serde_json::from_str(json).unwrap();
+        let hand = pbn("AKQ32.432.32.234");
+        assert!(evaluate_extended_clause(&clause, &hand, &HashMap::new(), None));
     }
 }

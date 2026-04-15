@@ -148,3 +148,20 @@ standard outer wrappers for every screen. Tokens they consume live in
   `min-width: 1024px`). Prerendered pages slide under the desktop rail without it.
 - `GameScreen` and `LearningScreen` are intentionally exempt — they run custom
   split-pane/table-scale layouts that don't fit the AppScreen overflow chain.
+
+## Blackwood combined counts only flow through the convention adapter
+
+The `CombinedAceCount` / `CombinedKingCount` extended clauses read partner's
+disclosed ace/king count from `RelationalFactContext.public_commitments`. Only
+`bridge-service::convention_adapter::derive_blackwood_commitments` populates
+that field by walking the full observation log for
+`blackwood:response-*-aces` / `blackwood:king-response-*` carriers.
+
+`pipeline/evaluation/meaning_evaluator.rs` also constructs a
+`RelationalFactContext` (per-surface bindings projection) but does NOT see the
+observation log at that layer, so it leaves `public_commitments: None`.
+Consequence: Blackwood signoff / ask-kings surfaces whose gating depends on
+the combined partnership count evaluate correctly only on the adapter-driven
+path. If in the future the meaning-evaluator path needs to gate on the same
+clauses, thread the observation log through to that site and reuse
+`derive_blackwood_commitments`.

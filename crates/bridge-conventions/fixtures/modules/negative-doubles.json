@@ -10,15 +10,30 @@
       "url": "https://www.larryco.com/bridge-articles/negative-doubles",
       "label": "Larry Cohen — authoritative on modern negative double practice and level-dependent thresholds"
     },
-    "discovery": { "url": "https://www.bridgebum.com/negative_double.php" }
+    "discovery": {
+      "url": "https://www.bridgebum.com/negative_double.php"
+    }
   },
   "teaching": {
     "tradeoff": "Using double as conventional means you can't make a penalty double of the overcall at low levels.",
     "principle": "When opponents overcall, double shows the values and suits (especially unbid majors) that a natural response would show, keeping the bidding alive at a low level.",
     "commonMistakes": [
-      "A negative double is NOT a penalty double — it shows unbid suits, not strength in the opponent's suit",
-      "At the 1-level you only need 6+ HCP, but at the 2-level you need 8+ HCP for a negative double",
-      "A negative double after 1H-(1S) shows the MINORS, not a major — hearts is already bid"
+      {
+        "text": "Do not treat a negative double as a penalty double.",
+        "reason": "The call shows values and unbid suits; pure penalty intentions start with pass and later conversion, not an immediate negative double."
+      },
+      {
+        "text": "Do not negative-double with a 5+ card suit you could bid naturally.",
+        "reason": "A natural suit bid usually describes your shape more accurately than hiding that suit inside a conventional double."
+      },
+      {
+        "text": "Do not negative-double with a penalty-quality holding in the overcalled suit.",
+        "reason": "When your strength sits in their suit, the partnership wants a penalty route instead of a takeout-style description."
+      },
+      {
+        "text": "Do not assume every negative double shows both majors.",
+        "reason": "Promises vary by auction; for example, after 1♥-(1♠) the negative double typically shows the minors rather than an unbid major."
+      }
     ]
   },
   "explanationEntries": [
@@ -383,13 +398,6 @@
         "from": "after-neg-dbl",
         "to": "done",
         "on": {
-          "act": "pass"
-        }
-      },
-      {
-        "from": "after-neg-dbl",
-        "to": "done",
-        "on": {
           "act": "place"
         }
       },
@@ -522,7 +530,10 @@
             "summary": "Partner opens 1S"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "r1-after-1c",
@@ -851,8 +862,119 @@
             "name": "Opponent overcalls 2S",
             "summary": "Opponent overcalls 2S over partner's 1C opening"
           }
+        },
+        {
+          "meaningId": "negdbl:opp-overcall-3h-after-1c",
+          "semanticClassId": "negdbl:opp-overcall",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.hearts:gte:6",
+              "description": "6+ hearts (preemptive jump overcall)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 11,
+              "clauseId": "hand.hcp:lte:11",
+              "description": "At most 11 HCP (preemptive)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "NegDblOpponentOvercall",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent overcalls 3H",
+            "summary": "Opponent makes a preemptive 3H jump overcall over partner's 1C opening"
+          }
+        },
+        {
+          "meaningId": "negdbl:opp-overcall-3s-after-1c",
+          "semanticClassId": "negdbl:opp-overcall",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.spades:gte:6",
+              "description": "6+ spades (preemptive jump overcall)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 11,
+              "clauseId": "hand.hcp:lte:11",
+              "description": "At most 11 HCP (preemptive)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "NegDblOpponentOvercall",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent overcalls 3S",
+            "summary": "Opponent makes a preemptive 3S jump overcall over partner's 1C opening"
+          }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "r1-after-1d",
@@ -1019,8 +1141,119 @@
             "name": "Opponent overcalls 2C",
             "summary": "Opponent overcalls 2C over partner's 1D opening"
           }
+        },
+        {
+          "meaningId": "negdbl:opp-overcall-3h-after-1d",
+          "semanticClassId": "negdbl:opp-overcall",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.hearts:gte:6",
+              "description": "6+ hearts (preemptive jump overcall)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 11,
+              "clauseId": "hand.hcp:lte:11",
+              "description": "At most 11 HCP (preemptive)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "NegDblOpponentOvercall",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent overcalls 3H",
+            "summary": "Opponent makes a preemptive 3H jump overcall over partner's 1D opening"
+          }
+        },
+        {
+          "meaningId": "negdbl:opp-overcall-3s-after-1d",
+          "semanticClassId": "negdbl:opp-overcall",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.spades:gte:6",
+              "description": "6+ spades (preemptive jump overcall)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 11,
+              "clauseId": "hand.hcp:lte:11",
+              "description": "At most 11 HCP (preemptive)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "NegDblOpponentOvercall",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent overcalls 3S",
+            "summary": "Opponent makes a preemptive 3S jump overcall over partner's 1D opening"
+          }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "r1-after-1h",
@@ -1241,8 +1474,65 @@
             "name": "Opponent overcalls 2S",
             "summary": "Opponent overcalls 2S over partner's 1H opening"
           }
+        },
+        {
+          "meaningId": "negdbl:opp-overcall-3s-after-1h",
+          "semanticClassId": "negdbl:opp-overcall",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.spades:gte:6",
+              "description": "6+ spades (preemptive jump overcall)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 11,
+              "clauseId": "hand.hcp:lte:11",
+              "description": "At most 11 HCP (preemptive)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "NegDblOpponentOvercall",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent overcalls 3S",
+            "summary": "Opponent makes a preemptive 3S jump overcall over partner's 1H opening"
+          }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "r1-after-1s",
@@ -1409,8 +1699,65 @@
             "name": "Opponent overcalls 2H",
             "summary": "Opponent overcalls 2H over partner's 1S opening"
           }
+        },
+        {
+          "meaningId": "negdbl:opp-overcall-3h-after-1s",
+          "semanticClassId": "negdbl:opp-overcall",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.hearts:gte:6",
+              "description": "6+ hearts (preemptive jump overcall)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 11,
+              "clauseId": "hand.hcp:lte:11",
+              "description": "At most 11 HCP (preemptive)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "NegDblOpponentOvercall",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent overcalls 3H",
+            "summary": "Opponent makes a preemptive 3H jump overcall over partner's 1S opening"
+          }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1c",
@@ -1499,7 +1846,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1c",
@@ -1537,6 +1887,14 @@
               "value": 4,
               "clauseId": "hand.suitLength.spades:gte:4",
               "description": "4+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:lte:4",
+              "description": "At most 4 spades (5+ bids 1S naturally)",
               "isPublic": true
             }
           ],
@@ -1580,7 +1938,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1c",
@@ -1661,7 +2022,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1c",
@@ -1688,9 +2052,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP",
+              "value": 9,
+              "clauseId": "hand.hcp:gte:9",
+              "description": "9+ HCP",
               "isPublic": true
             },
             {
@@ -1714,7 +2078,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows at least one 4-card major with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows at least one 4-card major with competitive values (2-level, needs 9+ HCP)"
           }
         },
         {
@@ -1742,7 +2106,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1c",
@@ -1769,9 +2136,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP",
+              "value": 9,
+              "clauseId": "hand.hcp:gte:9",
+              "description": "9+ HCP",
               "isPublic": true
             },
             {
@@ -1803,7 +2170,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows exactly 4 spades with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows exactly 4 spades with competitive values (2-level, needs 9+ HCP)"
           }
         },
         {
@@ -1831,7 +2198,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1c",
@@ -1912,7 +2282,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1d",
@@ -1950,6 +2323,14 @@
               "value": 4,
               "clauseId": "hand.suitLength.spades:gte:4",
               "description": "4+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:lte:4",
+              "description": "At most 4 spades (5+ bids 1S naturally)",
               "isPublic": true
             }
           ],
@@ -1993,7 +2374,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1d",
@@ -2074,7 +2458,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1d",
@@ -2101,9 +2488,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP",
+              "value": 9,
+              "clauseId": "hand.hcp:gte:9",
+              "description": "9+ HCP",
               "isPublic": true
             },
             {
@@ -2135,7 +2522,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows exactly 4 spades with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows exactly 4 spades with competitive values (2-level, needs 9+ HCP)"
           }
         },
         {
@@ -2163,7 +2550,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1d",
@@ -2244,7 +2634,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1d",
@@ -2270,9 +2663,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP",
+              "value": 9,
+              "clauseId": "hand.hcp:gte:9",
+              "description": "9+ HCP",
               "isPublic": true
             },
             {
@@ -2304,7 +2697,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows both majors (4-4+) with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows both majors (4-4+) with competitive values (2-level, needs 9+ HCP)"
           }
         },
         {
@@ -2332,7 +2725,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1h",
@@ -2421,7 +2817,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1h",
@@ -2518,7 +2917,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1h",
@@ -2598,7 +3000,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1h",
@@ -2678,7 +3083,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1s",
@@ -2758,7 +3166,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1s",
@@ -2838,7 +3249,10 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-oc-1s",
@@ -2926,31 +3340,125 @@
             "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
-      "phase": "after-neg-dbl",
-      "turn": "opener",
+      "phase": "after-oc-1c",
+      "turn": "responder",
       "route": {
-        "kind": "contains",
+        "kind": "last",
         "pattern": {
-          "act": "open",
-          "strain": "clubs"
+          "act": "overcall",
+          "suit": "hearts",
+          "level": 3
         }
       },
       "surfaces": [
         {
-          "meaningId": "negdbl:opener-raise-hearts-after-1c",
-          "semanticClassId": "negdbl:opener-raise",
+          "meaningId": "negdbl:double-after-1c-3h",
+          "semanticClassId": "negdbl:negative-double",
           "moduleId": "negative-doubles",
           "encoding": {
             "defaultCall": {
-              "type": "bid",
-              "level": 2,
-              "strain": "H"
+              "type": "double"
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows 4+ spades with 11+ HCP after RHO's preemptive 3H overcall (TODO: extend cutoff to 4D per Cohen)"
+          }
+        },
+        {
+          "meaningId": "negdbl:pass-after-1c-3h",
+          "semanticClassId": "negdbl:responder-pass",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-oc-1c",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "spades",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1c-3s",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
+            },
             {
               "factId": "hand.suitLength.hearts",
               "operator": "gte",
@@ -2958,433 +3466,259 @@
               "clauseId": "hand.suitLength.hearts:gte:4",
               "description": "4+ hearts",
               "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP (minimum)",
-              "isPublic": true
             }
           ],
           "ranking": {
-            "recommendationBand": "should",
+            "recommendationBand": "must",
             "modulePrecedence": 0,
             "declarationOrder": 0
           },
           "sourceIntent": {
-            "type": "NegDblOpenerRaise",
-            "params": {
-              "suit": "hearts"
-            }
+            "type": "NegativeDouble",
+            "params": {}
           },
-          "disclosure": "natural",
+          "disclosure": "alert",
           "teachingLabel": {
-            "name": "Raise hearts",
-            "summary": "Support responder's implied hearts with minimum values"
+            "name": "Negative Double",
+            "summary": "Shows 4+ hearts with 11+ HCP after RHO's preemptive 3S overcall (cap at 3S — 4D extension is partnership-specific)"
           }
         },
         {
-          "meaningId": "negdbl:opener-rebid-clubs-after-1c",
-          "semanticClassId": "negdbl:opener-rebid",
+          "meaningId": "negdbl:pass-after-1c-3s",
+          "semanticClassId": "negdbl:responder-pass",
           "moduleId": "negative-doubles",
           "encoding": {
             "defaultCall": {
-              "type": "bid",
-              "level": 2,
-              "strain": "C"
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-oc-1d",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "hearts",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1d-3h",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
             }
           },
           "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows 4+ spades with 11+ HCP after RHO's preemptive 3H overcall (TODO: extend cutoff to 4D per Cohen)"
+          }
+        },
+        {
+          "meaningId": "negdbl:pass-after-1d-3h",
+          "semanticClassId": "negdbl:responder-pass",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-oc-1d",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "spades",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1d-3s",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows 4+ hearts with 11+ HCP after RHO's preemptive 3S overcall (cap at 3S — 4D extension is partnership-specific)"
+          }
+        },
+        {
+          "meaningId": "negdbl:pass-after-1d-3s",
+          "semanticClassId": "negdbl:responder-pass",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-oc-1h",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "spades",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1h-3s",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
+            },
             {
               "factId": "hand.suitLength.clubs",
               "operator": "gte",
-              "value": 6,
-              "clauseId": "hand.suitLength.clubs:gte:6",
-              "description": "6+ clubs",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP (minimum)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 1
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerRebid",
-            "params": {
-              "suit": "clubs"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Rebid clubs",
-            "summary": "Rebid own 6+ card club suit with minimum values"
-          }
-        },
-        {
-          "meaningId": "negdbl:opener-1nt-after-1c",
-          "semanticClassId": "negdbl:opener-nt",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 1,
-              "strain": "NT"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "may",
-            "modulePrecedence": 0,
-            "declarationOrder": 2
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerNT",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "1NT rebid",
-            "summary": "Balanced minimum with no major fit"
-          }
-        },
-        {
-          "meaningId": "negdbl:opener-pass-after-1c",
-          "semanticClassId": "negdbl:opener-pass",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "pass"
-            }
-          },
-          "clauses": [],
-          "ranking": {
-            "recommendationBand": "may",
-            "modulePrecedence": 0,
-            "declarationOrder": 3
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerPass",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Pass",
-            "summary": "Minimum with no fit, no extra length"
-          }
-        }
-      ]
-    },
-    {
-      "phase": "after-neg-dbl",
-      "turn": "opener",
-      "route": {
-        "kind": "contains",
-        "pattern": {
-          "act": "open",
-          "strain": "diamonds"
-        }
-      },
-      "surfaces": [
-        {
-          "meaningId": "negdbl:opener-raise-hearts-after-1d",
-          "semanticClassId": "negdbl:opener-raise",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 2,
-              "strain": "H"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
               "value": 4,
-              "clauseId": "hand.suitLength.hearts:gte:4",
-              "description": "4+ hearts",
+              "clauseId": "hand.suitLength.clubs:gte:4",
+              "description": "4+ clubs",
               "isPublic": true
             },
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP (minimum)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 0
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerRaise",
-            "params": {
-              "suit": "hearts"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Raise hearts",
-            "summary": "Support responder's implied hearts with minimum values"
-          }
-        },
-        {
-          "meaningId": "negdbl:opener-rebid-diamonds-after-1d",
-          "semanticClassId": "negdbl:opener-rebid",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 2,
-              "strain": "D"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.suitLength.diamonds",
-              "operator": "gte",
-              "value": 6,
-              "clauseId": "hand.suitLength.diamonds:gte:6",
-              "description": "6+ diamonds",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP (minimum)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 1
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerRebid",
-            "params": {
-              "suit": "diamonds"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Rebid diamonds",
-            "summary": "Rebid own 6+ card diamond suit with minimum values"
-          }
-        },
-        {
-          "meaningId": "negdbl:opener-1nt-after-1d",
-          "semanticClassId": "negdbl:opener-nt",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 1,
-              "strain": "NT"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "may",
-            "modulePrecedence": 0,
-            "declarationOrder": 2
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerNT",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "1NT rebid",
-            "summary": "Balanced minimum with no major fit"
-          }
-        },
-        {
-          "meaningId": "negdbl:opener-pass-after-1d",
-          "semanticClassId": "negdbl:opener-pass",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "pass"
-            }
-          },
-          "clauses": [],
-          "ranking": {
-            "recommendationBand": "may",
-            "modulePrecedence": 0,
-            "declarationOrder": 3
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerPass",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Pass",
-            "summary": "Minimum with no fit, no extra length"
-          }
-        }
-      ]
-    },
-    {
-      "phase": "after-neg-dbl",
-      "turn": "opener",
-      "route": {
-        "kind": "contains",
-        "pattern": {
-          "act": "open",
-          "strain": "hearts"
-        }
-      },
-      "surfaces": [
-        {
-          "meaningId": "negdbl:opener-rebid-hearts-after-1h",
-          "semanticClassId": "negdbl:opener-rebid",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 2,
-              "strain": "H"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
-              "value": 6,
-              "clauseId": "hand.suitLength.hearts:gte:6",
-              "description": "6+ hearts",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP (minimum)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 0
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerRebid",
-            "params": {
-              "suit": "hearts"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Rebid hearts",
-            "summary": "Rebid own 6+ card heart suit with minimum values"
-          }
-        },
-        {
-          "meaningId": "negdbl:opener-raise-minor-after-1h",
-          "semanticClassId": "negdbl:opener-raise",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 2,
-              "strain": "D"
-            }
-          },
-          "clauses": [
             {
               "factId": "hand.suitLength.diamonds",
               "operator": "gte",
@@ -3392,278 +3726,26 @@
               "clauseId": "hand.suitLength.diamonds:gte:4",
               "description": "4+ diamonds",
               "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP (minimum)",
-              "isPublic": true
             }
           ],
           "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 1
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerRaise",
-            "params": {
-              "suit": "diamonds"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Raise diamonds",
-            "summary": "Support responder's implied diamonds with minimum values"
-          }
-        },
-        {
-          "meaningId": "negdbl:opener-1nt-after-1h",
-          "semanticClassId": "negdbl:opener-nt",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 1,
-              "strain": "NT"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "may",
-            "modulePrecedence": 0,
-            "declarationOrder": 2
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerNT",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "1NT rebid",
-            "summary": "Balanced minimum with no major fit"
-          }
-        },
-        {
-          "meaningId": "negdbl:opener-pass-after-1h",
-          "semanticClassId": "negdbl:opener-pass",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "pass"
-            }
-          },
-          "clauses": [],
-          "ranking": {
-            "recommendationBand": "may",
-            "modulePrecedence": 0,
-            "declarationOrder": 3
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerPass",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Pass",
-            "summary": "Minimum with no fit, no extra length"
-          }
-        }
-      ]
-    },
-    {
-      "phase": "after-neg-dbl",
-      "turn": "opener",
-      "route": {
-        "kind": "contains",
-        "pattern": {
-          "act": "open",
-          "strain": "spades"
-        }
-      },
-      "surfaces": [
-        {
-          "meaningId": "negdbl:opener-rebid-spades-after-1s",
-          "semanticClassId": "negdbl:opener-rebid",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 2,
-              "strain": "S"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.suitLength.spades",
-              "operator": "gte",
-              "value": 6,
-              "clauseId": "hand.suitLength.spades:gte:6",
-              "description": "6+ spades",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP (minimum)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
+            "recommendationBand": "must",
             "modulePrecedence": 0,
             "declarationOrder": 0
           },
           "sourceIntent": {
-            "type": "NegDblOpenerRebid",
-            "params": {
-              "suit": "spades"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Rebid spades",
-            "summary": "Rebid own 6+ card spade suit with minimum values"
-          }
-        },
-        {
-          "meaningId": "negdbl:opener-raise-hearts-after-1s",
-          "semanticClassId": "negdbl:opener-raise",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 2,
-              "strain": "H"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.hearts:gte:4",
-              "description": "4+ hearts",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP (minimum)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 1
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerRaise",
-            "params": {
-              "suit": "hearts"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Raise hearts",
-            "summary": "Support responder's implied hearts with minimum values"
-          }
-        },
-        {
-          "meaningId": "negdbl:opener-1nt-after-1s",
-          "semanticClassId": "negdbl:opener-nt",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 1,
-              "strain": "NT"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP (opening values)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "may",
-            "modulePrecedence": 0,
-            "declarationOrder": 2
-          },
-          "sourceIntent": {
-            "type": "NegDblOpenerNT",
+            "type": "NegativeDouble",
             "params": {}
           },
-          "disclosure": "natural",
+          "disclosure": "alert",
           "teachingLabel": {
-            "name": "1NT rebid",
-            "summary": "Balanced minimum with no major fit"
+            "name": "Negative Double",
+            "summary": "Shows both minors (4-4+) with 11+ HCP after RHO's preemptive 3S overcall (cap at 3S — 4D extension is partnership-specific)"
           }
         },
         {
-          "meaningId": "negdbl:opener-pass-after-1s",
-          "semanticClassId": "negdbl:opener-pass",
+          "meaningId": "negdbl:pass-after-1h-3s",
+          "semanticClassId": "negdbl:responder-pass",
           "moduleId": "negative-doubles",
           "encoding": {
             "defaultCall": {
@@ -3674,21 +3756,366 @@
           "ranking": {
             "recommendationBand": "may",
             "modulePrecedence": 0,
-            "declarationOrder": 3
+            "declarationOrder": 1
           },
           "sourceIntent": {
-            "type": "NegDblOpenerPass",
+            "type": "NegDblResponderPass",
             "params": {}
           },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass",
-            "summary": "Minimum with no fit, no extra length"
+            "summary": "No suitable negative double available"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-oc-1s",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "hearts",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1s-3h",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.clubs:gte:4",
+              "description": "4+ clubs",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.diamonds:gte:4",
+              "description": "4+ diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows both minors (4-4+) with 11+ HCP after RHO's preemptive 3H overcall (TODO: extend cutoff to 4D per Cohen)"
+          }
+        },
+        {
+          "meaningId": "negdbl:pass-after-1s-3h",
+          "semanticClassId": "negdbl:responder-pass",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
+  "reference": {
+    "summaryCard": {
+      "trigger": "Partner opens one of a suit, right-hand opponent overcalls, and you double conventionally",
+      "definingMeaningId": "negdbl:double-after-1c-1d",
+      "partnership": "This module covers negative doubles through two spades; extensions beyond that are separate partnership agreements. The exact suit promise still changes with the opening, overcall, and level."
+    },
+    "whenToUse": [
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 6
+              }
+            },
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 4
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 4
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gloss": "At the one-level, use the negative double with competitive values and an unbid four-card major that a natural response would have shown."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 8
+              }
+            },
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 4
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 4
+                  }
+                },
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "gte",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "gte",
+                        "value": 4
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gloss": "At the two-level, negative doubles need more values and may show either an unbid major or both minors, depending on the exact overcall."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 10
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 4
+              }
+            }
+          ]
+        },
+        "gloss": "Over especially space-eating overcalls such as two spades after a minor opening, treat the negative double as a stronger action rather than an automatic reflex."
+      }
+    ],
+    "workedAuctions": [
+      {
+        "kind": "positive",
+        "label": "One-level overcall: double keeps the unbid major in play",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "D"
+            },
+            "rationale": "Opener starts with a natural one-diamond opening."
+          },
+          {
+            "seat": "E",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            },
+            "rationale": "Right-hand opponent overcalls 1♥."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "double"
+            },
+            "rationale": "Negative double shows spades and competitive values more economically than inventing another call."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener can now rebid naturally with a balanced minimum and no spade fit."
+          }
+        ]
+      },
+      {
+        "kind": "negative",
+        "label": "Counter-example: a real five-card suit is often better bid naturally",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "C"
+            },
+            "rationale": "Opener begins with 1♣."
+          },
+          {
+            "seat": "E",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "D"
+            },
+            "rationale": "The opponents overcall 1♦."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            },
+            "rationale": "With a real five-card spade suit, bidding it naturally is often more descriptive than hiding it inside a negative double."
+          }
+        ]
+      }
+    ],
+    "interference": {
+      "status": "applicable",
+      "items": [
+        {
+          "opponentAction": "The opener's side raises the overcall after your negative double",
+          "ourAction": "Let opener reevaluate naturally between supporting the implied suit, rebidding notrump, competing further, or passing with a minimum and no fit.",
+          "note": "The negative double described your hand shape; it did not force opener to act again at all costs."
+        },
+        {
+          "opponentAction": "The auction gets doubled or redoubled later",
+          "ourAction": "Treat later doubles as natural or partnership-specific; the original double has already spent the conventional meaning.",
+          "note": "Once the negative double is on the table, later doubles need a separate agreement."
+        }
+      ]
+    },
+    "quickReference": {
+      "kind": "list",
+      "axis": {
+        "kind": "systemFactLadder",
+        "label": "Responder strength",
+        "facts": [
+          "system.responder.weakHand",
+          "system.responder.inviteValues",
+          "system.responder.gameValues"
+        ]
+      },
+      "items": [
+        {
+          "recommendation": "With weak hands, prefer a natural suit bid or pass; the negative double is not the default catch-all.",
+          "note": "If you can bid a real five-card suit economically, do that instead of forcing a generic sequence through the double."
+        },
+        {
+          "recommendation": "Core auctions to memorize: one club over one diamond double shows both majors; one diamond over one heart double shows at least four spades; one heart over one spade double shows both minors.",
+          "note": "Those anchor sequences show why there is no universal negative-double promise; the exact meaning depends on the auction."
+        },
+        {
+          "recommendation": "With stronger hands, the same sequence map still applies, but the negative double often starts a forcing auction instead of ending the description.",
+          "note": "Use the response table for the exact continuation because the suit promise remains sequence-specific even when the hand is stronger."
+        }
+      ]
+    },
+    "relatedLinks": [
+      {
+        "moduleId": "natural-bids",
+        "discriminator": "When you hold a real five-card suit that can be bid economically, the natural call may describe the hand better than a negative double."
+      }
+    ]
+  },
   "facts": {
     "definitions": [
       {
@@ -3697,6 +4124,7 @@
         "world": "acting-hand",
         "description": "Minimum HCP for negative double at 1-level",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": ["hand.hcp"],
         "constrainsDimensions": ["pointRange"],
         "composition": {
@@ -3714,6 +4142,7 @@
         "world": "acting-hand",
         "description": "Minimum HCP for negative double at 2-level",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": ["hand.hcp"],
         "constrainsDimensions": ["pointRange"],
         "composition": {
@@ -3731,6 +4160,7 @@
         "world": "acting-hand",
         "description": "Has 4+ hearts",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": ["hand.suitLength.hearts"],
         "constrainsDimensions": ["suitLength"],
         "composition": {
@@ -3748,6 +4178,7 @@
         "world": "acting-hand",
         "description": "Has 4+ spades",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": ["hand.suitLength.spades"],
         "constrainsDimensions": ["suitLength"],
         "composition": {

@@ -3,18 +3,37 @@
   "displayName": "DONT",
   "category": "competitive",
   "fixtureVersion": 1,
-  "description": "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns",
+  "description": "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns. VARIANT: this fixture encodes the modern DONT variant where 2S is a natural single-suit spade overcall as a direct overcall, and module.dont.singleSuited explicitly excludes spades. The original Bergen version treats spades as a single-suit type revealed via takeout double (a reveal-spades-2S surface under wait-reveal). Verify runs that anchor on the original Bergen authority will flag a missing reveal-spades-2S surface — this is intentional. See fixtures/modules/dont.variant-notes.md for details.",
   "purpose": "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
   "references": {
-    "authority": { "url": "https://www.bridgeguys.com/Conventions/DONT.html", "label": "Bridge Guys — comprehensive DONT coverage including Marty Bergen's original and common variants" },
-    "discovery": { "url": "https://www.bridgebum.com/dont.php" }
+    "authority": {
+      "url": "https://www.bridgeguys.com/Conventions/DONT.html",
+      "label": "Bridge Guys — comprehensive DONT coverage including Marty Bergen's original and common variants"
+    },
+    "discovery": {
+      "url": "https://www.bridgebum.com/dont.php"
+    },
+    "variantNotes": {
+      "url": "./dont.variant-notes.md",
+      "label": "Modern vs. original Bergen DONT variant selection — documents why this fixture has no reveal-spades-2S surface"
+    }
   },
   "teaching": {
     "tradeoff": "DONT overcalls commit to the 2-level immediately — if partner has a misfit, you may go down.",
     "principle": "Against a strong 1NT, disrupting their communication is more valuable than finding your own perfect contract.",
     "commonMistakes": [
-      "Double shows a single long suit (not penalty) — advancer must relay to 2C to discover which suit",
-      "2H shows hearts AND a higher suit (spades) — it's not a single-suited overcall"
+      {
+        "text": "Do not use DONT with only four-card suits at unfavorable vulnerability.",
+        "reason": "The method works best with shapely playing strength; flimsy four-carders do not survive the relay-and-correct auction well."
+      },
+      {
+        "text": "Do not compete with DONT on a flat 8-count and no real long suit.",
+        "reason": "If you are not showing a genuine one-suiter or two-suiter, you help declarer more than partner."
+      },
+      {
+        "text": "Do not treat this fixture's 2♠ call as Bergen's spades-plus-a-minor agreement.",
+        "reason": "This module uses a natural 6+ spade overcall, so partnerships expecting the two-suited 2♠ treatment will be on different continuations immediately."
+      }
     ]
   },
   "explanationEntries": [
@@ -26,10 +45,7 @@
       "contrastiveTemplateKey": "dont.bothMajors.whyNot",
       "contrastiveDisplayText": "Does not hold 5-4 or better in both majors",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.diamondsAndMajor",
@@ -39,10 +55,7 @@
       "contrastiveTemplateKey": "dont.diamondsAndMajor.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ diamonds with a 4+ card major",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.clubsAndHigher",
@@ -52,10 +65,7 @@
       "contrastiveTemplateKey": "dont.clubsAndHigher.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ clubs with a 4+ card higher suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.naturalSpades",
@@ -65,10 +75,7 @@
       "contrastiveTemplateKey": "dont.naturalSpades.whyNot",
       "contrastiveDisplayText": "Does not hold 6+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.singleSuited",
@@ -78,10 +85,7 @@
       "contrastiveTemplateKey": "dont.singleSuited.whyNot",
       "contrastiveDisplayText": "Does not hold a single-suited hand (non-spades) without a secondary suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.singleSuitClubs",
@@ -91,10 +95,7 @@
       "contrastiveTemplateKey": "dont.singleSuitClubs.whyNot",
       "contrastiveDisplayText": "The single suit is not clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.singleSuitDiamonds",
@@ -104,10 +105,7 @@
       "contrastiveTemplateKey": "dont.singleSuitDiamonds.whyNot",
       "contrastiveDisplayText": "The single suit is not diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.singleSuitHearts",
@@ -117,10 +115,7 @@
       "contrastiveTemplateKey": "dont.singleSuitHearts.whyNot",
       "contrastiveDisplayText": "The single suit is not hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.clubsHigherDiamonds",
@@ -130,10 +125,7 @@
       "contrastiveTemplateKey": "dont.clubsHigherDiamonds.whyNot",
       "contrastiveDisplayText": "The higher suit is not diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.clubsHigherHearts",
@@ -143,10 +135,7 @@
       "contrastiveTemplateKey": "dont.clubsHigherHearts.whyNot",
       "contrastiveDisplayText": "The higher suit is not hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.clubsHigherSpades",
@@ -156,10 +145,7 @@
       "contrastiveTemplateKey": "dont.clubsHigherSpades.whyNot",
       "contrastiveDisplayText": "The higher suit is not spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.diamondsMajorHearts",
@@ -169,10 +155,7 @@
       "contrastiveTemplateKey": "dont.diamondsMajorHearts.whyNot",
       "contrastiveDisplayText": "The major is not hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.diamondsMajorSpades",
@@ -182,10 +165,7 @@
       "contrastiveTemplateKey": "dont.diamondsMajorSpades.whyNot",
       "contrastiveDisplayText": "The major is not spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.heartSupport",
@@ -195,10 +175,7 @@
       "contrastiveTemplateKey": "dont.heartSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 hearts to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.spadeSupport",
@@ -208,10 +185,7 @@
       "contrastiveTemplateKey": "dont.spadeSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 spades to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.diamondSupport",
@@ -221,10 +195,7 @@
       "contrastiveTemplateKey": "dont.diamondSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 diamonds to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.clubSupport",
@@ -234,10 +205,7 @@
       "contrastiveTemplateKey": "dont.clubSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 clubs to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.hasLongMinor",
@@ -247,10 +215,7 @@
       "contrastiveTemplateKey": "dont.hasLongMinor.whyNot",
       "contrastiveDisplayText": "Does not hold 6+ in either minor",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longMinorIsClubs",
@@ -260,10 +225,7 @@
       "contrastiveTemplateKey": "dont.longMinorIsClubs.whyNot",
       "contrastiveDisplayText": "Longer minor is not clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longMinorIsDiamonds",
@@ -273,10 +235,7 @@
       "contrastiveTemplateKey": "dont.longMinorIsDiamonds.whyNot",
       "contrastiveDisplayText": "Longer minor is not diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longDiamonds",
@@ -286,10 +245,7 @@
       "contrastiveTemplateKey": "dont.longDiamonds.whyNot",
       "contrastiveDisplayText": "Fewer than 6 diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longHearts",
@@ -299,10 +255,7 @@
       "contrastiveTemplateKey": "dont.longHearts.whyNot",
       "contrastiveDisplayText": "Fewer than 6 hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longSpades",
@@ -312,10 +265,7 @@
       "contrastiveTemplateKey": "dont.longSpades.whyNot",
       "contrastiveDisplayText": "Fewer than 6 spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longClubs",
@@ -325,10 +275,7 @@
       "contrastiveTemplateKey": "dont.longClubs.whyNot",
       "contrastiveDisplayText": "Fewer than 6 clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.stub.opponent1nt",
@@ -344,9 +291,7 @@
       "templateKey": "dont.r1.bothMajors.semantic",
       "displayText": "2H: Both majors (5-4 or better)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.diamondsMajor",
@@ -354,9 +299,7 @@
       "templateKey": "dont.r1.diamondsMajor.semantic",
       "displayText": "2D: Diamonds plus a major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.clubsHigher",
@@ -364,9 +307,7 @@
       "templateKey": "dont.r1.clubsHigher.semantic",
       "displayText": "2C: Clubs plus a higher suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.naturalSpades",
@@ -374,9 +315,7 @@
       "templateKey": "dont.r1.naturalSpades.semantic",
       "displayText": "2S: Natural 6+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.singleSuited",
@@ -384,9 +323,7 @@
       "templateKey": "dont.r1.singleSuited.semantic",
       "displayText": "Double: One long suit (6+), relay for identity",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.overcallerPass",
@@ -394,9 +331,7 @@
       "templateKey": "dont.r1.overcallerPass.semantic",
       "displayText": "Pass: No DONT action (hand does not qualify)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.acceptHearts",
@@ -404,9 +339,7 @@
       "templateKey": "dont.adv.acceptHearts.semantic",
       "displayText": "Pass: Accept hearts as trump",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.preferSpades",
@@ -414,9 +347,7 @@
       "templateKey": "dont.adv.preferSpades.semantic",
       "displayText": "2S: Prefer spades (3+ spades, fewer than 3 hearts)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.escapeClubs",
@@ -424,9 +355,7 @@
       "templateKey": "dont.adv.escapeClubs.semantic",
       "displayText": "3C: Escape to long clubs (6+), no major fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.escapeDiamonds",
@@ -434,9 +363,7 @@
       "templateKey": "dont.adv.escapeDiamonds.semantic",
       "displayText": "3D: Escape to long diamonds (6+), no major fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.acceptDiamonds",
@@ -444,9 +371,7 @@
       "templateKey": "dont.adv.acceptDiamonds.semantic",
       "displayText": "Pass: Accept diamonds as trump (3+ diamonds)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.relay2hAfter2d",
@@ -454,9 +379,7 @@
       "templateKey": "dont.adv.relay2hAfter2d.semantic",
       "displayText": "2H: Relay asking which major partner holds",
       "preferredLevel": "mechanical",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypass2sAfter2d",
@@ -464,9 +387,7 @@
       "templateKey": "dont.adv.bypass2sAfter2d.semantic",
       "displayText": "2S: Bypass relay with 6+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.acceptClubs",
@@ -474,9 +395,7 @@
       "templateKey": "dont.adv.acceptClubs.semantic",
       "displayText": "Pass: Accept clubs as trump (3+ clubs)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.relay2dAfter2c",
@@ -484,9 +403,7 @@
       "templateKey": "dont.adv.relay2dAfter2c.semantic",
       "displayText": "2D: Relay asking which higher suit partner holds",
       "preferredLevel": "mechanical",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypass2hAfter2c",
@@ -494,9 +411,7 @@
       "templateKey": "dont.adv.bypass2hAfter2c.semantic",
       "displayText": "2H: Bypass relay with 6+ hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypass2sAfter2c",
@@ -504,9 +419,7 @@
       "templateKey": "dont.adv.bypass2sAfter2c.semantic",
       "displayText": "2S: Bypass relay with 6+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.acceptSpades",
@@ -514,9 +427,7 @@
       "templateKey": "dont.adv.acceptSpades.semantic",
       "displayText": "Pass: Accept spades as trump (3+ spades)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.acceptSpadesFallback",
@@ -524,9 +435,7 @@
       "templateKey": "dont.adv.acceptSpadesFallback.semantic",
       "displayText": "Pass: Accept spades by default (no better option)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.escape3cAfter2s",
@@ -534,9 +443,7 @@
       "templateKey": "dont.adv.escape3cAfter2s.semantic",
       "displayText": "3C: Escape to 6+ clubs (no spade fit)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.escape3dAfter2s",
@@ -544,9 +451,7 @@
       "templateKey": "dont.adv.escape3dAfter2s.semantic",
       "displayText": "3D: Escape to 6+ diamonds (no spade fit)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.escape3hAfter2s",
@@ -554,9 +459,7 @@
       "templateKey": "dont.adv.escape3hAfter2s.semantic",
       "displayText": "3H: Escape to 6+ hearts (no spade fit)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.forcedRelay",
@@ -564,9 +467,7 @@
       "templateKey": "dont.adv.forcedRelay.semantic",
       "displayText": "2C: Forced relay after partner's double",
       "preferredLevel": "mechanical",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypassDiamonds",
@@ -574,9 +475,7 @@
       "templateKey": "dont.adv.bypassDiamonds.semantic",
       "displayText": "2D: Bypass relay with 6+ diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypassHearts",
@@ -584,9 +483,7 @@
       "templateKey": "dont.adv.bypassHearts.semantic",
       "displayText": "2H: Bypass relay with 6+ hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypassSpades",
@@ -594,9 +491,7 @@
       "templateKey": "dont.adv.bypassSpades.semantic",
       "displayText": "2S: Bypass relay with 6+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.reveal.clubs",
@@ -604,9 +499,7 @@
       "templateKey": "dont.reveal.clubs.semantic",
       "displayText": "Pass: 6+ clubs (was the mystery suit)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.reveal.diamonds",
@@ -614,9 +507,7 @@
       "templateKey": "dont.reveal.diamonds.semantic",
       "displayText": "2D: 6+ diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.reveal.hearts",
@@ -624,9 +515,7 @@
       "templateKey": "dont.reveal.hearts.semantic",
       "displayText": "2H: 6+ hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.relay2c.diamondsPass",
@@ -634,9 +523,7 @@
       "templateKey": "dont.relay2c.diamondsPass.semantic",
       "displayText": "Pass: Higher suit is diamonds (already bid via relay)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.relay2c.hearts2h",
@@ -644,9 +531,7 @@
       "templateKey": "dont.relay2c.hearts2h.semantic",
       "displayText": "2H: Higher suit is hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.relay2c.spades2s",
@@ -654,9 +539,7 @@
       "templateKey": "dont.relay2c.spades2s.semantic",
       "displayText": "2S: Higher suit is spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.relay2d.heartsPass",
@@ -664,9 +547,7 @@
       "templateKey": "dont.relay2d.heartsPass.semantic",
       "displayText": "Pass: The major is hearts (already bid via relay)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.relay2d.spades2s",
@@ -674,9 +555,7 @@
       "templateKey": "dont.relay2d.spades2s.semantic",
       "displayText": "2S: The major is spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -986,7 +865,10 @@
             "summary": "Opponent opens 1NT, triggering the DONT convention"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "r1",
@@ -1229,7 +1111,10 @@
             "summary": "Decline to compete — hand does not meet DONT overcall requirements"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-2h",
@@ -1421,7 +1306,10 @@
             "summary": "Escape to diamonds with a long suit when lacking support for either major"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-2d",
@@ -1703,7 +1591,10 @@
             "summary": "Bid spades naturally at the 3-level when the hand is better described by a long suit"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-2c",
@@ -2021,7 +1912,10 @@
             "summary": "Bid spades naturally at the 3-level with a long self-sufficient suit"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-2s",
@@ -2193,7 +2087,10 @@
             "summary": "Accept spades by default when no long suit provides a better escape"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-double",
@@ -2333,7 +2230,10 @@
             "summary": "Relay to 2C so overcaller can reveal their single long suit"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "wait-reveal",
@@ -2444,7 +2344,10 @@
             "summary": "Reveal hearts as the long suit by correcting from the 2C relay"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "wait-2c-relay",
@@ -2555,7 +2458,10 @@
             "summary": "Reveal spades as the higher suit alongside clubs"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "wait-2d-relay",
@@ -2630,7 +2536,10 @@
             "summary": "Reveal spades as the major alongside diamonds"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "wait-2c-2nt",
@@ -2796,7 +2705,10 @@
             "summary": "Show spades as the higher suit and a maximum-range overcall"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "wait-2d-2nt",
@@ -2969,7 +2881,10 @@
             "summary": "Show spades as the major with a maximum-range overcall"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "wait-2h-2nt",
@@ -3142,7 +3057,10 @@
             "summary": "Show a maximum hand with spades longer than hearts"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-2x-dbl",
@@ -3160,7 +3078,11 @@
           "meaningId": "dont:comp-pass-after-2c-dbl",
           "semanticClassId": "dont:competition-pass",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "pass" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.hasClubSupport",
@@ -3171,8 +3093,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
-          "sourceIntent": { "type": "DONTAcceptClubs", "params": {} },
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTAcceptClubs",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass — tolerate clubs",
@@ -3183,10 +3112,21 @@
           "meaningId": "dont:comp-redouble-after-2c-dbl",
           "semanticClassId": "dont:competition-redouble",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "redouble" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "redouble"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 1 },
-          "sourceIntent": { "type": "DONTSOSRedouble", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTSOSRedouble",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "XX — SOS redouble",
@@ -3197,10 +3137,23 @@
           "meaningId": "dont:comp-2nt-after-2c-dbl",
           "semanticClassId": "dont:forcing-inquiry",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 2 },
-          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTForcingInquiry",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "2NT — forcing inquiry",
@@ -3211,7 +3164,13 @@
           "meaningId": "dont:comp-3d-after-2c-dbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "D" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longDiamonds",
@@ -3222,8 +3181,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
-          "sourceIntent": { "type": "DONTEscapeDiamonds", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeDiamonds",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3D — natural",
@@ -3234,7 +3200,13 @@
           "meaningId": "dont:comp-2h-after-2c-dbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "H" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longHearts",
@@ -3245,8 +3217,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
-          "sourceIntent": { "type": "DONTBypassHeartsAfter2C", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "DONTBypassHeartsAfter2C",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2H — natural",
@@ -3257,7 +3236,13 @@
           "meaningId": "dont:comp-2s-after-2c-dbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longSpades",
@@ -3268,15 +3253,25 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 5 },
-          "sourceIntent": { "type": "DONTBypassSpadesAfter2C", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "DONTBypassSpadesAfter2C",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2S — natural",
             "summary": "Bid a long spade suit naturally after the double"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-2x-dbl",
@@ -3294,7 +3289,11 @@
           "meaningId": "dont:comp-pass-after-2d-dbl",
           "semanticClassId": "dont:competition-pass",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "pass" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.hasDiamondSupport",
@@ -3305,8 +3304,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
-          "sourceIntent": { "type": "DONTAcceptDiamonds", "params": {} },
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTAcceptDiamonds",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass — tolerate diamonds",
@@ -3317,10 +3323,21 @@
           "meaningId": "dont:comp-redouble-after-2d-dbl",
           "semanticClassId": "dont:competition-redouble",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "redouble" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "redouble"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 1 },
-          "sourceIntent": { "type": "DONTSOSRedouble", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTSOSRedouble",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "XX — SOS redouble",
@@ -3331,10 +3348,23 @@
           "meaningId": "dont:comp-2nt-after-2d-dbl",
           "semanticClassId": "dont:forcing-inquiry",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 2 },
-          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTForcingInquiry",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "2NT — forcing inquiry",
@@ -3345,7 +3375,13 @@
           "meaningId": "dont:comp-3c-after-2d-dbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "C" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longClubs",
@@ -3356,8 +3392,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
-          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeClubs",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3C — natural",
@@ -3368,7 +3411,13 @@
           "meaningId": "dont:comp-3h-after-2d-dbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "H" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longHearts",
@@ -3379,8 +3428,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
-          "sourceIntent": { "type": "DONTBypassHearts", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "DONTBypassHearts",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3H — natural",
@@ -3391,7 +3447,13 @@
           "meaningId": "dont:comp-2s-after-2d-dbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longSpades",
@@ -3402,15 +3464,25 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 5 },
-          "sourceIntent": { "type": "DONTBypassSpadesAfter2D", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "DONTBypassSpadesAfter2D",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2S — natural",
             "summary": "Bid a long spade suit naturally after the double"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-2x-dbl",
@@ -3428,7 +3500,11 @@
           "meaningId": "dont:comp-pass-after-2h-dbl",
           "semanticClassId": "dont:competition-pass",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "pass" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.hasHeartSupport",
@@ -3439,8 +3515,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
-          "sourceIntent": { "type": "DONTAcceptHearts", "params": {} },
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTAcceptHearts",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass — tolerate hearts",
@@ -3451,10 +3534,21 @@
           "meaningId": "dont:comp-redouble-after-2h-dbl",
           "semanticClassId": "dont:competition-redouble",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "redouble" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "redouble"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 1 },
-          "sourceIntent": { "type": "DONTSOSRedouble", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTSOSRedouble",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "XX — SOS redouble",
@@ -3465,10 +3559,23 @@
           "meaningId": "dont:comp-2s-after-2h-dbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
-          "sourceIntent": { "type": "DONTPreferSpades", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTPreferSpades",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2S — to play",
@@ -3479,10 +3586,23 @@
           "meaningId": "dont:comp-2nt-after-2h-dbl",
           "semanticClassId": "dont:forcing-inquiry",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 3 },
-          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTForcingInquiry",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "2NT — forcing inquiry",
@@ -3493,7 +3613,13 @@
           "meaningId": "dont:comp-3c-after-2h-dbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "C" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longClubs",
@@ -3504,8 +3630,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
-          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeClubs",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3C — natural",
@@ -3516,7 +3649,13 @@
           "meaningId": "dont:comp-3d-after-2h-dbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "D" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longDiamonds",
@@ -3527,15 +3666,25 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 5 },
-          "sourceIntent": { "type": "DONTEscapeDiamonds", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeDiamonds",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3D — natural",
             "summary": "Compete naturally with a long diamond suit after the double"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-2x-bid",
@@ -3553,10 +3702,21 @@
           "meaningId": "dont:comp-double-after-2c-bid",
           "semanticClassId": "dont:competition-double",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "double" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
-          "sourceIntent": { "type": "DONTTakeoutDouble", "params": {} },
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTTakeoutDouble",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "X — takeout",
@@ -3567,10 +3727,23 @@
           "meaningId": "dont:comp-2nt-after-2c-bid",
           "semanticClassId": "dont:forcing-inquiry",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 1 },
-          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTForcingInquiry",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "2NT — forcing inquiry",
@@ -3581,7 +3754,13 @@
           "meaningId": "dont:comp-2h-after-2c-bid",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "H" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longHearts",
@@ -3592,8 +3771,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
-          "sourceIntent": { "type": "DONTBypassHeartsAfter2C", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTBypassHeartsAfter2C",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2H — natural",
@@ -3604,7 +3790,13 @@
           "meaningId": "dont:comp-2s-after-2c-bid",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longSpades",
@@ -3615,15 +3807,25 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
-          "sourceIntent": { "type": "DONTBypassSpadesAfter2C", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTBypassSpadesAfter2C",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2S — natural",
             "summary": "Bid a long spade suit naturally after enemy interference"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-2x-bid",
@@ -3641,10 +3843,21 @@
           "meaningId": "dont:comp-double-after-2d-bid",
           "semanticClassId": "dont:competition-double",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "double" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
-          "sourceIntent": { "type": "DONTTakeoutDouble", "params": {} },
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTTakeoutDouble",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "X — takeout",
@@ -3655,10 +3868,23 @@
           "meaningId": "dont:comp-2nt-after-2d-bid",
           "semanticClassId": "dont:forcing-inquiry",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 1 },
-          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTForcingInquiry",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "2NT — forcing inquiry",
@@ -3669,7 +3895,13 @@
           "meaningId": "dont:comp-2s-after-2d-bid",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longSpades",
@@ -3680,8 +3912,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
-          "sourceIntent": { "type": "DONTBypassSpadesAfter2D", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTBypassSpadesAfter2D",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2S — natural",
@@ -3692,7 +3931,13 @@
           "meaningId": "dont:comp-3c-after-2d-bid",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "C" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longClubs",
@@ -3703,15 +3948,25 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
-          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeClubs",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3C — natural",
             "summary": "Bid a long club suit naturally after enemy interference"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-2x-bid",
@@ -3729,10 +3984,21 @@
           "meaningId": "dont:comp-double-after-2h-bid",
           "semanticClassId": "dont:competition-double",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "double" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
-          "sourceIntent": { "type": "DONTTakeoutDouble", "params": {} },
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTTakeoutDouble",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "X — takeout",
@@ -3743,10 +4009,23 @@
           "meaningId": "dont:comp-2nt-after-2h-bid",
           "semanticClassId": "dont:forcing-inquiry",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 1 },
-          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTForcingInquiry",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "2NT — forcing inquiry",
@@ -3757,10 +4036,23 @@
           "meaningId": "dont:comp-2s-after-2h-bid",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
-          "sourceIntent": { "type": "DONTPreferSpades", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTPreferSpades",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2S — to play",
@@ -3771,7 +4063,13 @@
           "meaningId": "dont:comp-3c-after-2h-bid",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "C" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longClubs",
@@ -3782,8 +4080,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
-          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeClubs",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3C — natural",
@@ -3794,7 +4099,13 @@
           "meaningId": "dont:comp-3d-after-2h-bid",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 3, "strain": "D" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longDiamonds",
@@ -3805,15 +4116,25 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
-          "sourceIntent": { "type": "DONTEscapeDiamonds", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeDiamonds",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3D — natural",
             "summary": "Bid a long diamond suit naturally after enemy interference"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-double-redbl",
@@ -3822,10 +4143,21 @@
           "meaningId": "dont:comp-pass-after-double-redbl",
           "semanticClassId": "dont:competition-pass",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "pass" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
-          "sourceIntent": { "type": "DONTPass", "params": {} },
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTPass",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass — let partner run",
@@ -3836,7 +4168,13 @@
           "meaningId": "dont:comp-2c-after-double-redbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "C" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longClubs",
@@ -3847,8 +4185,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 1 },
-          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeClubs",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2C — natural",
@@ -3859,7 +4204,13 @@
           "meaningId": "dont:comp-2d-after-double-redbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "D" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longDiamonds",
@@ -3870,8 +4221,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
-          "sourceIntent": { "type": "DONTBypassDiamonds", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTBypassDiamonds",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2D — natural",
@@ -3882,7 +4240,13 @@
           "meaningId": "dont:comp-2h-after-double-redbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "H" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longHearts",
@@ -3893,8 +4257,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
-          "sourceIntent": { "type": "DONTBypassHearts", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTBypassHearts",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2H — natural",
@@ -3905,7 +4276,13 @@
           "meaningId": "dont:comp-2s-after-double-redbl",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longSpades",
@@ -3916,8 +4293,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
-          "sourceIntent": { "type": "DONTBypassSpades", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "DONTBypassSpades",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2S — natural",
@@ -3928,17 +4312,33 @@
           "meaningId": "dont:comp-2nt-after-double-redbl",
           "semanticClassId": "dont:forcing-inquiry",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 5 },
-          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "DONTForcingInquiry",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "2NT — forcing inquiry",
             "summary": "The artificial ask is still available, though highly unusual after a redouble"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-double-bid",
@@ -3947,10 +4347,21 @@
           "meaningId": "dont:comp-double-after-double-bid",
           "semanticClassId": "dont:competition-double",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "double" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "must", "modulePrecedence": 0, "declarationOrder": 0 },
-          "sourceIntent": { "type": "DONTTakeoutDouble", "params": {} },
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTTakeoutDouble",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "X — takeout",
@@ -3961,7 +4372,13 @@
           "meaningId": "dont:comp-2c-after-double-bid",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "C" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longClubs",
@@ -3972,8 +4389,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 1 },
-          "sourceIntent": { "type": "DONTEscapeClubs", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTEscapeClubs",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2C — natural",
@@ -3984,7 +4408,13 @@
           "meaningId": "dont:comp-2d-after-double-bid",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "D" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longDiamonds",
@@ -3995,8 +4425,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 2 },
-          "sourceIntent": { "type": "DONTBypassDiamonds", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTBypassDiamonds",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2D — natural",
@@ -4007,7 +4444,13 @@
           "meaningId": "dont:comp-2h-after-double-bid",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "H" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longHearts",
@@ -4018,8 +4461,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 3 },
-          "sourceIntent": { "type": "DONTBypassHearts", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTBypassHearts",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2H — natural",
@@ -4030,7 +4480,13 @@
           "meaningId": "dont:comp-2s-after-double-bid",
           "semanticClassId": "dont:competition-natural",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "S" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
           "clauses": [
             {
               "factId": "module.dont.longSpades",
@@ -4041,8 +4497,15 @@
               "isPublic": true
             }
           ],
-          "ranking": { "recommendationBand": "should", "modulePrecedence": 0, "declarationOrder": 4 },
-          "sourceIntent": { "type": "DONTBypassSpades", "params": {} },
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "DONTBypassSpades",
+            "params": {}
+          },
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2S — natural",
@@ -4053,19 +4516,322 @@
           "meaningId": "dont:comp-2nt-after-double-bid",
           "semanticClassId": "dont:forcing-inquiry",
           "moduleId": "dont",
-          "encoding": { "defaultCall": { "type": "bid", "level": 2, "strain": "NT" } },
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
           "clauses": [],
-          "ranking": { "recommendationBand": "may", "modulePrecedence": 0, "declarationOrder": 5 },
-          "sourceIntent": { "type": "DONTForcingInquiry", "params": {} },
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "DONTForcingInquiry",
+            "params": {}
+          },
           "disclosure": "alert",
           "teachingLabel": {
             "name": "2NT — forcing inquiry",
             "summary": "The artificial ask is still available, though highly unusual after enemy bidding"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
+  "reference": {
+    "summaryCard": {
+      "trigger": "Opponent opens one notrump and you interfere",
+      "definingMeaningId": "dont:single-suited-double",
+      "partnership": "This fixture treats DONT as a defense to a strong one notrump and uses the natural two-spades treatment, where two spades shows a six-card or longer spade suit. Some partnerships prefer Marty Bergen's original two-suited style where two spades shows spades plus an unspecified minor, so confirm that agreement before playing."
+    },
+    "whenToUse": [
+      {
+        "predicate": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 6
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 6
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 6
+              }
+            }
+          ]
+        },
+        "gloss": "Use the double with a single long suit when the cheapest relay will let partner uncover which suit you own."
+      },
+      {
+        "predicate": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "gte",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "gte",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "gte",
+                        "value": 4
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "gte",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "gte",
+                        "value": 4
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gloss": "Use the artificial two-level overcalls to show clubs-plus-higher or diamonds-plus-a-major when describing two suits cheaply matters more than bidding one naturally."
+      },
+      {
+        "predicate": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 4
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 6
+              }
+            }
+          ]
+        },
+        "gloss": "Use two hearts for both majors, or bid two spades naturally with a real spade suit, when the majors are where you expect to compete."
+      }
+    ],
+    "workedAuctions": [
+      {
+        "kind": "positive",
+        "label": "Double then relay reveals the long suit",
+        "calls": [
+          {
+            "seat": "W",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "The opponents open a strong 1NT."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "double"
+            },
+            "rationale": "DONT double shows a single long suit rather than penalties."
+          },
+          {
+            "seat": "E",
+            "call": {
+              "type": "pass"
+            },
+            "rationale": "The opening side does not compete immediately."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Advancer makes the forced relay so overcaller can identify the long suit."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            },
+            "rationale": "Overcaller corrects to hearts, completing the DONT story."
+          }
+        ]
+      },
+      {
+        "kind": "negative",
+        "label": "Counter-example: do not treat the double as penalty",
+        "calls": [
+          {
+            "seat": "W",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "The opponents open 1NT."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "double"
+            },
+            "rationale": "In DONT, this announces a single-suited hand."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "pass"
+            },
+            "rationale": "Passing here would be the wrong partnership expectation, because advancer is supposed to relay unless holding a special agreement."
+          }
+        ]
+      }
+    ],
+    "interference": {
+      "status": "applicable",
+      "items": [
+        {
+          "opponentAction": "The opener's side doubles an artificial two clubs, two diamonds, or two hearts call",
+          "ourAction": "Pass with tolerance, redouble to ask for the other suit, or compete naturally with a long suit of your own.",
+          "note": "The fixture includes dedicated competitive continuations after doubles of the artificial calls."
+        },
+        {
+          "opponentAction": "The opener's side bids a new suit over the artificial call",
+          "ourAction": "Double to ask partner to act with the right holding, or bid your own long suit naturally if that tells the story better.",
+          "note": "Once the opponents consume space, the cheapest natural escape often matters more than repeating the full DONT structure."
+        }
+      ]
+    },
+    "quickReference": {
+      "kind": "list",
+      "axis": {
+        "kind": "systemFactLadder",
+        "label": "Advancer strength",
+        "facts": [
+          "system.responder.weakHand",
+          "system.responder.inviteValues",
+          "system.responder.gameValues"
+        ]
+      },
+      "items": [
+        {
+          "recommendation": "With a weak hand, pass or correct into the known fit, and use the cheapest relay only when partner still owes shape.",
+          "note": "This strength ladder replaces the old call-by-call chart because the hidden two-suited shape partition is still deferred."
+        },
+        {
+          "recommendation": "With invitational values, keep competing naturally unless partner's artificial call still needs a relay to uncover the second suit.",
+          "note": "The shared bucket loses the exact mapping from each artificial overcall to its promised shape."
+        },
+        {
+          "recommendation": "With game values, use the forcing inquiry or jump once you know enough about the fit.",
+          "note": "The game-forcing branch stays visible, but the old per-call rows are gone until overcall.twoSuitedShape exists."
+        }
+      ]
+    },
+    "relatedLinks": [
+      {
+        "moduleId": "michaels-unusual",
+        "discriminator": "Both conventions trade natural calls for fast two-suit disclosure, but DONT applies over one notrump while Michaels/Unusual applies over suit openings."
+      }
+    ]
+  },
   "facts": {
     "definitions": [
       {
@@ -4075,11 +4841,7 @@
         "description": "H5+S4+ or S5+H4+ — both majors for 2H bid",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -4135,11 +4897,7 @@
         "description": "D5+ and (H4+ or S4+) — diamonds + a major for 2D bid",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -4182,11 +4940,7 @@
         "description": "C5+ and (D4+ or H4+ or S4+) — clubs + higher suit for 2C bid",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -4237,10 +4991,7 @@
         "description": "S6+ — natural spades for 2S bid",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4257,32 +5008,121 @@
         "description": "One suit 6+, no other suit 4+, longest suit is not spades — for double",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "shapeClass",
-          "suitLength",
-          "suitIdentity"
-        ],
+        "constrainsDimensions": ["shapeClass", "suitLength", "suitIdentity"],
         "composition": {
           "kind": "or",
           "operands": [
-            { "kind": "and", "operands": [
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 6 } },
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "lte", "value": 3 } },
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "lte", "value": 3 } },
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "lte", "value": 3 } }
-            ]},
-            { "kind": "and", "operands": [
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 6 } },
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "lte", "value": 3 } },
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "lte", "value": 3 } },
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "lte", "value": 3 } }
-            ]},
-            { "kind": "and", "operands": [
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 6 } },
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "lte", "value": 3 } },
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "lte", "value": 3 } },
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "lte", "value": 3 } }
-            ]}
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "lte",
+                    "value": 3
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "lte",
+                    "value": 3
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "lte",
+                    "value": 3
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "lte",
+                    "value": 3
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "lte",
+                    "value": 3
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "lte",
+                    "value": 3
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "lte",
+                    "value": 3
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "lte",
+                    "value": 3
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "lte",
+                    "value": 3
+                  }
+                }
+              ]
+            }
           ]
         }
       },
@@ -4293,10 +5133,7 @@
         "description": "D6+ — long diamonds for bypass/escape",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4313,10 +5150,7 @@
         "description": "H6+ — long hearts for bypass/escape",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4333,10 +5167,7 @@
         "description": "S6+ — long spades for bypass/escape",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4353,10 +5184,7 @@
         "description": "C6+ — long clubs for escape",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4373,14 +5201,26 @@
         "description": "8-10 HCP — minimum DONT range for forcing-inquiry replies",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 8 } },
-            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 10 } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 8
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "lte",
+                "value": 10
+              }
+            }
           ]
         }
       },
@@ -4391,14 +5231,26 @@
         "description": "11-15 HCP — maximum DONT range for forcing-inquiry replies",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 11 } },
-            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "lte", "value": 15 } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 11
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "lte",
+                "value": 15
+              }
+            }
           ]
         }
       },
@@ -4408,29 +5260,53 @@
         "world": "acting-hand",
         "description": "With diamonds and a major, the major is longer than diamonds",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.diamondsAndMajor"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "derivesFrom": ["module.dont.diamondsAndMajor"],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "or",
           "operands": [
             {
               "kind": "and",
               "operands": [
-                { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.diamondsMajorHearts", "expected": true } },
-                { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "H", "op": "gt", "b": "D" } }
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "booleanFact",
+                    "fact_id": "module.dont.diamondsMajorHearts",
+                    "expected": true
+                  }
+                },
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "suitCompare",
+                    "a": "H",
+                    "op": "gt",
+                    "b": "D"
+                  }
+                }
               ]
             },
             {
               "kind": "and",
               "operands": [
-                { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.diamondsMajorSpades", "expected": true } },
-                { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "S", "op": "gt", "b": "D" } }
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "booleanFact",
+                    "fact_id": "module.dont.diamondsMajorSpades",
+                    "expected": true
+                  }
+                },
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "suitCompare",
+                    "a": "S",
+                    "op": "gt",
+                    "b": "D"
+                  }
+                }
               ]
             }
           ]
@@ -4442,19 +5318,28 @@
         "world": "acting-hand",
         "description": "With both majors, spades are longer than hearts",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.bothMajors"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "derivesFrom": ["module.dont.bothMajors"],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.bothMajors", "expected": true } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "S", "op": "gt", "b": "H" } }
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.dont.bothMajors",
+                "expected": true
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "S",
+                "op": "gt",
+                "b": "H"
+              }
+            }
           ]
         }
       },
@@ -4464,19 +5349,34 @@
         "world": "acting-hand",
         "description": "The 6+ single suit is clubs",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.singleSuited"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.singleSuited"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.singleSuited", "expected": true } },
-            { "kind": "extended", "clause": { "clauseKind": "longestSuitIs", "suit": "C" } },
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 6 } }
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.dont.singleSuited",
+                "expected": true
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "longestSuitIs",
+                "suit": "C"
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 6
+              }
+            }
           ]
         }
       },
@@ -4486,19 +5386,34 @@
         "world": "acting-hand",
         "description": "The 6+ single suit is diamonds",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.singleSuited"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.singleSuited"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.singleSuited", "expected": true } },
-            { "kind": "extended", "clause": { "clauseKind": "longestSuitIs", "suit": "D" } },
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 6 } }
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.dont.singleSuited",
+                "expected": true
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "longestSuitIs",
+                "suit": "D"
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 6
+              }
+            }
           ]
         }
       },
@@ -4508,19 +5423,34 @@
         "world": "acting-hand",
         "description": "The 6+ single suit is hearts",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.singleSuited"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.singleSuited"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.dont.singleSuited", "expected": true } },
-            { "kind": "extended", "clause": { "clauseKind": "longestSuitIs", "suit": "H" } },
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 6 } }
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.dont.singleSuited",
+                "expected": true
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "longestSuitIs",
+                "suit": "H"
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 6
+              }
+            }
           ]
         }
       },
@@ -4530,19 +5460,37 @@
         "world": "acting-hand",
         "description": "With clubs as anchor, higher suit is diamonds",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.clubsAndHigher"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.clubsAndHigher"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 4 } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "D", "op": "gt", "b": "H" } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "D", "op": "gt", "b": "S" } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "D",
+                "op": "gt",
+                "b": "H"
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "D",
+                "op": "gt",
+                "b": "S"
+              }
+            }
           ]
         }
       },
@@ -4552,19 +5500,37 @@
         "world": "acting-hand",
         "description": "With clubs as anchor, higher suit is hearts",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.clubsAndHigher"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.clubsAndHigher"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 4 } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "H", "op": "gte", "b": "D" } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "H", "op": "gt", "b": "S" } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "H",
+                "op": "gte",
+                "b": "D"
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "H",
+                "op": "gt",
+                "b": "S"
+              }
+            }
           ]
         }
       },
@@ -4574,19 +5540,37 @@
         "world": "acting-hand",
         "description": "With clubs as anchor, higher suit is spades",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.clubsAndHigher"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.clubsAndHigher"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 4 } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "S", "op": "gte", "b": "H" } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "S", "op": "gte", "b": "D" } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "S",
+                "op": "gte",
+                "b": "H"
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "S",
+                "op": "gte",
+                "b": "D"
+              }
+            }
           ]
         }
       },
@@ -4596,18 +5580,28 @@
         "world": "acting-hand",
         "description": "With diamonds as anchor, the major is hearts",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.diamondsAndMajor"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.diamondsAndMajor"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 4 } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "H", "op": "gt", "b": "S" } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "H",
+                "op": "gt",
+                "b": "S"
+              }
+            }
           ]
         }
       },
@@ -4617,18 +5611,28 @@
         "world": "acting-hand",
         "description": "With diamonds as anchor, the major is spades",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.diamondsAndMajor"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.diamondsAndMajor"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 4 } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "S", "op": "gte", "b": "H" } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "S",
+                "op": "gte",
+                "b": "H"
+              }
+            }
           ]
         }
       },
@@ -4639,18 +5643,40 @@
         "description": "3+ hearts, or equal length in both majors (2-2)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "or",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 3 } },
-            { "kind": "and", "operands": [
-              { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 2 } },
-              { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "H", "op": "gte", "b": "S" } }
-            ]}
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 3
+              }
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 2
+                  }
+                },
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "suitCompare",
+                    "a": "H",
+                    "op": "gte",
+                    "b": "S"
+                  }
+                }
+              ]
+            }
           ]
         }
       },
@@ -4661,10 +5687,7 @@
         "description": "3+ spades",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4681,10 +5704,7 @@
         "description": "3+ diamonds",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4701,10 +5721,7 @@
         "description": "3+ clubs",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4720,16 +5737,28 @@
         "world": "acting-hand",
         "description": "6+ in clubs or diamonds (for minor escape)",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "or",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 6 } },
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 6 } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 6
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 6
+              }
+            }
           ]
         }
       },
@@ -4739,19 +5768,28 @@
         "world": "acting-hand",
         "description": "Longer minor is clubs (for 3C escape)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.hasLongMinor"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "shapeClass"
-        ],
+        "derivesFrom": ["module.dont.hasLongMinor"],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "shapeClass"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.clubs", "operator": "gte", "value": 6 } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "C", "op": "gte", "b": "D" } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 6
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "C",
+                "op": "gte",
+                "b": "D"
+              }
+            }
           ]
         }
       },
@@ -4761,19 +5799,28 @@
         "world": "acting-hand",
         "description": "Longer minor is diamonds (for 3D escape)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.hasLongMinor"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "shapeClass"
-        ],
+        "derivesFrom": ["module.dont.hasLongMinor"],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "shapeClass"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.diamonds", "operator": "gte", "value": 6 } },
-            { "kind": "extended", "clause": { "clauseKind": "suitCompare", "a": "D", "op": "gt", "b": "C" } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 6
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "D",
+                "op": "gt",
+                "b": "C"
+              }
+            }
           ]
         }
       }

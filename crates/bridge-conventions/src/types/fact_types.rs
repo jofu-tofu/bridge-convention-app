@@ -93,7 +93,11 @@ pub enum CompareOp {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "clauseKind")]
 pub enum ExtendedClause {
-    /// Count of A/K/Q in a suit (0-3).
+    /// Count of top-N honors (by rank, highest first) in a suit.
+    ///
+    /// `top_n` selects how many ranks from the top count toward the total:
+    /// N=3 counts A/K/Q (classic "top 3"), N=5 counts A/K/Q/J/T ("top 5").
+    /// When omitted, defaults to 3 for backwards compatibility.
     #[serde(rename = "topHonorCount")]
     TopHonorCount {
         suit: Suit,
@@ -101,6 +105,8 @@ pub enum ExtendedClause {
         min: Option<u8>,
         #[serde(skip_serializing_if = "Option::is_none")]
         max: Option<u8>,
+        #[serde(default, rename = "topN", skip_serializing_if = "Option::is_none")]
+        top_n: Option<u8>,
     },
     /// Aces held across all suits (0-4).
     #[serde(rename = "aceCount")]
@@ -138,6 +144,50 @@ pub enum ExtendedClause {
         min: Option<f64>,
         #[serde(skip_serializing_if = "Option::is_none")]
         max: Option<f64>,
+    },
+    /// Combined partnership ace count = own aces + partner's disclosed aces
+    /// from a Blackwood ace response carrier in the observation log (0-8).
+    ///
+    /// Exists as an ExtendedClause (not a module-local fact) because partnership
+    /// combination generalises beyond Blackwood — any convention that gates on
+    /// aces revealed across the partnership (Gerber, keycard variants) can reuse
+    /// this primitive without per-module state. A module-local "combined aces"
+    /// field was rejected as too narrow.
+    #[serde(rename = "combinedAceCount")]
+    CombinedAceCount {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        min: Option<u8>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        max: Option<u8>,
+    },
+    /// Combined partnership king count = own kings + partner's disclosed kings
+    /// from a Blackwood king response carrier in the observation log (0-8).
+    ///
+    /// Lives as an extended clause for the same reason as CombinedAceCount:
+    /// partnership totals are a reusable primitive, not Blackwood-local state.
+    /// A composed "own + partner" proxy was rejected because it would require a
+    /// new ComputeExpr primitive for no extra expressive power.
+    #[serde(rename = "combinedKingCount")]
+    CombinedKingCount {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        min: Option<u8>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        max: Option<u8>,
+    },
+    /// Honor-trick + length-trick playing-tricks count, summed across suits.
+    ///
+    /// Exists as an ExtendedClause to parallel AceCount/KingCount: both inspect
+    /// the full hand in a way the plain hcp/suitLength fact map cannot express
+    /// declaratively. A composed proxy (length + top-honor combinations) was
+    /// rejected as imprecise — classic strong-2C authority (Wikipedia / Goren)
+    /// references playing tricks directly, and honor-trick tables are the
+    /// standard formalization.
+    #[serde(rename = "playingTricks")]
+    PlayingTricks {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        min: Option<u8>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        max: Option<u8>,
     },
 }
 
@@ -218,6 +268,8 @@ pub struct FactDefinition {
     pub constrains_dimensions: Vec<ConstraintDimension>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub composition: Option<FactComposition>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub for_teaching_only: bool,
 }
 
 /// Data-only subset of TS `FactCatalogExtension`.
@@ -303,6 +355,7 @@ mod tests {
             derives_from: Some(vec!["hand.hcp".to_string()]),
             constrains_dimensions: vec![ConstraintDimension::SuitLength],
             composition: None,
+            for_teaching_only: false,
         };
         let json = serde_json::to_string(&def).unwrap();
         let back: FactDefinition = serde_json::from_str(&json).unwrap();

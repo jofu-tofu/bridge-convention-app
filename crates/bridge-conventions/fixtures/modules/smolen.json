@@ -6,15 +6,30 @@
   "description": "Jump to 3H/3S after Stayman denial to show 5-4 in majors, game-forcing",
   "purpose": "Handle the 5-4 major hand with game values after Stayman gets a 2D denial — let opener choose the fit while keeping the strong hand as declarer",
   "references": {
-    "authority": { "url": "https://www.bridgeguys.com/Conventions/Smolen.html", "label": "Bridge Guys — Smolen convention with opener's rebids after the game-forcing jump" },
-    "discovery": { "url": "https://www.bridgebum.com/smolen.php" }
+    "authority": {
+      "url": "https://www.bridgeguys.com/Conventions/Smolen.html",
+      "label": "Bridge Guys — Smolen convention with opener's rebids after the game-forcing jump"
+    },
+    "discovery": {
+      "url": "https://www.bridgebum.com/smolen.php"
+    }
   },
   "teaching": {
     "tradeoff": "Smolen uses jump bids (3H/3S) that could otherwise be used as natural invitational bids.",
     "principle": "Bid the shorter major at the 3-level — this tells opener about both majors and lets the strong hand declare.",
     "commonMistakes": [
-      "Smolen bids show the SHORT major — 3H shows 4 hearts and 5 spades, not the other way around",
-      "Only use Smolen with game-forcing values — with invitational hands, use a different approach after Stayman denial"
+      {
+        "text": "Do not forget that the jump shows the short major.",
+        "reason": "Bidding the long major misdescribes the hand and wrong-sides the contract."
+      },
+      {
+        "text": "Do not use Smolen without game values.",
+        "reason": "The jump forces the auction to game and removes invitational room."
+      },
+      {
+        "text": "Do not bypass simpler methods with only one major.",
+        "reason": "Transfers or ordinary Stayman describe single-suited hands more accurately."
+      }
     ]
   },
   "explanationEntries": [
@@ -137,6 +152,16 @@
       ]
     },
     {
+      "explanationId": "nt.smolen.acceptHearts3h",
+      "meaningId": "smolen:accept-hearts-3h",
+      "templateKey": "nt.smolen.acceptHearts3h.semantic",
+      "displayText": "Accept 3♥: opener confirms heart fit after Smolen 3♠ (slow try)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
       "explanationId": "nt.smolen.placeFourSpades",
       "meaningId": "smolen:place-four-spades",
       "templateKey": "nt.smolen.placeFourSpades.semantic",
@@ -151,6 +176,16 @@
       "meaningId": "smolen:responder-place-four-spades",
       "templateKey": "nt.smolen.responderPlaceFourSpades.semantic",
       "displayText": "Place 4♠: responder completes to game after opener's 3♠ acceptance",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "nt.smolen.responderPlaceFourHearts",
+      "meaningId": "smolen:responder-place-four-hearts",
+      "templateKey": "nt.smolen.responderPlaceFourHearts.semantic",
+      "displayText": "Place 4♥: responder completes to game after opener's 3♥ acceptance",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -262,6 +297,22 @@
       },
       {
         "from": "placing-hearts",
+        "to": "accepted-hearts",
+        "on": {
+          "act": "accept",
+          "feature": "heldSuit",
+          "suit": "hearts"
+        }
+      },
+      {
+        "from": "placing-hearts",
+        "to": "done",
+        "on": {
+          "act": "place"
+        }
+      },
+      {
+        "from": "accepted-hearts",
         "to": "done",
         "on": {
           "act": "place"
@@ -411,7 +462,10 @@
             "summary": "Initiate Stayman with 5 spades and 4 hearts, planning a Smolen jump if opener denies"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "post-r1",
@@ -495,7 +549,10 @@
             "summary": "Show 5 spades and 4 hearts with game-forcing values after Stayman denial"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "post-r1",
@@ -579,7 +636,10 @@
             "summary": "Show 5 hearts and 4 spades with game-forcing values after Stayman denial"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "placing-hearts",
@@ -625,6 +685,45 @@
           }
         },
         {
+          "meaningId": "smolen:accept-hearts-3h",
+          "semanticClassId": "smolen:accept-hearts-3h",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.smolen.openerHasHeartFit",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.smolen.openerHasHeartFit:boolean:true",
+              "description": "Opener has heart fit",
+              "rationale": "fit with responder's 5",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SmolenAcceptance",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3H (heart fit found)",
+            "summary": "Confirm a heart fit after responder's Smolen 3♠ showed 5 hearts"
+          }
+        },
+        {
           "meaningId": "smolen:place-three-nt-no-heart-fit",
           "semanticClassId": "smolen:place-three-nt",
           "moduleId": "smolen",
@@ -649,7 +748,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 1
+            "declarationOrder": 2
           },
           "sourceIntent": {
             "type": "SmolenPlacement",
@@ -663,7 +762,10 @@
             "summary": "Sign off in 3NT when opener lacks 3-card heart support for responder's 5-card suit"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "placing-spades",
@@ -793,7 +895,10 @@
             "summary": "Sign off in 3NT when opener lacks 3-card spade support for responder's 5-card suit"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "accepted-spades",
@@ -828,9 +933,382 @@
             "summary": "Raise opener's 3♠ acceptance to the 4♠ game contract"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "accepted-hearts",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "smolen:responder-place-four-hearts",
+          "semanticClassId": "smolen:responder-place-four-hearts",
+          "moduleId": "smolen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SmolenPlacement",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "4H (complete to game)",
+            "summary": "Raise opener's 3♥ acceptance to the 4♥ game contract"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
+  "reference": {
+    "summaryCard": {
+      "trigger": "After Stayman gets a diamond denial, responder jumps in the short major",
+      "definingMeaningId": "smolen:bid-short-hearts",
+      "partnership": "Special extension to Stayman."
+    },
+    "whenToUse": [
+      {
+        "predicate": {
+          "kind": "extended",
+          "clause": {
+            "clauseKind": "booleanFact",
+            "fact_id": "system.responder.gameValues",
+            "expected": true
+          }
+        },
+        "gloss": "Use Smolen only with game values after the denial."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gloss": "Use it when one major is five cards and the other is four."
+      }
+    ],
+    "workedAuctions": [
+      {
+        "kind": "positive",
+        "label": "Spade game through the short heart jump",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener starts with the balanced notrump opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder begins with Stayman because both majors matter and game is certain."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            },
+            "rationale": "Opener denies a four-card major."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            },
+            "rationale": "The jump in the short major shows 5 spades and 4 hearts with a game force."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            },
+            "rationale": "Opener places the contract in spades, keeping the strong hand declarer."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "Heart game through the short spade jump",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener begins with the balanced notrump opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder starts with Stayman because both majors are still in play."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            },
+            "rationale": "Opener denies both majors."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            },
+            "rationale": "The jump in the short major shows 5 hearts and 4 spades with game-forcing values."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            },
+            "rationale": "Opener chooses hearts, again declaring from the strong side."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "No major fit still reaches notrump game",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener starts with the balanced notrump opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder enters through Stayman with the game-forcing two-suiter."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            },
+            "rationale": "Opener denies both majors."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            },
+            "rationale": "Responder shows 5 spades and 4 hearts by jumping in the short major."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            },
+            "rationale": "Without a spade fit, opener places the contract in notrump game."
+          }
+        ]
+      },
+      {
+        "kind": "negative",
+        "label": "Counter-example: invitational values cannot fake a game force",
+        "responderHand": {
+          "spades": "K J 9 8 4",
+          "hearts": "Q 8 7 3",
+          "diamonds": "A 6",
+          "clubs": "8 5 2"
+        },
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener begins with the balanced notrump opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder starts with Stayman even though the hand is only invitational."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            },
+            "rationale": "Opener denies a four-card major."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            },
+            "rationale": "The Smolen jump falsely creates a game force that this hand does not own."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            },
+            "rationale": "The partnership is forced too high because the jump promised more than invitational values."
+          }
+        ]
+      }
+    ],
+    "interference": {
+      "status": "applicable",
+      "items": [
+        {
+          "opponentAction": "Interference before the denial sequence is complete",
+          "ourAction": "Smolen is off and the partnership reverts to normal competitive methods.",
+          "note": "Without the clean Stayman denial, the short-major jump has no agreed meaning."
+        },
+        {
+          "opponentAction": "Action over the Smolen jump",
+          "ourAction": "Opener places the contract naturally or uses the partnership's agreed competition tools.",
+          "note": "The artificial relay meanings disappear once the opponents enter after the jump."
+        }
+      ]
+    },
+    "quickReference": {
+      "kind": "list",
+      "axis": {
+        "kind": "partitionLadder",
+        "label": "Major-suit shape",
+        "fact": "responder.majorShape"
+      },
+      "items": [
+        {
+          "recommendation": "Not Smolen",
+          "note": "Smolen needs both majors."
+        },
+        {
+          "recommendation": "Use Stayman or a transfer",
+          "note": "The pattern is not a Smolen two-suiter."
+        },
+        {
+          "recommendation": "Start with Stayman",
+          "note": "After the denial, jump in the short major with game values."
+        },
+        {
+          "recommendation": "Not Smolen",
+          "note": "There is no five-card major to reveal."
+        }
+      ]
+    },
+    "relatedLinks": [
+      {
+        "moduleId": "stayman",
+        "discriminator": "Stayman creates the denial sequence Smolen needs before the jump."
+      },
+      {
+        "moduleId": "jacoby-transfers",
+        "discriminator": "Transfers describe single long majors without forcing through the denial."
+      },
+      {
+        "moduleId": "stayman-garbage",
+        "discriminator": "Garbage Stayman uses the same entry bid for a weak escape instead of a game force."
+      }
+    ]
+  },
   "facts": {
     "definitions": [
       {

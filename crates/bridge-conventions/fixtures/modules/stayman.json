@@ -6,17 +6,34 @@
   "description": "Bid 2C over 1NT to find a 4-4 major-suit fit",
   "purpose": "Discover whether opener holds a 4-card major so the partnership can play in an 8-card major fit instead of notrump",
   "references": {
-    "authority": { "url": "https://en.wikipedia.org/wiki/Stayman_convention", "label": "ACBL SAYC — Stayman is a core SAYC convention, standardized in the ACBL booklet" },
-    "discovery": { "url": "https://www.bridgebum.com/stayman.php" }
+    "authority": {
+      "url": "https://en.wikipedia.org/wiki/Stayman_convention",
+      "label": "ACBL SAYC — Stayman is a core SAYC convention, standardized in the ACBL booklet"
+    },
+    "discovery": {
+      "url": "https://www.bridgebum.com/stayman.php"
+    }
   },
   "teaching": {
     "tradeoff": "Using the ask as Stayman means the partnership cannot play the ask in its natural strain.",
     "principle": "Always check for a four-card major fit before settling in notrump — majors score better and play easier with a trump suit.",
     "commonMistakes": [
-      { "text": "Do not use Stayman with a flat hand and no ruffing value.", "reason": "A balanced responder gets no extra tricks from the major fit, so notrump usually scores at least as well." },
-      { "text": "Do not use Stayman when your only four-card major is the one opener has already denied.", "reason": "No fit is possible, so the ask only gives the defenders information about responder's shape." },
-      { "text": "Do not launch Stayman without a plan for each possible response.", "reason": "Responder must already know which major to raise, which to sign off, and how to invite before starting the sequence." },
-      { "text": "Do not use Stayman just to escape a weak notrump with a long minor.", "reason": "That is a separate agreement (garbage Stayman), and treating the ask as constructive creates misunderstandings." }
+      {
+        "text": "Do not use Stayman with a flat hand and no ruffing value.",
+        "reason": "A balanced responder gets no extra tricks from the major fit, so notrump usually scores at least as well."
+      },
+      {
+        "text": "Do not use Stayman when your only four-card major is the one opener has already denied.",
+        "reason": "No fit is possible, so the ask only gives the defenders information about responder's shape."
+      },
+      {
+        "text": "Do not launch Stayman without a plan for each possible response.",
+        "reason": "Responder must already know which major to raise, which to sign off, and how to invite before starting the sequence."
+      },
+      {
+        "text": "Do not use Stayman just to escape a weak notrump with both majors and short clubs.",
+        "reason": "That is a separate agreement (garbage Stayman), and treating the ask as constructive creates misunderstandings."
+      }
     ]
   },
   "explanationEntries": [
@@ -28,11 +45,7 @@
       "contrastiveTemplateKey": "nt.stayman.eligible.whyNot",
       "contrastiveDisplayText": "Not eligible for Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking",
-        "pedagogical"
-      ]
+      "roles": ["supporting", "blocking", "pedagogical"]
     },
     {
       "explanationId": "nt.stayman.preferred",
@@ -40,10 +53,7 @@
       "templateKey": "nt.stayman.preferred.supporting",
       "displayText": "Stayman is the preferred convention",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "inferential"
-      ]
+      "roles": ["supporting", "inferential"]
     },
     {
       "explanationId": "nt.stayman.nsHaveEightCardFitLikely",
@@ -75,9 +85,7 @@
       "templateKey": "nt.stayman.askMajor.semantic",
       "displayText": "Stayman 2♣: asks opener for a 4-card major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showHearts",
@@ -85,9 +93,7 @@
       "templateKey": "nt.stayman.showHearts.semantic",
       "displayText": "Opener shows 4+ hearts in response to Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showSpades",
@@ -95,9 +101,7 @@
       "templateKey": "nt.stayman.showSpades.semantic",
       "displayText": "Opener shows 4+ spades in response to Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.denyMajor",
@@ -105,9 +109,7 @@
       "templateKey": "nt.stayman.denyMajor.semantic",
       "displayText": "Opener bids 2♦ to deny holding a 4-card major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseGameHearts",
@@ -115,9 +117,7 @@
       "templateKey": "nt.stayman.raiseGameHearts.semantic",
       "displayText": "Raise to 4♥ with game values and a heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseInviteHearts",
@@ -125,9 +125,7 @@
       "templateKey": "nt.stayman.raiseInviteHearts.semantic",
       "displayText": "Invite in hearts (3♥) with invitational values and a heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntGameNoFit",
@@ -135,9 +133,7 @@
       "templateKey": "nt.stayman.ntGameNoFit.semantic",
       "displayText": "Bid 3NT with game values but no heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntInviteNoFit",
@@ -145,9 +141,7 @@
       "templateKey": "nt.stayman.ntInviteNoFit.semantic",
       "displayText": "Bid 2NT to invite game with no heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseGameSpades",
@@ -155,9 +149,7 @@
       "templateKey": "nt.stayman.raiseGameSpades.semantic",
       "displayText": "Raise to 4♠ with game values and a spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseInviteSpades",
@@ -165,9 +157,7 @@
       "templateKey": "nt.stayman.raiseInviteSpades.semantic",
       "displayText": "Invite in spades (3♠) with invitational values and a spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntGameNoFit2S",
@@ -175,9 +165,7 @@
       "templateKey": "nt.stayman.ntGameNoFit2S.semantic",
       "displayText": "Bid 3NT with game values but no spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntInviteNoFit2S",
@@ -185,9 +173,7 @@
       "templateKey": "nt.stayman.ntInviteNoFit2S.semantic",
       "displayText": "Bid 2NT to invite game with no spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntGameAfterDenial",
@@ -195,9 +181,7 @@
       "templateKey": "nt.stayman.ntGameAfterDenial.semantic",
       "displayText": "Bid 3NT with game values after opener denies a major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntInviteAfterDenial",
@@ -205,9 +189,7 @@
       "templateKey": "nt.stayman.ntInviteAfterDenial.semantic",
       "displayText": "Bid 2NT to invite game after opener denies a major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showFiveHeartsAfterDenial",
@@ -215,9 +197,7 @@
       "templateKey": "nt.stayman.showFiveHeartsAfterDenial.semantic",
       "displayText": "Bid 2♥ showing 5 hearts and 4 spades (invitational, non-forcing)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showFiveSpadesAfterDenial",
@@ -225,9 +205,7 @@
       "templateKey": "nt.stayman.showFiveSpadesAfterDenial.semantic",
       "displayText": "Bid 2♠ showing 5 spades and 4 hearts (invitational, non-forcing)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showFiveHeartsGfAfterDenial",
@@ -235,9 +213,7 @@
       "templateKey": "nt.stayman.showFiveHeartsGfAfterDenial.semantic",
       "displayText": "Bid 3♥ showing 5 hearts and 4 spades, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showFiveSpadesGfAfterDenial",
@@ -245,9 +221,7 @@
       "templateKey": "nt.stayman.showFiveSpadesGfAfterDenial.semantic",
       "displayText": "Bid 3♠ showing 5 spades and 4 hearts, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crossMajorInvite2SAfter2H",
@@ -255,9 +229,7 @@
       "templateKey": "nt.stayman.crossMajorInvite2SAfter2H.semantic",
       "displayText": "Bid 2♠ showing 5 spades and 4 hearts (invitational, non-forcing)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2H",
@@ -265,9 +237,7 @@
       "templateKey": "nt.stayman.minorGF3CAfter2H.semantic",
       "displayText": "Bid 3♣ showing 5+ clubs, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2H",
@@ -275,9 +245,7 @@
       "templateKey": "nt.stayman.minorGF3DAfter2H.semantic",
       "displayText": "Bid 3♦ showing 5+ diamonds, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crossMajorGF3SAfter2H",
@@ -285,9 +253,7 @@
       "templateKey": "nt.stayman.crossMajorGF3SAfter2H.semantic",
       "displayText": "Bid 3♠ showing 5+ spades and 4 hearts, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2H",
@@ -295,9 +261,7 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2H.semantic",
       "displayText": "Bid 4NT quantitative, inviting 6NT with no heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2S",
@@ -305,9 +269,7 @@
       "templateKey": "nt.stayman.minorGF3CAfter2S.semantic",
       "displayText": "Bid 3♣ showing 5+ clubs, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2S",
@@ -315,9 +277,7 @@
       "templateKey": "nt.stayman.minorGF3DAfter2S.semantic",
       "displayText": "Bid 3♦ showing 5+ diamonds, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crossMajorGF3HAfter2S",
@@ -325,9 +285,7 @@
       "templateKey": "nt.stayman.crossMajorGF3HAfter2S.semantic",
       "displayText": "Bid 3♥ showing 5+ hearts and 4 spades, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2S",
@@ -335,9 +293,7 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2S.semantic",
       "displayText": "Bid 4NT quantitative, inviting 6NT with no spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2D",
@@ -345,9 +301,7 @@
       "templateKey": "nt.stayman.minorGF3CAfter2D.semantic",
       "displayText": "Bid 3♣ showing 5+ clubs, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2D",
@@ -355,9 +309,7 @@
       "templateKey": "nt.stayman.minorGF3DAfter2D.semantic",
       "displayText": "Bid 3♦ showing 5+ diamonds, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.majorSignoff4HAfter2D",
@@ -365,9 +317,7 @@
       "templateKey": "nt.stayman.majorSignoff4HAfter2D.semantic",
       "displayText": "Bid 4♥ to play with 6 hearts and 4 spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.majorSignoff4SAfter2D",
@@ -375,9 +325,7 @@
       "templateKey": "nt.stayman.majorSignoff4SAfter2D.semantic",
       "displayText": "Bid 4♠ to play with 6 spades and 4 hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2D",
@@ -385,9 +333,7 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2D.semantic",
       "displayText": "Bid 4NT quantitative, inviting 6NT after denial",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -479,20 +425,20 @@
           },
           "clauses": [
             {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP (for Stayman)",
-              "rationale": "for Stayman",
-              "isPublic": true
-            },
-            {
               "factId": "bridge.hasFourCardMajor",
               "operator": "boolean",
               "value": true,
               "clauseId": "bridge.hasFourCardMajor:boolean:true",
-              "description": "4-card major",
+              "description": "At least one four-card major",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "Invitational or better values",
+              "rationale": "invitational or better values",
               "isPublic": true
             },
             {
@@ -500,8 +446,9 @@
               "operator": "boolean",
               "value": false,
               "clauseId": "bridge.hasFiveCardMajor:boolean:false",
-              "description": "No 5-card major (transfer instead)",
-              "rationale": "transfer instead"
+              "description": "Handled by transfer or other continuations",
+              "rationale": "handled elsewhere",
+              "isPublic": false
             }
           ],
           "ranking": {
@@ -583,7 +530,10 @@
             "summary": "Seek a 4-4 major fit with 5-4 in both majors at invite strength"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "asked",
@@ -712,7 +662,10 @@
             "summary": "Deny holding a 4-card major in response to Stayman"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "shown-hearts",
@@ -939,15 +892,6 @@
               "description": "5+ spades (5-card spade suit)",
               "rationale": "5-card spade suit",
               "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.hearts:gte:4",
-              "description": "4+ hearts (4 hearts (Stayman entry))",
-              "rationale": "4 hearts (Stayman entry)",
-              "isPublic": true
             }
           ],
           "ranking": {
@@ -1168,7 +1112,10 @@
             "summary": "Invite slam in notrump after no heart fit is found"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "shown-spades",
@@ -1567,7 +1514,10 @@
             "summary": "Invite slam in notrump after no spade fit is found"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "denied",
@@ -2128,7 +2078,10 @@
             "summary": "Invite slam in notrump after opener denies a 4-card major"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
   "facts": {
@@ -2139,18 +2092,28 @@
         "world": "acting-hand",
         "description": "Eligible for Stayman (4+ card major AND 8+ HCP)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "bridge.hasFourCardMajor",
-          "hand.hcp"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity"
-        ],
+        "forTeachingOnly": true,
+        "derivesFrom": ["bridge.hasFourCardMajor", "hand.hcp"],
+        "constrainsDimensions": ["suitIdentity"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "bridge.hasFourCardMajor", "expected": true } },
-            { "kind": "primitive", "clause": { "factId": "hand.hcp", "operator": "gte", "value": 8 } }
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "bridge.hasFourCardMajor",
+                "expected": true
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 8
+              }
+            }
           ]
         }
       },
@@ -2160,30 +2123,80 @@
         "world": "acting-hand",
         "description": "Stayman preferred (eligible AND either no 5-card major OR 5-4 in both majors)",
         "valueType": "boolean",
+        "forTeachingOnly": true,
         "derivesFrom": [
           "module.stayman.eligible",
           "bridge.hasFiveCardMajor",
           "hand.suitLength.hearts",
           "hand.suitLength.spades"
         ],
-        "constrainsDimensions": [
-          "suitIdentity"
-        ],
+        "constrainsDimensions": ["suitIdentity"],
         "composition": {
           "kind": "and",
           "operands": [
-            { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "module.stayman.eligible", "expected": true } },
-            { "kind": "or", "operands": [
-              { "kind": "extended", "clause": { "clauseKind": "booleanFact", "fact_id": "bridge.hasFiveCardMajor", "expected": false } },
-              { "kind": "and", "operands": [
-                { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 4 } },
-                { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 4 } },
-                { "kind": "or", "operands": [
-                  { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "gte", "value": 5 } },
-                  { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "gte", "value": 5 } }
-                ]}
-              ]}
-            ]}
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.stayman.eligible",
+                "expected": true
+              }
+            },
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "booleanFact",
+                    "fact_id": "bridge.hasFiveCardMajor",
+                    "expected": false
+                  }
+                },
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "gte",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "gte",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "or",
+                      "operands": [
+                        {
+                          "kind": "primitive",
+                          "clause": {
+                            "factId": "hand.suitLength.spades",
+                            "operator": "gte",
+                            "value": 5
+                          }
+                        },
+                        {
+                          "kind": "primitive",
+                          "clause": {
+                            "factId": "hand.suitLength.hearts",
+                            "operator": "gte",
+                            "value": 5
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
           ]
         }
       },
@@ -2193,6 +2206,7 @@
         "world": "acting-hand",
         "description": "Posterior probability that N/S have an 8+ card major fit",
         "valueType": "number",
+        "forTeachingOnly": true,
         "constrainsDimensions": []
       },
       {
@@ -2201,6 +2215,7 @@
         "world": "acting-hand",
         "description": "Posterior probability that opener has balanced shape",
         "valueType": "number",
+        "forTeachingOnly": true,
         "constrainsDimensions": []
       },
       {
@@ -2209,50 +2224,447 @@
         "world": "acting-hand",
         "description": "Posterior probability that opener has a second 4-card major",
         "valueType": "number",
+        "forTeachingOnly": true,
         "constrainsDimensions": []
       }
     ]
   },
   "reference": {
     "summaryCard": {
-      "trigger": "Partner opens 1NT, you respond",
+      "trigger": "Partner opens one notrump, you respond",
       "definingMeaningId": "stayman:ask-major",
-      "partnership": "Available in standard partnerships; confirm with partner before using."
+      "partnership": "Common agreement."
     },
     "whenToUse": [
-      "Use Stayman with invitational values and a four-card major, when finding the major fit would push the partnership toward game.",
-      "Use Stayman with game-going values and a four-card major, so the partnership can play game in a major fit instead of notrump.",
-      "Use Stayman with both majors at invitational strength or better, because the ask uncovers either fit before responder has to choose a strain.",
-      "Use Stayman whenever responder would prefer a major game to a notrump game and has the shape to pursue it."
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "booleanFact",
+                    "fact_id": "system.responder.inviteValues",
+                    "expected": true
+                  }
+                },
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "booleanFact",
+                    "fact_id": "system.responder.gameValues",
+                    "expected": true
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "and",
+                      "operands": [
+                        {
+                          "kind": "primitive",
+                          "clause": {
+                            "factId": "hand.suitLength.hearts",
+                            "operator": "gte",
+                            "value": 4
+                          }
+                        },
+                        {
+                          "kind": "primitive",
+                          "clause": {
+                            "factId": "hand.suitLength.spades",
+                            "operator": "lte",
+                            "value": 3
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "and",
+                      "operands": [
+                        {
+                          "kind": "primitive",
+                          "clause": {
+                            "factId": "hand.suitLength.spades",
+                            "operator": "gte",
+                            "value": 4
+                          }
+                        },
+                        {
+                          "kind": "primitive",
+                          "clause": {
+                            "factId": "hand.suitLength.hearts",
+                            "operator": "lte",
+                            "value": 3
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "not",
+                  "operand": {
+                    "kind": "or",
+                    "operands": [
+                      {
+                        "kind": "and",
+                        "operands": [
+                          {
+                            "kind": "primitive",
+                            "clause": {
+                              "factId": "hand.suitLength.spades",
+                              "operator": "eq",
+                              "value": 4
+                            }
+                          },
+                          {
+                            "kind": "primitive",
+                            "clause": {
+                              "factId": "hand.suitLength.hearts",
+                              "operator": "eq",
+                              "value": 3
+                            }
+                          },
+                          {
+                            "kind": "primitive",
+                            "clause": {
+                              "factId": "hand.suitLength.diamonds",
+                              "operator": "eq",
+                              "value": 3
+                            }
+                          },
+                          {
+                            "kind": "primitive",
+                            "clause": {
+                              "factId": "hand.suitLength.clubs",
+                              "operator": "eq",
+                              "value": 3
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "kind": "and",
+                        "operands": [
+                          {
+                            "kind": "primitive",
+                            "clause": {
+                              "factId": "hand.suitLength.spades",
+                              "operator": "eq",
+                              "value": 3
+                            }
+                          },
+                          {
+                            "kind": "primitive",
+                            "clause": {
+                              "factId": "hand.suitLength.hearts",
+                              "operator": "eq",
+                              "value": 4
+                            }
+                          },
+                          {
+                            "kind": "primitive",
+                            "clause": {
+                              "factId": "hand.suitLength.diamonds",
+                              "operator": "eq",
+                              "value": 3
+                            }
+                          },
+                          {
+                            "kind": "primitive",
+                            "clause": {
+                              "factId": "hand.suitLength.clubs",
+                              "operator": "eq",
+                              "value": 3
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gloss": "Use Stayman with invitational or better values and one four-card major when a major fit would score better than notrump."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "booleanFact",
+                    "fact_id": "system.responder.inviteValues",
+                    "expected": true
+                  }
+                },
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "booleanFact",
+                    "fact_id": "system.responder.gameValues",
+                    "expected": true
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 4
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 4
+                  }
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "gte",
+                        "value": 5
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "gte",
+                        "value": 5
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "gloss": "Use Stayman with both majors and invitational or better values so the auction can uncover the best major fit before responder chooses a strain."
+      }
     ],
     "workedAuctions": [
       {
-        "label": "Invitational 4-card spade hand finds a spade fit",
+        "kind": "positive",
+        "label": "Invitational spade hand finds a fit",
         "calls": [
-          { "seat": "N", "call": { "type": "bid", "level": 1, "strain": "NT" }, "rationale": "Opener shows a balanced 15-17 HCP hand." },
-          { "seat": "S", "call": { "type": "bid", "level": 2, "strain": "C" }, "rationale": "Responder asks about a 4-card major with invitational values." },
-          { "seat": "N", "call": { "type": "bid", "level": 2, "strain": "S" }, "rationale": "Opener shows 4 spades (and denies 4 hearts or promises shape per partnership style)." },
-          { "seat": "S", "call": { "type": "bid", "level": 3, "strain": "S" }, "rationale": "Responder invites game in the confirmed 4-4 spade fit." }
-        ],
-        "outcomeNote": "Opener accepts with a maximum or declines with a minimum — the ask has already located the major fit."
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener shows a balanced 15-17 HCP hand."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder asks about a 4-card major with invitational values."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            },
+            "rationale": "Opener shows 4 spades (and denies 4 hearts or promises shape per partnership style)."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            },
+            "rationale": "Responder invites game in the confirmed 4-4 spade fit; opener accepts with a maximum or declines with a minimum."
+          }
+        ]
       },
       {
-        "label": "Game-forcing hand with 4 hearts lands in 4H",
+        "kind": "positive",
+        "label": "Game-forcing heart hand lands in game",
         "calls": [
-          { "seat": "N", "call": { "type": "bid", "level": 1, "strain": "NT" }, "rationale": "Opener shows a balanced 15-17 HCP hand." },
-          { "seat": "S", "call": { "type": "bid", "level": 2, "strain": "C" }, "rationale": "Responder asks about a 4-card major with game-forcing values." },
-          { "seat": "N", "call": { "type": "bid", "level": 2, "strain": "H" }, "rationale": "Opener shows 4 hearts." },
-          { "seat": "S", "call": { "type": "bid", "level": 4, "strain": "H" }, "rationale": "Responder bids game in the confirmed 4-4 heart fit." }
-        ],
-        "outcomeNote": "The partnership plays 4H on an 8-card major fit rather than 3NT on the same values."
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener shows a balanced 15-17 HCP hand."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder asks about a 4-card major with game-forcing values."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            },
+            "rationale": "Opener shows 4 hearts."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            },
+            "rationale": "Responder bids game in the confirmed 4-4 heart fit, preferring the major to 3NT on the same values."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "Game values with no major fit still reach notrump game",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener shows a balanced 15-17 HCP hand."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder checks for a 4-card major before committing to notrump game."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            },
+            "rationale": "Opener denies holding a 4-card major."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            },
+            "rationale": "With game values and no major fit, responder places the contract in 3NT after checking for a better major-suit game first."
+          }
+        ]
+      },
+      {
+        "kind": "negative",
+        "label": "Counter-example: flat shape steers to the wrong game",
+        "responderHand": {
+          "spades": "K J 3",
+          "hearts": "Q 8 4 2",
+          "diamonds": "K 7 4",
+          "clubs": "Q 8 5"
+        },
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener shows a balanced 15-17 HCP hand."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder asks automatically because of the 4-card heart, even though the 4-3-3-3 shape has no ruffing value."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            },
+            "rationale": "Opener shows four hearts, so the fit exists."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            },
+            "rationale": "Responder steers to 4♥ because the fit was found, but 3NT was cold while 4♥ needed a finesse and went down."
+          }
+        ]
       }
     ],
     "interference": {
       "status": "applicable",
       "items": [
-        { "opponentAction": "Double of the notrump opening", "ourAction": "Stayman is normally off; systems-on agreements vary, so check with partner.", "note": "Many partnerships play runouts over the double, so the ask is no longer available by default." },
-        { "opponentAction": "Overcall of two of a minor", "ourAction": "A cue of the overcalled minor typically replaces the ask.", "note": "Natural bids of two of a major become available and may be preferred with a real suit." },
-        { "opponentAction": "Overcall at two of a major or higher", "ourAction": "The ask is unavailable; bid naturally or use a partnership-specific gadget such as Lebensohl.", "note": "Interference above two of a minor preempts the room needed for the ask." }
+        {
+          "opponentAction": "Double of the notrump opening",
+          "ourAction": "Stayman is normally off; systems-on agreements vary, so check with partner.",
+          "note": "Many partnerships play runouts over the double, so the ask is no longer available by default."
+        },
+        {
+          "opponentAction": "Overcall of two of a minor",
+          "ourAction": "A cue of the overcalled minor typically replaces the ask.",
+          "note": "Natural bids of two of a major become available and may be preferred with a real suit."
+        },
+        {
+          "opponentAction": "Overcall at two of a major or higher",
+          "ourAction": "The ask is unavailable; bid naturally or use a partnership-specific gadget such as Lebensohl.",
+          "note": "Interference above two of a minor preempts the room needed for the ask."
+        }
       ]
     },
     "quickReference": {
@@ -2260,22 +2672,282 @@
       "rowAxis": {
         "kind": "systemFactLadder",
         "label": "Responder strength",
-        "facts": ["system.responder.weakHand", "system.responder.inviteValues", "system.responder.gameValues"]
+        "facts": [
+          "system.responder.weakHand",
+          "system.responder.inviteValues",
+          "system.responder.gameValues"
+        ]
       },
       "colAxis": {
-        "kind": "qualitative",
-        "label": "Shape",
-        "values": ["No four-card major", "One four-card major", "Five-four in the majors", "Flat hand with a four-card major"]
+        "kind": "partitionLadder",
+        "label": "Major-suit shape",
+        "fact": "responder.majorShape"
       },
       "cells": [
-        ["Pass", "Pass", "Garbage Stayman only by agreement", "Pass"],
-        ["Invite in notrump", "Ask, then invite", "Ask, then show the longer major", "Invite in notrump"],
-        ["Bid game in notrump", "Ask, then bid game", "Ask, then force to game", "Usually notrump game"]
+        [
+          {
+            "kind": "notApplicable",
+            "reason": {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.weakHand",
+                "expected": true
+              }
+            }
+          },
+          {
+            "kind": "notApplicable",
+            "reason": {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.weakHand",
+                "expected": true
+              }
+            }
+          },
+          {
+            "kind": "notApplicable",
+            "reason": {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.weakHand",
+                "expected": true
+              }
+            }
+          },
+          {
+            "kind": "notApplicable",
+            "reason": {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.weakHand",
+                "expected": true
+              }
+            }
+          }
+        ],
+        [
+          {
+            "kind": "notApplicable",
+            "reason": {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "bridge.hasFourCardMajor",
+                "expected": false
+              }
+            }
+          },
+          {
+            "kind": "auto"
+          },
+          {
+            "kind": "auto"
+          },
+          {
+            "kind": "notApplicable",
+            "reason": {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          {
+            "kind": "notApplicable",
+            "reason": {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "bridge.hasFourCardMajor",
+                "expected": false
+              }
+            }
+          },
+          {
+            "kind": "auto"
+          },
+          {
+            "kind": "surface",
+            "id": "stayman:ask-major"
+          },
+          {
+            "kind": "notApplicable",
+            "reason": {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
       ]
     },
     "relatedLinks": [
-      { "moduleId": "jacoby-transfers", "discriminator": "Use transfers when responder has a five-card or longer major and wants opener to declare; use the ask when responder has exactly a four-card major and is looking for a four-four fit." },
-      { "moduleId": "smolen", "discriminator": "Prefer Smolen when responder is five-four in the majors and game-forcing; the ask still starts the auction, but Smolen lets opener declare the major fit." }
+      {
+        "moduleId": "stayman-garbage",
+        "discriminator": "Use garbage Stayman to escape a weak hand with both majors and short clubs; standard Stayman promises invitational or better values."
+      },
+      {
+        "moduleId": "jacoby-transfers",
+        "discriminator": "Use transfers when responder has a five-card or longer major and wants opener to declare; use the ask when responder has exactly a four-card major and is looking for a four-four fit."
+      },
+      {
+        "moduleId": "smolen",
+        "discriminator": "Prefer Smolen when responder is five-four in the majors and game-forcing; the ask still starts the auction, but Smolen lets opener declare the major fit."
+      }
     ]
   }
 }

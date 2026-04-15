@@ -37,6 +37,92 @@ use bridge_engine::types::{Call, Hand, Seat, Vulnerability};
 use bridge_engine::strategy::Disclosure as EngineDisclosure;
 use bridge_session::heuristics::{BidResult, BiddingContext, BiddingStrategy};
 
+/// Walk the observation log and synthesize `PublicConstraint`s that disclose
+/// partner's ace/king count from Blackwood response carriers.
+///
+/// The asker is identified as the seat that committed `blackwood:ask-aces`;
+/// the asker's partner is the one whose `blackwood:response-*-aces` /
+/// `blackwood:king-response-*` carriers reveal the counts. Only carriers
+/// actually committed by the asker's partner produce constraints.
+///
+/// Unexpected Blackwood-phase carriers (anything in the `blackwood:` namespace
+/// that isn't in the 10 expected response strings) are logged at `warn`.
+fn derive_blackwood_commitments(
+    log: &[CommittedStep],
+) -> Vec<bridge_conventions::fact_dsl::types::PublicConstraint> {
+    use bridge_conventions::fact_dsl::types::{PublicConstraint, PublicFactConstraint};
+    use bridge_conventions::types::{ConstraintValue, FactOperator};
+
+    // Find the asker seat — whoever committed blackwood:ask-aces.
+    let asker_seat = log.iter().find_map(|step| {
+        step.resolved_claim.as_ref().and_then(|c| {
+            if c.meaning_id == "blackwood:ask-aces" {
+                Some(step.actor)
+            } else {
+                None
+            }
+        })
+    });
+    let Some(asker) = asker_seat else {
+        return Vec::new();
+    };
+    let asker_partner = bridge_engine::constants::partner_seat(asker);
+
+    let mut out: Vec<PublicConstraint> = Vec::new();
+
+    for step in log {
+        let claim = match step.resolved_claim.as_ref() {
+            Some(c) => c,
+            None => continue,
+        };
+        let meaning_id = claim.meaning_id.as_str();
+
+        // Map meaning_id -> (fact_id, count). Only recognise the 10 expected strings.
+        let mapped: Option<(&str, u8)> = match meaning_id {
+            "blackwood:response-0-aces" => Some(("module.partner.aceCount", 0)),
+            "blackwood:response-1-ace" => Some(("module.partner.aceCount", 1)),
+            "blackwood:response-2-aces" => Some(("module.partner.aceCount", 2)),
+            "blackwood:response-3-aces" => Some(("module.partner.aceCount", 3)),
+            "blackwood:response-4-aces" => Some(("module.partner.aceCount", 4)),
+            "blackwood:king-response-0" => Some(("module.partner.kingCount", 0)),
+            "blackwood:king-response-1" => Some(("module.partner.kingCount", 1)),
+            "blackwood:king-response-2" => Some(("module.partner.kingCount", 2)),
+            "blackwood:king-response-3" => Some(("module.partner.kingCount", 3)),
+            "blackwood:king-response-4" => Some(("module.partner.kingCount", 4)),
+            other if other.starts_with("blackwood:response-")
+                || other.starts_with("blackwood:king-response") =>
+            {
+                tracing::warn!(
+                    meaning_id = other,
+                    "unexpected Blackwood response carrier in observation log"
+                );
+                None
+            }
+            _ => None,
+        };
+
+        let Some((fact_id, count)) = mapped else {
+            continue;
+        };
+
+        // Only emit constraints for the asker's partner.
+        if step.actor != asker_partner {
+            continue;
+        }
+
+        out.push(PublicConstraint {
+            subject: "partner".to_string(),
+            constraint: PublicFactConstraint {
+                fact_id: fact_id.to_string(),
+                operator: FactOperator::Eq,
+                value: ConstraintValue::Number(serde_json::Number::from(count)),
+            },
+        });
+    }
+
+    out
+}
+
 /// Convert convention-crate Disclosure to engine-crate Disclosure.
 fn to_engine_disclosure(d: bridge_conventions::types::meaning::Disclosure) -> EngineDisclosure {
     match d {
@@ -195,18 +281,27 @@ impl ConventionStrategyAdapter {
                         .last()
                         .map(|s| s.state_after.clone())
                         .unwrap_or_else(initial_negotiation);
-                    let relational_ctx = prev_kernel.fit_agreed.as_ref().map(|fa| {
-                        bridge_conventions::fact_dsl::types::RelationalFactContext {
+                    let blackwood_commitments = derive_blackwood_commitments(&log);
+                    let relational_ctx = if prev_kernel.fit_agreed.is_some()
+                        || !blackwood_commitments.is_empty()
+                    {
+                        Some(bridge_conventions::fact_dsl::types::RelationalFactContext {
                             bindings: None,
-                            public_commitments: None,
-                            fit_agreed: Some(
+                            public_commitments: if blackwood_commitments.is_empty() {
+                                None
+                            } else {
+                                Some(blackwood_commitments)
+                            },
+                            fit_agreed: prev_kernel.fit_agreed.as_ref().map(|fa| {
                                 bridge_conventions::fact_dsl::types::FitAgreedContext {
                                     strain: format!("{:?}", fa.strain).to_lowercase(),
                                     confidence: fa.confidence,
-                                },
-                            ),
-                        }
-                    });
+                                }
+                            }),
+                        })
+                    } else {
+                        None
+                    };
 
                     let facts = evaluate_facts(
                         hand,
@@ -260,7 +355,7 @@ impl ConventionStrategyAdapter {
                     .get(&module.module_id)
                     .cloned()
                     .unwrap_or_else(|| module.local.initial.clone());
-                let next = advance_local_fsm(&current, &step, &module.local.transitions);
+                let next = advance_local_fsm(&current, &step, &log, &module.local.transitions);
                 local_phases.insert(module.module_id.clone(), next);
             }
 
@@ -283,13 +378,20 @@ impl ConventionStrategyAdapter {
         // Derive fit_agreed from the observation log — if partner accepted a suit,
         // that's the agreed fit for total-point threshold evaluation.
         let fit_agreed = Self::derive_fit_from_log(&log, ctx.seat);
-        let relational_ctx = fit_agreed.as_ref().map(|fa| {
-            bridge_conventions::fact_dsl::types::RelationalFactContext {
+        let blackwood_commitments = derive_blackwood_commitments(&log);
+        let relational_ctx = if fit_agreed.is_some() || !blackwood_commitments.is_empty() {
+            Some(bridge_conventions::fact_dsl::types::RelationalFactContext {
                 bindings: None,
-                public_commitments: None,
-                fit_agreed: Some(fa.clone()),
-            }
-        });
+                public_commitments: if blackwood_commitments.is_empty() {
+                    None
+                } else {
+                    Some(blackwood_commitments)
+                },
+                fit_agreed: fit_agreed.clone(),
+            })
+        } else {
+            None
+        };
 
         let vuln_facts = self.vulnerability_facts(ctx.vulnerability, ctx.seat);
 

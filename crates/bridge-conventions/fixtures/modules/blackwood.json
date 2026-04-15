@@ -6,8 +6,13 @@
   "description": "Use 4NT to ask for aces when considering slam",
   "purpose": "Determine whether the partnership has enough aces to bid slam safely",
   "references": {
-    "authority": { "url": "https://en.wikipedia.org/wiki/Blackwood_convention", "label": "ACBL SAYC — Blackwood is a core SAYC convention, fully standardized" },
-    "discovery": { "url": "https://www.bridgebum.com/blackwood.php" }
+    "authority": {
+      "url": "https://en.wikipedia.org/wiki/Blackwood_convention",
+      "label": "ACBL SAYC — Blackwood is a core SAYC convention, fully standardized"
+    },
+    "discovery": {
+      "url": "https://www.bridgebum.com/blackwood.php"
+    }
   },
   "teaching": {
     "tradeoff": "Using 4NT as Blackwood means you can't use it as a natural quantitative raise to slam.",
@@ -26,11 +31,7 @@
       "contrastiveTemplateKey": "blackwood.slamInterest.whyNot",
       "contrastiveDisplayText": "Not enough strength for slam exploration",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking",
-        "pedagogical"
-      ]
+      "roles": ["supporting", "blocking", "pedagogical"]
     },
     {
       "explanationId": "blackwood.aceCount",
@@ -38,9 +39,7 @@
       "templateKey": "blackwood.aceCount.mechanical",
       "displayText": "Number of aces held",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting"
-      ]
+      "roles": ["supporting"]
     },
     {
       "explanationId": "blackwood.kingCount",
@@ -48,9 +47,7 @@
       "templateKey": "blackwood.kingCount.mechanical",
       "displayText": "Number of kings held",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting"
-      ]
+      "roles": ["supporting"]
     },
     {
       "explanationId": "blackwood.askAces",
@@ -58,9 +55,7 @@
       "templateKey": "blackwood.askAces.semantic",
       "displayText": "Blackwood 4NT: asks partner how many aces they hold",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.response0Aces",
@@ -68,9 +63,7 @@
       "templateKey": "blackwood.response0Aces.semantic",
       "displayText": "5♣ shows 0 (or 4) aces",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.response4Aces",
@@ -78,9 +71,7 @@
       "templateKey": "blackwood.response4Aces.semantic",
       "displayText": "5♣ shows 0 (or 4) aces",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.response1Ace",
@@ -88,9 +79,7 @@
       "templateKey": "blackwood.response1Ace.semantic",
       "displayText": "5♦ shows 1 ace",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.response2Aces",
@@ -98,9 +87,7 @@
       "templateKey": "blackwood.response2Aces.semantic",
       "displayText": "5♥ shows 2 aces",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.response3Aces",
@@ -108,9 +95,7 @@
       "templateKey": "blackwood.response3Aces.semantic",
       "displayText": "5♠ shows 3 aces",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.askKings",
@@ -118,9 +103,7 @@
       "templateKey": "blackwood.askKings.semantic",
       "displayText": "5NT asks for kings (guarantees all aces are held)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.signoffSmallSlam",
@@ -128,9 +111,7 @@
       "templateKey": "blackwood.signoffSmallSlam.semantic",
       "displayText": "Sign off at small slam in the agreed trump suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.signoffGrandSlam",
@@ -138,9 +119,7 @@
       "templateKey": "blackwood.signoffGrandSlam.semantic",
       "displayText": "Bid grand slam in the agreed trump suit with all aces and kings",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.signoff5Level",
@@ -148,9 +127,7 @@
       "templateKey": "blackwood.signoff5Level.semantic",
       "displayText": "Stop at 5-level — partnership is missing too many aces for slam",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.kingResponse0",
@@ -158,9 +135,7 @@
       "templateKey": "blackwood.kingResponse0.semantic",
       "displayText": "6♣ shows 0 (or 4) kings",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.kingResponse4",
@@ -168,9 +143,7 @@
       "templateKey": "blackwood.kingResponse4.semantic",
       "displayText": "6♣ shows 0 (or 4) kings",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.kingResponse1",
@@ -178,9 +151,7 @@
       "templateKey": "blackwood.kingResponse1.semantic",
       "displayText": "6♦ shows 1 king",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.kingResponse2",
@@ -188,9 +159,7 @@
       "templateKey": "blackwood.kingResponse2.semantic",
       "displayText": "6♥ shows 2 kings",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.kingResponse3",
@@ -198,9 +167,7 @@
       "templateKey": "blackwood.kingResponse3.semantic",
       "displayText": "6♠ shows 3 kings",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -304,7 +271,10 @@
             "summary": "Ask partner how many aces they hold to evaluate slam potential"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "asked",
@@ -503,7 +473,10 @@
             "summary": "Show exactly three aces in response to partner's Blackwood ask"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "responded",
@@ -520,7 +493,16 @@
               "strain": "NT"
             }
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "module.blackwood.combinedAceCount",
+              "operator": "eq",
+              "value": 4,
+              "clauseId": "module.blackwood.combinedAceCount:eq:4",
+              "description": "All four aces accounted for between the partnership",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
@@ -549,13 +531,46 @@
               "strain": "H"
             },
             "alternateEncodings": [
-              { "call": { "type": "bid", "level": 6, "strain": "S" } },
-              { "call": { "type": "bid", "level": 6, "strain": "D" } },
-              { "call": { "type": "bid", "level": 6, "strain": "C" } },
-              { "call": { "type": "bid", "level": 6, "strain": "NT" } }
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 6,
+                  "strain": "S"
+                }
+              },
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 6,
+                  "strain": "D"
+                }
+              },
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 6,
+                  "strain": "C"
+                }
+              },
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 6,
+                  "strain": "NT"
+                }
+              }
             ]
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "module.blackwood.combinedAceCount",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "module.blackwood.combinedAceCount:gte:3",
+              "description": "Partnership holds at least three aces",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
@@ -584,12 +599,39 @@
               "strain": "H"
             },
             "alternateEncodings": [
-              { "call": { "type": "bid", "level": 5, "strain": "S" } },
-              { "call": { "type": "bid", "level": 5, "strain": "D" } },
-              { "call": { "type": "bid", "level": 5, "strain": "C" } }
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 5,
+                  "strain": "S"
+                }
+              },
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 5,
+                  "strain": "D"
+                }
+              },
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 5,
+                  "strain": "C"
+                }
+              }
             ]
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "module.blackwood.combinedAceCount",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "module.blackwood.combinedAceCount:lte:2",
+              "description": "Partnership is missing at least two aces",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "may",
             "modulePrecedence": 0,
@@ -607,7 +649,10 @@
             "summary": "Stop below slam in the agreed trump suit after learning the partnership is missing too many aces"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "king-ask",
@@ -650,7 +695,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6♣ — 0 (or 4) kings",
+            "name": "6♣ — 0 kings",
             "summary": "Show zero kings in response to partner's king ask"
           }
         },
@@ -662,7 +707,7 @@
             "defaultCall": {
               "type": "bid",
               "level": 6,
-              "strain": "C"
+              "strain": "NT"
             }
           },
           "clauses": [
@@ -688,7 +733,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6♣ — 4 kings",
+            "name": "6NT — 4 kings",
             "summary": "Show all four kings in response to partner's king ask"
           }
         },
@@ -806,7 +851,10 @@
             "summary": "Show exactly three kings in response to partner's king ask"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "king-responded",
@@ -823,13 +871,54 @@
               "strain": "H"
             },
             "alternateEncodings": [
-              { "call": { "type": "bid", "level": 7, "strain": "S" } },
-              { "call": { "type": "bid", "level": 7, "strain": "D" } },
-              { "call": { "type": "bid", "level": 7, "strain": "C" } },
-              { "call": { "type": "bid", "level": 7, "strain": "NT" } }
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 7,
+                  "strain": "S"
+                }
+              },
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 7,
+                  "strain": "D"
+                }
+              },
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 7,
+                  "strain": "C"
+                }
+              },
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 7,
+                  "strain": "NT"
+                }
+              }
             ]
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "module.blackwood.combinedAceCount",
+              "operator": "eq",
+              "value": 4,
+              "clauseId": "module.blackwood.combinedAceCount:eq:4",
+              "description": "Partnership holds all four aces",
+              "isPublic": true
+            },
+            {
+              "factId": "module.blackwood.combinedKingCount",
+              "operator": "eq",
+              "value": 4,
+              "clauseId": "module.blackwood.combinedKingCount:eq:4",
+              "description": "Partnership holds all four kings",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
@@ -846,43 +935,11 @@
             "name": "Grand slam in agreed suit",
             "summary": "Bid grand slam in the agreed trump suit after confirming all aces and sufficient kings"
           }
-        },
-        {
-          "meaningId": "blackwood:signoff-small-slam",
-          "semanticClassId": "blackwood:signoff",
-          "moduleId": "blackwood",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 6,
-              "strain": "H"
-            },
-            "alternateEncodings": [
-              { "call": { "type": "bid", "level": 6, "strain": "S" } },
-              { "call": { "type": "bid", "level": 6, "strain": "D" } },
-              { "call": { "type": "bid", "level": 6, "strain": "C" } },
-              { "call": { "type": "bid", "level": 6, "strain": "NT" } }
-            ]
-          },
-          "clauses": [],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 1
-          },
-          "sourceIntent": {
-            "type": "BlackwoodSignoff",
-            "params": {
-              "level": "small-slam"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Small slam in agreed suit",
-            "summary": "Settle for small slam in the agreed trump suit after learning the partnership is missing a king"
-          }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
   "facts": {
@@ -893,12 +950,9 @@
         "world": "acting-hand",
         "description": "Hand has slam-level values (17+ HCP consistent with partnership slam values)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.hcp"
-        ],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "forTeachingOnly": true,
+        "derivesFrom": ["hand.hcp"],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -918,10 +972,50 @@
         "composition": {
           "kind": "match",
           "cases": [
-            { "when": { "kind": "extended", "clause": { "clauseKind": "aceCount", "min": 4, "max": 4 } }, "then": 4 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "aceCount", "min": 3, "max": 3 } }, "then": 3 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "aceCount", "min": 2, "max": 2 } }, "then": 2 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "aceCount", "min": 1, "max": 1 } }, "then": 1 }
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "aceCount",
+                  "min": 4,
+                  "max": 4
+                }
+              },
+              "then": 4
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "aceCount",
+                  "min": 3,
+                  "max": 3
+                }
+              },
+              "then": 3
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "aceCount",
+                  "min": 2,
+                  "max": 2
+                }
+              },
+              "then": 2
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "aceCount",
+                  "min": 1,
+                  "max": 1
+                }
+              },
+              "then": 1
+            }
           ],
           "default": 0
         }
@@ -936,13 +1030,395 @@
         "composition": {
           "kind": "match",
           "cases": [
-            { "when": { "kind": "extended", "clause": { "clauseKind": "kingCount", "min": 4, "max": 4 } }, "then": 4 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "kingCount", "min": 3, "max": 3 } }, "then": 3 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "kingCount", "min": 2, "max": 2 } }, "then": 2 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "kingCount", "min": 1, "max": 1 } }, "then": 1 }
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "kingCount",
+                  "min": 4,
+                  "max": 4
+                }
+              },
+              "then": 4
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "kingCount",
+                  "min": 3,
+                  "max": 3
+                }
+              },
+              "then": 3
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "kingCount",
+                  "min": 2,
+                  "max": 2
+                }
+              },
+              "then": 2
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "kingCount",
+                  "min": 1,
+                  "max": 1
+                }
+              },
+              "then": 1
+            }
           ],
           "default": 0
         }
+      },
+      {
+        "id": "module.blackwood.combinedAceCount",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Combined partnership aces (own + partner's disclosed response, 0-8)",
+        "valueType": "number",
+        "constrainsDimensions": [],
+        "composition": {
+          "kind": "match",
+          "cases": [
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 8, "max": 8 } }, "then": 8 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 7, "max": 7 } }, "then": 7 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 6, "max": 6 } }, "then": 6 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 5, "max": 5 } }, "then": 5 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 4, "max": 4 } }, "then": 4 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 3, "max": 3 } }, "then": 3 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 2, "max": 2 } }, "then": 2 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 1, "max": 1 } }, "then": 1 }
+          ],
+          "default": 0
+        }
+      },
+      {
+        "id": "module.blackwood.combinedKingCount",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Combined partnership kings (own + partner's disclosed response, 0-8)",
+        "valueType": "number",
+        "constrainsDimensions": [],
+        "composition": {
+          "kind": "match",
+          "cases": [
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 8, "max": 8 } }, "then": 8 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 7, "max": 7 } }, "then": 7 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 6, "max": 6 } }, "then": 6 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 5, "max": 5 } }, "then": 5 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 4, "max": 4 } }, "then": 4 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 3, "max": 3 } }, "then": 3 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 2, "max": 2 } }, "then": 2 },
+            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 1, "max": 1 } }, "then": 1 }
+          ],
+          "default": 0
+        }
+      }
+    ]
+  },
+  "reference": {
+    "summaryCard": {
+      "trigger": "A trump fit is agreed and you are exploring slam",
+      "definingMeaningId": "blackwood:ask-aces",
+      "partnership": "Confirm whether you play classic Blackwood before using the ask. Most modern tournament partnerships play Roman Keycard Blackwood (RKC) rather than classic Blackwood; RKC counts the trump king as a fifth keycard. The ask still presumes a solid trump suit, because missing top trump honors can defeat slam even when every ace is accounted for."
+    },
+    "whenToUse": [
+      {
+        "predicate": {
+          "kind": "extended",
+          "clause": {
+            "clauseKind": "booleanFact",
+            "fact_id": "system.responder.slamValues",
+            "expected": true
+          }
+        },
+        "gloss": "Use the ace ask after a fit is agreed and the partnership still needs one control check before committing higher."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.slamValues",
+                "expected": true
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 17
+              }
+            }
+          ]
+        },
+        "gloss": "Use the king ask only after the ace reply still leaves grand slam in view."
+      }
+    ],
+    "workedAuctions": [
+      {
+        "kind": "positive",
+        "label": "Ace ask reaches a safe small slam",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            },
+            "rationale": "The partnership starts by agreeing hearts as trumps."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            },
+            "rationale": "Responder confirms the heart fit and shows a hand interested in going higher."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "NT"
+            },
+            "rationale": "Blackwood asks how many aces responder holds before the partnership commits to slam."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 5,
+              "strain": "H"
+            },
+            "rationale": "Responder shows two aces, so opener knows the partnership is not missing two fast losers."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 6,
+              "strain": "H"
+            },
+            "rationale": "With enough combined control, opener signs off in the small slam."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "King ask checks for the grand",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            },
+            "rationale": "The partnership establishes spades as trumps."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            },
+            "rationale": "Responder confirms the fit and keeps slam in the picture."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "NT"
+            },
+            "rationale": "Opener starts with the ace ask."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 5,
+              "strain": "C"
+            },
+            "rationale": "The reply shows that the partnership has all the aces covered in classic Blackwood."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 5,
+              "strain": "NT"
+            },
+            "rationale": "Now opener asks for kings because the ace reply kept grand slam alive."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 6,
+              "strain": "D"
+            },
+            "rationale": "Responder shows one king, letting opener judge whether to stop or stretch."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 6,
+              "strain": "S"
+            },
+            "rationale": "One king is enough for a practical small slam but not enough to guarantee the grand."
+          }
+        ]
+      },
+      {
+        "kind": "negative",
+        "label": "Counter-example: a void hides a wasted control",
+        "responderHand": {
+          "spades": "A K Q J x",
+          "hearts": "K x x x",
+          "diamonds": "Q x x",
+          "clubs": "—"
+        },
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            },
+            "rationale": "Opener starts with a natural spade opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            },
+            "rationale": "Responder confirms the spade fit and shows slam-try strength."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "NT"
+            },
+            "rationale": "Opener asks for aces, unable to describe the club void through Blackwood."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 5,
+              "strain": "H"
+            },
+            "rationale": "Responder shows two aces — but classic Blackwood cannot reveal which two."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 6,
+              "strain": "S"
+            },
+            "rationale": "Opener commits to slam trusting the ace count. Slam fails because partner's club ace faces the void and wins no extra trick, while a heart loser plus a diamond loser cash out. Cue-bidding would have exposed the duplicated control and steered the partnership to a safer contract."
+          }
+        ]
+      },
+      {
+        "kind": "negative",
+        "label": "Counter-example: no fit makes the ask meaningless",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "No trump suit has been agreed yet."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "NT"
+            },
+            "rationale": "Without an agreed fit, this call is no longer a clean ace ask and may be read as a natural or quantitative move."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "pass"
+            },
+            "rationale": "The partnership never gets the ace-count answer it wanted, because the auction never established the conditions that make Blackwood meaningful."
+          }
+        ]
+      }
+    ],
+    "interference": {
+      "status": "notApplicable",
+      "reason": "This reference covers uncontested slam auctions; once the opponents act, partnership-specific control methods usually take over."
+    },
+    "quickReference": {
+      "kind": "list",
+      "axis": {
+        "kind": "partitionLadder",
+        "label": "Partner's ace reply",
+        "fact": "responder.classicAceCount"
+      },
+      "items": [
+        {
+          "recommendation": "Bid five clubs",
+          "note": "Shared with all aces in classic Blackwood."
+        },
+        {
+          "recommendation": "Bid five diamonds",
+          "note": "Shows one ace. Asker usually signs off, since a slam with two aces missing is off against an opening lead."
+        },
+        {
+          "recommendation": "Bid five hearts",
+          "note": "Shows two aces. Asker has enough control information to commit to small slam when the combined strength supports it."
+        },
+        {
+          "recommendation": "Bid five spades",
+          "note": "Shows three aces. Asker may continue with the king ask when a grand slam is still in view."
+        },
+        {
+          "recommendation": "Bid five clubs",
+          "note": "Shared with no aces in classic Blackwood."
+        }
+      ]
+    },
+    "relatedLinks": [
+      {
+        "moduleId": "natural-bids",
+        "discriminator": "Agree the trump suit naturally before asking for aces; without a fit the reply has no clear meaning."
+      },
+      {
+        "moduleId": "strong-2c",
+        "discriminator": "After a forcing start uncovers a fit, Blackwood becomes the later control check for slam decisions."
       }
     ]
   }

@@ -6,15 +6,30 @@
   "description": "Use 3C/3D as artificial raises after 1M to show different strength levels",
   "purpose": "Distinguish between weak, constructive, limit, and game-forcing raises of partner's major so opener can judge the right level",
   "references": {
-    "authority": { "url": "https://www.larryco.com/bridge-articles/bergen-raises", "label": "Larry Cohen — co-inventor of Bergen Raises, authoritative on standard vs reverse variants" },
-    "discovery": { "url": "https://www.bridgebum.com/bergen_raises.php" }
+    "authority": {
+      "url": "https://www.larryco.com/bridge-articles/bergen-raises",
+      "label": "Larry Cohen — co-inventor of Bergen Raises, authoritative on standard vs reverse variants"
+    },
+    "discovery": {
+      "url": "https://www.bridgebum.com/bergen_raises.php"
+    }
   },
   "teaching": {
     "tradeoff": "Uses 3C and 3D as conventional raises, giving up natural minor bids over 1M.",
     "principle": "Immediately show trump support and strength — the Law of Total Tricks says bid to the level of your combined trump length.",
     "commonMistakes": [
-      "Remember 3C is constructive (7-10) and 3D is limit (10-12) — don't confuse the order",
-      "With 4+ trump support and 12+ HCP with a shortage, bid the short suit as a splinter instead of using Bergen"
+      {
+        "text": "Do not treat Bergen as a three-card raise structure.",
+        "reason": "Standard Bergen promises 4+ trumps, though some partnerships tighten the jumps to exactly four. With only three-card limit support, route through 1NT forcing and then a 3M rebid instead."
+      },
+      {
+        "text": "Do not confuse the constructive and limit steps.",
+        "reason": "Reversing 3♣ and 3♦ gives opener the wrong picture of responder's strength and game odds."
+      },
+      {
+        "text": "Do not bury a game-forcing shortage hand inside Bergen.",
+        "reason": "Shortage plus strong support belongs in a splinter so opener can evaluate slam and wasted values correctly."
+      }
     ]
   },
   "explanationEntries": [
@@ -26,11 +41,7 @@
       "contrastiveTemplateKey": "bergen.support.hasMajorSupport.whyNot",
       "contrastiveDisplayText": "Does not have 4-card support in either major",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting",
-        "blocking",
-        "pedagogical"
-      ]
+      "roles": ["supporting", "blocking", "pedagogical"]
     },
     {
       "explanationId": "bergen.hcp.splinter",
@@ -40,10 +51,7 @@
       "contrastiveTemplateKey": "bergen.hcp.splinter.whyNot",
       "contrastiveDisplayText": "Not enough strength for a splinter raise",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "bergen.hcp.game",
@@ -53,10 +61,7 @@
       "contrastiveTemplateKey": "bergen.hcp.game.whyNot",
       "contrastiveDisplayText": "Not enough HCP for a Bergen game raise",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "bergen.hcp.limit",
@@ -66,10 +71,7 @@
       "contrastiveTemplateKey": "bergen.hcp.limit.whyNot",
       "contrastiveDisplayText": "Not enough HCP for a limit raise",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "bergen.hcp.constructive",
@@ -79,10 +81,7 @@
       "contrastiveTemplateKey": "bergen.hcp.constructive.whyNot",
       "contrastiveDisplayText": "Not enough HCP for a constructive raise",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "bergen.hcp.preemptive",
@@ -92,10 +91,7 @@
       "contrastiveTemplateKey": "bergen.hcp.preemptive.whyNot",
       "contrastiveDisplayText": "Too many HCP for a preemptive raise",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "bergen.support.majorFit",
@@ -105,11 +101,7 @@
       "contrastiveTemplateKey": "bergen.support.majorFit.whyNot",
       "contrastiveDisplayText": "Not enough support for opener's major",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting",
-        "blocking",
-        "pedagogical"
-      ]
+      "roles": ["supporting", "blocking", "pedagogical"]
     },
     {
       "explanationId": "bergen.shape.shortage",
@@ -119,11 +111,7 @@
       "contrastiveTemplateKey": "bergen.shape.shortage.whyNot",
       "contrastiveDisplayText": "No short suit for a splinter",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking",
-        "pedagogical"
-      ]
+      "roles": ["supporting", "blocking", "pedagogical"]
     },
     {
       "explanationId": "bergen.opener.hcp.game17",
@@ -133,10 +121,7 @@
       "contrastiveTemplateKey": "bergen.opener.hcp.game17.whyNot",
       "contrastiveDisplayText": "Not enough HCP (need 17+) to bid game after constructive raise",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "bergen.opener.hcp.try14",
@@ -146,10 +131,7 @@
       "contrastiveTemplateKey": "bergen.opener.hcp.try14.whyNot",
       "contrastiveDisplayText": "HCP not in game-try range (14-16) after constructive raise",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "bergen.opener.hcp.game15",
@@ -157,10 +139,7 @@
       "templateKey": "bergen.opener.hcp.game15.supporting",
       "displayText": "15+ HCP to accept the limit raise",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "bergen.opener.hcp.game18",
@@ -170,10 +149,7 @@
       "contrastiveTemplateKey": "bergen.opener.hcp.game18.whyNot",
       "contrastiveDisplayText": "Not enough total points (need 18+) to bid game over preemptive raise",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "bergen.responder.hcp.tryAccept",
@@ -183,10 +159,7 @@
       "contrastiveTemplateKey": "bergen.responder.hcp.tryAccept.whyNot",
       "contrastiveDisplayText": "Not enough HCP to accept the game try",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "bergen.system.oneNtRange",
@@ -196,10 +169,7 @@
       "contrastiveTemplateKey": "bergen.system.oneNtRange.whyNot",
       "contrastiveDisplayText": "HCP outside the system's 1NT response range",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "bergen.stub.opener1h",
@@ -207,9 +177,7 @@
       "templateKey": "bergen.stub.opener1h.semantic",
       "displayText": "Opening 1♥: 12+ HCP with 5+ hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.stub.opener1s",
@@ -217,9 +185,7 @@
       "templateKey": "bergen.stub.opener1s.semantic",
       "displayText": "Opening 1♠: 12+ HCP with 5+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.splinterHearts",
@@ -227,9 +193,7 @@
       "templateKey": "bergen.r1.splinterHearts.semantic",
       "displayText": "Splinter in hearts: 12+ pts, 4+ trumps, shortness",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.gameRaiseHearts",
@@ -237,9 +201,7 @@
       "templateKey": "bergen.r1.gameRaiseHearts.semantic",
       "displayText": "Bergen game raise in hearts: 13+ pts, 4+ trumps",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.limitRaiseHearts",
@@ -247,9 +209,7 @@
       "templateKey": "bergen.r1.limitRaiseHearts.semantic",
       "displayText": "Bergen limit raise in hearts: 10-12 pts, 4+ trumps (3♦)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.constructiveRaiseHearts",
@@ -257,9 +217,7 @@
       "templateKey": "bergen.r1.constructiveRaiseHearts.semantic",
       "displayText": "Bergen constructive raise in hearts: 7-10 pts, 4+ trumps (3♣)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.preemptiveRaiseHearts",
@@ -267,9 +225,7 @@
       "templateKey": "bergen.r1.preemptiveRaiseHearts.semantic",
       "displayText": "Preemptive raise to 3♥: 0-6 pts, 4+ trumps",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.natural1ntHearts",
@@ -277,9 +233,7 @@
       "templateKey": "bergen.r1.natural1ntHearts.semantic",
       "displayText": "Natural 1NT response to 1♥: within system range, no 4-card support",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.splinterSpades",
@@ -287,9 +241,7 @@
       "templateKey": "bergen.r1.splinterSpades.semantic",
       "displayText": "Splinter in spades: 12+ pts, 4+ trumps, shortness",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.gameRaiseSpades",
@@ -297,9 +249,7 @@
       "templateKey": "bergen.r1.gameRaiseSpades.semantic",
       "displayText": "Bergen game raise in spades: 13+ pts, 4+ trumps",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.limitRaiseSpades",
@@ -307,9 +257,7 @@
       "templateKey": "bergen.r1.limitRaiseSpades.semantic",
       "displayText": "Bergen limit raise in spades: 10-12 pts, 4+ trumps (3♦)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.constructiveRaiseSpades",
@@ -317,9 +265,7 @@
       "templateKey": "bergen.r1.constructiveRaiseSpades.semantic",
       "displayText": "Bergen constructive raise in spades: 7-10 pts, 4+ trumps (3♣)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.preemptiveRaiseSpades",
@@ -327,9 +273,7 @@
       "templateKey": "bergen.r1.preemptiveRaiseSpades.semantic",
       "displayText": "Preemptive raise to 3♠: 0-6 pts, 4+ trumps",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r1.natural1ntSpades",
@@ -337,9 +281,7 @@
       "templateKey": "bergen.r1.natural1ntSpades.semantic",
       "displayText": "Natural 1NT response to 1♠: within system range, no 4-card support",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.gameAfterConstructiveHearts",
@@ -347,9 +289,7 @@
       "templateKey": "bergen.r2.gameAfterConstructiveHearts.semantic",
       "displayText": "Opener bids 4♥ after constructive raise (17+ HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.gameTryAfterConstructiveHearts",
@@ -357,9 +297,7 @@
       "templateKey": "bergen.r2.gameTryAfterConstructiveHearts.semantic",
       "displayText": "Opener makes a game try with 3♦ after constructive raise (14-16 HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.signoffAfterConstructiveHearts",
@@ -367,9 +305,7 @@
       "templateKey": "bergen.r2.signoffAfterConstructiveHearts.semantic",
       "displayText": "Opener signs off in 3♥ after constructive raise",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.gameAfterConstructiveSpades",
@@ -377,9 +313,7 @@
       "templateKey": "bergen.r2.gameAfterConstructiveSpades.semantic",
       "displayText": "Opener bids 4♠ after constructive raise (17+ HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.gameTryAfterConstructiveSpades",
@@ -387,9 +321,7 @@
       "templateKey": "bergen.r2.gameTryAfterConstructiveSpades.semantic",
       "displayText": "Opener makes a game try with 3♥ after constructive raise (14-16 HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.signoffAfterConstructiveSpades",
@@ -397,9 +329,7 @@
       "templateKey": "bergen.r2.signoffAfterConstructiveSpades.semantic",
       "displayText": "Opener signs off in 3♠ after constructive raise",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.gameAfterLimitHearts",
@@ -407,9 +337,7 @@
       "templateKey": "bergen.r2.gameAfterLimitHearts.semantic",
       "displayText": "Opener accepts limit raise and bids 4♥ (15+ HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.signoffAfterLimitHearts",
@@ -417,9 +345,7 @@
       "templateKey": "bergen.r2.signoffAfterLimitHearts.semantic",
       "displayText": "Opener declines limit raise and signs off in 3♥",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.gameAfterLimitSpades",
@@ -427,9 +353,7 @@
       "templateKey": "bergen.r2.gameAfterLimitSpades.semantic",
       "displayText": "Opener accepts limit raise and bids 4♠ (15+ HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.signoffAfterLimitSpades",
@@ -437,9 +361,7 @@
       "templateKey": "bergen.r2.signoffAfterLimitSpades.semantic",
       "displayText": "Opener declines limit raise and signs off in 3♠",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.gameAfterPreemptiveHearts",
@@ -447,9 +369,7 @@
       "templateKey": "bergen.r2.gameAfterPreemptiveHearts.semantic",
       "displayText": "Opener bids 4♥ despite preemptive raise (18+ total pts)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.passAfterPreemptiveHearts",
@@ -457,9 +377,7 @@
       "templateKey": "bergen.r2.passAfterPreemptiveHearts.semantic",
       "displayText": "Opener passes after preemptive raise to 3♥",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.gameAfterPreemptiveSpades",
@@ -467,9 +385,7 @@
       "templateKey": "bergen.r2.gameAfterPreemptiveSpades.semantic",
       "displayText": "Opener bids 4♠ despite preemptive raise (18+ total pts)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r2.passAfterPreemptiveSpades",
@@ -477,9 +393,7 @@
       "templateKey": "bergen.r2.passAfterPreemptiveSpades.semantic",
       "displayText": "Opener passes after preemptive raise to 3♠",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r3.tryAcceptHearts",
@@ -487,9 +401,7 @@
       "templateKey": "bergen.r3.tryAcceptHearts.semantic",
       "displayText": "Accept game try and bid 4♥",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r3.tryAcceptSpades",
@@ -497,9 +409,7 @@
       "templateKey": "bergen.r3.tryAcceptSpades.semantic",
       "displayText": "Accept game try and bid 4♠",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r3.tryRejectHearts",
@@ -507,9 +417,7 @@
       "templateKey": "bergen.r3.tryRejectHearts.semantic",
       "displayText": "Reject game try and sign off in 3♥",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r3.tryRejectSpades",
@@ -517,9 +425,7 @@
       "templateKey": "bergen.r3.tryRejectSpades.semantic",
       "displayText": "Reject game try and sign off in 3♠",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r3.acceptGame",
@@ -527,9 +433,7 @@
       "templateKey": "bergen.r3.acceptGame.semantic",
       "displayText": "Responder accepts opener's game bid",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r3.acceptSignoff",
@@ -537,9 +441,7 @@
       "templateKey": "bergen.r3.acceptSignoff.semantic",
       "displayText": "Responder accepts opener's signoff",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.r4.openerAcceptAfterTry",
@@ -547,9 +449,7 @@
       "templateKey": "bergen.r4.openerAcceptAfterTry.semantic",
       "displayText": "Opener accepts game after responder accepts the try",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "bergen.splinter.relayHearts",
@@ -968,7 +868,24 @@
               "strain": "H"
             }
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "At least 12 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 21,
+              "clauseId": "hand.hcp:lte:21",
+              "description": "At most 21 HCP",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
@@ -997,7 +914,24 @@
               "strain": "S"
             }
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 12,
+              "clauseId": "hand.hcp:gte:12",
+              "description": "At least 12 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 21,
+              "clauseId": "hand.hcp:lte:21",
+              "description": "At most 21 HCP",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
@@ -1015,7 +949,10 @@
             "summary": "Open 1 spade to show 5+ spades and 12-21 HCP"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "opened-hearts",
@@ -1099,18 +1036,18 @@
           "clauses": [
             {
               "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 13,
-              "clauseId": "hand.hcp:gte:13",
-              "description": "13+ HCP",
+              "operator": "lte",
+              "value": 6,
+              "clauseId": "hand.hcp:lte:6",
+              "description": "Under 7 HCP (preemptive)",
               "isPublic": true
             },
             {
               "factId": "hand.suitLength.$suit",
-              "operator": "eq",
-              "value": 4,
-              "clauseId": "hand.suitLength.$suit:eq:4",
-              "description": "Exactly 4 hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.$suit:gte:5",
+              "description": "5+ hearts",
               "isPublic": true
             }
           ],
@@ -1127,8 +1064,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Game raise (4H)",
-            "summary": "Raise directly to game with 13+ HCP and 4-card trump support"
+            "name": "Preemptive raise (4H)",
+            "summary": "Raise directly to game preemptively with under 7 HCP and 5+ card trump support"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -1150,19 +1087,19 @@
               "factId": "hand.hcp",
               "operator": "range",
               "value": {
-                "min": 10,
+                "min": 11,
                 "max": 12
               },
-              "clauseId": "hand.hcp:range:10-12",
-              "description": "10–12 HCP",
+              "clauseId": "hand.hcp:range:11-12",
+              "description": "11–12 HCP",
               "isPublic": true
             },
             {
               "factId": "hand.suitLength.$suit",
-              "operator": "eq",
+              "operator": "gte",
               "value": 4,
-              "clauseId": "hand.suitLength.$suit:eq:4",
-              "description": "Exactly 4 hearts",
+              "clauseId": "hand.suitLength.$suit:gte:4",
+              "description": "4+ hearts",
               "isPublic": true
             }
           ],
@@ -1180,7 +1117,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Limit raise (3D)",
-            "summary": "Show 4+ card support with 10-12 HCP, inviting game via artificial 3D"
+            "summary": "Show 4+ card support with 11-12 HCP, inviting game via artificial 3D"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -1211,10 +1148,10 @@
             },
             {
               "factId": "hand.suitLength.$suit",
-              "operator": "eq",
+              "operator": "gte",
               "value": 4,
-              "clauseId": "hand.suitLength.$suit:eq:4",
-              "description": "Exactly 4 hearts",
+              "clauseId": "hand.suitLength.$suit:gte:4",
+              "description": "4+ hearts",
               "isPublic": true
             }
           ],
@@ -1287,7 +1224,10 @@
             "suit": "hearts"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "opened-hearts",
@@ -1349,7 +1289,10 @@
             "suit": "hearts"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "opened-spades",
@@ -1433,18 +1376,18 @@
           "clauses": [
             {
               "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 13,
-              "clauseId": "hand.hcp:gte:13",
-              "description": "13+ HCP",
+              "operator": "lte",
+              "value": 6,
+              "clauseId": "hand.hcp:lte:6",
+              "description": "Under 7 HCP (preemptive)",
               "isPublic": true
             },
             {
               "factId": "hand.suitLength.$suit",
-              "operator": "eq",
-              "value": 4,
-              "clauseId": "hand.suitLength.$suit:eq:4",
-              "description": "Exactly 4 spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.$suit:gte:5",
+              "description": "5+ spades",
               "isPublic": true
             }
           ],
@@ -1461,8 +1404,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Game raise (4S)",
-            "summary": "Raise directly to game with 13+ HCP and 4-card trump support"
+            "name": "Preemptive raise (4S)",
+            "summary": "Raise directly to game preemptively with under 7 HCP and 5+ card trump support"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -1484,19 +1427,19 @@
               "factId": "hand.hcp",
               "operator": "range",
               "value": {
-                "min": 10,
+                "min": 11,
                 "max": 12
               },
-              "clauseId": "hand.hcp:range:10-12",
-              "description": "10–12 HCP",
+              "clauseId": "hand.hcp:range:11-12",
+              "description": "11–12 HCP",
               "isPublic": true
             },
             {
               "factId": "hand.suitLength.$suit",
-              "operator": "eq",
+              "operator": "gte",
               "value": 4,
-              "clauseId": "hand.suitLength.$suit:eq:4",
-              "description": "Exactly 4 spades",
+              "clauseId": "hand.suitLength.$suit:gte:4",
+              "description": "4+ spades",
               "isPublic": true
             }
           ],
@@ -1514,7 +1457,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Limit raise (3D)",
-            "summary": "Show 4+ card support with 10-12 HCP, inviting game via artificial 3D"
+            "summary": "Show 4+ card support with 11-12 HCP, inviting game via artificial 3D"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -1545,10 +1488,10 @@
             },
             {
               "factId": "hand.suitLength.$suit",
-              "operator": "eq",
+              "operator": "gte",
               "value": 4,
-              "clauseId": "hand.suitLength.$suit:eq:4",
-              "description": "Exactly 4 spades",
+              "clauseId": "hand.suitLength.$suit:gte:4",
+              "description": "4+ spades",
               "isPublic": true
             }
           ],
@@ -1621,7 +1564,10 @@
             "suit": "spades"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "opened-spades",
@@ -1676,7 +1622,10 @@
             "suit": "spades"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-constructive-hearts",
@@ -1811,7 +1760,10 @@
             "suit": "hearts"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-constructive-spades",
@@ -1946,7 +1898,10 @@
             "suit": "spades"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-limit-hearts",
@@ -2037,7 +1992,10 @@
             "suit": "hearts"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-limit-spades",
@@ -2128,7 +2086,10 @@
             "suit": "spades"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-preemptive-hearts",
@@ -2217,7 +2178,10 @@
             "suit": "hearts"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-preemptive-spades",
@@ -2306,7 +2270,10 @@
             "suit": "spades"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-game",
@@ -2340,7 +2307,10 @@
             "summary": "Pass after opener bids game, accepting the final contract"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-signoff",
@@ -2374,7 +2344,10 @@
             "summary": "Pass after opener signs off, ending the auction at partscore"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-game-try-hearts",
@@ -2471,7 +2444,10 @@
             "suit": "hearts"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-game-try-spades",
@@ -2568,7 +2544,10 @@
             "suit": "spades"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "r4",
@@ -2602,7 +2581,10 @@
             "summary": "Pass after responder decides on the game try, accepting their judgment"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-splinter-hearts",
@@ -2643,7 +2625,10 @@
             "summary": "Cheapest step over responder's 3♠ ambiguous splinter asks which suit is short"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-splinter-spades",
@@ -2684,7 +2669,10 @@
             "summary": "Cheapest step over responder's 3♥ ambiguous splinter asks which suit is short"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-splinter-hearts-relay",
@@ -2815,7 +2803,10 @@
             "summary": "Reveal shortness in the other major (spades) after opener's relay"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "after-splinter-spades-relay",
@@ -2946,9 +2937,314 @@
             "summary": "Reveal shortness in the other major (hearts) after opener's relay"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
+  "reference": {
+    "summaryCard": {
+      "trigger": "Partner opens one major and responder already knows there is support.",
+      "definingMeaningId": "bergen:constructive-raise-hearts",
+      "partnership": "Bergen pairs three clubs and three diamonds as peer entry points that both promise exactly four-card major support; the conventional act is choosing between them, with three clubs as the constructive raise and three diamonds as the limit raise.",
+      "peers": [
+        {
+          "definingMeaningId": "bergen:constructive-raise-hearts",
+          "discriminatorLabel": "Constructive raise"
+        },
+        {
+          "definingMeaningId": "bergen:limit-raise-hearts",
+          "discriminatorLabel": "Limit raise"
+        }
+      ]
+    },
+    "whenToUse": [
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.bergen.hasMajorSupport",
+                "expected": true
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.weakHand",
+                "expected": true
+              }
+            }
+          ]
+        },
+        "gloss": "Use Bergen's obstructive raises with weak support hands."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.bergen.hasMajorSupport",
+                "expected": true
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.inviteValues",
+                "expected": true
+              }
+            }
+          ]
+        },
+        "gloss": "Use Bergen to separate constructive and limit raises with support."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.bergen.hasMajorSupport",
+                "expected": true
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.gameValues",
+                "expected": true
+              }
+            },
+            {
+              "kind": "not",
+              "operand": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "booleanFact",
+                  "fact_id": "bridge.hasShortage",
+                  "expected": true
+                }
+              }
+            }
+          ]
+        },
+        "gloss": "Use Bergen with game-going support hands that are not splinters."
+      }
+    ],
+    "workedAuctions": [
+      {
+        "kind": "positive",
+        "label": "Constructive raise accepts a help-suit try",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            },
+            "rationale": "Opener starts with hearts."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            },
+            "rationale": "Responder uses the constructive Bergen raise."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            },
+            "rationale": "Opener makes a help-suit game try."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            },
+            "rationale": "Responder accepts with the top of the constructive range."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "Limit raise lets opener judge game immediately",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            },
+            "rationale": "Opener begins with spades."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            },
+            "rationale": "Responder shows the limit Bergen raise."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            },
+            "rationale": "Opener accepts the invitation with enough values for game."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "Strong support with shortness becomes a splinter sequence",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            },
+            "rationale": "Opener starts with spades."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            },
+            "rationale": "Responder uses the spade splinter, showing strong support with shortness."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            },
+            "rationale": "Opener relays to ask where the shortage is."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 4,
+              "strain": "D"
+            },
+            "rationale": "Responder reveals diamond shortness."
+          }
+        ]
+      },
+      {
+        "kind": "negative",
+        "label": "Counter-example: three-card support overstates the trump fit",
+        "responderHand": {
+          "spades": "Q J 7",
+          "hearts": "K 8 5",
+          "diamonds": "A J 9 4",
+          "clubs": "10 7 3"
+        },
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            },
+            "rationale": "Opener begins with spades."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            },
+            "rationale": "Responder uses Bergen anyway, even though the hand has only three-card support."
+          }
+        ]
+      }
+    ],
+    "interference": {
+      "status": "applicable",
+      "items": [
+        {
+          "opponentAction": "Double of the one-major opening",
+          "ourAction": "Many partnerships switch to Jordan or redouble structure instead of plain Bergen.",
+          "note": "The double changes both the available room and the standard meanings of jump raises."
+        },
+        {
+          "opponentAction": "Overcall after the one-major opening",
+          "ourAction": "Bergen is usually off and the raise structure becomes cue-bids, fit jumps, or natural competition.",
+          "note": "Once opponents enter, the standard step map no longer has enough uncontested room."
+        }
+      ]
+    },
+    "quickReference": {
+      "kind": "list",
+      "axis": {
+        "kind": "systemFactLadder",
+        "label": "Responder strength",
+        "facts": [
+          "system.responder.weakHand",
+          "system.responder.inviteValues",
+          "system.responder.gameValues"
+        ]
+      },
+      "items": [
+        {
+          "recommendation": "Simple raise in the major, or use the preemptive jump raise when your partnership's Bergen style applies.",
+          "note": "Downgraded view: this list cannot separate the ordinary single raise from the jump raise cleanly, and the current surfaces are authored as exactly four trumps even though standard Bergen is usually four or more."
+        },
+        {
+          "recommendation": "Constructive raise or limit raise.",
+          "note": "Constructive and limit raises share this bucket in the downgraded view, because the missing trump-support fact prevents a full Bergen grid."
+        },
+        {
+          "recommendation": "Game raise or a splinter.",
+          "note": "Once support is known to be strong enough, game-going hands either raise directly or show shortness with the splinter branch."
+        }
+      ]
+    },
+    "relatedLinks": [
+      {
+        "moduleId": "new-minor-forcing",
+        "discriminator": "Bergen shows support immediately after one major; NMF checks back later after opener limits the hand with one notrump."
+      },
+      {
+        "moduleId": "stayman",
+        "discriminator": "Both conventions aim at major-suit games, but Bergen starts from an agreed fit while Stayman asks whether a fit exists."
+      }
+    ]
+  },
   "facts": {
     "definitions": [
       {
@@ -2957,19 +3253,28 @@
         "world": "acting-hand",
         "description": "Has exactly 4-card support in at least one major",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.hearts",
-          "hand.suitLength.spades"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "forTeachingOnly": true,
+        "derivesFrom": ["hand.suitLength.hearts", "hand.suitLength.spades"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "or",
           "operands": [
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.hearts", "operator": "eq", "value": 4 } },
-            { "kind": "primitive", "clause": { "factId": "hand.suitLength.spades", "operator": "eq", "value": 4 } }
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "eq",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "eq",
+                "value": 4
+              }
+            }
           ]
         }
       }

@@ -270,8 +270,8 @@ fn find_opener_seat(log: &[CommittedStep]) -> Option<Seat> {
 
 fn replay_local_fsm(module: &ConventionModule, context: &AuctionContext) -> String {
     let mut phase = module.local.initial.clone();
-    for step in &context.log {
-        phase = advance_local_fsm(&phase, step, &module.local.transitions);
+    for (i, step) in context.log.iter().enumerate() {
+        phase = advance_local_fsm(&phase, step, &context.log[..i], &module.local.transitions);
     }
     phase
 }

@@ -1,6 +1,38 @@
 //! Route matcher — evaluates RouteExpr patterns against a CommittedStep log.
 //!
 //! Mirrors TS from `pipeline/observation/route-matcher.ts`.
+//!
+//! # Duplicate-phase disambiguation contract
+//!
+//! Multiple `StateEntry`s in a module may share the same `phase` string
+//! (e.g. DONT's three `after-2x-dbl` states, negative-doubles's several
+//! `after-oc-1c` states). When more than one state shares a phase, the
+//! `rule_interpreter` runs `state_entry_matches` for each candidate and
+//! collects surfaces from **every** state whose full predicate matches;
+//! final selection happens in the arbitrator, not here.
+//!
+//! A state's full predicate is `phase AND turn AND kernel AND route`.
+//! For same-phase states to behave deterministically, authors MUST make
+//! the conjunction of `turn`, `kernel`, and `route` either:
+//!
+//! 1. **Mutually exclusive**, so at most one state matches a given
+//!    auction position (e.g. negative-doubles distinguishes `after-oc-1c`
+//!    states by `route.pattern.suit` + `.level` of the overcall); or
+//!
+//! 2. **Intentionally overlapping**, so multiple states all contribute
+//!    surfaces that will be disambiguated later by clause evaluation and
+//!    arbitration (e.g. jacoby-transfers' two `accepted-hearts` /
+//!    turn=responder states split surfaces for rendering but expose
+//!    disjoint clauses so arbitration always picks the intended one).
+//!
+//! Note that FSM phase transitions (`local_fsm::advance_local_fsm`) call
+//! `step_matches_obs` with `opener_seat = None`, which means the
+//! `ObsPattern.actor` field is IGNORED for FSM transitions (it is
+//! honored by `match_route` during state evaluation, because
+//! `state_entry_matches` threads the real opener seat through).
+//! Authors relying on actor-gated transitions must instead gate via
+//! level/jump/strain on the observation, or by splitting the `from`
+//! phase upstream.
 
 use bridge_engine::partner_seat;
 use bridge_engine::types::{BidSuit, Call, Seat};
@@ -25,8 +57,8 @@ fn derive_actor_role(actor: Seat, opener_seat: Seat) -> TurnRole {
 /// Note: this function evaluates obs-level fields only (act/feature/suit/
 /// strain/strength/actor). The `level` and `jump` fields require containing-
 /// step + prior-log context and are enforced by `step_matches_obs`. Callers
-/// that invoke `match_obs` directly (e.g. `local_fsm::advance_local_fsm`) will
-/// not enforce level/jump.
+/// that invoke `match_obs` directly will not enforce level/jump; FSM-style
+/// consumers should use `step_matches_obs` instead.
 pub fn match_obs(pattern: &ObsPattern, obs: &BidAction, actor_role: Option<TurnRole>) -> bool {
     // Actor check
     if let (Some(pat_actor), Some(role)) = (pattern.actor, actor_role) {
@@ -166,7 +198,10 @@ fn check_level_jump(
 }
 
 /// Does any observation in a step match the pattern?
-fn step_matches_obs(
+///
+/// Public so that FSM-style consumers (e.g. `local_fsm::advance_local_fsm`)
+/// can honor level/jump enforcement the same way `match_route` does.
+pub fn step_matches_obs(
     pattern: &ObsPattern,
     step: &CommittedStep,
     prior_log: &[CommittedStep],
@@ -346,7 +381,12 @@ mod tests {
 
     // --- level / jump matcher tests ---
 
-    fn make_bid_step(actor: Seat, level: u8, strain: BidSuit, actions: Vec<BidAction>) -> CommittedStep {
+    fn make_bid_step(
+        actor: Seat,
+        level: u8,
+        strain: BidSuit,
+        actions: Vec<BidAction>,
+    ) -> CommittedStep {
         CommittedStep {
             actor,
             call: bridge_engine::types::Call::Bid { level, strain },
@@ -379,16 +419,24 @@ mod tests {
                 Seat::South,
                 1,
                 BidSuit::Clubs,
-                vec![BidAction::Open { strain: BidSuitName::Clubs, strength: None }],
+                vec![BidAction::Open {
+                    strain: BidSuitName::Clubs,
+                    strength: None,
+                }],
             ),
             make_bid_step(
                 Seat::West,
                 2,
                 BidSuit::Hearts,
-                vec![BidAction::Overcall { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Hearts) }],
+                vec![BidAction::Overcall {
+                    feature: HandFeature::HeldSuit,
+                    suit: Some(ObsSuit::Hearts),
+                }],
             ),
         ];
-        let expr = RouteExpr::Last { pattern: overcall_hearts_pattern(None, None) };
+        let expr = RouteExpr::Last {
+            pattern: overcall_hearts_pattern(None, None),
+        };
         assert!(match_route(&expr, &log, None));
     }
 
@@ -398,24 +446,37 @@ mod tests {
             Seat::West,
             1,
             BidSuit::Hearts,
-            vec![BidAction::Overcall { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Hearts) }],
+            vec![BidAction::Overcall {
+                feature: HandFeature::HeldSuit,
+                suit: Some(ObsSuit::Hearts),
+            }],
         )];
         let log_2h = vec![
             make_bid_step(
                 Seat::South,
                 1,
                 BidSuit::Clubs,
-                vec![BidAction::Open { strain: BidSuitName::Clubs, strength: None }],
+                vec![BidAction::Open {
+                    strain: BidSuitName::Clubs,
+                    strength: None,
+                }],
             ),
             make_bid_step(
                 Seat::West,
                 2,
                 BidSuit::Hearts,
-                vec![BidAction::Overcall { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Hearts) }],
+                vec![BidAction::Overcall {
+                    feature: HandFeature::HeldSuit,
+                    suit: Some(ObsSuit::Hearts),
+                }],
             ),
         ];
-        let expr_1h = RouteExpr::Last { pattern: overcall_hearts_pattern(Some(1), None) };
-        let expr_2h = RouteExpr::Last { pattern: overcall_hearts_pattern(Some(2), None) };
+        let expr_1h = RouteExpr::Last {
+            pattern: overcall_hearts_pattern(Some(1), None),
+        };
+        let expr_2h = RouteExpr::Last {
+            pattern: overcall_hearts_pattern(Some(2), None),
+        };
         assert!(match_route(&expr_1h, &log_1h, None));
         assert!(!match_route(&expr_1h, &log_2h, None));
         assert!(match_route(&expr_2h, &log_2h, None));
@@ -430,19 +491,28 @@ mod tests {
                 Seat::South,
                 1,
                 BidSuit::Clubs,
-                vec![BidAction::Open { strain: BidSuitName::Clubs, strength: None }],
+                vec![BidAction::Open {
+                    strain: BidSuitName::Clubs,
+                    strength: None,
+                }],
             ),
             make_bid_step(
                 Seat::West,
                 1,
                 BidSuit::Spades,
-                vec![BidAction::Overcall { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Spades) }],
+                vec![BidAction::Overcall {
+                    feature: HandFeature::HeldSuit,
+                    suit: Some(ObsSuit::Spades),
+                }],
             ),
             make_bid_step(
                 Seat::North,
                 3,
                 BidSuit::Hearts,
-                vec![BidAction::Overcall { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Hearts) }],
+                vec![BidAction::Overcall {
+                    feature: HandFeature::HeldSuit,
+                    suit: Some(ObsSuit::Hearts),
+                }],
             ),
         ];
         // Non-jump log: 1C-1S-2H (2H is minimum legal for hearts).
@@ -451,23 +521,36 @@ mod tests {
                 Seat::South,
                 1,
                 BidSuit::Clubs,
-                vec![BidAction::Open { strain: BidSuitName::Clubs, strength: None }],
+                vec![BidAction::Open {
+                    strain: BidSuitName::Clubs,
+                    strength: None,
+                }],
             ),
             make_bid_step(
                 Seat::West,
                 1,
                 BidSuit::Spades,
-                vec![BidAction::Overcall { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Spades) }],
+                vec![BidAction::Overcall {
+                    feature: HandFeature::HeldSuit,
+                    suit: Some(ObsSuit::Spades),
+                }],
             ),
             make_bid_step(
                 Seat::North,
                 2,
                 BidSuit::Hearts,
-                vec![BidAction::Overcall { feature: HandFeature::HeldSuit, suit: Some(ObsSuit::Hearts) }],
+                vec![BidAction::Overcall {
+                    feature: HandFeature::HeldSuit,
+                    suit: Some(ObsSuit::Hearts),
+                }],
             ),
         ];
-        let jump_expr = RouteExpr::Last { pattern: overcall_hearts_pattern(None, Some(true)) };
-        let non_jump_expr = RouteExpr::Last { pattern: overcall_hearts_pattern(None, Some(false)) };
+        let jump_expr = RouteExpr::Last {
+            pattern: overcall_hearts_pattern(None, Some(true)),
+        };
+        let non_jump_expr = RouteExpr::Last {
+            pattern: overcall_hearts_pattern(None, Some(false)),
+        };
         assert!(match_route(&jump_expr, &jump_log, None));
         assert!(!match_route(&jump_expr, &non_jump_log, None));
         assert!(match_route(&non_jump_expr, &non_jump_log, None));
@@ -509,6 +592,82 @@ mod tests {
         assert!(json.contains("\"jump\":true"));
         let back: ObsPattern = serde_json::from_str(&json).unwrap();
         assert_eq!(back, p);
+    }
+
+    /// Regression: documents the same-phase disambiguation contract used by
+    /// negative-doubles / DONT. Two state entries share a phase but carry
+    /// different `route` patterns — `match_route` must select exactly the
+    /// matching one against the auction tail.
+    ///
+    /// Models the negative-doubles shape: after 1C opening + a 1-level
+    /// overcall, the fixture has separate states for overcall-diamonds,
+    /// overcall-hearts, overcall-spades. Only the one whose `route` matches
+    /// the actual overcall should accept its surfaces.
+    #[test]
+    fn route_last_disambiguates_same_phase_states_by_overcall_suit() {
+        // Auction: 1C (South) - 1H (West)
+        let log_1h = vec![
+            make_bid_step(
+                Seat::South,
+                1,
+                BidSuit::Clubs,
+                vec![BidAction::Open {
+                    strain: BidSuitName::Clubs,
+                    strength: None,
+                }],
+            ),
+            make_bid_step(
+                Seat::West,
+                1,
+                BidSuit::Hearts,
+                vec![BidAction::Overcall {
+                    feature: HandFeature::HeldSuit,
+                    suit: Some(ObsSuit::Hearts),
+                }],
+            ),
+        ];
+
+        let overcall_diamonds_route = RouteExpr::Last {
+            pattern: ObsPattern {
+                act: ObsPatternAct::Specific(BidActionType::Overcall),
+                feature: None,
+                suit: Some(ObsSuit::Diamonds),
+                strain: None,
+                strength: None,
+                actor: None,
+                level: Some(1),
+                jump: None,
+            },
+        };
+        let overcall_hearts_route = RouteExpr::Last {
+            pattern: ObsPattern {
+                act: ObsPatternAct::Specific(BidActionType::Overcall),
+                feature: None,
+                suit: Some(ObsSuit::Hearts),
+                strain: None,
+                strength: None,
+                actor: None,
+                level: Some(1),
+                jump: None,
+            },
+        };
+        let overcall_spades_route = RouteExpr::Last {
+            pattern: ObsPattern {
+                act: ObsPatternAct::Specific(BidActionType::Overcall),
+                feature: None,
+                suit: Some(ObsSuit::Spades),
+                strain: None,
+                strength: None,
+                actor: None,
+                level: Some(1),
+                jump: None,
+            },
+        };
+
+        // Exactly one of the three same-phase routes matches the auction tail.
+        assert!(!match_route(&overcall_diamonds_route, &log_1h, None));
+        assert!(match_route(&overcall_hearts_route, &log_1h, None));
+        assert!(!match_route(&overcall_spades_route, &log_1h, None));
     }
 
     #[test]

@@ -3,18 +3,33 @@
   "displayName": "Natural Bids",
   "category": "opening-bids",
   "fixtureVersion": 1,
-  "description": "Standard natural bids: opening bids, natural notrump raises, and other common non-convention sequences",
-  "purpose": "Learn the standard natural bids you use when no special convention applies",
+  "description": "Standard natural bids: one-level opening bids and natural notrump invite/game raises. This is an umbrella baseline — responder actions to 1-of-a-suit openings and opener rebid continuations are intentionally out of scope for this module and are handled by dedicated response/opening modules.",
+  "purpose": "Learn the baseline one-level opening bids and natural notrump raises that apply when no specialized convention changes the meaning of a call",
   "references": {
-    "authority": { "url": "https://en.wikipedia.org/wiki/Standard_American_Yellow_Card", "label": "ACBL SAYC — natural bidding rules are defined by the base system" },
-    "discovery": { "url": "https://www.bridgebum.com/sayc.php" }
+    "authority": {
+      "url": "https://en.wikipedia.org/wiki/Standard_American_Yellow_Card",
+      "label": "ACBL SAYC — natural bidding rules are defined by the base system"
+    },
+    "discovery": {
+      "url": "https://www.bridgebum.com/sayc.php"
+    }
   },
   "teaching": {
     "tradeoff": "There is no special tradeoff here — these bids keep their usual natural meanings",
     "principle": "When no major fit exists, raise notrump to the level your combined HCP supports — 25 total for game.",
     "commonMistakes": [
-      "Don't jump to 3NT with a worthless doubleton — consider if a suit contract might be safer",
-      "With a flat 8-9 HCP hand, 2NT (invite) is correct — don't stretch to game with marginal values"
+      {
+        "text": "Don't jump to three notrump with a worthless doubleton — consider whether a suit contract might play better",
+        "reason": "Notrump games need controls on the side suits; a bare doubleton in responder's hand can concede the first trick and set up a long suit for the defence."
+      },
+      {
+        "text": "With a flat invitational hand, raise to two notrump rather than stretching to game with marginal values",
+        "reason": "Opposite a minimum one notrump opening, game is poor on barely-invitational values; responder should let opener accept or decline."
+      },
+      {
+        "text": "Treat one club as possibly three cards in a four-four-three-two or four-three-three-three hand; do not play responder for four-plus clubs",
+        "reason": "With four-four in the majors and three-two in the minors, opener must bid one club because one diamond would promise four; the short-club convention keeps the opening natural without misrepresenting club length."
+      }
     ]
   },
   "explanationEntries": [
@@ -104,49 +119,32 @@
         "from": "idle",
         "to": "opened-suit",
         "on": {
-          "act": "open"
+          "act": "open",
+          "strain": "clubs"
         }
       },
       {
-        "from": "opened-nt",
-        "to": "responded",
+        "from": "idle",
+        "to": "opened-suit",
         "on": {
-          "act": "inquire"
+          "act": "open",
+          "strain": "diamonds"
         }
       },
       {
-        "from": "opened-nt",
-        "to": "responded",
+        "from": "idle",
+        "to": "opened-suit",
         "on": {
-          "act": "transfer"
+          "act": "open",
+          "strain": "hearts"
         }
       },
       {
-        "from": "opened-nt",
-        "to": "responded",
+        "from": "idle",
+        "to": "opened-suit",
         "on": {
-          "act": "raise"
-        }
-      },
-      {
-        "from": "opened-nt",
-        "to": "responded",
-        "on": {
-          "act": "place"
-        }
-      },
-      {
-        "from": "opened-nt",
-        "to": "responded",
-        "on": {
-          "act": "signoff"
-        }
-      },
-      {
-        "from": "opened-nt",
-        "to": "responded",
-        "on": {
-          "act": "show"
+          "act": "open",
+          "strain": "spades"
         }
       }
     ]
@@ -392,7 +390,10 @@
             "summary": "Open 1♠ with 12+ HCP and a 5-card or longer spade suit"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     },
     {
       "phase": "opened-nt",
@@ -504,9 +505,130 @@
             "summary": "Bid game in notrump with game-forcing values and no 4-card or 5-card major"
           }
         }
-      ]
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
+  "reference": {
+    "summaryCard": {
+      "trigger": "No specialized agreement applies and the auction stays natural",
+      "definingMeaningId": "bridge:1nt-opening",
+      "partnership": "This module is intentionally an umbrella baseline, not a full continuation encyclopedia. Use it as the natural layer underneath the more specific response and opening modules."
+    },
+    "whenToUse": [
+      {
+        "predicate": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.hcp",
+            "operator": "gte",
+            "value": 12
+          }
+        },
+        "gloss": "Use the natural one-level openings when you have opening values and no attached convention changes the meaning of the call."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "booleanFact",
+                    "fact_id": "system.responder.inviteValues",
+                    "expected": true
+                  }
+                },
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "booleanFact",
+                    "fact_id": "system.responder.gameValues",
+                    "expected": true
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "bridge.hasFourCardMajor",
+                "expected": false
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "bridge.hasFiveCardMajor",
+                "expected": false
+              }
+            }
+          ]
+        },
+        "gloss": "Use the natural notrump raises here when responder has the right invite-or-game strength opposite one notrump and no major-suit route is better."
+      }
+    ],
+    "workedAuctions": [],
+    "interference": {
+      "status": "notApplicable",
+      "reason": "This module is an umbrella for baseline natural actions, not a dedicated competitive treatment. Use the competitive modules for interference-specific agreements."
+    },
+    "quickReference": {
+      "kind": "list",
+      "axis": {
+        "kind": "systemFactLadder",
+        "label": "Responder strength opposite one notrump",
+        "facts": [
+          "system.responder.weakHand",
+          "system.responder.inviteValues",
+          "system.responder.gameValues"
+        ]
+      },
+      "items": [
+        {
+          "recommendation": "This axis does not apply: opposite a one notrump opening, a weak responder passes, bids Stayman, or uses Jacoby transfers instead of a natural notrump raise.",
+          "note": "Natural-bids covers only the invite and game notrump raises; the weak-responder row is handled by pass and by the Stayman and transfer modules."
+        },
+        {
+          "recommendation": "Without a major-suit convention route, invite with two notrump.",
+          "note": "Use this only when Stayman and transfers are off the table."
+        },
+        {
+          "recommendation": "Without a major-suit convention route, place the hand in three notrump.",
+          "note": "Game-going natural notrump raises stay here; the specialized modules cover major-suit searches."
+        }
+      ]
+    },
+    "relatedLinks": [
+      {
+        "moduleId": "stayman",
+        "discriminator": "Use Stayman when the natural one notrump response should become a major-suit ask instead of a direct natural raise."
+      },
+      {
+        "moduleId": "stayman-garbage",
+        "discriminator": "Garbage Stayman escapes a weak unbalanced responder to a major-suit partscore instead of leaving the hand in an unsuitable one notrump."
+      },
+      {
+        "moduleId": "jacoby-transfers",
+        "discriminator": "Transfers replace natural direct bids when responder has a five-card major and wants opener to declare."
+      },
+      {
+        "moduleId": "weak-twos",
+        "discriminator": "Weak two openings are specialized preemptive actions; this module covers the natural baseline when that treatment is not in play."
+      },
+      {
+        "moduleId": "strong-2c",
+        "discriminator": "Strong two clubs replaces ordinary natural openings when the hand is too strong for the baseline structure."
+      }
+    ]
+  },
   "facts": {
     "definitions": []
   }

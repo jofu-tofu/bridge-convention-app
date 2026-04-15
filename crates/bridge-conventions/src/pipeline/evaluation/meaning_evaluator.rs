@@ -158,6 +158,14 @@ fn precompute_binding_facts(
                     strain: suit.clone(),
                     confidence: crate::types::ConfidenceLevel::Tentative,
                 });
+        // Coverage gap: this path does NOT populate public_commitments.
+        // Blackwood combined ace/king counts are synthesized only by
+        // convention_adapter::ConventionStrategyAdapter::derive_blackwood_commitments
+        // (which has access to the full observation log). meaning_evaluator.rs runs
+        // in a per-surface bindings-projection context that does not see the log
+        // here, so CombinedAceCount/CombinedKingCount extended clauses evaluate
+        // with partner = 0 on this path. See docs/guides/gotchas.md
+        // "Blackwood combined counts only flow through the convention adapter".
         let ctx = RelationalFactContext {
             bindings: Some(bindings.clone()),
             public_commitments: None,

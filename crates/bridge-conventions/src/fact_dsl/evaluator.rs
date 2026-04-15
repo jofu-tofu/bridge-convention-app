@@ -79,7 +79,6 @@ pub fn evaluate_facts(
         .collect();
 
     let sorted = topological_sort(&composable_defs);
-    let bindings = relational_context.and_then(|ctx| ctx.bindings.as_ref());
 
     for def in sorted {
         // Skip if already evaluated (primitives, bridge-derived, system)
@@ -88,7 +87,7 @@ pub fn evaluate_facts(
         }
 
         if let Some(composition) = def.composition.as_ref() {
-            let value = evaluate_composition(composition, hand, &facts, bindings);
+            let value = evaluate_composition(composition, hand, &facts, relational_context);
             facts.insert(
                 def.id.clone(),
                 FactValue {
