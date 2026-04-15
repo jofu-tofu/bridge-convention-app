@@ -83,11 +83,11 @@
   class={`root rounded-[--radius-lg] border border-border-default border-l-4 p-4 shadow-sm ${accentClass}`.trim()}
   aria-labelledby="summary-card-heading"
 >
-  <div class="mb-3 flex items-center justify-between gap-3">
+  <div class="summary-header mb-3 flex items-center justify-between gap-3">
     <h2 id="summary-card-heading" class="text-[--text-heading] font-semibold text-text-primary">
       Summary Card
     </h2>
-    <span class="rounded-full border border-border-default px-2 py-1 text-[--text-annotation] uppercase tracking-[0.12em] text-text-muted">
+    <span class="summary-category rounded-full border border-border-default px-2 py-1 text-[--text-annotation] uppercase tracking-[0.12em] text-text-muted">
       {category}
     </span>
   </div>
@@ -95,7 +95,7 @@
   <dl class="divide-y divide-border-subtle">
     {#each heroLines as line (line.label)}
       {#if typeof line.value === "string" && line.value.trim() !== ""}
-        <div class="grid gap-2 py-3 md:grid-cols-[10rem_minmax(0,1fr)] md:items-start">
+        <div class="summary-row grid gap-2 py-3">
           <dt class="text-[--text-label] font-semibold uppercase tracking-[0.12em] text-text-muted">
             {line.label}
           </dt>
@@ -172,10 +172,47 @@
 <style>
   .root {
     break-inside: avoid;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .summary-header {
+    flex-wrap: wrap;
+  }
+
+  .summary-header h2 {
+    min-width: 0;
+  }
+
+  .summary-category {
+    display: inline-flex;
+    flex: 0 0 auto;
+    width: fit-content;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .summary-row {
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+  }
+
+  .summary-row dt,
+  .summary-row dd {
+    min-width: 0;
+  }
+
+  @media (min-width: 641px) {
+    .summary-row {
+      grid-template-columns: minmax(max-content, 150px) minmax(0, 1fr);
+      align-items: start;
+    }
   }
 
   .bids-grid.md-multi {
     grid-template-columns: 1fr;
+    min-width: 0;
   }
 
   @media (min-width: 768px) {
@@ -186,6 +223,7 @@
 
   .bid-tile {
     break-inside: avoid;
+    min-width: 0;
     background:
       linear-gradient(135deg, color-mix(in srgb, var(--color-bg-card) 78%, white 6%), transparent),
       color-mix(in srgb, var(--color-bg-card) 92%, transparent);
@@ -198,6 +236,7 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-text-muted);
+    overflow-wrap: break-word;
   }
 
   .bid-tile__bid :global(span) {

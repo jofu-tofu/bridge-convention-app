@@ -193,10 +193,12 @@
 
   .reference-stack {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
   }
 
   .scroll-target {
+    min-width: 0;
     scroll-margin-top: 6rem;
   }
 
