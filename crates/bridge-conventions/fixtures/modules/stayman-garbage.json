@@ -4,28 +4,28 @@
   "category": "notrump-responses",
   "fixtureVersion": 1,
   "variantOf": "stayman",
-  "description": "Bid 2C over 1NT as Garbage Stayman — a weak-hand escape with 4-4 majors and short clubs",
-  "purpose": "Use Stayman as an escape mechanism with weak hands containing both majors and at most one club, planning to pass any response",
+  "description": "Bid 2C over 1NT as Garbage Stayman — a weak-hand escape with both majors, including the Crawling Stayman continuation when diamonds are short",
+  "purpose": "Use Stayman as an escape mechanism with weak hands containing both majors, passing a safe response or rebidding 2H over a 2D denial when diamonds are short",
   "references": {
     "authority": {
-      "url": "https://www.bridgeguys.com/Conventions/GarbageStayman.html",
-      "label": "Bridge Guys — Garbage Stayman as a 4-4 majors, short-club escape variant"
+      "url": "https://en.wikipedia.org/wiki/Stayman_convention#Garbage_Stayman_and_crawling_Stayman",
+      "label": "Wikipedia (Stayman convention) — Garbage Stayman and crawling Stayman variants"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/garbage_stayman.php"
     }
   },
   "teaching": {
-    "tradeoff": "Garbage Stayman sacrifices the standard HCP requirement for Stayman to allow weak hands with short clubs to escape 1NT.",
-    "principle": "With a weak hand, both majors, and short clubs, bid 2C planning to pass any response — you will land in a better contract than 1NT.",
+    "tradeoff": "Garbage Stayman sacrifices the standard HCP requirement for Stayman to let weak both-major hands escape 1NT.",
+    "principle": "With a weak hand and both majors, use Stayman to escape 1NT; pass a safe response, or over a 2D denial bid 2H when diamonds are too short to pass.",
     "commonMistakes": [
       {
         "text": "Do not use Garbage Stayman without both majors.",
         "reason": "The ask only works when every likely major reply is a safe resting place."
       },
       {
-        "text": "Do not use Garbage Stayman without short clubs.",
-        "reason": "A diamond denial is the escape hatch, so extra clubs make the fallback unsafe."
+        "text": "Do not pass opener's 2D denial with short diamonds.",
+        "reason": "When diamonds are short, Crawling Stayman uses 2H to ask opener to choose a major instead."
       },
       {
         "text": "Do not treat Garbage Stayman as constructive.",
@@ -329,6 +329,14 @@
       "meaningId": "stayman:garbage-pass-after-spades",
       "templateKey": "nt.stayman.garbagePassAfterSpades.semantic",
       "displayText": "Pass opener's 2♠ — Garbage Stayman escape with a weak hand",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "nt.stayman.crawlingAfterDenial",
+      "meaningId": "stayman:crawling-2h-after-denial",
+      "templateKey": "nt.stayman.crawlingAfterDenial.semantic",
+      "displayText": "Bid 2♥ after 2♦ — Crawling Stayman asks opener to choose a major",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -1168,9 +1176,9 @@
             {
               "factId": "hand.suitLength.clubs",
               "operator": "lte",
-              "value": 2,
-              "clauseId": "hand.suitLength.clubs:lte:2",
-              "description": "Short clubs (garbage Stayman shape premise)",
+              "value": 1,
+              "clauseId": "hand.suitLength.clubs:lte:1",
+              "description": "Singleton or void in clubs",
               "rationale": "Garbage Stayman asks only with short clubs; passing 2H is safe with the same shape",
               "isPublic": true
             }
@@ -1616,9 +1624,9 @@
             {
               "factId": "hand.suitLength.clubs",
               "operator": "lte",
-              "value": 2,
-              "clauseId": "hand.suitLength.clubs:lte:2",
-              "description": "Short clubs (garbage Stayman shape premise)",
+              "value": 1,
+              "clauseId": "hand.suitLength.clubs:lte:1",
+              "description": "Singleton or void in clubs",
               "rationale": "Garbage Stayman asks only with short clubs; passing 2S is safe with the same shape",
               "isPublic": true
             }
@@ -2091,6 +2099,73 @@
           }
         },
         {
+          "meaningId": "stayman:crawling-2h-after-denial",
+          "semanticClassId": "stayman:crawling-stayman",
+          "moduleId": "stayman",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.responder.weakHand",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.weakHand:boolean:true",
+              "description": "Weak hand (0–7 HCP)",
+              "rationale": "Crawling Stayman is a weak-hand rescue sequence",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts",
+              "rationale": "Opener may pass 2H as the chosen major",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
+              "rationale": "Opener may correct to 2S as the chosen major",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.diamonds:lte:2",
+              "description": "Short diamonds",
+              "rationale": "Responder cannot safely pass opener's 2D denial",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 9
+          },
+          "sourceIntent": {
+            "type": "Signoff",
+            "params": {
+              "suit": "hearts",
+              "reason": "crawling-stayman"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Crawling Stayman 2♥",
+            "summary": "After opener's 2♦ denial, bid 2♥ with a weak 4-4 majors hand and short diamonds so opener can pass hearts or correct to spades"
+          }
+        },
+        {
           "meaningId": "stayman:garbage-pass-after-denial",
           "semanticClassId": "stayman:garbage-pass",
           "moduleId": "stayman",
@@ -2112,9 +2187,9 @@
             {
               "factId": "hand.suitLength.clubs",
               "operator": "lte",
-              "value": 2,
-              "clauseId": "hand.suitLength.clubs:lte:2",
-              "description": "Short clubs (garbage Stayman shape premise)",
+              "value": 1,
+              "clauseId": "hand.suitLength.clubs:lte:1",
+              "description": "Singleton or void in clubs",
               "rationale": "Garbage Stayman asks only with short clubs",
               "isPublic": true
             },
@@ -2131,7 +2206,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 9
+            "declarationOrder": 10
           },
           "sourceIntent": {
             "type": "Signoff",
@@ -2155,7 +2230,7 @@
     "summaryCard": {
       "trigger": "Partner opens one notrump and responder is escaping",
       "definingMeaningId": "stayman:ask-major",
-      "partnership": "Requires an explicit partnership agreement that Stayman can be non-forcing here; responder uses the two-club ask as a weak escape and plans to pass any reply."
+      "partnership": "Requires an explicit partnership agreement that Stayman can be non-forcing here; responder uses the two-club ask as a weak escape, with Crawling Stayman available after a diamond denial."
     },
     "whenToUse": [
       {
@@ -2203,6 +2278,17 @@
           }
         },
         "gloss": "Use it when short clubs make a diamond escape safe."
+      },
+      {
+        "predicate": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.diamonds",
+            "operator": "lte",
+            "value": 2
+          }
+        },
+        "gloss": "After a diamond denial, rebid two hearts as Crawling Stayman when diamonds are short."
       }
     ],
     "workedAuctions": [
@@ -2323,6 +2409,57 @@
               "type": "pass"
             },
             "rationale": "Short clubs imply enough diamonds to tolerate the denial as the final spot."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "Crawling Stayman avoids a short-diamond trap",
+        "calls": [
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Opener begins with the notrump opening."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            },
+            "rationale": "Responder starts the weak escape with both majors."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            },
+            "rationale": "Opener denies a four-card major."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            },
+            "rationale": "With short diamonds, responder crawls to hearts and asks opener to pass hearts or correct to spades."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            },
+            "rationale": "Opener chooses spades at the cheapest level when that is the better major."
           }
         ]
       },

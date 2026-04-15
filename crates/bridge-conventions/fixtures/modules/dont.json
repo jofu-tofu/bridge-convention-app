@@ -7,8 +7,8 @@
   "purpose": "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
   "references": {
     "authority": {
-      "url": "https://www.bridgeguys.com/Conventions/DONT.html",
-      "label": "Bridge Guys — comprehensive DONT coverage including Marty Bergen's original and common variants"
+      "url": "https://kwbridge.com/dont.htm",
+      "label": "Karen Walker — DONT overcalls against a strong 1NT, with suit-pair meanings and the short-spade treatment"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/dont.php"
@@ -278,6 +278,36 @@
       "roles": ["supporting", "blocking"]
     },
     {
+      "explanationId": "dont.majorMinorMonster",
+      "factId": "module.dont.majorMinorMonster",
+      "templateKey": "dont.majorMinorMonster.supporting",
+      "displayText": "Major-minor two-suiter, 6-5 or better",
+      "contrastiveTemplateKey": "dont.majorMinorMonster.whyNot",
+      "contrastiveDisplayText": "Does not hold a major-minor two-suiter of 6-5 or better",
+      "preferredLevel": "semantic",
+      "roles": ["supporting", "blocking"]
+    },
+    {
+      "explanationId": "dont.majorTwoSuiterMonster",
+      "factId": "module.dont.majorTwoSuiterMonster",
+      "templateKey": "dont.majorTwoSuiterMonster.supporting",
+      "displayText": "Major two-suiter, 6-5 or better",
+      "contrastiveTemplateKey": "dont.majorTwoSuiterMonster.whyNot",
+      "contrastiveDisplayText": "Does not hold both majors 6-5 or better",
+      "preferredLevel": "semantic",
+      "roles": ["supporting", "blocking"]
+    },
+    {
+      "explanationId": "dont.gameInterest",
+      "factId": "module.dont.gameInterest",
+      "templateKey": "dont.gameInterest.supporting",
+      "displayText": "Strong enough to make a game try after the relay",
+      "contrastiveTemplateKey": "dont.gameInterest.whyNot",
+      "contrastiveDisplayText": "Not strong enough for the jump-rebid game try",
+      "preferredLevel": "semantic",
+      "roles": ["supporting", "blocking"]
+    },
+    {
       "explanationId": "dont.stub.opponent1nt",
       "meaningId": "dont:opponent-1nt",
       "templateKey": "dont.stub.opponent1nt.semantic",
@@ -322,6 +352,54 @@
       "meaningId": "dont:single-suited-double",
       "templateKey": "dont.r1.singleSuited.semantic",
       "displayText": "Double: One long suit (6+), relay for identity",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.r1.majorMinorMonster",
+      "meaningId": "dont:major-minor-monster-2nt",
+      "templateKey": "dont.r1.majorMinorMonster.semantic",
+      "displayText": "2NT: Major-minor two-suiter, 6-5 or better, monster hand",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.r1.preemptClubs",
+      "meaningId": "dont:preempt-clubs-3c",
+      "templateKey": "dont.r1.preemptClubs.semantic",
+      "displayText": "3C: Preemptive long club suit",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.r1.preemptDiamonds",
+      "meaningId": "dont:preempt-diamonds-3d",
+      "templateKey": "dont.r1.preemptDiamonds.semantic",
+      "displayText": "3D: Preemptive long diamond suit",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.r1.preemptHearts",
+      "meaningId": "dont:preempt-hearts-3h",
+      "templateKey": "dont.r1.preemptHearts.semantic",
+      "displayText": "3H: Preemptive long heart suit",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.r1.preemptSpades",
+      "meaningId": "dont:preempt-spades-3s",
+      "templateKey": "dont.r1.preemptSpades.semantic",
+      "displayText": "3S: Preemptive long spade suit",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.r1.majorTwoSuiterMonster",
+      "meaningId": "dont:major-two-suiter-monster-3nt",
+      "templateKey": "dont.r1.majorTwoSuiterMonster.semantic",
+      "displayText": "3NT: Major two-suiter, 6-5 or better, monster hand",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -470,6 +548,14 @@
       "roles": ["pedagogical"]
     },
     {
+      "explanationId": "dont.adv.monsterRelay",
+      "meaningId": "dont:relay-3c-after-2nt",
+      "templateKey": "dont.adv.monsterRelay.semantic",
+      "displayText": "3C: Forced relay after partner's 2NT monster overcall",
+      "preferredLevel": "mechanical",
+      "roles": ["pedagogical"]
+    },
+    {
       "explanationId": "dont.adv.bypassDiamonds",
       "meaningId": "dont:bypass-diamonds-2d",
       "templateKey": "dont.adv.bypassDiamonds.semantic",
@@ -514,6 +600,54 @@
       "meaningId": "dont:reveal-hearts-2h",
       "templateKey": "dont.reveal.hearts.semantic",
       "displayText": "2H: 6+ hearts",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.reveal.jumpClubs",
+      "meaningId": "dont:jump-reveal-clubs-3c",
+      "templateKey": "dont.reveal.jumpClubs.semantic",
+      "displayText": "3C: Clubs with game interest after the relay",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.reveal.jumpDiamonds",
+      "meaningId": "dont:jump-reveal-diamonds-3d",
+      "templateKey": "dont.reveal.jumpDiamonds.semantic",
+      "displayText": "3D: Diamonds with game interest after the relay",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.reveal.jumpHearts",
+      "meaningId": "dont:jump-reveal-hearts-3h",
+      "templateKey": "dont.reveal.jumpHearts.semantic",
+      "displayText": "3H: Hearts with game interest after the relay",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.adv.strongInviteClubs",
+      "meaningId": "dont:strong-invite-2nt-after-club-reveal",
+      "templateKey": "dont.adv.strongInviteClubs.semantic",
+      "displayText": "2NT: Strong invitation after partner reveals clubs",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.adv.strongInviteDiamonds",
+      "meaningId": "dont:strong-invite-2nt-after-diamond-reveal",
+      "templateKey": "dont.adv.strongInviteDiamonds.semantic",
+      "displayText": "2NT: Strong invitation after partner reveals diamonds",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "dont.adv.strongInviteHearts",
+      "meaningId": "dont:strong-invite-2nt-after-heart-reveal",
+      "templateKey": "dont.adv.strongInviteHearts.semantic",
+      "displayText": "2NT: Strong invitation after partner reveals hearts",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -571,6 +705,64 @@
       },
       {
         "from": "r1",
+        "to": "after-2nt",
+        "on": {
+          "act": "force",
+          "strength": "game",
+          "level": 2
+        }
+      },
+      {
+        "from": "r1",
+        "to": "done",
+        "on": {
+          "act": "force",
+          "strength": "game",
+          "level": 3
+        }
+      },
+      {
+        "from": "r1",
+        "to": "done",
+        "on": {
+          "act": "overcall",
+          "feature": "heldSuit",
+          "suit": "clubs",
+          "level": 3
+        }
+      },
+      {
+        "from": "r1",
+        "to": "done",
+        "on": {
+          "act": "overcall",
+          "feature": "heldSuit",
+          "suit": "diamonds",
+          "level": 3
+        }
+      },
+      {
+        "from": "r1",
+        "to": "done",
+        "on": {
+          "act": "overcall",
+          "feature": "heldSuit",
+          "suit": "hearts",
+          "level": 3
+        }
+      },
+      {
+        "from": "r1",
+        "to": "done",
+        "on": {
+          "act": "overcall",
+          "feature": "heldSuit",
+          "suit": "spades",
+          "level": 3
+        }
+      },
+      {
+        "from": "r1",
         "to": "after-2h",
         "on": {
           "act": "show",
@@ -602,7 +794,8 @@
         "on": {
           "act": "overcall",
           "feature": "heldSuit",
-          "suit": "spades"
+          "suit": "spades",
+          "level": 2
         }
       },
       {
@@ -756,6 +949,13 @@
         }
       },
       {
+        "from": "after-2nt",
+        "to": "wait-2nt-relay",
+        "on": {
+          "act": "relay"
+        }
+      },
+      {
         "from": "after-double",
         "to": "done",
         "on": {
@@ -794,7 +994,24 @@
         "from": "wait-reveal",
         "to": "done",
         "on": {
+          "act": "show",
+          "level": 3
+        }
+      },
+      {
+        "from": "wait-reveal",
+        "to": "after-one-suit-reveal",
+        "on": {
           "act": "show"
+        }
+      },
+      {
+        "from": "after-one-suit-reveal",
+        "to": "done",
+        "on": {
+          "act": "raise",
+          "strain": "notrump",
+          "strength": "invitational"
         }
       },
       {
@@ -874,6 +1091,264 @@
       "phase": "r1",
       "surfaces": [
         {
+          "meaningId": "dont:major-minor-monster-2nt",
+          "semanticClassId": "dont:monster-two-suiter",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 16,
+              "clauseId": "hand.hcp:gte:16",
+              "description": "Monster strength"
+            },
+            {
+              "factId": "module.dont.majorMinorMonster",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.majorMinorMonster:boolean:true",
+              "description": "Major-minor two-suiter",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTMajorMinorMonster",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — major-minor monster",
+            "summary": "Show a major-minor two-suiter, 6-5 or better, with monster playing strength"
+          }
+        },
+        {
+          "meaningId": "dont:major-two-suiter-monster-3nt",
+          "semanticClassId": "dont:monster-two-suiter",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 16,
+              "clauseId": "hand.hcp:gte:16",
+              "description": "Monster strength"
+            },
+            {
+              "factId": "module.dont.majorTwoSuiterMonster",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.majorTwoSuiterMonster:boolean:true",
+              "description": "Major two-suiter",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTMajorTwoSuiterMonster",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3NT — major two-suiter monster",
+            "summary": "Show both majors, 6-5 or better, with monster playing strength"
+          }
+        },
+        {
+          "meaningId": "dont:preempt-clubs-3c",
+          "semanticClassId": "dont:preemptive-long-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 10,
+              "clauseId": "hand.hcp:lte:10",
+              "description": "Preemptive strength"
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 7,
+              "clauseId": "hand.suitLength.clubs:gte:7",
+              "description": "7+ clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "DONTPreemptClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3C — preemptive clubs",
+            "summary": "Preempt directly with a seven-card or longer club suit"
+          }
+        },
+        {
+          "meaningId": "dont:preempt-diamonds-3d",
+          "semanticClassId": "dont:preemptive-long-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 10,
+              "clauseId": "hand.hcp:lte:10",
+              "description": "Preemptive strength"
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 7,
+              "clauseId": "hand.suitLength.diamonds:gte:7",
+              "description": "7+ diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTPreemptDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3D — preemptive diamonds",
+            "summary": "Preempt directly with a seven-card or longer diamond suit"
+          }
+        },
+        {
+          "meaningId": "dont:preempt-hearts-3h",
+          "semanticClassId": "dont:preemptive-long-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 10,
+              "clauseId": "hand.hcp:lte:10",
+              "description": "Preemptive strength"
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 7,
+              "clauseId": "hand.suitLength.hearts:gte:7",
+              "description": "7+ hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "DONTPreemptHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H — preemptive hearts",
+            "summary": "Preempt directly with a seven-card or longer heart suit"
+          }
+        },
+        {
+          "meaningId": "dont:preempt-spades-3s",
+          "semanticClassId": "dont:preemptive-long-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 10,
+              "clauseId": "hand.hcp:lte:10",
+              "description": "Preemptive strength"
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 7,
+              "clauseId": "hand.suitLength.spades:gte:7",
+              "description": "7+ spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "DONTPreemptSpades",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3S — preemptive spades",
+            "summary": "Preempt directly with a seven-card or longer spade suit"
+          }
+        },
+        {
           "meaningId": "dont:both-majors-2h",
           "semanticClassId": "dont:both-majors",
           "moduleId": "dont",
@@ -904,7 +1379,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 0
+            "declarationOrder": 10
           },
           "sourceIntent": {
             "type": "DONTBothMajors",
@@ -947,7 +1422,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 1
+            "declarationOrder": 11
           },
           "sourceIntent": {
             "type": "DONTDiamondsMajor",
@@ -990,7 +1465,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 2
+            "declarationOrder": 12
           },
           "sourceIntent": {
             "type": "DONTClubsHigher",
@@ -1033,7 +1508,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 3
+            "declarationOrder": 13
           },
           "sourceIntent": {
             "type": "DONTNaturalSpades",
@@ -1074,7 +1549,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 4
+            "declarationOrder": 14
           },
           "sourceIntent": {
             "type": "DONTSingleSuited",
@@ -1099,7 +1574,7 @@
           "ranking": {
             "recommendationBand": "avoid",
             "modulePrecedence": 0,
-            "declarationOrder": 5
+            "declarationOrder": 15
           },
           "sourceIntent": {
             "type": "DONTPass",
@@ -2093,6 +2568,49 @@
       }
     },
     {
+      "phase": "after-2nt",
+      "surfaces": [
+        {
+          "meaningId": "dont:relay-3c-after-2nt",
+          "semanticClassId": "dont:forced-relay",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTForcedRelay",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3C — forced relay",
+            "summary": "Relay after the 2NT major-minor monster so overcaller can identify the suits"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "wait-2nt-relay",
+      "surfaces": [],
+      "scope": {
+        "kind": "out_of_scope",
+        "reason": "Karen Walker states that 2NT relays partner to 3C, after which the DONT bidder identifies the two suits using a complicated code, but the handout delegates those follow-ups to the original Bridge Today article."
+      }
+    },
+    {
       "phase": "after-double",
       "surfaces": [
         {
@@ -2342,6 +2860,318 @@
           "teachingLabel": {
             "name": "2H — hearts",
             "summary": "Reveal hearts as the long suit by correcting from the 2C relay"
+          }
+        },
+        {
+          "meaningId": "dont:jump-reveal-clubs-3c",
+          "semanticClassId": "dont:reveal-clubs",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.singleSuitClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.singleSuitClubs:boolean:true",
+              "description": "Single-suited: clubs",
+              "isPublic": true
+            },
+            {
+              "factId": "module.dont.gameInterest",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.gameInterest:boolean:true",
+              "description": "Game-interest strength",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "DONTShowClubs",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3C — clubs, game interest",
+            "summary": "Jump to three clubs after the relay to show clubs with game interest"
+          }
+        },
+        {
+          "meaningId": "dont:jump-reveal-diamonds-3d",
+          "semanticClassId": "dont:reveal-diamonds",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.singleSuitDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.singleSuitDiamonds:boolean:true",
+              "description": "Single-suited: diamonds",
+              "isPublic": true
+            },
+            {
+              "factId": "module.dont.gameInterest",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.gameInterest:boolean:true",
+              "description": "Game-interest strength",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "DONTShowDiamonds",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3D — diamonds, game interest",
+            "summary": "Jump to three diamonds after the relay to show diamonds with game interest"
+          }
+        },
+        {
+          "meaningId": "dont:jump-reveal-hearts-3h",
+          "semanticClassId": "dont:reveal-hearts",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.singleSuitHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.singleSuitHearts:boolean:true",
+              "description": "Single-suited: hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "module.dont.gameInterest",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.gameInterest:boolean:true",
+              "description": "Game-interest strength",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "DONTShowHearts",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "3H — hearts, game interest",
+            "summary": "Jump to three hearts after the relay to show hearts with game interest"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-one-suit-reveal",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "clubs",
+          "actor": "opponent"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "dont:strong-invite-2nt-after-club-reveal",
+          "semanticClassId": "dont:strong-invite",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.hasClubSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasClubSupport:boolean:true",
+              "description": "Club support",
+              "isPublic": true
+            },
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Strong invitation"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTStrongInvite2NT",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — strong invite",
+            "summary": "Show a fit and a stronger game invitation after partner reveals clubs"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-one-suit-reveal",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "diamonds",
+          "actor": "opponent"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "dont:strong-invite-2nt-after-diamond-reveal",
+          "semanticClassId": "dont:strong-invite",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.hasDiamondSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasDiamondSupport:boolean:true",
+              "description": "Diamond support",
+              "isPublic": true
+            },
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Strong invitation"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTStrongInvite2NT",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — strong invite",
+            "summary": "Show a fit and a stronger game invitation after partner reveals diamonds"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-one-suit-reveal",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "hearts",
+          "actor": "opponent"
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "dont:strong-invite-2nt-after-heart-reveal",
+          "semanticClassId": "dont:strong-invite",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasHeartSupport:boolean:true",
+              "description": "Heart support",
+              "isPublic": true
+            },
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Strong invitation"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTStrongInvite2NT",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — strong invite",
+            "summary": "Show a fit and a stronger game invitation after partner reveals hearts"
           }
         }
       ],
@@ -4549,7 +5379,7 @@
     "summaryCard": {
       "trigger": "Opponent opens one notrump and you interfere",
       "definingMeaningId": "dont:single-suited-double",
-      "partnership": "This fixture treats DONT as a defense to a strong one notrump and uses the natural two-spades treatment, where two spades shows a six-card or longer spade suit. Some partnerships prefer Marty Bergen's original two-suited style where two spades shows spades plus an unspecified minor, so confirm that agreement before playing."
+      "partnership": "This fixture treats DONT as a defense to a strong one notrump and uses the natural two-spades treatment, where two spades shows a six-card or longer spade suit. It also includes Walker's direct monster two-suiter calls and preemptive direct three-level jumps. Some partnerships prefer Marty Bergen's original two-suited style where two spades shows spades plus an unspecified minor, so confirm that agreement before playing."
     },
     "whenToUse": [
       {
@@ -4704,6 +5534,62 @@
           ]
         },
         "gloss": "Use two hearts for both majors, or bid two spades naturally with a real spade suit, when the majors are where you expect to compete."
+      },
+      {
+        "predicate": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.dont.majorMinorMonster",
+                "expected": true
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "module.dont.majorTwoSuiterMonster",
+                "expected": true
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 7
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 7
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 7
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 7
+              }
+            }
+          ]
+        },
+        "gloss": "Use the direct monster calls for very shapely two-suiters, and direct three-level jumps as preempts with a very long suit."
       }
     ],
     "workedAuctions": [
@@ -4782,6 +5668,39 @@
             "rationale": "Passing here would be the wrong partnership expectation, because advancer is supposed to relay unless holding a special agreement."
           }
         ]
+      },
+      {
+        "kind": "positive",
+        "label": "Monster major-minor two-suiter starts with two notrump",
+        "calls": [
+          {
+            "seat": "W",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "The opponents open a strong 1NT."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            },
+            "rationale": "DONT 2NT shows a monster major-minor two-suiter rather than a natural notrump bid."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            },
+            "rationale": "Advancer relays to 3C so overcaller can identify the two suits by partnership agreement."
+          }
+        ]
       }
     ],
     "interference": {
@@ -4812,16 +5731,16 @@
       },
       "items": [
         {
-          "recommendation": "With a weak hand, pass or correct into the known fit, and use the cheapest relay only when partner still owes shape.",
-          "note": "This strength ladder replaces the old call-by-call chart because the hidden two-suited shape partition is still deferred."
+          "recommendation": "With a weak hand, pass or correct into the known fit, and use direct three-level jumps only as preemptive long-suit actions.",
+          "note": "The direct preempts are separate from the relay-and-correct structure."
         },
         {
           "recommendation": "With invitational values, keep competing naturally unless partner's artificial call still needs a relay to uncover the second suit.",
-          "note": "The shared bucket loses the exact mapping from each artificial overcall to its promised shape."
+          "note": "After a one-suit reveal, a jump to notrump is the stronger invitation when you have a fit."
         },
         {
-          "recommendation": "With game values, use the forcing inquiry or jump once you know enough about the fit.",
-          "note": "The game-forcing branch stays visible, but the old per-call rows are gone until overcall.twoSuitedShape exists."
+          "recommendation": "With game values, use the forcing inquiry or the direct monster actions when the hand is too strong and shapely for the normal DONT range.",
+          "note": "The notrump monster route relays through clubs; Walker's handout does not spell out the full reveal code."
         }
       ]
     },
@@ -5191,6 +6110,261 @@
             "factId": "hand.suitLength.clubs",
             "operator": "gte",
             "value": 6
+          }
+        }
+      },
+      {
+        "id": "module.dont.majorMinorMonster",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Major-minor two-suiter, 6-5 or better",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.dont.majorTwoSuiterMonster",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Hearts and spades, 6-5 or better",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.dont.gameInterest",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "11+ HCP — game interest after partner's forced relay",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": ["pointRange"],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.hcp",
+            "operator": "gte",
+            "value": 11
           }
         }
       },

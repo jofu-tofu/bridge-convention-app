@@ -22,4 +22,4 @@ This difference is intentional. Keep the modern variant unless a partnership exp
 If ConventionForge verify or any similar authority-comparison tool flags `reveal-spades-2S` as missing, that is **expected** given the authority anchor. Do not add the surface; instead, either:
 
 1. Keep the variant gap as an explicit "modern variant" note in the report, or
-2. Re-anchor the verify run on a modern DONT reference (e.g., Bridge Guys' "modern variant" section, BridgeBum) rather than the original Bergen source.
+2. Re-anchor the verify run on a modern DONT reference (e.g., Karen Walker's handout at kwbridge.com/dont.htm, or BridgeBum) rather than the original Bergen source.

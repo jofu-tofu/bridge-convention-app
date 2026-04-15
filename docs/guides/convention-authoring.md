@@ -10,12 +10,41 @@ Priority chain for resolving ambiguity:
 2. **ACBL SAYC Booklet** — https://www.acbl.org/learn_page/how-to-play-bridge/how-to-bid/
 3. **bridgebum.com** — Convention encyclopedia (stayman.php, bergen_raises.php, dont.php, etc.)
 
+### Per-module `references.authority` policy
+
+Every module fixture under `crates/bridge-conventions/fixtures/modules/` must carry a
+`references.authority` pointing at a **live, publicly reachable** write-up of that
+convention, plus a `references.discovery` pointing at the corresponding `bridgebum.com`
+page (enforced by `tests/structural_invariants.rs`).
+
+**Historical note (2026-04-15):** Several modules originally cited `bridgeguys.com`
+(DONT, Smolen, Garbage Stayman, New Minor Forcing, Michaels) as the authority. That
+site was taken down in 2018, its domain expired in 2019, and there is no live mirror
+(`bridgeguys.online` does not resolve as of this writing). Wayback snapshots exist for
+most pages, but linking to the archive is a tombstone — the content is frozen and
+unverifiable for future agents.
+
+We re-sourced those five modules to live authorities rather than pinning Wayback URLs:
+
+| Module             | Authority                                                          |
+| ------------------ | ------------------------------------------------------------------ |
+| DONT               | Karen Walker — `kwbridge.com/dont.htm`                             |
+| Smolen             | Larry Cohen — `larryco.com/bridge-articles/smolen`                 |
+| Garbage Stayman    | Wikipedia — `en.wikipedia.org/wiki/Stayman_convention#Garbage_Stayman_and_crawling_Stayman` |
+| New Minor Forcing  | Karen Walker — `kwbridge.com/nmf.htm`                              |
+| Michaels / Unusual | Karen Walker — `kwbridge.com/michaels.htm`                         |
+
+Rule going forward: **do not add a new fixture whose `authority.url` is a dead site
+or a Wayback snapshot.** If the best write-up for a convention is on a defunct site,
+pick the next-best live source (author's own page, a reputable teacher's handout,
+Wikipedia with a section anchor, or ACBL) rather than archiving.
+
 ## Convention Quick Reference
 
 - **NT Bundle (1NT Responses):** Stayman (2C ask) + Jacoby Transfers (2D→H, 2H→S) + Smolen (3H/3S game-forcing after denial with 5-4 majors). 35 surfaces, 4 fact extensions.
 - **Bergen Bundle:** Standard Bergen (3C=constructive 7–10, 3D=limit 10–12, 3M=preemptive 0–6, splinter 12+). `$suit` binding for DRY heart/spade parameterization.
 - **Weak Two Bundle:** Weak Two openings (2D/2H/2S) with Ogust responses. Ogust: 3C=min/bad, 3D=min/good, 3H=max/bad, 3S=max/good, 3NT=solid.
-- **DONT Bundle:** Competitive overcalls after opponent's 1NT. No `match.turn` — uses phase + route scoping. 24 surfaces, 21 facts.
+- **DONT Bundle:** Competitive overcalls after opponent's 1NT. No `match.turn` — uses phase + route scoping. Modern variant with natural direct 2S, direct monster two-suiters, direct preempts, and relay continuations. 114 surfaces, 31 facts.
 
 Deal constraints are never listed per bundle here because they are auto-derived from surface preconditions at runtime — add a surface and the generator will find hands. See `docs/architecture/teaching-architecture.md` § Deal Generation.
 

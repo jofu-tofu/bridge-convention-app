@@ -992,7 +992,7 @@
     "summaryCard": {
       "trigger": "After Stayman gets a diamond denial, responder jumps in the short major",
       "definingMeaningId": "smolen:bid-short-hearts",
-      "partnership": "Special extension to Stayman. Cohen's primary treatment has opener choose 3NT or game in responder's five-card major; the three-level acceptance branches shown here are partnership extensions covered by the discovery reference."
+      "partnership": "Special extension to Stayman. Cohen's primary treatment has opener choose notrump game or game in responder's five-card major; the three-level acceptance branches shown here are partnership extensions covered by the discovery reference."
     },
     "whenToUse": [
       {

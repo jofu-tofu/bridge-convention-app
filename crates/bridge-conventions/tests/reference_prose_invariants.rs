@@ -85,11 +85,7 @@ fn walk_reference_strings(value: &serde_json::Value, path: &str, failures: &mut 
     }
 }
 
-fn walk_reference_system_names(
-    value: &serde_json::Value,
-    path: &str,
-    failures: &mut Vec<String>,
-) {
+fn walk_reference_system_names(value: &serde_json::Value, path: &str, failures: &mut Vec<String>) {
     match value {
         serde_json::Value::String(text) => {
             let normalized_path = normalize_indexed_path(path);

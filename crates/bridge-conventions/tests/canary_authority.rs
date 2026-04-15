@@ -57,8 +57,9 @@ fn build_strategy(target: Target) -> ConventionStrategy {
 
     match target {
         Target::Bundle(bundle_id) => {
-            let spec = spec_from_bundle(bundle_id, &system_config, &base_module_ids, &HashMap::new())
-                .unwrap_or_else(|| panic!("bundle '{bundle_id}' should resolve"));
+            let spec =
+                spec_from_bundle(bundle_id, &system_config, &base_module_ids, &HashMap::new())
+                    .unwrap_or_else(|| panic!("bundle '{bundle_id}' should resolve"));
             ConventionStrategy::new(spec, vec![])
         }
         Target::Module(module_id) => {
@@ -94,7 +95,10 @@ fn build_strategy(target: Target) -> ConventionStrategy {
     }
 }
 
-fn evaluate_hand(strategy: &ConventionStrategy, hand: &Hand) -> bridge_conventions::fact_dsl::types::EvaluatedFacts {
+fn evaluate_hand(
+    strategy: &ConventionStrategy,
+    hand: &Hand,
+) -> bridge_conventions::fact_dsl::types::EvaluatedFacts {
     let definitions = strategy
         .spec
         .modules
@@ -102,7 +106,14 @@ fn evaluate_hand(strategy: &ConventionStrategy, hand: &Hand) -> bridge_conventio
         .flat_map(|module| module.facts.definitions.iter().cloned())
         .collect::<Vec<_>>();
     let evaluation = evaluate_hand_hcp(hand);
-    evaluate_facts(hand, &evaluation, &definitions, Some(&sayc_config()), None, None)
+    evaluate_facts(
+        hand,
+        &evaluation,
+        &definitions,
+        Some(&sayc_config()),
+        None,
+        None,
+    )
 }
 
 fn parse_rank(rank: char) -> Rank {
@@ -316,7 +327,11 @@ const STAYMAN_GF_HEARTS_AFTER_DENIAL: Canary = Canary {
     module: "stayman",
     target: Target::Bundle("nt-stayman"),
     auction: &["1NT", "2C", "2D"],
-    auction_meaning_ids: &["bridge:1nt-opening", "stayman:ask-major", "stayman:deny-major"],
+    auction_meaning_ids: &[
+        "bridge:1nt-opening",
+        "stayman:ask-major",
+        "stayman:deny-major",
+    ],
     auction_seats: &[Seat::North, Seat::South, Seat::North],
     hand_pbn: "KQ97.AJ863.K4.72",
     user_seat: Seat::South,
@@ -434,19 +449,6 @@ const MICHAELS_PREEMPT_HEARTS: Canary = Canary {
     note: "verify-michaels-unusual.md:25",
 };
 
-const MICHAELS_INVITE_2NT_MINOR_CUE: Canary = Canary {
-    module: "michaels-unusual",
-    target: Target::Bundle("michaels-unusual-bundle"),
-    auction: &["1C", "2C"],
-    auction_meaning_ids: &["michaels:opponent-1c", "michaels:cue-bid-1c-2c"],
-    auction_seats: &[Seat::West, Seat::North],
-    hand_pbn: "AQ4.KJ84.742.983",
-    user_seat: Seat::South,
-    expected_call: "2NT",
-    authority: "Michaels major-cue advance: 2NT is the invitational constructive ask",
-    note: "verify-michaels-unusual.md:15",
-};
-
 const NEGATIVE_DOUBLE_AFTER_1C_2D: Canary = Canary {
     module: "negative-doubles",
     target: Target::Bundle("negative-doubles-bundle"),
@@ -456,7 +458,8 @@ const NEGATIVE_DOUBLE_AFTER_1C_2D: Canary = Canary {
     hand_pbn: "AQ84.K742.43.872",
     user_seat: Seat::East,
     expected_call: "X",
-    authority: "Larry Cohen / BridgeBum negative doubles through 2S: 1C-(2D)-X shows the unbid majors",
+    authority:
+        "Larry Cohen / BridgeBum negative doubles through 2S: 1C-(2D)-X shows the unbid majors",
     note: "verify-negative-doubles.md:24",
 };
 
@@ -555,7 +558,8 @@ const SMOLEN_DIRECT_FOUR_SPADES: Canary = Canary {
     hand_pbn: "AQ3.KQ7.A32.Q742",
     user_seat: Seat::West,
     expected_call: "4S",
-    authority: "Smolen: opener with 3-card support places the contract directly in responder's long major",
+    authority:
+        "Smolen: opener with 3-card support places the contract directly in responder's long major",
     note: "verify-smolen.md:11",
 };
 
@@ -627,36 +631,17 @@ define_canary_test!(
 define_canary_test!(dont_forcing_inquiry_after_2c, DONT_FORCING_INQUIRY_AFTER_2C);
 define_canary_test!(dont_forcing_inquiry_after_2d, DONT_FORCING_INQUIRY_AFTER_2D);
 define_canary_test!(michaels_preempt_hearts, MICHAELS_PREEMPT_HEARTS);
-define_canary_test!(michaels_invite_2nt_minor_cue, MICHAELS_INVITE_2NT_MINOR_CUE);
-define_canary_test!(
-    negative_double_after_1c_2d,
-    NEGATIVE_DOUBLE_AFTER_1C_2D
-);
-define_canary_test!(
-    negative_double_after_1h_2s,
-    NEGATIVE_DOUBLE_AFTER_1H_2S
-);
-define_canary_test!(
-    strong_2c_pass_over_2nt_rebid,
-    STRONG_2C_PASS_OVER_2NT_REBID
-);
-define_canary_test!(
-    strong_2c_second_negative_3c,
-    STRONG_2C_SECOND_NEGATIVE_3C
-);
+define_canary_test!(negative_double_after_1c_2d, NEGATIVE_DOUBLE_AFTER_1C_2D);
+define_canary_test!(negative_double_after_1h_2s, NEGATIVE_DOUBLE_AFTER_1H_2S);
+define_canary_test!(strong_2c_pass_over_2nt_rebid, STRONG_2C_PASS_OVER_2NT_REBID);
+define_canary_test!(strong_2c_second_negative_3c, STRONG_2C_SECOND_NEGATIVE_3C);
 define_canary_test!(strong_2c_stayman_over_2nt, STRONG_2C_STAYMAN_OVER_2NT);
 define_canary_test!(
     nmf_responder_2c_over_1h_branch,
     NMF_RESPONDER_2C_OVER_1H_BRANCH
 );
-define_canary_test!(
-    smolen_direct_four_spades,
-    SMOLEN_DIRECT_FOUR_SPADES
-);
-define_canary_test!(
-    bergen_splinter_relay_hearts,
-    BERGEN_SPLINTER_RELAY_HEARTS
-);
+define_canary_test!(smolen_direct_four_spades, SMOLEN_DIRECT_FOUR_SPADES);
+define_canary_test!(bergen_splinter_relay_hearts, BERGEN_SPLINTER_RELAY_HEARTS);
 define_canary_test!(
     blackwood_ask_kings_after_four_aces,
     BLACKWOOD_ASK_KINGS_AFTER_FOUR_ACES

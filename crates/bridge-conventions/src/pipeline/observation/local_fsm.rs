@@ -231,9 +231,6 @@ mod tests {
             feature: HandFeature::MajorSuit,
             suit: None,
         }]);
-        assert_eq!(
-            advance_local_fsm("idle", &step, &[], &transitions),
-            "asked"
-        );
+        assert_eq!(advance_local_fsm("idle", &step, &[], &transitions), "asked");
     }
 }

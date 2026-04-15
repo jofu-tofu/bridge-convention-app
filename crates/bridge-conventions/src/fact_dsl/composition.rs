@@ -276,13 +276,7 @@ fn count_top_n_honors(hand: &Hand, suit: Suit, top_n: u8) -> u8 {
         2 => &[Rank::Ace, Rank::King],
         3 => &[Rank::Ace, Rank::King, Rank::Queen],
         4 => &[Rank::Ace, Rank::King, Rank::Queen, Rank::Jack],
-        _ => &[
-            Rank::Ace,
-            Rank::King,
-            Rank::Queen,
-            Rank::Jack,
-            Rank::Ten,
-        ],
+        _ => &[Rank::Ace, Rank::King, Rank::Queen, Rank::Jack, Rank::Ten],
     };
     hand.cards
         .iter()
@@ -581,7 +575,12 @@ mod tests {
             op: CompareOp::Gt,
             b: Suit::Hearts,
         };
-        assert!(evaluate_extended_clause(&clause, &empty_hand(), &facts, None));
+        assert!(evaluate_extended_clause(
+            &clause,
+            &empty_hand(),
+            &facts,
+            None
+        ));
     }
 
     #[test]
@@ -716,8 +715,8 @@ mod tests {
     fn combined_ace_count_uses_partner_ctx() {
         // Own 2 aces + partner disclosed 2 → combined 4.
         let hand = pbn("A32.A32.432.432");
-        use crate::types::{ConstraintValue, FactOperator};
         use super::super::types::{PublicConstraint, PublicFactConstraint};
+        use crate::types::{ConstraintValue, FactOperator};
         let ctx = RelationalFactContext {
             bindings: None,
             public_commitments: Some(vec![PublicConstraint {
@@ -780,24 +779,14 @@ mod tests {
             max: None,
             top_n: Some(3),
         };
-        assert!(!evaluate_extended_clause(
-            &top3_gte_3,
-            &hand,
-            &facts,
-            None
-        ));
+        assert!(!evaluate_extended_clause(&top3_gte_3, &hand, &facts, None));
         let top5_gte_3 = ExtendedClause::TopHonorCount {
             suit: Suit::Spades,
             min: Some(3),
             max: None,
             top_n: Some(5),
         };
-        assert!(evaluate_extended_clause(
-            &top5_gte_3,
-            &hand,
-            &facts,
-            None
-        ));
+        assert!(evaluate_extended_clause(&top5_gte_3, &hand, &facts, None));
     }
 
     #[test]
@@ -838,6 +827,11 @@ mod tests {
         let json = r#"{"clauseKind":"topHonorCount","suit":"S","min":2}"#;
         let clause: ExtendedClause = serde_json::from_str(json).unwrap();
         let hand = pbn("AKQ32.432.32.234");
-        assert!(evaluate_extended_clause(&clause, &hand, &HashMap::new(), None));
+        assert!(evaluate_extended_clause(
+            &clause,
+            &hand,
+            &HashMap::new(),
+            None
+        ));
     }
 }

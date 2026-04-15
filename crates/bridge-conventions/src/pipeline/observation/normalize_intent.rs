@@ -631,10 +631,15 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
             feature: HandFeature::HeldSuit,
             suit: Some(ObsSuit::Spades),
         }],
-        "DONTMajorMinorMonster" | "DONTMajorTwoSuiterMonster" => vec![BidAction::Overcall {
-            feature: HandFeature::TwoSuited,
-            suit: None,
-        }],
+        "DONTMajorMinorMonster" | "DONTMajorTwoSuiterMonster" => vec![
+            BidAction::Overcall {
+                feature: HandFeature::TwoSuited,
+                suit: None,
+            },
+            BidAction::Force {
+                level: HandStrength::Game,
+            },
+        ],
         "DONTPreemptClubs" => vec![BidAction::Overcall {
             feature: HandFeature::HeldSuit,
             suit: Some(ObsSuit::Clubs),
@@ -1126,5 +1131,24 @@ mod tests {
         let result = normalize_intent(&intent("DONTBothMajors"));
         assert_eq!(result.len(), 3);
         assert_eq!(*result[0].act(), BidActionType::Overcall);
+    }
+
+    #[test]
+    fn dont_monster_two_suiter_forces_game() {
+        let result = normalize_intent(&intent("DONTMajorMinorMonster"));
+        assert_eq!(result.len(), 2);
+        assert_eq!(*result[0].act(), BidActionType::Overcall);
+        assert_eq!(result[0].feature(), Some(&HandFeature::TwoSuited));
+        assert_eq!(*result[1].act(), BidActionType::Force);
+        assert_eq!(result[1].strength(), Some(&HandStrength::Game));
+    }
+
+    #[test]
+    fn dont_strong_invite_2nt_is_invitational_raise() {
+        let result = normalize_intent(&intent("DONTStrongInvite2NT"));
+        assert_eq!(result.len(), 1);
+        assert_eq!(*result[0].act(), BidActionType::Raise);
+        assert_eq!(result[0].strain(), Some(&BidSuitName::Notrump));
+        assert_eq!(result[0].strength(), Some(&HandStrength::Invitational));
     }
 }
