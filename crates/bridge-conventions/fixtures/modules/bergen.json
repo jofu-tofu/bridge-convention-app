@@ -564,19 +564,19 @@
       },
       {
         "from": "opened-hearts",
+        "to": "after-splinter-hearts",
+        "on": {
+          "act": "show",
+          "feature": "shortage"
+        }
+      },
+      {
+        "from": "opened-hearts",
         "to": "done",
         "on": {
           "act": "raise",
           "strain": "hearts",
           "strength": "game"
-        }
-      },
-      {
-        "from": "opened-hearts",
-        "to": "after-splinter-hearts",
-        "on": {
-          "act": "show",
-          "feature": "shortage"
         }
       },
       {
@@ -632,19 +632,19 @@
       },
       {
         "from": "opened-spades",
+        "to": "after-splinter-spades",
+        "on": {
+          "act": "show",
+          "feature": "shortage"
+        }
+      },
+      {
+        "from": "opened-spades",
         "to": "done",
         "on": {
           "act": "raise",
           "strain": "spades",
           "strength": "game"
-        }
-      },
-      {
-        "from": "opened-spades",
-        "to": "after-splinter-spades",
-        "on": {
-          "act": "show",
-          "feature": "shortage"
         }
       },
       {

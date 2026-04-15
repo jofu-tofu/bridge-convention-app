@@ -345,8 +345,8 @@
         "id": "smolen/placing-hearts:opener",
         "label": "smolen placing-hearts (opener)",
         "members": [
-          "smolen:place-four-hearts",
-          "smolen:place-three-nt-no-heart-fit"
+          "smolen:place-four-spades",
+          "smolen:place-three-nt-no-spade-fit"
         ],
         "relationship": "mutually_exclusive",
         "description": "Surfaces competing at placing-hearts in smolen (opener's turn)"
@@ -355,8 +355,8 @@
         "id": "smolen/placing-spades:opener",
         "label": "smolen placing-spades (opener)",
         "members": [
-          "smolen:accept-spades-3s",
-          "smolen:place-three-nt-no-spade-fit"
+          "smolen:place-four-hearts",
+          "smolen:place-three-nt-no-heart-fit"
         ],
         "relationship": "mutually_exclusive",
         "description": "Surfaces competing at placing-spades in smolen (opener's turn)"

@@ -51,9 +51,9 @@
       "explanationId": "negdbl.minHcp2Level",
       "factId": "module.negdbl.minHcp2Level",
       "templateKey": "negdbl.minHcp2Level.supporting",
-      "displayText": "8+ HCP for negative double at 2-level",
+      "displayText": "9+ HCP for negative double at 2-level",
       "contrastiveTemplateKey": "negdbl.minHcp2Level.whyNot",
-      "contrastiveDisplayText": "Fewer than 8 HCP for 2-level double",
+      "contrastiveDisplayText": "Fewer than 9 HCP for 2-level double",
       "preferredLevel": "semantic",
       "roles": ["supporting", "blocking"]
     },
@@ -2946,9 +2946,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP",
+              "value": 9,
+              "clauseId": "hand.hcp:gte:9",
+              "description": "9+ HCP",
               "isPublic": true
             },
             {
@@ -2972,7 +2972,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows 4+ spades with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows 4+ spades with competitive values (2-level, needs 9+ HCP)"
           }
         },
         {
@@ -3029,9 +3029,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP",
+              "value": 9,
+              "clauseId": "hand.hcp:gte:9",
+              "description": "9+ HCP",
               "isPublic": true
             },
             {
@@ -3055,7 +3055,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows 4+ spades with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows 4+ spades with competitive values (2-level, needs 9+ HCP)"
           }
         },
         {
@@ -3112,9 +3112,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP",
+              "value": 9,
+              "clauseId": "hand.hcp:gte:9",
+              "description": "9+ HCP",
               "isPublic": true
             },
             {
@@ -3138,7 +3138,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows 4+ hearts with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows 4+ hearts with competitive values (2-level, needs 9+ HCP)"
           }
         },
         {
@@ -3195,9 +3195,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP",
+              "value": 9,
+              "clauseId": "hand.hcp:gte:9",
+              "description": "9+ HCP",
               "isPublic": true
             },
             {
@@ -3221,7 +3221,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows 4+ hearts with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows 4+ hearts with competitive values (2-level, needs 9+ HCP)"
           }
         },
         {
@@ -3278,9 +3278,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "8+ HCP",
+              "value": 9,
+              "clauseId": "hand.hcp:gte:9",
+              "description": "9+ HCP",
               "isPublic": true
             },
             {
@@ -3312,7 +3312,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows both minors (4-4+) with competitive values (2-level, needs 8+ HCP)"
+            "summary": "Shows both minors (4-4+) with competitive values (2-level, needs 9+ HCP)"
           }
         },
         {
@@ -3396,7 +3396,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows 4+ spades with 11+ HCP after RHO's preemptive 3H overcall (TODO: extend cutoff to 4D per Cohen)"
+            "summary": "Shows 4+ spades with 11+ HCP after RHO's preemptive 3H overcall. Cohen extends negative doubles through 4D."
           }
         },
         {
@@ -3564,7 +3564,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows 4+ spades with 11+ HCP after RHO's preemptive 3H overcall (TODO: extend cutoff to 4D per Cohen)"
+            "summary": "Shows 4+ spades with 11+ HCP after RHO's preemptive 3H overcall. Cohen extends negative doubles through 4D."
           }
         },
         {
@@ -3832,7 +3832,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows both minors (4-4+) with 11+ HCP after RHO's preemptive 3H overcall (TODO: extend cutoff to 4D per Cohen)"
+            "summary": "Shows both minors (4-4+) with 11+ HCP after RHO's preemptive 3H overcall. Cohen extends negative doubles through 4D."
           }
         },
         {

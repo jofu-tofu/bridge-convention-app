@@ -225,9 +225,190 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
                 strength: HandStrength::Game,
             },
         ],
+        // ── Strong 2C ────────────────────────────────────────────────
+        "Strong2COpen" => vec![BidAction::Open {
+            strain: BidSuitName::Clubs,
+            strength: Some(HandStrength::Strong),
+        }],
+        "Strong2CWaiting" => vec![BidAction::Relay { forced: false }],
+        "Strong2CPositiveHearts" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CPositiveSpades" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CPositiveClubs" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CPositiveDiamonds" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Diamonds),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CPositiveBalanced" => vec![BidAction::Show {
+            feature: HandFeature::Balanced,
+            suit: None,
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CRebidHearts" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CRebidSpades" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CRebidClubs" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CRebidDiamonds" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Diamonds),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CRebid2NT" | "Strong2CRebid3NT" => vec![BidAction::Show {
+            feature: HandFeature::Balanced,
+            suit: None,
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CPass2NT" => vec![BidAction::Pass],
+        "Strong2CRaise3NT" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::Game,
+        }],
+        "Strong2CRaise4NT" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::SlamInvite,
+        }],
+        "Strong2CShowHeartsOver2NT" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CShowSpadesOver2NT" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+            quality: None,
+            strength: None,
+        }],
         "Strong2CStaymanOver2NT" => vec![BidAction::Inquire {
             feature: HandFeature::MajorSuit,
             suit: None,
+        }],
+        "Strong2CRaiseHearts" => vec![BidAction::Raise {
+            strain: BidSuitName::Hearts,
+            strength: HandStrength::Game,
+        }],
+        "Strong2CRaiseSpades" => vec![BidAction::Raise {
+            strain: BidSuitName::Spades,
+            strength: HandStrength::Game,
+        }],
+        "Strong2CRaiseClubs" => vec![BidAction::Raise {
+            strain: BidSuitName::Clubs,
+            strength: HandStrength::Game,
+        }],
+        "Strong2CRaiseDiamonds" => vec![BidAction::Raise {
+            strain: BidSuitName::Diamonds,
+            strength: HandStrength::Game,
+        }],
+        "Strong2CResp2NTAfterSuit" | "Strong2CResp3NTAfterSuit" => vec![BidAction::Show {
+            feature: HandFeature::Balanced,
+            suit: None,
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CRespNewClubs" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CRespNewDiamonds" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Diamonds),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CRespNewHearts" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2CRespNewSpades" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2COpenerRaiseHearts" => vec![BidAction::Raise {
+            strain: BidSuitName::Hearts,
+            strength: HandStrength::Game,
+        }],
+        "Strong2COpenerRaiseSpades" => vec![BidAction::Raise {
+            strain: BidSuitName::Spades,
+            strength: HandStrength::Game,
+        }],
+        "Strong2COpenerRaiseClubs" => vec![BidAction::Raise {
+            strain: BidSuitName::Clubs,
+            strength: HandStrength::Game,
+        }],
+        "Strong2COpenerRaiseDiamonds" => vec![BidAction::Raise {
+            strain: BidSuitName::Diamonds,
+            strength: HandStrength::Game,
+        }],
+        "Strong2COpener3NTAfterPositive" | "Strong2COpener3NTAfter2NT" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::Game,
+        }],
+        "Strong2COpener4NTAfter2NT" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::SlamInvite,
+        }],
+        "Strong2COpenerShowClubs" | "Strong2COpenerClubsAfter2NT" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2COpenerShowDiamonds" | "Strong2COpenerDiamondsAfter2NT" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Diamonds),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2COpenerShowHearts" | "Strong2COpenerHeartsAfter2NT" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+            quality: None,
+            strength: None,
+        }],
+        "Strong2COpenerShowSpades" | "Strong2COpenerSpadesAfter2NT" => vec![BidAction::Show {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+            quality: None,
+            strength: None,
         }],
         "Strong2CSecondNegative" => vec![BidAction::Show {
             feature: HandFeature::Strength,
@@ -450,6 +631,26 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
             feature: HandFeature::HeldSuit,
             suit: Some(ObsSuit::Spades),
         }],
+        "DONTMajorMinorMonster" | "DONTMajorTwoSuiterMonster" => vec![BidAction::Overcall {
+            feature: HandFeature::TwoSuited,
+            suit: None,
+        }],
+        "DONTPreemptClubs" => vec![BidAction::Overcall {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Clubs),
+        }],
+        "DONTPreemptDiamonds" => vec![BidAction::Overcall {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Diamonds),
+        }],
+        "DONTPreemptHearts" => vec![BidAction::Overcall {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+        }],
+        "DONTPreemptSpades" => vec![BidAction::Overcall {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Spades),
+        }],
         "DONTSingleSuited" => vec![BidAction::Overcall {
             feature: HandFeature::HeldSuit,
             suit: None,
@@ -505,6 +706,10 @@ pub fn normalize_intent(intent: &SourceIntent) -> Vec<BidAction> {
                 level: HandStrength::Game,
             },
         ],
+        "DONTStrongInvite2NT" => vec![BidAction::Raise {
+            strain: BidSuitName::Notrump,
+            strength: HandStrength::Invitational,
+        }],
         "DONTAcceptSpades" | "DONTAcceptSpadesFallback" => vec![BidAction::Accept {
             feature: HandFeature::HeldSuit,
             suit: Some(ObsSuit::Spades),

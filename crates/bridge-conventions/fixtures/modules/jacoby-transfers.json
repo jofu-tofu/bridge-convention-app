@@ -1154,9 +1154,9 @@
             {
               "factId": "hand.suitLength.hearts",
               "operator": "gte",
-              "value": 5,
-              "clauseId": "hand.suitLength.hearts:gte:5",
-              "description": "5+ hearts (game in major with long suit)",
+              "value": 6,
+              "clauseId": "hand.suitLength.hearts:gte:6",
+              "description": "6+ hearts (game in major with long suit)",
               "rationale": "game in major with long suit",
               "isPublic": true
             }
@@ -1661,9 +1661,9 @@
             {
               "factId": "hand.suitLength.spades",
               "operator": "gte",
-              "value": 5,
-              "clauseId": "hand.suitLength.spades:gte:5",
-              "description": "5+ spades (game in major with long suit)",
+              "value": 6,
+              "clauseId": "hand.suitLength.spades:gte:6",
+              "description": "6+ spades (game in major with long suit)",
               "rationale": "game in major with long suit",
               "isPublic": true
             }

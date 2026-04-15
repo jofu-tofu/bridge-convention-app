@@ -286,7 +286,7 @@
         "to": "opened-2c",
         "on": {
           "act": "open",
-          "feature": "strength"
+          "strain": "clubs"
         }
       },
       {
@@ -1230,6 +1230,24 @@
               "clauseId": "module.strong2c.responderSlamValues:boolean:true",
               "description": "8+ HCP (slam interest)",
               "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.hearts:lte:3",
+              "description": "No 4-card heart suit (would bid 3C Stayman first)",
+              "rationale": "no 4-card heart suit",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.spades:lte:3",
+              "description": "No 4-card spade suit (would bid 3C Stayman first)",
+              "rationale": "no 4-card spade suit",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -1348,11 +1366,12 @@
           },
           "clauses": [
             {
-              "factId": "module.strong2c.responderGameValues",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.strong2c.responderGameValues:boolean:true",
-              "description": "Game values opposite 22-24",
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.hcp:gte:3",
+              "description": "Invitational+ values opposite 22-24",
+              "rationale": "enough strength to probe for a major fit",
               "isPublic": true
             },
             {

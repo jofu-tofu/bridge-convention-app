@@ -1543,6 +1543,24 @@
               "description": "Game values opposite 1NT",
               "rationale": "game values opposite 1NT",
               "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:lte:4",
+              "description": "No 5-card heart suit (would show via 3H GF)",
+              "rationale": "no 5-card heart suit",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:lte:4",
+              "description": "No 5-card spade suit (would show via 3S GF)",
+              "rationale": "no 5-card spade suit",
+              "isPublic": true
             }
           ],
           "ranking": {

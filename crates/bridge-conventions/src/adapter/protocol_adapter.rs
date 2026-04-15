@@ -17,6 +17,7 @@ use crate::adapter::tree_evaluation::ResolvedCandidateDTO;
 use crate::fact_dsl::types::EvaluatedFacts;
 use crate::pipeline::evaluation::provenance::ActivationTrace;
 use crate::pipeline::observation::committed_step::AuctionContext;
+use crate::pipeline::observation::public_commitments::derive_public_commitments;
 use crate::pipeline::observation::rule_interpreter::{
     collect_matching_claims, flatten_surfaces, ModuleSurfaceResult,
 };
@@ -88,6 +89,12 @@ impl ConventionStrategy {
         system_config: Option<&SystemConfig>,
         partner_context: Option<&PartnerContext>,
     ) -> (Option<BidResult>, StrategyEvaluation) {
+        let public_commitments = derive_public_commitments(&context.log);
+        let public_commitments_ref: Option<&[_]> = if public_commitments.is_empty() {
+            None
+        } else {
+            Some(&public_commitments)
+        };
         let pipeline_result = run_pipeline(PipelineInput {
             surfaces,
             facts,
@@ -95,6 +102,7 @@ impl ConventionStrategy {
             is_legal,
             hand,
             system_config,
+            public_commitments: public_commitments_ref,
         });
 
         self.build_evaluation(
@@ -123,6 +131,12 @@ impl ConventionStrategy {
         let surfaces = flatten_surfaces(&surface_results);
 
         // Step 2: Run the pipeline
+        let public_commitments = derive_public_commitments(&context.log);
+        let public_commitments_ref: Option<&[_]> = if public_commitments.is_empty() {
+            None
+        } else {
+            Some(&public_commitments)
+        };
         let pipeline_result = run_pipeline(PipelineInput {
             surfaces: &surfaces,
             facts,
@@ -130,6 +144,7 @@ impl ConventionStrategy {
             is_legal,
             hand,
             system_config,
+            public_commitments: public_commitments_ref,
         });
 
         self.build_evaluation(

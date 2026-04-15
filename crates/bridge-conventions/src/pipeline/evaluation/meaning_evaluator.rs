@@ -8,7 +8,7 @@ use bridge_engine::types::Hand;
 
 use crate::fact_dsl::bridge_derived::evaluate_bridge_relational;
 use crate::fact_dsl::system_facts::evaluate_system_relational;
-use crate::fact_dsl::types::{EvaluatedFacts, FactData, RelationalFactContext};
+use crate::fact_dsl::types::{EvaluatedFacts, FactData, PublicConstraint, RelationalFactContext};
 use crate::pipeline::evaluation::binding_resolver::resolve_clause;
 use crate::pipeline::evaluation::specificity_deriver::derive_specificity;
 use crate::pipeline::evaluation::types::{MeaningClause, MeaningProposal, RankingMetadata};
@@ -105,9 +105,11 @@ pub fn evaluate_all_bid_meanings(
     inherited_dimensions: &HashMap<String, Vec<ConstraintDimension>>,
     hand: Option<&Hand>,
     system_config: Option<&SystemConfig>,
+    public_commitments: Option<&[PublicConstraint]>,
 ) -> Vec<MeaningProposal> {
     // Precompute relational facts per unique binding set
-    let binding_cache = precompute_binding_facts(surfaces, facts, hand, system_config);
+    let binding_cache =
+        precompute_binding_facts(surfaces, facts, hand, system_config, public_commitments);
 
     surfaces
         .iter()
@@ -135,6 +137,7 @@ fn precompute_binding_facts(
     facts: &EvaluatedFacts,
     hand: Option<&Hand>,
     system_config: Option<&SystemConfig>,
+    public_commitments: Option<&[PublicConstraint]>,
 ) -> HashMap<Option<Vec<(String, String)>>, EvaluatedFacts> {
     let mut cache: HashMap<Option<Vec<(String, String)>>, EvaluatedFacts> = HashMap::new();
 
@@ -158,17 +161,14 @@ fn precompute_binding_facts(
                     strain: suit.clone(),
                     confidence: crate::types::ConfidenceLevel::Tentative,
                 });
-        // Coverage gap: this path does NOT populate public_commitments.
-        // Blackwood combined ace/king counts are synthesized only by
-        // convention_adapter::ConventionStrategyAdapter::derive_blackwood_commitments
-        // (which has access to the full observation log). meaning_evaluator.rs runs
-        // in a per-surface bindings-projection context that does not see the log
-        // here, so CombinedAceCount/CombinedKingCount extended clauses evaluate
-        // with partner = 0 on this path. See docs/guides/gotchas.md
-        // "Blackwood combined counts only flow through the convention adapter".
+        // public_commitments flow in from the caller (derived from the
+        // observation log via
+        // `pipeline::observation::public_commitments::derive_public_commitments`)
+        // so CombinedAceCount / CombinedKingCount extended clauses see
+        // partner's disclosed counts on this per-surface projection path.
         let ctx = RelationalFactContext {
             bindings: Some(bindings.clone()),
-            public_commitments: None,
+            public_commitments: public_commitments.map(|c| c.to_vec()),
             fit_agreed,
         };
         evaluate_bridge_relational(h, &mut cloned.facts, &ctx);

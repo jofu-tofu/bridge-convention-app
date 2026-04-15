@@ -8,5 +8,6 @@ pub mod local_fsm;
 pub mod negotiation_extractor;
 pub mod negotiation_matcher;
 pub mod normalize_intent;
+pub mod public_commitments;
 pub mod route_matcher;
 pub mod rule_interpreter;

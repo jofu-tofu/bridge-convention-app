@@ -165,3 +165,25 @@ the combined partnership count evaluate correctly only on the adapter-driven
 path. If in the future the meaning-evaluator path needs to gate on the same
 clauses, thread the observation log through to that site and reuse
 `derive_blackwood_commitments`.
+
+## `normalize_intent.rs` must have an arm for every module `sourceIntent.type`
+
+`crates/bridge-conventions/src/pipeline/observation/normalize_intent.rs` maps a
+module's authored `sourceIntent.type` string onto `BidAction`s. Unknown intents
+fall through to `_ => Vec::new()`, which means the committed step carries no
+public actions. `advance_local_fsm` then finds no matching transition, the
+module's local FSM stays wedged at its initial phase, and downstream surfaces
+gated on later phases silently stop matching.
+
+The failure mode is silent: the convention appears to "work" because early-
+phase surfaces still fire, but every multi-round auction collapses to the idle
+state. This bit strong-2c — only 3 of ~40 intents had arms, so every surface
+after the 2C opening was unreachable in both tests and live sessions.
+
+When adding new `sourceIntent.type` values to any module fixture: add the
+corresponding arm to `normalize_intent.rs` AND verify the emitted
+`BidAction`'s `{act, feature, suit, strain, strength}` match the FSM
+transition pattern(s) that expect to advance on it. `Open` and `Raise` have no
+`feature` field — transitions like `{act: "open", feature: "strength"}` are
+unmatchable and must be rewritten to `{act: "open", strain: "..."}` or split
+into multiple actions.

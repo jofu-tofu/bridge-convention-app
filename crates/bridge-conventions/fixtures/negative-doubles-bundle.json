@@ -68,7 +68,7 @@
   },
   "teaching": {
     "purpose": "When opponents overcall partner's opening bid, use a conventional double to show the unbid suits (especially majors) and competitive values instead of passing or overbidding",
-    "whenToUse": "Partner opens 1C/1D/1H/1S and RHO overcalls. You have 6+ HCP (at 1-level) or 8+ HCP (at 2-level) and length in the unbid suits.",
+    "whenToUse": "Partner opens 1C/1D/1H/1S and RHO overcalls. You have 6+ HCP (at 1-level) or 9+ HCP (at 2-level) and length in the unbid suits.",
     "whenNotToUse": [
       "You have a natural bid available (5+ card suit you can bid at the appropriate level)",
       "You want to penalize the overcaller — pass and hope partner reopens with a double",

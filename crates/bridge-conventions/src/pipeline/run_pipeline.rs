@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use bridge_engine::types::{Call, Hand};
 
-use crate::fact_dsl::types::EvaluatedFacts;
+use crate::fact_dsl::types::{EvaluatedFacts, PublicConstraint};
 use crate::pipeline::evaluation::meaning_arbitrator::arbitrate_meanings;
 use crate::pipeline::evaluation::meaning_evaluator::evaluate_all_bid_meanings;
 use crate::pipeline::types::PipelineResult;
@@ -29,6 +29,10 @@ pub struct PipelineInput<'a> {
     pub hand: Option<&'a Hand>,
     /// System config for per-surface system relational overrides (optional).
     pub system_config: Option<&'a SystemConfig>,
+    /// Public commitments derived from the observation log. Threaded into
+    /// per-surface relational-fact evaluation so Blackwood combined counts
+    /// (and future log-derived partner disclosures) see partner's state.
+    pub public_commitments: Option<&'a [PublicConstraint]>,
 }
 
 /// Run the meaning pipeline — the 4-step pure transformation.
@@ -48,6 +52,7 @@ pub fn run_pipeline(input: PipelineInput) -> PipelineResult {
         input.inherited_dimensions,
         input.hand,
         input.system_config,
+        input.public_commitments,
     );
 
     // Step 2: Arbitrate — encode, gate-check, rank, select
@@ -134,6 +139,7 @@ mod tests {
             is_legal: &|_| true,
             hand: None,
             system_config: None,
+            public_commitments: None,
         });
         assert!(result.selected.is_none());
         assert!(result.truth_set.is_empty());
@@ -150,6 +156,7 @@ mod tests {
             is_legal: &|_| true,
             hand: None,
             system_config: None,
+            public_commitments: None,
         });
         assert!(result.selected.is_some());
         assert_eq!(
@@ -169,6 +176,7 @@ mod tests {
             is_legal: &|_| true,
             hand: None,
             system_config: None,
+            public_commitments: None,
         });
         assert!(result.selected.is_none());
         assert!(result.truth_set.is_empty());

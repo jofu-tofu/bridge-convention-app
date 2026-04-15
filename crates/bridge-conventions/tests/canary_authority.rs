@@ -28,6 +28,7 @@ use bridge_engine::{evaluate_hand_hcp, BidSuit, Call, Card, Hand, Rank, Seat, Su
 enum Target {
     Bundle(&'static str),
     Module(&'static str),
+    Modules(&'static [&'static str]),
 }
 
 struct Canary {
@@ -70,6 +71,24 @@ fn build_strategy(target: Target) -> ConventionStrategy {
                 modules: vec![module],
                 system_config: Some(system_config),
             };
+            ConventionStrategy::new(spec, vec![])
+        }
+        Target::Modules(module_ids) => {
+            let modules: Vec<_> = module_ids
+                .iter()
+                .map(|id| {
+                    get_module(id, BaseSystemId::Sayc)
+                        .cloned()
+                        .unwrap_or_else(|| panic!("module '{id}' should resolve"))
+                })
+                .collect();
+            let spec = ConventionSpec {
+                id: format!("canary-multi-{}", module_ids.join("-")),
+                name: format!("Canary {}", module_ids.join("+")),
+                modules,
+                system_config: Some(system_config),
+            };
+            let _ = base_module_ids;
             ConventionStrategy::new(spec, vec![])
         }
     }
@@ -351,11 +370,11 @@ const JACOBY_GAME_HEARTS_WITH_FIVE_CARD_MAJOR: Canary = Canary {
     auction: &["1NT", "2D", "2H"],
     auction_meaning_ids: &["bridge:1nt-opening", "transfer:to-hearts", "transfer:accept"],
     auction_seats: &[Seat::North, Seat::South, Seat::North],
-    hand_pbn: "K.AQJ94.A74.Q932",
+    hand_pbn: "Q43.KQJ94.K74.32",
     user_seat: Seat::South,
-    expected_call: "4H",
-    authority: "Jacoby transfer game-in-major should allow 5-card major game hands, not only 6+",
-    note: "correctness-fixes-summary.md:41",
+    expected_call: "3NT",
+    authority: "VERDICT 2026-04-15: Jacoby transfer 4M game-jump requires 6+ card major; 5-card major with 1NT-opposite game values routes to 3NT via nt-game-*.",
+    note: "VERDICT 2026-04-15 tightened transfer:game-hearts / transfer:game-spades length from gte:5 to gte:6, moving balanced 5-card-major game hands to 3NT.",
 };
 
 const JACOBY_ACCEPT_INVITE_RAISE_SPADES: Canary = Canary {
@@ -568,10 +587,14 @@ const STRONG_2C_UNBALANCED_PLAYING_TRICKS: Canary = Canary {
 
 const BLACKWOOD_ASK_KINGS_AFTER_FOUR_ACES: Canary = Canary {
     module: "blackwood",
-    target: Target::Module("blackwood"),
-    auction: &["4NT", "5C"],
-    auction_meaning_ids: &["blackwood:ask-aces", "blackwood:response-4-aces"],
-    auction_seats: &[Seat::North, Seat::South],
+    target: Target::Modules(&["natural-bids", "blackwood"]),
+    auction: &["1NT", "4NT", "5C"],
+    auction_meaning_ids: &[
+        "bridge:1nt-opening",
+        "blackwood:ask-aces",
+        "blackwood:response-0-aces",
+    ],
+    auction_seats: &[Seat::South, Seat::North, Seat::South],
     hand_pbn: "AKQ.AKQ.AKQJ.AK2",
     user_seat: Seat::North,
     expected_call: "5NT",
@@ -584,7 +607,6 @@ define_canary_test!(
     STAYMAN_SHOW_HEARTS_ON_FOUR_FOUR
 );
 define_canary_test!(
-    ignore "known-bad: stayman GF 5-4 cross-major still ranks 3NT over the authority-backed 3H continuation",
     stayman_gf_hearts_after_denial,
     STAYMAN_GF_HEARTS_AFTER_DENIAL
 );
@@ -615,36 +637,27 @@ define_canary_test!(
     NEGATIVE_DOUBLE_AFTER_1H_2S
 );
 define_canary_test!(
-    ignore "blocked: strong-2c sourceIntent normalization in this harness does not advance the authored FSM through 2C-2D rebid context",
     strong_2c_pass_over_2nt_rebid,
     STRONG_2C_PASS_OVER_2NT_REBID
 );
 define_canary_test!(
-    ignore "blocked: strong-2c sourceIntent normalization in this harness does not advance the authored FSM through 2C-2D suit-rebid context",
     strong_2c_second_negative_3c,
     STRONG_2C_SECOND_NEGATIVE_3C
 );
-define_canary_test!(
-    ignore "blocked: strong-2c sourceIntent normalization in this harness does not advance the authored FSM through 2C-2D-2NT context",
-    strong_2c_stayman_over_2nt,
-    STRONG_2C_STAYMAN_OVER_2NT
-);
+define_canary_test!(strong_2c_stayman_over_2nt, STRONG_2C_STAYMAN_OVER_2NT);
 define_canary_test!(
     nmf_responder_2c_over_1h_branch,
     NMF_RESPONDER_2C_OVER_1H_BRANCH
 );
 define_canary_test!(
-    ignore "known-bad: smolen still routes 3H Smolen acceptance through 3S/4S instead of direct 4S placement",
     smolen_direct_four_spades,
     SMOLEN_DIRECT_FOUR_SPADES
 );
 define_canary_test!(
-    ignore "known-bad: bergen ambiguous-splinter relay subtree is still missing after 1H-3S",
     bergen_splinter_relay_hearts,
     BERGEN_SPLINTER_RELAY_HEARTS
 );
 define_canary_test!(
-    ignore "blocked: blackwood remains bundleless and still lacks stable agreed-trump / asker-role context for a live canary",
     blackwood_ask_kings_after_four_aces,
     BLACKWOOD_ASK_KINGS_AFTER_FOUR_ACES
 );
