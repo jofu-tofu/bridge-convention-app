@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
 
-  type Width = "wide" | "narrow";
+  type Width = "wide" | "narrow" | "reference";
 
   interface Props {
     title?: string;
@@ -63,8 +63,18 @@
     max-width: var(--screen-max-content-narrow);
   }
 
+  .content-screen[data-width="reference"] {
+    max-width: var(--screen-max-content-reference);
+  }
+
   .content-screen.has-aside[data-width="narrow"] {
     max-width: calc(var(--screen-max-content-narrow) + 240px);
+  }
+
+  @media (min-width: 1024px) {
+    .content-screen[data-width="reference"] {
+      margin-inline: 0 auto;
+    }
   }
 
   @media (min-width: 640px) {

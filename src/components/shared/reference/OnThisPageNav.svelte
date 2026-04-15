@@ -121,6 +121,7 @@
     gap: 0.5rem;
     padding-left: 0.75rem;
     position: relative;
+    white-space: nowrap;
   }
 
   .toc a::before {

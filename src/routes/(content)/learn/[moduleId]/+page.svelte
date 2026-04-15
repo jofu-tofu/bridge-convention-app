@@ -65,7 +65,7 @@
 </svelte:head>
 
 <ContentScreen
-  width="wide"
+  width="reference"
   title={viewport.displayName}
   subtitle={viewport.description}
 >
@@ -161,15 +161,16 @@
   @media (min-width: 1024px) {
     .page-wrap {
       display: grid;
-      grid-template-columns: 200px minmax(0, 1fr);
-      gap: 2.5rem;
+      grid-template-columns: 260px minmax(0, 1020px);
+      gap: 2rem;
       max-width: none;
       margin: 0;
       align-items: start;
     }
     .screen-only {
       min-width: 0;
-      max-width: 760px;
+      width: 100%;
+      max-width: 1020px;
     }
     .screen-only .wide {
       max-width: none;

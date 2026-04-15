@@ -23,7 +23,7 @@ Game components MUST use `--text-*` tokens (ESLint enforced) and `--color-*` tok
 Every screen wraps in one of two outer primitives (tokens in `src/app.css` under `--screen-*`):
 
 - `shared/AppScreen.svelte` — for `(app)` routes. Owns its own inner scroll container (`.app-screen__body { overflow-y: auto }`), so individual screens no longer need the `h-full flex flex-col p-4 pb-0` pattern. Props: `title?`, `subtitle?`, `width: "wide" | "form" | "custom"`, `actions?` / `tabs?` snippets, `scroll?`, `contentClass?`.
-- `shared/ContentScreen.svelte` — for `(content)` prerendered routes. Scrolls at the `AppShell` main level (not internally). Preserves the desktop rail offset (`margin-inline-start: calc(var(--rail-width) + 1rem)` at `min-width: 1024px`). Props: `title?`, `subtitle?`, `width: "wide" | "narrow"`, `actions?` / `aside?` snippets.
+- `shared/ContentScreen.svelte` — for `(content)` prerendered routes. Scrolls at the `AppShell` main level (not internally). Preserves the desktop rail offset (`margin-inline-start: calc(var(--rail-width) + 1rem)` at `min-width: 1024px`). Props: `title?`, `subtitle?`, `width: "wide" | "narrow" | "reference"` (`reference` is left-aligned and wider for `/learn/[moduleId]` pages), `actions?` / `aside?` snippets.
 
 Two sibling primitives, not one universal wrapper: the overflow chains differ enough that a prop-gated branch would be harder to reason about. See `docs/guides/gotchas.md#screen-layout-primitives`. New `(content)` route authors must wrap the page with `ContentScreen`; new `(app)` screens with `AppScreen`. `GameScreen` and `LearningScreen` are intentional exceptions (custom split-pane / table-scale layouts).
 
@@ -195,4 +195,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `AppReady.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-13 | version=19 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-15 | version=20 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->
