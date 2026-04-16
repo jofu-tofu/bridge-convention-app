@@ -32,12 +32,14 @@
   }
 
   a {
-    color: #4d90f7;
+    color: var(--color-accent-primary);
     text-decoration: none;
     font-size: 0.875rem;
+    transition: color 0.15s ease;
   }
 
   a:hover {
+    color: var(--color-accent-primary-hover);
     text-decoration: underline;
   }
 </style>

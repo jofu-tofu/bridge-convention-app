@@ -1,5 +1,6 @@
 <script lang="ts">
   import ContentScreen from "../../../../components/shared/ContentScreen.svelte";
+  import AppLink from "../../../../components/shared/AppLink.svelte";
   const { data } = $props();
 </script>
 
@@ -12,7 +13,9 @@
 </svelte:head>
 
 <ContentScreen width="narrow" title={data.guide.title} subtitle={data.guide.date}>
-  <a class="back-link" href="/guides/">← All Guides</a>
+  <div class="back-link-wrap">
+    <AppLink variant="back" href="/guides/">All Guides</AppLink>
+  </div>
 
   <article class="guide-prose">
     <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted build-time markdown, not user input -->
@@ -37,16 +40,8 @@
 </ContentScreen>
 
 <style>
-  .back-link {
-    display: inline-block;
-    color: var(--color-accent-primary);
-    text-decoration: none;
-    font-size: 0.875rem;
+  .back-link-wrap {
     margin-bottom: 1.5rem;
-  }
-
-  .back-link:hover {
-    text-decoration: underline;
   }
 
   .guide-prose :global(h2) {

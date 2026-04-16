@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import CustomDrillForm from "../../../../../../components/screens/CustomDrillForm.svelte";
+  import AppLink from "../../../../../../components/shared/AppLink.svelte";
   import { getCustomDrillsStore } from "../../../../../../stores/context";
 
   const drillsStore = getCustomDrillsStore();
@@ -11,7 +12,7 @@
   <CustomDrillForm mode="edit" {drill} />
 {:else}
   <main class="max-w-2xl mx-auto p-4">
-    <p class="text-text-muted">Drill not found.</p>
-    <a href="/practice/drill" class="text-accent-primary">Back to my drills</a>
+    <p class="text-text-muted mb-2">Drill not found.</p>
+    <AppLink variant="back" href="/practice/drill">Back to my drills</AppLink>
   </main>
 {/if}

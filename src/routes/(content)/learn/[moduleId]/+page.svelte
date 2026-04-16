@@ -12,6 +12,7 @@
   import WhenNotTable from "../../../../components/shared/reference/WhenNotTable.svelte";
   import WorkedAuctionCard from "../../../../components/shared/reference/WorkedAuctionCard.svelte";
   import ContentScreen from "../../../../components/shared/ContentScreen.svelte";
+  import AppLink from "../../../../components/shared/AppLink.svelte";
   import {
     buildPracticeUrl,
     normalizeReferenceView,
@@ -92,7 +93,9 @@
   title={viewport.displayName}
   subtitle={viewport.description}
 >
-  <a class="back-link" href="/learn/">← All Conventions</a>
+  <div class="back-link-wrap">
+    <AppLink variant="back" href="/learn/">All Conventions</AppLink>
+  </div>
 
 <div class="page-wrap">
   <div class="screen-only">
@@ -216,15 +219,8 @@
     display: block;
   }
 
-  .back-link {
-    display: inline-block;
-    color: var(--color-accent-primary);
-    text-decoration: none;
-    font-size: 0.875rem;
-  }
-
-  .back-link:hover {
-    text-decoration: underline;
+  .back-link-wrap {
+    margin-bottom: 1rem;
   }
 
   .reference-stack {

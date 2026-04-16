@@ -54,24 +54,22 @@
   {:else}
     <ul class="space-y-2">
       {#each drillsStore.drills as d (d.id)}
-        <li class="bg-bg-card border border-border-subtle rounded-[--radius-md] p-3 flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <p class="text-sm font-medium text-text-primary truncate">{d.name}</p>
+        <li class="relative group bg-bg-card border border-border-subtle rounded-[--radius-md] transition-all hover:border-border-default hover:shadow-md focus-within:border-accent-primary">
+          <a
+            href="/practice/drill/{d.id}/edit"
+            class="block p-3 pr-24 no-underline focus-visible:outline-none"
+          >
+            <p class="text-sm font-medium text-text-primary truncate group-hover:text-accent-primary transition-colors">{d.name}</p>
             <p class="text-xs text-text-muted mt-0.5">
               {conventionName(d.conventionId)} · {systemLabel(d.systemSelectionId)} · {roleLabel(d.practiceRole)}
             </p>
-          </div>
-          <div class="flex items-center gap-1 shrink-0">
-            <a
-              href="/practice/drill/{d.id}/edit"
-              class="px-2.5 py-1 rounded-[--radius-md] text-xs font-medium text-text-secondary hover:text-text-primary border border-border-subtle no-underline"
-            >Edit</a>
-            <button
-              type="button"
-              onclick={() => onDelete(d.id, d.name)}
-              class="px-2.5 py-1 rounded-[--radius-md] text-xs font-medium text-text-secondary hover:text-red-400 border border-border-subtle cursor-pointer"
-            >Delete</button>
-          </div>
+          </a>
+          <button
+            type="button"
+            onclick={() => onDelete(d.id, d.name)}
+            class="absolute top-1/2 -translate-y-1/2 right-2 px-2.5 py-1 rounded-[--radius-md] text-xs font-medium text-text-secondary hover:text-red-400 hover:border-border-default border border-border-subtle bg-bg-card cursor-pointer transition-colors"
+            aria-label="Delete drill {d.name}"
+          >Delete</button>
         </li>
       {/each}
     </ul>
