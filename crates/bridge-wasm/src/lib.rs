@@ -1,3 +1,4 @@
+use std::sync::Once;
 use wasm_bindgen::prelude::*;
 
 use bridge_engine::types::{Call, Card, Seat};
@@ -5,6 +6,29 @@ use bridge_engine::types::{Call, Card, Seat};
 use bridge_service::DevServicePort;
 use bridge_service::{ServicePort, ServicePortImpl, SessionConfig};
 use bridge_session::dds::{DdsError, McddParams, SolveBoardRequest, SolveBoardResponse};
+
+// ── Tracing setup ───────────────────────────────────────────────
+
+static TRACING_INIT: Once = Once::new();
+
+/// Enable verbose tracing output (maps Rust `tracing` events to console.log).
+/// Call once before running commands that need diagnostics. Idempotent.
+#[wasm_bindgen]
+pub fn set_verbose(max_level: &str) {
+    let level = match max_level {
+        "trace" => tracing::Level::TRACE,
+        "debug" => tracing::Level::DEBUG,
+        "warn" => tracing::Level::WARN,
+        "error" => tracing::Level::ERROR,
+        _ => tracing::Level::INFO,
+    };
+    TRACING_INIT.call_once(|| {
+        let mut builder = tracing_wasm::WASMLayerConfigBuilder::new();
+        builder.set_max_level(level);
+        builder.set_report_logs_in_timings(false);
+        tracing_wasm::set_as_global_default_with_config(builder.build());
+    });
+}
 
 // ── Serialization helpers ─────────────────────────────────────────
 

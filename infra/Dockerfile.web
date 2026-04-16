@@ -33,7 +33,7 @@ RUN cargo build --release -p bridge-static
 FROM node:20-slim AS node-build
 WORKDIR /build
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 COPY --from=wasm-build /build/crates/bridge-wasm/pkg/ crates/bridge-wasm/pkg/
 COPY static/ static/
 COPY src/ src/

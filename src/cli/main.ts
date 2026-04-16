@@ -40,6 +40,13 @@ async function main(): Promise<void> {
   const service = new BridgeService();
   await service.init();
 
+  // Activate verbose tracing if requested (must run after init so WASM is loaded)
+  if (flags["verbose"] === true || flags["v"] === true) {
+    const level = typeof flags["verbose"] === "string" ? flags["verbose"] : "debug";
+    const wasm = await import("../../crates/bridge-wasm/pkg/bridge_wasm.js");
+    wasm.set_verbose(level);
+  }
+
   switch (subcommand) {
     case "bundles":
       await runBundles(service);
