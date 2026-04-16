@@ -117,8 +117,11 @@
       <div class="mb-2 flex justify-end">
         <a
           href="/practice/drill"
-          class="text-xs font-medium text-accent-primary hover:underline"
-        >My drills →</a>
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-secondary border border-border-subtle bg-bg-card no-underline transition-all hover:text-text-primary hover:border-border-default hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
+        >
+          My drills
+          <span aria-hidden="true" class="text-accent-primary">→</span>
+        </a>
       </div>
     {/if}
 
