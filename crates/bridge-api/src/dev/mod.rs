@@ -51,7 +51,27 @@ async fn dev_login(
     jar: CookieJar,
     Json(req): Json<DevLoginRequest>,
 ) -> Result<(CookieJar, Response), AppError> {
-    let user_id = req.id.unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+    // Resolve user_id: explicit > existing row keyed by stripe_customer_id > fresh UUID.
+    // The stripe_customer_id lookup keeps devLogin idempotent across test runs that
+    // reuse the same customer id — otherwise the unique index on users.stripe_customer_id
+    // rejects the second insert.
+    let user_id = match req.id {
+        Some(id) => id,
+        None => {
+            let existing = match req.stripe_customer_id.as_deref() {
+                Some(cus) => {
+                    sqlx::query_scalar::<_, String>(
+                        "SELECT id FROM users WHERE stripe_customer_id = ?",
+                    )
+                    .bind(cus)
+                    .fetch_optional(&state.pool)
+                    .await?
+                }
+                None => None,
+            };
+            existing.unwrap_or_else(|| uuid::Uuid::new_v4().to_string())
+        }
+    };
     let display_name = req.display_name.unwrap_or_else(|| "Dev User".to_string());
 
     sqlx::query(

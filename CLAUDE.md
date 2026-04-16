@@ -15,6 +15,7 @@ Read the narrowest context that matches the task before editing:
 - **Testing work** → `docs/guides/testing-philosophy.md`, `src/test-support/CLAUDE.md`, and `tests/CLAUDE.md`
 - **Local debug params or route shortcuts** → `docs/guides/dev-tools.md`
 - **Deployment or release work** → `docs/guides/deployment.md`, `docs/product/product-direction.md`, and `infra/README.md`
+- **Local staging / manual auth+billing smoke** → `docs/guides/local-staging.md` (docker-compose stack with real Google OAuth + Stripe test mode; covers gaps in the Playwright billing suite)
 - **SEO, learn pages, or product framing** → `docs/product/product-direction.md` plus the relevant `docs/research/` topic
 
 ## Commands

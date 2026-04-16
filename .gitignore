@@ -6,6 +6,7 @@ node_modules
 .env
 .env.*
 !.env.example
+!infra/.env.staging.example
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 # MY specific folders

@@ -9,7 +9,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "cargo run -p bridge-api --features dev-tools",
+      command: "rm -f /tmp/bridge-api-e2e.db && cargo run -p bridge-api --features dev-tools",
       url: "http://localhost:3001/api/health",
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,

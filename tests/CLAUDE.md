@@ -30,7 +30,7 @@ Playwright end-to-end smoke tests for user-facing behavior.
 | `e2e/session-modes.spec.ts`           | Session-mode wiring smoke: default decision drill, full-auction label, autoplay→review, review analysis tab |
 | `e2e/representative-conventions.spec.ts` | Desktop-only representative bundle flows: Jacoby Transfers and Bergen Raises |
 | `e2e/responsive-layout.spec.ts`       | Responsive shell checks for home, game, and settings. Desktop also runs it; mobile/tablet run this file only |
-| `e2e/billing.spec.ts`                 | Billing + auth flows against bridge-api built with `--features dev-tools`: anon paywall, free-tier paywall, paid-user portal navigation (mock Stripe), `subscription.deleted` webhook leaves tier Paid until period_end. `globalSetup` wipes `/tmp/bridge-api-e2e.db` so migrations run on a clean schema. |
+| `e2e/billing.spec.ts`                 | Billing + auth flows against bridge-api built with `--features dev-tools`: anon paywall, free-tier paywall, paid-user portal navigation (mock Stripe), `subscription.deleted` webhook leaves tier Paid until period_end. The `bridge-api` webServer command wipes `/tmp/bridge-api-e2e.db` on startup so migrations run on a clean schema; `dev_login` is also idempotent on `stripe_customer_id` so reused servers don't collide on the unique index. |
 
 ## Constraints
 

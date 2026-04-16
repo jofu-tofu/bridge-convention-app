@@ -1,0 +1,35 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.web
+    image: bridge-convention-app:local
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./Caddyfile.local:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    image: bridge-convention-app-api:local
+    env_file: .env.staging
+    volumes:
+      - api_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: "no"
+
+volumes:
+  caddy_data:
+  api_data:

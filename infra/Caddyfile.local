@@ -1,0 +1,14 @@
+localhost {
+    tls internal
+
+    handle /api/* {
+        reverse_proxy api:3001
+    }
+
+    handle {
+        root * /srv
+        encode gzip zstd
+        try_files {path} /index.html
+        file_server
+    }
+}
