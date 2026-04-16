@@ -16,23 +16,43 @@
     buildPracticeUrl,
     normalizeReferenceView,
   } from "./reference-page";
+  import {
+    OG_IMAGE,
+    SITE_MODIFIED,
+    SITE_NAME,
+    SITE_PUBLISHED,
+    SITE_URL,
+    truncateDescription,
+  } from "../../seo";
 
   const { data } = $props();
-  const viewport = data.viewport;
+  const viewport = $derived(data.viewport);
+  const pageUrl = $derived(`${SITE_URL}/learn/${viewport.moduleId}/`);
+  const metaDescription = $derived(truncateDescription(viewport.purpose));
 
-  const jsonLd = JSON.stringify({
+  const jsonLd = $derived(JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Article",
     headline: `${viewport.displayName} — Learn Bridge Conventions`,
-    description: viewport.purpose,
-    url: `https://bridgelab.net/learn/${viewport.moduleId}/`,
-    publisher: { "@type": "Organization", name: "BridgeLab", url: "https://bridgelab.net" },
-  });
+    description: metaDescription,
+    url: pageUrl,
+    mainEntityOfPage: pageUrl,
+    image: OG_IMAGE,
+    datePublished: SITE_PUBLISHED,
+    dateModified: SITE_MODIFIED,
+    author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/brand/logo.svg` },
+    },
+  }));
 
-  const reference = normalizeReferenceView(viewport.reference);
+  const reference = $derived(normalizeReferenceView(viewport.reference));
   // Server-load returns a structurally equivalent mirror type; cast to service type.
-  const flowTree = data.flowTree as ModuleFlowTreeViewport | null;
-  const practiceHref = buildPracticeUrl(viewport.bundleIds, viewport.moduleId);
+  const flowTree = $derived(data.flowTree as ModuleFlowTreeViewport | null);
+  const practiceHref = $derived(buildPracticeUrl(viewport.bundleIds, viewport.moduleId));
 
   const tocSections = $derived.by(() => {
     return [
@@ -55,11 +75,14 @@
 
 <svelte:head>
   <title>{viewport.displayName} — Learn Bridge Conventions | BridgeLab</title>
-  <meta name="description" content={viewport.purpose} />
-  <link rel="canonical" href="https://bridgelab.net/learn/{viewport.moduleId}/" />
+  <meta name="description" content={metaDescription} />
+  <link rel="canonical" href={pageUrl} />
   <meta property="og:title" content="{viewport.displayName} — Learn Bridge Conventions" />
-  <meta property="og:description" content={viewport.purpose} />
+  <meta property="og:description" content={metaDescription} />
   <meta property="og:type" content="article" />
+  <meta property="og:url" content={pageUrl} />
+  <meta property="article:published_time" content={SITE_PUBLISHED} />
+  <meta property="article:modified_time" content={SITE_MODIFIED} />
   <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted build-time JSON-LD, not user input -->
   {@html `<script type="application/ld+json">${jsonLd}<\/script>`}
 </svelte:head>
@@ -72,7 +95,6 @@
   <a class="back-link" href="/learn/">← All Conventions</a>
 
 <div class="page-wrap">
-  <OnThisPageNav sections={tocSections} />
   <div class="screen-only">
     <div class="reference-stack">
       <div id="summary-card" class="scroll-target">
@@ -142,6 +164,10 @@
     {/if}
   </div>
 
+  <div class="toc-col">
+    <OnThisPageNav sections={tocSections} />
+  </div>
+
   <div class="scroll-target print-only">
     <QuickRefCard
       moduleId={viewport.moduleId}
@@ -158,10 +184,14 @@
     margin: 0 auto;
   }
 
-  @media (min-width: 1024px) {
+  .toc-col {
+    display: none;
+  }
+
+  @media (min-width: 1280px) {
     .page-wrap {
       display: grid;
-      grid-template-columns: 260px minmax(0, 1020px);
+      grid-template-columns: minmax(0, 1fr) 240px;
       gap: 2rem;
       max-width: none;
       margin: 0;
@@ -170,10 +200,15 @@
     .screen-only {
       min-width: 0;
       width: 100%;
-      max-width: 1020px;
     }
     .screen-only .wide {
       max-width: none;
+    }
+    .toc-col {
+      display: block;
+      position: sticky;
+      top: 4rem;
+      align-self: start;
     }
   }
 

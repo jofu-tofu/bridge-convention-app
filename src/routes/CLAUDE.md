@@ -6,7 +6,7 @@ SvelteKit file-based routing. `adapter-static` with `fallback: 'index.html'`.
 
 - `(app)/` — client-only (`ssr=false`). Loads WASM, renders `AppReady` + `AppShell`. All interactive game routes live here.
 - `(app)/billing/{success,cancel}` — Stripe return routes. They stay client-only so they can refresh auth state and redirect back to `/practice` without a separate server render path.
-- `(content)/` — prerendered (`prerender = true` in `+layout.ts`). SEO pages: `/` (landing), `/guides/[slug]`, `/learn/[moduleId]`. All content routes — including `/` — wrap in `AppShell`. The landing page renders `LoggedInLanding` when authed, marketing hero otherwise, both inside the shell chrome.
+- `(content)/` — prerendered (`prerender = true` in `+layout.ts`). SEO pages: `/` (landing), `/guides/[slug]`, `/learn/` + `/learn/[moduleId]`, `/lessons/`, `/systems/`. All content routes — including `/` — wrap in `AppShell`. The landing page renders `LoggedInLanding` when authed, marketing hero otherwise, both inside the shell chrome. `/learn/*` has a group-level `+layout.svelte` + `+layout.server.ts` that loads the module catalog once and renders `LearnSidebar` (search + convention list) beside the page body on desktop.
 
 ## Custom drills
 
@@ -21,6 +21,13 @@ All three are reachable without an entitlement (entitlement gating is per-action
 - `/learn/[moduleId]` is the convention reference surface. Keep it reference-first and scan-friendly; step-by-step tutorial content belongs in guided practice / in-app learning flows, not on this prerendered page.
 - **Authoring-field-driven, no per-module hardcoding.** Every field the page renders must come from authored module/bundle data or be derived (e.g. from `definingMeaningId`, surfaces, or `systemFactLadder`). Do not branch on module id, hardcode per-convention prose, or override derived values in the page component. The learn page now has one render path: every module ships a populated `reference` block, and `ModuleLearningViewport.reference` is non-optional. If a convention needs to say something new, add a required authored field on the module data model — do not special-case the renderer. See `docs/guides/convention-authoring.md` for the authoring-eligible field list and the "derive, don't author" rules.
 - **Scalability check before adding a field.** Anything system-specific (HCP, total points, losing-trick count, suit-quality thresholds, etc.) must resolve through `SystemConfig` / fact-catalog-driven axes, not hardcoded prose. Before adding a new authored field, ask: will every convention in every system need to answer this? If yes, it belongs on the module data model as **required** — authors write explicit applicability states rather than leaving it null, so every reference page is complete by construction.
+
+## SEO metadata
+
+- Shared SEO helpers live in `src/routes/(content)/seo.ts`: `SITE_URL`, `SITE_NAME`, `OG_IMAGE`, `SITE_PUBLISHED`, `SITE_MODIFIED` (build-date), and `truncateDescription()` (155-char word-boundary trim). Prerendered content pages import from here — do not hardcode `https://bridgelab.net` or duplicate the truncator.
+- Site-wide `og:image`, `twitter:card`, and `og:site_name` are set in `src/app.html`. Per-page heads only need to add page-specific `og:title`, `og:description`, `og:url`, and (for articles) `article:published_time` / `article:modified_time`.
+- `/learn/[moduleId]` emits an `Article` JSON-LD block with `author`, `publisher` (w/ logo), `image`, `datePublished`, `dateModified`, and `mainEntityOfPage`. Keep the shape in sync with Google's Article rich-result guidelines when editing.
+- `src/routes/sitemap.xml/+server.ts` is prerendered and enumerates content routes by reading `.generated/learn-data.json` and `content/guides/*.md` frontmatter. Add new prerendered route families here when created. `static/robots.txt` points to this sitemap.
 
 ## Auth store
 
