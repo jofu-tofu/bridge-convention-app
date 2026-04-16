@@ -8,7 +8,7 @@
 
 use bridge_conventions::fact_dsl::witness::{enumerate_witnesses, project_witness, Witness};
 use bridge_conventions::registry::module_registry::get_module;
-use bridge_conventions::types::system_config::BaseSystemId;
+use bridge_conventions::types::system_config::{BaseSystemId, SystemConfig};
 use bridge_conventions::types::{rule_types::TurnRole, ConventionModule};
 use bridge_engine::constants::next_seat;
 use bridge_engine::types::{Auction, AuctionEntry, Call, DealConstraints, Seat};
@@ -163,10 +163,12 @@ fn candidate_surfaces(
 /// enumerated; the service surfaces this as
 /// `ServiceError::DealGenerationExhausted` so the UI retries with a new
 /// seed.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn select_witness(
     bundle_member_ids: &[String],
     base_module_ids: &[String],
     system: BaseSystemId,
+    system_config: &SystemConfig,
     role: PracticeRole,
     dealer: Seat,
     target_module_override: Option<&str>,
@@ -209,7 +211,7 @@ pub(crate) fn select_witness(
         // Phase 1 guarantees ≥ 1 projected branch when at least one witness
         // is returned. Document the single-branch assumption: we take the
         // first.
-        let branches = project_witness(&chosen, &loaded);
+        let branches = project_witness(&chosen, &loaded, Some(system_config));
         let Some(projected) = branches.into_iter().next() else {
             last_failed = Some((module_id, surface_id));
             continue;

@@ -290,7 +290,14 @@ pub(crate) fn build_witness_acceptance_predicate(
         let (_bid, strategy_evaluation) = adapter.suggest_with_evaluation(&ctx, None);
         match matched_module_and_surface(&strategy_evaluation) {
             Some((mid, sid)) => {
-                let ok = mid == witness.target_module_id && sid == witness.target_surface_id;
+                // Accept when (module_id, meaning_id) match exactly, OR when
+                // meaning_id matches and the pipeline's module_id is the base
+                // module that the target module's surfaces claim as their origin
+                // (extension modules like stayman-garbage author surfaces with
+                // the base module's ID, not the containing module ID).
+                let ok = sid == witness.target_surface_id
+                    && (mid == witness.target_module_id
+                        || mid == witness.target_surface_module_id);
                 if !ok {
                     tracing::debug!(
                         "reject: pipeline selected {}/{} but witness targets {}/{}",
@@ -426,6 +433,7 @@ mod tests {
             }],
             target_surface_id: "stayman:ask-major".to_string(),
             target_module_id: "stayman".to_string(),
+            target_surface_module_id: "stayman".to_string(),
             user_seat: Seat::South,
             dealer: Seat::North,
         };
@@ -507,6 +515,7 @@ mod tests {
             }],
             target_surface_id: "stayman:ask-major".to_string(),
             target_module_id: "stayman".to_string(),
+            target_surface_module_id: "stayman".to_string(),
             user_seat: Seat::South,
             dealer: Seat::North,
         };

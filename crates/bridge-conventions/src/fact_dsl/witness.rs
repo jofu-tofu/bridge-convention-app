@@ -5,10 +5,11 @@
 //! intersect the hand-clauses of each surface on its path *per seat*, producing
 //! much tighter `DealConstraints` than v1's global union.
 //!
-//! Phase 1 scope (additive only):
-//! - `partition_clauses` — splits a surface's clauses into invertible "hand"
-//!   clauses and non-invertible "context" clauses (`module.*`, `system.*`,
-//!   `bridge.hasFiveCardMajor`, etc.).
+//! Scope:
+//! - `partition_clauses` — utility that splits a surface's clauses into
+//!   directly-invertible "hand" clauses and "context" clauses (`module.*`,
+//!   `system.*`, `bridge.hasFiveCardMajor`, etc.). Kept for external
+//!   inspection use; projection itself now expands context clauses in place.
 //! - `enumerate_witnesses` — derives symbolic witnesses from authored data.
 //!   Uses a **hybrid** strategy: `RouteExpr` when the target `StateEntry` has
 //!   one (approach C), otherwise walks the target module's `LocalFsm` (approach
@@ -16,11 +17,10 @@
 //!   paths so that e.g. "1NT opener" is surfaced even though stayman's FSM
 //!   starts in `idle` with no edge to traverse.
 //! - `project_witness` — intersects per-seat hand clauses across all surfaces
-//!   on the witness to produce `DealConstraints`.
-//!
-//! This module is intentionally additive. Nothing in v1
-//! (`derive_deal_constraints`) is removed, and callers of the existing
-//! pipeline are not touched.
+//!   on the witness to produce `DealConstraints`. `module.*` / `bridge.*`
+//!   derived facts are substituted with their authored compositions, and
+//!   `system.*` boolean facts expand to concrete `hand.hcp` bounds using the
+//!   caller-supplied `SystemConfig`.
 
 use std::collections::{HashMap, HashSet, VecDeque};
 
@@ -35,9 +35,18 @@ use crate::types::meaning::BidMeaning;
 use crate::types::rule_types::{
     LocalFsm, ObsPattern, ObsPatternAct, PhaseRef, RouteExpr, StateEntry, TurnRole,
 };
-use crate::types::{BidMeaningClause, ConventionModule};
+use crate::types::{
+    BidMeaningClause, ConstraintValue, ConventionModule, FactComposition, FactOperator,
+    PrimitiveClause, PrimitiveClauseOperator, PrimitiveClauseValue, SystemConfig,
+};
 
-use super::inversion::{compose_surface_clauses, invert_composition, InvertedConstraint};
+use super::inversion::{invert_composition, InvertedConstraint};
+use super::system_facts::{
+    SYSTEM_DONT_OVERCALL_IN_RANGE, SYSTEM_OPENER_NOT_MINIMUM, SYSTEM_OPENING_STRONG_2C_RANGE,
+    SYSTEM_OPENING_WEAK_TWO_RANGE, SYSTEM_RESPONDER_GAME_VALUES, SYSTEM_RESPONDER_INVITE_VALUES,
+    SYSTEM_RESPONDER_ONE_NT_RANGE, SYSTEM_RESPONDER_SLAM_VALUES,
+    SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT, SYSTEM_RESPONDER_WEAK_HAND,
+};
 
 // =====================================================================
 // 1a. Clause partitioning
@@ -190,6 +199,11 @@ pub struct Witness {
     /// Stable id of the chosen target surface. Phase 1 uses `meaning_id`.
     pub target_surface_id: String,
     pub target_module_id: String,
+    /// The `moduleId` field authored on the target surface itself. Extension
+    /// modules (e.g. `stayman-garbage`) may author surfaces with a different
+    /// `moduleId` (e.g. `"stayman"`) than the containing module, so the
+    /// acceptance predicate needs both to match correctly.
+    pub target_surface_module_id: String,
     pub user_seat: Seat,
     pub dealer: Seat,
 }
@@ -442,12 +456,11 @@ fn merge_prefixes(mut a: Vec<WitnessCall>, b: Vec<WitnessCall>) -> Vec<WitnessCa
 /// Hybrid strategy per work-rule:
 /// 1. For each target `StateEntry` of `target_module_id` whose `turn` resolves
 ///    to `user_seat`:
-///    a. If `StateEntry.route` is `Some`, attempt approach C
-///       (`extract_required_prefix_from_route`). Success → that reified call
-///       list forms the prefix; bidders are inferred by turn-cursor from
-///       dealer.
-///    b. Otherwise, approach E: BFS `target_module.local` for a reifiable
-///       path from `initial` to any phase hosting this state entry.
+///   a. If `StateEntry.route` is `Some`, attempt approach C
+///      (`extract_required_prefix_from_route`). Success → that reified call
+///      list forms the prefix; bidders are inferred by turn-cursor from dealer.
+///   b. Otherwise, approach E: BFS `target_module.local` for a reifiable
+///      path from `initial` to any phase hosting this state entry.
 /// 2. **Context augmentation:** for every base-system module in
 ///    `loaded_modules` that is *not* the target, find its "responder-context
 ///    path" and fold it in. This is how 1NT-opener context flows into a
@@ -531,10 +544,21 @@ pub fn enumerate_witnesses(
             .unwrap_or_default();
         prefix = merge_prefixes(prefix, best_ctx);
 
+        // The surface's authored `module_id` may differ from the containing
+        // module's `module_id` for extension modules (e.g. stayman-garbage's
+        // surfaces declare moduleId: "stayman"). Grab it for the predicate.
+        let surface_module_id = se
+            .surfaces
+            .iter()
+            .find(|s| s.meaning_id == target_surface_id)
+            .and_then(|s| s.module_id.clone())
+            .unwrap_or_else(|| target_module_id.to_string());
+
         witnesses.push(Witness {
             prefix,
             target_surface_id: target_surface_id.to_string(),
             target_module_id: target_module_id.to_string(),
+            target_surface_module_id: surface_module_id,
             user_seat,
             dealer,
         });
@@ -625,54 +649,31 @@ fn intersect_inverted(constraints: &[InvertedConstraint]) -> InvertedConstraint 
     out
 }
 
-/// OR / union: loosest bounds. Mirrors `union_all` in `inversion.rs`,
-/// re-implemented here because that function is private. Any branch
-/// missing a bound drops the bound for the union (unconstrained).
-fn union_inverted(constraints: &[InvertedConstraint]) -> InvertedConstraint {
-    if constraints.is_empty() {
-        return InvertedConstraint::default();
+/// Score how constrained an `InvertedConstraint` is. Higher = more
+/// populated fields = more specific. Used to pick the variant most likely
+/// to generate compatible deals when multiple meaning_id-sharing surfaces
+/// exist for the same target.
+fn specificity_score(c: &InvertedConstraint) -> usize {
+    let mut score = 0;
+    if c.min_hcp.is_some() {
+        score += 1;
     }
-    if constraints.len() == 1 {
-        return constraints[0].clone();
+    if c.max_hcp.is_some() {
+        score += 1;
     }
-    let mut out = InvertedConstraint::default();
-    let mut all_have_min_hcp = true;
-    let mut all_have_max_hcp = true;
-    for c in constraints {
-        match c.min_hcp {
-            Some(min) => {
-                out.min_hcp = Some(out.min_hcp.map_or(min, |cur| cur.min(min)));
-            }
-            None => all_have_min_hcp = false,
-        }
-        match c.max_hcp {
-            Some(max) => {
-                out.max_hcp = Some(out.max_hcp.map_or(max, |cur| cur.max(max)));
-            }
-            None => all_have_max_hcp = false,
-        }
-        if let Some(ref ml) = c.min_length {
-            let target = out.min_length_any.get_or_insert_with(HashMap::new);
-            for (&suit, &len) in ml {
-                let e = target.entry(suit).or_insert(len);
-                *e = (*e).min(len);
-            }
-        }
-        if let Some(ref mla) = c.min_length_any {
-            let target = out.min_length_any.get_or_insert_with(HashMap::new);
-            for (&suit, &len) in mla {
-                let e = target.entry(suit).or_insert(len);
-                *e = (*e).min(len);
-            }
-        }
+    if c.balanced.is_some() {
+        score += 1;
     }
-    if !all_have_min_hcp {
-        out.min_hcp = None;
+    if let Some(ref ml) = c.min_length {
+        score += ml.len();
     }
-    if !all_have_max_hcp {
-        out.max_hcp = None;
+    if let Some(ref ml) = c.max_length {
+        score += ml.len();
     }
-    out
+    if let Some(ref ml) = c.min_length_any {
+        score += ml.len();
+    }
+    score
 }
 
 fn inverted_to_seat_constraint(seat: Seat, c: &InvertedConstraint) -> SeatConstraint {
@@ -687,10 +688,299 @@ fn inverted_to_seat_constraint(seat: Seat, c: &InvertedConstraint) -> SeatConstr
     }
 }
 
-/// Invert the *hand-only* clauses of `surface` into a single
-/// `InvertedConstraint`. Context clauses are silently dropped (they're the
-/// purview of phase-2+ auction/system evaluation).
-fn invert_hand_only(surface: &BidMeaning) -> InvertedConstraint {
+/// Convert a boolean surface clause on a `system.*` fact into a concrete
+/// `FactComposition` on `hand.hcp` using `SystemConfig` thresholds. Returns
+/// `None` when:
+/// - the fact is not a recognized system fact
+/// - the clause asks for the `false` side of a range-based threshold (the
+///   negation is disjunctive and not cleanly expressible as a single bound;
+///   we drop it rather than over-constrain)
+/// - `SystemConfig` is unavailable
+///
+/// Supported facts: `weakHand`, `inviteValues`, `gameValues`, `slamValues`,
+/// `openerNotMinimum`, `responderTwoLevelNewSuit`, `responderOneNtRange`,
+/// `dontOvercallInRange`, `openingWeakTwoRange`, `openingStrong2cRange`.
+fn expand_system_fact_to_hand_composition(
+    fact_id: &str,
+    boolean_value: bool,
+    system: &SystemConfig,
+) -> Option<FactComposition> {
+    let hcp_min = |min: u32| -> FactComposition {
+        FactComposition::Primitive {
+            clause: PrimitiveClause {
+                fact_id: "hand.hcp".to_string(),
+                operator: PrimitiveClauseOperator::Gte,
+                value: PrimitiveClauseValue::Single(serde_json::Number::from(min)),
+            },
+        }
+    };
+    let hcp_max = |max: u32| -> FactComposition {
+        FactComposition::Primitive {
+            clause: PrimitiveClause {
+                fact_id: "hand.hcp".to_string(),
+                operator: PrimitiveClauseOperator::Lte,
+                value: PrimitiveClauseValue::Single(serde_json::Number::from(max)),
+            },
+        }
+    };
+    let hcp_range = |min: u32, max: u32| -> FactComposition {
+        FactComposition::And {
+            operands: vec![hcp_min(min), hcp_max(max)],
+        }
+    };
+
+    // Only the `true` side is cleanly invertible for range-valued thresholds.
+    // Negations of an interior range map to a disjunction; we drop them.
+    match fact_id {
+        id if id == SYSTEM_RESPONDER_WEAK_HAND => {
+            if boolean_value {
+                // hcp < invite_min → hcp <= invite_min - 1
+                let cap = system.responder_thresholds.invite_min.saturating_sub(1);
+                Some(hcp_max(cap))
+            } else {
+                Some(hcp_min(system.responder_thresholds.invite_min))
+            }
+        }
+        id if id == SYSTEM_RESPONDER_INVITE_VALUES && boolean_value => Some(hcp_range(
+            system.responder_thresholds.invite_min,
+            system.responder_thresholds.invite_max,
+        )),
+        id if id == SYSTEM_RESPONDER_GAME_VALUES => {
+            if boolean_value {
+                Some(hcp_min(system.responder_thresholds.game_min))
+            } else {
+                let cap = system.responder_thresholds.game_min.saturating_sub(1);
+                Some(hcp_max(cap))
+            }
+        }
+        id if id == SYSTEM_RESPONDER_SLAM_VALUES => {
+            if boolean_value {
+                Some(hcp_min(system.responder_thresholds.slam_min))
+            } else {
+                let cap = system.responder_thresholds.slam_min.saturating_sub(1);
+                Some(hcp_max(cap))
+            }
+        }
+        id if id == SYSTEM_OPENER_NOT_MINIMUM => {
+            if boolean_value {
+                Some(hcp_min(system.opener_rebid.not_minimum))
+            } else {
+                let cap = system.opener_rebid.not_minimum.saturating_sub(1);
+                Some(hcp_max(cap))
+            }
+        }
+        id if id == SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT => {
+            if boolean_value {
+                Some(hcp_min(system.suit_response.two_level_min))
+            } else {
+                let cap = system.suit_response.two_level_min.saturating_sub(1);
+                Some(hcp_max(cap))
+            }
+        }
+        id if id == SYSTEM_RESPONDER_ONE_NT_RANGE && boolean_value => Some(hcp_range(
+            system.one_nt_response_after_major.min_hcp,
+            system.one_nt_response_after_major.max_hcp,
+        )),
+        id if id == SYSTEM_DONT_OVERCALL_IN_RANGE && boolean_value => Some(hcp_range(
+            system.dont_overcall.min_hcp,
+            system.dont_overcall.max_hcp,
+        )),
+        id if id == SYSTEM_OPENING_WEAK_TWO_RANGE && boolean_value => Some(hcp_range(
+            system.opening.weak_two.min_hcp,
+            system.opening.weak_two.max_hcp,
+        )),
+        id if id == SYSTEM_OPENING_STRONG_2C_RANGE => {
+            if boolean_value {
+                Some(hcp_min(system.opening.strong_2c_min))
+            } else {
+                let cap = system.opening.strong_2c_min.saturating_sub(1);
+                Some(hcp_max(cap))
+            }
+        }
+        _ => None,
+    }
+}
+
+/// Look up a `module.*` or `bridge.*` derived fact's `composition` in the
+/// loaded modules. Returns `None` when the fact is unknown or has no
+/// composition (evaluator-backed). Cycle protection is the caller's job.
+fn find_fact_composition<'m>(
+    fact_id: &str,
+    loaded_modules: &[&'m ConventionModule],
+) -> Option<&'m FactComposition> {
+    for module in loaded_modules {
+        for def in &module.facts.definitions {
+            if def.id == fact_id {
+                return def.composition.as_ref();
+            }
+        }
+    }
+    None
+}
+
+/// Maximum recursion depth for expanding `module.*` / `bridge.*` fact
+/// definitions whose compositions reference other derived facts. Guards
+/// against pathological cycles in authored fixtures without a full visited
+/// set (authoring cycles are invariant-violations, caught elsewhere).
+const MAX_EXPANSION_DEPTH: u8 = 8;
+
+/// Recursively expand any `module.*` / `bridge.*` fact references inside a
+/// `FactComposition` to the underlying hand primitives by substituting their
+/// authored `composition`. System facts are expanded via `system_config` when
+/// provided. References without a composition or at max depth are replaced
+/// with an empty `And` (unconstrained), matching phase-1 drop semantics.
+fn expand_composition(
+    comp: &FactComposition,
+    loaded_modules: &[&ConventionModule],
+    system_config: Option<&SystemConfig>,
+    depth: u8,
+) -> FactComposition {
+    if depth > MAX_EXPANSION_DEPTH {
+        return FactComposition::And { operands: vec![] };
+    }
+    match comp {
+        FactComposition::Primitive { clause } => {
+            if is_hand_fact_id(&clause.fact_id)
+                || clause.fact_id == "hand.isBalanced"
+                || clause.fact_id == "bridge.isBalanced"
+            {
+                return comp.clone();
+            }
+            // System fact expansion: only well-formed boolean clauses are
+            // invertible. Encoded form after `clause_to_primitive` is Eq with
+            // 0/1. Upstream surface clauses reach here as raw PrimitiveClause,
+            // so accept either `Boolean`-equivalent Eq(0)/Eq(1).
+            if clause.fact_id.starts_with("system.") {
+                if let Some(sys) = system_config {
+                    if let Some(b) = primitive_clause_as_boolean(clause) {
+                        if let Some(expanded) =
+                            expand_system_fact_to_hand_composition(&clause.fact_id, b, sys)
+                        {
+                            return expanded;
+                        }
+                    }
+                }
+                return FactComposition::And { operands: vec![] };
+            }
+            // module.* or bridge.*: expand via authored composition.
+            if clause.fact_id.starts_with("module.") || clause.fact_id.starts_with("bridge.") {
+                if let Some(inner) = find_fact_composition(&clause.fact_id, loaded_modules) {
+                    let expanded = expand_composition(inner, loaded_modules, system_config, depth + 1);
+                    // Boolean Eq(0) on the fact = the negation of the composition.
+                    match primitive_clause_as_boolean(clause) {
+                        Some(true) => return expanded,
+                        Some(false) => {
+                            return FactComposition::Not {
+                                operand: Box::new(expanded),
+                            };
+                        }
+                        // Non-boolean references (numeric module facts) carry
+                        // a comparison against the fact's numeric value and
+                        // aren't expressible via pure composition rewriting.
+                        None => return FactComposition::And { operands: vec![] },
+                    }
+                }
+                return FactComposition::And { operands: vec![] };
+            }
+            // Unknown namespace: drop.
+            FactComposition::And { operands: vec![] }
+        }
+        FactComposition::And { operands } => FactComposition::And {
+            operands: operands
+                .iter()
+                .map(|o| expand_composition(o, loaded_modules, system_config, depth + 1))
+                .collect(),
+        },
+        FactComposition::Or { operands } => FactComposition::Or {
+            operands: operands
+                .iter()
+                .map(|o| expand_composition(o, loaded_modules, system_config, depth + 1))
+                .collect(),
+        },
+        FactComposition::Not { operand } => FactComposition::Not {
+            operand: Box::new(expand_composition(
+                operand,
+                loaded_modules,
+                system_config,
+                depth + 1,
+            )),
+        },
+        // Extended / Match / Compute: not invertible; drop to empty so the
+        // outer `And` becomes unconstrained on this branch.
+        _ => FactComposition::And { operands: vec![] },
+    }
+}
+
+/// Decode a PrimitiveClause's boolean-encoded value (post-`clause_to_primitive`
+/// form: `Eq(0)` / `Eq(1)`). Returns `None` for non-boolean-encoded clauses.
+fn primitive_clause_as_boolean(clause: &PrimitiveClause) -> Option<bool> {
+    if !matches!(clause.operator, PrimitiveClauseOperator::Eq) {
+        return None;
+    }
+    match &clause.value {
+        PrimitiveClauseValue::Single(n) => match n.as_u64() {
+            Some(0) => Some(false),
+            Some(1) => Some(true),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// Promote a raw surface clause to a `FactComposition` tree. Mirrors
+/// `compose_surface_clauses` but produces a single node per clause so we can
+/// feed each through `expand_composition` before re-composing the outer And.
+fn clause_to_composition(clause: &BidMeaningClause) -> Option<FactComposition> {
+    let primitive = raw_clause_to_primitive(clause)?;
+    Some(FactComposition::Primitive { clause: primitive })
+}
+
+/// Local port of `clause_to_primitive` (private in inversion.rs). Kept in
+/// lockstep with that function; if you widen the accepted operator/value
+/// shapes there, do the same here.
+fn raw_clause_to_primitive(clause: &BidMeaningClause) -> Option<PrimitiveClause> {
+    let (op, value) = match (&clause.operator, &clause.value) {
+        (FactOperator::Gte, ConstraintValue::Number(n)) => (
+            PrimitiveClauseOperator::Gte,
+            PrimitiveClauseValue::Single(n.clone()),
+        ),
+        (FactOperator::Lte, ConstraintValue::Number(n)) => (
+            PrimitiveClauseOperator::Lte,
+            PrimitiveClauseValue::Single(n.clone()),
+        ),
+        (FactOperator::Eq, ConstraintValue::Number(n)) => (
+            PrimitiveClauseOperator::Eq,
+            PrimitiveClauseValue::Single(n.clone()),
+        ),
+        (FactOperator::Range, ConstraintValue::Range { min, max }) => (
+            PrimitiveClauseOperator::Range,
+            PrimitiveClauseValue::Range {
+                min: min.clone(),
+                max: max.clone(),
+            },
+        ),
+        (FactOperator::Boolean, ConstraintValue::Bool(b)) => (
+            PrimitiveClauseOperator::Eq,
+            PrimitiveClauseValue::Single(serde_json::Number::from(if *b { 1 } else { 0 })),
+        ),
+        _ => return None,
+    };
+    Some(PrimitiveClause {
+        fact_id: clause.fact_id.clone(),
+        operator: op,
+        value,
+    })
+}
+
+/// Invert a surface's hand-influencing clauses into a single
+/// `InvertedConstraint`. `module.*` / `bridge.*` derived-fact references are
+/// recursively expanded via authored compositions, and `system.*` clauses
+/// are expanded via `system_config` (`None` → drop, matching phase-1 legacy).
+fn invert_hand_only(
+    surface: &BidMeaning,
+    loaded_modules: &[&ConventionModule],
+    system_config: Option<&SystemConfig>,
+) -> InvertedConstraint {
     let resolved_clauses: Vec<BidMeaningClause> =
         if let Some(bindings) = surface.surface_bindings.as_ref() {
             surface
@@ -701,8 +991,12 @@ fn invert_hand_only(surface: &BidMeaning) -> InvertedConstraint {
         } else {
             surface.clauses.clone()
         };
-    let (hand_clauses, _ctx) = partition_clauses(&resolved_clauses);
-    let comp = compose_surface_clauses(&hand_clauses);
+    let operands: Vec<FactComposition> = resolved_clauses
+        .iter()
+        .filter_map(clause_to_composition)
+        .map(|c| expand_composition(&c, loaded_modules, system_config, 0))
+        .collect();
+    let comp = FactComposition::And { operands };
     invert_composition(&comp)
 }
 
@@ -761,6 +1055,7 @@ pub fn synthesize_no_interference_constraint(
     seat: Seat,
     position: &[WitnessCall],
     loaded_modules: &[&ConventionModule],
+    system_config: Option<&SystemConfig>,
 ) -> InvertedConstraint {
     let candidates = candidate_interference_surfaces(seat, position, loaded_modules);
     if candidates.is_empty() {
@@ -770,8 +1065,10 @@ pub fn synthesize_no_interference_constraint(
         };
     }
 
-    let inverted: Vec<InvertedConstraint> =
-        candidates.iter().map(|s| invert_hand_only(s)).collect();
+    let inverted: Vec<InvertedConstraint> = candidates
+        .iter()
+        .map(|s| invert_hand_only(s, loaded_modules, system_config))
+        .collect();
     let mut synthesized = InvertedConstraint {
         max_hcp: Some(
             inverted
@@ -835,16 +1132,27 @@ fn find_target_surfaces<'m>(
 ///
 /// Phase 1 emits a single branch per witness (no disjunction-distribution).
 /// Per-seat projection:
-/// - Target surface's hand clauses contribute to `user_seat`.
+/// - Target surface's hand clauses contribute to `user_seat`. When multiple
+///   surfaces share the target `meaning_id`, we UNION (loosest) across
+///   variants since any variant is a valid witness hand. System/module fact
+///   expansion (`expand_composition`) ensures each variant contributes
+///   concrete HCP bounds rather than empty constraints — the old bug where
+///   a system-gated variant contributed no hand constraints (dropping the
+///   union's HCP bound entirely) is resolved by the expansion layer.
 /// - Each prefix call's matched base-module surfaces contribute to their
 ///   bidder seat; when multiple surfaces match the same call, their
 ///   inverted constraints are intersected (tightest bound wins).
 /// - Opponent pass slots implied between witness calls synthesize a
 ///   "no-interference" constraint so drill generation avoids hands where the
 ///   live heuristic opponents would overcall before the user's turn.
+///
+/// `system_config` is threaded through so `system.*` clauses on target and
+/// prefix surfaces expand to concrete `hand.hcp` bounds. Passing `None`
+/// reproduces the legacy behavior of silently dropping system clauses.
 pub fn project_witness(
     witness: &Witness,
     loaded_modules: &[&ConventionModule],
+    system_config: Option<&SystemConfig>,
 ) -> Vec<DealConstraints> {
     let Some(target_module) = find_module(loaded_modules, &witness.target_module_id) else {
         return Vec::new();
@@ -853,8 +1161,15 @@ pub fn project_witness(
     let mut per_seat: HashMap<Seat, Vec<InvertedConstraint>> = HashMap::new();
 
     // Target surface(s) → user_seat. Multiple authored variants of the same
-    // meaning_id are alternative meanings → union (loosest) across variants
-    // to honor the semantics that ANY variant is a valid witness hand.
+    // meaning_id are alternative meanings. We pick the single MOST
+    // CONSTRAINING variant (highest specificity score). The deal-acceptance
+    // predicate will reject deals where the pipeline picks a different
+    // variant anyway, so generating hands that match the tightest variant
+    // maximizes acceptance-predicate hit rate. A union across variants with
+    // disjoint HCP ranges (e.g., garbage Stayman 0-7 vs invite Stayman 8-9)
+    // would produce a constraint window that spans both, but ~50% of
+    // generated hands would be rejected at the pipeline level because the
+    // "wrong" variant was selected.
     let target_surfaces = find_target_surfaces(
         target_module,
         &witness.target_surface_id,
@@ -862,12 +1177,15 @@ pub fn project_witness(
         witness.dealer,
     );
     if !target_surfaces.is_empty() {
-        let inverted_variants: Vec<InvertedConstraint> = target_surfaces
+        let best = target_surfaces
             .iter()
-            .map(|s| invert_hand_only(s))
-            .collect();
-        let unioned = union_inverted(&inverted_variants);
-        per_seat.entry(witness.user_seat).or_default().push(unioned);
+            .map(|s| invert_hand_only(s, loaded_modules, system_config))
+            .max_by_key(specificity_score)
+            .unwrap_or_default();
+        per_seat
+            .entry(witness.user_seat)
+            .or_default()
+            .push(best);
     }
 
     // Prefix calls → bidder seat via base-module surface lookup.
@@ -878,8 +1196,12 @@ pub fn project_witness(
     for entry in &witness.prefix {
         while cursor != entry.seat {
             if is_opponent_seat(cursor, witness.dealer) {
-                let synthesized =
-                    synthesize_no_interference_constraint(cursor, &position, loaded_modules);
+                let synthesized = synthesize_no_interference_constraint(
+                    cursor,
+                    &position,
+                    loaded_modules,
+                    system_config,
+                );
                 per_seat.entry(cursor).or_default().push(synthesized);
             }
             position.push(WitnessCall {
@@ -890,8 +1212,12 @@ pub fn project_witness(
         }
 
         if entry.call == Call::Pass && is_opponent_seat(entry.seat, witness.dealer) {
-            let synthesized =
-                synthesize_no_interference_constraint(entry.seat, &position, loaded_modules);
+            let synthesized = synthesize_no_interference_constraint(
+                entry.seat,
+                &position,
+                loaded_modules,
+                system_config,
+            );
             per_seat.entry(entry.seat).or_default().push(synthesized);
             position.push(entry.clone());
             cursor = step_seat(entry.seat, 1);
@@ -905,8 +1231,10 @@ pub fn project_witness(
             cursor = step_seat(entry.seat, 1);
             continue;
         }
-        let per_call: Vec<InvertedConstraint> =
-            matches.iter().map(|s| invert_hand_only(s)).collect();
+        let per_call: Vec<InvertedConstraint> = matches
+            .iter()
+            .map(|s| invert_hand_only(s, loaded_modules, system_config))
+            .collect();
         // Multiple surfaces for the same call (e.g. two authored variants)
         // are intersected — they describe the same authored bid.
         let tightened = intersect_inverted(&per_call);
@@ -917,8 +1245,12 @@ pub fn project_witness(
 
     while cursor != witness.user_seat {
         if is_opponent_seat(cursor, witness.dealer) {
-            let synthesized =
-                synthesize_no_interference_constraint(cursor, &position, loaded_modules);
+            let synthesized = synthesize_no_interference_constraint(
+                cursor,
+                &position,
+                loaded_modules,
+                system_config,
+            );
             per_seat.entry(cursor).or_default().push(synthesized);
         }
         position.push(WitnessCall {

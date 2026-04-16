@@ -39,7 +39,16 @@ Convention logic has been migrated to Rust (`bridge-conventions` crate). TS `src
 No tree/protocol/overlay pipeline remains. Convention logic lives in `ConventionBundle` with `meaningSurfaces`, `conversationMachine`, `factExtensions`, `explanationCatalog`. Deal constraints are DERIVED from surface preconditions at runtime (`fact_dsl::inversion::derive_deal_constraints`) — never hand-authored. All teaching content is auto-derived from module structure.
 
 ### "Pass — no convention applies" appears in drills
-Either the user's target module has no surface matching the generated deal (rejection-sampling budget exhausted — check `tracing::warn` logs from `start_drill`) OR surfaces are missing hand-clause preconditions the inverter can reason about (non-`hand.*` / `bridge.isBalanced` facts are silently ignored during inversion). See `docs/architecture/teaching-architecture.md` § Deal Generation → Known Limitations for the specific failure modes (notably the `balanced` union-drop bug affecting NT-family bundles).
+Either the user's target module has no surface matching the generated deal (rejection-sampling budget exhausted — check `tracing::warn` logs from `start_drill`) OR surfaces are missing hand-clause preconditions the inverter can reason about. See `docs/architecture/teaching-architecture.md` § Deal Generation → Known Limitations for the specific failure modes (notably the `balanced` union-drop bug affecting NT-family bundles).
+
+### Witness projection expands system and module facts
+`project_witness` now expands `system.*` clauses to concrete `hand.hcp` bounds via `SystemConfig` thresholds, and `module.*` clauses to their authored `FactComposition` trees. Previously these were silently dropped, leaving the user seat unconstrained for bundles like blackwood (`system.responder.slamValues`) and smolen (`system.responder.gameValues` + `module.smolen.*` facts). If a new system fact is added to `evaluate_system_facts`, add a corresponding expansion case in `expand_system_fact_to_hand_composition` or the witness projector will silently drop it.
+
+### Extension modules use base-module surface IDs
+Modules like `stayman-garbage` author their surfaces with `moduleId: "stayman"` (the base module's ID), not the containing module's ID. The deal-acceptance predicate in `deal_gating.rs` checks both `target_module_id` (from the bundle member) and `target_surface_module_id` (from the surface's authored `moduleId`) to handle this.
+
+### Kernel-gated state entries are unreachable by witnesses
+Modules whose target `StateEntry` requires a kernel state (e.g., blackwood's `kernel: { kind: "fit" }` requiring a trump fit) cannot have deals generated via the witness system. The witness prefix is a linear auction path that doesn't manipulate kernel state. This causes `blackwood-bundle` to exhaust deal generation. Fixing requires witness paths that establish kernel context through bidding sequences that agree a fit.
 
 ### Convention-Specific Details
 - Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)

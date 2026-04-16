@@ -134,7 +134,7 @@ fn project_witness_nt_stayman_gives_tight_opener_bounds() {
         64,
     );
     let w = witnesses.first().expect("need at least one witness");
-    let projections = project_witness(w, &modules);
+    let projections = project_witness(w, &modules, None);
     let dc = projections
         .first()
         .expect("should produce at least one branch");
@@ -157,11 +157,10 @@ fn project_witness_nt_stayman_gives_tight_opener_bounds() {
     // `idle` state:
     //   v1: hcp>=8, hasFourCardMajor, !hasFiveCardMajor
     //   v2: system.inviteValues, hearts>=4, spades>=4, hasFiveCardMajor
-    // Under OR (union) across variants, the HCP bound from v1 disappears
-    // (v2 has no explicit hcp clause — its hcp constraint is system-fact
-    // gated, which phase-1 honestly drops). The shared length floor survives
-    // in `min_length_any`. So we assert the length bound (the v1 win) and
-    // allow hcp to be None.
+    // We pick the most-specific variant (highest specificity score).
+    // v1 has hcp>=8 (1 field) and no lengths; v2 (without SystemConfig)
+    // has hearts>=4, spades>=4 (2 length fields). v2 wins → the projected
+    // constraint is hearts>=4 AND spades>=4, no HCP bound.
     let has_h_or_s_bound = south
         .min_length
         .as_ref()
@@ -180,7 +179,7 @@ fn project_witness_nt_stayman_gives_tight_opener_bounds() {
             .unwrap_or(false);
     assert!(
         has_h_or_s_bound,
-        "S should carry a 4+ H or 4+ S length bound after union across variants; got {:?}",
+        "S should carry a 4+ H or 4+ S length bound from the most-specific variant; got {:?}",
         south
     );
 }
@@ -280,7 +279,7 @@ fn project_witness_nt_stayman_constrains_opponents() {
     })
     .expect("need a stayman witness with a 1NT opener");
 
-    let projections = project_witness(&witness, &modules);
+    let projections = project_witness(&witness, &modules, None);
     let dc = projections
         .first()
         .expect("should produce at least one projected branch");

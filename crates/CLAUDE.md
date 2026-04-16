@@ -90,13 +90,16 @@ crates/
                        flow: at drill-creation, `bridge-service::drill_setup` picks a target
                        `(module_id, surface_id)` seeded by `config.seed`, enumerates witnesses via
                        `fact_dsl::witness::enumerate_witnesses`, and projects a chosen witness through
-                       `project_witness` to tight per-seat `DealConstraints`. Opponent pass slots
-                       implied between witness bids now synthesize "no interference" caps from any
-                       loaded `turn=opponent` surfaces that are legal at that auction position,
-                       falling back to `max_hcp=10` when the loaded modules author no such
-                       interference surfaces. The v1 loose-union `derive_deal_constraints` was
-                       removed in phase 2; `compose_surface_clauses` + `invert_composition`
-                       primitives remain and are reused by witness projection.
+                       `project_witness` to tight per-seat `DealConstraints`. The projection
+                       expands `system.*` clauses to concrete `hand.hcp` bounds via `SystemConfig`
+                       and `module.*` / `bridge.*` derived facts via their authored `FactComposition`
+                       trees. When multiple meaning_id-sharing surfaces exist on the target module,
+                       the most-specific variant (highest `specificity_score`) is projected rather
+                       than a union — this avoids dilution when variants have disjoint HCP ranges.
+                       Opponent pass slots implied between witness bids synthesize "no interference"
+                       caps from loaded `turn=opponent` surfaces, falling back to `max_hcp=10`.
+                       The v1 loose-union `derive_deal_constraints` was removed in phase 2;
+                       `invert_composition` primitives remain and are reused by witness projection.
   bridge-session/      Rust session logic: inference, heuristics, controllers, viewports.
                        Phase 4 of the migration. Depends on bridge-engine + bridge-conventions.
                        Inference: natural inference + Monte Carlo posterior (rejection sampling)

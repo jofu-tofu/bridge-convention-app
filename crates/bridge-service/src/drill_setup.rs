@@ -117,6 +117,7 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
                     &bundle_input.member_ids,
                     &resolved.base_module_ids,
                     system,
+                    &resolved.system_config,
                     options.practice_role,
                     // Witness enumeration uses dealer = North.
                     Seat::North,
