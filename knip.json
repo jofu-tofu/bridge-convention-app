@@ -1,9 +1,4 @@
 {
   "entry": ["src/cli/main.ts", "src/routes/**/*.svelte", "src/routes/**/*.ts"],
-  "ignore": [
-    "static/dds/dds.js",
-    "src/components/screens/convention-canvas/ConventionFlowEditor.svelte",
-    "src/components/screens/convention-canvas/ModulePickerSidebar.svelte",
-    "src/components/screens/convention-canvas/NodeDetailPanel.svelte"
-  ]
+  "ignore": ["static/dds/dds.js"]
 }

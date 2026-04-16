@@ -106,13 +106,6 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     minWidth: 280,
     mobileNotes: "Embedded parameter editor; steppers and toggles adapt naturally to width",
   },
-  {
-    path: "ConversationFlowTree.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Desktop-only HTML/CSS flexbox tree; hidden on mobile via isDesktop check. Supports interactive mode for Workshop.",
-  },
-
   // --- Logged-in landing ---
   {
     path: "landing/LoggedInLanding.svelte",
@@ -125,12 +118,6 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileStrategy: "embedded",
     minWidth: 280,
     mobileNotes: "Embedded resume card inside LoggedInLanding primary column",
-  },
-  {
-    path: "landing/MarketingHero.svelte",
-    mobileStrategy: "centered",
-    minWidth: 320,
-    mobileNotes: "Anonymous landing hero; CTA row stacks below 520px",
   },
   {
     path: "landing/QuickActions.svelte",
@@ -245,25 +232,5 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileStrategy: "embedded",
     minWidth: 280,
     mobileNotes: "CSS transform scaling with max-width/max-height constraints",
-  },
-
-  // --- Convention flow editor (convention-canvas/) ---
-  {
-    path: "convention-canvas/ConventionFlowEditor.svelte",
-    mobileStrategy: "sidebar-overlay",
-    minWidth: 320,
-    mobileNotes: "3-column flow editor: sidebar + flow tree + detail panel; sidebar overlays on mobile",
-  },
-  {
-    path: "convention-canvas/ModulePickerSidebar.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Module list sidebar embedded in ConventionFlowEditor",
-  },
-  {
-    path: "convention-canvas/NodeDetailPanel.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Slide-out detail panel with parameter editing",
   },
 ] as const;

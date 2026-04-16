@@ -87,18 +87,6 @@ export function getModuleLearningViewportSync(moduleId: string): { teaching: { p
 }
 
 /**
- * Get a module flow tree synchronously.
- * Returns null if module not found or WASM not ready.
- */
-export function getModuleFlowTreeSync(moduleId: string): unknown {
-  try {
-    return getSyncPort().get_module_flow_tree(moduleId);
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Get a module config schema synchronously.
  * Returns null if module not found or WASM not ready.
  */
