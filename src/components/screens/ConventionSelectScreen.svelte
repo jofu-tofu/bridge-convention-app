@@ -167,7 +167,7 @@
           <SectionHeader level="h2">{group.category}</SectionHeader>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
             {#each group.items as convention (convention.id)}
-              <ItemCard testId="convention-{convention.id}" interactive={false}>
+              <ItemCard testId="convention-{convention.id}" interactive={false} class="!rounded-[--radius-xl]">
                 <div class="flex items-start justify-between gap-2">
                   <h2 class="text-lg font-semibold text-text-primary leading-tight">
                     {displayName(convention.name)}
