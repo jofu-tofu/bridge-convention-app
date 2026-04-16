@@ -1352,6 +1352,7 @@ mod tests {
             states: Some(Vec::new()),
             symmetric_pairs: Vec::new(),
             attachments: Vec::new(),
+            bidding_context: None,
         };
 
         // Resolve via map_quick_reference directly (avoids debug-panic on missing meaning).
@@ -1529,6 +1530,7 @@ mod tests {
             }]),
             symmetric_pairs: Vec::new(),
             attachments: Vec::new(),
+            bidding_context: None,
         };
 
         let resolved = map_quick_reference(

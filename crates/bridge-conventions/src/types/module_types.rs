@@ -419,6 +419,61 @@ pub struct ModuleReference {
 /// Author-opted symmetry check between two FSM state ids (phase names).
 pub type SymmetricStatePair = (String, String);
 
+/// Which partnership opened, relative to the module's user side.
+///
+/// `Partner` means "the module's user-side partner opened"; `Opponent` means
+/// "an opponent opened." Partnership-scoped, not seat-scoped.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum OpenerRole {
+    Partner,
+    Opponent,
+}
+
+/// Structured trigger context for a convention module.
+///
+/// Complements the natural-language `ModuleReferenceSummaryCard.trigger` with
+/// a machine-groupable tuple. Consumers include future auto-derived
+/// `relatedLinks`, structured learn-page trigger rendering, and engine-side
+/// module gating.
+///
+/// `opener_bids` is non-empty: usually one entry (e.g. `[1NT]` for Stayman),
+/// but may be a set (e.g. Negative Doubles fires after any of
+/// `[1C, 1D, 1H, 1S]`). Deserialization rejects the empty list.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BiddingContext {
+    pub opener_bids: Vec<Call>,
+    pub opener_role: OpenerRole,
+    pub competitive: bool,
+}
+
+impl<'de> Deserialize<'de> for BiddingContext {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Raw {
+            opener_bids: Vec<Call>,
+            opener_role: OpenerRole,
+            competitive: bool,
+        }
+
+        let raw = Raw::deserialize(d)?;
+        if raw.opener_bids.is_empty() {
+            return Err(D::Error::custom(
+                "biddingContext.openerBids must be non-empty",
+            ));
+        }
+        Ok(BiddingContext {
+            opener_bids: raw.opener_bids,
+            opener_role: raw.opener_role,
+            competitive: raw.competitive,
+        })
+    }
+}
+
 /// A self-contained convention module.
 /// Phase generic is always String at runtime (TS generic is compile-time only).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -433,6 +488,11 @@ pub struct ConventionModule {
     pub purpose: ModulePurpose,
     pub teaching: ModuleTeaching,
     pub reference: ModuleReference,
+
+    /// Structured trigger context. Optional during rollout; will become
+    /// required once all module fixtures are backfilled.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bidding_context: Option<BiddingContext>,
 
     // Declaration
     pub facts: FactDefinitionSet,

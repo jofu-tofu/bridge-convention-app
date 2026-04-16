@@ -178,6 +178,27 @@ export const {NAME}_EXPLANATION_CATALOG: ExplanationCatalog =
 - **Template-form factIds are module-owned.** Platform catalog covers only concrete shared/system fact IDs.
 - **Non-pedagogical facts use `displayText: 'internal'`.**
 
+## Authoring `biddingContext`
+
+Every module fixture carries an optional top-level `biddingContext` tuple that names the auction position where the module fires. It complements the prose `reference.summaryCard.trigger` with a machine-groupable value used by future auto-derived related-links, structured trigger rendering, and engine-side module gating.
+
+Shape:
+
+```json
+"biddingContext": {
+  "openerBids": [{ "type": "bid", "level": 1, "strain": "NT" }],
+  "openerRole": "partner",
+  "competitive": false
+}
+```
+
+- `openerBids` is a non-empty list of `Call` values. `Call` is internally tagged — use the same `{"type":"bid","level":L,"strain":S}` shape as worked-auction `call` fields (see e.g. `fixtures/modules/stayman.json` around the first `"call"`). Strain values: `"C"`, `"D"`, `"H"`, `"S"`, `"NT"`. Empty list fails deserialize.
+- Most modules have length 1 (Stayman: `[1NT]`). Length >1 is for modules that fire across a set of openings (Negative Doubles: `[1C, 1D, 1H, 1S]`).
+- `openerRole` is `"partner"` (partner opened) or `"opponent"` (an opponent opened). Partnership-scoped, not seat-scoped.
+- `competitive: true` when the module's trigger requires an intervening overcall/double (e.g. Negative Doubles). For uncontested triggers (Stayman, Jacoby transfers), set `false`.
+
+The integration test `bidding_context_consistency.rs` asserts the authored tuple agrees with the FSM idle-exit edge where that's derivable (single-hop Inquire/Transfer → 1NT; single-hop Open → level+strain). Multi-hop modules are pinned via an allowlist in the test. If the test fails with a "not derivable and not in allowlist" message, either add `level`/`strain` to the FSM edge or add an allowlist entry.
+
 ## Reference Block Authoring
 
 Every fixture-backed learn page must carry a hand-authored `reference` block. It is the source of truth for the prerendered `/learn/[moduleId]` reference page, and fixture deserialization now fails if the block is missing. Treat it as editorial copy: concise, reference-first, and stable enough for deep links and print.

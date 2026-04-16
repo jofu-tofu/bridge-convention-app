@@ -2,6 +2,16 @@
   "moduleId": "negative-doubles",
   "displayName": "Negative Doubles",
   "category": "competitive",
+  "biddingContext": {
+    "openerBids": [
+      { "type": "bid", "level": 1, "strain": "C" },
+      { "type": "bid", "level": 1, "strain": "D" },
+      { "type": "bid", "level": 1, "strain": "H" },
+      { "type": "bid", "level": 1, "strain": "S" }
+    ],
+    "openerRole": "partner",
+    "competitive": true
+  },
   "fixtureVersion": 1,
   "description": "After partner opens 1-of-a-suit and the opponent overcalls, responder's double is conventional — showing values and unbid suits rather than penalty",
   "purpose": "Keep the bidding alive at a low level when opponents overcall, showing the unbid suits (especially majors) that a natural response would have shown",
