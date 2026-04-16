@@ -25,7 +25,7 @@ Every screen wraps in one of two outer primitives (tokens in `src/app.css` under
 - `shared/AppScreen.svelte` — for `(app)` routes. Owns its own inner scroll container (`.app-screen__body { overflow-y: auto }`), so individual screens no longer need the `h-full flex flex-col p-4 pb-0` pattern. Props: `title?`, `subtitle?`, `width: "wide" | "form" | "custom"`, `actions?` / `tabs?` snippets, `scroll?`, `contentClass?`.
 - `shared/ContentScreen.svelte` — for `(content)` prerendered routes. Scrolls at the `AppShell` main level (not internally). Preserves the desktop rail offset (`margin-inline-start: calc(var(--rail-width) + 1rem)` at `min-width: 1024px`). Props: `title?`, `subtitle?`, `width: "wide" | "narrow" | "reference"` (`reference` is left-aligned and wider for `/learn/[moduleId]` pages), `actions?` / `aside?` snippets.
 
-Two sibling primitives, not one universal wrapper: the overflow chains differ enough that a prop-gated branch would be harder to reason about. See `docs/guides/gotchas.md#screen-layout-primitives`. New `(content)` route authors must wrap the page with `ContentScreen`; new `(app)` screens with `AppScreen`. `GameScreen` and `LearningScreen` are intentional exceptions (custom split-pane / table-scale layouts).
+Two sibling primitives, not one universal wrapper: the overflow chains differ enough that a prop-gated branch would be harder to reason about. See `docs/guides/gotchas.md#screen-layout-primitives`. New `(content)` route authors must wrap the page with `ContentScreen`; new `(app)` screens with `AppScreen`. `GameScreen` is an intentional exception (custom table-scale layout).
 
 ## Architecture
 
@@ -40,8 +40,6 @@ components/
     SavedDrillsShelf.svelte          Horizontal chip strip of saved drill presets (MRU). Hidden when empty. Each chip: click to launch (`onLaunch`), `⋯` opens menu (Launch / Rename / Edit configuration / Delete). Data from `getDrillPresetsStore()`.
     DrillPresetDialog.svelte         Native `<dialog>` with four fields (mode / role / system / name) + three actions (Cancel / Save / Save & Launch). `open({ mode: "create", convention })` or `open({ mode: "edit", presetId })`. Convention field read-only in edit mode. Launch runs via parent-provided `onLaunch` callback.
     CustomDrillForm.svelte           Full-page create/edit form for custom drills (name + convention + system + role). Props: `mode: "create" | "edit"`, optional `drill`. Save writes to `customDrillsStore` then `goto("/practice/drill")`. No launch button this phase.
-    LearningScreen.svelte            Three-tab learning screen (Lessons | Conventions | Bidding Systems). Conventions tab = current reference view (sidebar lists modules filterable by bundle, main content shows conversation flow tree + module teaching + surfaces). Lessons and Bidding Systems are placeholders.
-    MobileFlowTree.svelte            Compact vertical flow tree for mobile — collapsible card, recursive snippet, tap-to-expand accordion for detail (recommendation/disclosure/explanation/clauses)
     ConversationFlowTree.svelte      HTML/CSS flexbox tree visualization of module conversation flow — recursive snippets, CSS pseudo-element connectors, self-contained auto-scaling. Optional interactive mode (selectedNodeId + onNodeSelect props) for Workshop click-to-select.
     CoverageScreen.svelte            Coverage drill-down screen (bundle picker → targets) for testing convention correctness
     WorkshopScreen.svelte            System/convention/practice pack management — three-tab toggle (Systems, Conventions, Practice Packs). Conventions tab: ConventionFlowEditor (sidebar + flow tree canvas + detail panel). Hosts SystemEditor inline.
@@ -114,8 +112,10 @@ components/
       DebugPlayLog.svelte            Card play history by trick
       debug-helpers.ts               Formatting utilities (formatCall re-export, formatSuitCards, fmtFactValue, truncate)
   navigation/
-    NavRail.svelte                   Thin left rail (~80px) — Home/Learn/Workshop (dev only)/Settings icons. Desktop only. Workshop gated behind FEATURES.workshop. Practice and Learn items each have a hover flyout (group-hover/focus-within). Practice flyout: Preconfigured (`/practice`) / Drills (`/practice/drill`). Learn flyout: Lessons / Conventions / Bidding Systems.
+    NavRail.svelte                   Thin left rail (~80px) — Home/Learn/Workshop (dev only)/Settings icons. Desktop only. Workshop gated behind FEATURES.workshop. Practice and Learn items each have a hover flyout (group-hover/focus-within). Practice flyout: Preconfigured (`/practice`) / Drills (`/practice/drill`). Learn flyout: Conventions (`/learn`) / Lessons (`/lessons`) / Bidding Systems (`/systems`).
     BottomTabBar.svelte              Mobile bottom tab bar — Home + Learn + Workshop (dev only) + Settings tabs. Mobile only. Workshop tab gated behind FEATURES.workshop.
+  learn/
+    LearnSidebar.svelte              Sticky desktop sidebar for `/learn/*` routes: progressive-enhancement search input filters a fully server-rendered `<ul>` of conventions (SEO-intact). Mobile renders a disclosure toggle above the list. Active link keyed off `$page.url.pathname`.
   shared/
     Button.svelte                    Primary/secondary/ghost variants
     Card.svelte                      70x98 visual playing card
@@ -145,7 +145,7 @@ components/
     screens/                         Screen component tests
 ```
 
-**Screen flow:** SvelteKit `(app)/+layout.svelte` owns the full app layout — loads WASM, renders `AppReady.svelte` which provides context setup + nav chrome. File-based routing replaces store-driven screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop (dev only)/Settings icons. Learn navigates directly to Learning screen. Mobile: bottom tab bar (BottomTabBar) with Home/Learn/Workshop (dev only)/Settings tabs (3 tabs in production, 4 in dev). Workshop tab is the home for system/convention/practice pack management, gated behind `FEATURES.workshop`. `?profiles=true` backward compat alias redirects to `/workshop`. Conventions tab shows an inline flow editor (ConventionFlowEditor): left sidebar with module picker, center flow tree (shared ConversationFlowTree in interactive mode), right slide-out panel for node parameter editing. Workshop = management (fork, edit, delete, configure). Learn = study (teaching content, flow trees, surfaces).
+**Screen flow:** SvelteKit `(app)/+layout.svelte` owns the full app layout — loads WASM, renders `AppReady.svelte` which provides context setup + nav chrome. File-based routing replaces store-driven screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop (dev only)/Settings icons. Learn links to `/learn` (conventions reference); the NavRail flyout also exposes `/lessons` and `/systems`. Mobile: bottom tab bar (BottomTabBar) with Home/Learn/Workshop (dev only)/Settings tabs (3 tabs in production, 4 in dev). Workshop tab is the home for system/convention/practice pack management, gated behind `FEATURES.workshop`. `?profiles=true` backward compat alias redirects to `/workshop`. Conventions tab shows an inline flow editor (ConventionFlowEditor): left sidebar with module picker, center flow tree (shared ConversationFlowTree in interactive mode), right slide-out panel for node parameter editing. Workshop = management (fork, edit, delete, configure). Learn = study (teaching content, flow trees, surfaces).
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 

@@ -100,10 +100,6 @@ export function createAppStore() {
   let devSeed = $state<number | null>(null);
   let devDealCount = $state(0);
   let debugPanelOpen = $state(false);
-  let learningConvention = $state<ConventionInfo | null>(null);
-  let learningModuleId = $state<string | null>(null);
-  let learningBundleFilter = $state<string | null>(null);
-  let learningBundleFilterName = $state<string | null>(null);
   let autoplay = $state(false);
   let targetState = $state<string | null>(null);
   let targetSurface = $state<string | null>(null);
@@ -140,18 +136,6 @@ export function createAppStore() {
     get selectedConvention() {
       return selectedConvention;
     },
-    get learningConvention() {
-      return learningConvention;
-    },
-    get learningModuleId() {
-      return learningModuleId;
-    },
-    get learningBundleFilter() {
-      return learningBundleFilter;
-    },
-    get learningBundleFilterName() {
-      return learningBundleFilterName;
-    },
     get lastPracticedId() {
       return lastPracticedId;
     },
@@ -167,53 +151,11 @@ export function createAppStore() {
     selectConvention(config: ConventionInfo) {
       selectedConvention = config;
       saveLastConvention(config.id);
-      learningConvention = null;
     },
 
-    /** Set learning state for a bundle. Does NOT navigate. */
-    setLearningFromBundle(config: ConventionInfo) {
-      learningConvention = config;
-      selectedConvention = null;
-      learningBundleFilter = config.id;
-      learningBundleFilterName = config.name;
-      // Auto-select first module from the bundle's member ordering
-      const firstModuleId = config.moduleDescriptions?.keys().next().value ?? null;
-      learningModuleId = firstModuleId ?? null;
-    },
-
-    /** Set learning state for a specific module. Does NOT navigate. */
-    setLearningModule(moduleId: string, bundleFilter?: string, bundleFilterName?: string) {
-      learningModuleId = moduleId;
-      learningBundleFilter = bundleFilter ?? null;
-      learningBundleFilterName = bundleFilterName ?? null;
-      learningConvention = null;
-      selectedConvention = null;
-    },
-
-    selectLearningModule(moduleId: string) {
-      learningModuleId = moduleId;
-    },
-
-    clearBundleFilter() {
-      learningBundleFilter = null;
-      learningBundleFilterName = null;
-    },
-
-    /** Clear learning state for a fresh learning home view. Does NOT navigate. */
-    clearLearningState() {
-      learningConvention = null;
-      selectedConvention = null;
-      learningBundleFilter = null;
-      learningBundleFilterName = null;
-    },
-
-    /** Clear all ephemeral state (selection, learning, editing). Does NOT navigate. */
+    /** Clear all ephemeral state (selection, editing). Does NOT navigate. */
     clearSelection() {
       selectedConvention = null;
-      learningConvention = null;
-      learningModuleId = null;
-      learningBundleFilter = null;
-      learningBundleFilterName = null;
       editingModuleId = null;
       editingPackId = null;
       editingPackBasedOn = null;

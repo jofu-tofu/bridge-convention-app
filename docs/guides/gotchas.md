@@ -146,8 +146,8 @@ standard outer wrappers for every screen. Tokens they consume live in
   is harder to reason about than the two small files.
 - Do not remove `ContentScreen`'s rail offset (`margin-inline-start` at
   `min-width: 1024px`). Prerendered pages slide under the desktop rail without it.
-- `GameScreen` and `LearningScreen` are intentionally exempt — they run custom
-  split-pane/table-scale layouts that don't fit the AppScreen overflow chain.
+- `GameScreen` is intentionally exempt — it runs a custom table-scale layout
+  that doesn't fit the AppScreen overflow chain.
 
 ## Blackwood combined counts only flow through the convention adapter
 

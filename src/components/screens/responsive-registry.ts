@@ -41,12 +41,6 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "max-w-3xl centered container, single-column card grid",
   },
   {
-    path: "LearningScreen.svelte",
-    mobileStrategy: "sidebar-overlay",
-    minWidth: 320,
-    mobileNotes: "Sidebar becomes fixed overlay with backdrop on mobile",
-  },
-  {
     path: "SettingsScreen.svelte",
     mobileStrategy: "centered",
     minWidth: 320,
@@ -116,13 +110,7 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     path: "ConversationFlowTree.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,
-    mobileNotes: "Desktop-only HTML/CSS flexbox tree; hidden on mobile via isDesktop check in LearningScreen. Supports interactive mode for Workshop.",
-  },
-  {
-    path: "MobileFlowTree.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Compact vertical flow tree for mobile; collapsible, depth-capped",
+    mobileNotes: "Desktop-only HTML/CSS flexbox tree; hidden on mobile via isDesktop check. Supports interactive mode for Workshop.",
   },
 
   // --- Logged-in landing ---

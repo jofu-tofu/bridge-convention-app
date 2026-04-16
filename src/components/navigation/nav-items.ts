@@ -1,6 +1,6 @@
 import { FEATURES } from "../../stores/feature-flags";
 
-export type NavClearAction = "selection" | "learning" | "workshop";
+export type NavClearAction = "selection" | "workshop";
 
 export interface NavItem {
   href: string;
@@ -22,7 +22,7 @@ const SETTINGS_ICON = '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73
 export function getNavItems(): NavItem[] {
   const items: NavItem[] = [
     { href: "/practice", label: "Practice", iconSvg: PRACTICE_ICON, activePaths: ["/practice", "/practice/drill", "/game"], clearAction: "selection" },
-    { href: "/learning", label: "Learn", iconSvg: LEARN_ICON, activePaths: ["/learning", "/coverage"], clearAction: "learning" },
+    { href: "/learn", label: "Learn", iconSvg: LEARN_ICON, activePaths: ["/learn", "/lessons", "/systems", "/coverage"] },
     { href: "/guides", label: "Guides", iconSvg: GUIDES_ICON, activePaths: ["/guides"] },
   ];
   if (FEATURES.workshop) {
@@ -44,6 +44,9 @@ export function isItemActive(item: NavItem, pathname: string): boolean {
   }
   if (item.href === "/practice") {
     return pathname === "/practice" || pathname.startsWith("/practice/") || pathname === "/game";
+  }
+  if (item.href === "/learn") {
+    return pathname === "/learn" || pathname.startsWith("/learn/") || pathname === "/lessons" || pathname === "/systems" || pathname === "/coverage";
   }
   return item.activePaths.includes(pathname);
 }

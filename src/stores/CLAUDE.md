@@ -15,7 +15,7 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 
 | File                 | Role                                                                                               |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
-| `app.svelte.ts`      | `createAppStore()` — selected convention, learning state, coverage state, dev seed, dev flags (`autoplay`, `debugExpanded`, `autoDismissFeedback`, `skipToPhase`), drill tuning (persisted to localStorage). Screen navigation handled by SvelteKit file-based routing (`goto()` from `$app/navigation`), not store-driven. No `Screen` type or `navigateToX` methods. |
+| `app.svelte.ts`      | `createAppStore()` — selected convention, coverage state, dev seed, dev flags (`autoplay`, `debugExpanded`, `autoDismissFeedback`, `skipToPhase`), drill tuning (persisted to localStorage). Screen navigation handled by SvelteKit file-based routing (`goto()` from `$app/navigation`), not store-driven. No `Screen` type or `navigateToX` methods. |
 | `game.svelte.ts`     | `createGameStore(service)` — coordinator/facade, drill lifecycle, user action handlers, thin reactive cache over service viewports. Delegates to sub-modules for bidding, play, phase transitions, viewport caching, and DDS |
 | `bidding-phase.svelte.ts` | `createBiddingPhase(deps)` — bidding state, AI bid animation, user bid submission, feedback, session stats |
 | `play-phase.svelte.ts` | `createPlayPhase(deps)` — play state, AI play animation, user card play, trick display |

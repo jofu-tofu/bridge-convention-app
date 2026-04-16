@@ -54,9 +54,8 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   const learnParam = params.get("learn");
 
   if (learnParam) {
-    // Module-first resolution: set learning state and navigate
-    store.setLearningModule(learnParam);
-    void goto("/learning");
+    // Module deep link → prerendered reference page
+    void goto(`/learn/${learnParam}`);
   } else if (conventionParam) {
     // Resolve from catalog for proper display name; fall back to stub for unknown IDs
     const conventions = listConventions();

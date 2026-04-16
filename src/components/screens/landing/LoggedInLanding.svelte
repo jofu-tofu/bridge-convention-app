@@ -12,7 +12,7 @@
   const isPaid = $derived(user?.subscription_tier === SubscriptionTier.Paid);
   const tierLabel = $derived(
     user?.subscription_tier === SubscriptionTier.Paid
-      ? "Paid"
+      ? "Premium"
       : user?.subscription_tier === SubscriptionTier.Expired
         ? "Expired"
         : "Free"

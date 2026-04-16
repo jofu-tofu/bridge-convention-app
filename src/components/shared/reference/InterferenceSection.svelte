@@ -25,7 +25,7 @@
     <table class="interference-table">
       <colgroup>
         <col class="col-bid" />
-        <col class="col-bid" />
+        <col class="col-action" />
         <col class="col-note" />
       </colgroup>
       <thead>
@@ -57,10 +57,15 @@
 
   .col-bid {
     width: 1%;
+    white-space: nowrap;
+  }
+
+  .col-action {
+    width: auto;
   }
 
   .col-note {
-    width: auto;
+    width: 32%;
   }
 
   .interference-table thead th {

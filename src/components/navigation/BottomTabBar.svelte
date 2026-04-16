@@ -11,7 +11,6 @@
   function handleClear(item: NavItem) {
     if (!appStore) return;
     if (item.clearAction === "selection") appStore.clearSelection();
-    else if (item.clearAction === "learning") appStore.clearLearningState();
     else if (item.clearAction === "workshop") appStore.clearWorkshopState();
   }
 </script>

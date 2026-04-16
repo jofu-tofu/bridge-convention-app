@@ -19,7 +19,6 @@
   function handleClear(item: NavItem) {
     if (!appStore) return;
     if (item.clearAction === "selection") appStore.clearSelection();
-    else if (item.clearAction === "learning") appStore.clearLearningState();
     else if (item.clearAction === "workshop") appStore.clearWorkshopState();
   }
 </script>
@@ -78,7 +77,7 @@
           </div>
         </div>
       </div>
-    {:else if item.href === "/learning"}
+    {:else if item.href === "/learn"}
       <div class="relative w-full group">
         <a
           href={item.href}
@@ -105,9 +104,9 @@
         >
           <div class="min-w-[180px] bg-bg-elevated border border-border-default rounded-[--radius-md] shadow-lg py-1">
             {#each [
-              { href: "/learning?tab=lessons", label: "Lessons" },
-              { href: "/learning", label: "Conventions" },
-              { href: "/learning?tab=systems", label: "Bidding Systems" },
+              { href: "/learn", label: "Conventions" },
+              { href: "/lessons", label: "Lessons" },
+              { href: "/systems", label: "Bidding Systems" },
             ] as const as sub (sub.href)}
               <a
                 href={sub.href}

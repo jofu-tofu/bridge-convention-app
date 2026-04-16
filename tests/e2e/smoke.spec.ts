@@ -24,9 +24,8 @@ test.describe("app smoke", () => {
     await waitForPhase(page, "Bidding");
     await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
 
-    await page.goto("/learning?learn=nt-stayman");
-    await expect(page.getByRole("main", { name: "Convention learning" })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Stayman/ })).toBeVisible();
+    await page.goto("/learn/nt-stayman");
+    await expect(page.getByRole("heading", { level: 1, name: /Stayman/ })).toBeVisible();
   });
 
   test("wrong bid feedback is blocking and retry restores the bid panel", async ({ page }) => {
