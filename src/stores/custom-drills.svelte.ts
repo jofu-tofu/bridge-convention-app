@@ -11,6 +11,7 @@
 
 import { PracticeRole } from "../service";
 import type { SystemSelectionId } from "../service";
+import { canonicalBundleId } from "./bundle-id-migration";
 import { loadFromStorage, saveToStorage } from "./local-storage";
 
 const STORAGE_KEY = "bridge-app:custom-drills";
@@ -55,7 +56,9 @@ function loadDrills(): CustomDrill[] {
   return loadFromStorage(STORAGE_KEY, [] as CustomDrill[], (raw) => {
     const parsed = raw as StoredDrills;
     if (!Array.isArray(parsed?.drills)) return undefined;
-    return parsed.drills.filter(validateStoredDrill);
+    return parsed.drills
+      .filter(validateStoredDrill)
+      .map((drill) => ({ ...drill, conventionId: canonicalBundleId(drill.conventionId) }));
   });
 }
 
@@ -115,7 +118,7 @@ export function createCustomDrillsStore() {
       const drill: CustomDrill = {
         id: generateId(),
         name: params.name.trim(),
-        conventionId: params.conventionId,
+        conventionId: canonicalBundleId(params.conventionId),
         practiceRole: params.practiceRole,
         systemSelectionId: params.systemSelectionId,
         createdAt: now,
@@ -134,7 +137,7 @@ export function createCustomDrillsStore() {
           return {
             ...d,
             ...(patch.name !== undefined ? { name: patch.name.trim() } : {}),
-            ...(patch.conventionId !== undefined ? { conventionId: patch.conventionId } : {}),
+            ...(patch.conventionId !== undefined ? { conventionId: canonicalBundleId(patch.conventionId) } : {}),
             ...(patch.practiceRole !== undefined ? { practiceRole: patch.practiceRole } : {}),
             ...(patch.systemSelectionId !== undefined ? { systemSelectionId: patch.systemSelectionId } : {}),
             updatedAt: now,

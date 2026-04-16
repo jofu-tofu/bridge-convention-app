@@ -93,7 +93,7 @@
   );
 
   // Partner hand space summary
-  const hasPartnerInfo = $derived(teaching?.partnerSummary != null); // eslint-disable-line eqeqeq -- intentional nullish check
+  const hasPartnerInfo = $derived(teaching?.partnerSummary !== null && teaching?.partnerSummary !== undefined);
 
   // Encoding explanation — show when the meaning was encoded via an artificial mechanism
   const encodingNote = $derived(
@@ -104,9 +104,9 @@
 
   // Decision metadata — ambiguity and grading type
   const ambiguityNote = $derived(
-    teaching?.ambiguityScore != null
+    teaching?.ambiguityScore !== null && teaching?.ambiguityScore !== undefined
       ? formatAmbiguity(teaching.ambiguityScore)
-      : null, // eslint-disable-line eqeqeq -- intentional nullish check
+      : null,
   );
 
   // Practical score breakdown

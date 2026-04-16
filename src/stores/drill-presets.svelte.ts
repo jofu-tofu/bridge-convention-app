@@ -10,6 +10,7 @@
 
 import { PracticeMode, PracticeRole } from "../service";
 import type { SystemSelectionId } from "../service";
+import { canonicalBundleId } from "./bundle-id-migration";
 import { loadFromStorage, saveToStorage } from "./local-storage";
 
 const STORAGE_KEY = "bridge-app:drill-presets";
@@ -61,7 +62,9 @@ function loadPresets(): DrillPreset[] {
   return loadFromStorage(STORAGE_KEY, [] as DrillPreset[], (raw) => {
     const parsed = raw as StoredPresets;
     if (!Array.isArray(parsed?.presets)) return undefined;
-    return parsed.presets.filter(validateStoredPreset);
+    return parsed.presets
+      .filter(validateStoredPreset)
+      .map((preset) => ({ ...preset, conventionId: canonicalBundleId(preset.conventionId) }));
   });
 }
 
@@ -134,7 +137,7 @@ export function createDrillPresetsStore() {
       const preset: DrillPreset = {
         id: generateId(),
         name: params.name.trim(),
-        conventionId: params.conventionId,
+        conventionId: canonicalBundleId(params.conventionId),
         practiceMode: params.practiceMode,
         practiceRole: params.practiceRole,
         systemSelectionId: params.systemSelectionId,

@@ -175,7 +175,7 @@ A dismissible banner at the top of `ConventionSelectScreen`, shown only on first
 > Master bidding conventions through interactive learning and hands-on practice. Start with Stayman -- our most popular convention -- and see how the app teaches through real bidding decisions.
 
 **CTAs:**
-- Primary: **"Learn Stayman"** (accent-colored button, navigates to `LearningScreen` with `nt-stayman` module)
+- Primary: **"Learn Stayman"** (accent-colored button, navigates to `LearningScreen` with the `stayman` module)
 - Secondary: **"Browse All Conventions"** (text link, dismisses banner and stays on grid)
 
 **Dismiss behavior:**
@@ -327,7 +327,7 @@ This keeps the SPA unchanged while adding crawlable content pages at SEO-relevan
 
 ```
 Search query                    → Static content page              → App
-"what is stayman in bridge"     → /guides/what-is-stayman          → ?learn=nt-stayman
+"what is stayman in bridge"     → /guides/what-is-stayman          → ?learn=stayman
 "jacoby transfers explained"    → /guides/jacoby-transfers         → ?learn=jacoby-transfers
 "bridge conventions for         → /conventions/beginners-guide     → ?convention=nt-bundle
  beginners"

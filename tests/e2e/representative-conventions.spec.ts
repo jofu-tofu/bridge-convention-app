@@ -3,7 +3,7 @@ import { waitForPhase } from "./helpers";
 
 test.describe("representative convention flows", () => {
   test("Jacoby Transfers reaches review after the two key responder decisions", async ({ page }) => {
-    await page.goto("/practice?convention=nt-transfers&seed=42");
+    await page.goto("/practice?convention=jacoby-transfers-bundle&seed=42");
     await waitForPhase(page, "Bidding");
 
     await page.getByTestId("bid-2H").click();

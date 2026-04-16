@@ -130,6 +130,7 @@ export default tseslint.config(
           maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 25,
           allowDefaultProject: [
             "playwright.config.ts",
+            "tests/e2e/billing.spec.ts",
             "tests/e2e/helpers.ts",
             "tests/e2e/representative-conventions.spec.ts",
             "tests/e2e/responsive-layout.spec.ts",

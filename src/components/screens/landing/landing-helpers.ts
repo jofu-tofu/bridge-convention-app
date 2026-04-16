@@ -6,6 +6,8 @@
  * format ids for display without calling into the service layer.
  */
 
+import { canonicalBundleId } from "../../../stores/bundle-id-migration";
+
 const LAST_CONVENTION_KEY = "bridge-app:last-convention";
 const PREFS_KEY = "bridge-app:practice-preferences";
 const CUSTOM_SYSTEMS_KEY = "bridge-app:custom-systems";
@@ -13,8 +15,8 @@ const PRACTICE_PACKS_KEY = "bridge-app:practice-packs";
 
 const CONVENTION_DISPLAY_NAMES: Record<string, string> = {
   "nt-bundle": "1NT Responses",
-  "nt-stayman": "Stayman",
-  "nt-transfers": "Jacoby Transfers",
+  "stayman-bundle": "Stayman",
+  "jacoby-transfers-bundle": "Jacoby Transfers",
   "bergen-bundle": "Bergen Raises",
   "weak-twos-bundle": "Weak Twos",
   "dont-bundle": "DONT",
@@ -37,9 +39,10 @@ const PRACTICE_MODE_LABELS: Record<string, string> = {
 };
 
 export function displayConventionId(id: string): string {
+  const canonicalId = canonicalBundleId(id);
   return (
-    CONVENTION_DISPLAY_NAMES[id] ??
-    id
+    CONVENTION_DISPLAY_NAMES[canonicalId] ??
+    canonicalId
       .split("-")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ")
@@ -59,7 +62,8 @@ export function displayPracticeMode(mode: string | null | undefined): string {
 
 export function readLastConventionId(): string | null {
   try {
-    return localStorage.getItem(LAST_CONVENTION_KEY);
+    const id = localStorage.getItem(LAST_CONVENTION_KEY);
+    return id ? canonicalBundleId(id) : null;
   } catch {
     return null;
   }

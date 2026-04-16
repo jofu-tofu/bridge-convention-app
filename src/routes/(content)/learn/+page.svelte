@@ -37,21 +37,19 @@
   type Group = { category: string; blurb: string; modules: LearnSidebarModule[] };
 
   const groups: Group[] = (() => {
-    const byCat = new Map<string, LearnSidebarModule[]>();
+    const byCat: Record<string, LearnSidebarModule[]> = {};
     for (const m of modules) {
       const cat = MODULE_CATEGORIES[m.moduleId] ?? "Other";
-      const list = byCat.get(cat);
-      if (list) list.push(m);
-      else byCat.set(cat, [m]);
+      (byCat[cat] ??= []).push(m);
     }
     const result: Group[] = [];
     for (const cat of CATEGORY_ORDER) {
-      const list = byCat.get(cat);
+      const list = byCat[cat];
       if (list && list.length > 0) {
         result.push({ category: cat, blurb: CATEGORY_BLURBS[cat] ?? "", modules: list });
       }
     }
-    for (const [cat, list] of byCat) {
+    for (const [cat, list] of Object.entries(byCat)) {
       if (!CATEGORY_ORDER.includes(cat)) {
         result.push({ category: cat, blurb: CATEGORY_BLURBS[cat] ?? "", modules: list });
       }

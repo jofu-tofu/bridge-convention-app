@@ -8,12 +8,13 @@
 
 import { SubscriptionTier } from "../service";
 import type { AuthUser } from "../service";
+import { canonicalBundleId } from "./bundle-id-migration";
 
 /** Bundles free-tier users can practice without paying. Mirrors the Rust FREE_BUNDLE_IDS allowlist. */
 const FREE_PRACTICE_BUNDLES: ReadonlySet<string> = new Set([
   "nt-bundle",
-  "nt-stayman",
-  "nt-transfers",
+  "stayman-bundle",
+  "jacoby-transfers-bundle",
   "strong-2c-bundle",
   "weak-twos-bundle",
   "blackwood-bundle",
@@ -28,7 +29,7 @@ function effectiveTier(user: AuthUser | null): SubscriptionTier {
 export function canPractice(user: AuthUser | null, bundleId: string): boolean {
   const tier = effectiveTier(user);
   if (tier === SubscriptionTier.Paid) return true;
-  return FREE_PRACTICE_BUNDLES.has(bundleId);
+  return FREE_PRACTICE_BUNDLES.has(canonicalBundleId(bundleId));
 }
 
 export function isPaid(user: AuthUser | null): boolean {

@@ -7,7 +7,7 @@ debug-only overrides during local development.
 
 | Param | Values | Effect |
 | --- | --- | --- |
-| `?convention=<id>` | `nt-bundle`, `nt-stayman`, `nt-transfers`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`, `michaels-unusual-bundle`, `strong-2c-bundle`, `negative-doubles-bundle`, `nmf-bundle` | Select convention and open the game screen. `?learn=stayman` resolves module-first; `?learn=nt-bundle` falls back to bundle filter behavior. |
+| `?convention=<id>` | `nt-bundle`, `stayman-bundle`, `jacoby-transfers-bundle`, `bergen-bundle`, `weak-twos-bundle`, `dont-bundle`, `michaels-unusual-bundle`, `strong-2c-bundle`, `negative-doubles-bundle`, `nmf-bundle` | Select convention and open the game screen. `?learn=stayman` resolves module-first; `?learn=nt-bundle` falls back to bundle filter behavior. |
 | `?learn=<id>` | module or bundle ID | Open learning mode. Resolution is module-first, then bundle filter. |
 | `?seed=<n>` | number | Deterministic PRNG seed. Advances per deal (`42`, `43`, `44`...). Reload resets. |
 | `?phase=<name>` | `review`, `playing`, `declarer` | Jump straight to a game phase after auto-completing prior steps. Requires `?convention=`. |

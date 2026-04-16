@@ -16,17 +16,19 @@ function makeUser(subscription_tier: SubscriptionTier): AuthUser {
 }
 
 describe("entitlements", () => {
-  it("allows anonymous users to practice only the free bundle", () => {
+  it("allows anonymous users to practice only free bundles", () => {
     expect(canPractice(null, "nt-bundle")).toBe(true);
-    expect(canPractice(null, "jacoby-transfers")).toBe(false);
+    expect(canPractice(null, "jacoby-transfers-bundle")).toBe(true);
+    expect(canPractice(null, "bergen-bundle")).toBe(false);
     expect(isPaid(null)).toBe(false);
   });
 
-  it("allows free users to practice only the free bundle", () => {
+  it("allows free users to practice only free bundles", () => {
     const user = makeUser(SubscriptionTier.Free);
 
     expect(canPractice(user, "nt-bundle")).toBe(true);
-    expect(canPractice(user, "jacoby-transfers")).toBe(false);
+    expect(canPractice(user, "jacoby-transfers-bundle")).toBe(true);
+    expect(canPractice(user, "bergen-bundle")).toBe(false);
     expect(isPaid(user)).toBe(false);
   });
 
@@ -34,7 +36,7 @@ describe("entitlements", () => {
     const user = makeUser(SubscriptionTier.Paid);
 
     expect(canPractice(user, "nt-bundle")).toBe(true);
-    expect(canPractice(user, "jacoby-transfers")).toBe(true);
+    expect(canPractice(user, "jacoby-transfers-bundle")).toBe(true);
     expect(isPaid(user)).toBe(true);
   });
 
@@ -42,7 +44,13 @@ describe("entitlements", () => {
     const user = makeUser(SubscriptionTier.Expired);
 
     expect(canPractice(user, "nt-bundle")).toBe(true);
-    expect(canPractice(user, "jacoby-transfers")).toBe(false);
+    expect(canPractice(user, "jacoby-transfers-bundle")).toBe(true);
+    expect(canPractice(user, "bergen-bundle")).toBe(false);
     expect(isPaid(user)).toBe(false);
+  });
+
+  it("honors legacy single-module NT bundle ids", () => {
+    expect(canPractice(null, "nt-stayman")).toBe(true);
+    expect(canPractice(null, "nt-transfers")).toBe(true);
   });
 });

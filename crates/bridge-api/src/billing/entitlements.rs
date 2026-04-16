@@ -5,8 +5,8 @@
 #[allow(dead_code)]
 pub const FREE_BUNDLE_IDS: &[&str] = &[
     "nt-bundle",
-    "nt-stayman",
-    "nt-transfers",
+    "stayman-bundle",
+    "jacoby-transfers-bundle",
     "strong-2c-bundle",
     "weak-twos-bundle",
     "blackwood-bundle",

@@ -5,11 +5,11 @@ test.describe("app smoke", () => {
   test("home search narrows the convention list", async ({ page }) => {
     await page.goto("/practice");
 
-    await expect(page.getByTestId("practice-nt-transfers")).toBeVisible();
+    await expect(page.getByTestId("practice-jacoby-transfers-bundle")).toBeVisible();
     await expect(page.getByTestId("practice-bergen-bundle")).toBeVisible();
     await page.getByLabel("Search conventions").fill("stayman");
 
-    await expect(page.getByTestId("practice-nt-stayman")).toBeVisible();
+    await expect(page.getByTestId("practice-stayman-bundle")).toBeVisible();
     await expect(page.getByTestId("practice-bergen-bundle")).not.toBeAttached();
   });
 
@@ -24,7 +24,7 @@ test.describe("app smoke", () => {
     await waitForPhase(page, "Bidding");
     await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
 
-    await page.goto("/learn/nt-stayman");
+    await page.goto("/learn/stayman-bundle");
     await expect(page.getByRole("heading", { level: 1, name: /Stayman/ })).toBeVisible();
   });
 

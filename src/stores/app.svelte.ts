@@ -1,5 +1,6 @@
 import type { ConventionInfo, SystemSelectionId, VulnerabilityDistribution, DrillSettings, PlayProfileId, PracticePreferences, DisplayPreferences, PracticeMode, PracticeRole } from "../service";
 import { OpponentMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
+import { canonicalBundleId } from "./bundle-id-migration";
 import { loadFromStorage, saveToStorage } from "./local-storage";
 
 // ─── Persistence ────────────────────────────────────────────
@@ -90,12 +91,16 @@ export function createAppStore() {
   let lastPracticedId = $state<string | null>(loadLastConvention());
 
   function loadLastConvention(): string | null {
-    try { return localStorage.getItem(LAST_CONVENTION_KEY); } catch { return null; }
+    try {
+      const id = localStorage.getItem(LAST_CONVENTION_KEY);
+      return id ? canonicalBundleId(id) : null;
+    } catch { return null; }
   }
 
   function saveLastConvention(id: string) {
-    lastPracticedId = id;
-    try { localStorage.setItem(LAST_CONVENTION_KEY, id); } catch { /* ignore */ }
+    const canonicalId = canonicalBundleId(id);
+    lastPracticedId = canonicalId;
+    try { localStorage.setItem(LAST_CONVENTION_KEY, canonicalId); } catch { /* ignore */ }
   }
   let devSeed = $state<number | null>(null);
   let devDealCount = $state(0);

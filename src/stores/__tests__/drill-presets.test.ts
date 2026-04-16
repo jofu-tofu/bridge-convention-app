@@ -99,6 +99,16 @@ describe("drill-presets store", () => {
     expect(store.presets[0]!.id).toBe("drill:ok");
   });
 
+  it("migrates legacy single-module NT bundle ids on load", () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      presets: [
+        { id: "drill:stayman", name: "Stayman", conventionId: "nt-stayman", practiceMode: "decision-drill", practiceRole: "responder", systemSelectionId: "sayc", createdAt: "x", lastUsedAt: null },
+      ],
+    }));
+    const store = createDrillPresetsStore();
+    expect(store.presets[0]!.conventionId).toBe("stayman-bundle");
+  });
+
   it("enforces soft cap", () => {
     const store = createDrillPresetsStore();
     for (let i = 0; i < DRILL_PRESET_SOFT_CAP; i++) {

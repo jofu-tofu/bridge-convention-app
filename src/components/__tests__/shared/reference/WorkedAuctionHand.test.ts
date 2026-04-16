@@ -22,7 +22,7 @@ describe("WorkedAuctionCard", () => {
   });
 
   it("renders the responder hand diagram when hand data is present", () => {
-    const { getByLabelText, getByText } = render(WorkedAuctionCard, {
+    const { getByLabelText } = render(WorkedAuctionCard, {
       props: {
         moduleId: "stayman",
         auction: workedAuctionWithHandFixture,
@@ -32,7 +32,12 @@ describe("WorkedAuctionCard", () => {
     expect(
       getByLabelText("Responder hand for Main Line — find the heart fit"),
     ).toBeTruthy();
-    expect(getByText("K97")).toBeTruthy();
-    expect(getByText("AJ53")).toBeTruthy();
+    expect(getByLabelText("K of spades")).toBeTruthy();
+    expect(getByLabelText("9 of spades")).toBeTruthy();
+    expect(getByLabelText("7 of spades")).toBeTruthy();
+    expect(getByLabelText("A of hearts")).toBeTruthy();
+    expect(getByLabelText("J of hearts")).toBeTruthy();
+    expect(getByLabelText("5 of hearts")).toBeTruthy();
+    expect(getByLabelText("3 of hearts")).toBeTruthy();
   });
 });

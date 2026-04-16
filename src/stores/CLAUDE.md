@@ -22,7 +22,8 @@ Svelte 5 rune-based stores for application state. Factory pattern with dependenc
 | `phase-transitions.svelte.ts` | `createPhaseTransitions(deps)` — phase state machine (`transitionTo`), unified lifecycle executor (`executeTransition`), `dispatchPlayTransition`, `handlePostAuction`, `guarded()` wrapper, prompt mode |
 | `viewport-cache.svelte.ts` | `createViewportCache(deps)` — reactive viewport cache (`ViewportCache`), `fetchAndCache`, `viewportNeededForPhase` pure helper |
 | `dds-solver.svelte.ts` | `createDDSSolver(deps)` — DDS solution/solving/error state, `triggerSolve` |
-| `entitlements.ts`    | `canPractice(user, bundleId)`, `isPaid(user)` — resolves what bundles the user can access based on subscription tier. Free tier gets one bundle (`nt-bundle`), paid gets all; expired collapses to free behavior. Plain module, no runes. |
+| `entitlements.ts`    | `canPractice(user, bundleId)`, `isPaid(user)` — resolves what bundles the user can access based on subscription tier. Free tier gets core SAYC bundles, paid gets all; expired collapses to free behavior. Plain module, no runes. |
+| `bundle-id-migration.ts` | `canonicalBundleId()` — maps legacy single-module bundle IDs (`nt-stayman`, `nt-transfers`) to canonical synthesized IDs before localStorage state is used. Plain module, no runes. |
 | `feature-flags.ts`   | `FEATURES` const registry — build-time feature flags (`workshop`, etc.). Plain module, no runes. `import.meta.env.DEV`-gated flags are dead-code-eliminated in prod. Use `FEATURES.flagName` at gate points. |
 | `local-storage.ts`   | Shared `loadFromStorage` / `saveToStorage` helpers — all stores use these instead of inlining try/catch JSON read/write |
 | `prompt-logic.ts`    | Pure functions: `computePromptMode`, `computeFaceUpSeats` |
@@ -114,4 +115,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `game.svelte.ts` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-12 | version=16 | dir-commits-at-audit=15 | tree-sig=dirs:2,files:23,exts:ts:22,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-16 | version=17 | dir-commits-at-audit=15 | tree-sig=dirs:2,files:24,exts:ts:23,md:1 -->

@@ -4,6 +4,7 @@
  */
 
 import type { CustomPracticePack } from "../service/session-types";
+import { canonicalBundleId } from "./bundle-id-migration";
 import { loadFromStorage, saveToStorage } from "./local-storage";
 
 const STORAGE_KEY = "bridge-app:practice-packs";
@@ -16,7 +17,9 @@ function loadPacks(): CustomPracticePack[] {
   return loadFromStorage(STORAGE_KEY, [] as CustomPracticePack[], (raw) => {
     const parsed = raw as StoredPacks;
     if (!Array.isArray(parsed?.packs)) return undefined;
-    return parsed.packs.filter(validateStoredPack);
+    return parsed.packs
+      .filter(validateStoredPack)
+      .map((pack) => ({ ...pack, basedOn: pack.basedOn ? canonicalBundleId(pack.basedOn) : null }));
   });
 }
 
@@ -60,7 +63,7 @@ export function createPracticePacksStore() {
         id: generateId(),
         name: params.name,
         description: params.description,
-        basedOn: params.basedOn ?? null,
+        basedOn: params.basedOn ? canonicalBundleId(params.basedOn) : null,
         conventionIds: params.conventionIds,
         createdAt: now,
         updatedAt: now,

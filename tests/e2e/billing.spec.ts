@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { devLogin, fireStripeWebhook } from "./helpers";
 
-const PAID_BUNDLE = "nt-transfers";
+const PAID_BUNDLE = "bergen-bundle";
 
 // Serial: SQLite file backing bridge-api can hit readonly/busy errors under
 // concurrent writes when specs run in parallel.
