@@ -110,10 +110,33 @@ pub(crate) fn build_witness_acceptance_predicate(
 
     let adapter = Arc::new(ConventionStrategyAdapter::new(spec, surface_groups));
 
+    // Log what the witness expects (once, outside the closure).
+    tracing::debug!(
+        target_module = %witness.target_module_id,
+        target_surface = %witness.target_surface_id,
+        user_seat = ?witness.user_seat,
+        prefix_len = witness.prefix.len(),
+        prefix_calls = ?witness.prefix.iter().map(|e| format!("{:?}:{:?}", e.seat, e.call)).collect::<Vec<_>>(),
+        "building witness predicate"
+    );
+    if let Some(ref dc) = bundle_deal_constraints {
+        for sc in &dc.seats {
+            tracing::debug!(
+                "projected constraint: {:?} hcp={:?}-{:?} balanced={:?} minLen={:?} maxLen={:?}",
+                sc.seat, sc.min_hcp, sc.max_hcp, sc.balanced, sc.min_length, sc.max_length
+            );
+        }
+    } else {
+        tracing::debug!("no projected deal constraints");
+    }
+
     Some(Arc::new(move |deal: &Deal, user_seat: Seat| -> bool {
         let user_hand = match deal.hands.get(&user_seat) {
             Some(h) => h.clone(),
-            None => return false,
+            None => {
+                tracing::debug!("reject: user seat {:?} missing from deal", user_seat);
+                return false;
+            }
         };
 
         // Build the seat strategy map identically to the live session. Built
@@ -164,6 +187,10 @@ pub(crate) fn build_witness_acceptance_predicate(
                 }
             }
             if entry.call != Call::Pass {
+                tracing::debug!(
+                    "reject: pre-seeded entry {:?} at {:?} is non-pass and doesn't match witness",
+                    entry.call, entry.seat
+                );
                 return false;
             }
         }
@@ -212,11 +239,21 @@ pub(crate) fn build_witness_acceptance_predicate(
             if is_witness_step {
                 let expected = next_expected.expect("checked above");
                 if call != expected.call {
+                    tracing::debug!(
+                        "reject: witness step {:?} expected {:?} but adapter produced {:?} (seat {:?}, hcp={})",
+                        witness_idx, expected.call, call, cursor,
+                        evaluate_hand_hcp(&deal.hands[&cursor]).hcp
+                    );
                     return false;
                 }
                 witness_idx += 1;
             } else if call != Call::Pass {
                 // Opponent auto-played non-pass; breaks the witness sequence.
+                tracing::debug!(
+                    "reject: opponent {:?} auto-played {:?} instead of Pass (hcp={})",
+                    cursor, call,
+                    evaluate_hand_hcp(&deal.hands[&cursor]).hcp
+                );
                 return false;
             }
 
@@ -225,16 +262,22 @@ pub(crate) fn build_witness_acceptance_predicate(
         }
 
         if cursor != user_seat {
+            tracing::debug!("reject: cursor {:?} != user_seat {:?} after prefix replay", cursor, user_seat);
             return false;
         }
 
         // At user's turn: the full witness prefix must have been consumed
         // (all partnership steps accounted for).
         if witness_idx != witness.prefix.len() {
+            tracing::debug!(
+                "reject: witness_idx {} != prefix len {} — not all partnership steps consumed",
+                witness_idx, witness.prefix.len()
+            );
             return false;
         }
 
         let evaluation = evaluate_hand_hcp(&user_hand);
+        let user_hcp = evaluation.hcp;
         let ctx = BiddingContext {
             hand: user_hand,
             auction,
@@ -246,8 +289,23 @@ pub(crate) fn build_witness_acceptance_predicate(
 
         let (_bid, strategy_evaluation) = adapter.suggest_with_evaluation(&ctx, None);
         match matched_module_and_surface(&strategy_evaluation) {
-            Some((mid, sid)) => mid == witness.target_module_id && sid == witness.target_surface_id,
-            None => false,
+            Some((mid, sid)) => {
+                let ok = mid == witness.target_module_id && sid == witness.target_surface_id;
+                if !ok {
+                    tracing::debug!(
+                        "reject: pipeline selected {}/{} but witness targets {}/{}",
+                        mid, sid, witness.target_module_id, witness.target_surface_id
+                    );
+                }
+                ok
+            }
+            None => {
+                tracing::debug!(
+                    "reject: pipeline returned no module/surface match (user hcp={})",
+                    user_hcp
+                );
+                false
+            }
         }
     }))
 }

@@ -16,6 +16,7 @@ import { parseArgs } from "./shared";
 import { runBundles, runModules, runDescribe } from "./commands/info";
 import { runPlay } from "./commands/play";
 import { runSelftest } from "./commands/selftest";
+import { runDealtest } from "./commands/dealtest";
 import { printUsage, printSubcommandHelp } from "./help";
 
 // ── Main dispatch ───────────────────────────────────────────────────
@@ -62,6 +63,9 @@ async function main(): Promise<void> {
       break;
     case "selftest":
       await runSelftest(service, flags);
+      break;
+    case "dealtest":
+      await runDealtest(service, flags);
       break;
     default:
       console.error(`Unknown subcommand: "${subcommand}"`);

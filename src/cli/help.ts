@@ -9,6 +9,7 @@ export function printUsage(): void {
   console.error("  describe  --bundle=<id>                    Inspect a bundle and its modules");
   console.error("  play      --bundle=<id> --seed=N [--bid=X] Session-based playthrough");
   console.error("  selftest  --bundle=<id> | --all [--seed=N] Strategy self-consistency check");
+  console.error("  dealtest  [--bundle=<id>] [--seed=N]       Deal-generation smoke test (all bundles)");
   console.error("  help                                       Show this help");
   console.error("");
   console.error("Global settings:");
