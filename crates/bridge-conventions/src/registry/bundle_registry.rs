@@ -2,16 +2,26 @@
 //!
 //! Bundle-input manifests (authored metadata without modules) are embedded
 //! as JSON. Full resolved bundles are loaded from pre-computed fixtures.
+//!
+//! Any module without a hand-authored bundle gets a single-module bundle
+//! synthesized at cache-init time (id `{module_id}-bundle`). See
+//! `synthesize_single_module_bundle` for the derivation rules. The
+//! `every_module_has_a_bundle` test enforces coverage.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
 
-use crate::types::bundle_types::{BundleInput, ConventionBundle};
+use crate::types::agreement::{ModuleEntry, ModuleKind, SystemProfile};
+use crate::types::bundle_types::{
+    BundleInput, ConventionBundle, ConventionCategory, ConventionTeaching, DerivedTeachingContent,
+};
+use crate::types::module_types::{ConventionModule, ModuleCategory};
 use crate::types::system_config::BaseSystemId;
 
-use super::module_registry::get_module;
+use super::module_registry::{get_all_modules, get_module};
+use super::system_configs::sayc_system_config;
 
-// Embedded bundle-input manifest (all 8 bundles)
+// Embedded bundle-input manifest (all authored bundles)
 const BUNDLE_MANIFESTS_JSON: &str = include_str!("../../fixtures/bundle-manifests.json");
 
 // Embedded full resolved bundles (SAYC)
@@ -44,8 +54,8 @@ fn json_for_bundle(id: &str) -> Option<&'static str> {
     }
 }
 
-/// All known bundle IDs in definition order.
-const BUNDLE_IDS: &[&str] = &[
+/// Hand-authored bundle IDs in definition order.
+const AUTHORED_BUNDLE_IDS: &[&str] = &[
     "nt-bundle",
     "nt-stayman",
     "nt-transfers",
@@ -58,14 +68,111 @@ const BUNDLE_IDS: &[&str] = &[
     "nmf-bundle",
 ];
 
+/// Compute the auto-synthesized bundle ID for a module.
+fn synthesized_bundle_id(module_id: &str) -> String {
+    format!("{}-bundle", module_id)
+}
+
+/// Map a module's category to a bundle's UI category.
+fn map_category(cat: ModuleCategory) -> ConventionCategory {
+    match cat {
+        ModuleCategory::Slam => ConventionCategory::Asking,
+        ModuleCategory::Competitive => ConventionCategory::Competitive,
+        ModuleCategory::OpeningBids
+        | ModuleCategory::NotrumpResponses
+        | ModuleCategory::MajorRaises
+        | ModuleCategory::WeakBids
+        | ModuleCategory::Constructive
+        | ModuleCategory::Custom => ConventionCategory::Constructive,
+    }
+}
+
+/// Synthesize a single-module bundle from a module.
+///
+/// Fields derived from the module:
+/// - name, member_ids, category, description, teaching
+/// - system_profile: SAYC default + one ModuleEntry using the module's own attachments
+///
+/// Fields left empty/None:
+/// - declared_capabilities, allowed_dealers, supports_role_selection
+/// - derived_teaching.surface_groups (empty; matches nmf-bundle precedent)
+fn synthesize_single_module_bundle(module: &ConventionModule) -> ConventionBundle {
+    let bundle_id = synthesized_bundle_id(&module.module_id);
+    let teaching = Some(ConventionTeaching {
+        purpose: Some(module.purpose.to_string()),
+        when_to_use: None,
+        when_not_to_use: None,
+        tradeoff: Some(module.teaching.tradeoff.to_string()),
+        principle: Some(module.teaching.principle.to_string()),
+        roles: None,
+    });
+    let system_profile = Some(SystemProfile {
+        profile_id: format!("{}-synth", module.module_id),
+        base_system: BaseSystemId::Sayc,
+        system_config: Some(sayc_system_config()),
+        modules: vec![ModuleEntry {
+            module_id: module.module_id.clone(),
+            kind: ModuleKind::AddOn,
+            attachments: module.attachments.clone(),
+            options: None,
+        }],
+    });
+
+    ConventionBundle {
+        id: bundle_id,
+        name: module.display_name.clone(),
+        member_ids: vec![module.module_id.clone()],
+        internal: None,
+        system_profile,
+        declared_capabilities: None,
+        category: map_category(module.category),
+        description: module.description.to_string(),
+        teaching,
+        modules: vec![module.clone()],
+        derived_teaching: DerivedTeachingContent {
+            surface_groups: Vec::new(),
+        },
+        allowed_dealers: None,
+        supports_role_selection: Some(true),
+    }
+}
+
+/// Project a ConventionBundle back to its BundleInput (authored-subset) shape.
+fn bundle_input_from(bundle: &ConventionBundle) -> BundleInput {
+    BundleInput {
+        id: bundle.id.clone(),
+        name: bundle.name.clone(),
+        member_ids: bundle.member_ids.clone(),
+        internal: bundle.internal,
+        system_profile: bundle.system_profile.clone(),
+        declared_capabilities: bundle.declared_capabilities.clone(),
+        category: bundle.category,
+        description: bundle.description.clone(),
+        teaching: bundle.teaching.clone(),
+    }
+}
+
 // ── Bundle input manifest cache ────────────────────────────────────
 
 static MANIFEST_CACHE: OnceLock<(Vec<BundleInput>, HashMap<String, usize>)> = OnceLock::new();
 
 fn manifest_cache() -> &'static (Vec<BundleInput>, HashMap<String, usize>) {
     MANIFEST_CACHE.get_or_init(|| {
-        let inputs: Vec<BundleInput> = serde_json::from_str(BUNDLE_MANIFESTS_JSON)
+        let mut inputs: Vec<BundleInput> = serde_json::from_str(BUNDLE_MANIFESTS_JSON)
             .expect("Failed to deserialize bundle manifests");
+
+        // Extend with synthesized single-module bundles for any module not
+        // already covered by an authored bundle's memberIds.
+        let covered: HashSet<String> = inputs
+            .iter()
+            .flat_map(|b| b.member_ids.iter().cloned())
+            .collect();
+        for module in get_all_modules(BaseSystemId::Sayc) {
+            if !covered.contains(&module.module_id) {
+                inputs.push(bundle_input_from(&synthesize_single_module_bundle(module)));
+            }
+        }
+
         let index: HashMap<String, usize> = inputs
             .iter()
             .enumerate()
@@ -93,7 +200,7 @@ static BUNDLE_CACHE: OnceLock<HashMap<String, ConventionBundle>> = OnceLock::new
 fn bundle_cache() -> &'static HashMap<String, ConventionBundle> {
     BUNDLE_CACHE.get_or_init(|| {
         let mut map = HashMap::new();
-        for &id in BUNDLE_IDS {
+        for &id in AUTHORED_BUNDLE_IDS {
             if let Some(json) = json_for_bundle(id) {
                 match serde_json::from_str::<ConventionBundle>(json) {
                     Ok(mut bundle) => {
@@ -123,6 +230,19 @@ fn bundle_cache() -> &'static HashMap<String, ConventionBundle> {
                 }
             }
         }
+
+        // Synthesize single-module bundles for any module not already covered.
+        let covered: HashSet<String> = map
+            .values()
+            .flat_map(|b| b.member_ids.iter().cloned())
+            .collect();
+        for module in get_all_modules(BaseSystemId::Sayc) {
+            if !covered.contains(&module.module_id) {
+                let synthesized = synthesize_single_module_bundle(module);
+                map.insert(synthesized.id.clone(), synthesized);
+            }
+        }
+
         map
     })
 }
@@ -139,16 +259,12 @@ mod tests {
     use crate::types::bundle_types::ConventionCategory;
 
     #[test]
-    fn list_bundle_inputs_returns_10() {
+    fn list_bundle_inputs_includes_authored_bundles() {
         let inputs = list_bundle_inputs();
-        assert_eq!(inputs.len(), 10);
-    }
-
-    #[test]
-    fn list_bundle_inputs_correct_ids() {
-        let inputs = list_bundle_inputs();
-        let ids: Vec<&str> = inputs.iter().map(|b| b.id.as_str()).collect();
-        assert_eq!(ids, BUNDLE_IDS);
+        let ids: HashSet<&str> = inputs.iter().map(|b| b.id.as_str()).collect();
+        for authored in AUTHORED_BUNDLE_IDS {
+            assert!(ids.contains(authored), "missing authored bundle {authored}");
+        }
     }
 
     #[test]
@@ -186,8 +302,8 @@ mod tests {
     }
 
     #[test]
-    fn resolve_bundle_all_10() {
-        for &id in BUNDLE_IDS {
+    fn resolve_authored_bundles() {
+        for &id in AUTHORED_BUNDLE_IDS {
             let bundle = resolve_bundle(id, BaseSystemId::Sayc);
             assert!(bundle.is_some(), "Bundle '{}' should resolve", id);
         }
@@ -195,7 +311,7 @@ mod tests {
 
     #[test]
     fn resolve_bundle_modules_match_member_ids() {
-        for &id in BUNDLE_IDS {
+        for &id in AUTHORED_BUNDLE_IDS {
             let bundle = resolve_bundle(id, BaseSystemId::Sayc)
                 .unwrap_or_else(|| panic!("Bundle '{}' not found", id));
             assert_eq!(
@@ -221,5 +337,47 @@ mod tests {
             !bundle.derived_teaching.surface_groups.is_empty(),
             "NT bundle should have derived surface groups"
         );
+    }
+
+    /// Coverage invariant: every registered module must be a `memberId` of
+    /// some bundle (authored or synthesized). If this fails, a module was
+    /// added without a matching bundle — extend `get_all_modules` or author
+    /// a new bundle JSON fixture.
+    #[test]
+    fn every_module_has_a_bundle() {
+        let modules = get_all_modules(BaseSystemId::Sayc);
+        let bundles = list_bundle_inputs();
+        let covered: HashSet<&str> = bundles
+            .iter()
+            .flat_map(|b| b.member_ids.iter().map(|s| s.as_str()))
+            .collect();
+        let uncovered: Vec<&str> = modules
+            .iter()
+            .map(|m| m.module_id.as_str())
+            .filter(|mid| !covered.contains(mid))
+            .collect();
+        assert!(
+            uncovered.is_empty(),
+            "modules without any bundle: {:?}",
+            uncovered
+        );
+    }
+
+    #[test]
+    fn synthesized_bundle_resolves_for_blackwood() {
+        let bundle = resolve_bundle("blackwood-bundle", BaseSystemId::Sayc);
+        assert!(bundle.is_some(), "blackwood-bundle should auto-synthesize");
+        let b = bundle.unwrap();
+        assert_eq!(b.member_ids, vec!["blackwood"]);
+        assert_eq!(b.modules.len(), 1);
+        assert_eq!(b.modules[0].module_id, "blackwood");
+        assert_eq!(b.category, ConventionCategory::Asking);
+    }
+
+    #[test]
+    fn synthesized_bundle_resolves_for_natural_bids() {
+        let bundle = resolve_bundle("natural-bids-bundle", BaseSystemId::Sayc);
+        assert!(bundle.is_some());
+        assert_eq!(bundle.unwrap().category, ConventionCategory::Constructive);
     }
 }

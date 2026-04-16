@@ -1,6 +1,16 @@
-// Mirror of TS const FREE_PRACTICE_BUNDLE in src/stores/entitlements.ts — keep in sync.
+// Mirror of TS FREE_PRACTICE_BUNDLES in src/stores/entitlements.ts — keep in sync.
+// Core SAYC base-system bundles (Stayman, Jacoby Transfers, Smolen, Strong 2C,
+// Weak Twos, Blackwood) are free. Optional add-on conventions (Bergen, DONT,
+// Michaels, Negative Doubles, NMF) remain paid.
 #[allow(dead_code)]
-pub const FREE_BUNDLE_IDS: &[&str] = &["nt-bundle"];
+pub const FREE_BUNDLE_IDS: &[&str] = &[
+    "nt-bundle",
+    "nt-stayman",
+    "nt-transfers",
+    "strong-2c-bundle",
+    "weak-twos-bundle",
+    "blackwood-bundle",
+];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 #[serde(rename_all = "lowercase")]
