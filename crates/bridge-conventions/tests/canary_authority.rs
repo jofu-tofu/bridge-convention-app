@@ -312,7 +312,7 @@ macro_rules! define_canary_test {
 
 const STAYMAN_SHOW_HEARTS_ON_FOUR_FOUR: Canary = Canary {
     module: "stayman",
-    target: Target::Bundle("nt-stayman"),
+    target: Target::Bundle("stayman-bundle"),
     auction: &["1NT", "2C"],
     auction_meaning_ids: &["bridge:1nt-opening", "stayman:ask-major"],
     auction_seats: &[Seat::North, Seat::South],
@@ -325,7 +325,7 @@ const STAYMAN_SHOW_HEARTS_ON_FOUR_FOUR: Canary = Canary {
 
 const STAYMAN_GF_HEARTS_AFTER_DENIAL: Canary = Canary {
     module: "stayman",
-    target: Target::Bundle("nt-stayman"),
+    target: Target::Bundle("stayman-bundle"),
     auction: &["1NT", "2C", "2D"],
     auction_meaning_ids: &[
         "bridge:1nt-opening",
@@ -368,7 +368,7 @@ const WEAK_TWO_OGUST_WITHOUT_FIT: Canary = Canary {
 
 const JACOBY_SUPER_ACCEPT_HEARTS: Canary = Canary {
     module: "jacoby-transfers",
-    target: Target::Bundle("nt-transfers"),
+    target: Target::Bundle("jacoby-transfers-bundle"),
     auction: &["1NT", "2D"],
     auction_meaning_ids: &["bridge:1nt-opening", "transfer:to-hearts"],
     auction_seats: &[Seat::North, Seat::South],
@@ -381,7 +381,7 @@ const JACOBY_SUPER_ACCEPT_HEARTS: Canary = Canary {
 
 const JACOBY_GAME_HEARTS_WITH_FIVE_CARD_MAJOR: Canary = Canary {
     module: "jacoby-transfers",
-    target: Target::Bundle("nt-transfers"),
+    target: Target::Bundle("jacoby-transfers-bundle"),
     auction: &["1NT", "2D", "2H"],
     auction_meaning_ids: &["bridge:1nt-opening", "transfer:to-hearts", "transfer:accept"],
     auction_seats: &[Seat::North, Seat::South, Seat::North],
@@ -394,7 +394,7 @@ const JACOBY_GAME_HEARTS_WITH_FIVE_CARD_MAJOR: Canary = Canary {
 
 const JACOBY_ACCEPT_INVITE_RAISE_SPADES: Canary = Canary {
     module: "jacoby-transfers",
-    target: Target::Bundle("nt-transfers"),
+    target: Target::Bundle("jacoby-transfers-bundle"),
     auction: &["1NT", "2H", "2S", "3S"],
     auction_meaning_ids: &[
         "bridge:1nt-opening",

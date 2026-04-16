@@ -65,28 +65,3 @@ fn roundtrip_fixture(name: &str) {
 fn nt_bundle_roundtrip() {
     roundtrip_fixture("nt-bundle");
 }
-
-#[test]
-fn nt_stayman_roundtrip() {
-    roundtrip_fixture("nt-stayman");
-}
-
-#[test]
-fn nt_transfers_roundtrip() {
-    roundtrip_fixture("nt-transfers");
-}
-
-#[test]
-fn bergen_bundle_roundtrip() {
-    roundtrip_fixture("bergen-bundle");
-}
-
-#[test]
-fn weak_twos_bundle_roundtrip() {
-    roundtrip_fixture("weak-twos-bundle");
-}
-
-#[test]
-fn dont_bundle_roundtrip() {
-    roundtrip_fixture("dont-bundle");
-}

@@ -3,7 +3,9 @@
 //! Mirrors TS types from `conventions/core/convention-module.ts`
 //! and `conventions/core/explanation-catalog.ts`.
 
-use bridge_engine::types::Call;
+use std::collections::HashMap;
+
+use bridge_engine::types::{Call, Seat};
 use serde::{Deserialize, Serialize};
 
 use crate::fact_catalog::partition_discriminants;
@@ -91,6 +93,44 @@ pub struct ModuleTeaching {
     pub tradeoff: TeachingTradeoff,
     pub principle: TeachingPrinciple,
     pub common_mistakes: Vec<TeachingItem>,
+}
+
+/// Bundle-level teaching fields that a single-module synthesized bundle cannot
+/// derive from the module's reference block without losing authored wording.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleBundleTeaching {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub purpose: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub when_to_use: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub when_not_to_use: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tradeoff: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub principle: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub roles: Option<String>,
+}
+
+/// Metadata used only when synthesizing a single-module `ConventionBundle`.
+///
+/// Authored multi-module bundles still own their bundle JSON. This block lets
+/// single-module bundle fixtures disappear without dropping catalog metadata.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleBundleMetadata {
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub declared_capabilities: HashMap<String, String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub attachments: Vec<super::agreement::Attachment>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allowed_dealers: Option<Vec<Seat>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub supports_role_selection: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub teaching: Option<ModuleBundleTeaching>,
 }
 
 /// Above-the-fold reference summary for a convention module (authored side).
@@ -488,6 +528,8 @@ pub struct ConventionModule {
     pub purpose: ModulePurpose,
     pub teaching: ModuleTeaching,
     pub reference: ModuleReference,
+    #[serde(default, skip_serializing_if = "ModuleBundleMetadata::is_empty")]
+    pub bundle_metadata: ModuleBundleMetadata,
 
     /// Structured trigger context. Optional during rollout; will become
     /// required once all module fixtures are backfilled.
@@ -512,6 +554,16 @@ pub struct ConventionModule {
     /// that activate in response to specific auction patterns or states.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub attachments: Vec<super::agreement::Attachment>,
+}
+
+impl ModuleBundleMetadata {
+    pub fn is_empty(&self) -> bool {
+        self.declared_capabilities.is_empty()
+            && self.attachments.is_empty()
+            && self.allowed_dealers.is_none()
+            && self.supports_role_selection.is_none()
+            && self.teaching.is_none()
+    }
 }
 
 #[cfg(test)]

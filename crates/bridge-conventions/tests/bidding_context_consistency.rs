@@ -26,10 +26,22 @@ fn allowlist() -> Vec<(&'static str, BiddingContext)> {
         "negative-doubles",
         BiddingContext {
             opener_bids: vec![
-                Call::Bid { level: 1, strain: BidSuit::Clubs },
-                Call::Bid { level: 1, strain: BidSuit::Diamonds },
-                Call::Bid { level: 1, strain: BidSuit::Hearts },
-                Call::Bid { level: 1, strain: BidSuit::Spades },
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Clubs,
+                },
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Diamonds,
+                },
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Hearts,
+                },
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Spades,
+                },
             ],
             opener_role: OpenerRole::Partner,
             competitive: true,
@@ -74,10 +86,7 @@ fn meaningful_idle_exits<'a>(fsm: &'a LocalFsm) -> Vec<&'a PhaseTransition> {
 /// Derive the expected `opener_bids` set from the FSM's idle-exit edges.
 /// Returns `Ok(None)` if the FSM encoding is not derivable and the module
 /// must be in the allowlist instead.
-fn derive_opener_bids(
-    module_id: &str,
-    fsm: &LocalFsm,
-) -> Result<Option<Vec<Call>>, String> {
+fn derive_opener_bids(module_id: &str, fsm: &LocalFsm) -> Result<Option<Vec<Call>>, String> {
     let exits = meaningful_idle_exits(fsm);
     if exits.is_empty() {
         return Err(format!(
@@ -128,8 +137,7 @@ fn derive_opener_bids(
 fn load_module(path: &std::path::Path) -> ConventionModule {
     let raw = fs::read_to_string(path)
         .unwrap_or_else(|e| panic!("failed to read {}: {e}", path.display()));
-    serde_json::from_str(&raw)
-        .unwrap_or_else(|e| panic!("failed to parse {}: {e}", path.display()))
+    serde_json::from_str(&raw).unwrap_or_else(|e| panic!("failed to parse {}: {e}", path.display()))
 }
 
 fn set_of_bids(bids: &[Call]) -> std::collections::BTreeSet<String> {
@@ -176,8 +184,9 @@ fn bidding_context_matches_fsm_idle_exit() {
         }
 
         // Allowlist pin: authored must match expected exactly.
-        if let Some((_, expected)) =
-            allowlist.iter().find(|(id, _)| *id == module.module_id.as_str())
+        if let Some((_, expected)) = allowlist
+            .iter()
+            .find(|(id, _)| *id == module.module_id.as_str())
         {
             assert_eq!(
                 ctx, expected,
@@ -189,8 +198,8 @@ fn bidding_context_matches_fsm_idle_exit() {
         }
 
         // Derivable single-hop path.
-        let derived = derive_opener_bids(&module.module_id, &module.local)
-            .unwrap_or_else(|e| panic!("{e}"));
+        let derived =
+            derive_opener_bids(&module.module_id, &module.local).unwrap_or_else(|e| panic!("{e}"));
         let Some(derived) = derived else {
             panic!(
                 "{}: FSM idle-exit not derivable and module not in multi-hop allowlist. \

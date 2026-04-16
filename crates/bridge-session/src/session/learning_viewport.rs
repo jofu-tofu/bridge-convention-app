@@ -1341,6 +1341,7 @@ mod tests {
                 },
                 related_links: Vec::new(),
             },
+            bundle_metadata: Default::default(),
             facts: FactDefinitionSet {
                 definitions: Vec::new(),
             },
@@ -1465,6 +1466,7 @@ mod tests {
                 },
                 related_links: Vec::new(),
             },
+            bundle_metadata: Default::default(),
             facts: FactDefinitionSet {
                 definitions: Vec::new(),
             },

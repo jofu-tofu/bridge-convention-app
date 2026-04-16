@@ -186,13 +186,13 @@ fn nt_bundle_adapter_produces_correct_bids() {
 }
 
 #[test]
-fn nt_stayman_adapter_produces_correct_bids() {
-    run_bundle_tests("nt-stayman");
+fn stayman_bundle_adapter_produces_correct_bids() {
+    run_bundle_tests("stayman-bundle");
 }
 
 #[test]
-fn nt_transfers_adapter_produces_correct_bids() {
-    run_bundle_tests("nt-transfers");
+fn jacoby_transfers_bundle_adapter_produces_correct_bids() {
+    run_bundle_tests("jacoby-transfers-bundle");
 }
 
 #[test]

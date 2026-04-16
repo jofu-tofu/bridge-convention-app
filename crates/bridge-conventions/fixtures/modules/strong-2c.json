@@ -45,7 +45,10 @@
       "contrastiveTemplateKey": "strong2c.qualifiesForOpen.whyNot",
       "contrastiveDisplayText": "Does not have 22+ HCP for strong 2C opening",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.isWaitingResponse",
@@ -55,7 +58,10 @@
       "contrastiveTemplateKey": "strong2c.isWaitingResponse.whyNot",
       "contrastiveDisplayText": "Has 8+ HCP — too strong for waiting response",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.isPositiveResponse",
@@ -65,7 +71,10 @@
       "contrastiveTemplateKey": "strong2c.isPositiveResponse.whyNot",
       "contrastiveDisplayText": "Fewer than 8 HCP — not strong enough for positive response",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.positiveBalanced",
@@ -75,7 +84,10 @@
       "contrastiveTemplateKey": "strong2c.positiveBalanced.whyNot",
       "contrastiveDisplayText": "Does not qualify for balanced positive 2NT response",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.balanced22to24",
@@ -85,7 +97,10 @@
       "contrastiveTemplateKey": "strong2c.balanced22to24.whyNot",
       "contrastiveDisplayText": "Not 22-24 HCP balanced",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.balanced25to27",
@@ -95,7 +110,10 @@
       "contrastiveTemplateKey": "strong2c.balanced25to27.whyNot",
       "contrastiveDisplayText": "Not 25-27 HCP balanced",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.responderGameValues",
@@ -105,7 +123,10 @@
       "contrastiveTemplateKey": "strong2c.responderGameValues.whyNot",
       "contrastiveDisplayText": "Does not have 3-7 HCP game values",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.responderSlamValues",
@@ -115,7 +136,10 @@
       "contrastiveTemplateKey": "strong2c.responderSlamValues.whyNot",
       "contrastiveDisplayText": "Fewer than 8 HCP — not enough for slam try",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.hasHeartSupport",
@@ -125,7 +149,10 @@
       "contrastiveTemplateKey": "strong2c.hasHeartSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 hearts to support partner",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.hasSpadeSupport",
@@ -135,7 +162,10 @@
       "contrastiveTemplateKey": "strong2c.hasSpadeSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 spades to support partner",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.hasClubSupport",
@@ -145,7 +175,10 @@
       "contrastiveTemplateKey": "strong2c.hasClubSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 clubs to support partner",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.hasDiamondSupport",
@@ -155,7 +188,10 @@
       "contrastiveTemplateKey": "strong2c.hasDiamondSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 diamonds to support partner",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "strong2c.r1.open2c",
@@ -163,7 +199,9 @@
       "templateKey": "strong2c.r1.open2c.semantic",
       "displayText": "Open 2C: 22+ HCP, artificial and forcing",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r2.waiting2d",
@@ -171,7 +209,9 @@
       "templateKey": "strong2c.r2.waiting2d.semantic",
       "displayText": "2D waiting: 0-7 HCP, artificial negative/waiting response",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r2.positive2h",
@@ -179,7 +219,9 @@
       "templateKey": "strong2c.r2.positive2h.semantic",
       "displayText": "2H positive: 8+ HCP with 5+ hearts",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r2.positive2s",
@@ -187,7 +229,9 @@
       "templateKey": "strong2c.r2.positive2s.semantic",
       "displayText": "2S positive: 8+ HCP with 5+ spades",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r2.positive3c",
@@ -195,7 +239,9 @@
       "templateKey": "strong2c.r2.positive3c.semantic",
       "displayText": "3C positive: 8+ HCP with 5+ clubs",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r2.positive3d",
@@ -203,7 +249,9 @@
       "templateKey": "strong2c.r2.positive3d.semantic",
       "displayText": "3D positive: 8+ HCP with 5+ diamonds",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r2.positive2nt",
@@ -211,7 +259,9 @@
       "templateKey": "strong2c.r2.positive2nt.semantic",
       "displayText": "2NT positive: 8+ HCP, balanced, no 5-card suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r3.rebid2nt",
@@ -219,7 +269,9 @@
       "templateKey": "strong2c.r3.rebid2nt.semantic",
       "displayText": "2NT rebid: 22-24 HCP balanced after 2D waiting",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r3.rebid3nt",
@@ -227,7 +279,9 @@
       "templateKey": "strong2c.r3.rebid3nt.semantic",
       "displayText": "3NT rebid: 25-27 HCP balanced after 2D waiting",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r3.rebidJump3h",
@@ -235,7 +289,9 @@
       "templateKey": "strong2c.r3.rebidJump3h.semantic",
       "displayText": "3H jump rebid: solid hearts one-suiter with slam interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r3.rebidJump3s",
@@ -243,7 +299,9 @@
       "templateKey": "strong2c.r3.rebidJump3s.semantic",
       "displayText": "3S jump rebid: solid spades one-suiter with slam interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r4.secondNegative3c",
@@ -251,7 +309,9 @@
       "templateKey": "strong2c.r4.secondNegative3c.semantic",
       "displayText": "Second negative 3♣: 0-3 HCP, no values",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r4.staymanOver2nt",
@@ -259,7 +319,9 @@
       "templateKey": "strong2c.r4.staymanOver2nt.semantic",
       "displayText": "Stayman 3♣ over 2NT rebid: asks for a 4-card major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r4.transferHeartsOver2nt",
@@ -267,7 +329,9 @@
       "templateKey": "strong2c.r4.transferHeartsOver2nt.semantic",
       "displayText": "Transfer 3♦ over 2NT rebid: 5+ hearts",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "strong2c.r4.transferSpadesOver2nt",
@@ -275,7 +339,9 @@
       "templateKey": "strong2c.r4.transferSpadesOver2nt.semantic",
       "displayText": "Transfer 3♥ over 2NT rebid: 5+ spades",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     }
   ],
   "local": {
@@ -2436,8 +2502,12 @@
         "world": "acting-hand",
         "description": "22+ HCP or 9+ playing tricks qualifies for strong 2C opening",
         "valueType": "boolean",
-        "derivesFrom": ["hand.hcp"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -2465,8 +2535,12 @@
         "world": "acting-hand",
         "description": "2D is the true waiting bid — any hand lacking a suit-quality positive bids 2D regardless of HCP",
         "valueType": "boolean",
-        "derivesFrom": ["hand.hcp"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -2482,8 +2556,12 @@
         "world": "acting-hand",
         "description": "8+ HCP (positive response)",
         "valueType": "boolean",
-        "derivesFrom": ["hand.hcp"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -2506,7 +2584,10 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["pointRange", "suitLength"],
+        "constrainsDimensions": [
+          "pointRange",
+          "suitLength"
+        ],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2566,7 +2647,10 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["pointRange", "suitLength"],
+        "constrainsDimensions": [
+          "pointRange",
+          "suitLength"
+        ],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2634,7 +2718,10 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["pointRange", "suitLength"],
+        "constrainsDimensions": [
+          "pointRange",
+          "suitLength"
+        ],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2695,8 +2782,12 @@
         "world": "acting-hand",
         "description": "3-7 HCP (game values opposite 22-24)",
         "valueType": "boolean",
-        "derivesFrom": ["hand.hcp"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2725,8 +2816,12 @@
         "world": "acting-hand",
         "description": "8+ HCP (slam try values)",
         "valueType": "boolean",
-        "derivesFrom": ["hand.hcp"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -2742,8 +2837,12 @@
         "world": "acting-hand",
         "description": "3+ hearts to support partner",
         "valueType": "boolean",
-        "derivesFrom": ["hand.suitLength.hearts"],
-        "constrainsDimensions": ["suitLength"],
+        "derivesFrom": [
+          "hand.suitLength.hearts"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -2759,8 +2858,12 @@
         "world": "acting-hand",
         "description": "3+ spades to support partner",
         "valueType": "boolean",
-        "derivesFrom": ["hand.suitLength.spades"],
-        "constrainsDimensions": ["suitLength"],
+        "derivesFrom": [
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -2776,8 +2879,12 @@
         "world": "acting-hand",
         "description": "3+ clubs to support partner",
         "valueType": "boolean",
-        "derivesFrom": ["hand.suitLength.clubs"],
-        "constrainsDimensions": ["suitLength"],
+        "derivesFrom": [
+          "hand.suitLength.clubs"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -2793,8 +2900,12 @@
         "world": "acting-hand",
         "description": "3+ diamonds to support partner",
         "valueType": "boolean",
-        "derivesFrom": ["hand.suitLength.diamonds"],
-        "constrainsDimensions": ["suitLength"],
+        "derivesFrom": [
+          "hand.suitLength.diamonds"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3024,6 +3135,37 @@
       {
         "moduleId": "jacoby-transfers",
         "discriminator": "Transfer responses belong after the later notrump rebid, not over the strong two clubs opening itself."
+      }
+    ]
+  },
+  "bundleMetadata": {
+    "declaredCapabilities": {
+      "opening.strong-2c": "active"
+    },
+    "allowedDealers": [
+      "S"
+    ],
+    "supportsRoleSelection": false,
+    "teaching": {
+      "purpose": "Open very strong hands (22+ HCP) with an artificial 2C bid that is game-forcing, then describe hand type through rebids",
+      "whenToUse": "Open 2C with 22+ HCP. As responder, bid 2D (waiting) with 0-7 HCP, or make a positive response (suit or 2NT) with 8+ HCP. After 2D, opener rebids naturally: suit with 5+, 2NT with 22-24 balanced, 3NT with 25-27 balanced.",
+      "whenNotToUse": [
+        "With 20-21 HCP — open at the 1-level and jump-rebid",
+        "With a weak hand and a long suit — use a Weak Two instead",
+        "2C is always artificial — never open 2C to show clubs"
+      ],
+      "tradeoff": "2C loses its natural club meaning in exchange for a forcing opening that prevents being passed out with a monster hand",
+      "principle": "The strongest hands need a forcing opening to ensure the auction continues. 2C → 2D (waiting) is the universal relay; opener then describes shape and strength through rebids.",
+      "roles": "Opener describes; responder evaluates. After 2D waiting, the auction is game-forcing (except after 2NT rebid with 0-2 HCP)."
+    },
+    "attachments": [
+      {
+        "whenAuction": {
+          "kind": "sequence",
+          "calls": [
+            "2C"
+          ]
+        }
       }
     ]
   }

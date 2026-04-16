@@ -197,26 +197,25 @@ impl ConventionStrategyAdapter {
                         .map(|s| s.state_after.clone())
                         .unwrap_or_else(initial_negotiation);
                     let blackwood_commitments = derive_public_commitments(&log);
-                    let relational_ctx = if prev_kernel.fit_agreed.is_some()
-                        || !blackwood_commitments.is_empty()
-                    {
-                        Some(bridge_conventions::fact_dsl::types::RelationalFactContext {
-                            bindings: None,
-                            public_commitments: if blackwood_commitments.is_empty() {
-                                None
-                            } else {
-                                Some(blackwood_commitments.clone())
-                            },
-                            fit_agreed: prev_kernel.fit_agreed.as_ref().map(|fa| {
-                                bridge_conventions::fact_dsl::types::FitAgreedContext {
-                                    strain: format!("{:?}", fa.strain).to_lowercase(),
-                                    confidence: fa.confidence,
-                                }
-                            }),
-                        })
-                    } else {
-                        None
-                    };
+                    let relational_ctx =
+                        if prev_kernel.fit_agreed.is_some() || !blackwood_commitments.is_empty() {
+                            Some(bridge_conventions::fact_dsl::types::RelationalFactContext {
+                                bindings: None,
+                                public_commitments: if blackwood_commitments.is_empty() {
+                                    None
+                                } else {
+                                    Some(blackwood_commitments.clone())
+                                },
+                                fit_agreed: prev_kernel.fit_agreed.as_ref().map(|fa| {
+                                    bridge_conventions::fact_dsl::types::FitAgreedContext {
+                                        strain: format!("{:?}", fa.strain).to_lowercase(),
+                                        confidence: fa.confidence,
+                                    }
+                                }),
+                            })
+                        } else {
+                            None
+                        };
 
                     let facts = evaluate_facts(
                         hand,
@@ -226,8 +225,7 @@ impl ConventionStrategyAdapter {
                         relational_ctx.as_ref(),
                         vuln_facts.as_ref(),
                     );
-                    let public_commitments_ref: Option<&[_]> = if blackwood_commitments.is_empty()
-                    {
+                    let public_commitments_ref: Option<&[_]> = if blackwood_commitments.is_empty() {
                         None
                     } else {
                         Some(&blackwood_commitments)

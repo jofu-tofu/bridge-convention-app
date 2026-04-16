@@ -272,7 +272,7 @@ mod tests {
 
     fn stayman_config(seed: u64) -> SessionConfig {
         SessionConfig {
-            convention_id: "nt-stayman".to_string(),
+            convention_id: "stayman-bundle".to_string(),
             system_config: get_system_config(BaseSystemId::Sayc),
             base_module_ids: BASE_MODULE_IDS.iter().map(|s| s.to_string()).collect(),
             practice_mode: Some(PracticeMode::DecisionDrill),
@@ -286,7 +286,7 @@ mod tests {
         }
     }
 
-    /// Phase 2g: nt-stayman drills either succeed with matched stayman or
+    /// Phase 2g: stayman-bundle drills either succeed with matched stayman or
     /// return `DealGenerationExhausted` — never silently fall through.
     /// Tight budget: ≥ 80% succeed across 10 seeds.
     #[test]
@@ -304,11 +304,11 @@ mod tests {
         assert_eq!(ok + exh, 10, "must be ok or exhausted, nothing else");
         assert!(
             ok >= 8,
-            "expected ≥80% nt-stayman success across 10 seeds, got {ok}/10"
+            "expected ≥80% stayman-bundle success across 10 seeds, got {ok}/10"
         );
     }
 
-    /// Phase 2g: nt-transfers — with witness-based tight bounds, 1NT openings
+    /// Phase 2g: jacoby-transfers-bundle — with witness-based tight bounds, 1NT openings
     /// are surfaced reliably. Was `#[ignore]` under v1 loose semantics.
     #[test]
     fn phase2_nt_transfers_succeeds_across_seeds() {
@@ -317,7 +317,7 @@ mod tests {
         let mut exh = 0;
         for seed in 200..210u64 {
             let config = SessionConfig {
-                convention_id: "nt-transfers".to_string(),
+                convention_id: "jacoby-transfers-bundle".to_string(),
                 system_config: get_system_config(BaseSystemId::Sayc),
                 base_module_ids: BASE_MODULE_IDS.iter().map(|s| s.to_string()).collect(),
                 practice_mode: Some(PracticeMode::DecisionDrill),
@@ -343,7 +343,7 @@ mod tests {
         // that exhaustion is a clean Err.
         assert!(
             ok >= 1,
-            "expected at least one nt-transfers success across 10 seeds, got {ok}/10"
+            "expected at least one jacoby-transfers-bundle success across 10 seeds, got {ok}/10"
         );
     }
 
@@ -377,7 +377,7 @@ mod tests {
             .map(|s| s.to_string())
             .collect::<Vec<_>>();
         let sys = get_system_config(BaseSystemId::Sayc);
-        let spec = spec_from_bundle("nt-stayman", &sys, &base, &HashMap::new());
+        let spec = spec_from_bundle("stayman-bundle", &sys, &base, &HashMap::new());
         let groups: Vec<SurfaceGroup> = Vec::new();
         let pred = build_witness_acceptance_predicate(
             &spec,
@@ -385,13 +385,13 @@ mod tests {
             witness,
             PracticeRole::Responder,
             None,
-            "nt-stayman",
+            "stayman-bundle",
             OpponentMode::Natural,
         )
         .expect("predicate should build");
 
         let convention = ConventionConfig {
-            id: "nt-stayman".to_string(),
+            id: "stayman-bundle".to_string(),
             deal_constraints: DealConstraints {
                 seats: Vec::new(),
                 dealer: Some(Seat::North),
@@ -407,7 +407,7 @@ mod tests {
             ..Default::default()
         };
         let drill_config = DrillConfig {
-            convention_id: "nt-stayman".to_string(),
+            convention_id: "stayman-bundle".to_string(),
             user_seat: Seat::South,
             seat_strategies: HashMap::new(),
         };
@@ -458,7 +458,7 @@ mod tests {
             .map(|s| s.to_string())
             .collect::<Vec<_>>();
         let sys = get_system_config(BaseSystemId::Sayc);
-        let spec = spec_from_bundle("nt-stayman", &sys, &base, &HashMap::new());
+        let spec = spec_from_bundle("stayman-bundle", &sys, &base, &HashMap::new());
         let groups: Vec<SurfaceGroup> = Vec::new();
 
         let pred = build_witness_acceptance_predicate(
@@ -467,7 +467,7 @@ mod tests {
             witness,
             PracticeRole::Responder,
             None,
-            "nt-stayman",
+            "stayman-bundle",
             OpponentMode::Natural,
         )
         .expect("predicate should build");

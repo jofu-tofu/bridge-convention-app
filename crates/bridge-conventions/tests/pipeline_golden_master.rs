@@ -131,13 +131,13 @@ fn nt_bundle_pipeline_snapshots() {
 }
 
 #[test]
-fn nt_stayman_pipeline_snapshots() {
-    validate_bundle_snapshots("nt-stayman");
+fn stayman_bundle_pipeline_snapshots() {
+    validate_bundle_snapshots("stayman-bundle");
 }
 
 #[test]
-fn nt_transfers_pipeline_snapshots() {
-    validate_bundle_snapshots("nt-transfers");
+fn jacoby_transfers_bundle_pipeline_snapshots() {
+    validate_bundle_snapshots("jacoby-transfers-bundle");
 }
 
 #[test]

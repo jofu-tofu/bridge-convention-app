@@ -156,7 +156,7 @@ mod tests {
     fn spec_from_bundle_deduplicates() {
         let config = sayc_config();
         let base = default_base_module_ids();
-        let spec = spec_from_bundle("nt-stayman", &config, &base, &no_user_modules());
+        let spec = spec_from_bundle("stayman-bundle", &config, &base, &no_user_modules());
         assert!(spec.is_some());
         let s = spec.unwrap();
 

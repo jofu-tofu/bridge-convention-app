@@ -45,7 +45,10 @@
       "contrastiveTemplateKey": "weakTwo.hcp.opener.whyNot",
       "contrastiveDisplayText": "HCP not in weak two opening range",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.ogust.isMaximum",
@@ -55,7 +58,10 @@
       "contrastiveTemplateKey": "weakTwo.ogust.isMaximum.whyNot",
       "contrastiveDisplayText": "Not maximum — hand is in the minimum range",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.ogust.isMinimum",
@@ -65,7 +71,10 @@
       "contrastiveTemplateKey": "weakTwo.ogust.isMinimum.whyNot",
       "contrastiveDisplayText": "Not minimum — hand is in the maximum range",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.ogust.isSolid.hearts",
@@ -75,7 +84,10 @@
       "contrastiveTemplateKey": "weakTwo.ogust.isSolid.hearts.whyNot",
       "contrastiveDisplayText": "Heart suit not solid — missing at least one top honor",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.ogust.isSolid.spades",
@@ -85,7 +97,10 @@
       "contrastiveTemplateKey": "weakTwo.ogust.isSolid.spades.whyNot",
       "contrastiveDisplayText": "Spade suit not solid — missing at least one top honor",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.ogust.isSolid.diamonds",
@@ -95,7 +110,10 @@
       "contrastiveTemplateKey": "weakTwo.ogust.isSolid.diamonds.whyNot",
       "contrastiveDisplayText": "Diamond suit not solid — missing at least one top honor",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.hasNewSuit.hearts",
@@ -103,7 +121,10 @@
       "templateKey": "weakTwo.hasNewSuit.hearts.supporting",
       "displayText": "Has 5+ cards in a suit other than hearts",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.hasNewSuit.spades",
@@ -111,7 +132,10 @@
       "templateKey": "weakTwo.hasNewSuit.spades.supporting",
       "displayText": "Has 5+ cards in a suit other than spades",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.hasNewSuit.diamonds",
@@ -119,7 +143,10 @@
       "templateKey": "weakTwo.hasNewSuit.diamonds.supporting",
       "displayText": "Has 5+ cards in a suit other than diamonds",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.hasNsfSupport.hearts",
@@ -127,7 +154,10 @@
       "templateKey": "weakTwo.hasNsfSupport.hearts.supporting",
       "displayText": "Opener has 3+ support for a non-heart suit",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.hasNsfSupport.spades",
@@ -135,7 +165,10 @@
       "templateKey": "weakTwo.hasNsfSupport.spades.supporting",
       "displayText": "Opener has 3+ support for a non-spade suit",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.hasNsfSupport.diamonds",
@@ -143,7 +176,10 @@
       "templateKey": "weakTwo.hasNsfSupport.diamonds.supporting",
       "displayText": "Opener has 3+ support for a non-diamond suit",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.topHonors.hearts",
@@ -151,7 +187,10 @@
       "templateKey": "weakTwo.topHonors.hearts.supporting",
       "displayText": "Top honor count (A, K, Q) in hearts",
       "preferredLevel": "mechanical",
-      "roles": ["supporting", "pedagogical"]
+      "roles": [
+        "supporting",
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.topHonors.spades",
@@ -159,7 +198,10 @@
       "templateKey": "weakTwo.topHonors.spades.supporting",
       "displayText": "Top honor count (A, K, Q) in spades",
       "preferredLevel": "mechanical",
-      "roles": ["supporting", "pedagogical"]
+      "roles": [
+        "supporting",
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.topHonors.diamonds",
@@ -167,7 +209,10 @@
       "templateKey": "weakTwo.topHonors.diamonds.supporting",
       "displayText": "Top honor count (A, K, Q) in diamonds",
       "preferredLevel": "mechanical",
-      "roles": ["supporting", "pedagogical"]
+      "roles": [
+        "supporting",
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r1.open2h",
@@ -175,7 +220,9 @@
       "templateKey": "weakTwo.r1.open2h.semantic",
       "displayText": "Open 2H: 6+ hearts, 5-11 NV / 6-11 vul HCP",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r1.open2s",
@@ -183,7 +230,9 @@
       "templateKey": "weakTwo.r1.open2s.semantic",
       "displayText": "Open 2S: 6+ spades, 5-11 NV / 6-11 vul HCP",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r1.open2d",
@@ -191,7 +240,9 @@
       "templateKey": "weakTwo.r1.open2d.semantic",
       "displayText": "Open 2D: 6+ diamonds, 5-11 NV / 6-11 vul HCP",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.gameRaise.hearts",
@@ -199,7 +250,9 @@
       "templateKey": "weakTwo.r2.gameRaise.hearts.semantic",
       "displayText": "Game raise in hearts: 16+ HCP with 3+ heart support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.ogustAsk.hearts",
@@ -207,7 +260,9 @@
       "templateKey": "weakTwo.r2.ogustAsk.hearts.semantic",
       "displayText": "Ogust 2NT over 2H: ask opener about hand strength and suit quality",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.inviteRaise.hearts",
@@ -215,7 +270,9 @@
       "templateKey": "weakTwo.r2.inviteRaise.hearts.semantic",
       "displayText": "Invite raise in hearts: 14-15 HCP with 3+ heart support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.preemptiveRaise.hearts",
@@ -223,7 +280,9 @@
       "templateKey": "weakTwo.r2.preemptiveRaise.hearts.semantic",
       "displayText": "Preemptive raise in hearts: 6-13 total points with 3+ heart support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.newSuitForcing.hearts",
@@ -231,7 +290,9 @@
       "templateKey": "weakTwo.r2.newSuitForcing.hearts.semantic",
       "displayText": "New suit forcing over 2H: 16+ HCP with 5+ in a new suit, forcing one round",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.weakPass.hearts",
@@ -239,7 +300,9 @@
       "templateKey": "weakTwo.r2.weakPass.hearts.semantic",
       "displayText": "Pass over 2H: not enough strength to raise or invoke Ogust",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.gameRaise.spades",
@@ -247,7 +310,9 @@
       "templateKey": "weakTwo.r2.gameRaise.spades.semantic",
       "displayText": "Game raise in spades: 16+ HCP with 3+ spade support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.ogustAsk.spades",
@@ -255,7 +320,9 @@
       "templateKey": "weakTwo.r2.ogustAsk.spades.semantic",
       "displayText": "Ogust 2NT over 2S: ask opener about hand strength and suit quality",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.inviteRaise.spades",
@@ -263,7 +330,9 @@
       "templateKey": "weakTwo.r2.inviteRaise.spades.semantic",
       "displayText": "Invite raise in spades: 14-15 HCP with 3+ spade support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.preemptiveRaise.spades",
@@ -271,7 +340,9 @@
       "templateKey": "weakTwo.r2.preemptiveRaise.spades.semantic",
       "displayText": "Preemptive raise in spades: 6-13 total points with 3+ spade support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.newSuitForcing.spades",
@@ -279,7 +350,9 @@
       "templateKey": "weakTwo.r2.newSuitForcing.spades.semantic",
       "displayText": "New suit forcing over 2S: 16+ HCP with 5+ in a new suit, forcing one round",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.weakPass.spades",
@@ -287,7 +360,9 @@
       "templateKey": "weakTwo.r2.weakPass.spades.semantic",
       "displayText": "Pass over 2S: not enough strength to raise or invoke Ogust",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.gameRaise.diamonds",
@@ -295,7 +370,9 @@
       "templateKey": "weakTwo.r2.gameRaise.diamonds.semantic",
       "displayText": "Game raise in diamonds: 16+ HCP with 3+ diamond support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.ogustAsk.diamonds",
@@ -303,7 +380,9 @@
       "templateKey": "weakTwo.r2.ogustAsk.diamonds.semantic",
       "displayText": "Ogust 2NT over 2D: ask opener about hand strength and suit quality",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.inviteRaise.diamonds",
@@ -311,7 +390,9 @@
       "templateKey": "weakTwo.r2.inviteRaise.diamonds.semantic",
       "displayText": "Invite raise in diamonds: 14-15 HCP with 3+ diamond support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.preemptiveRaise.diamonds",
@@ -319,7 +400,9 @@
       "templateKey": "weakTwo.r2.preemptiveRaise.diamonds.semantic",
       "displayText": "Preemptive raise in diamonds: 6-13 total points with 3+ diamond support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.newSuitForcing.diamonds",
@@ -327,7 +410,9 @@
       "templateKey": "weakTwo.r2.newSuitForcing.diamonds.semantic",
       "displayText": "New suit forcing over 2D: 16+ HCP with 5+ in a new suit, forcing one round",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.weakPass.diamonds",
@@ -335,7 +420,9 @@
       "templateKey": "weakTwo.r2.weakPass.diamonds.semantic",
       "displayText": "Pass over 2D: not enough strength to raise or invoke Ogust",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustSolid.hearts",
@@ -343,7 +430,9 @@
       "templateKey": "weakTwo.r3.ogustSolid.hearts.semantic",
       "displayText": "Solid heart suit (AKQ) — bid 3NT",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMinBad.hearts",
@@ -351,7 +440,9 @@
       "templateKey": "weakTwo.r3.ogustMinBad.hearts.semantic",
       "displayText": "Minimum hand, bad heart suit (0-1 top honors) — bid 3C",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMinGood.hearts",
@@ -359,7 +450,9 @@
       "templateKey": "weakTwo.r3.ogustMinGood.hearts.semantic",
       "displayText": "Minimum hand, good heart suit (2+ top honors) — bid 3D",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMaxBad.hearts",
@@ -367,7 +460,9 @@
       "templateKey": "weakTwo.r3.ogustMaxBad.hearts.semantic",
       "displayText": "Maximum hand, bad heart suit (0-1 top honors) — bid 3H",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMaxGood.hearts",
@@ -375,7 +470,9 @@
       "templateKey": "weakTwo.r3.ogustMaxGood.hearts.semantic",
       "displayText": "Maximum hand, good heart suit (2+ top honors) — bid 3S",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustSolid.spades",
@@ -383,7 +480,9 @@
       "templateKey": "weakTwo.r3.ogustSolid.spades.semantic",
       "displayText": "Solid spade suit (AKQ) — bid 3NT",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMinBad.spades",
@@ -391,7 +490,9 @@
       "templateKey": "weakTwo.r3.ogustMinBad.spades.semantic",
       "displayText": "Minimum hand, bad spade suit (0-1 top honors) — bid 3C",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMinGood.spades",
@@ -399,7 +500,9 @@
       "templateKey": "weakTwo.r3.ogustMinGood.spades.semantic",
       "displayText": "Minimum hand, good spade suit (2+ top honors) — bid 3D",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMaxBad.spades",
@@ -407,7 +510,9 @@
       "templateKey": "weakTwo.r3.ogustMaxBad.spades.semantic",
       "displayText": "Maximum hand, bad spade suit (0-1 top honors) — bid 3H",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMaxGood.spades",
@@ -415,7 +520,9 @@
       "templateKey": "weakTwo.r3.ogustMaxGood.spades.semantic",
       "displayText": "Maximum hand, good spade suit (2+ top honors) — bid 3S",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustSolid.diamonds",
@@ -423,7 +530,9 @@
       "templateKey": "weakTwo.r3.ogustSolid.diamonds.semantic",
       "displayText": "Solid diamond suit (AKQ) — bid 3NT",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMinBad.diamonds",
@@ -431,7 +540,9 @@
       "templateKey": "weakTwo.r3.ogustMinBad.diamonds.semantic",
       "displayText": "Minimum hand, bad diamond suit (0-1 top honors) — bid 3C",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMinGood.diamonds",
@@ -439,7 +550,9 @@
       "templateKey": "weakTwo.r3.ogustMinGood.diamonds.semantic",
       "displayText": "Minimum hand, good diamond suit (2+ top honors) — bid 3D",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMaxBad.diamonds",
@@ -447,7 +560,9 @@
       "templateKey": "weakTwo.r3.ogustMaxBad.diamonds.semantic",
       "displayText": "Maximum hand, bad diamond suit (0-1 top honors) — bid 3H",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.ogustMaxGood.diamonds",
@@ -455,7 +570,9 @@
       "templateKey": "weakTwo.r3.ogustMaxGood.diamonds.semantic",
       "displayText": "Maximum hand, good diamond suit (2+ top honors) — bid 3S",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.nsfSupport.hearts",
@@ -463,7 +580,9 @@
       "templateKey": "weakTwo.r3.nsfSupport.hearts.semantic",
       "displayText": "Support responder's new suit: 3+ cards in responder's suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.nsfRebid.hearts",
@@ -471,7 +590,9 @@
       "templateKey": "weakTwo.r3.nsfRebid.hearts.semantic",
       "displayText": "Rebid hearts: no support for responder's suit, return to own suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.nsfSupport.spades",
@@ -479,7 +600,9 @@
       "templateKey": "weakTwo.r3.nsfSupport.spades.semantic",
       "displayText": "Support responder's new suit: 3+ cards in responder's suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.nsfRebid.spades",
@@ -487,7 +610,9 @@
       "templateKey": "weakTwo.r3.nsfRebid.spades.semantic",
       "displayText": "Rebid spades: no support for responder's suit, return to own suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.nsfSupport.diamonds",
@@ -495,7 +620,9 @@
       "templateKey": "weakTwo.r3.nsfSupport.diamonds.semantic",
       "displayText": "Support responder's new suit: 3+ cards in responder's suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.nsfRebid.diamonds",
@@ -503,7 +630,9 @@
       "templateKey": "weakTwo.r3.nsfRebid.diamonds.semantic",
       "displayText": "Rebid diamonds: no support for responder's suit, return to own suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.postOgustGame.hearts",
@@ -511,7 +640,9 @@
       "templateKey": "weakTwo.r4.postOgustGame.hearts.semantic",
       "displayText": "Bid game in hearts after Ogust: opener showed enough strength or quality",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.postOgustSignoff.hearts",
@@ -519,7 +650,9 @@
       "templateKey": "weakTwo.r4.postOgustSignoff.hearts.semantic",
       "displayText": "Sign off in hearts after Ogust: opener is too weak for game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.postOgustPass.hearts",
@@ -527,7 +660,9 @@
       "templateKey": "weakTwo.r4.postOgustPass.hearts.semantic",
       "displayText": "Pass after Ogust in hearts: already at a playable level",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.postOgustGame.spades",
@@ -535,7 +670,9 @@
       "templateKey": "weakTwo.r4.postOgustGame.spades.semantic",
       "displayText": "Bid game in spades after Ogust: opener showed enough strength or quality",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.postOgustSignoff.spades",
@@ -543,7 +680,9 @@
       "templateKey": "weakTwo.r4.postOgustSignoff.spades.semantic",
       "displayText": "Sign off in spades after Ogust: opener is too weak for game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.postOgustPass.spades",
@@ -551,7 +690,9 @@
       "templateKey": "weakTwo.r4.postOgustPass.spades.semantic",
       "displayText": "Pass after Ogust in spades: already at a playable level",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.postOgustGame.diamonds",
@@ -559,7 +700,9 @@
       "templateKey": "weakTwo.r4.postOgustGame.diamonds.semantic",
       "displayText": "Bid game in diamonds (5D) after Ogust: opener showed enough strength or quality",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.postOgust3nt.diamonds",
@@ -567,7 +710,9 @@
       "templateKey": "weakTwo.r4.postOgust3nt.diamonds.semantic",
       "displayText": "Bid 3NT after Ogust over 2D: prefer notrump game with strong hand",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.postOgustSignoff.diamonds",
@@ -575,7 +720,9 @@
       "templateKey": "weakTwo.r4.postOgustSignoff.diamonds.semantic",
       "displayText": "Sign off in diamonds after Ogust: opener is too weak for game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.postOgustPass.diamonds",
@@ -583,7 +730,9 @@
       "templateKey": "weakTwo.r4.postOgustPass.diamonds.semantic",
       "displayText": "Pass after Ogust in diamonds: already at a playable level",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     }
   ],
   "local": {
@@ -3504,7 +3653,10 @@
         "description": "Count of A, K, Q in hearts (raw top-3 count used by Ogust response partitioning)",
         "valueType": "number",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitIdentity", "suitQuality"],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitQuality"
+        ],
         "forTeachingOnly": true,
         "composition": {
           "kind": "match",
@@ -3556,7 +3708,10 @@
         "description": "Count of A, K, Q in spades (raw top-3 count used by Ogust response partitioning)",
         "valueType": "number",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitIdentity", "suitQuality"],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitQuality"
+        ],
         "forTeachingOnly": true,
         "composition": {
           "kind": "match",
@@ -3608,7 +3763,10 @@
         "description": "Count of A, K, Q in diamonds (raw top-3 count used by Ogust response partitioning)",
         "valueType": "number",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitIdentity", "suitQuality"],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitQuality"
+        ],
         "forTeachingOnly": true,
         "composition": {
           "kind": "match",
@@ -3660,7 +3818,9 @@
         "description": "Hearts suit quality passes authority: 2 of top 3 honors (A/K/Q) OR 3 of top 5 honors (A/K/Q/J/T)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitQuality"],
+        "constrainsDimensions": [
+          "suitQuality"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -3692,7 +3852,9 @@
         "description": "Spades suit quality passes authority: 2 of top 3 honors (A/K/Q) OR 3 of top 5 honors (A/K/Q/J/T)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitQuality"],
+        "constrainsDimensions": [
+          "suitQuality"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -3724,7 +3886,9 @@
         "description": "Diamonds suit quality passes authority: 2 of top 3 honors (A/K/Q) OR 3 of top 5 honors (A/K/Q/J/T)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitQuality"],
+        "constrainsDimensions": [
+          "suitQuality"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -3755,8 +3919,13 @@
         "world": "acting-hand",
         "description": "Opener is minimum for weak two (5-7 NV, 6-7 vul)",
         "valueType": "boolean",
-        "derivesFrom": ["hand.hcp", "bridge.isVulnerable"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp",
+          "bridge.isVulnerable"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -3825,8 +3994,12 @@
         "world": "acting-hand",
         "description": "Opener is maximum for weak two (8-11 HCP)",
         "valueType": "boolean",
-        "derivesFrom": ["hand.hcp"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3855,8 +4028,13 @@
         "world": "acting-hand",
         "description": "HCP in weak two opening range (5-11 NV, 6-11 vul)",
         "valueType": "boolean",
-        "derivesFrom": ["hand.hcp", "bridge.isVulnerable"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp",
+          "bridge.isVulnerable"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -3926,7 +4104,9 @@
         "description": "All three top honors (AKQ) in hearts",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": ["module.weakTwo.topHonorCount.hearts"],
+        "derivesFrom": [
+          "module.weakTwo.topHonorCount.hearts"
+        ],
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength",
@@ -3950,7 +4130,9 @@
         "description": "All three top honors (AKQ) in spades",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": ["module.weakTwo.topHonorCount.spades"],
+        "derivesFrom": [
+          "module.weakTwo.topHonorCount.spades"
+        ],
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength",
@@ -3974,7 +4156,9 @@
         "description": "All three top honors (AKQ) in diamonds",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": ["module.weakTwo.topHonorCount.diamonds"],
+        "derivesFrom": [
+          "module.weakTwo.topHonorCount.diamonds"
+        ],
         "constrainsDimensions": [
           "suitIdentity",
           "suitLength",
@@ -4004,7 +4188,9 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitLength"],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -4048,7 +4234,9 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitLength"],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -4092,7 +4280,9 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitLength"],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -4136,7 +4326,9 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitLength"],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -4180,7 +4372,9 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitLength"],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -4224,7 +4418,9 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitLength"],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -4466,6 +4662,53 @@
       {
         "moduleId": "natural-bids",
         "discriminator": "Choose a natural opening when the hand is too balanced, too strong, or too short in the suit for a weak two."
+      }
+    ]
+  },
+  "bundleMetadata": {
+    "declaredCapabilities": {
+      "opening.weak-two": "active"
+    },
+    "allowedDealers": [
+      "N"
+    ],
+    "supportsRoleSelection": true,
+    "teaching": {
+      "purpose": "Open light hands with a long suit at the 2-level to preempt opponents, and use the Ogust convention to describe hand strength and suit quality",
+      "whenToUse": "Open 2D/2H/2S with 6+ cards in the suit and 5-11 HCP. As responder, use 2NT (Ogust) to ask about opener's hand, raise to game with 16+ HCP and fit, or invite with 14-15 HCP and fit.",
+      "whenNotToUse": [
+        "2C is reserved for strong openings — never open 2C as a weak two",
+        "With a hand too strong for a weak two (12+ HCP) — open at the 1-level instead",
+        "After opponent interference — standard competitive actions apply"
+      ],
+      "tradeoff": "2-level openings lose their natural strong meaning in favor of preemptive action",
+      "principle": "Weak twos simultaneously obstruct opponents and describe a narrow hand type (6-card suit, limited strength) that partner can evaluate precisely",
+      "roles": "Opener describes; responder captains. After Ogust 2NT, opener further classifies along strength and quality dimensions"
+    },
+    "attachments": [
+      {
+        "whenAuction": {
+          "kind": "sequence",
+          "calls": [
+            "2D"
+          ]
+        }
+      },
+      {
+        "whenAuction": {
+          "kind": "sequence",
+          "calls": [
+            "2H"
+          ]
+        }
+      },
+      {
+        "whenAuction": {
+          "kind": "sequence",
+          "calls": [
+            "2S"
+          ]
+        }
       }
     ]
   }

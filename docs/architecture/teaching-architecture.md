@@ -85,9 +85,9 @@ Failure mode: slightly looser derived constraints, marginally higher rejection-s
 Upgrade trigger: `tracing::warn` budget-exhaustion logs in normal use OR sampling cost noticeably impacts `start_drill` latency. Fix: FSM reachability analysis over base→target paths.
 
 **3. Union does not propagate `balanced`.**
-Rationale: `invert_composition`'s union branch drops `balanced` bounds when any branch lacks them. Bundles whose only "balanced" signal comes from the SAYC 1NT-opening surface (e.g. `nt-transfers`) end up with no `balanced` constraint on the opener seat.
-Failure mode: for NT-family bundles, the opener is rarely 15-17 balanced, so rejection sampling works harder or exhausts. The `nt-transfers` e2e test is currently `#[ignore]` pending fix.
-Upgrade trigger: `nt-transfers` / NT-bundle budget-exhaustion warnings in prod, or a bundle where 1NT opening is the only path. Fix: either (a) `union_all` preserves `balanced=Some(true)` when at least one branch asserts it and others are silent, or (b) the inverter treats "surface is unreachable under current branch" differently from "surface is reachable but has no balanced opinion."
+Rationale: `invert_composition`'s union branch drops `balanced` bounds when any branch lacks them. Bundles whose only "balanced" signal comes from the SAYC 1NT-opening surface (e.g. `jacoby-transfers-bundle`) end up with no `balanced` constraint on the opener seat.
+Failure mode: for NT-family bundles, the opener is rarely 15-17 balanced, so rejection sampling works harder or exhausts. The active `jacoby-transfers-bundle` service regression accepts occasional clean exhaustion rather than silently falling through.
+Upgrade trigger: `jacoby-transfers-bundle` / NT-bundle budget-exhaustion warnings in prod, or a bundle where 1NT opening is the only path. Fix: either (a) `union_all` preserves `balanced=Some(true)` when at least one branch asserts it and others are silent, or (b) the inverter treats "surface is unreachable under current branch" differently from "surface is reachable but has no balanced opinion."
 
 ## Opponent Modes
 

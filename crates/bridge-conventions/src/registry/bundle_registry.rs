@@ -1,12 +1,13 @@
 //! Bundle registry — lookup bundle definitions and resolve full bundles.
 //!
 //! Bundle-input manifests (authored metadata without modules) are embedded
-//! as JSON. Full resolved bundles are loaded from pre-computed fixtures.
+//! as JSON. Multi-module authored bundles are loaded from pre-computed
+//! fixtures; single-module bundles are synthesized from module fixtures.
 //!
-//! Any module without a hand-authored bundle gets a single-module bundle
-//! synthesized at cache-init time (id `{module_id}-bundle`). See
-//! `synthesize_single_module_bundle` for the derivation rules. The
-//! `every_module_has_a_bundle` test enforces coverage.
+//! Every module without a hand-authored bundle at its canonical single-module
+//! ID gets a synthesized bundle at cache-init time. Multi-module authored
+//! bundles do not suppress this. See `synthesize_single_module_bundle` for the
+//! derivation rules. The `every_module_has_a_bundle` test enforces coverage.
 
 use std::collections::{HashMap, HashSet};
 use std::sync::OnceLock;
@@ -16,7 +17,9 @@ use crate::types::bundle_types::{
     BundleInput, ConventionBundle, ConventionCategory, ConventionTeaching, DerivedTeachingContent,
 };
 use crate::types::module_types::{ConventionModule, ModuleCategory};
+use crate::types::rule_types::{PhaseRef, TurnRole};
 use crate::types::system_config::BaseSystemId;
+use crate::types::teaching::{SurfaceGroup, SurfaceGroupRelationship};
 
 use super::module_registry::{get_all_modules, get_module};
 use super::system_configs::sayc_system_config;
@@ -26,51 +29,23 @@ const BUNDLE_MANIFESTS_JSON: &str = include_str!("../../fixtures/bundle-manifest
 
 // Embedded full resolved bundles (SAYC)
 const NT_BUNDLE_JSON: &str = include_str!("../../fixtures/nt-bundle.json");
-const NT_STAYMAN_JSON: &str = include_str!("../../fixtures/nt-stayman.json");
-const NT_TRANSFERS_JSON: &str = include_str!("../../fixtures/nt-transfers.json");
-const BERGEN_BUNDLE_JSON: &str = include_str!("../../fixtures/bergen-bundle.json");
-const WEAK_TWOS_BUNDLE_JSON: &str = include_str!("../../fixtures/weak-twos-bundle.json");
-const DONT_BUNDLE_JSON: &str = include_str!("../../fixtures/dont-bundle.json");
-const MICHAELS_UNUSUAL_BUNDLE_JSON: &str =
-    include_str!("../../fixtures/michaels-unusual-bundle.json");
-const STRONG_2C_BUNDLE_JSON: &str = include_str!("../../fixtures/strong-2c-bundle.json");
-const NEGATIVE_DOUBLES_BUNDLE_JSON: &str =
-    include_str!("../../fixtures/negative-doubles-bundle.json");
-const NMF_BUNDLE_JSON: &str = include_str!("../../fixtures/nmf-bundle.json");
 
 fn json_for_bundle(id: &str) -> Option<&'static str> {
     match id {
         "nt-bundle" => Some(NT_BUNDLE_JSON),
-        "nt-stayman" => Some(NT_STAYMAN_JSON),
-        "nt-transfers" => Some(NT_TRANSFERS_JSON),
-        "bergen-bundle" => Some(BERGEN_BUNDLE_JSON),
-        "weak-twos-bundle" => Some(WEAK_TWOS_BUNDLE_JSON),
-        "dont-bundle" => Some(DONT_BUNDLE_JSON),
-        "michaels-unusual-bundle" => Some(MICHAELS_UNUSUAL_BUNDLE_JSON),
-        "strong-2c-bundle" => Some(STRONG_2C_BUNDLE_JSON),
-        "negative-doubles-bundle" => Some(NEGATIVE_DOUBLES_BUNDLE_JSON),
-        "nmf-bundle" => Some(NMF_BUNDLE_JSON),
         _ => None,
     }
 }
 
 /// Hand-authored bundle IDs in definition order.
-const AUTHORED_BUNDLE_IDS: &[&str] = &[
-    "nt-bundle",
-    "nt-stayman",
-    "nt-transfers",
-    "bergen-bundle",
-    "dont-bundle",
-    "weak-twos-bundle",
-    "michaels-unusual-bundle",
-    "strong-2c-bundle",
-    "negative-doubles-bundle",
-    "nmf-bundle",
-];
+const AUTHORED_BUNDLE_IDS: &[&str] = &["nt-bundle"];
 
 /// Compute the auto-synthesized bundle ID for a module.
 fn synthesized_bundle_id(module_id: &str) -> String {
-    format!("{}-bundle", module_id)
+    match module_id {
+        "new-minor-forcing" => "nmf-bundle".to_string(),
+        _ => format!("{}-bundle", module_id),
+    }
 }
 
 /// Map a module's category to a bundle's UI category.
@@ -87,24 +62,75 @@ fn map_category(cat: ModuleCategory) -> ConventionCategory {
     }
 }
 
+fn phase_ref_label(phase: &PhaseRef) -> String {
+    match phase {
+        PhaseRef::Single(s) => s.clone(),
+        PhaseRef::Multiple(phases) => phases.join("+"),
+    }
+}
+
+fn turn_role_label(turn: Option<TurnRole>) -> &'static str {
+    match turn {
+        Some(TurnRole::Opener) => "opener",
+        Some(TurnRole::Responder) => "responder",
+        Some(TurnRole::Opponent) => "opponent",
+        None => "any",
+    }
+}
+
+fn derive_surface_groups(module: &ConventionModule) -> Vec<SurfaceGroup> {
+    module
+        .states
+        .as_deref()
+        .unwrap_or(&[])
+        .iter()
+        .filter_map(|entry| {
+            let members: Vec<String> = entry
+                .surfaces
+                .iter()
+                .map(|surface| surface.meaning_id.clone())
+                .collect();
+            if members.len() < 2 {
+                return None;
+            }
+
+            let phase = phase_ref_label(&entry.phase);
+            let turn = turn_role_label(entry.turn);
+            Some(SurfaceGroup {
+                id: format!("{}/{}:{}", module.module_id, phase, turn),
+                label: format!("{} {} ({})", module.module_id, phase, turn),
+                members,
+                relationship: SurfaceGroupRelationship::MutuallyExclusive,
+                description: format!(
+                    "Surfaces competing at {} in {} ({}'s turn)",
+                    phase, module.module_id, turn
+                ),
+            })
+        })
+        .collect()
+}
+
 /// Synthesize a single-module bundle from a module.
 ///
 /// Fields derived from the module:
-/// - name, member_ids, category, description, teaching
-/// - system_profile: SAYC default + one ModuleEntry using the module's own attachments
-///
-/// Fields left empty/None:
-/// - declared_capabilities, allowed_dealers, supports_role_selection
-/// - derived_teaching.surface_groups (empty; matches nmf-bundle precedent)
+/// - name, member_ids, category, description, teaching, bundle metadata
+/// - system_profile: SAYC default + one ModuleEntry using synthesis-only bundle metadata attachments
 fn synthesize_single_module_bundle(module: &ConventionModule) -> ConventionBundle {
     let bundle_id = synthesized_bundle_id(&module.module_id);
+    let bundle_teaching = module.bundle_metadata.teaching.as_ref();
     let teaching = Some(ConventionTeaching {
-        purpose: Some(module.purpose.to_string()),
-        when_to_use: None,
-        when_not_to_use: None,
-        tradeoff: Some(module.teaching.tradeoff.to_string()),
-        principle: Some(module.teaching.principle.to_string()),
-        roles: None,
+        purpose: bundle_teaching
+            .and_then(|t| t.purpose.clone())
+            .or_else(|| Some(module.purpose.to_string())),
+        when_to_use: bundle_teaching.and_then(|t| t.when_to_use.clone()),
+        when_not_to_use: bundle_teaching.and_then(|t| t.when_not_to_use.clone()),
+        tradeoff: bundle_teaching
+            .and_then(|t| t.tradeoff.clone())
+            .or_else(|| Some(module.teaching.tradeoff.to_string())),
+        principle: bundle_teaching
+            .and_then(|t| t.principle.clone())
+            .or_else(|| Some(module.teaching.principle.to_string())),
+        roles: bundle_teaching.and_then(|t| t.roles.clone()),
     });
     let system_profile = Some(SystemProfile {
         profile_id: format!("{}-synth", module.module_id),
@@ -113,7 +139,11 @@ fn synthesize_single_module_bundle(module: &ConventionModule) -> ConventionBundl
         modules: vec![ModuleEntry {
             module_id: module.module_id.clone(),
             kind: ModuleKind::AddOn,
-            attachments: module.attachments.clone(),
+            attachments: if module.bundle_metadata.attachments.is_empty() {
+                module.attachments.clone()
+            } else {
+                module.bundle_metadata.attachments.clone()
+            },
             options: None,
         }],
     });
@@ -124,16 +154,25 @@ fn synthesize_single_module_bundle(module: &ConventionModule) -> ConventionBundl
         member_ids: vec![module.module_id.clone()],
         internal: None,
         system_profile,
-        declared_capabilities: None,
+        declared_capabilities: if module.bundle_metadata.declared_capabilities.is_empty() {
+            None
+        } else {
+            Some(module.bundle_metadata.declared_capabilities.clone())
+        },
         category: map_category(module.category),
         description: module.description.to_string(),
         teaching,
         modules: vec![module.clone()],
         derived_teaching: DerivedTeachingContent {
-            surface_groups: Vec::new(),
+            surface_groups: derive_surface_groups(module),
         },
-        allowed_dealers: None,
-        supports_role_selection: Some(true),
+        allowed_dealers: module.bundle_metadata.allowed_dealers.clone(),
+        supports_role_selection: Some(
+            module
+                .bundle_metadata
+                .supports_role_selection
+                .unwrap_or(true),
+        ),
     }
 }
 
@@ -161,14 +200,12 @@ fn manifest_cache() -> &'static (Vec<BundleInput>, HashMap<String, usize>) {
         let mut inputs: Vec<BundleInput> = serde_json::from_str(BUNDLE_MANIFESTS_JSON)
             .expect("Failed to deserialize bundle manifests");
 
-        // Extend with synthesized single-module bundles for any module not
-        // already covered by an authored bundle's memberIds.
-        let covered: HashSet<String> = inputs
-            .iter()
-            .flat_map(|b| b.member_ids.iter().cloned())
-            .collect();
+        // Extend with synthesized single-module bundles. Multi-module authored
+        // bundles (for example nt-bundle) do not suppress canonical
+        // single-module bundle IDs such as stayman-bundle.
+        let authored_ids: HashSet<String> = inputs.iter().map(|b| b.id.clone()).collect();
         for module in get_all_modules(BaseSystemId::Sayc) {
-            if !covered.contains(&module.module_id) {
+            if !authored_ids.contains(&synthesized_bundle_id(&module.module_id)) {
                 inputs.push(bundle_input_from(&synthesize_single_module_bundle(module)));
             }
         }
@@ -231,13 +268,11 @@ fn bundle_cache() -> &'static HashMap<String, ConventionBundle> {
             }
         }
 
-        // Synthesize single-module bundles for any module not already covered.
-        let covered: HashSet<String> = map
-            .values()
-            .flat_map(|b| b.member_ids.iter().cloned())
-            .collect();
+        // Synthesize canonical single-module bundles for every module that
+        // does not already have an authored bundle at its canonical ID.
         for module in get_all_modules(BaseSystemId::Sayc) {
-            if !covered.contains(&module.module_id) {
+            let synthesized_id = synthesized_bundle_id(&module.module_id);
+            if !map.contains_key(&synthesized_id) {
                 let synthesized = synthesize_single_module_bundle(module);
                 map.insert(synthesized.id.clone(), synthesized);
             }
@@ -379,5 +414,58 @@ mod tests {
         let bundle = resolve_bundle("natural-bids-bundle", BaseSystemId::Sayc);
         assert!(bundle.is_some());
         assert_eq!(bundle.unwrap().category, ConventionCategory::Constructive);
+    }
+
+    #[test]
+    fn synthesized_bundle_resolves_for_module_inside_multi_module_bundle() {
+        let bundle = resolve_bundle("stayman-bundle", BaseSystemId::Sayc)
+            .expect("stayman-bundle should auto-synthesize even though nt-bundle includes Stayman");
+
+        assert_eq!(bundle.member_ids, vec!["stayman"]);
+        assert_eq!(bundle.modules.len(), 1);
+        assert_eq!(bundle.modules[0].module_id, "stayman");
+    }
+
+    #[test]
+    fn synthesized_bundle_preserves_single_module_metadata() {
+        let bundle = resolve_bundle("stayman-bundle", BaseSystemId::Sayc)
+            .expect("stayman-bundle should resolve");
+
+        assert_eq!(
+            bundle
+                .declared_capabilities
+                .as_ref()
+                .and_then(|caps| caps.get("opening.1nt")),
+            Some(&"active".to_string())
+        );
+        assert!(
+            bundle
+                .system_profile
+                .as_ref()
+                .and_then(|profile| profile.modules.first())
+                .map(|entry| !entry.attachments.is_empty())
+                .unwrap_or(false),
+            "synthesized bundle should carry module attachment triggers"
+        );
+        assert!(
+            bundle.supports_role_selection.unwrap_or(false),
+            "Stayman should preserve role selection support"
+        );
+        assert!(
+            !bundle.derived_teaching.surface_groups.is_empty(),
+            "synthesized bundle should derive surface groups from module states"
+        );
+    }
+
+    #[test]
+    fn synthesized_bundle_preserves_disabled_role_selection() {
+        let bundle = resolve_bundle("dont-bundle", BaseSystemId::Sayc)
+            .expect("dont-bundle should synthesize");
+
+        assert_eq!(
+            bundle.allowed_dealers,
+            Some(vec![bridge_engine::types::Seat::East])
+        );
+        assert_eq!(bundle.supports_role_selection, Some(false));
     }
 }
