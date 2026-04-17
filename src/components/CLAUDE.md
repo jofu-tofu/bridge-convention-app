@@ -107,7 +107,7 @@ components/
       DebugPlayLog.svelte            Card play history by trick
       debug-helpers.ts               Formatting utilities (formatCall re-export, formatSuitCards, fmtFactValue, truncate)
   navigation/
-    NavRail.svelte                   Thin left rail (~80px) — Home/Learn/Workshop (dev only)/Settings icons. Desktop only. Workshop gated behind FEATURES.workshop. Practice and Learn items each have a hover flyout (group-hover/focus-within). Practice flyout: Preconfigured (`/practice`) / Drills (`/practice/drill`). Learn flyout: Conventions (`/learn`) / Lessons (`/lessons`) / Bidding Systems (`/systems`).
+    NavRail.svelte                   Thin left rail (~80px) — Home/Learn/Workshop (dev only)/Settings icons. Desktop only. Workshop gated behind FEATURES.workshop. Practice and Learn items each have a hover flyout (group-hover/focus-within). Practice flyout: Quick Practice (`/practice`) / Drills (`/practice/drill`). Learn flyout: Conventions (`/learn`) / Lessons (`/lessons`) / Bidding Systems (`/systems`).
     BottomTabBar.svelte              Mobile bottom tab bar — Home + Learn + Workshop (dev only) + Settings tabs. Mobile only. Workshop tab gated behind FEATURES.workshop.
   learn/
     LearnSidebar.svelte              Sticky desktop sidebar for `/learn/*` routes: progressive-enhancement search input filters a fully server-rendered `<ul>` of conventions (SEO-intact). Mobile renders a disclosure toggle above the list. Active link keyed off `$page.url.pathname`.
@@ -188,4 +188,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `AppReady.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-15 | version=20 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-16 | version=21 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->

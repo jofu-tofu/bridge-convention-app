@@ -7,6 +7,7 @@ Scope boundary: these docs govern the **data model for authored module/bundle co
 ## Contents
 
 - `reference-manual-inferred-fields.md` — design spec for generalizing the `/learn/[moduleId]` reference-page data model so every convention renders through one derivation pipeline, with typed predicates replacing free-text escape hatches and required fields forcing explicit "not applicable" reasons.
+- `reference-migration-backlog.md` — prioritized remaining work after the initial migration (surface-level corrections, catalog infrastructure, renderer items, framework polish).
 
 ## Placement Rules
 

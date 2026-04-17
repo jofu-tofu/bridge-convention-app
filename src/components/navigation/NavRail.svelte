@@ -62,7 +62,7 @@
         >
           <div class="min-w-[180px] bg-bg-elevated border border-border-default rounded-[--radius-md] shadow-lg py-1">
             {#each [
-              { href: "/practice", label: "Preconfigured" },
+              { href: "/practice", label: "Quick Practice" },
               { href: "/practice/drill", label: "Drills" },
             ] as const as sub (sub.href)}
               <a

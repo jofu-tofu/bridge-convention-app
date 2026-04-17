@@ -15,7 +15,7 @@ export default defineConfig({
     strictPort: true,
     host: true,
     watch: {
-      ignored: ["**/crates/**"],
+      ignored: ["**/crates/**", "**/_output/**", "**/target/**", "**/.generated/**"],
     },
     fs: {
       allow: ["."],
