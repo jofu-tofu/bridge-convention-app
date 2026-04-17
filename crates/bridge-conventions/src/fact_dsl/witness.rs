@@ -25,15 +25,23 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 
 use bridge_engine::{
-    is_legal_call, partner_seat,
+    is_auction_complete, is_legal_call, next_seat, partner_seat,
     types::{Auction, AuctionEntry, BidSuit, Call, DealConstraints, Seat, SeatConstraint, Suit},
 };
 
 use crate::pipeline::evaluation::binding_resolver::resolve_clause;
-use crate::types::bid_action::{BidActionType, BidSuitName};
+use crate::pipeline::observation::committed_step::{
+    initial_negotiation, ClaimRef, CommittedStep, CommittedStepStatus,
+};
+use crate::pipeline::observation::local_fsm::advance_local_fsm;
+use crate::pipeline::observation::negotiation_extractor::apply_negotiation_actions;
+use crate::pipeline::observation::negotiation_matcher::match_kernel;
+use crate::pipeline::observation::normalize_intent::normalize_intent;
+use crate::types::bid_action::{BidAction, BidActionType, BidSuitName};
 use crate::types::meaning::BidMeaning;
+use crate::types::negotiation::{Captain, NegotiationDelta, NegotiationState};
 use crate::types::rule_types::{
-    LocalFsm, ObsPattern, ObsPatternAct, PhaseRef, RouteExpr, StateEntry, TurnRole,
+    LocalFsm, NegotiationExpr, ObsPattern, ObsPatternAct, PhaseRef, RouteExpr, StateEntry, TurnRole,
 };
 use crate::types::{
     BidMeaningClause, ConstraintValue, ConventionModule, FactComposition, FactOperator,
@@ -432,6 +440,566 @@ fn base_module_responder_context_path(
     shortest_reifiable_path(&module.local, &targets, dealer, module.states.as_deref())
 }
 
+// =====================================================================
+// Kernel-gated target: fit-establishing prefix synthesis (§ kernel)
+// =====================================================================
+
+/// Maximum total length of the BFS-synthesized kernel prefix (partnership
+/// bids + opponent/partnership passes). Bounded to prevent combinatorial
+/// explosion; 8 accommodates the longest observed path (3 authored bids + 3
+/// passes) plus a safety margin for dual termination padding.
+const MAX_KERNEL_PREFIX_DEPTH: usize = 8;
+
+/// One entry in the fit-relevant-surface scan. Each authored partnership
+/// surface contributes a FitStep carrying:
+/// - `turn`: the authored TurnRole, used with dealer to resolve absolute seat
+/// - `phase`: the `PhaseRef` of the hosting StateEntry — used as an FSM
+///   phase-gate so we only consider a surface when its defining module is
+///   currently in that phase.
+/// - `default_call`: the concrete Call this surface would emit
+/// - `actions`: the normalized Vec<BidAction> from the surface's sourceIntent
+/// - `module_id`, `meaning_id`: for deterministic ordering and debugging
+///
+/// The BFS uses ALL entries as candidate edges — `fit_relevant` refers to
+/// the scan's role (enabling fit establishment) rather than a filter on
+/// individual entries; termination is driven by `match_kernel` against the
+/// folded NegotiationState.
+#[derive(Debug, Clone)]
+struct FitStep {
+    turn: TurnRole,
+    phase: PhaseRef,
+    default_call: Call,
+    actions: Vec<BidAction>,
+    module_id: String,
+    #[allow(dead_code)] // kept for debugging; read via Debug only
+    meaning_id: String,
+    sort_key: String,
+}
+
+/// Static pre-scan of all authored partnership surfaces across `modules`.
+/// Returns entries sorted by `(module_id, state.phase, meaning_id)` for
+/// deterministic BFS ordering (stable iteration → stable witness choice).
+/// Bundle-local: `modules` is the already-scoped `loaded_modules` the caller
+/// passes in, matching the inference-model constraint that we don't consult
+/// cross-system modules when establishing partnership-native context.
+fn fit_relevant_surfaces(modules: &[&ConventionModule]) -> Vec<FitStep> {
+    let mut out: Vec<FitStep> = Vec::new();
+    for m in modules {
+        let Some(states) = m.states.as_ref() else {
+            continue;
+        };
+        for se in states {
+            let Some(turn) = se.turn else { continue };
+            if matches!(turn, TurnRole::Opponent) {
+                continue;
+            }
+            let phase_label = match &se.phase {
+                PhaseRef::Single(p) => p.clone(),
+                PhaseRef::Multiple(ps) => ps.join("+"),
+            };
+            for surface in &se.surfaces {
+                let actions = normalize_intent(&surface.source_intent);
+                out.push(FitStep {
+                    turn,
+                    phase: se.phase.clone(),
+                    default_call: surface.encoding.default_call.clone(),
+                    actions,
+                    module_id: m.module_id.clone(),
+                    meaning_id: surface.meaning_id.clone(),
+                    sort_key: format!("{}:{}", phase_label, surface.meaning_id),
+                });
+            }
+        }
+    }
+    out.sort_by(|a, b| {
+        a.module_id
+            .cmp(&b.module_id)
+            .then_with(|| a.sort_key.cmp(&b.sort_key))
+    });
+    out
+}
+
+/// Does a module's current phase match the surface's PhaseRef?
+fn phase_ref_contains(phase_ref: &PhaseRef, phase: &str) -> bool {
+    match phase_ref {
+        PhaseRef::Single(p) => p == phase,
+        PhaseRef::Multiple(ps) => ps.iter().any(|p| p == phase),
+    }
+}
+
+/// Short authored-fixture call notation, e.g. "1NT", "2D", "P", "X".
+/// Mirrors `bridge-session::session::learning_formatters::call_key` — kept
+/// inline to avoid a crate dependency. Used for attachment-pattern matching.
+fn call_to_short_label(call: &Call) -> String {
+    match call {
+        Call::Pass => "P".to_string(),
+        Call::Double => "X".to_string(),
+        Call::Redouble => "XX".to_string(),
+        Call::Bid { level, strain } => {
+            let s = match strain {
+                BidSuit::Clubs => "C",
+                BidSuit::Diamonds => "D",
+                BidSuit::Hearts => "H",
+                BidSuit::Spades => "S",
+                BidSuit::NoTrump => "NT",
+            };
+            format!("{}{}", level, s)
+        }
+    }
+}
+
+/// Check whether the current authored auction prefix satisfies an
+/// `AuctionPattern`. Uses bridge-notation call labels ("1NT" etc.) for
+/// comparison. Passes are stripped from the matched log so
+/// `sequence: ["1NT"]` reads as "the last non-pass bid is 1NT" — the
+/// semantics authored fixtures actually expect (otherwise any opponent
+/// Pass between the opening and the follow-up would break the match).
+fn auction_pattern_matches(
+    pattern: &crate::types::agreement::AuctionPattern,
+    prefix: &[WitnessCall],
+) -> bool {
+    use crate::types::agreement::AuctionPattern;
+    let labels: Vec<String> = prefix
+        .iter()
+        .filter(|c| !matches!(c.call, Call::Pass))
+        .map(|c| call_to_short_label(&c.call))
+        .collect();
+    match pattern {
+        AuctionPattern::Sequence { calls } => {
+            if labels.len() < calls.len() {
+                return false;
+            }
+            let start = labels.len() - calls.len();
+            labels[start..]
+                .iter()
+                .zip(calls.iter())
+                .all(|(a, b)| a == b)
+        }
+        AuctionPattern::Contains { call, .. } => labels.iter().any(|l| l == call),
+        AuctionPattern::ByRole { last_call, .. } => {
+            labels.last().map(|l| l == last_call).unwrap_or(false)
+        }
+    }
+}
+
+/// True if `module`'s authored bundle_metadata.attachments (or top-level
+/// attachments if bundle_metadata is empty) are satisfied by the current
+/// prefix. Modules with no attachments are always considered active.
+fn module_attachments_active(module: &ConventionModule, prefix: &[WitnessCall]) -> bool {
+    let attachments = if !module.bundle_metadata.attachments.is_empty() {
+        &module.bundle_metadata.attachments
+    } else {
+        &module.attachments
+    };
+    if attachments.is_empty() {
+        return true;
+    }
+    attachments.iter().any(|att| {
+        att.when_auction
+            .as_ref()
+            .map(|p| auction_pattern_matches(p, prefix))
+            .unwrap_or(true)
+    })
+}
+
+/// Snapshot of every loaded module's FSM phase. Serializable (BTreeMap for
+/// stable ordering) so it can be used in BFS dedup keys.
+type ModulePhases = std::collections::BTreeMap<String, String>;
+
+fn initial_module_phases(modules: &[&ConventionModule]) -> ModulePhases {
+    let mut m = ModulePhases::new();
+    for mm in modules {
+        m.insert(mm.module_id.clone(), mm.local.initial.clone());
+    }
+    m
+}
+
+/// Build a `CommittedStep` from an actor + call + actions. Only the fields
+/// read by `advance_local_fsm` (`call`, `public_actions`) are populated
+/// meaningfully; the rest are placeholders.
+fn synth_committed_step(actor: Seat, call: Call, actions: Vec<BidAction>) -> CommittedStep {
+    CommittedStep {
+        actor,
+        call,
+        resolved_claim: Some(ClaimRef {
+            module_id: String::new(),
+            meaning_id: String::new(),
+            semantic_class_id: String::new(),
+            source_intent: crate::types::meaning::SourceIntent {
+                intent_type: String::new(),
+                params: std::collections::HashMap::new(),
+            },
+        }),
+        public_actions: actions,
+        negotiation_delta: NegotiationDelta::default(),
+        state_after: initial_negotiation(),
+        status: CommittedStepStatus::Resolved,
+    }
+}
+
+/// Advance every module's FSM phase by one step. `prior_steps` is reused
+/// across modules; FSMs that don't have a matching transition keep their
+/// current phase (idempotent).
+fn advance_all_module_phases(
+    modules: &[&ConventionModule],
+    phases: &ModulePhases,
+    step: &CommittedStep,
+    prior_steps: &[CommittedStep],
+) -> ModulePhases {
+    let mut out = phases.clone();
+    for m in modules {
+        let current = out
+            .get(&m.module_id)
+            .cloned()
+            .unwrap_or_else(|| m.local.initial.clone());
+        let next = advance_local_fsm(&current, step, prior_steps, &m.local.transitions);
+        out.insert(m.module_id.clone(), next);
+    }
+    out
+}
+
+/// True if a step's normalized actions include a fit-setting BidAction.
+fn actions_set_fit(actions: &[BidAction]) -> bool {
+    actions.iter().any(|a| {
+        matches!(
+            a,
+            BidAction::Raise { .. }
+                | BidAction::Agree { .. }
+                | BidAction::Accept { suit: Some(_), .. }
+                | BidAction::Transfer { .. }
+        )
+    })
+}
+
+/// Build an `Auction` from a prefix, computing `is_complete` correctly so
+/// `is_legal_call` respects auction-closure semantics during BFS expansion.
+fn auction_from_prefix(prefix: &[WitnessCall]) -> Auction {
+    let mut a = Auction {
+        entries: prefix
+            .iter()
+            .map(|e| AuctionEntry {
+                seat: e.seat,
+                call: e.call.clone(),
+            })
+            .collect(),
+        is_complete: false,
+    };
+    a.is_complete = is_auction_complete(&a);
+    a
+}
+
+/// Bounded BFS that synthesizes an auction prefix (partnership bids +
+/// opponent/partnership passes) satisfying BOTH:
+/// (a) `match_kernel(kernel_req, &folded_state) == true`
+/// (b) `next_seat(last_seat_in_prefix) == seat_for_turn(target_turn, dealer)`
+///
+/// The folded state is computed by replaying each partnership surface's
+/// normalized BidActions through `apply_negotiation_actions`. Opponent seats
+/// contribute no actions (implicit pass). The BFS also lets partnership
+/// seats choose `Pass` as a no-op padding move so the prefix can land the
+/// target seat next-to-act when a fit-setting sequence would otherwise
+/// finish at the wrong partnership seat.
+///
+/// Returns `None` when no prefix ≤ `max_depth` satisfies both termination
+/// conditions; callers treat this as "kernel unreachable in this bundle".
+fn find_kernel_establishing_prefix(
+    kernel_req: &NegotiationExpr,
+    modules: &[&ConventionModule],
+    dealer: Seat,
+    target_turn: TurnRole,
+    max_depth: usize,
+) -> Option<Vec<WitnessCall>> {
+    let target_seat = seat_for_turn(target_turn, dealer);
+    let steps = fit_relevant_surfaces(modules);
+    let initial_state = initial_negotiation();
+    let initial_phases = initial_module_phases(modules);
+
+    // Early-out: empty prefix. Satisfies the kernel iff the initial state
+    // matches AND the target seat is the dealer (otherwise padding is
+    // needed to reach it).
+    if match_kernel(kernel_req, &initial_state) && dealer == target_seat {
+        return Some(Vec::new());
+    }
+
+    // BFS frontier: (NegotiationState, ModulePhases, prefix, committed_steps).
+    // The `committed_steps` mirror `prefix` but as CommittedStep values so
+    // `advance_local_fsm` can be called with a non-empty `prior_log` (needed
+    // for jump/level-gated transitions).
+    let mut queue: VecDeque<(
+        NegotiationState,
+        ModulePhases,
+        Vec<WitnessCall>,
+        Vec<CommittedStep>,
+    )> = VecDeque::new();
+    queue.push_back((initial_state, initial_phases, Vec::new(), Vec::new()));
+
+    // Dedup on (serialized state, serialized phases, current_seat, prefix_len).
+    let mut visited: HashSet<String> = HashSet::new();
+
+    // Bound iterations to defend against unexpected fan-out from attachment
+    // / phase-gate bugs. 100k is far above the expected ~few thousand for
+    // today's module set.
+    let mut iterations = 0u64;
+    while let Some((state, phases, prefix, steps_log)) = queue.pop_front() {
+        iterations += 1;
+        if iterations > 100_000 {
+            break;
+        }
+        let current_seat = match prefix.last() {
+            Some(last) => next_seat(last.seat),
+            None => dealer,
+        };
+
+        // Dedup key. Includes the full prefix-call label sequence so two
+        // different authored paths reaching the same (state, phases) don't
+        // prune each other — distinct prefixes imply distinct future
+        // legal-call windows (last bid governs legal raises). This is
+        // coarser than pure state+phase dedup but avoids losing branches
+        // that must differ because `is_legal_call` depends on recent
+        // calls.
+        let state_json = serde_json::to_string(&state).unwrap_or_default();
+        let phases_json = serde_json::to_string(&phases).unwrap_or_default();
+        let prefix_labels: String = prefix
+            .iter()
+            .map(|c| format!("{:?}:{}", c.seat, call_to_short_label(&c.call)))
+            .collect::<Vec<_>>()
+            .join(",");
+        let key = format!(
+            "{}|{}|{:?}|{}",
+            state_json, phases_json, current_seat, prefix_labels
+        );
+        if !visited.insert(key) {
+            continue;
+        }
+
+        // Termination: kernel satisfied, seat aligned, auction open.
+        let auction = auction_from_prefix(&prefix);
+        if !prefix.is_empty()
+            && match_kernel(kernel_req, &state)
+            && current_seat == target_seat
+            && !auction.is_complete
+        {
+            return Some(prefix);
+        }
+
+        if prefix.len() >= max_depth {
+            continue;
+        }
+        if auction.is_complete {
+            continue;
+        }
+
+        if is_partnership_seat(current_seat, dealer) {
+            // Opening gate: before an opening, only Open-intent surfaces
+            // are valid edges. Prevents the BFS from using a response
+            // surface (e.g., AcceptTransfer) as the auction's first
+            // partnership bid.
+            let require_opening = matches!(state.captain, Captain::Undecided);
+
+            for step in &steps {
+                if seat_for_turn(step.turn, dealer) != current_seat {
+                    continue;
+                }
+                if !is_legal_call(&auction, &step.default_call, current_seat) {
+                    continue;
+                }
+                // FSM phase gate: the surface's defining module must be
+                // in the surface's authored phase. Without this, a surface
+                // like stayman's `shown-hearts:raise-game-hearts` would be
+                // usable as a direct response to 1C, which is semantically
+                // invalid and would be rejected by the live adapter.
+                let module_phase = phases.get(&step.module_id).cloned().unwrap_or_default();
+                if !phase_ref_contains(&step.phase, &module_phase) {
+                    continue;
+                }
+                // Attachment gate: only check when the module is at its
+                // INITIAL phase (i.e., about to be activated for the first
+                // time). Once the module's FSM has advanced past initial,
+                // it is "committed" — subsequent internal transitions
+                // (e.g. jacoby accept after transfer) should proceed
+                // without re-checking the activation trigger.
+                if let Some(owner) = find_module(modules, &step.module_id) {
+                    let is_at_initial = module_phase == owner.local.initial;
+                    if is_at_initial && !module_attachments_active(owner, &prefix) {
+                        continue;
+                    }
+                }
+                if require_opening
+                    && !step
+                        .actions
+                        .iter()
+                        .any(|a| matches!(a, BidAction::Open { .. }))
+                {
+                    continue;
+                }
+                let new_state = apply_negotiation_actions(&state, &step.actions, current_seat);
+                let committed = synth_committed_step(
+                    current_seat,
+                    step.default_call.clone(),
+                    step.actions.clone(),
+                );
+                let new_phases =
+                    advance_all_module_phases(modules, &phases, &committed, &steps_log);
+                let mut new_prefix = prefix.clone();
+                new_prefix.push(WitnessCall {
+                    seat: current_seat,
+                    call: step.default_call.clone(),
+                });
+                let mut new_log = steps_log.clone();
+                new_log.push(committed);
+                queue.push_back((new_state, new_phases, new_prefix, new_log));
+            }
+            // Partnership pass for padding. Only allowed after an opening
+            // (captain != Undecided), since a captain=Undecided all-pass
+            // prefix can never establish a kernel.
+            if !require_opening {
+                let pass_step = synth_committed_step(
+                    current_seat,
+                    Call::Pass,
+                    vec![BidAction::Pass],
+                );
+                let new_phases =
+                    advance_all_module_phases(modules, &phases, &pass_step, &steps_log);
+                let mut pass_prefix = prefix.clone();
+                pass_prefix.push(WitnessCall {
+                    seat: current_seat,
+                    call: Call::Pass,
+                });
+                let mut new_log = steps_log.clone();
+                new_log.push(pass_step);
+                queue.push_back((state.clone(), new_phases, pass_prefix, new_log));
+            }
+        } else {
+            // Opponent seat: automatic pass.
+            let pass_step = synth_committed_step(
+                current_seat,
+                Call::Pass,
+                vec![BidAction::Pass],
+            );
+            let new_phases =
+                advance_all_module_phases(modules, &phases, &pass_step, &steps_log);
+            let mut new_prefix = prefix.clone();
+            new_prefix.push(WitnessCall {
+                seat: current_seat,
+                call: Call::Pass,
+            });
+            let mut new_log = steps_log.clone();
+            new_log.push(pass_step);
+            queue.push_back((state, new_phases, new_prefix, new_log));
+        }
+    }
+
+    None
+}
+
+/// Join a kernel-establishing prefix with an intra-module path. Today the
+/// only fixture authoring a kernel gate places it on the target module's
+/// `idle` (initial) state so `intra_prefix` is empty and the kernel prefix
+/// itself reaches the target seat. When `intra_prefix` is non-empty (a
+/// future-proofing case), we enforce seat-alignment: the last seat of
+/// `kernel` +1 must equal `intra[0].seat`, otherwise the composition is
+/// invalid and we reject.
+fn splice_kernel_prefix(
+    kernel: Vec<WitnessCall>,
+    intra: Vec<WitnessCall>,
+) -> Option<Vec<WitnessCall>> {
+    if intra.is_empty() {
+        return Some(kernel);
+    }
+    let last = kernel.last()?.seat;
+    if next_seat(last) != intra[0].seat {
+        return None;
+    }
+    let mut out = kernel;
+    out.extend(intra);
+    Some(out)
+}
+
+/// Replay a witness prefix through `apply_negotiation_actions` to recompute
+/// the `NegotiationState` at the point the target surface is bid. For each
+/// non-pass call we look up the emitting surface in `modules` via
+/// `surfaces_emitting_call`; when multiple surfaces match, we prefer
+/// fit-setting ones (their sourceIntent normalizes to
+/// Raise/Agree/Accept/Transfer) and tie-break by `specificity_score`, then
+/// by `(module_id, meaning_id)` lexicographic order.
+///
+/// Visibility: declared `pub` (reachable from the integration test at
+/// `tests/witness_derivation.rs`) and annotated `#[doc(hidden)]` to signal
+/// it is not part of the stable public API.
+#[doc(hidden)]
+pub fn replay_kernel_from_prefix(
+    prefix: &[WitnessCall],
+    modules: &[&ConventionModule],
+    dealer: Seat,
+) -> NegotiationState {
+    let mut state = initial_negotiation();
+    for entry in prefix {
+        if matches!(entry.call, Call::Pass | Call::Double | Call::Redouble) {
+            continue;
+        }
+        let candidates = surfaces_emitting_call(modules, &entry.call, entry.seat, dealer);
+        if candidates.is_empty() {
+            continue;
+        }
+        // Among candidates, prefer fit-setting ones. Then pick the
+        // most-specific by invert-score; tie-break by (module_id, meaning_id).
+        let chosen = pick_replay_surface(&candidates);
+        let actions = normalize_intent(&chosen.source_intent);
+        state = apply_negotiation_actions(&state, &actions, entry.seat);
+    }
+    state
+}
+
+fn pick_replay_surface<'m>(candidates: &[&'m BidMeaning]) -> &'m BidMeaning {
+    // Partition by fit-setting vs not.
+    let fit_setting: Vec<&BidMeaning> = candidates
+        .iter()
+        .copied()
+        .filter(|s| actions_set_fit(&normalize_intent(&s.source_intent)))
+        .collect();
+    let pool: &[&BidMeaning] = if !fit_setting.is_empty() {
+        &fit_setting[..]
+    } else {
+        candidates
+    };
+    // Pick most-specific; tie-break lexicographically on (module_id, meaning_id).
+    let mut best: Option<&BidMeaning> = None;
+    let mut best_score: isize = -1;
+    for s in pool {
+        let score = specificity_score_for_surface(s) as isize;
+        let better = match best {
+            None => true,
+            Some(cur) => {
+                if score != best_score {
+                    score > best_score
+                } else {
+                    let cur_key = (cur.module_id.as_deref().unwrap_or(""), cur.meaning_id.as_str());
+                    let new_key = (s.module_id.as_deref().unwrap_or(""), s.meaning_id.as_str());
+                    new_key < cur_key
+                }
+            }
+        };
+        if better {
+            best = Some(s);
+            best_score = score;
+        }
+    }
+    best.unwrap_or(pool[0])
+}
+
+fn specificity_score_for_surface(surface: &BidMeaning) -> usize {
+    // Cheap specificity: count hand-relevant clauses. Higher = more specific.
+    surface
+        .clauses
+        .iter()
+        .filter(|c| is_hand_fact_id(&c.fact_id))
+        .count()
+}
+
+// =====================================================================
+// Prefix merge (used by the non-kernel enumerate_witnesses path)
+// =====================================================================
+
 /// Merge two witness prefixes, preferring the longer. When both are non-empty
 /// and differ, we keep the longer since it reflects more authored context;
 /// if lengths match, we keep the first.
@@ -532,17 +1100,45 @@ pub fn enumerate_witnesses(
             }
         }
 
-        let Some(mut prefix) = prefix_opt else {
+        let Some(intra_prefix) = prefix_opt else {
             continue;
         };
 
-        // Fold in the longest context path (base-module opener context).
-        let best_ctx = context_paths
-            .iter()
-            .cloned()
-            .max_by_key(|p| p.len())
-            .unwrap_or_default();
-        prefix = merge_prefixes(prefix, best_ctx);
+        // Kernel-gated target: splice in a fit-establishing prefix and
+        // SUPPRESS the base-module responder-context fold. The kernel prefix
+        // already contains an opening call (e.g., 1NT from natural-bids),
+        // so folding the base-module 1NT context on top would double-open
+        // the auction. See crates/CLAUDE.md + docs/guides/gotchas.md for
+        // the invariant.
+        let prefix = if let Some(kernel_expr) = se.kernel.as_ref() {
+            let target_turn = match se.turn {
+                Some(t) => t,
+                None => continue,
+            };
+            let Some(kernel_prefix) = find_kernel_establishing_prefix(
+                kernel_expr,
+                loaded_modules,
+                dealer,
+                target_turn,
+                MAX_KERNEL_PREFIX_DEPTH,
+            ) else {
+                // Kernel unreachable in this bundle — drop this state entry.
+                continue;
+            };
+            match splice_kernel_prefix(kernel_prefix, intra_prefix) {
+                Some(p) => p,
+                None => continue,
+            }
+        } else {
+            // No kernel: fold in the longest context path (base-module
+            // opener context).
+            let best_ctx = context_paths
+                .iter()
+                .cloned()
+                .max_by_key(|p| p.len())
+                .unwrap_or_default();
+            merge_prefixes(intra_prefix, best_ctx)
+        };
 
         // The surface's authored `module_id` may differ from the containing
         // module's `module_id` for extension modules (e.g. stayman-garbage's
@@ -595,6 +1191,73 @@ fn surfaces_emitting_call<'m>(
                 continue;
             };
             if seat_for_turn(turn, dealer) != bidder_seat {
+                continue;
+            }
+            for surface in &se.surfaces {
+                if &surface.encoding.default_call == call {
+                    out.push(surface);
+                }
+            }
+        }
+    }
+    out
+}
+
+/// FSM-phase-aware variant of `surfaces_emitting_call`. Filters to surfaces
+/// whose hosting state phase matches the module's current FSM phase — the
+/// phase the module would be in after replaying `prior_prefix` through its
+/// `local.transitions`. Prevents e.g. `stayman:show-hearts` (at `asked`
+/// phase) from matching `N:2H` in a Jacoby-accept context where stayman's
+/// FSM is still at `idle`.
+fn surfaces_emitting_call_with_phase_gate<'m>(
+    loaded_modules: &[&'m ConventionModule],
+    call: &Call,
+    bidder_seat: Seat,
+    dealer: Seat,
+    prior_prefix: &[WitnessCall],
+) -> Vec<&'m BidMeaning> {
+    // Compute per-module FSM phases after replaying prior_prefix.
+    let mut phases = initial_module_phases(loaded_modules);
+    let mut steps_log: Vec<CommittedStep> = Vec::new();
+    for entry in prior_prefix {
+        let actions = if matches!(entry.call, Call::Pass) {
+            vec![BidAction::Pass]
+        } else {
+            // Look up candidate surfaces for this historical call (loose
+            // match; used only as a hint for FSM advance). Prefer
+            // fit-setting surfaces to match BFS pick-logic.
+            let candidates = surfaces_emitting_call(loaded_modules, &entry.call, entry.seat, dealer);
+            if candidates.is_empty() {
+                Vec::new()
+            } else {
+                // Pick the most-specific fit-setting surface (matches BFS's
+                // `pick_replay_surface` policy).
+                let chosen = pick_replay_surface(&candidates);
+                normalize_intent(&chosen.source_intent)
+            }
+        };
+        let step = synth_committed_step(entry.seat, entry.call.clone(), actions);
+        phases = advance_all_module_phases(loaded_modules, &phases, &step, &steps_log);
+        steps_log.push(step);
+    }
+
+    let mut out = Vec::new();
+    for m in loaded_modules {
+        let Some(states) = m.states.as_ref() else {
+            continue;
+        };
+        let module_phase = phases
+            .get(&m.module_id)
+            .cloned()
+            .unwrap_or_else(|| m.local.initial.clone());
+        for se in states {
+            let Some(turn) = se.turn else {
+                continue;
+            };
+            if seat_for_turn(turn, dealer) != bidder_seat {
+                continue;
+            }
+            if !phase_ref_contains(&se.phase, &module_phase) {
                 continue;
             }
             for surface in &se.surfaces {
@@ -1104,6 +1767,31 @@ pub fn synthesize_no_interference_constraint(
 /// at any state entry whose turn resolves to `user_seat`. Fixtures often
 /// author multiple variants of the same meaning_id (different
 /// partnership reasons); we collect all of them for union-projection.
+/// Return the authored `kernel` NegotiationExpr for the state entry that
+/// hosts `witness.target_surface_id` at the user's turn, or `None` if the
+/// target state entry has no kernel gate. Used by `project_witness` to
+/// decide whether to run the replay guard.
+fn target_kernel_for_witness(
+    target_module: &ConventionModule,
+    witness: &Witness,
+) -> Option<NegotiationExpr> {
+    let states = target_module.states.as_ref()?;
+    for se in states {
+        let Some(turn) = se.turn else { continue };
+        if seat_for_turn(turn, witness.dealer) != witness.user_seat {
+            continue;
+        }
+        if se
+            .surfaces
+            .iter()
+            .any(|s| s.meaning_id == witness.target_surface_id)
+        {
+            return se.kernel.clone();
+        }
+    }
+    None
+}
+
 fn find_target_surfaces<'m>(
     module: &'m ConventionModule,
     target_surface_id: &str,
@@ -1157,6 +1845,18 @@ pub fn project_witness(
     let Some(target_module) = find_module(loaded_modules, &witness.target_module_id) else {
         return Vec::new();
     };
+
+    // Kernel-replay guard: when the target StateEntry authors a kernel gate,
+    // verify the witness prefix actually establishes that kernel by replaying
+    // its BidActions. This confines behavior change to kernel-gated states —
+    // stayman / jacoby / smolen / bergen targets have no kernel field and
+    // skip this branch entirely.
+    if let Some(kernel_req) = target_kernel_for_witness(target_module, witness) {
+        let state = replay_kernel_from_prefix(&witness.prefix, loaded_modules, witness.dealer);
+        if !match_kernel(&kernel_req, &state) {
+            return Vec::new();
+        }
+    }
 
     let mut per_seat: HashMap<Seat, Vec<InvertedConstraint>> = HashMap::new();
 
@@ -1224,8 +1924,13 @@ pub fn project_witness(
             continue;
         }
 
-        let matches =
-            surfaces_emitting_call(loaded_modules, &entry.call, entry.seat, witness.dealer);
+        let matches = surfaces_emitting_call_with_phase_gate(
+            loaded_modules,
+            &entry.call,
+            entry.seat,
+            witness.dealer,
+            &position,
+        );
         if matches.is_empty() {
             position.push(entry.clone());
             cursor = step_seat(entry.seat, 1);

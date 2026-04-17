@@ -110,6 +110,17 @@ fn derive_surface_groups(module: &ConventionModule) -> Vec<SurfaceGroup> {
         .collect()
 }
 
+/// Fit-establishing modules auto-bundled with Slam-category modules so the
+/// live spec has the tools to reach a trump fit before the slam tool fires.
+/// Without this pairing, e.g., blackwood-bundle would only load natural-bids
+/// + blackwood; natural-bids has no authored raise surfaces, so the bot
+/// cannot establish a fit, and witness selection's kernel-gated path would
+/// have no reachable fit-establishing prefix. Jacoby transfers + Stayman
+/// cover the 1NT-origin fit paths; their own attachment sequence gating
+/// (`1NT`) prevents spurious activation after non-1NT openings inside
+/// kernel-gated drills.
+const SLAM_FIT_DEPENDENCIES: &[&str] = &["jacoby-transfers", "stayman"];
+
 /// Synthesize a single-module bundle from a module.
 ///
 /// Fields derived from the module:
@@ -132,26 +143,66 @@ fn synthesize_single_module_bundle(module: &ConventionModule) -> ConventionBundl
             .or_else(|| Some(module.teaching.principle.to_string())),
         roles: bundle_teaching.and_then(|t| t.roles.clone()),
     });
+
+    // For Slam-category modules (blackwood today), pair with fit-establishing
+    // base modules so the live spec can reach an agreed trump fit before the
+    // slam tool fires.
+    let extra_dep_ids: Vec<String> = if matches!(module.category, ModuleCategory::Slam) {
+        SLAM_FIT_DEPENDENCIES
+            .iter()
+            .filter(|&&dep| dep != module.module_id)
+            .map(|s| s.to_string())
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    let mut member_ids = vec![module.module_id.clone()];
+    member_ids.extend(extra_dep_ids.iter().cloned());
+
+    let mut profile_modules = vec![ModuleEntry {
+        module_id: module.module_id.clone(),
+        kind: ModuleKind::AddOn,
+        attachments: if module.bundle_metadata.attachments.is_empty() {
+            module.attachments.clone()
+        } else {
+            module.bundle_metadata.attachments.clone()
+        },
+        options: None,
+    }];
+    for dep_id in &extra_dep_ids {
+        if let Some(dep_module) = get_module(dep_id, BaseSystemId::Sayc) {
+            profile_modules.push(ModuleEntry {
+                module_id: dep_id.clone(),
+                kind: ModuleKind::BaseSystem,
+                attachments: if dep_module.bundle_metadata.attachments.is_empty() {
+                    dep_module.attachments.clone()
+                } else {
+                    dep_module.bundle_metadata.attachments.clone()
+                },
+                options: None,
+            });
+        }
+    }
+
     let system_profile = Some(SystemProfile {
         profile_id: format!("{}-synth", module.module_id),
         base_system: BaseSystemId::Sayc,
         system_config: Some(sayc_system_config()),
-        modules: vec![ModuleEntry {
-            module_id: module.module_id.clone(),
-            kind: ModuleKind::AddOn,
-            attachments: if module.bundle_metadata.attachments.is_empty() {
-                module.attachments.clone()
-            } else {
-                module.bundle_metadata.attachments.clone()
-            },
-            options: None,
-        }],
+        modules: profile_modules,
     });
+
+    let mut bundle_modules = vec![module.clone()];
+    for dep_id in &extra_dep_ids {
+        if let Some(dep_module) = get_module(dep_id, BaseSystemId::Sayc) {
+            bundle_modules.push(dep_module.clone());
+        }
+    }
 
     ConventionBundle {
         id: bundle_id,
         name: module.display_name.clone(),
-        member_ids: vec![module.module_id.clone()],
+        member_ids,
         internal: None,
         system_profile,
         declared_capabilities: if module.bundle_metadata.declared_capabilities.is_empty() {
@@ -162,7 +213,7 @@ fn synthesize_single_module_bundle(module: &ConventionModule) -> ConventionBundl
         category: map_category(module.category),
         description: module.description.to_string(),
         teaching,
-        modules: vec![module.clone()],
+        modules: bundle_modules,
         derived_teaching: DerivedTeachingContent {
             surface_groups: derive_surface_groups(module),
         },
@@ -403,8 +454,11 @@ mod tests {
         let bundle = resolve_bundle("blackwood-bundle", BaseSystemId::Sayc);
         assert!(bundle.is_some(), "blackwood-bundle should auto-synthesize");
         let b = bundle.unwrap();
-        assert_eq!(b.member_ids, vec!["blackwood"]);
-        assert_eq!(b.modules.len(), 1);
+        // Slam-category modules are auto-paired with fit-establishing
+        // base modules so the live spec can reach an agreed trump fit
+        // before the slam tool fires. See SLAM_FIT_DEPENDENCIES.
+        assert_eq!(b.member_ids, vec!["blackwood", "jacoby-transfers", "stayman"]);
+        assert_eq!(b.modules.len(), 3);
         assert_eq!(b.modules[0].module_id, "blackwood");
         assert_eq!(b.category, ConventionCategory::Asking);
     }

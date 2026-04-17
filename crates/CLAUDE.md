@@ -100,6 +100,19 @@ crates/
                        caps from loaded `turn=opponent` surfaces, falling back to `max_hcp=10`.
                        The v1 loose-union `derive_deal_constraints` was removed in phase 2;
                        `invert_composition` primitives remain and are reused by witness projection.
+                       Witnesses for kernel-gated target surfaces (e.g., blackwood's
+                       `kernel: { kind: "fit" }`) get a fit-establishing prefix spliced in via
+                       `find_kernel_establishing_prefix`, which BFS-walks loaded modules for
+                       surfaces whose `sourceIntent` normalizes to fit-setting `BidAction`s
+                       (Raise/Agree/Accept/Transfer), gated by per-module FSM-phase tracking and
+                       `bundle_metadata.attachments` so e.g. Jacoby transfers only fire after 1NT.
+                       When a kernel prefix is present, the base-system responder-context fold
+                       is suppressed — the kernel prefix already contains an opening call, and
+                       compounding it with a context fold would produce a double-open auction.
+                       Slam-category modules auto-pair with `jacoby-transfers` + `stayman` in
+                       `synthesize_single_module_bundle` (see `SLAM_FIT_DEPENDENCIES` in
+                       `registry/bundle_registry.rs`) so the live spec has the modules needed
+                       to reach the required fit.
   bridge-session/      Rust session logic: inference, heuristics, controllers, viewports.
                        Phase 4 of the migration. Depends on bridge-engine + bridge-conventions.
                        Inference: natural inference + Monte Carlo posterior (rejection sampling)

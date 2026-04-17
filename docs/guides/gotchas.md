@@ -47,8 +47,14 @@ Either the user's target module has no surface matching the generated deal (reje
 ### Extension modules use base-module surface IDs
 Modules like `stayman-garbage` author their surfaces with `moduleId: "stayman"` (the base module's ID), not the containing module's ID. The deal-acceptance predicate in `deal_gating.rs` checks both `target_module_id` (from the bundle member) and `target_surface_module_id` (from the surface's authored `moduleId`) to handle this.
 
-### Kernel-gated state entries are unreachable by witnesses
-Modules whose target `StateEntry` requires a kernel state (e.g., blackwood's `kernel: { kind: "fit" }` requiring a trump fit) cannot have deals generated via the witness system. The witness prefix is a linear auction path that doesn't manipulate kernel state. This causes `blackwood-bundle` to exhaust deal generation. Fixing requires witness paths that establish kernel context through bidding sequences that agree a fit.
+### Kernel-gated state entries get a fit-establishing prefix spliced in
+Modules whose target `StateEntry` authors a `kernel` `NegotiationExpr` (today: blackwood's `kernel: { kind: "fit" }`) are handled by `find_kernel_establishing_prefix` in `fact_dsl/witness.rs`. The chainer scans `sourceIntent` on every loaded-partnership surface (via `normalize_intent`), BFS-walks partnership bids + opponent passes until `match_kernel(kernel_expr, state) == true` AND `next_seat(last) == seat_for_turn(target_turn, dealer)`, and splices the resulting prefix into the witness. The BFS is gated by per-module FSM-phase tracking plus `bundle_metadata.attachments` (`whenAuction: sequence [1NT]` etc.) so e.g. Jacoby transfers don't fire as a response to 1C. The `project_witness` entry point guards with `replay_kernel_from_prefix` + `match_kernel` so kernel-gated projections only fire when the prefix genuinely establishes the kernel.
+
+**Context-fold suppression invariant.** When a kernel prefix is spliced in, the `base_module_responder_context_path` fold at `enumerate_witnesses` is SKIPPED for that witness. The kernel prefix already contains an opening call (e.g., 1NT from natural-bids); folding the base-module 1NT-responder context on top would produce an illegal double-open auction.
+
+**Slam-category modules auto-pair with fit-establishing modules.** `synthesize_single_module_bundle` adds `jacoby-transfers` and `stayman` to the member_ids of any Slam-category module's synthesized bundle, so the live spec has the tools to reach the required fit. See `SLAM_FIT_DEPENDENCIES` in `registry/bundle_registry.rs`.
+
+`Forcing / Captain / Competition` kernel gates are not exercised by any current fixture but would work via the same chainer — `find_kernel_establishing_prefix` reuses `match_kernel` for termination so no redesign is needed when new gate types are authored.
 
 ### Convention-Specific Details
 - Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)

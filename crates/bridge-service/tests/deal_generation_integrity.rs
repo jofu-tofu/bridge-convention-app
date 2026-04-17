@@ -26,13 +26,7 @@ const SEED_RANGE: std::ops::RangeInclusive<u64> = 1..=10;
 /// `(bundle_id, blocker_description)`. The canary test asserts these
 /// still fail — if one starts passing, the canary fires and the bundle
 /// must be removed from this list so the main integrity test covers it.
-const KNOWN_BROKEN: &[(&str, &str)] = &[(
-    "blackwood-bundle",
-    "witness enumerator cannot synthesize trump-fit prefix; \
-     ask-aces state is phase=idle (= initial), so FSM BFS returns empty \
-     path and only base-system 1NT opener context is folded in. \
-     Pipeline correctly rejects Blackwood over a bare 1NT.",
-)];
+const KNOWN_BROKEN: &[(&str, &str)] = &[];
 
 fn make_config(bundle_id: &str, seed: u64) -> SessionConfig {
     SessionConfig {
@@ -132,4 +126,24 @@ fn known_broken_bundles_canary() {
             now_passing
         );
     }
+}
+
+/// Strict seed-sweep for the kernel-gated blackwood-bundle: every seed in
+/// 0..32 must produce a drill-able deal. This is stricter than the
+/// main integrity loop (which uses 1..=10) — it guards the
+/// fit-establishing prefix synthesis against sampling flakiness.
+#[test]
+fn blackwood_bundle_drills_successfully() {
+    let mut failures: Vec<(u64, String)> = Vec::new();
+    for seed in 0..32u64 {
+        if let Err(e) = try_create("blackwood-bundle", seed) {
+            failures.push((seed, format!("{e:?}")));
+        }
+    }
+    assert!(
+        failures.is_empty(),
+        "blackwood-bundle failed for {} seeds: {:?}",
+        failures.len(),
+        failures
+    );
 }
