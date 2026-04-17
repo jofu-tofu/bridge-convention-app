@@ -5,8 +5,7 @@ test.describe("responsive layout", () => {
   test("home screen stays visible without horizontal overflow", async ({ page }) => {
     await page.goto("/practice");
 
-    const main = page.locator("main");
-    await expect(main).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Practice" })).toBeVisible();
     await expect(page.getByTestId("practice-nt-bundle")).toBeVisible();
 
     const hasHorizontalScroll = await page.evaluate(() => (

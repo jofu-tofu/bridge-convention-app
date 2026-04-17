@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { waitForPhase } from "./helpers";
+import { startPracticeFromHome, waitForPhase } from "./helpers";
 
 const DECISION_CONTEXT = "Partner opened 1NT. RHO passed. Your turn to respond.";
 
@@ -12,11 +12,8 @@ test.describe("session modes", () => {
     await expect(page.getByText(DECISION_CONTEXT)).toBeVisible();
   });
 
-  test("practice picker can start full auction mode", async ({ page }) => {
-    await page.goto("/practice");
-    await page.getByTestId("practice-jacoby-transfers-bundle").click();
-    await page.getByTestId("mode-full-auction").click({ timeout: 5_000 });
-
+  test("practice starts in full auction mode when requested from the URL", async ({ page }) => {
+    await startPracticeFromHome(page, "jacoby-transfers-bundle", "full-auction");
     await waitForPhase(page, "Bidding");
     await expect(page.getByTestId("practice-mode-label")).toHaveText("Full Auction");
     await expect(page.getByText(DECISION_CONTEXT)).toHaveCount(0);

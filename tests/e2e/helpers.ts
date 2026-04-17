@@ -134,8 +134,12 @@ export async function startPracticeFromHome(
   conventionId: string,
   mode: "decision-drill" | "full-auction" = "decision-drill",
 ): Promise<void> {
-  await page.goto("/practice");
+  const params = new URLSearchParams();
+  if (mode !== "decision-drill") {
+    params.set("practiceMode", mode);
+  }
+  const href = params.size > 0 ? `/practice?${params.toString()}` : "/practice";
+  await page.goto(href);
   await page.getByTestId(`practice-${conventionId}`).click();
-  await page.getByTestId(`mode-${mode}`).click({ timeout: 5_000 });
   await waitForPhase(page, "Bidding");
 }

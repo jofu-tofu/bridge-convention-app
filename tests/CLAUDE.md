@@ -16,7 +16,7 @@ Playwright end-to-end smoke tests for user-facing behavior.
 - Dev server auto-starts on port 1420 if not running
 - Base URL: `http://localhost:1420`
 - Test structural concerns (elements render, navigation works), not specific copy
-- Bid buttons have `data-testid="bid-{callKey}"` selectors (e.g., `bid-1C`, `bid-pass`) — use these instead of unicode suit symbols
+- Bid buttons have `data-testid="bid-{callKey}"` selectors (e.g., `bid-1C`, `bid-P`) — use these instead of unicode suit symbols
 - Dev URL params available: `?convention=nt-bundle&seed=42` for deterministic scenarios, `?phase=review` for instant skip-to-phase, `?dev=debug,expanded,autoDismiss` for friction-free debug probing, `?screen=settings|coverage|workshop` for direct screen nav
 
 ## Architecture

@@ -24,7 +24,7 @@ test.describe("app smoke", () => {
     await waitForPhase(page, "Bidding");
     await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
 
-    await page.goto("/learn/stayman-bundle");
+    await page.goto("/learn/stayman/");
     await expect(page.getByRole("heading", { level: 1, name: /Stayman/ })).toBeVisible();
   });
 
