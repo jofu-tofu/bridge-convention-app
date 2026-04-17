@@ -317,7 +317,7 @@
       "explanationId": "michaels.r1.unusual2nt1c",
       "meaningId": "michaels:unusual-2nt-1c",
       "templateKey": "michaels.r1.unusual2nt1c.semantic",
-      "displayText": "2NT: Both minors over 1C opening",
+      "displayText": "2NT: Diamonds + hearts over 1C opening",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -327,7 +327,7 @@
       "explanationId": "michaels.r1.unusual2nt1d",
       "meaningId": "michaels:unusual-2nt-1d",
       "templateKey": "michaels.r1.unusual2nt1d.semantic",
-      "displayText": "2NT: Both minors over 1D opening",
+      "displayText": "2NT: Clubs + hearts over 1D opening",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -397,7 +397,7 @@
       "explanationId": "michaels.adv.preferHearts2h",
       "meaningId": "michaels:adv-prefer-hearts-2h",
       "templateKey": "michaels.adv.preferHearts2h.semantic",
-      "displayText": "2H: Prefer hearts (weak hand)",
+      "displayText": "2H: Prefer hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -407,7 +407,7 @@
       "explanationId": "michaels.adv.preferSpades2s",
       "meaningId": "michaels:adv-prefer-spades-2s",
       "templateKey": "michaels.adv.preferSpades2s.semantic",
-      "displayText": "2S: Prefer spades (weak hand)",
+      "displayText": "2S: Prefer spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -417,7 +417,7 @@
       "explanationId": "michaels.adv.preemptHearts3h",
       "meaningId": "michaels:adv-preempt-hearts-3h",
       "templateKey": "michaels.adv.preemptHearts3h.semantic",
-      "displayText": "3H: Preemptive raise in hearts",
+      "displayText": "3H: Invitational raise in hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -427,7 +427,7 @@
       "explanationId": "michaels.adv.preemptSpades3s",
       "meaningId": "michaels:adv-preempt-spades-3s",
       "templateKey": "michaels.adv.preemptSpades3s.semantic",
-      "displayText": "3S: Preemptive raise in spades",
+      "displayText": "3S: Invitational raise in spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -454,20 +454,10 @@
       ]
     },
     {
-      "explanationId": "michaels.adv.passMinor",
-      "meaningId": "michaels:adv-pass-minor",
-      "templateKey": "michaels.adv.passMinor.semantic",
-      "displayText": "Pass: No preference for either major",
-      "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
-    },
-    {
       "explanationId": "michaels.adv.acceptSpades2s",
       "meaningId": "michaels:adv-accept-spades-2s",
       "templateKey": "michaels.adv.acceptSpades2s.semantic",
-      "displayText": "2S: Accept spades (weak hand)",
+      "displayText": "2S: Accept spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -514,20 +504,10 @@
       ]
     },
     {
-      "explanationId": "michaels.adv.pass1h",
-      "meaningId": "michaels:adv-pass-1h",
-      "templateKey": "michaels.adv.pass1h.semantic",
-      "displayText": "Pass: Decline Michaels (over 1H)",
-      "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
-    },
-    {
       "explanationId": "michaels.adv.acceptHearts3h",
       "meaningId": "michaels:adv-accept-hearts-3h",
       "templateKey": "michaels.adv.acceptHearts3h.semantic",
-      "displayText": "3H: Accept hearts (weak hand, over 1S Michaels)",
+      "displayText": "3H: Accept hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -558,16 +538,6 @@
       "meaningId": "michaels:adv-pass-or-correct-3c-1s",
       "templateKey": "michaels.adv.passOrCorrect3c1s.semantic",
       "displayText": "3C: Pass-or-correct — escape to partner's minor (over 1S Michaels)",
-      "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
-    },
-    {
-      "explanationId": "michaels.adv.pass1s",
-      "meaningId": "michaels:adv-pass-1s",
-      "templateKey": "michaels.adv.pass1s.semantic",
-      "displayText": "Pass: Decline Michaels (over 1S)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -617,7 +587,7 @@
       "explanationId": "michaels.adv.passUnusual",
       "meaningId": "michaels:adv-pass-unusual",
       "templateKey": "michaels.adv.passUnusual.semantic",
-      "displayText": "Pass: Decline Unusual 2NT",
+      "displayText": "Pass: Take partner's revealed minor",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -638,6 +608,56 @@
       "meaningId": "michaels:reveal-diamonds-3d",
       "templateKey": "michaels.reveal.diamonds.semantic",
       "displayText": "3D: The minor is diamonds",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.inviteHearts3h1s",
+      "meaningId": "michaels:adv-invite-hearts-3h-1s",
+      "templateKey": "michaels.adv.inviteHearts3h1s.semantic",
+      "displayText": "3H: Invitational raise in hearts (over 1S Michaels)",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.raiseClubs4c",
+      "meaningId": "michaels:adv-raise-clubs-4c",
+      "templateKey": "michaels.adv.raiseClubs4c.semantic",
+      "displayText": "4C: Raise clubs after the relay reveal",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.raiseDiamonds4d",
+      "meaningId": "michaels:adv-raise-diamonds-4d",
+      "templateKey": "michaels.adv.raiseDiamonds4d.semantic",
+      "displayText": "4D: Raise diamonds after the relay reveal",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.sacrificeClubs5c",
+      "meaningId": "michaels:adv-sacrifice-clubs-5c",
+      "templateKey": "michaels.adv.sacrificeClubs5c.semantic",
+      "displayText": "5C: Sacrifice in clubs after the relay reveal",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "michaels.adv.sacrificeDiamonds5d",
+      "meaningId": "michaels:adv-sacrifice-diamonds-5d",
+      "templateKey": "michaels.adv.sacrificeDiamonds5d.semantic",
+      "displayText": "5D: Sacrifice in diamonds after the relay reveal",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -689,7 +709,7 @@
       },
       {
         "from": "r1-after-1c",
-        "to": "after-unusual-2nt",
+        "to": "after-unusual-2nt-over-1c",
         "on": {
           "act": "show",
           "feature": "twoSuited"
@@ -712,7 +732,7 @@
       },
       {
         "from": "r1-after-1d",
-        "to": "after-unusual-2nt",
+        "to": "after-unusual-2nt-over-1d",
         "on": {
           "act": "show",
           "feature": "twoSuited"
@@ -735,7 +755,7 @@
       },
       {
         "from": "r1-after-1h",
-        "to": "after-unusual-2nt",
+        "to": "after-unusual-2nt-over-major",
         "on": {
           "act": "show",
           "feature": "twoSuited"
@@ -758,7 +778,7 @@
       },
       {
         "from": "r1-after-1s",
-        "to": "after-unusual-2nt",
+        "to": "after-unusual-2nt-over-major",
         "on": {
           "act": "show",
           "feature": "twoSuited"
@@ -786,13 +806,6 @@
         }
       },
       {
-        "from": "after-michaels-minor",
-        "to": "done",
-        "on": {
-          "act": "pass"
-        }
-      },
-      {
         "from": "after-michaels-1h",
         "to": "done",
         "on": {
@@ -812,13 +825,6 @@
         "on": {
           "act": "inquire",
           "feature": "heldSuit"
-        }
-      },
-      {
-        "from": "after-michaels-1h",
-        "to": "done",
-        "on": {
-          "act": "pass"
         }
       },
       {
@@ -844,38 +850,95 @@
         }
       },
       {
-        "from": "after-michaels-1s",
-        "to": "done",
-        "on": {
-          "act": "pass"
-        }
-      },
-      {
-        "from": "after-unusual-2nt",
+        "from": "after-unusual-2nt-over-1c",
         "to": "done",
         "on": {
           "act": "accept"
         }
       },
       {
-        "from": "after-unusual-2nt",
+        "from": "after-unusual-2nt-over-1c",
         "to": "done",
         "on": {
           "act": "raise"
         }
       },
       {
-        "from": "after-unusual-2nt",
+        "from": "after-unusual-2nt-over-1d",
         "to": "done",
         "on": {
-          "act": "pass"
+          "act": "accept"
+        }
+      },
+      {
+        "from": "after-unusual-2nt-over-1d",
+        "to": "done",
+        "on": {
+          "act": "raise"
+        }
+      },
+      {
+        "from": "after-unusual-2nt-over-major",
+        "to": "done",
+        "on": {
+          "act": "accept"
+        }
+      },
+      {
+        "from": "after-unusual-2nt-over-major",
+        "to": "done",
+        "on": {
+          "act": "raise"
         }
       },
       {
         "from": "ask-minor",
+        "to": "after-reveal-clubs",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "clubs",
+          "level": 3
+        }
+      },
+      {
+        "from": "ask-minor",
+        "to": "after-reveal-diamonds",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "diamonds",
+          "level": 3
+        }
+      },
+      {
+        "from": "after-reveal-clubs",
         "to": "done",
         "on": {
-          "act": "show"
+          "act": "pass"
+        }
+      },
+      {
+        "from": "after-reveal-clubs",
+        "to": "done",
+        "on": {
+          "act": "accept",
+          "suit": "clubs"
+        }
+      },
+      {
+        "from": "after-reveal-diamonds",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "after-reveal-diamonds",
+        "to": "done",
+        "on": {
+          "act": "accept",
+          "suit": "diamonds"
         }
       }
     ]
@@ -1073,11 +1136,19 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.bothMinorsFiveFive",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.bothMinorsFiveFive:boolean:true",
-              "description": "5+ cards in both minors",
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.diamonds:gte:5",
+              "description": "5+ diamonds",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts",
               "isPublic": true
             }
           ],
@@ -1092,8 +1163,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT — both minors over 1C",
-            "summary": "Unusual 2NT to show 5-5 or better in both minors"
+            "name": "2NT — diamonds + hearts over 1C",
+            "summary": "Unusual 2NT to show 5-5 or better in diamonds and hearts"
           }
         },
         {
@@ -1194,11 +1265,19 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.bothMinorsFiveFive",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.bothMinorsFiveFive:boolean:true",
-              "description": "5+ cards in both minors",
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.clubs:gte:5",
+              "description": "5+ clubs",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts",
               "isPublic": true
             }
           ],
@@ -1213,8 +1292,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT — both minors over 1D",
-            "summary": "Unusual 2NT to show 5-5 or better in both minors"
+            "name": "2NT — clubs + hearts over 1D",
+            "summary": "Unusual 2NT to show 5-5 or better in clubs and hearts"
           }
         },
         {
@@ -1513,11 +1592,11 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.advancerWeak",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
               "isPublic": true
             }
           ],
@@ -1532,8 +1611,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H — prefer hearts (weak)",
-            "summary": "Choose hearts as trump with a weak hand and 3+ heart support"
+            "name": "2H — prefer hearts",
+            "summary": "Choose hearts at the lowest available level and 3+ heart support"
           }
         },
         {
@@ -1544,6 +1623,110 @@
             "defaultCall": {
               "type": "bid",
               "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasSpadeSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
+              "description": "3+ spades to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerPreferSpades",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "2S — prefer spades",
+            "summary": "Choose spades at the lowest available level and 3+ spade support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-preempt-hearts-3h",
+          "semanticClassId": "michaels:adv-invite-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "At least 8 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
+              "description": "3+ hearts to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerInviteValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerInviteValues:boolean:true",
+              "description": "8-9 HCP (invitational values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerInviteHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H — invitational hearts",
+            "summary": "Invite game in hearts and 3+ heart support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-preempt-spades-3s",
+          "semanticClassId": "michaels:adv-invite-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
               "strain": "S"
             }
           },
@@ -1573,133 +1756,11 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.advancerWeak",
+              "factId": "module.michaels.advancerInviteValues",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 1
-          },
-          "sourceIntent": {
-            "type": "MichaelsAdvancerPreferSpades",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "2S — prefer spades (weak)",
-            "summary": "Choose spades as trump with a weak hand and 3+ spade support"
-          }
-        },
-        {
-          "meaningId": "michaels:adv-preempt-hearts-3h",
-          "semanticClassId": "michaels:adv-preempt-major",
-          "moduleId": "michaels-unusual",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "H"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 0,
-              "clauseId": "hand.hcp:gte:0",
-              "description": "At least 0 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 7,
-              "clauseId": "hand.hcp:lte:7",
-              "description": "At most 7 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.hearts:gte:4",
-              "description": "4+ hearts for the weak jump raise",
-              "rationale": "preemptive raises need extra trump length",
-              "isPublic": true
-            },
-            {
-              "factId": "module.michaels.advancerWeak",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 2
-          },
-          "sourceIntent": {
-            "type": "MichaelsAdvancerPreemptHearts",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "3H — preemptive hearts",
-            "summary": "Make a weak jump raise in hearts with 4+ support and 0-7 HCP"
-          }
-        },
-        {
-          "meaningId": "michaels:adv-preempt-spades-3s",
-          "semanticClassId": "michaels:adv-preempt-major",
-          "moduleId": "michaels-unusual",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "S"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 0,
-              "clauseId": "hand.hcp:gte:0",
-              "description": "At least 0 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 7,
-              "clauseId": "hand.hcp:lte:7",
-              "description": "At most 7 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.spades",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.spades:gte:4",
-              "description": "4+ spades for the weak jump raise",
-              "rationale": "preemptive raises need extra trump length",
-              "isPublic": true
-            },
-            {
-              "factId": "module.michaels.advancerWeak",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
+              "clauseId": "module.michaels.advancerInviteValues:boolean:true",
+              "description": "8-9 HCP (invitational values)",
               "isPublic": true
             }
           ],
@@ -1709,13 +1770,13 @@
             "declarationOrder": 3
           },
           "sourceIntent": {
-            "type": "MichaelsAdvancerPreemptSpades",
+            "type": "MichaelsAdvancerInviteSpades",
             "params": {}
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S — preemptive spades",
-            "summary": "Make a weak jump raise in spades with 4+ support and 0-7 HCP"
+            "name": "3S — invitational spades",
+            "summary": "Invite game in spades and 3+ spade support"
           }
         },
         {
@@ -1741,10 +1802,17 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP to commit directly to game",
-              "rationale": "with enough strength to bid game immediately",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
               "isPublic": true
             }
           ],
@@ -1760,7 +1828,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "4H — game in hearts",
-            "summary": "Bid game in hearts directly with 12+ HCP and 3+ heart support"
+            "summary": "Bid game in hearts and 3+ heart support"
           }
         },
         {
@@ -1776,22 +1844,6 @@
           },
           "clauses": [
             {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "At least 8 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 9,
-              "clauseId": "hand.hcp:lte:9",
-              "description": "At most 9 HCP",
-              "isPublic": true
-            },
-            {
               "factId": "module.michaels.hasSpadeSupport",
               "operator": "boolean",
               "value": true,
@@ -1802,10 +1854,17 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 12,
-              "clauseId": "hand.hcp:gte:12",
-              "description": "12+ HCP to commit directly to game",
-              "rationale": "with enough strength to bid game immediately",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
               "isPublic": true
             }
           ],
@@ -1821,41 +1880,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "4S — game in spades",
-            "summary": "Bid game in spades directly with 12+ HCP and 3+ spade support"
-          }
-        },
-        {
-          "meaningId": "michaels:adv-pass-minor",
-          "semanticClassId": "michaels:adv-pass",
-          "moduleId": "michaels-unusual",
-          "encoding": {
-            "defaultCall": {
-              "type": "pass"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "module.michaels.advancerWeak",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "may",
-            "modulePrecedence": 0,
-            "declarationOrder": 6
-          },
-          "sourceIntent": {
-            "type": "MichaelsAdvancerPass",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Pass (no major preference)",
-            "summary": "Pass with a weak hand and no clear preference between the majors"
+            "summary": "Bid game in spades and 3+ spade support"
           }
         }
       ],
@@ -1879,22 +1904,6 @@
           },
           "clauses": [
             {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "At least 8 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 9,
-              "clauseId": "hand.hcp:lte:9",
-              "description": "At most 9 HCP",
-              "isPublic": true
-            },
-            {
               "factId": "module.michaels.hasSpadeSupport",
               "operator": "boolean",
               "value": true,
@@ -1903,11 +1912,11 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.advancerWeak",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
               "isPublic": true
             }
           ],
@@ -1922,8 +1931,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S — accept spades (weak)",
-            "summary": "Accept the known spade suit with a weak hand"
+            "name": "2S — accept spades",
+            "summary": "Accept the known spade suit at the lowest available level and 3+ spade support"
           }
         },
         {
@@ -2010,7 +2019,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3S — invitational spades",
-            "summary": "Invite game in spades with 8-9 HCP and 3+ spade support"
+            "summary": "Invite game in spades and 3+ spade support"
           }
         },
         {
@@ -2062,7 +2071,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "4S — game in spades",
-            "summary": "Bid game in spades with 10+ HCP and 3+ spade support"
+            "summary": "Bid game in spades and 3+ spade support"
           }
         },
         {
@@ -2108,40 +2117,6 @@
             "name": "3C — pass-or-correct",
             "summary": "Bid 3C asking partner to pass with clubs or correct to 3D with diamonds — escape to the minor with no spade fit"
           }
-        },
-        {
-          "meaningId": "michaels:adv-pass-1h",
-          "semanticClassId": "michaels:adv-pass",
-          "moduleId": "michaels-unusual",
-          "encoding": {
-            "defaultCall": {
-              "type": "pass"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "module.michaels.advancerWeak",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "may",
-            "modulePrecedence": 0,
-            "declarationOrder": 5
-          },
-          "sourceIntent": {
-            "type": "MichaelsAdvancerPass",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Pass (decline Michaels over 1H)",
-            "summary": "Pass with a weak hand — no fit for spades and no interest in the minor"
-          }
         }
       ],
       "scope": {
@@ -2164,22 +2139,6 @@
           },
           "clauses": [
             {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "At least 8 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 9,
-              "clauseId": "hand.hcp:lte:9",
-              "description": "At most 9 HCP",
-              "isPublic": true
-            },
-            {
               "factId": "module.michaels.hasHeartSupport",
               "operator": "boolean",
               "value": true,
@@ -2188,11 +2147,11 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.advancerWeak",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
               "isPublic": true
             }
           ],
@@ -2207,8 +2166,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H — accept hearts (weak)",
-            "summary": "Accept the known heart suit with a weak hand (3H needed since 2S was the cue bid)"
+            "name": "3H — accept hearts",
+            "summary": "Accept the known heart suit at the lowest available level and 3+ heart support"
           }
         },
         {
@@ -2295,7 +2254,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3H — invitational hearts",
-            "summary": "Invite game in hearts with 8-9 HCP and 3+ heart support"
+            "summary": "Invite game in hearts and 3+ heart support"
           }
         },
         {
@@ -2347,7 +2306,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "4H — game in hearts",
-            "summary": "Bid game in hearts with 10+ HCP and 3+ heart support"
+            "summary": "Bid game in hearts and 3+ heart support"
           }
         },
         {
@@ -2393,40 +2352,6 @@
             "name": "3C — pass-or-correct",
             "summary": "Bid 3C asking partner to pass with clubs or correct to 3D with diamonds — escape to the minor with no heart fit"
           }
-        },
-        {
-          "meaningId": "michaels:adv-pass-1s",
-          "semanticClassId": "michaels:adv-pass",
-          "moduleId": "michaels-unusual",
-          "encoding": {
-            "defaultCall": {
-              "type": "pass"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "module.michaels.advancerWeak",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "may",
-            "modulePrecedence": 0,
-            "declarationOrder": 5
-          },
-          "sourceIntent": {
-            "type": "MichaelsAdvancerPass",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Pass (decline Michaels over 1S)",
-            "summary": "Pass with a weak hand — no fit for hearts and no interest in the minor"
-          }
         }
       ],
       "scope": {
@@ -2434,52 +2359,8 @@
       }
     },
     {
-      "phase": "after-unusual-2nt",
+      "phase": "after-unusual-2nt-over-1c",
       "surfaces": [
-        {
-          "meaningId": "michaels:adv-prefer-clubs-3c",
-          "semanticClassId": "michaels:adv-prefer-minor",
-          "moduleId": "michaels-unusual",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "C"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 10,
-              "clauseId": "hand.hcp:gte:10",
-              "description": "At least 10 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "module.michaels.hasClubSupport",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.hasClubSupport:boolean:true",
-              "description": "3+ clubs to support partner",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 0
-          },
-          "sourceIntent": {
-            "type": "UnusualAdvancerPreferClubs",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "3C — prefer clubs",
-            "summary": "Choose clubs as trump after partner's Unusual 2NT"
-          }
-        },
         {
           "meaningId": "michaels:adv-prefer-diamonds-3d",
           "semanticClassId": "michaels:adv-prefer-minor",
@@ -2493,19 +2374,19 @@
           },
           "clauses": [
             {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 10,
-              "clauseId": "hand.hcp:gte:10",
-              "description": "At least 10 HCP",
-              "isPublic": true
-            },
-            {
               "factId": "module.michaels.hasDiamondSupport",
               "operator": "boolean",
               "value": true,
               "clauseId": "module.michaels.hasDiamondSupport:boolean:true",
               "description": "3+ diamonds to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
               "isPublic": true
             }
           ],
@@ -2521,35 +2402,79 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3D — prefer diamonds",
-            "summary": "Choose diamonds as trump after partner's Unusual 2NT"
+            "summary": "Choose diamonds at the lowest available level and 3+ diamond support"
           }
         },
         {
-          "meaningId": "michaels:adv-game-5c",
-          "semanticClassId": "michaels:adv-game-minor",
+          "meaningId": "michaels:adv-accept-hearts-3h",
+          "semanticClassId": "michaels:adv-accept-known",
           "moduleId": "michaels-unusual",
           "encoding": {
             "defaultCall": {
               "type": "bid",
-              "level": 5,
-              "strain": "C"
+              "level": 3,
+              "strain": "H"
             }
           },
           "clauses": [
+            {
+              "factId": "module.michaels.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
+              "description": "3+ hearts to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerAcceptHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H — choose hearts",
+            "summary": "Choose hearts at the lowest available level and 3+ heart support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-game-hearts-4h",
+          "semanticClassId": "michaels:adv-game-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
+              "description": "3+ hearts to support partner",
+              "isPublic": true
+            },
             {
               "factId": "hand.hcp",
               "operator": "gte",
               "value": 10,
               "clauseId": "hand.hcp:gte:10",
               "description": "At least 10 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "module.michaels.hasClubSupport",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.hasClubSupport:boolean:true",
-              "description": "3+ clubs to support partner",
               "isPublic": true
             },
             {
@@ -2564,16 +2489,16 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 2
+            "declarationOrder": 4
           },
           "sourceIntent": {
-            "type": "UnusualAdvancerGameClubs",
+            "type": "MichaelsAdvancerGameHearts",
             "params": {}
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "5C — game in clubs",
-            "summary": "Bid game in clubs with 10+ HCP and 3+ club support"
+            "name": "4H — game in hearts",
+            "summary": "Bid game in hearts and 3+ heart support"
           }
         },
         {
@@ -2625,41 +2550,407 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "5D — game in diamonds",
-            "summary": "Bid game in diamonds with 10+ HCP and 3+ diamond support"
+            "summary": "Bid game in diamonds and 3+ diamond support"
           }
-        },
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-unusual-2nt-over-1d",
+      "surfaces": [
         {
-          "meaningId": "michaels:adv-pass-unusual",
-          "semanticClassId": "michaels:adv-pass",
+          "meaningId": "michaels:adv-prefer-clubs-3c",
+          "semanticClassId": "michaels:adv-prefer-minor",
           "moduleId": "michaels-unusual",
           "encoding": {
             "defaultCall": {
-              "type": "pass"
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
             }
           },
           "clauses": [
             {
-              "factId": "module.michaels.advancerWeak",
+              "factId": "module.michaels.hasClubSupport",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
+              "clauseId": "module.michaels.hasClubSupport:boolean:true",
+              "description": "3+ clubs to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
               "isPublic": true
             }
           ],
           "ranking": {
-            "recommendationBand": "may",
+            "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 4
+            "declarationOrder": 0
           },
           "sourceIntent": {
-            "type": "UnusualAdvancerPass",
+            "type": "UnusualAdvancerPreferClubs",
             "params": {}
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass (decline Unusual 2NT)",
-            "summary": "Pass with a weak hand and no clear minor preference"
+            "name": "3C — prefer clubs",
+            "summary": "Choose clubs at the lowest available level and 3+ club support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-accept-hearts-3h",
+          "semanticClassId": "michaels:adv-accept-known",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
+              "description": "3+ hearts to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerAcceptHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H — choose hearts",
+            "summary": "Choose hearts at the lowest available level and 3+ heart support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-game-hearts-4h",
+          "semanticClassId": "michaels:adv-game-major",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
+              "description": "3+ hearts to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "MichaelsAdvancerGameHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4H — game in hearts",
+            "summary": "Bid game in hearts and 3+ heart support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-game-5c",
+          "semanticClassId": "michaels:adv-game-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.hasClubSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasClubSupport:boolean:true",
+              "description": "3+ clubs to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerGameClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "5C — game in clubs",
+            "summary": "Bid game in clubs and 3+ club support"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-unusual-2nt-over-major",
+      "surfaces": [
+        {
+          "meaningId": "michaels:adv-prefer-clubs-3c",
+          "semanticClassId": "michaels:adv-prefer-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasClubSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasClubSupport:boolean:true",
+              "description": "3+ clubs to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerPreferClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3C — prefer clubs",
+            "summary": "Choose clubs at the lowest available level and 3+ club support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-prefer-diamonds-3d",
+          "semanticClassId": "michaels:adv-prefer-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasDiamondSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasDiamondSupport:boolean:true",
+              "description": "3+ diamonds to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerPreferDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3D — prefer diamonds",
+            "summary": "Choose diamonds at the lowest available level and 3+ diamond support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-game-5c",
+          "semanticClassId": "michaels:adv-game-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.hasClubSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasClubSupport:boolean:true",
+              "description": "3+ clubs to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerGameClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "5C — game in clubs",
+            "summary": "Bid game in clubs and 3+ club support"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-game-5d",
+          "semanticClassId": "michaels:adv-game-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "At least 10 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.hasDiamondSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasDiamondSupport:boolean:true",
+              "description": "3+ diamonds to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerGameValues:boolean:true",
+              "description": "10+ HCP (game-forcing values)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerGameDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "5D — game in diamonds",
+            "summary": "Bid game in diamonds and 3+ diamond support"
           }
         }
       ],
@@ -2746,13 +3037,239 @@
       "scope": {
         "kind": "enumerated"
       }
+    },
+    {
+      "phase": "after-reveal-clubs",
+      "surfaces": [
+        {
+          "meaningId": "michaels:adv-pass-unusual",
+          "semanticClassId": "michaels:adv-pass",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass — take partner's revealed minor",
+            "summary": "Pass once partner has shown the minor you wanted to play"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-raise-clubs-4c",
+          "semanticClassId": "michaels:adv-raise-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasClubSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasClubSupport:boolean:true",
+              "description": "3+ clubs to support partner",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerPreferClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4C — raise clubs",
+            "summary": "Raise partner's revealed clubs with support when you want to compete higher"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-sacrifice-clubs-5c",
+          "semanticClassId": "michaels:adv-sacrifice-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasClubSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasClubSupport:boolean:true",
+              "description": "3+ clubs to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerPreferClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "5C — sacrifice in clubs",
+            "summary": "Compete one step higher in clubs as a sacrifice with support and a weak hand"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-reveal-diamonds",
+      "surfaces": [
+        {
+          "meaningId": "michaels:adv-pass-unusual",
+          "semanticClassId": "michaels:adv-pass",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass — take partner's revealed minor",
+            "summary": "Pass once partner has shown the minor you wanted to play"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-raise-diamonds-4d",
+          "semanticClassId": "michaels:adv-raise-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasDiamondSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasDiamondSupport:boolean:true",
+              "description": "3+ diamonds to support partner",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerPreferDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4D — raise diamonds",
+            "summary": "Raise partner's revealed diamonds with support when you want to compete higher"
+          }
+        },
+        {
+          "meaningId": "michaels:adv-sacrifice-diamonds-5d",
+          "semanticClassId": "michaels:adv-sacrifice-minor",
+          "moduleId": "michaels-unusual",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.michaels.hasDiamondSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.hasDiamondSupport:boolean:true",
+              "description": "3+ diamonds to support partner",
+              "isPublic": true
+            },
+            {
+              "factId": "module.michaels.advancerWeak",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "UnusualAdvancerPreferDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "5D — sacrifice in diamonds",
+            "summary": "Compete one step higher in diamonds as a sacrifice with support and a weak hand"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
   "reference": {
     "summaryCard": {
       "trigger": "Opponent opens a suit and you make a conventional two-suited overcall",
       "definingMeaningId": "michaels:cue-bid-1c-2c",
-      "partnership": "Strength is partnership-dependent. Common styles are weak or preemptive only, roughly six to eleven HCP; weak-or-strong mini-maxi methods where intermediate hands overcall naturally; or strong-only treatments. Confirm the agreement and vulnerability discipline before bidding. Minor openings: cue-bid shows both majors and unusual two notrump shows both minors; major openings: cue-bid shows the other major plus an undisclosed minor."
+      "partnership": "Strength is partnership-dependent. Common styles are weak or preemptive only, roughly six to eleven HCP; weak-or-strong mini-maxi methods where intermediate hands overcall naturally; or strong-only treatments. Confirm the agreement and vulnerability discipline before bidding. Over a minor opening, Michaels shows both majors and Unusual two notrump shows the two lower unbid suits (one clubs = diamonds and hearts, one diamonds = clubs and hearts). Over a major opening, Michaels shows the other major plus an undisclosed minor and Unusual two notrump shows both minors."
     },
     "whenToUse": [
       {
@@ -2857,27 +3374,74 @@
       },
       {
         "predicate": {
-          "kind": "and",
+          "kind": "or",
           "operands": [
             {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.suitLength.clubs",
-                "operator": "gte",
-                "value": 5
-              }
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
             },
             {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.suitLength.diamonds",
-                "operator": "gte",
-                "value": 5
-              }
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
             }
           ]
         },
-        "gloss": "Use unusual two notrump with both minors when the auction leaves that artificial two-suited call available."
+        "gloss": "Use unusual two notrump with the two lower unbid suits: over one clubs it shows diamonds and hearts, over one diamonds clubs and hearts, and over a major both minors."
       }
     ],
     "workedAuctions": [
@@ -2983,8 +3547,8 @@
       },
       "items": [
         {
-          "recommendation": "With a weak hand, pass or choose the known fit as cheaply as possible.",
-          "note": "This supported ladder replaces the opening-by-opening chart; the lost detail is which cue-bid shape belongs to each opposing suit opening."
+          "recommendation": "With a weak-to-intermediate hand, choose one of partner's suits at the lowest available level; after a relay reveal, you may pass the minor partner names.",
+          "note": "Walker explicitly forbids passing immediately after partner's artificial Michaels cuebid or Unusual two notrump when RHO has passed."
         },
         {
           "recommendation": "With invitational values, raise the known fit, or ask for the hidden minor only when advancing a major-opening Michaels cue-bid.",
@@ -3017,7 +3581,7 @@
     "supportsRoleSelection": false,
     "teaching": {
       "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
-      "whenToUse": "After opponent opens 1C/1D/1H/1S: cue-bid their suit to show a two-suited hand, or bid 2NT to show both minors. Over a minor opening, the cue bid shows both majors. Over a major, it shows the other major plus an unspecified minor.",
+      "whenToUse": "After opponent opens 1C/1D/1H/1S: cue-bid their suit to show a two-suited hand, or bid 2NT to show the two lower unbid suits. Over a minor opening, the cue bid shows both majors and Unusual 2NT shows diamonds+hearts over 1C or clubs+hearts over 1D. Over a major, the cue bid shows the other major plus an unspecified minor and 2NT shows both minors.",
       "whenNotToUse": [
         "With only 5-4 shape — need 5-5 or better",
         "With a strong balanced hand — don't confuse with a Western Cue Bid",

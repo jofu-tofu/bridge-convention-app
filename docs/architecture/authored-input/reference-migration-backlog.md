@@ -28,7 +28,6 @@ Each needs a dedicated codex session with authority to regenerate pipeline golde
 | Negative Doubles | Response Table shows opponent overcalls; should show responder's double per context; per-auction promises derivation | `negative-doubles.md` |
 | Weak Twos | New-suit binding bug ("2♠ shows 5+ hearts"); 16+ HCP floor → ~14+; suit-quality "2/3 OR 3/5"; seat gating (3rd/4th) | `weak-twos.md` |
 | Strong 2♣ | 2♦-waiting predicate broadened from "0-7 HCP" to "any hand without a positive"; opening predicate to include playing-tricks | `strong-2c.md` |
-| Stayman Garbage | Add `4+ diamonds` to defining meaning's clauses | `stayman-garbage.md` |
 
 ## Priority 2 — catalog infrastructure
 

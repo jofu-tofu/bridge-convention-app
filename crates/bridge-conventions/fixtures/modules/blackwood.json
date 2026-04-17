@@ -7,8 +7,8 @@
   "purpose": "Determine whether the partnership has enough aces to bid slam safely",
   "references": {
     "authority": {
-      "url": "https://en.wikipedia.org/wiki/Blackwood_convention",
-      "label": "ACBL SAYC — Blackwood is a core SAYC convention, fully standardized"
+      "url": "https://www.larryco.com/bridge-articles/blackwood",
+      "label": "Larry Cohen — Blackwood (bridge-articles/blackwood)"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/blackwood.php"
@@ -31,7 +31,25 @@
       "contrastiveTemplateKey": "blackwood.slamInterest.whyNot",
       "contrastiveDisplayText": "Not enough strength for slam exploration",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking", "pedagogical"]
+      "roles": [
+        "supporting",
+        "blocking",
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.hasVoid",
+      "factId": "module.blackwood.hasVoid",
+      "templateKey": "blackwood.hasVoid.blocking",
+      "displayText": "Hand has no void that would distort a plain-Blackwood ace ask",
+      "contrastiveTemplateKey": "blackwood.hasVoid.whyNot",
+      "contrastiveDisplayText": "A void makes plain Blackwood a misleading ace ask",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking",
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.aceCount",
@@ -39,7 +57,9 @@
       "templateKey": "blackwood.aceCount.mechanical",
       "displayText": "Number of aces held",
       "preferredLevel": "mechanical",
-      "roles": ["supporting"]
+      "roles": [
+        "supporting"
+      ]
     },
     {
       "explanationId": "blackwood.kingCount",
@@ -47,7 +67,9 @@
       "templateKey": "blackwood.kingCount.mechanical",
       "displayText": "Number of kings held",
       "preferredLevel": "mechanical",
-      "roles": ["supporting"]
+      "roles": [
+        "supporting"
+      ]
     },
     {
       "explanationId": "blackwood.askAces",
@@ -55,7 +77,9 @@
       "templateKey": "blackwood.askAces.semantic",
       "displayText": "Blackwood 4NT: asks partner how many aces they hold",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.response0Aces",
@@ -63,7 +87,9 @@
       "templateKey": "blackwood.response0Aces.semantic",
       "displayText": "5♣ shows 0 (or 4) aces",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.response4Aces",
@@ -71,7 +97,9 @@
       "templateKey": "blackwood.response4Aces.semantic",
       "displayText": "5♣ shows 0 (or 4) aces",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.response1Ace",
@@ -79,7 +107,9 @@
       "templateKey": "blackwood.response1Ace.semantic",
       "displayText": "5♦ shows 1 ace",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.response2Aces",
@@ -87,7 +117,9 @@
       "templateKey": "blackwood.response2Aces.semantic",
       "displayText": "5♥ shows 2 aces",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.response3Aces",
@@ -95,7 +127,9 @@
       "templateKey": "blackwood.response3Aces.semantic",
       "displayText": "5♠ shows 3 aces",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.askKings",
@@ -103,7 +137,9 @@
       "templateKey": "blackwood.askKings.semantic",
       "displayText": "5NT asks for kings (guarantees all aces are held)",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.signoffSmallSlam",
@@ -111,7 +147,19 @@
       "templateKey": "blackwood.signoffSmallSlam.semantic",
       "displayText": "Sign off at small slam in the agreed trump suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "blackwood.signoffNoGrand",
+      "meaningId": "blackwood:signoff-no-grand",
+      "templateKey": "blackwood.signoffNoGrand.semantic",
+      "displayText": "Pass and accept partner's king reply when grand slam is not right",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.signoffGrandSlam",
@@ -119,7 +167,9 @@
       "templateKey": "blackwood.signoffGrandSlam.semantic",
       "displayText": "Bid grand slam in the agreed trump suit with all aces and kings",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.signoff5Level",
@@ -127,7 +177,9 @@
       "templateKey": "blackwood.signoff5Level.semantic",
       "displayText": "Stop at 5-level — partnership is missing too many aces for slam",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.kingResponse0",
@@ -135,7 +187,9 @@
       "templateKey": "blackwood.kingResponse0.semantic",
       "displayText": "6♣ shows 0 (or 4) kings",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.kingResponse4",
@@ -143,7 +197,9 @@
       "templateKey": "blackwood.kingResponse4.semantic",
       "displayText": "6♣ shows 0 (or 4) kings",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.kingResponse1",
@@ -151,7 +207,9 @@
       "templateKey": "blackwood.kingResponse1.semantic",
       "displayText": "6♦ shows 1 king",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.kingResponse2",
@@ -159,7 +217,9 @@
       "templateKey": "blackwood.kingResponse2.semantic",
       "displayText": "6♥ shows 2 kings",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.kingResponse3",
@@ -167,7 +227,9 @@
       "templateKey": "blackwood.kingResponse3.semantic",
       "displayText": "6♠ shows 3 kings",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     }
   ],
   "local": {
@@ -251,6 +313,15 @@
               "clauseId": "system.responder.slamValues:boolean:true",
               "description": "Slam interest",
               "rationale": "slam interest",
+              "isPublic": true
+            },
+            {
+              "factId": "module.blackwood.hasVoid",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.blackwood.hasVoid:boolean:false",
+              "description": "No void",
+              "rationale": "plain Blackwood should not be used with a void",
               "isPublic": true
             }
           ],
@@ -707,7 +778,7 @@
             "defaultCall": {
               "type": "bid",
               "level": 6,
-              "strain": "NT"
+              "strain": "C"
             }
           },
           "clauses": [
@@ -733,8 +804,8 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6NT — 4 kings",
-            "summary": "Show all four kings in response to partner's king ask"
+            "name": "6♣ — 4 kings",
+            "summary": "Share the same 6♣ reply used for 0 or 4 kings in plain Blackwood"
           }
         },
         {
@@ -861,6 +932,126 @@
       "turn": "responder",
       "surfaces": [
         {
+          "meaningId": "blackwood:signoff-small-slam",
+          "semanticClassId": "blackwood:signoff",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 6,
+              "strain": "H"
+            },
+            "alternateEncodings": [
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 6,
+                  "strain": "S"
+                }
+              },
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 6,
+                  "strain": "D"
+                }
+              },
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 6,
+                  "strain": "C"
+                }
+              },
+              {
+                "call": {
+                  "type": "bid",
+                  "level": 6,
+                  "strain": "NT"
+                }
+              }
+            ]
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.combinedAceCount",
+              "operator": "eq",
+              "value": 4,
+              "clauseId": "module.blackwood.combinedAceCount:eq:4",
+              "description": "Partnership holds all four aces",
+              "isPublic": true
+            },
+            {
+              "factId": "module.blackwood.combinedKingCount",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "module.blackwood.combinedKingCount:lte:3",
+              "description": "Partnership is still short of all four kings",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "BlackwoodSignoff",
+            "params": {
+              "level": "small-slam"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Natural small slam",
+            "summary": "Bid the best natural small slam after the king reply when grand slam is not justified"
+          }
+        },
+        {
+          "meaningId": "blackwood:signoff-no-grand",
+          "semanticClassId": "blackwood:signoff",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.combinedAceCount",
+              "operator": "eq",
+              "value": 4,
+              "clauseId": "module.blackwood.combinedAceCount:eq:4",
+              "description": "Partnership holds all four aces",
+              "isPublic": true
+            },
+            {
+              "factId": "module.blackwood.combinedKingCount",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "module.blackwood.combinedKingCount:lte:3",
+              "description": "Partnership is still short of all four kings",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "BlackwoodSignoff",
+            "params": {
+              "level": "no-grand"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass — no grand slam",
+            "summary": "Pass when partner's king reply is already the right natural small-slam contract"
+          }
+        },
+        {
           "meaningId": "blackwood:signoff-grand-slam",
           "semanticClassId": "blackwood:signoff",
           "moduleId": "blackwood",
@@ -922,7 +1113,7 @@
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 0
+            "declarationOrder": 2
           },
           "sourceIntent": {
             "type": "BlackwoodSignoff",
@@ -951,8 +1142,12 @@
         "description": "Hand has slam-level values (17+ HCP consistent with partnership slam values)",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": ["hand.hcp"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -960,6 +1155,59 @@
             "operator": "gte",
             "value": 17
           }
+        }
+      },
+      {
+        "id": "module.blackwood.hasVoid",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Hand has a void in some suit, making plain Blackwood misleading",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.spades",
+          "hand.suitLength.hearts",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.clubs"
+        ],
+        "constrainsDimensions": [
+          "shapeClass"
+        ],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "eq",
+                "value": 0
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "eq",
+                "value": 0
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "eq",
+                "value": 0
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "eq",
+                "value": 0
+              }
+            }
+          ]
         }
       },
       {
@@ -1088,14 +1336,94 @@
         "composition": {
           "kind": "match",
           "cases": [
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 8, "max": 8 } }, "then": 8 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 7, "max": 7 } }, "then": 7 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 6, "max": 6 } }, "then": 6 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 5, "max": 5 } }, "then": 5 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 4, "max": 4 } }, "then": 4 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 3, "max": 3 } }, "then": 3 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 2, "max": 2 } }, "then": 2 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedAceCount", "min": 1, "max": 1 } }, "then": 1 }
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedAceCount",
+                  "min": 8,
+                  "max": 8
+                }
+              },
+              "then": 8
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedAceCount",
+                  "min": 7,
+                  "max": 7
+                }
+              },
+              "then": 7
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedAceCount",
+                  "min": 6,
+                  "max": 6
+                }
+              },
+              "then": 6
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedAceCount",
+                  "min": 5,
+                  "max": 5
+                }
+              },
+              "then": 5
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedAceCount",
+                  "min": 4,
+                  "max": 4
+                }
+              },
+              "then": 4
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedAceCount",
+                  "min": 3,
+                  "max": 3
+                }
+              },
+              "then": 3
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedAceCount",
+                  "min": 2,
+                  "max": 2
+                }
+              },
+              "then": 2
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedAceCount",
+                  "min": 1,
+                  "max": 1
+                }
+              },
+              "then": 1
+            }
           ],
           "default": 0
         }
@@ -1110,14 +1438,94 @@
         "composition": {
           "kind": "match",
           "cases": [
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 8, "max": 8 } }, "then": 8 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 7, "max": 7 } }, "then": 7 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 6, "max": 6 } }, "then": 6 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 5, "max": 5 } }, "then": 5 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 4, "max": 4 } }, "then": 4 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 3, "max": 3 } }, "then": 3 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 2, "max": 2 } }, "then": 2 },
-            { "when": { "kind": "extended", "clause": { "clauseKind": "combinedKingCount", "min": 1, "max": 1 } }, "then": 1 }
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedKingCount",
+                  "min": 8,
+                  "max": 8
+                }
+              },
+              "then": 8
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedKingCount",
+                  "min": 7,
+                  "max": 7
+                }
+              },
+              "then": 7
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedKingCount",
+                  "min": 6,
+                  "max": 6
+                }
+              },
+              "then": 6
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedKingCount",
+                  "min": 5,
+                  "max": 5
+                }
+              },
+              "then": 5
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedKingCount",
+                  "min": 4,
+                  "max": 4
+                }
+              },
+              "then": 4
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedKingCount",
+                  "min": 3,
+                  "max": 3
+                }
+              },
+              "then": 3
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedKingCount",
+                  "min": 2,
+                  "max": 2
+                }
+              },
+              "then": 2
+            },
+            {
+              "when": {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "combinedKingCount",
+                  "min": 1,
+                  "max": 1
+                }
+              },
+              "then": 1
+            }
           ],
           "default": 0
         }

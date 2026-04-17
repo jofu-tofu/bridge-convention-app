@@ -7,8 +7,8 @@
   "purpose": "Learn the baseline one-level opening bids and natural notrump raises that apply when no specialized convention changes the meaning of a call",
   "references": {
     "authority": {
-      "url": "https://en.wikipedia.org/wiki/Standard_American_Yellow_Card",
-      "label": "ACBL SAYC — natural bidding rules are defined by the base system"
+      "url": "https://web2.acbl.org/documentlibrary/play/SP3%20(bk)%20single%20pages.pdf",
+      "label": "ACBL — SAYC System Booklet (SP3, rev. Jan 2006)"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/sayc.php"
@@ -249,7 +249,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1♣ opening",
-            "summary": "Open 1♣ with 12+ HCP and 3+ clubs"
+            "summary": "Open 1♣ and 3+ clubs"
           }
         },
         {
@@ -295,7 +295,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1♦ opening",
-            "summary": "Open 1♦ with 12+ HCP and 4+ diamonds"
+            "summary": "Open 1♦ and 4+ diamonds"
           }
         },
         {
@@ -341,7 +341,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1♥ opening",
-            "summary": "Open 1♥ with 12+ HCP and a 5-card or longer heart suit"
+            "summary": "Open 1♥ and a 5-card or longer heart suit"
           }
         },
         {
@@ -387,7 +387,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1♠ opening",
-            "summary": "Open 1♠ with 12+ HCP and a 5-card or longer spade suit"
+            "summary": "Open 1♠ and a 5-card or longer spade suit"
           }
         }
       ],

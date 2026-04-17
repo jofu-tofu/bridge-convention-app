@@ -1031,7 +1031,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1♥ opening",
-            "summary": "Open 1 heart to show 5+ hearts and 12-21 HCP"
+            "summary": "Open 1 heart to show 5+ hearts and"
           }
         },
         {
@@ -1077,7 +1077,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1♠ opening",
-            "summary": "Open 1 spade to show 5+ spades and 12-21 HCP"
+            "summary": "Open 1 spade to show 5+ spades and"
           }
         }
       ],
@@ -1196,7 +1196,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Preemptive raise (4H)",
-            "summary": "Raise directly to game preemptively with under 7 HCP and 5+ card trump support"
+            "summary": "Raise directly to game preemptively with under and 5+ card trump support"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -1248,7 +1248,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Limit raise (3D)",
-            "summary": "Show 4+ card support with 11-12 HCP, inviting game via artificial 3D"
+            "summary": "Show 4+ card support, inviting game via artificial 3D"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -1300,7 +1300,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Constructive raise (3C)",
-            "summary": "Show 4+ card support with 7-10 HCP via artificial 3C, competing for the partscore"
+            "summary": "Show 4+ card support via artificial 3C, competing for the partscore"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -1536,7 +1536,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Preemptive raise (4S)",
-            "summary": "Raise directly to game preemptively with under 7 HCP and 5+ card trump support"
+            "summary": "Raise directly to game preemptively with under and 5+ card trump support"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -1588,7 +1588,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Limit raise (3D)",
-            "summary": "Show 4+ card support with 11-12 HCP, inviting game via artificial 3D"
+            "summary": "Show 4+ card support, inviting game via artificial 3D"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -1640,7 +1640,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Constructive raise (3C)",
-            "summary": "Show 4+ card support with 7-10 HCP via artificial 3C, competing for the partscore"
+            "summary": "Show 4+ card support via artificial 3C, competing for the partscore"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -1800,7 +1800,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Accept constructive",
-            "summary": "Bid game with 17+ HCP after partner's constructive raise"
+            "summary": "Bid game after partner's constructive raise"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -1844,7 +1844,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Game try (3D)",
-            "summary": "Invite game with 14-16 HCP by bidding a help suit after the constructive raise"
+            "summary": "Invite game by bidding a help suit after the constructive raise"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -1938,7 +1938,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Accept constructive",
-            "summary": "Bid game with 17+ HCP after partner's constructive raise"
+            "summary": "Bid game after partner's constructive raise"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -1982,7 +1982,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Game try (3H)",
-            "summary": "Invite game with 14-16 HCP by bidding a help suit after the constructive raise"
+            "summary": "Invite game by bidding a help suit after the constructive raise"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -2076,7 +2076,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Accept limit raise",
-            "summary": "Bid game with 15+ HCP after partner's limit raise shows 10-12 points"
+            "summary": "Bid game after partner's limit raise shows 10-12 points"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -2170,7 +2170,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Accept limit raise",
-            "summary": "Bid game with 15+ HCP after partner's limit raise shows 10-12 points"
+            "summary": "Bid game after partner's limit raise shows 10-12 points"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -2525,7 +2525,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Accept game try → game (4H)",
-            "summary": "Accept opener's game try with 9-10 HCP at the top of the constructive range"
+            "summary": "Accept opener's game try at the top of the constructive range"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -2569,7 +2569,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Reject game try → signoff (3H)",
-            "summary": "Reject opener's game try with 7-8 HCP, returning to the agreed trump suit"
+            "summary": "Reject opener's game try, returning to the agreed trump suit"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -2625,7 +2625,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Accept game try → game (4S)",
-            "summary": "Accept opener's game try with 9-10 HCP at the top of the constructive range"
+            "summary": "Accept opener's game try at the top of the constructive range"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -2669,7 +2669,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Reject game try → signoff (3S)",
-            "summary": "Reject opener's game try with 7-8 HCP, returning to the agreed trump suit"
+            "summary": "Reject opener's game try, returning to the agreed trump suit"
           },
           "surfaceBindings": {
             "suit": "spades"

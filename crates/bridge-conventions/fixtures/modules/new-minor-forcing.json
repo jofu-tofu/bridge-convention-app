@@ -1405,7 +1405,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Respond 1H",
-            "summary": "Show 4+ hearts with 6+ HCP"
+            "summary": "Show 4+ hearts"
           }
         },
         {
@@ -1451,7 +1451,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Respond 1S",
-            "summary": "Show 4+ spades with 6+ HCP"
+            "summary": "Show 4+ spades"
           }
         }
       ],
@@ -1591,7 +1591,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Opener rebids 1NT",
-            "summary": "12-15 HCP balanced, denies 4-card support for responder's major"
+            "summary": "balanced, denies 4-card support for responder's major"
           }
         }
       ],
@@ -1669,7 +1669,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Opener rebids 1NT",
-            "summary": "12-15 HCP balanced, denies a 4-card heart suit to show naturally"
+            "summary": "balanced, denies a 4-card heart suit to show naturally"
           }
         }
       ],
@@ -1934,7 +1934,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT invite",
-            "summary": "Invitational 10-11 HCP balanced — no major fit preference"
+            "summary": "Invitational balanced — no major fit preference"
           }
         },
         {
@@ -2012,7 +2012,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass",
-            "summary": "Weak hand (6-9 HCP) with no 5-card major — play in 1NT"
+            "summary": "Weak hand () with no 5-card major — play in 1NT"
           }
         }
       ],
@@ -2082,7 +2082,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Show heart support (min)",
-            "summary": "Minimum hand (12-13 HCP) with 3-card heart support"
+            "summary": "Minimum hand () with 3-card heart support"
           }
         },
         {
@@ -2136,7 +2136,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Jump raise hearts (max)",
-            "summary": "Maximum hand (14-15 HCP) with 3-card heart support — jump to 3H"
+            "summary": "Maximum hand () with 3-card heart support — jump to 3H"
           }
         },
         {
@@ -2260,7 +2260,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Jump to 3S (max)",
-            "summary": "Maximum hand (14-15 HCP), no heart support but 4+ spades — jump to show strength"
+            "summary": "Maximum hand (), no heart support but 4+ spades — jump to show strength"
           }
         },
         {
@@ -2312,7 +2312,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT minimum",
-            "summary": "No major fit, minimum hand (12-13 HCP)"
+            "summary": "No major fit, minimum hand ()"
           }
         },
         {
@@ -2364,7 +2364,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3NT maximum",
-            "summary": "No major fit, maximum hand (14-15 HCP)"
+            "summary": "No major fit, maximum hand ()"
           }
         }
       ],
@@ -2434,7 +2434,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Show spade support (min)",
-            "summary": "Minimum hand (12-13 HCP) with 3-card spade support"
+            "summary": "Minimum hand () with 3-card spade support"
           }
         },
         {
@@ -2488,7 +2488,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Jump raise spades (max)",
-            "summary": "Maximum hand (14-15 HCP) with 3-card spade support — jump to 3S"
+            "summary": "Maximum hand () with 3-card spade support — jump to 3S"
           }
         },
         {
@@ -2612,7 +2612,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Jump to 3H (max)",
-            "summary": "Maximum hand (14-15 HCP), no spade support but 4+ hearts — jump to show strength"
+            "summary": "Maximum hand (), no spade support but 4+ hearts — jump to show strength"
           }
         },
         {
@@ -2664,7 +2664,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT minimum",
-            "summary": "No major fit, minimum hand (12-13 HCP)"
+            "summary": "No major fit, minimum hand ()"
           }
         },
         {
@@ -2716,7 +2716,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3NT maximum",
-            "summary": "No major fit, maximum hand (14-15 HCP)"
+            "summary": "No major fit, maximum hand ()"
           }
         }
       ],
@@ -2771,7 +2771,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Respond 1S",
-            "summary": "Show 4+ spades with 6+ HCP over partner's 1H"
+            "summary": "Show 4+ spades over partner's 1H"
           }
         }
       ],
@@ -2931,7 +2931,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2♦ natural",
-            "summary": "Natural weak signoff showing 5+ diamonds, 6-9 HCP"
+            "summary": "Natural weak signoff showing 5+ diamonds"
           }
         }
       ],
@@ -2994,7 +2994,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Show spade support (min)",
-            "summary": "Minimum hand (12-13 HCP) with 3-card spade support after 1H-1S-1NT-2C NMF"
+            "summary": "Minimum hand () with 3-card spade support after 1H-1S-1NT-2C NMF"
           }
         },
         {
@@ -3048,7 +3048,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Jump raise spades (max)",
-            "summary": "Maximum hand (14-15 HCP) with 3-card spade support"
+            "summary": "Maximum hand () with 3-card spade support"
           }
         },
         {
@@ -3144,7 +3144,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3NT maximum",
-            "summary": "No major fit, maximum hand (14-15 HCP) after 1H-1S-1NT-2C NMF"
+            "summary": "No major fit, maximum hand () after 1H-1S-1NT-2C NMF"
           }
         },
         {
@@ -3207,7 +3207,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♣ raise NMF minor",
-            "summary": "Priority 4: raise the NMF minor with 4-card support, concentrated values, and 14-15 HCP"
+            "summary": "Priority 4: raise the NMF minor with 4-card support, concentrated values, and"
           }
         },
         {
@@ -3355,7 +3355,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2♦ rebid own diamonds",
-            "summary": "Minimum 12-13 HCP with 5+ diamonds and no major feature to show"
+            "summary": "Minimum with 5+ diamonds and no major feature to show"
           }
         },
         {
@@ -3418,7 +3418,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♣ jump in clubs",
-            "summary": "Maximum 14-15 HCP with extra clubs length and no major feature to show"
+            "summary": "Maximum with extra clubs length and no major feature to show"
           }
         },
         {
@@ -3489,7 +3489,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♦ jump rebid diamonds",
-            "summary": "Maximum 14-15 HCP with extra diamonds length and no major feature to show"
+            "summary": "Maximum with extra diamonds length and no major feature to show"
           }
         }
       ],
@@ -3590,7 +3590,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♣ jump rebid clubs",
-            "summary": "Maximum 14-15 HCP with extra clubs length and no major feature to show"
+            "summary": "Maximum with extra clubs length and no major feature to show"
           }
         }
       ],
@@ -3691,7 +3691,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2♦ rebid own diamonds",
-            "summary": "Minimum 12-13 HCP with 5+ diamonds and no major feature to show"
+            "summary": "Minimum with 5+ diamonds and no major feature to show"
           }
         },
         {
@@ -3754,7 +3754,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♣ jump in clubs",
-            "summary": "Maximum 14-15 HCP with extra clubs length and no major feature to show"
+            "summary": "Maximum with extra clubs length and no major feature to show"
           }
         },
         {
@@ -3825,7 +3825,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♦ jump rebid diamonds",
-            "summary": "Maximum 14-15 HCP with extra diamonds length and no major feature to show"
+            "summary": "Maximum with extra diamonds length and no major feature to show"
           }
         }
       ],
@@ -3926,7 +3926,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♣ jump rebid clubs",
-            "summary": "Maximum 14-15 HCP with extra clubs length and no major feature to show"
+            "summary": "Maximum with extra clubs length and no major feature to show"
           }
         }
       ],
@@ -4044,7 +4044,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♥ invite",
-            "summary": "Invitational 10-11 HCP with an uncovered hearts fit — invite game"
+            "summary": "Invitational with an uncovered hearts fit — invite game"
           }
         }
       ],
@@ -4240,7 +4240,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♠ invite",
-            "summary": "Invitational 10-11 HCP with an uncovered spades fit — invite game"
+            "summary": "Invitational with an uncovered spades fit — invite game"
           }
         }
       ],
@@ -4436,7 +4436,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♠ invite",
-            "summary": "Invitational 10-11 HCP with an uncovered spades fit — invite game"
+            "summary": "Invitational with an uncovered spades fit — invite game"
           }
         }
       ],
@@ -4633,7 +4633,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♥ invite",
-            "summary": "Invitational 10-11 HCP with an uncovered hearts fit — invite game"
+            "summary": "Invitational with an uncovered hearts fit — invite game"
           }
         },
         {
@@ -4721,7 +4721,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT invite",
-            "summary": "Invitational 10-11 HCP without a major fit — invite in notrump"
+            "summary": "Invitational without a major fit — invite in notrump"
           }
         }
       ],
@@ -4968,7 +4968,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3♠ invite",
-            "summary": "Invitational 10-11 HCP with an uncovered spades fit — invite game"
+            "summary": "Invitational with an uncovered spades fit — invite game"
           }
         },
         {
@@ -5056,7 +5056,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT invite",
-            "summary": "Invitational 10-11 HCP without a major fit — invite in notrump"
+            "summary": "Invitational without a major fit — invite in notrump"
           }
         }
       ],
@@ -5266,7 +5266,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass",
-            "summary": "Invitational 10-11 HCP: opener showed a minimum 2NT, so stop there"
+            "summary": "Invitational: opener showed a minimum 2NT, so stop there"
           }
         }
       ],
@@ -5415,7 +5415,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass",
-            "summary": "Invitational 10-11 HCP: opener showed a minimum 2NT, so stop there"
+            "summary": "Invitational: opener showed a minimum 2NT, so stop there"
           }
         }
       ],
@@ -5567,7 +5567,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT invite",
-            "summary": "Invitational 10-11 HCP without a major fit — invite in notrump"
+            "summary": "Invitational without a major fit — invite in notrump"
           }
         }
       ],
@@ -5776,7 +5776,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT invite",
-            "summary": "Invitational 10-11 HCP without a major fit — invite in notrump"
+            "summary": "Invitational without a major fit — invite in notrump"
           }
         }
       ],

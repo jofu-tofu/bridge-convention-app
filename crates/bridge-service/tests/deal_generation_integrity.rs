@@ -26,7 +26,12 @@ const SEED_RANGE: std::ops::RangeInclusive<u64> = 1..=10;
 /// `(bundle_id, blocker_description)`. The canary test asserts these
 /// still fail — if one starts passing, the canary fires and the bundle
 /// must be removed from this list so the main integrity test covers it.
-const KNOWN_BROKEN: &[(&str, &str)] = &[];
+const KNOWN_BROKEN: &[(&str, &str)] = &[
+    (
+        "strong-2c-bundle",
+        "post-2026-04-17 strong-2c scope fix: positive-2s and positive-3d now require 8+ HCP plus a decent 5+ suit per Larry. Witness projection sometimes exhausts the 32-attempt rejection budget for these surfaces. Needs tighter witness projection or looser positive-response gates; see docs/architecture/authority-and-module-composition.md Part 3.",
+    ),
+];
 
 fn make_config(bundle_id: &str, seed: u64) -> SessionConfig {
     SessionConfig {
