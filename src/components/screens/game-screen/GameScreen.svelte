@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { goto } from "$app/navigation";
-  import { Seat, PracticeMode, PromptMode } from "../../../service";
+  import { Seat, PracticeMode, PromptMode, listConventions } from "../../../service";
   import type { Call } from "../../../service";
   import { buildConventionCardPanel, buildAcblCardPanel } from "../../../service";
   import { getGameStore, getAppStore, setLayoutConfig, getCustomSystemsStore } from "../../../stores/context";
@@ -25,6 +25,7 @@
   const gameStore = getGameStore();
   const appStore = getAppStore();
   const customSystemsStore = getCustomSystemsStore();
+  const allConventions = listConventions();
 
   const userSeat = Seat.South;
 
@@ -92,8 +93,17 @@
   }
 
   function startNewDrill() {
-    const baseConvention = appStore.selectedConvention;
-    if (!baseConvention) return;
+    const activeLaunch = appStore.activeLaunch;
+    let currentConvention = appStore.selectedConvention;
+    if (activeLaunch && activeLaunch.moduleIds.length > 0) {
+      const currentIndex = activeLaunch.moduleIds.indexOf(gameStore.currentModuleId);
+      const nextIndex = gameStore.isInitialized && currentIndex >= 0
+        ? (currentIndex + 1) % activeLaunch.moduleIds.length
+        : 0;
+      const nextModuleId = activeLaunch.moduleIds[nextIndex] ?? activeLaunch.moduleIds[0];
+      currentConvention = allConventions.find((convention) => convention.id === nextModuleId) ?? currentConvention;
+    }
+    if (!currentConvention) return;
     dealNumber++;
 
     const devSeed = getDevSeed();
@@ -101,25 +111,30 @@
 
     // Build session config — service handles convention resolution,
     // RNG creation, deal generation, and strategy assembly internally.
-    const practiceMode = appStore.devPracticeMode ?? appStore.userPracticeMode;
-    const practiceRole = appStore.devPracticeRole ?? appStore.userPracticeRole;
+    const requestedRole = activeLaunch?.practiceRole ?? appStore.practiceRole;
+    const practiceMode = appStore.devPracticeMode ?? activeLaunch?.practiceMode ?? appStore.userPracticeMode;
+    const practiceRole = appStore.devPracticeRole
+      ?? (requestedRole === "auto" ? currentConvention.defaultRole : requestedRole);
     const drill = appStore.drillSettings;
+    const systemSelectionId = activeLaunch?.systemSelectionId ?? appStore.baseSystemId;
     const { systemConfig, baseModuleIds } = resolveSystemForSession(
-      appStore.baseSystemId,
+      systemSelectionId,
       customSystemsStore.systems,
     );
     const config: SessionConfig = {
-      conventionId: baseConvention.id,
+      conventionId: currentConvention.id,
       userSeat,
       seed: devSeed,
       systemConfig,
       baseModuleIds,
+      targetModuleId: currentConvention.id,
       opponentMode: drill.opponentMode,
       ...(drill.playPreference ? { playPreference: drill.playPreference } : {}),
       ...(practiceMode ? { practiceMode } : {}),
       ...(practiceRole ? { practiceRole } : {}),
     };
 
+    appStore.selectConvention(currentConvention);
     gameStore.startNewDrill(config);
   }
 

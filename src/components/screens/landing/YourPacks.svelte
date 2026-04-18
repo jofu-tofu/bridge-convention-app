@@ -7,7 +7,7 @@
 
 {#if packs.length > 0}
   <section class="your-packs">
-    <h2>Practice packs ({packs.length})</h2>
+    <h2>Multi-convention drills ({packs.length})</h2>
     <ul>
       {#each packs as pack (pack.id)}
         <li>
@@ -15,7 +15,7 @@
           {#if FEATURES.workshop}
             <a
               class="edit"
-              href={`/practice-pack-editor?packId=${encodeURIComponent(pack.id)}`}>open →</a
+              href={`/practice/drills/${encodeURIComponent(pack.id)}/edit`}>open →</a
             >
           {/if}
         </li>

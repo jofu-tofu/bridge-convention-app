@@ -21,7 +21,7 @@ const SETTINGS_ICON = '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73
 
 export function getNavItems(): NavItem[] {
   const items: NavItem[] = [
-    { href: "/practice", label: "Practice", iconSvg: PRACTICE_ICON, activePaths: ["/practice", "/practice/drill", "/game"], clearAction: "selection" },
+    { href: "/practice", label: "Practice", iconSvg: PRACTICE_ICON, activePaths: ["/practice", "/practice/drills", "/game"], clearAction: "selection" },
     { href: "/learn", label: "Learn", iconSvg: LEARN_ICON, activePaths: ["/learn", "/lessons", "/systems", "/coverage"] },
     { href: "/guides", label: "Guides", iconSvg: GUIDES_ICON, activePaths: ["/guides"] },
   ];
@@ -30,7 +30,7 @@ export function getNavItems(): NavItem[] {
       href: "/workshop",
       label: "Workshop",
       iconSvg: WORKSHOP_ICON,
-      activePaths: ["/workshop", "/convention-editor", "/practice-pack-editor"],
+      activePaths: ["/workshop", "/convention-editor"],
       clearAction: "workshop",
     });
   }

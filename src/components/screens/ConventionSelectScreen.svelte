@@ -12,7 +12,6 @@
   import ItemCard from "../shared/ItemCard.svelte";
   import SectionHeader from "../shared/SectionHeader.svelte";
   import SavedDrillsShelf from "./SavedDrillsShelf.svelte";
-  import DrillPresetDialog from "./DrillPresetDialog.svelte";
   import DrillSettingsPanel from "./DrillSettingsPanel.svelte";
   import AppScreen from "../shared/AppScreen.svelte";
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
@@ -23,7 +22,6 @@
 
   let authModal = $state<ReturnType<typeof AuthModal>>();
   let paywallOverlay = $state<ReturnType<typeof PaywallOverlay>>();
-  let presetDialog = $state<ReturnType<typeof DrillPresetDialog>>();
 
   let innerW = $state(window.innerWidth);
   const isMobile = $derived(innerW < DESKTOP_MIN);
@@ -98,12 +96,8 @@
     void goto("/game");
   }
 
-  function openConfigureDialog(convention: ConventionInfo) {
-    presetDialog?.open({ mode: "create", convention });
-  }
-
-  function openEditDialog(presetId: string) {
-    presetDialog?.open({ mode: "edit", presetId });
+  function openEditDrill(drillId: string): void {
+    void goto(`/practice/drills/${drillId}/edit`);
   }
 
   const displayName = displayConventionName;
@@ -158,7 +152,7 @@
       {#if showMyDrillsLink}
         <div class="mb-2 flex justify-end">
           <a
-            href="/practice/drill"
+            href="/practice/drills"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-secondary border border-border-subtle bg-bg-card no-underline transition-all hover:text-text-primary hover:border-border-default hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
           >
             My drills
@@ -207,7 +201,7 @@
       {/if}
 
       {#if !searchQuery}
-        <SavedDrillsShelf onLaunch={launchDrill} onEdit={openEditDialog} />
+        <SavedDrillsShelf onLaunch={launchDrill} onEdit={openEditDrill} />
       {/if}
 
       {#if filteredConventions.length > 0}
@@ -254,17 +248,17 @@
                       {/if}
                       <span class="hidden sm:inline">{locked ? "Locked" : "Practice"}</span>
                     </button>
-                    <button
+                    <a
                       class="flex items-center justify-center p-1.5 rounded-[--radius-md] text-xs font-medium
                         text-text-secondary bg-bg-elevated hover:text-accent-primary hover:bg-accent-primary/10
                         transition-all cursor-pointer border border-transparent hover:border-accent-primary/20
                         min-w-[--size-touch-target] min-h-[--size-touch-target]"
                       data-testid="configure-{convention.id}"
                       aria-label="Configure and save drill for {displayName(convention.name)}"
-                      onclick={() => openConfigureDialog(convention)}
+                      href={`/practice/drills/new?convention=${encodeURIComponent(convention.id)}`}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
-                    </button>
+                    </a>
                   </div>
                 </ItemCard>
               {/each}
@@ -280,5 +274,4 @@
   </div>
   <AuthModal bind:this={authModal} />
   <PaywallOverlay bind:this={paywallOverlay} />
-  <DrillPresetDialog bind:this={presetDialog} onLaunch={launchDrill} />
 </AppScreen>

@@ -45,6 +45,8 @@ export type { BidHistoryEntry } from "../service";
 interface GameStoreOptions {
   /** Override the delay function used for AI bid/play timing. Defaults to setTimeout-based delay. */
   delayFn?: (ms: number) => Promise<void>;
+  /** Active launch snapshot from the app store for multi-module drill rotation. */
+  getActiveLaunch?: () => { readonly moduleIds: readonly string[] } | null;
 }
 
 /** Viewport-safe bid feedback for the current turn. */
@@ -110,6 +112,8 @@ export function createGameStore(
   let effectiveUserSeat = $state<Seat | null>(null);
   let practiceMode = $state<PracticeMode>(PracticeMode.DecisionDrill);
   let playPreference = $state<PlayPreference>(PlayPreference.Prompt);
+  let launchDealIndex = $state(0);
+  let activeLaunchRef: { readonly moduleIds: readonly string[] } | null = null;
 
   // ── Grouped phase state ─────────────────────────────────────
   let publicBeliefState = $state<ServicePublicBeliefState>(freshPublicBeliefState());
@@ -192,6 +196,44 @@ export function createGameStore(
     return computeFaceUpSeats(effectiveUserSeat, userSeat, phase, contract);
   }
 
+  function getActiveLaunchSnapshot(): { readonly moduleIds: readonly string[] } | null {
+    return options?.getActiveLaunch?.() ?? null;
+  }
+
+  function syncLaunchDealIndex(): void {
+    const launch = getActiveLaunchSnapshot();
+    if (!launch || launch.moduleIds.length === 0) return;
+
+    if (launch !== activeLaunchRef) {
+      activeLaunchRef = launch;
+      launchDealIndex = 0;
+      return;
+    }
+
+    if (activeHandle) {
+      launchDealIndex += 1;
+    }
+  }
+
+  function getCurrentModuleId(): string {
+    const launch = getActiveLaunchSnapshot();
+    if (!launch || launch.moduleIds.length === 0) {
+      throw new Error("currentModuleId called with no activeLaunch");
+    }
+    return launch.moduleIds[launchDealIndex % launch.moduleIds.length] ?? launch.moduleIds[0]!;
+  }
+
+  function resolveSessionConfig(config: SessionConfig): SessionConfig {
+    const launch = getActiveLaunchSnapshot();
+    if (!launch || launch.moduleIds.length === 0) return config;
+    const moduleId = getCurrentModuleId();
+    return {
+      ...config,
+      conventionId: moduleId,
+      targetModuleId: moduleId,
+    };
+  }
+
   // ── User action handlers ──────────────────────────────────────
 
   async function acceptPromptAction(): Promise<void> {
@@ -252,7 +294,7 @@ export function createGameStore(
 
   // ── Reset ─────────────────────────────────────────────────────
 
-  function resetImpl() {
+  function resetImpl(clearLaunchTracking = false) {
     // Clear lifecycle guard — any in-flight operations will bail via activeHandle check
     transitions.transitioning = false;
 
@@ -264,6 +306,10 @@ export function createGameStore(
     effectiveUserSeat = null;
     practiceMode = PracticeMode.DecisionDrill;
     playPreference = PlayPreference.Prompt;
+    if (clearLaunchTracking) {
+      launchDealIndex = 0;
+      activeLaunchRef = null;
+    }
 
     // Sub-module state
     biddingPhase.reset();
@@ -335,7 +381,8 @@ export function createGameStore(
   async function startNewDrillImpl(config: SessionConfig) {
     isStarting = true;
     try {
-      const handle = await service.createDrillSession(config);
+      syncLaunchDealIndex();
+      const handle = await service.createDrillSession(resolveSessionConfig(config));
       await startDrillFromHandleImpl(handle);
     } finally {
       isStarting = false;
@@ -352,6 +399,7 @@ export function createGameStore(
     get phase() { return phase; },
     get contract(): Contract | null { return contract; },
     get practiceMode() { return practiceMode; },
+    get currentModuleId(): string { return getCurrentModuleId(); },
 
     // Bidding state — always viewport-derived
     get auction(): Auction {
@@ -547,7 +595,7 @@ export function createGameStore(
       return activeService.getExpectedBid(activeHandle);
     },
     reset(): void {
-      resetImpl();
+      resetImpl(true);
     },
   };
 }

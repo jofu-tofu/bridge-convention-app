@@ -59,7 +59,9 @@
         if (!customSystemsStore.isValidSelection(store.baseSystemId)) {
           store.setBaseSystemId("sayc");
         }
-        resolvedGameStore = createGameStore(svc);
+        resolvedGameStore = createGameStore(svc, {
+          getActiveLaunch: () => store.activeLaunch,
+        });
         applyDevParams(store);
         engineReady = true;
       })

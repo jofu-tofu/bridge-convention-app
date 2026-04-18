@@ -57,6 +57,7 @@ export interface GameStore {
   readonly phase: GamePhase;
   readonly contract: Contract | null;
   readonly practiceMode: PracticeMode;
+  readonly currentModuleId: string;
 
   // Bidding state
   readonly auction: Auction;

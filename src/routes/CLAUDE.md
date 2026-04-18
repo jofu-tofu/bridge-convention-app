@@ -8,13 +8,13 @@ SvelteKit file-based routing. `adapter-static` with `fallback: 'index.html'`.
 - `(app)/billing/{success,cancel}` — Stripe return routes. They stay client-only so they can refresh auth state and redirect back to `/practice` without a separate server render path.
 - `(content)/` — prerendered (`prerender = true` in `+layout.ts`). SEO pages: `/` (landing), `/guides/[slug]`, `/learn/` + `/learn/[moduleId]`, `/lessons/`, `/systems/`. All content routes — including `/` — wrap in `AppShell`. The landing page renders `LoggedInLanding` when authed, marketing hero otherwise, both inside the shell chrome. `/learn/*` has a group-level `+layout.svelte` + `+layout.server.ts` that loads the module catalog once and renders `LearnSidebar` (search + convention list) beside the page body on desktop.
 
-## Custom drills
+## Saved drills
 
-- `/practice/drill` — saved custom drills index.
-- `/practice/drill/new` — create form.
-- `/practice/drill/[id]/edit` — edit form.
+- `/practice/drills` — saved drill index for single- and multi-convention drills.
+- `/practice/drills/new` — create form (supports `?convention=<id>` prefill from the practice picker).
+- `/practice/drills/[id]/edit` — edit form.
 
-All three are reachable without an entitlement (entitlement gating is per-action at launch time via `canPractice(...)`, matching `ConventionSelectScreen`). Launch wiring is deferred; Phase 1 is create + save + edit + delete only.
+These routes are reachable without an entitlement; launch actions gate at execution time, matching `ConventionSelectScreen`.
 
 ## Learn Reference Surface
 

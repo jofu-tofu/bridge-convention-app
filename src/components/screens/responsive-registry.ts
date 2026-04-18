@@ -53,22 +53,16 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "max-w-4xl centered container, single-column grid",
   },
   {
-    path: "DrillPresetDialog.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Modal dialog with stacked radio/select/input controls; max-w-md and viewport-constrained width on mobile",
-  },
-  {
     path: "DrillSettingsPanel.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,
     mobileNotes: "Desktop sticky rail content that the parent screen renders inside a mobile disclosure above the convention grid",
   },
   {
-    path: "CustomDrillForm.svelte",
+    path: "DrillForm.svelte",
     mobileStrategy: "centered",
     minWidth: 320,
-    mobileNotes: "max-w-2xl centered form; name/convention/system/role inputs stack naturally",
+    mobileNotes: "max-w-form drill editor; selected chips and segmented controls stack naturally on mobile",
   },
   {
     path: "SavedDrillsShelf.svelte",
@@ -80,7 +74,7 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     path: "WorkshopScreen.svelte",
     mobileStrategy: "centered",
     minWidth: 320,
-    mobileNotes: "System management with preset cards, custom system list, and editor",
+    mobileNotes: "Two-tab system and convention management with preset cards, custom system list, and editor",
   },
   {
     path: "SystemEditor.svelte",
@@ -93,12 +87,6 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileStrategy: "centered",
     minWidth: 320,
     mobileNotes: "max-w-3xl centered container; parameter editing with steppers adapts naturally",
-  },
-  {
-    path: "PracticePackEditorScreen.svelte",
-    mobileStrategy: "centered",
-    minWidth: 320,
-    mobileNotes: "max-w-3xl centered container; convention checklist and reorder list stack vertically",
   },
   {
     path: "StrengthBar.svelte",

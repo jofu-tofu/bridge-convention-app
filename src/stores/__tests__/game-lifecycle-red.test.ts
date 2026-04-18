@@ -55,6 +55,59 @@ describe("game store lifecycle (RED tests)", () => {
     });
   });
 
+  it("RED: multi-module drills round-robin the active launch target module per deal", async () => {
+    const observedModuleIds: string[] = [];
+    const activeLaunch = { moduleIds: ["stayman-bundle", "jacoby-transfers-bundle"] };
+
+    vi.mocked(mockService.createDrillSession).mockImplementation(async (config) => {
+      observedModuleIds.push(config.targetModuleId ?? config.conventionId);
+      return `session-${observedModuleIds.length}`;
+    });
+
+    const store = createGameStore(mockService, {
+      delayFn: () => Promise.resolve(),
+      getActiveLaunch: () => activeLaunch,
+    });
+
+    const config = {
+      conventionId: "ignored",
+      userSeat: Seat.South,
+      systemConfig: SAYC_SYSTEM_CONFIG,
+      baseModuleIds: [...DEFAULT_BASE_MODULE_IDS],
+    };
+
+    store.startNewDrill(config);
+    await vi.waitFor(() => {
+      expect(observedModuleIds).toHaveLength(1);
+      expect(store.activeHandle).toBe("session-1");
+    });
+
+    store.startNewDrill(config);
+    await vi.waitFor(() => {
+      expect(observedModuleIds).toHaveLength(2);
+      expect(store.activeHandle).toBe("session-2");
+    });
+
+    store.startNewDrill(config);
+    await vi.waitFor(() => {
+      expect(observedModuleIds).toHaveLength(3);
+      expect(store.activeHandle).toBe("session-3");
+    });
+
+    store.startNewDrill(config);
+    await vi.waitFor(() => {
+      expect(observedModuleIds).toHaveLength(4);
+      expect(store.activeHandle).toBe("session-4");
+    });
+
+    expect(observedModuleIds).toEqual([
+      "stayman-bundle",
+      "jacoby-transfers-bundle",
+      "stayman-bundle",
+      "jacoby-transfers-bundle",
+    ]);
+  });
+
   it("RED: userBid with correct bid updates viewport and animates AI bids", async () => {
     const aiBids: AiBidEntry[] = [
       { seat: Seat.West, call: { type: "pass" as const }, historyEntry: { seat: Seat.West, call: { type: "pass" as const }, isUser: false } },
