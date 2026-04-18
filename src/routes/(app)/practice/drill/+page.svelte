@@ -1,12 +1,13 @@
 <script lang="ts">
   import { AVAILABLE_BASE_SYSTEMS, PracticeRole, displayConventionName, listConventions } from "../../../../service";
   import type { SystemSelectionId } from "../../../../service";
-  import { getCustomDrillsStore, getCustomSystemsStore } from "../../../../stores/context";
+  import { getDrillsStore, getCustomSystemsStore } from "../../../../stores/context";
   import AppScreen from "../../../../components/shared/AppScreen.svelte";
 
-  const drillsStore = getCustomDrillsStore();
+  const drillsStore = getDrillsStore();
   const customSystems = getCustomSystemsStore();
   const allConventions = listConventions();
+  const drills = $derived(drillsStore.drills.filter((drill) => drill.moduleIds.length === 1));
 
   function conventionName(id: string): string {
     const c = allConventions.find((x) => x.id === id);
@@ -20,7 +21,8 @@
     return custom?.name ?? id;
   }
 
-  function roleLabel(r: PracticeRole): string {
+  function roleLabel(r: PracticeRole | "auto"): string {
+    if (r === "auto") return "Auto";
     if (r === PracticeRole.Opener) return "Opener";
     if (r === PracticeRole.Responder) return "Responder";
     return "Both";
@@ -43,7 +45,7 @@
     >New drill</a>
   {/snippet}
 
-  {#if drillsStore.drills.length === 0}
+  {#if drills.length === 0}
     <div class="text-center py-16 border border-dashed border-border-subtle rounded-[--radius-lg]">
       <p class="text-text-muted mb-4">No custom drills yet.</p>
       <a
@@ -53,7 +55,7 @@
     </div>
   {:else}
     <ul class="space-y-2">
-      {#each drillsStore.drills as d (d.id)}
+      {#each drills as d (d.id)}
         <li class="relative group bg-bg-card border border-border-subtle rounded-[--radius-md] transition-all hover:border-border-default hover:shadow-md focus-within:border-accent-primary">
           <a
             href="/practice/drill/{d.id}/edit"
@@ -61,7 +63,7 @@
           >
             <p class="text-sm font-medium text-text-primary truncate group-hover:text-accent-primary transition-colors">{d.name}</p>
             <p class="text-xs text-text-muted mt-0.5">
-              {conventionName(d.conventionId)} · {systemLabel(d.systemSelectionId)} · {roleLabel(d.practiceRole)}
+              {conventionName(d.moduleIds[0] ?? "")} · {systemLabel(d.systemSelectionId)} · {roleLabel(d.practiceRole)}
             </p>
           </a>
           <button

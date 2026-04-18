@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { SystemSelectionId } from "../../service";
+  import { AVAILABLE_BASE_SYSTEMS } from "../../service";
   import type { DevServicePort } from "../../service";
   import { BridgeService } from "../../service";
   import { applyDevParams } from "../../stores/dev-params";
@@ -6,9 +8,7 @@
   import { createAppStore } from "../../stores/app.svelte";
   import { createCustomSystemsStore } from "../../stores/custom-systems.svelte";
   import { createUserModuleStore } from "../../stores/user-modules.svelte";
-  import { createPracticePacksStore } from "../../stores/practice-packs.svelte";
-  import { createDrillPresetsStore } from "../../stores/drill-presets.svelte";
-  import { createCustomDrillsStore } from "../../stores/custom-drills.svelte";
+  import { createDrillsStore } from "../../stores/drills.svelte";
   import { getAuthStore } from "../../stores/context";
   import AppShell from "../../components/navigation/AppShell.svelte";
   import AppReady from "../../AppReady.svelte";
@@ -22,10 +22,25 @@
   let appStore = $state<ReturnType<typeof createAppStore> | null>(null);
   let customSystemsStore = $state<ReturnType<typeof createCustomSystemsStore> | null>(null);
   let userModuleStore = $state<ReturnType<typeof createUserModuleStore> | null>(null);
-  let practicePacksStore = $state<ReturnType<typeof createPracticePacksStore> | null>(null);
-  let drillPresetsStore = $state<ReturnType<typeof createDrillPresetsStore> | null>(null);
-  let customDrillsStore = $state<ReturnType<typeof createCustomDrillsStore> | null>(null);
+  let drillsStore = $state<ReturnType<typeof createDrillsStore> | null>(null);
   const authStore = getAuthStore();
+
+  function readDefaultSystemId(): SystemSelectionId {
+    try {
+      const raw = localStorage.getItem("bridge-app:practice-preferences");
+      if (!raw) return "sayc";
+      const parsed = JSON.parse(raw) as { baseSystemId?: unknown };
+      const baseSystemId = parsed?.baseSystemId;
+      if (typeof baseSystemId !== "string") return "sayc";
+      if (baseSystemId.startsWith("custom:")) return baseSystemId as SystemSelectionId;
+      if (AVAILABLE_BASE_SYSTEMS.some((system) => system.id === baseSystemId)) {
+        return baseSystemId as SystemSelectionId;
+      }
+      return "sayc";
+    } catch {
+      return "sayc";
+    }
+  }
 
   function init(): void {
     engineReady = false;
@@ -35,13 +50,11 @@
     svc.init()
       .then(() => {
         resolvedService = svc;
-        const store = createAppStore();
-        appStore = store;
         customSystemsStore = createCustomSystemsStore();
         userModuleStore = createUserModuleStore();
-        practicePacksStore = createPracticePacksStore();
-        drillPresetsStore = createDrillPresetsStore();
-        customDrillsStore = createCustomDrillsStore();
+        drillsStore = createDrillsStore({ defaultSystemId: readDefaultSystemId() });
+        const store = createAppStore();
+        appStore = store;
         // Validate stored custom system selection still exists
         if (!customSystemsStore.isValidSelection(store.baseSystemId)) {
           store.setBaseSystemId("sayc");
@@ -66,7 +79,7 @@
       onclick={() => init()}
     >Retry</button>
   </div>
-{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore || !customSystemsStore || !userModuleStore || !practicePacksStore || !drillPresetsStore || !customDrillsStore || !authStore}
+{:else if !engineReady || !resolvedService || !resolvedGameStore || !appStore || !customSystemsStore || !userModuleStore || !drillsStore || !authStore}
   <div class="bg-bg-deepest text-text-primary flex h-screen items-center justify-center">
     Loading engine...
   </div>
@@ -77,9 +90,7 @@
     {appStore}
     {customSystemsStore}
     {userModuleStore}
-    {practicePacksStore}
-    {drillPresetsStore}
-    {customDrillsStore}
+    {drillsStore}
     {authStore}
   >
     <div class="bg-bg-deepest text-text-primary h-screen overflow-hidden font-sans">

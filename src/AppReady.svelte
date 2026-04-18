@@ -5,9 +5,7 @@
   import type { createAppStore } from "./stores/app.svelte";
   import type { createCustomSystemsStore } from "./stores/custom-systems.svelte";
   import type { createUserModuleStore } from "./stores/user-modules.svelte";
-  import type { createPracticePacksStore } from "./stores/practice-packs.svelte";
-  import type { createDrillPresetsStore } from "./stores/drill-presets.svelte";
-  import type { createCustomDrillsStore } from "./stores/custom-drills.svelte";
+  import type { createDrillsStore } from "./stores/drills.svelte";
   import type { createAuthStore } from "./stores/auth.svelte";
   import {
     setService,
@@ -15,9 +13,7 @@
     setAppStore,
     setCustomSystemsStore,
     setUserModuleStore,
-    setPracticePacksStore,
-    setDrillPresetsStore,
-    setCustomDrillsStore,
+    setDrillsStore,
     setAuthStore,
   } from "./stores/context";
 
@@ -27,9 +23,7 @@
     appStore: ReturnType<typeof createAppStore>;
     customSystemsStore: ReturnType<typeof createCustomSystemsStore>;
     userModuleStore: ReturnType<typeof createUserModuleStore>;
-    practicePacksStore: ReturnType<typeof createPracticePacksStore>;
-    drillPresetsStore: ReturnType<typeof createDrillPresetsStore>;
-    customDrillsStore: ReturnType<typeof createCustomDrillsStore>;
+    drillsStore: ReturnType<typeof createDrillsStore>;
     authStore: ReturnType<typeof createAuthStore>;
     children: Snippet;
   }
@@ -42,9 +36,7 @@
   setAppStore(props.appStore);
   setCustomSystemsStore(props.customSystemsStore);
   setUserModuleStore(props.userModuleStore);
-  setPracticePacksStore(props.practicePacksStore);
-  setDrillPresetsStore(props.drillPresetsStore);
-  setCustomDrillsStore(props.customDrillsStore);
+  setDrillsStore(props.drillsStore);
   setAuthStore(props.authStore);
 </script>
 

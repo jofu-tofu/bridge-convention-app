@@ -41,12 +41,14 @@
   // Map moduleId → displayName so whyNot rows can identify which convention
   // each eliminated meaning came from (e.g., Natural 3NT vs Jacoby 3NT).
   const moduleDisplayNames = $derived.by(() => {
-    const map = new Map<string, string>();
-    for (const m of listModules()) map.set(m.moduleId, m.displayName);
-    return map;
+    const names: Record<string, string> = {};
+    for (const module of listModules()) {
+      names[module.moduleId] = module.displayName;
+    }
+    return names;
   });
   function moduleDisplayName(moduleId: string): string {
-    return moduleDisplayNames.get(moduleId) ?? moduleId;
+    return moduleDisplayNames[moduleId] ?? moduleId;
   }
 
   // Meaning display label from the live meaning view

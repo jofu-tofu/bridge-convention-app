@@ -1,13 +1,14 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { getAppStore, getPracticePacksStore, getUserModuleStore } from "../../stores/context";
+  import { PracticeMode } from "../../service";
+  import { getAppStore, getDrillsStore, getUserModuleStore } from "../../stores/context";
   import { listModules, listConventions } from "../../service/service-helpers";
   import { type CatalogModule, mergeModules } from "../shared/module-catalog";
   import ModuleChecklist from "../shared/ModuleChecklist.svelte";
   import AppScreen from "../shared/AppScreen.svelte";
 
   const appStore = getAppStore();
-  const packsStore = getPracticePacksStore();
+  const drillsStore = getDrillsStore();
   const userModuleStore = getUserModuleStore();
 
   const packId = appStore.editingPackId;
@@ -29,11 +30,11 @@
   function initState() {
     if (packId) {
       // Edit mode
-      const pack = packsStore.getPack(packId);
-      if (pack) {
-        editName = pack.name;
-        editDescription = pack.description;
-        selectedIds = [...pack.conventionIds];
+      const drill = drillsStore.getById(packId);
+      if (drill) {
+        editName = drill.name;
+        editDescription = "";
+        selectedIds = [...drill.moduleIds];
       }
     } else if (basedOn) {
       // Fork mode
@@ -92,24 +93,32 @@
 
   function handleSave(): void {
     const trimmed = editName.trim();
-    const validationError = packsStore.validateName(trimmed, packId ?? undefined);
+    const validationError = drillsStore.validateName(trimmed);
     if (validationError) {
       nameError = validationError;
       return;
     }
+    if (selectedIds.length === 0) {
+      nameError = "Select at least one convention";
+      return;
+    }
 
     if (packId) {
-      packsStore.updatePack(packId, {
+      const existing = drillsStore.getById(packId);
+      drillsStore.update(packId, {
         name: trimmed,
-        description: editDescription.trim(),
-        conventionIds: selectedIds,
+        moduleIds: selectedIds,
+        practiceMode: existing?.practiceMode ?? PracticeMode.DecisionDrill,
+        practiceRole: existing?.practiceRole ?? "auto",
+        systemSelectionId: existing?.systemSelectionId ?? appStore.baseSystemId,
       });
     } else {
-      packsStore.createPack({
+      drillsStore.create({
         name: trimmed,
-        description: editDescription.trim(),
-        conventionIds: selectedIds,
-        basedOn: basedOn,
+        moduleIds: selectedIds,
+        practiceMode: PracticeMode.DecisionDrill,
+        practiceRole: "auto",
+        systemSelectionId: appStore.baseSystemId,
       });
     }
 
@@ -122,7 +131,7 @@
 
   function handleDelete(): void {
     if (!packId) return;
-    packsStore.deletePack(packId);
+    drillsStore.delete(packId);
     void goto("/workshop");
   }
 </script>

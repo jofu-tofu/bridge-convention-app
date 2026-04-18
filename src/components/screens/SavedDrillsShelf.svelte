@@ -1,18 +1,20 @@
 <script lang="ts">
   import { listConventions, displayConventionName } from "../../service";
   import type { ConventionInfo } from "../../service";
-  import { getDrillPresetsStore } from "../../stores/context";
-  import type { DrillPreset } from "../../stores/drill-presets.svelte";
+  import { getDrillsStore } from "../../stores/context";
+  import { DRILL_NAME_MAX } from "../../stores/drills.svelte";
+  import type { Drill } from "../../stores/drills.svelte";
   import SectionHeader from "../shared/SectionHeader.svelte";
 
   interface Props {
-    onLaunch: (preset: DrillPreset) => void;
-    onEdit: (presetId: string) => void;
+    onLaunch: (drill: Drill) => void;
+    onEdit: (drillId: string) => void;
   }
   const { onLaunch, onEdit }: Props = $props();
 
-  const presetsStore = getDrillPresetsStore();
+  const drillsStore = getDrillsStore();
   const conventions = $derived(listConventions());
+  const savedDrills = $derived(drillsStore.drills.filter((drill) => drill.moduleIds.length === 1));
   let openMenuId = $state<string | null>(null);
   let renameId = $state<string | null>(null);
   let renameValue = $state("");
@@ -47,75 +49,75 @@
     renameId = null;
   }
 
-  function startRename(p: DrillPreset): void {
-    renameId = p.id;
-    renameValue = p.name;
+  function startRename(drill: Drill): void {
+    renameId = drill.id;
+    renameValue = drill.name;
     renameError = null;
   }
 
   function commitRename(): void {
     if (!renameId) return;
-    const err = presetsStore.validateName(renameValue);
+    const err = drillsStore.validateName(renameValue);
     if (err) { renameError = err; return; }
-    presetsStore.update(renameId, { name: renameValue });
+    drillsStore.rename(renameId, renameValue);
     closeMenu();
   }
 
   function onDelete(id: string): void {
-    presetsStore.delete(id);
+    drillsStore.delete(id);
     closeMenu();
   }
 </script>
 
 <svelte:window onclick={closeMenu} />
 
-{#if presetsStore.presets.length > 0}
+{#if savedDrills.length > 0}
   <section class="mb-4" aria-labelledby="your-drills-heading">
     <div id="your-drills-heading">
       <SectionHeader level="h2">Your Drills</SectionHeader>
     </div>
     <div class="flex gap-2 overflow-x-auto scrollbar-none pb-1 mt-2">
-      {#each presetsStore.presets as preset (preset.id)}
-        <div class="relative shrink-0" onclick={(e) => e.stopPropagation()} role="presentation">
+      {#each savedDrills as drill (drill.id)}
+        <div class="relative shrink-0" onclick={(event) => event.stopPropagation()} role="presentation">
           <div class="flex items-stretch bg-bg-card border border-border-subtle rounded-[--radius-md] overflow-hidden w-56">
             <button
               type="button"
               class="flex-1 min-w-0 text-left px-3 py-2 hover:bg-accent-primary/5 cursor-pointer"
-              data-testid="drill-preset-launch-{preset.id}"
-              aria-label="Launch drill {preset.name}"
-              onclick={() => onLaunch(preset)}
+              data-testid="drill-preset-launch-{drill.id}"
+              aria-label="Launch drill {drill.name}"
+              onclick={() => onLaunch(drill)}
             >
               <p class="text-sm font-semibold text-text-primary truncate flex items-center gap-1.5">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="text-accent-primary shrink-0" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                {preset.name}
+                {drill.name}
               </p>
-              <p class="text-xs text-text-muted truncate">{conventionName(preset.conventionId)}</p>
-              <p class="text-xs text-text-muted truncate">{ago(preset.lastUsedAt)}</p>
+              <p class="text-xs text-text-muted truncate">{conventionName(drill.moduleIds[0] ?? "")}</p>
+              <p class="text-xs text-text-muted truncate">{ago(drill.lastUsedAt)}</p>
             </button>
             <button
               type="button"
               class="px-2 border-l border-border-subtle text-text-muted hover:text-text-primary cursor-pointer min-w-[--size-touch-target]"
-              aria-label="Options for {preset.name}"
+              aria-label="Options for {drill.name}"
               aria-haspopup="menu"
-              aria-expanded={openMenuId === preset.id}
-              data-testid="drill-preset-menu-{preset.id}"
-              onclick={() => toggleMenu(preset.id)}
+              aria-expanded={openMenuId === drill.id}
+              data-testid="drill-preset-menu-{drill.id}"
+              onclick={() => toggleMenu(drill.id)}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
             </button>
           </div>
 
-          {#if openMenuId === preset.id}
+          {#if openMenuId === drill.id}
             <div
               role="menu"
               class="absolute right-0 top-full mt-1 z-10 w-48 bg-bg-card border border-border-subtle rounded-[--radius-md] shadow-lg py-1"
             >
-              {#if renameId === preset.id}
+              {#if renameId === drill.id}
                 <div class="px-2 py-1 space-y-1">
                   <input
                     type="text"
                     bind:value={renameValue}
-                    maxlength={60}
+                    maxlength={DRILL_NAME_MAX}
                     aria-label="New name"
                     class="w-full px-2 py-1 rounded-[--radius-sm] bg-bg-base border border-border-subtle text-sm text-text-primary outline-none"
                     onkeydown={(e) => { if (e.key === "Enter") commitRename(); if (e.key === "Escape") closeMenu(); }}
@@ -127,10 +129,10 @@
                   </div>
                 </div>
               {:else}
-                <button type="button" role="menuitem" class="w-full text-left px-3 py-1.5 text-sm text-text-primary hover:bg-accent-primary/10 cursor-pointer" onclick={() => { onLaunch(preset); closeMenu(); }}>Launch</button>
-                <button type="button" role="menuitem" class="w-full text-left px-3 py-1.5 text-sm text-text-primary hover:bg-accent-primary/10 cursor-pointer" onclick={() => startRename(preset)}>Rename</button>
-                <button type="button" role="menuitem" class="w-full text-left px-3 py-1.5 text-sm text-text-primary hover:bg-accent-primary/10 cursor-pointer" onclick={() => { onEdit(preset.id); closeMenu(); }}>Edit configuration</button>
-                <button type="button" role="menuitem" class="w-full text-left px-3 py-1.5 text-sm text-red-400 hover:bg-red-400/10 cursor-pointer" onclick={() => onDelete(preset.id)}>Delete</button>
+                <button type="button" role="menuitem" class="w-full text-left px-3 py-1.5 text-sm text-text-primary hover:bg-accent-primary/10 cursor-pointer" onclick={() => { onLaunch(drill); closeMenu(); }}>Launch</button>
+                <button type="button" role="menuitem" class="w-full text-left px-3 py-1.5 text-sm text-text-primary hover:bg-accent-primary/10 cursor-pointer" onclick={() => startRename(drill)}>Rename</button>
+                <button type="button" role="menuitem" class="w-full text-left px-3 py-1.5 text-sm text-text-primary hover:bg-accent-primary/10 cursor-pointer" onclick={() => { onEdit(drill.id); closeMenu(); }}>Edit configuration</button>
+                <button type="button" role="menuitem" class="w-full text-left px-3 py-1.5 text-sm text-red-400 hover:bg-red-400/10 cursor-pointer" onclick={() => onDelete(drill.id)}>Delete</button>
               {/if}
             </div>
           {/if}

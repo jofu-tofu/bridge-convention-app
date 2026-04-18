@@ -2,10 +2,13 @@
   import { page } from "$app/state";
   import CustomDrillForm from "../../../../../../components/screens/CustomDrillForm.svelte";
   import AppLink from "../../../../../../components/shared/AppLink.svelte";
-  import { getCustomDrillsStore } from "../../../../../../stores/context";
+  import { getDrillsStore } from "../../../../../../stores/context";
 
-  const drillsStore = getCustomDrillsStore();
-  const drill = $derived(drillsStore.getDrill(page.params.id ?? ""));
+  const drillsStore = getDrillsStore();
+  const drill = $derived.by(() => {
+    const candidate = drillsStore.getById(page.params.id ?? "");
+    return candidate?.moduleIds.length === 1 ? candidate : undefined;
+  });
 </script>
 
 {#if drill}

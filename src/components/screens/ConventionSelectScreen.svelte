@@ -3,9 +3,9 @@
   import { page } from "$app/state";
   import { listConventions, ConventionCategory, displayConventionName } from "../../service";
   import type { ConventionInfo } from "../../service";
-  import { getAppStore, getAuthStore, getDrillPresetsStore } from "../../stores/context";
+  import { getAppStore, getAuthStore, getDrillsStore } from "../../stores/context";
   import { canPractice } from "../../stores/entitlements";
-  import type { DrillPreset } from "../../stores/drill-presets.svelte";
+  import type { Drill } from "../../stores/drills.svelte";
   import AuthModal from "../shared/AuthModal.svelte";
   import PaywallOverlay from "../shared/PaywallOverlay.svelte";
   import { filterConventions } from "./filter-conventions";
@@ -18,7 +18,7 @@
 
   const appStore = getAppStore();
   const auth = getAuthStore();
-  const presetsStore = getDrillPresetsStore();
+  const drillsStore = getDrillsStore();
 
   let authModal = $state<ReturnType<typeof AuthModal>>();
   let paywallOverlay = $state<ReturnType<typeof PaywallOverlay>>();
@@ -59,17 +59,19 @@
     void goto("/game");
   }
 
-  function launchPreset(preset: DrillPreset) {
-    const convention = allConventions.find((c) => c.id === preset.conventionId);
+  function launchDrill(drill: Drill) {
+    const conventionId = drill.moduleIds[0];
+    if (!conventionId) return;
+    const convention = allConventions.find((c) => c.id === conventionId);
     if (!convention) return;
     if (!canPractice(auth.user, convention.id)) {
       paywallOverlay?.open();
       return;
     }
-    presetsStore.markLaunched(preset.id);
-    appStore.setPracticeMode(preset.practiceMode);
-    appStore.setDevPracticeRole(preset.practiceRole);
-    appStore.setBaseSystemId(preset.systemSelectionId);
+    drillsStore.markLaunched(drill.id);
+    appStore.setPracticeMode(drill.practiceMode);
+    appStore.setDevPracticeRole(drill.practiceRole === "auto" ? null : drill.practiceRole);
+    appStore.setBaseSystemId(drill.systemSelectionId);
     appStore.selectConvention(convention);
     void goto("/game");
   }
@@ -158,7 +160,7 @@
 
   <div>
     {#if !searchQuery}
-      <SavedDrillsShelf onLaunch={launchPreset} onEdit={openEditDialog} />
+      <SavedDrillsShelf onLaunch={launchDrill} onEdit={openEditDialog} />
     {/if}
 
     {#if filteredConventions.length > 0}
@@ -227,5 +229,5 @@
   </div>
   <AuthModal bind:this={authModal} />
   <PaywallOverlay bind:this={paywallOverlay} />
-  <DrillPresetDialog bind:this={presetDialog} onLaunch={launchPreset} />
+  <DrillPresetDialog bind:this={presetDialog} onLaunch={launchDrill} />
 </AppScreen>

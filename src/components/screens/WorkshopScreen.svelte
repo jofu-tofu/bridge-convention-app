@@ -2,7 +2,7 @@
   import { goto } from "$app/navigation";
   import type { BaseSystemId, CustomSystem, ConventionInfo } from "../../service";
   import { AVAILABLE_BASE_SYSTEMS } from "../../service";
-  import { getAppStore, getCustomSystemsStore, getPracticePacksStore } from "../../stores/context";
+  import { getAppStore, getCustomSystemsStore, getDrillsStore } from "../../stores/context";
   import { listConventions } from "../../service/service-helpers";
   import ToggleGroup from "../shared/ToggleGroup.svelte";
   import ItemCard from "../shared/ItemCard.svelte";
@@ -19,7 +19,7 @@
 
   const appStore = getAppStore();
   const customSystems = getCustomSystemsStore();
-  const practicePacksStore = getPracticePacksStore();
+  const drillsStore = getDrillsStore();
 
   let activeSection = $state<"systems" | "conventions" | "practice-packs">("systems");
   let editingSystem = $state<CustomSystem | null>(null);
@@ -31,6 +31,7 @@
   const service = getService();
 
   const builtInBundles: ConventionInfo[] = listConventions();
+  const practicePacks = $derived(drillsStore.drills.filter((drill) => drill.moduleIds.length > 1));
 
   // Picker dialog refs
   let systemPickerRef = $state<{ open: () => void; close: () => void }>();
@@ -240,23 +241,16 @@
           New Practice Pack
         </button>
 
-        {#if practicePacksStore.packs.length > 0}
+        {#if practicePacks.length > 0}
           <div class="space-y-2">
-            {#each practicePacksStore.packs as pack (pack.id)}
-              {@const basedOnBundle = pack.basedOn ? builtInBundles.find((b) => b.id === pack.basedOn) : null}
+            {#each practicePacks as pack (pack.id)}
               <ItemCard testId="workshop-pack-{pack.id}" interactive={false}>
                 <div class="flex items-center justify-between">
                   <div>
                     <p class="font-semibold text-text-primary text-sm">{pack.name}</p>
                     <p class="text-xs text-text-muted mt-0.5">
-                      {pack.conventionIds.length} convention{pack.conventionIds.length !== 1 ? "s" : ""}
-                      {#if basedOnBundle}
-                        &middot; Based on {basedOnBundle.name}
-                      {/if}
+                      {pack.moduleIds.length} convention{pack.moduleIds.length !== 1 ? "s" : ""}
                     </p>
-                    {#if pack.description}
-                      <p class="text-xs text-text-secondary mt-1">{pack.description}</p>
-                    {/if}
                   </div>
                   <div class="flex gap-2">
                     <button
@@ -265,7 +259,7 @@
                     >Edit</button>
                     <button
                       class="px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-red-400 hover:text-red-300 border border-border-subtle hover:border-red-400/50 transition-colors cursor-pointer"
-                      onclick={() => practicePacksStore.deletePack(pack.id)}
+                      onclick={() => drillsStore.delete(pack.id)}
                     >Delete</button>
                   </div>
                 </div>

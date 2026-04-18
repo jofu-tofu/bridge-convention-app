@@ -11,7 +11,7 @@ import { canonicalBundleId } from "../../../stores/bundle-id-migration";
 const LAST_CONVENTION_KEY = "bridge-app:last-convention";
 const PREFS_KEY = "bridge-app:practice-preferences";
 const CUSTOM_SYSTEMS_KEY = "bridge-app:custom-systems";
-const PRACTICE_PACKS_KEY = "bridge-app:practice-packs";
+const DRILLS_KEY = "bridge-app:drills";
 
 const CONVENTION_DISPLAY_NAMES: Record<string, string> = {
   "nt-bundle": "1NT Responses",
@@ -120,13 +120,19 @@ export interface LandingPracticePack {
 
 export function readPracticePacks(): LandingPracticePack[] {
   try {
-    const raw = localStorage.getItem(PRACTICE_PACKS_KEY);
+    const raw = localStorage.getItem(DRILLS_KEY);
     if (!raw) return [];
-    const parsed = JSON.parse(raw) as { packs?: unknown };
-    if (!parsed || !Array.isArray(parsed.packs)) return [];
-    return (parsed.packs as Array<Record<string, unknown>>)
-      .filter((p) => typeof p.id === "string" && typeof p.name === "string")
-      .map((p) => ({ id: p.id as string, name: p.name as string }));
+    const parsed = JSON.parse(raw) as { drills?: unknown };
+    if (!parsed || !Array.isArray(parsed.drills)) return [];
+    return (parsed.drills as Array<Record<string, unknown>>)
+      .filter(
+        (drill) =>
+          typeof drill.id === "string" &&
+          typeof drill.name === "string" &&
+          Array.isArray(drill.moduleIds) &&
+          drill.moduleIds.length > 1,
+      )
+      .map((drill) => ({ id: drill.id as string, name: drill.name as string }));
   } catch {
     return [];
   }

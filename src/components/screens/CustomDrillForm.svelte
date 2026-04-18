@@ -2,6 +2,7 @@
   import { goto } from "$app/navigation";
   import {
     AVAILABLE_BASE_SYSTEMS,
+    PracticeMode,
     PracticeRole,
     displayConventionName,
     listConventions,
@@ -9,30 +10,32 @@
   import type { SystemSelectionId } from "../../service";
   import {
     getAppStore,
-    getCustomDrillsStore,
+    getDrillsStore,
     getCustomSystemsStore,
   } from "../../stores/context";
-  import type { CustomDrill } from "../../stores/custom-drills.svelte";
+  import type { Drill } from "../../stores/drills.svelte";
   import AppScreen from "../shared/AppScreen.svelte";
 
   interface Props {
     mode: "create" | "edit";
-    drill?: CustomDrill;
+    drill?: Drill;
   }
   const { mode, drill }: Props = $props();
 
   const appStore = getAppStore();
-  const drillsStore = getCustomDrillsStore();
+  const drillsStore = getDrillsStore();
   const customSystems = getCustomSystemsStore();
 
   const allConventions = listConventions();
 
   let name = $state(drill?.name ?? "");
   let conventionId = $state<string>(
-    drill?.conventionId ?? (allConventions[0]?.id ?? ""),
+    drill?.moduleIds[0] ?? (allConventions[0]?.id ?? ""),
   );
   let practiceRole = $state<PracticeRole>(
-    drill?.practiceRole ?? appStore.userPracticeRole ?? PracticeRole.Responder,
+    drill?.practiceRole === "auto"
+      ? appStore.userPracticeRole ?? PracticeRole.Responder
+      : drill?.practiceRole ?? appStore.userPracticeRole ?? PracticeRole.Responder,
   );
   let systemSelectionId = $state<SystemSelectionId>(
     drill?.systemSelectionId ?? appStore.baseSystemId,
@@ -54,10 +57,23 @@
     const err = drillsStore.validateName(name);
     if (err) { errorMsg = err; return; }
     if (!conventionId) { errorMsg = "Select a convention"; return; }
+    const practiceMode = drill?.practiceMode ?? PracticeMode.DecisionDrill;
     if (mode === "create") {
-      drillsStore.create({ name, conventionId, practiceRole, systemSelectionId });
+      drillsStore.create({
+        name,
+        moduleIds: [conventionId],
+        practiceMode,
+        practiceRole,
+        systemSelectionId,
+      });
     } else if (drill) {
-      drillsStore.update(drill.id, { name, conventionId, practiceRole, systemSelectionId });
+      drillsStore.update(drill.id, {
+        name,
+        moduleIds: [conventionId],
+        practiceMode,
+        practiceRole,
+        systemSelectionId,
+      });
     }
     void goto("/practice/drill");
   }

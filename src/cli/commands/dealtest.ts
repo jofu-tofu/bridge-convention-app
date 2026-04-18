@@ -4,7 +4,7 @@
 // session and reports whether deal generation succeeds or exhausts.
 // Does NOT require dev WASM — only calls createDrillSession + startDrill.
 
-import type { ServicePort, SessionConfig, BaseSystemId } from "../../service";
+import type { DevServicePort, SessionConfig } from "../../service";
 import { PlayPreference, getSystemConfig, DEFAULT_BASE_MODULE_IDS } from "../../service";
 import type { Flags } from "../shared";
 import {
@@ -22,7 +22,7 @@ interface BundleDealResult {
   failReasons: string[];
 }
 
-export async function runDealtest(service: ServicePort, flags: Flags): Promise<void> {
+export async function runDealtest(service: DevServicePort, flags: Flags): Promise<void> {
   const startSeed = optionalNumericArg(flags, "seed") ?? 1;
   const count = optionalNumericArg(flags, "count") ?? 10;
   const system = parseBaseSystem(flags);

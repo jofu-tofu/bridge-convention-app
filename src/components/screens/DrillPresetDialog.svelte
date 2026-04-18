@@ -1,19 +1,21 @@
 <script lang="ts">
-  import { PracticeMode, PracticeRole, AVAILABLE_BASE_SYSTEMS, displayConventionName } from "../../service";
+  import { PracticeMode, PracticeRole, AVAILABLE_BASE_SYSTEMS, displayConventionName, listConventions } from "../../service";
   import type { ConventionInfo, SystemSelectionId } from "../../service";
   import {
     getAppStore,
     getCustomSystemsStore,
-    getDrillPresetsStore,
+    getDrillsStore,
   } from "../../stores/context";
-  import type { DrillPreset } from "../../stores/drill-presets.svelte";
+  import { DRILL_NAME_MAX } from "../../stores/drills.svelte";
+  import type { Drill } from "../../stores/drills.svelte";
 
   const appStore = getAppStore();
   const customSystems = getCustomSystemsStore();
-  const presetsStore = getDrillPresetsStore();
+  const drillsStore = getDrillsStore();
+  const allConventions = listConventions();
 
   interface Props {
-    onLaunch: (preset: DrillPreset) => void;
+    onLaunch: (drill: Drill) => void;
   }
   const { onLaunch }: Props = $props();
 
@@ -60,15 +62,18 @@
       practiceRole = appStore.userPracticeRole ?? PracticeRole.Responder;
       systemSelectionId = appStore.baseSystemId;
     } else {
-      const p = presetsStore.getPreset(args.presetId);
-      if (!p) return;
+      const drill = drillsStore.getById(args.presetId);
+      if (!drill) return;
       mode = "edit";
-      presetId = p.id;
+      presetId = drill.id;
       convention = null;
-      name = p.name;
-      practiceMode = p.practiceMode;
-      practiceRole = p.practiceRole;
-      systemSelectionId = p.systemSelectionId;
+      name = drill.name;
+      practiceMode = drill.practiceMode;
+      practiceRole =
+        drill.practiceRole === "auto"
+          ? appStore.userPracticeRole ?? PracticeRole.Responder
+          : drill.practiceRole;
+      systemSelectionId = drill.systemSelectionId;
     }
     dialogRef?.showModal();
   }
@@ -80,32 +85,32 @@
   function conventionName(): string {
     if (convention) return displayConventionName(convention.name);
     if (presetId) {
-      const p = presetsStore.getPreset(presetId);
-      if (p) return p.conventionId;
+      const drill = drillsStore.getById(presetId);
+      const conventionId = drill?.moduleIds[0];
+      if (!conventionId) return "";
+      const matched = allConventions.find((item) => item.id === conventionId);
+      if (matched) return displayConventionName(matched.name);
+      return conventionId;
     }
     return "";
   }
 
-  function doSave(): DrillPreset | null {
-    const err = presetsStore.validateName(name);
+  function doSave(): Drill | null {
+    const err = drillsStore.validateName(name);
     if (err) { errorMsg = err; return null; }
     if (mode === "create") {
-      if (presetsStore.atSoftCap) {
-        errorMsg = "You have reached the maximum of 20 saved drills. Delete one to add more.";
-        return null;
-      }
       if (!convention) return null;
-      return presetsStore.create({
+      return drillsStore.create({
         name,
-        conventionId: convention.id,
+        moduleIds: [convention.id],
         practiceMode,
         practiceRole,
         systemSelectionId,
       });
     }
     if (!presetId) return null;
-    presetsStore.update(presetId, { name, practiceMode, practiceRole, systemSelectionId });
-    return presetsStore.getPreset(presetId) ?? null;
+    drillsStore.update(presetId, { name, practiceMode, practiceRole, systemSelectionId });
+    return drillsStore.getById(presetId) ?? null;
   }
 
   function onSave(): void {
@@ -191,12 +196,12 @@
         <input
           id="drill-preset-name"
           type="text"
-          maxlength={60}
+          maxlength={DRILL_NAME_MAX}
           bind:value={name}
           placeholder="e.g. Stayman responder 2/1"
           class="w-full px-3 py-2 rounded-[--radius-md] bg-bg-base border border-border-subtle text-sm text-text-primary outline-none focus:border-accent-primary/40"
         />
-        <p class="text-xs text-text-muted mt-1">Required, max 60 characters.</p>
+        <p class="text-xs text-text-muted mt-1">Required, max {DRILL_NAME_MAX} characters.</p>
       </div>
 
       {#if errorMsg}
