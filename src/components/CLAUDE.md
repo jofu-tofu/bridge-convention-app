@@ -59,11 +59,10 @@ components/
       LearnPhase.svelte              Learn mode: step-through completed auction with all 4 hands visible. Uses ExplanationViewport data. BidAnnotationPopup shows meaning per bid. Keyboard nav (arrows/space/home/end).
       LearnSidePanel.svelte          Learn mode side panel: step indicator + prev/next/first/last nav buttons + New Deal + Back to Menu
       layout-props.ts                (moved to src/components/shared/layout-props.ts)
-      BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + dev debug info
+      BiddingSidePanel.svelte        BidPanel + BidFeedbackPanel + new-deal lifecycle action
       PlaySidePanel.svelte           Contract, trick counts, restart play, skip-to-review
       ReviewSidePanel.svelte         Generic tabbed container: receives tab definitions (id, label, snippet) + actions snippet from parent
       review-helpers.ts              Pure format functions: formatVulnerability, formatResult (extracted from ReviewSidePanel)
-      SettingsDialog.svelte          Reusable settings dialog (readonly prop for non-bidding phases)
       ContractDisplay.svelte         Formatted contract with doubled/redoubled indicators
       ScaledTableArea.svelte         Responsive table wrapper with transform-origin
   game/
@@ -120,7 +119,6 @@ components/
     ScreenSection.svelte             Section wrapper with standardized h2 header + optional helper text + content snippet. Used by WorkshopScreen.
     Spinner.svelte                   Inline loading spinner (sm/md sizes)
     SectionHeader.svelte             Uppercase muted section heading (h2/h3)
-    SettingsButton.svelte            Full-width settings gear button
     BidFeedbackShell.svelte          Variant-colored alert container for bid feedback
     ToggleGroup.svelte               Mutually-exclusive button group (outline/filled variants)
     NumberStepper.svelte             Horizontal [-] N [+] input with auto-repeat long-press, clamp, keyboard arrows
@@ -144,6 +142,8 @@ components/
 **Screen flow:** SvelteKit `(app)/+layout.svelte` owns the full app layout — loads WASM, renders `AppReady.svelte` which provides context setup + nav chrome. File-based routing replaces store-driven screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop (dev only)/Settings icons. Learn links to `/learn` (conventions reference); the NavRail flyout also exposes `/lessons` and `/systems`. Mobile: bottom tab bar (BottomTabBar) with Home/Learn/Workshop (dev only)/Settings tabs (3 tabs in production, 4 in dev). Workshop tab is the home for system/convention/practice pack management, gated behind `FEATURES.workshop`. `?profiles=true` backward compat alias redirects to `/workshop`. Workshop = management (fork, edit, delete, configure). Learn = study (teaching content, flow trees, surfaces).
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
+
+**Practice settings are launch-time only.** `game-screen/*` components do not expose mode/role/system/opponent/play-profile settings controls. Those are chosen on `/practice` before launch and stay immutable for the active drill; the only in-game preference still read live is `displaySettings.showEducationalAnnotations` for annotation visibility.
 
 **Design tokens:** Suit colors use 4-color scheme — card-face colors differ from on-dark-bg colors. See `src/components/shared/tokens.ts`.
 
@@ -189,4 +189,5 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `AppReady.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-18 | version=23 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-18 | version=25 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->
+

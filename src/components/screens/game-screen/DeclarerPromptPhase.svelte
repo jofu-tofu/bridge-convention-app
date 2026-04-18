@@ -7,8 +7,6 @@
   import AuctionTable from "../../game/AuctionTable.svelte";
   import DeclarerPrompt from "../../game/DeclarerPrompt.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
-  import SettingsDialog from "./SettingsDialog.svelte";
-  import SettingsButton from "../../shared/SettingsButton.svelte";
 
   interface Props {
     viewport: DeclarerPromptViewport;
@@ -24,8 +22,6 @@
 
   const layout = getLayoutConfig();
   const appStore = getAppStore();
-
-  let settingsDialogRef = $state<ReturnType<typeof SettingsDialog>>();
 </script>
 
 <div class={PHASE_CONTAINER_CLASS}>
@@ -55,8 +51,5 @@
         compact
       />
     </div>
-    <SettingsButton onclick={() => settingsDialogRef?.open()} testId="declarer-open-settings" class="mt-2" />
   </aside>
 </div>
-
-<SettingsDialog readonly bind:this={settingsDialogRef} />

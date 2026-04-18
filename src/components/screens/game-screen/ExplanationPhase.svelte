@@ -16,7 +16,6 @@
   import ScaledTableArea from "./ScaledTableArea.svelte";
   import PlayHistoryPanel from "./PlayHistoryPanel.svelte";
   import ReviewSidePanel from "./ReviewSidePanel.svelte";
-  import SettingsDialog from "./SettingsDialog.svelte";
   import ContractDisplay from "./ContractDisplay.svelte";
   import AuctionStepPanel from "../../game/AuctionStepPanel.svelte";
   import RoundBidList from "../../game/RoundBidList.svelte";
@@ -69,7 +68,6 @@
   );
 
   let showAllCards = $state(false);
-  let settingsDialogRef = $state<ReturnType<typeof SettingsDialog>>();
 
   // Auction step-through state
   let selectedBidStep = $state<number | null>(null);
@@ -423,7 +421,6 @@
     Next Deal
   </Button>
   <Button variant="secondary" onclick={onBackToMenu} testId="review-back-to-menu">Back to Menu</Button>
-  <Button variant="secondary" onclick={() => settingsDialogRef?.open()} testId="review-open-settings">Settings</Button>
 {/snippet}
 
 {#if hasPlayData}
@@ -555,5 +552,3 @@
     </aside>
   </div>
 {/if}
-
-<SettingsDialog readonly bind:this={settingsDialogRef} />

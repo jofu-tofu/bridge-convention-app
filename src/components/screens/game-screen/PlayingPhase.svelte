@@ -9,7 +9,6 @@
   import ScaledTableArea from "./ScaledTableArea.svelte";
   import PlaySidePanel from "./PlaySidePanel.svelte";
   import PlayHistoryPanel from "./PlayHistoryPanel.svelte";
-  import SettingsDialog from "./SettingsDialog.svelte";
 
   interface Props {
     viewport: PlayingViewport;
@@ -32,8 +31,6 @@
 
   const layout = getLayoutConfig();
   const gameStore = getGameStore();
-
-  let settingsDialogRef = $state<ReturnType<typeof SettingsDialog>>();
 </script>
 
 <div class={PLAYING_PHASE_CONTAINER_CLASS}>
@@ -74,9 +71,6 @@
       {onSkipToReview}
       {onRestartPlay}
       disabled={gameStore.isTransitioning}
-      onOpenSettings={() => settingsDialogRef?.open()}
     />
   </aside>
 </div>
-
-<SettingsDialog readonly bind:this={settingsDialogRef} />
