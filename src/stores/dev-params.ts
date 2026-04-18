@@ -1,5 +1,10 @@
 import type { createAppStore } from "./app.svelte";
-import { ConventionCategory, PracticeMode, PracticeRole, SubscriptionTier } from "../service";
+import {
+  ConventionCategory,
+  PracticeMode,
+  PracticeRole,
+  SubscriptionTier,
+} from "../service";
 import type { ConventionInfo } from "../service";
 import { listConventions } from "../service/service-helpers";
 import { goto } from "$app/navigation";
@@ -39,14 +44,23 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   // Deep links should land in the game screen. When a convention or phase is
   // specified without an explicit practiceMode, default to decision-drill.
   const phaseParam = params.get("phase");
-  const practiceModeParam = params.get("practiceMode")
-    ?? ((phaseParam || conventionParam) ? PracticeMode.DecisionDrill : null);
-  if (practiceModeParam === PracticeMode.DecisionDrill || practiceModeParam === PracticeMode.FullAuction || practiceModeParam === PracticeMode.Learn) {
+  const practiceModeParam =
+    params.get("practiceMode") ??
+    (phaseParam || conventionParam ? PracticeMode.DecisionDrill : null);
+  if (
+    practiceModeParam === PracticeMode.DecisionDrill ||
+    practiceModeParam === PracticeMode.FullAuction ||
+    practiceModeParam === PracticeMode.Learn
+  ) {
     store.setPracticeMode(practiceModeParam);
   }
 
   const practiceRoleParam = params.get("practiceRole");
-  if (practiceRoleParam === PracticeRole.Opener || practiceRoleParam === PracticeRole.Responder || practiceRoleParam === PracticeRole.Both) {
+  if (
+    practiceRoleParam === PracticeRole.Opener ||
+    practiceRoleParam === PracticeRole.Responder ||
+    practiceRoleParam === PracticeRole.Both
+  ) {
     store.setDevPracticeRole(practiceRoleParam);
   }
 
@@ -59,7 +73,9 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   } else if (conventionParam) {
     // Resolve from catalog for proper display name; fall back to stub for unknown IDs
     const conventions = listConventions();
-    const catalogMatch: ConventionInfo | undefined = conventions.find(c => c.id === conventionParam);
+    const catalogMatch: ConventionInfo | undefined = conventions.find(
+      (c) => c.id === conventionParam,
+    );
     if (catalogMatch) {
       store.selectConvention(catalogMatch);
     } else {
@@ -68,6 +84,7 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
         name: conventionParam,
         description: "",
         category: ConventionCategory.Asking,
+        defaultRole: PracticeRole.Opener,
       };
       store.selectConvention(fallbackConvention);
     }
@@ -86,7 +103,11 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
   }
 
   // ── Phase skip (universal — works in prod for shareable links) ──
-  if (phaseParam === "review" || phaseParam === "playing" || phaseParam === "declarer") {
+  if (
+    phaseParam === "review" ||
+    phaseParam === "playing" ||
+    phaseParam === "declarer"
+  ) {
     store.setSkipToPhase(phaseParam);
   }
 
@@ -95,7 +116,9 @@ export function applyDevParams(store: ReturnType<typeof createAppStore>): void {
 
   // Parse ?dev= comma-separated flags
   const devParam = params.get("dev");
-  const devFlags = new Set(devParam ? devParam.split(",").map(f => f.trim()) : []);
+  const devFlags = new Set(
+    devParam ? devParam.split(",").map((f) => f.trim()) : [],
+  );
 
   if (devFlags.has("debug")) {
     store.setDebugPanel(true);
@@ -125,8 +148,8 @@ export function getDevAuthOverride(): SubscriptionTier | null {
   const devParam = params.get("dev");
   if (!devParam) return null;
 
-  const flags = devParam.split(",").map(f => f.trim());
-  const authFlag = flags.find(f => f.startsWith("auth:"));
+  const flags = devParam.split(",").map((f) => f.trim());
+  const authFlag = flags.find((f) => f.startsWith("auth:"));
   if (!authFlag) return null;
 
   const tier = authFlag.slice(5);

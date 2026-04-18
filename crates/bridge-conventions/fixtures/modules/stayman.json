@@ -2,6 +2,7 @@
   "moduleId": "stayman",
   "displayName": "Stayman",
   "category": "notrump-responses",
+  "defaultRole": "responder",
   "biddingContext": {
     "openerBids": [
       {
@@ -56,11 +57,7 @@
       "contrastiveTemplateKey": "nt.stayman.eligible.whyNot",
       "contrastiveDisplayText": "Not eligible for Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking",
-        "pedagogical"
-      ]
+      "roles": ["supporting", "blocking", "pedagogical"]
     },
     {
       "explanationId": "nt.stayman.preferred",
@@ -68,10 +65,7 @@
       "templateKey": "nt.stayman.preferred.supporting",
       "displayText": "Stayman is the preferred convention",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "inferential"
-      ]
+      "roles": ["supporting", "inferential"]
     },
     {
       "explanationId": "nt.stayman.nsHaveEightCardFitLikely",
@@ -103,9 +97,7 @@
       "templateKey": "nt.stayman.askMajor.semantic",
       "displayText": "Stayman 2♣: asks opener for a 4-card major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showHearts",
@@ -113,9 +105,7 @@
       "templateKey": "nt.stayman.showHearts.semantic",
       "displayText": "Opener shows 4+ hearts in response to Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showSpades",
@@ -123,9 +113,7 @@
       "templateKey": "nt.stayman.showSpades.semantic",
       "displayText": "Opener shows 4+ spades in response to Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.denyMajor",
@@ -133,9 +121,7 @@
       "templateKey": "nt.stayman.denyMajor.semantic",
       "displayText": "Opener bids 2♦ to deny holding a 4-card major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseGameHearts",
@@ -143,9 +129,7 @@
       "templateKey": "nt.stayman.raiseGameHearts.semantic",
       "displayText": "Raise to 4♥ with game values and a heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseInviteHearts",
@@ -153,9 +137,7 @@
       "templateKey": "nt.stayman.raiseInviteHearts.semantic",
       "displayText": "Invite in hearts (3♥) with invitational values and a heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntGameNoFit",
@@ -163,9 +145,7 @@
       "templateKey": "nt.stayman.ntGameNoFit.semantic",
       "displayText": "Bid 3NT with game values but no heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntInviteNoFit",
@@ -173,9 +153,7 @@
       "templateKey": "nt.stayman.ntInviteNoFit.semantic",
       "displayText": "Bid 2NT to invite game with no heart fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseGameSpades",
@@ -183,9 +161,7 @@
       "templateKey": "nt.stayman.raiseGameSpades.semantic",
       "displayText": "Raise to 4♠ with game values and a spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.raiseInviteSpades",
@@ -193,9 +169,7 @@
       "templateKey": "nt.stayman.raiseInviteSpades.semantic",
       "displayText": "Invite in spades (3♠) with invitational values and a spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntGameNoFit2S",
@@ -203,9 +177,7 @@
       "templateKey": "nt.stayman.ntGameNoFit2S.semantic",
       "displayText": "Bid 3NT to play with game values and four hearts after opener shows spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntInviteNoFit2S",
@@ -213,9 +185,7 @@
       "templateKey": "nt.stayman.ntInviteNoFit2S.semantic",
       "displayText": "Bid 2NT to invite game with no spade fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntGameAfterDenial",
@@ -223,9 +193,7 @@
       "templateKey": "nt.stayman.ntGameAfterDenial.semantic",
       "displayText": "Bid 3NT with game values after opener denies a major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.ntInviteAfterDenial",
@@ -233,9 +201,7 @@
       "templateKey": "nt.stayman.ntInviteAfterDenial.semantic",
       "displayText": "Bid 2NT to invite game after opener denies a major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showFiveHeartsAfterDenial",
@@ -243,9 +209,7 @@
       "templateKey": "nt.stayman.showFiveHeartsAfterDenial.semantic",
       "displayText": "Bid 2♥ as Garbage Stayman: opener must pass or correct",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showFiveSpadesAfterDenial",
@@ -253,9 +217,7 @@
       "templateKey": "nt.stayman.showFiveSpadesAfterDenial.semantic",
       "displayText": "Bid 2♠ showing 5 spades and 4 hearts (invitational, non-forcing)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showFiveHeartsGfAfterDenial",
@@ -263,9 +225,7 @@
       "templateKey": "nt.stayman.showFiveHeartsGfAfterDenial.semantic",
       "displayText": "Bid 3♥ showing 5 hearts and 4 spades, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showFiveSpadesGfAfterDenial",
@@ -273,9 +233,7 @@
       "templateKey": "nt.stayman.showFiveSpadesGfAfterDenial.semantic",
       "displayText": "Bid 3♠ showing 5 spades and 4 hearts, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crossMajorInvite2SAfter2H",
@@ -283,9 +241,7 @@
       "templateKey": "nt.stayman.crossMajorInvite2SAfter2H.semantic",
       "displayText": "Bid 2♠ showing 4 spades, presumed invitational",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2H",
@@ -293,9 +249,7 @@
       "templateKey": "nt.stayman.minorGF3CAfter2H.semantic",
       "displayText": "Bid 3♣ weak to play",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2H",
@@ -303,9 +257,7 @@
       "templateKey": "nt.stayman.minorGF3DAfter2H.semantic",
       "displayText": "Bid 3♦ weak to play",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crossMajorGF3SAfter2H",
@@ -313,9 +265,7 @@
       "templateKey": "nt.stayman.crossMajorGF3SAfter2H.semantic",
       "displayText": "Bid 3♠: artificial slam-interest raise of hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2H",
@@ -323,9 +273,7 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2H.semantic",
       "displayText": "Bid 4NT quantitative with at least one major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.splinter4CAfter2H",
@@ -333,9 +281,7 @@
       "templateKey": "nt.stayman.splinter4CAfter2H.semantic",
       "displayText": "Bid 4♣: club shortness with heart support and slam interest",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.splinter4DAfter2H",
@@ -343,9 +289,7 @@
       "templateKey": "nt.stayman.splinter4DAfter2H.semantic",
       "displayText": "Bid 4♦: diamond shortness with heart support and slam interest",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2S",
@@ -353,9 +297,7 @@
       "templateKey": "nt.stayman.minorGF3CAfter2S.semantic",
       "displayText": "Bid 3♣ weak to play",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2S",
@@ -363,9 +305,7 @@
       "templateKey": "nt.stayman.minorGF3DAfter2S.semantic",
       "displayText": "Bid 3♦ weak to play",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crossMajorGF3HAfter2S",
@@ -373,9 +313,7 @@
       "templateKey": "nt.stayman.crossMajorGF3HAfter2S.semantic",
       "displayText": "Bid 3♥: artificial slam-interest raise of spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2S",
@@ -383,9 +321,7 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2S.semantic",
       "displayText": "Bid 4NT quantitative with at least one major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.splinter4CAfter2S",
@@ -393,9 +329,7 @@
       "templateKey": "nt.stayman.splinter4CAfter2S.semantic",
       "displayText": "Bid 4♣: club shortness with spade support and slam interest",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.splinter4DAfter2S",
@@ -403,9 +337,7 @@
       "templateKey": "nt.stayman.splinter4DAfter2S.semantic",
       "displayText": "Bid 4♦: diamond shortness with spade support and slam interest",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2D",
@@ -413,9 +345,7 @@
       "templateKey": "nt.stayman.minorGF3CAfter2D.semantic",
       "displayText": "Bid 3♣ weak to play",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2D",
@@ -423,9 +353,7 @@
       "templateKey": "nt.stayman.minorGF3DAfter2D.semantic",
       "displayText": "Bid 3♦ weak to play",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.majorSignoff4HAfter2D",
@@ -433,9 +361,7 @@
       "templateKey": "nt.stayman.majorSignoff4HAfter2D.semantic",
       "displayText": "Bid 4♥ to play with 6 hearts and 4 spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.majorSignoff4SAfter2D",
@@ -443,9 +369,7 @@
       "templateKey": "nt.stayman.majorSignoff4SAfter2D.semantic",
       "displayText": "Bid 4♠ to play with 6 spades and 4 hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2D",
@@ -453,9 +377,7 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2D.semantic",
       "displayText": "Bid 4NT quantitative, inviting 6NT after denial",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -2462,9 +2384,7 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": [
-          "suitIdentity"
-        ],
+        "constrainsDimensions": ["suitIdentity"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2587,9 +2507,7 @@
           "hand.suitLength.hearts",
           "hand.suitLength.spades"
         ],
-        "constrainsDimensions": [
-          "suitIdentity"
-        ],
+        "constrainsDimensions": ["suitIdentity"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3371,13 +3289,9 @@
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": [
-            "1NT"
-          ]
+          "calls": ["1NT"]
         },
-        "requiresCapabilities": [
-          "opening.1nt"
-        ]
+        "requiresCapabilities": ["opening.1nt"]
       }
     ]
   }

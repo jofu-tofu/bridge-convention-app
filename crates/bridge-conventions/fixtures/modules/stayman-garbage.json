@@ -2,6 +2,7 @@
   "moduleId": "stayman-garbage",
   "displayName": "Garbage Stayman",
   "category": "notrump-responses",
+  "defaultRole": "responder",
   "fixtureVersion": 1,
   "variantOf": "stayman",
   "description": "Bid 2C over 1NT as Garbage Stayman to escape with a weak short-club hand; after a 2D denial, Crawling Stayman lets opener pass 2H or correct to 2S.",
@@ -42,11 +43,7 @@
       "contrastiveTemplateKey": "nt.stayman.eligible.whyNot",
       "contrastiveDisplayText": "Not eligible for Garbage Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking",
-        "pedagogical"
-      ]
+      "roles": ["supporting", "blocking", "pedagogical"]
     },
     {
       "explanationId": "nt.stayman.preferred",
@@ -54,10 +51,7 @@
       "templateKey": "nt.stayman.preferred.supporting",
       "displayText": "Garbage Stayman fits the published escape shapes",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "inferential"
-      ]
+      "roles": ["supporting", "inferential"]
     },
     {
       "explanationId": "nt.stayman.nsHaveEightCardFitLikely",
@@ -89,9 +83,7 @@
       "templateKey": "nt.stayman.askMajor.semantic",
       "displayText": "Garbage Stayman 2C: weak escape asking opener for a major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showHearts",
@@ -99,9 +91,7 @@
       "templateKey": "nt.stayman.showHearts.semantic",
       "displayText": "Opener shows 4+ hearts in response to Garbage Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.showSpades",
@@ -109,9 +99,7 @@
       "templateKey": "nt.stayman.showSpades.semantic",
       "displayText": "Opener shows 4+ spades in response to Garbage Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.denyMajor",
@@ -119,9 +107,7 @@
       "templateKey": "nt.stayman.denyMajor.semantic",
       "displayText": "Opener bids 2D to deny a 4-card major over Garbage Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.garbagePassAfterHearts",
@@ -129,9 +115,7 @@
       "templateKey": "nt.stayman.garbagePassAfterHearts.semantic",
       "displayText": "Pass opener's 2♥ — Garbage Stayman escape with a weak hand",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.garbagePassAfterSpades",
@@ -139,9 +123,7 @@
       "templateKey": "nt.stayman.garbagePassAfterSpades.semantic",
       "displayText": "Pass opener's 2♠ — Garbage Stayman escape with a weak hand",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crawlingAfterDenial",
@@ -149,9 +131,7 @@
       "templateKey": "nt.stayman.crawlingAfterDenial.semantic",
       "displayText": "Bid 2♥ after 2♦ — Crawling Stayman asks opener to choose a major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.garbagePassAfterDenial",
@@ -159,9 +139,7 @@
       "templateKey": "nt.stayman.garbagePassAfterDenial.semantic",
       "displayText": "Pass opener's 2♦ denial — Garbage Stayman escape to diamonds with a weak hand",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crawlingPassHearts",
@@ -169,9 +147,7 @@
       "templateKey": "nt.stayman.crawlingPassHearts.semantic",
       "displayText": "Pass 2♥ with three hearts after Crawling Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.stayman.crawlingCorrectSpades",
@@ -179,9 +155,7 @@
       "templateKey": "nt.stayman.crawlingCorrectSpades.semantic",
       "displayText": "Correct to 2♠ with three spades after Crawling Stayman",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -1195,9 +1169,7 @@
           "bridge.hasFourCardMajor",
           "bridge.hasFiveCardMajor"
         ],
-        "constrainsDimensions": [
-          "suitIdentity"
-        ],
+        "constrainsDimensions": ["suitIdentity"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -1256,9 +1228,7 @@
           "hand.suitLength.hearts",
           "hand.suitLength.spades"
         ],
-        "constrainsDimensions": [
-          "suitIdentity"
-        ],
+        "constrainsDimensions": ["suitIdentity"],
         "composition": {
           "kind": "and",
           "operands": [

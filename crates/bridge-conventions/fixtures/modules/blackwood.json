@@ -2,6 +2,7 @@
   "moduleId": "blackwood",
   "displayName": "Blackwood",
   "category": "slam",
+  "defaultRole": "both",
   "fixtureVersion": 1,
   "description": "Use 4NT to ask for aces when considering slam",
   "purpose": "Determine whether the partnership has enough aces to bid slam safely",
@@ -31,11 +32,7 @@
       "contrastiveTemplateKey": "blackwood.slamInterest.whyNot",
       "contrastiveDisplayText": "Not enough strength for slam exploration",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking",
-        "pedagogical"
-      ]
+      "roles": ["supporting", "blocking", "pedagogical"]
     },
     {
       "explanationId": "blackwood.hasVoid",
@@ -45,11 +42,7 @@
       "contrastiveTemplateKey": "blackwood.hasVoid.whyNot",
       "contrastiveDisplayText": "A void makes plain Blackwood a misleading ace ask",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking",
-        "pedagogical"
-      ]
+      "roles": ["supporting", "blocking", "pedagogical"]
     },
     {
       "explanationId": "blackwood.aceCount",
@@ -57,9 +50,7 @@
       "templateKey": "blackwood.aceCount.mechanical",
       "displayText": "Number of aces held",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting"
-      ]
+      "roles": ["supporting"]
     },
     {
       "explanationId": "blackwood.kingCount",
@@ -67,9 +58,7 @@
       "templateKey": "blackwood.kingCount.mechanical",
       "displayText": "Number of kings held",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting"
-      ]
+      "roles": ["supporting"]
     },
     {
       "explanationId": "blackwood.askAces",
@@ -77,9 +66,7 @@
       "templateKey": "blackwood.askAces.semantic",
       "displayText": "Blackwood 4NT: asks partner how many aces they hold",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.response0Aces",
@@ -87,9 +74,7 @@
       "templateKey": "blackwood.response0Aces.semantic",
       "displayText": "5♣ shows 0 (or 4) aces",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.response4Aces",
@@ -97,9 +82,7 @@
       "templateKey": "blackwood.response4Aces.semantic",
       "displayText": "5♣ shows 0 (or 4) aces",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.response1Ace",
@@ -107,9 +90,7 @@
       "templateKey": "blackwood.response1Ace.semantic",
       "displayText": "5♦ shows 1 ace",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.response2Aces",
@@ -117,9 +98,7 @@
       "templateKey": "blackwood.response2Aces.semantic",
       "displayText": "5♥ shows 2 aces",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.response3Aces",
@@ -127,9 +106,7 @@
       "templateKey": "blackwood.response3Aces.semantic",
       "displayText": "5♠ shows 3 aces",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.askKings",
@@ -137,9 +114,7 @@
       "templateKey": "blackwood.askKings.semantic",
       "displayText": "5NT asks for kings (guarantees all aces are held)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.signoffSmallSlam",
@@ -147,9 +122,7 @@
       "templateKey": "blackwood.signoffSmallSlam.semantic",
       "displayText": "Sign off at small slam in the agreed trump suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.signoffNoGrand",
@@ -157,9 +130,7 @@
       "templateKey": "blackwood.signoffNoGrand.semantic",
       "displayText": "Pass and accept partner's king reply when grand slam is not right",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.signoffGrandSlam",
@@ -167,9 +138,7 @@
       "templateKey": "blackwood.signoffGrandSlam.semantic",
       "displayText": "Bid grand slam in the agreed trump suit with all aces and kings",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.signoff5Level",
@@ -177,9 +146,7 @@
       "templateKey": "blackwood.signoff5Level.semantic",
       "displayText": "Stop at 5-level — partnership is missing too many aces for slam",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.kingResponse0",
@@ -187,9 +154,7 @@
       "templateKey": "blackwood.kingResponse0.semantic",
       "displayText": "6♣ shows 0 (or 4) kings",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.kingResponse4",
@@ -197,9 +162,7 @@
       "templateKey": "blackwood.kingResponse4.semantic",
       "displayText": "6♣ shows 0 (or 4) kings",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.kingResponse1",
@@ -207,9 +170,7 @@
       "templateKey": "blackwood.kingResponse1.semantic",
       "displayText": "6♦ shows 1 king",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.kingResponse2",
@@ -217,9 +178,7 @@
       "templateKey": "blackwood.kingResponse2.semantic",
       "displayText": "6♥ shows 2 kings",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "blackwood.kingResponse3",
@@ -227,9 +186,7 @@
       "templateKey": "blackwood.kingResponse3.semantic",
       "displayText": "6♠ shows 3 kings",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -1142,12 +1099,8 @@
         "description": "Hand has slam-level values (17+ HCP consistent with partnership slam values)",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": [
-          "hand.hcp"
-        ],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "derivesFrom": ["hand.hcp"],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -1169,9 +1122,7 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": [
-          "shapeClass"
-        ],
+        "constrainsDimensions": ["shapeClass"],
         "composition": {
           "kind": "or",
           "operands": [

@@ -2,6 +2,7 @@
   "moduleId": "new-minor-forcing",
   "displayName": "New Minor Forcing",
   "category": "constructive",
+  "defaultRole": "responder",
   "fixtureVersion": 1,
   "description": "After 1m-1M-1NT, bid the other minor as an artificial checkback to find major-suit fits or determine strength",
   "purpose": "After opener rebids 1NT, responder may need to explore for an 8-card major fit or determine whether to invite or bid game. NMF provides a one-round forcing mechanism to extract more information from opener.",
@@ -45,10 +46,7 @@
       "contrastiveTemplateKey": "nmf.responderInviteOrBetter.whyNot",
       "contrastiveDisplayText": "Not enough for NMF — need 10+ HCP",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nmf.responderGameValues",
@@ -58,10 +56,7 @@
       "contrastiveTemplateKey": "nmf.responderGameValues.whyNot",
       "contrastiveDisplayText": "Not enough for game — need 12+ HCP",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nmf.openerHas3Hearts",
@@ -71,10 +66,7 @@
       "contrastiveTemplateKey": "nmf.openerHas3Hearts.whyNot",
       "contrastiveDisplayText": "Opener does not have 3+ hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nmf.openerHas3Spades",
@@ -84,10 +76,7 @@
       "contrastiveTemplateKey": "nmf.openerHas3Spades.whyNot",
       "contrastiveDisplayText": "Opener does not have 3+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nmf.openerMinimum",
@@ -97,10 +86,7 @@
       "contrastiveTemplateKey": "nmf.openerMinimum.whyNot",
       "contrastiveDisplayText": "Not minimum — opener has 14-15 HCP",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nmf.openerMaximum",
@@ -110,10 +96,7 @@
       "contrastiveTemplateKey": "nmf.openerMaximum.whyNot",
       "contrastiveDisplayText": "Not maximum — opener has 12-13 HCP",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nmf.partnerOpens1c",
@@ -121,9 +104,7 @@
       "templateKey": "nmf.partnerOpens1c.semantic",
       "displayText": "Open 1♣",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.partnerOpens1d",
@@ -131,9 +112,7 @@
       "templateKey": "nmf.partnerOpens1d.semantic",
       "displayText": "Open 1♦",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.partnerOpens1h",
@@ -141,9 +120,7 @@
       "templateKey": "nmf.partnerOpens1h.semantic",
       "displayText": "Open 1♥",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.partnerOpens1s",
@@ -151,9 +128,7 @@
       "templateKey": "nmf.partnerOpens1s.semantic",
       "displayText": "Open 1♠",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.responder1h",
@@ -161,9 +136,7 @@
       "templateKey": "nmf.responder1h.semantic",
       "displayText": "Respond 1♥ showing 4+ hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.responder1s",
@@ -171,9 +144,7 @@
       "templateKey": "nmf.responder1s.semantic",
       "displayText": "Respond 1♠ showing 4+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerRebid1sAfterHearts",
@@ -181,9 +152,7 @@
       "templateKey": "nmf.openerRebid1sAfterHearts.semantic",
       "displayText": "Opener rebids 1♠ with 4+ spades after 1♥ response",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerRebid1nt",
@@ -191,9 +160,7 @@
       "templateKey": "nmf.openerRebid1nt.semantic",
       "displayText": "Opener rebids 1NT showing 12-15 HCP balanced",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.askAfter1c",
@@ -201,9 +168,7 @@
       "templateKey": "nmf.askAfter1c.semantic",
       "displayText": "New Minor Forcing 2♦ — artificial checkback after 1♣ opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.askAfter1d",
@@ -211,9 +176,7 @@
       "templateKey": "nmf.askAfter1d.semantic",
       "displayText": "New Minor Forcing 2♣ — artificial checkback after 1♦ opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.signoff2h",
@@ -221,9 +184,7 @@
       "templateKey": "nmf.signoff2h.semantic",
       "displayText": "Sign off in 2♥ with 5+ hearts and a weak hand",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.signoff2s",
@@ -231,9 +192,7 @@
       "templateKey": "nmf.signoff2s.semantic",
       "displayText": "Sign off in 2♠ with 5+ spades and a weak hand",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.ntInvite",
@@ -241,9 +200,7 @@
       "templateKey": "nmf.ntInvite.semantic",
       "displayText": "2NT invite — 10-11 HCP balanced, no major fit preference",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.ntGame",
@@ -251,9 +208,7 @@
       "templateKey": "nmf.ntGame.semantic",
       "displayText": "3NT game — 12+ HCP with no major fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.responderPass",
@@ -261,9 +216,7 @@
       "templateKey": "nmf.responderPass.semantic",
       "displayText": "Pass 1NT with a weak hand and no 5-card major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerSupportHeartsMin",
@@ -271,9 +224,7 @@
       "templateKey": "nmf.openerSupportHeartsMin.semantic",
       "displayText": "Show 3-card heart support with minimum (12-13 HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerSupportHeartsMax",
@@ -281,9 +232,7 @@
       "templateKey": "nmf.openerSupportHeartsMax.semantic",
       "displayText": "Jump raise to 3♥ — 3-card heart support with maximum (14-15 HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerShowSpadesAfterHearts",
@@ -291,9 +240,7 @@
       "templateKey": "nmf.openerShowSpadesAfterHearts.semantic",
       "displayText": "Show 4+ spades (no heart support) with minimum after NMF",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerShowSpadesAfterHeartsMax",
@@ -301,9 +248,7 @@
       "templateKey": "nmf.openerShowSpadesAfterHeartsMax.semantic",
       "displayText": "Jump to 3♠ — 4+ spades (no heart support) with maximum (14-15 HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerNtMinAfterHearts",
@@ -311,9 +256,7 @@
       "templateKey": "nmf.openerNtMinAfterHearts.semantic",
       "displayText": "2NT minimum (12-13 HCP) — no major fit after NMF",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerNtMaxAfterHearts",
@@ -321,9 +264,7 @@
       "templateKey": "nmf.openerNtMaxAfterHearts.semantic",
       "displayText": "3NT maximum (14-15 HCP) — no major fit after NMF",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerSupportSpadesMin",
@@ -331,9 +272,7 @@
       "templateKey": "nmf.openerSupportSpadesMin.semantic",
       "displayText": "Show 3-card spade support with minimum (12-13 HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerSupportSpadesMax",
@@ -341,9 +280,7 @@
       "templateKey": "nmf.openerSupportSpadesMax.semantic",
       "displayText": "Jump raise to 3♠ — 3-card spade support with maximum (14-15 HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerShowHeartsAfterSpades",
@@ -351,9 +288,7 @@
       "templateKey": "nmf.openerShowHeartsAfterSpades.semantic",
       "displayText": "Show 4+ hearts (no spade support) with minimum after NMF",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerShowHeartsAfterSpadesMax",
@@ -361,9 +296,7 @@
       "templateKey": "nmf.openerShowHeartsAfterSpadesMax.semantic",
       "displayText": "Jump to 3♥ — 4+ hearts (no spade support) with maximum (14-15 HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerNtMinAfterSpades",
@@ -371,9 +304,7 @@
       "templateKey": "nmf.openerNtMinAfterSpades.semantic",
       "displayText": "2NT minimum (12-13 HCP) — no major fit after NMF",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerNtMaxAfterSpades",
@@ -381,9 +312,7 @@
       "templateKey": "nmf.openerNtMaxAfterSpades.semantic",
       "displayText": "3NT maximum (14-15 HCP) — no major fit after NMF",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.responder1sOver1h",
@@ -391,9 +320,7 @@
       "templateKey": "nmf.responder1sOver1h.semantic",
       "displayText": "Respond 1♠ over partner's 1♥ with 4+ spades, 6+ HCP",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.opener1ntRebidAfter1h1s",
@@ -401,9 +328,7 @@
       "templateKey": "nmf.opener1ntRebidAfter1h1s.semantic",
       "displayText": "Rebid 1NT with 12-14 balanced, denying 4-card spade support",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.responderNmf2cOver1h",
@@ -411,9 +336,7 @@
       "templateKey": "nmf.responderNmf2cOver1h.semantic",
       "displayText": "NMF 2♣: artificial invite+ after 1H-1S-1NT",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.responder2dNaturalOver1h",
@@ -421,9 +344,7 @@
       "templateKey": "nmf.responder2dNaturalOver1h.semantic",
       "displayText": "2♦: natural, 5+ diamonds, weak (6-9 HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerSupportSpadesMinFrom1h",
@@ -431,9 +352,7 @@
       "templateKey": "nmf.openerSupportSpadesMinFrom1h.semantic",
       "displayText": "2♠: 3-card spade support, minimum (12-13 HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerSupportSpadesMaxFrom1h",
@@ -441,9 +360,7 @@
       "templateKey": "nmf.openerSupportSpadesMaxFrom1h.semantic",
       "displayText": "3♠: 3-card spade support, maximum (14-15 HCP)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerNtMinFrom1h",
@@ -451,9 +368,7 @@
       "templateKey": "nmf.openerNtMinFrom1h.semantic",
       "displayText": "2NT: minimum, no spade support after NMF",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerNtMaxFrom1h",
@@ -461,9 +376,7 @@
       "templateKey": "nmf.openerNtMaxFrom1h.semantic",
       "displayText": "3NT: maximum, no spade support after NMF",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerRaiseNmfMinorFrom1h",
@@ -471,9 +384,7 @@
       "templateKey": "nmf.openerRaiseNmfMinorFrom1h.semantic",
       "displayText": "3♣: raise NMF minor with 4-card support (priority 4)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nmf.openerRebidHeartsFrom1h",
@@ -481,15 +392,11 @@
       "templateKey": "nmf.openerRebidHeartsFrom1h.semantic",
       "displayText": "2♥: rebid own 6+ hearts (priority 5)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfOpenerRebidDiamondsMinAfterHearts",
       "meaningId": "nmf:opener-rebid-diamonds-min-after-hearts",
       "templateKey": "nmfOpenerRebidDiamondsMinAfterHearts.semantic",
@@ -497,9 +404,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfOpenerJumpClubsMaxAfterHearts",
       "meaningId": "nmf:opener-jump-clubs-max-after-hearts",
       "templateKey": "nmfOpenerJumpClubsMaxAfterHearts.semantic",
@@ -507,9 +412,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfOpenerJumpDiamondsMaxAfterHearts",
       "meaningId": "nmf:opener-jump-diamonds-max-after-hearts",
       "templateKey": "nmfOpenerJumpDiamondsMaxAfterHearts.semantic",
@@ -517,9 +420,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfOpenerJumpClubsOwnMaxAfterHearts",
       "meaningId": "nmf:opener-jump-clubs-own-max-after-hearts",
       "templateKey": "nmfOpenerJumpClubsOwnMaxAfterHearts.semantic",
@@ -527,9 +428,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfOpenerRebidDiamondsMinAfterSpades",
       "meaningId": "nmf:opener-rebid-diamonds-min-after-spades",
       "templateKey": "nmfOpenerRebidDiamondsMinAfterSpades.semantic",
@@ -537,9 +436,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfOpenerJumpClubsMaxAfterSpades",
       "meaningId": "nmf:opener-jump-clubs-max-after-spades",
       "templateKey": "nmfOpenerJumpClubsMaxAfterSpades.semantic",
@@ -547,9 +444,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfOpenerJumpDiamondsMaxAfterSpades",
       "meaningId": "nmf:opener-jump-diamonds-max-after-spades",
       "templateKey": "nmfOpenerJumpDiamondsMaxAfterSpades.semantic",
@@ -557,9 +452,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfOpenerJumpClubsOwnMaxAfterSpades",
       "meaningId": "nmf:opener-jump-clubs-own-max-after-spades",
       "templateKey": "nmfOpenerJumpClubsOwnMaxAfterSpades.semantic",
@@ -567,9 +460,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderGameHeartsAfterSupportMin",
       "meaningId": "nmf:responder-game-hearts-after-support-min",
       "templateKey": "nmfResponderGameHeartsAfterSupportMin.semantic",
@@ -577,9 +468,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderInviteHeartsAfterSupportMin",
       "meaningId": "nmf:responder-invite-hearts-after-support-min",
       "templateKey": "nmfResponderInviteHeartsAfterSupportMin.semantic",
@@ -587,9 +476,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderGameHeartsAfterSupportMax",
       "meaningId": "nmf:responder-game-hearts-after-support-max",
       "templateKey": "nmfResponderGameHeartsAfterSupportMax.semantic",
@@ -597,9 +484,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderGameSpadesAfterSupportMin",
       "meaningId": "nmf:responder-game-spades-after-support-min",
       "templateKey": "nmfResponderGameSpadesAfterSupportMin.semantic",
@@ -607,9 +492,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderInviteSpadesAfterSupportMin",
       "meaningId": "nmf:responder-invite-spades-after-support-min",
       "templateKey": "nmfResponderInviteSpadesAfterSupportMin.semantic",
@@ -617,9 +500,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderGameSpadesAfterSupportMax",
       "meaningId": "nmf:responder-game-spades-after-support-max",
       "templateKey": "nmfResponderGameSpadesAfterSupportMax.semantic",
@@ -627,9 +508,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderGameSpadesAfterSupportMinFrom1h",
       "meaningId": "nmf:responder-game-spades-after-support-min-from-1h",
       "templateKey": "nmfResponderGameSpadesAfterSupportMinFrom1h.semantic",
@@ -637,9 +516,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderInviteSpadesAfterSupportMinFrom1h",
       "meaningId": "nmf:responder-invite-spades-after-support-min-from-1h",
       "templateKey": "nmfResponderInviteSpadesAfterSupportMinFrom1h.semantic",
@@ -647,9 +524,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderGameSpadesAfterSupportMaxFrom1h",
       "meaningId": "nmf:responder-game-spades-after-support-max-from-1h",
       "templateKey": "nmfResponderGameSpadesAfterSupportMaxFrom1h.semantic",
@@ -657,9 +532,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderGameHeartsAfterOtherMajor",
       "meaningId": "nmf:responder-game-hearts-after-other-major",
       "templateKey": "nmfResponderGameHeartsAfterOtherMajor.semantic",
@@ -667,9 +540,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderInviteHeartsAfterOtherMajor",
       "meaningId": "nmf:responder-invite-hearts-after-other-major",
       "templateKey": "nmfResponderInviteHeartsAfterOtherMajor.semantic",
@@ -677,9 +548,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder3ntAfterHeartsOtherMajorNoFit",
       "meaningId": "nmf:responder-3nt-after-hearts-other-major-no-fit",
       "templateKey": "nmfResponder3ntAfterHeartsOtherMajorNoFit.semantic",
@@ -687,9 +556,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder2ntAfterHeartsOtherMajorNoFit",
       "meaningId": "nmf:responder-2nt-after-hearts-other-major-no-fit",
       "templateKey": "nmfResponder2ntAfterHeartsOtherMajorNoFit.semantic",
@@ -697,9 +564,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderGameHeartsAfterOtherMajorMax",
       "meaningId": "nmf:responder-game-hearts-after-other-major-max",
       "templateKey": "nmfResponderGameHeartsAfterOtherMajorMax.semantic",
@@ -707,9 +572,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder3ntAfterHeartsOtherMajorMaxNoFit",
       "meaningId": "nmf:responder-3nt-after-hearts-other-major-max-no-fit",
       "templateKey": "nmfResponder3ntAfterHeartsOtherMajorMaxNoFit.semantic",
@@ -717,9 +580,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderGameSpadesAfterOtherMajor",
       "meaningId": "nmf:responder-game-spades-after-other-major",
       "templateKey": "nmfResponderGameSpadesAfterOtherMajor.semantic",
@@ -727,9 +588,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderInviteSpadesAfterOtherMajor",
       "meaningId": "nmf:responder-invite-spades-after-other-major",
       "templateKey": "nmfResponderInviteSpadesAfterOtherMajor.semantic",
@@ -737,9 +596,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder3ntAfterSpadesOtherMajorNoFit",
       "meaningId": "nmf:responder-3nt-after-spades-other-major-no-fit",
       "templateKey": "nmfResponder3ntAfterSpadesOtherMajorNoFit.semantic",
@@ -747,9 +604,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder2ntAfterSpadesOtherMajorNoFit",
       "meaningId": "nmf:responder-2nt-after-spades-other-major-no-fit",
       "templateKey": "nmfResponder2ntAfterSpadesOtherMajorNoFit.semantic",
@@ -757,9 +612,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderGameSpadesAfterOtherMajorMax",
       "meaningId": "nmf:responder-game-spades-after-other-major-max",
       "templateKey": "nmfResponderGameSpadesAfterOtherMajorMax.semantic",
@@ -767,9 +620,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder3ntAfterSpadesOtherMajorMaxNoFit",
       "meaningId": "nmf:responder-3nt-after-spades-other-major-max-no-fit",
       "templateKey": "nmfResponder3ntAfterSpadesOtherMajorMaxNoFit.semantic",
@@ -777,9 +628,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder3ntOver2ntMin",
       "meaningId": "nmf:responder-3nt-over-2nt-min",
       "templateKey": "nmfResponder3ntOver2ntMin.semantic",
@@ -787,9 +636,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderPassOver2ntMin",
       "meaningId": "nmf:responder-pass-over-2nt-min",
       "templateKey": "nmfResponderPassOver2ntMin.semantic",
@@ -797,9 +644,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderPassOver3ntMax",
       "meaningId": "nmf:responder-pass-over-3nt-max",
       "templateKey": "nmfResponderPassOver3ntMax.semantic",
@@ -807,9 +652,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder3ntOver2ntMinFrom1h",
       "meaningId": "nmf:responder-3nt-over-2nt-min-from-1h",
       "templateKey": "nmfResponder3ntOver2ntMinFrom1h.semantic",
@@ -817,9 +660,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderPassOver2ntMinFrom1h",
       "meaningId": "nmf:responder-pass-over-2nt-min-from-1h",
       "templateKey": "nmfResponderPassOver2ntMinFrom1h.semantic",
@@ -827,9 +668,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponderPassOver3ntMaxFrom1h",
       "meaningId": "nmf:responder-pass-over-3nt-max-from-1h",
       "templateKey": "nmfResponderPassOver3ntMaxFrom1h.semantic",
@@ -837,9 +676,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder3ntOver2dMinorMin",
       "meaningId": "nmf:responder-3nt-over-2d-minor-min",
       "templateKey": "nmfResponder3ntOver2dMinorMin.semantic",
@@ -847,9 +684,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder2ntOver2dMinorMin",
       "meaningId": "nmf:responder-2nt-over-2d-minor-min",
       "templateKey": "nmfResponder2ntOver2dMinorMin.semantic",
@@ -857,9 +692,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder3ntOver3cMinorMax",
       "meaningId": "nmf:responder-3nt-over-3c-minor-max",
       "templateKey": "nmfResponder3ntOver3cMinorMax.semantic",
@@ -867,9 +700,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder3ntOver3dMinorMax",
       "meaningId": "nmf:responder-3nt-over-3d-minor-max",
       "templateKey": "nmfResponder3ntOver3dMinorMax.semantic",
@@ -877,9 +708,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder3ntOver2hOwnSuitFrom1h",
       "meaningId": "nmf:responder-3nt-over-2h-own-suit-from-1h",
       "templateKey": "nmfResponder3ntOver2hOwnSuitFrom1h.semantic",
@@ -887,9 +716,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder2ntOver2hOwnSuitFrom1h",
       "meaningId": "nmf:responder-2nt-over-2h-own-suit-from-1h",
       "templateKey": "nmfResponder2ntOver2hOwnSuitFrom1h.semantic",
@@ -897,9 +724,7 @@
     },
     {
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
+      "roles": ["pedagogical"],
       "explanationId": "nmfResponder3ntOver3cMinorFrom1h",
       "meaningId": "nmf:responder-3nt-over-3c-minor-from-1h",
       "templateKey": "nmfResponder3ntOver3cMinorFrom1h.semantic",
@@ -6195,9 +6020,7 @@
     "declaredCapabilities": {
       "constructive.nmf": "active"
     },
-    "allowedDealers": [
-      "S"
-    ],
+    "allowedDealers": ["S"],
     "supportsRoleSelection": true,
     "teaching": {
       "purpose": "After opener rebids 1NT (showing 12-14 balanced), use the other minor as an artificial forcing bid to find a 3-card major fit or determine the right game contract",
@@ -6215,17 +6038,13 @@
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": [
-            "1C"
-          ]
+          "calls": ["1C"]
         }
       },
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": [
-            "1D"
-          ]
+          "calls": ["1D"]
         }
       }
     ]
@@ -6238,13 +6057,8 @@
         "world": "acting-hand",
         "description": "Hearts are longer than spades",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.hearts",
-          "hand.suitLength.spades"
-        ],
-        "constrainsDimensions": [
-          "suitRelation"
-        ],
+        "derivesFrom": ["hand.suitLength.hearts", "hand.suitLength.spades"],
+        "constrainsDimensions": ["suitRelation"],
         "composition": {
           "kind": "extended",
           "clause": {
@@ -6261,13 +6075,8 @@
         "world": "acting-hand",
         "description": "Spades are at least as long as hearts",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.hearts",
-          "hand.suitLength.spades"
-        ],
-        "constrainsDimensions": [
-          "suitRelation"
-        ],
+        "derivesFrom": ["hand.suitLength.hearts", "hand.suitLength.spades"],
+        "constrainsDimensions": ["suitRelation"],
         "composition": {
           "kind": "extended",
           "clause": {
@@ -6284,13 +6093,8 @@
         "world": "acting-hand",
         "description": "Clubs are longer than diamonds, or the minors are equal at 3-3",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.clubs",
-          "hand.suitLength.diamonds"
-        ],
-        "constrainsDimensions": [
-          "suitRelation"
-        ],
+        "derivesFrom": ["hand.suitLength.clubs", "hand.suitLength.diamonds"],
+        "constrainsDimensions": ["suitRelation"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -6334,13 +6138,8 @@
         "world": "acting-hand",
         "description": "Diamonds are at least as long as clubs",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.clubs",
-          "hand.suitLength.diamonds"
-        ],
-        "constrainsDimensions": [
-          "suitRelation"
-        ],
+        "derivesFrom": ["hand.suitLength.clubs", "hand.suitLength.diamonds"],
+        "constrainsDimensions": ["suitRelation"],
         "composition": {
           "kind": "extended",
           "clause": {
@@ -6358,12 +6157,8 @@
         "description": "Responder has invitational+ values (10+ HCP)",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": [
-          "hand.hcp"
-        ],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "derivesFrom": ["hand.hcp"],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -6380,12 +6175,8 @@
         "description": "Responder has game values (12+ HCP)",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": [
-          "hand.hcp"
-        ],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "derivesFrom": ["hand.hcp"],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -6402,12 +6193,8 @@
         "description": "Opener has 3+ hearts",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": [
-          "hand.suitLength.hearts"
-        ],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.hearts"],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -6424,12 +6211,8 @@
         "description": "Opener has 3+ spades",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": [
-          "hand.suitLength.spades"
-        ],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.spades"],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -6446,12 +6229,8 @@
         "description": "Opener has minimum values (12-13 HCP)",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": [
-          "hand.hcp"
-        ],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "derivesFrom": ["hand.hcp"],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -6481,12 +6260,8 @@
         "description": "Opener has maximum values (14-15 HCP)",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": [
-          "hand.hcp"
-        ],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "derivesFrom": ["hand.hcp"],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "and",
           "operands": [

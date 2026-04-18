@@ -14,8 +14,32 @@
  *   BidMeaning, InferenceEngine.
  */
 
-import type { Call, Card, Hand, Seat, Vulnerability, SuitLength, DistributionPoints, Contract, PlayedCard, Trick, Suit, DDSolution, AuctionEntry, NumberRange } from "../engine/types";
-import type { GamePhase, PracticeMode, PlayPreference, PromptMode, TeachingProjection, ConventionTeaching, ParseTreeView } from "./session-types";
+import type {
+  Call,
+  Card,
+  Hand,
+  Seat,
+  Vulnerability,
+  SuitLength,
+  DistributionPoints,
+  Contract,
+  PlayedCard,
+  Trick,
+  Suit,
+  DDSolution,
+  AuctionEntry,
+  NumberRange,
+} from "../engine/types";
+import type {
+  GamePhase,
+  PracticeMode,
+  PlayPreference,
+  PracticeRole,
+  PromptMode,
+  TeachingProjection,
+  ConventionTeaching,
+  ParseTreeView,
+} from "./session-types";
 
 /** Bid context relative to the practice target. */
 enum BidContext {
@@ -94,7 +118,11 @@ export interface ServiceConditionEvidence {
 
 /** Explanation node — service-owned mirror of teaching-types ExplanationNode. */
 export interface ServiceExplanationNode {
-  readonly kind: "text" | "condition" | "call-reference" | "convention-reference";
+  readonly kind:
+    | "text"
+    | "condition"
+    | "call-reference"
+    | "convention-reference";
   readonly content: string;
   readonly passed?: boolean;
   readonly explanationId?: string;
@@ -137,7 +165,10 @@ interface ServiceCallProjection {
   readonly status: "truth" | "acceptable" | "wrong";
   readonly supportingMeanings: readonly string[];
   readonly primaryMeaning?: string;
-  readonly projectionKind: "single-rationale" | "merged-equivalent" | "multi-rationale-same-call";
+  readonly projectionKind:
+    | "single-rationale"
+    | "merged-equivalent"
+    | "multi-rationale-same-call";
 }
 
 // ── Service-owned viewport-safe bid history ─────────────────────────
@@ -195,7 +226,12 @@ export interface ServiceBidHistoryEntry {
 export interface ServiceFactConstraint {
   readonly factId: string;
   readonly operator: ServiceFactOperator;
-  readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
+  readonly value:
+    | number
+    | boolean
+    | string
+    | { min: number; max: number }
+    | readonly string[];
   readonly isPublic?: boolean;
 }
 
@@ -332,6 +368,7 @@ export interface ConventionInfo {
   readonly name: string;
   readonly description?: string;
   readonly category?: string;
+  readonly defaultRole: PracticeRole;
   readonly moduleIds?: readonly string[];
   readonly moduleDescriptions?: ReadonlyMap<string, string>;
   readonly teaching?: ConventionTeaching;
@@ -391,7 +428,12 @@ export interface ClauseSystemVariant {
 interface SurfaceClauseView {
   readonly factId: string;
   readonly operator: ServiceFactOperator;
-  readonly value: number | boolean | string | { min: number; max: number } | readonly string[];
+  readonly value:
+    | number
+    | boolean
+    | string
+    | { min: number; max: number }
+    | readonly string[];
   /** Human-readable description — always auto-derived, optionally with author rationale appended. */
   readonly description: string;
   /** True if this clause is disclosed to opponents (communicative). */
@@ -669,7 +711,10 @@ export interface TeachingDetail {
     readonly fullCredit: boolean;
   }[];
   /** Near-miss bids with reasons. */
-  readonly nearMissCalls?: readonly { readonly call: Call; readonly reason: string }[];
+  readonly nearMissCalls?: readonly {
+    readonly call: Call;
+    readonly reason: string;
+  }[];
 
   // ── Decision metadata ─────────────────────────────────────────
   /** How ambiguous the bid decision was (0 = clear-cut, 0.8 = highly ambiguous).
@@ -739,10 +784,19 @@ export interface ObservationView {
 
 /** Viewport-safe kernel state — purely semantic negotiation state. */
 export interface KernelView {
-  readonly fitAgreed: { readonly strain: string; readonly confidence: string } | null;
+  readonly fitAgreed: {
+    readonly strain: string;
+    readonly confidence: string;
+  } | null;
   readonly forcing: string;
   readonly captain: string;
-  readonly competition: string | { readonly kind: string; readonly strain: string; readonly level: number };
+  readonly competition:
+    | string
+    | {
+        readonly kind: string;
+        readonly strain: string;
+        readonly level: number;
+      };
 }
 
 // ── Non-Bidding Phase Viewports ─────────────────────────────────────
@@ -782,7 +836,7 @@ export interface PlayingViewport extends AuctionContextBase {
 /** World-class recommendation for a single user card play. */
 export interface PlayRecommendation {
   readonly trickIndex: number;
-  readonly playIndex: number;       // 0-3 within trick
+  readonly playIndex: number; // 0-3 within trick
   readonly seat: Seat;
   readonly cardPlayed: Card;
   readonly recommendedCard: Card;
@@ -808,12 +862,12 @@ export interface ExplanationViewport extends AuctionContextBase {
 
 /** Convention card summary — mirrors the physical card at the table. */
 export interface ConventionCardView {
-  readonly partnership: string;      // "N-S" or "E-W"
-  readonly systemName: string;       // "SAYC", "2/1", "Acol"
-  readonly ntRange: string;          // "15–17" or "12–14"
-  readonly twoLevelForcing: string;  // "1 round" or "Game forcing"
-  readonly oneNtResponse: string;    // "Non-forcing 6–10" or "Semi-forcing 6–12"
-  readonly majorLength: string;      // "5-card majors" or "4-card majors"
+  readonly partnership: string; // "N-S" or "E-W"
+  readonly systemName: string; // "SAYC", "2/1", "Acol"
+  readonly ntRange: string; // "15–17" or "12–14"
+  readonly twoLevelForcing: string; // "1 round" or "Game forcing"
+  readonly oneNtResponse: string; // "Non-forcing 6–10" or "Semi-forcing 6–12"
+  readonly majorLength: string; // "5-card majors" or "4-card majors"
 }
 
 // ── Convention Card Panel ────────────────────────────────────────

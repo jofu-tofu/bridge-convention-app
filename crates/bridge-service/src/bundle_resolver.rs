@@ -7,12 +7,22 @@ use std::collections::HashMap;
 
 use bridge_conventions::registry::bundle_registry::{list_bundle_inputs, resolve_bundle};
 use bridge_conventions::teaching::teaching_types::{SurfaceGroup, SurfaceGroupRelationship};
+use bridge_conventions::types::module_types::PracticeRole as ModulePracticeRole;
 use bridge_conventions::types::teaching::SurfaceGroupRelationship as BundleSGRelationship;
 use bridge_conventions::BaseSystemId;
 use bridge_conventions::BundleInput;
+use bridge_session::types::PracticeRole;
 
 use crate::error::ServiceError;
 use crate::response_types::ConventionInfo;
+
+fn map_default_role(role: ModulePracticeRole) -> PracticeRole {
+    match role {
+        ModulePracticeRole::Responder => PracticeRole::Responder,
+        ModulePracticeRole::Opener => PracticeRole::Opener,
+        ModulePracticeRole::Both => PracticeRole::Both,
+    }
+}
 
 // ── Bundle lookup ────────────────────────────────────────────────
 
@@ -74,11 +84,25 @@ pub(crate) fn list_conventions() -> Vec<ConventionInfo> {
                     .map(|m| (m.module_id.clone(), m.description.to_string()))
                     .collect::<HashMap<String, String>>()
             });
+            let default_role = b
+                .member_ids
+                .first()
+                .and_then(|module_id| {
+                    bridge_conventions::registry::get_module(module_id, BaseSystemId::Sayc)
+                })
+                .map(|module| map_default_role(module.default_role))
+                .unwrap_or_else(|| {
+                    panic!(
+                        "Bundle '{}' must have a primary member module to derive defaultRole",
+                        b.id
+                    )
+                });
             ConventionInfo {
                 id: b.id.clone(),
                 name: b.name.clone(),
                 description: b.description.clone(),
                 category: format!("{:?}", b.category),
+                default_role,
                 module_ids: b.member_ids.clone(),
                 module_descriptions,
                 teaching: b.teaching.clone(),

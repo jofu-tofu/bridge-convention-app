@@ -2,6 +2,7 @@
   "moduleId": "michaels-unusual",
   "displayName": "Michaels / Unusual 2NT",
   "category": "competitive",
+  "defaultRole": "opener",
   "fixtureVersion": 1,
   "description": "Michaels Cue Bids and Unusual 2NT: compete over opponent's suit opening with two-suited hands (5-5+)",
   "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
@@ -41,10 +42,7 @@
       "contrastiveTemplateKey": "michaels.inOvercallRange.whyNot",
       "contrastiveDisplayText": "HCP not in overcall range",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.bothMajorsFiveFive",
@@ -54,10 +52,7 @@
       "contrastiveTemplateKey": "michaels.bothMajorsFiveFive.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ cards in both majors",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.bothMinorsFiveFive",
@@ -67,10 +62,7 @@
       "contrastiveTemplateKey": "michaels.bothMinorsFiveFive.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ cards in both minors",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.spadesAndMinor",
@@ -80,10 +72,7 @@
       "contrastiveTemplateKey": "michaels.spadesAndMinor.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ spades with a 5+ minor",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.heartsAndMinor",
@@ -93,10 +82,7 @@
       "contrastiveTemplateKey": "michaels.heartsAndMinor.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ hearts with a 5+ minor",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.minorIsClubs",
@@ -106,10 +92,7 @@
       "contrastiveTemplateKey": "michaels.minorIsClubs.whyNot",
       "contrastiveDisplayText": "The minor suit is not clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.minorIsDiamonds",
@@ -119,10 +102,7 @@
       "contrastiveTemplateKey": "michaels.minorIsDiamonds.whyNot",
       "contrastiveDisplayText": "The minor suit is not diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.hasHeartSupport",
@@ -132,10 +112,7 @@
       "contrastiveTemplateKey": "michaels.hasHeartSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 hearts to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.hasSpadeSupport",
@@ -145,10 +122,7 @@
       "contrastiveTemplateKey": "michaels.hasSpadeSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 spades to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.hasClubSupport",
@@ -158,10 +132,7 @@
       "contrastiveTemplateKey": "michaels.hasClubSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 clubs to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.hasDiamondSupport",
@@ -171,10 +142,7 @@
       "contrastiveTemplateKey": "michaels.hasDiamondSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 diamonds to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.noSpadeSupport",
@@ -184,10 +152,7 @@
       "contrastiveTemplateKey": "michaels.noSpadeSupport.whyNot",
       "contrastiveDisplayText": "3+ spades available",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.noHeartSupport",
@@ -197,10 +162,7 @@
       "contrastiveTemplateKey": "michaels.noHeartSupport.whyNot",
       "contrastiveDisplayText": "3+ hearts available",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.advancerGameValues",
@@ -210,10 +172,7 @@
       "contrastiveTemplateKey": "michaels.advancerGameValues.whyNot",
       "contrastiveDisplayText": "Fewer than 10 HCP",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.advancerInviteValues",
@@ -223,10 +182,7 @@
       "contrastiveTemplateKey": "michaels.advancerInviteValues.whyNot",
       "contrastiveDisplayText": "HCP not in invitational range (8-9)",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.advancerWeak",
@@ -236,10 +192,7 @@
       "contrastiveTemplateKey": "michaels.advancerWeak.whyNot",
       "contrastiveDisplayText": "More than 7 HCP",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "michaels.stub.opponent1c",
@@ -279,9 +232,7 @@
       "templateKey": "michaels.r1.cueBid1c.semantic",
       "displayText": "2C: Both majors over 1C opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.cueBid1d",
@@ -289,9 +240,7 @@
       "templateKey": "michaels.r1.cueBid1d.semantic",
       "displayText": "2D: Both majors over 1D opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.cueBid1h",
@@ -299,9 +248,7 @@
       "templateKey": "michaels.r1.cueBid1h.semantic",
       "displayText": "2H: Spades + a minor over 1H opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.cueBid1s",
@@ -309,9 +256,7 @@
       "templateKey": "michaels.r1.cueBid1s.semantic",
       "displayText": "2S: Hearts + a minor over 1S opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.unusual2nt1c",
@@ -319,9 +264,7 @@
       "templateKey": "michaels.r1.unusual2nt1c.semantic",
       "displayText": "2NT: Diamonds + hearts over 1C opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.unusual2nt1d",
@@ -329,9 +272,7 @@
       "templateKey": "michaels.r1.unusual2nt1d.semantic",
       "displayText": "2NT: Clubs + hearts over 1D opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.unusual2nt1h",
@@ -339,9 +280,7 @@
       "templateKey": "michaels.r1.unusual2nt1h.semantic",
       "displayText": "2NT: Both minors over 1H opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.unusual2nt1s",
@@ -349,9 +288,7 @@
       "templateKey": "michaels.r1.unusual2nt1s.semantic",
       "displayText": "2NT: Both minors over 1S opening",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.pass1c",
@@ -359,9 +296,7 @@
       "templateKey": "michaels.r1.pass1c.semantic",
       "displayText": "Pass: No Michaels/Unusual action over 1C",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.pass1d",
@@ -369,9 +304,7 @@
       "templateKey": "michaels.r1.pass1d.semantic",
       "displayText": "Pass: No Michaels/Unusual action over 1D",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.pass1h",
@@ -379,9 +312,7 @@
       "templateKey": "michaels.r1.pass1h.semantic",
       "displayText": "Pass: No Michaels/Unusual action over 1H",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.r1.pass1s",
@@ -389,9 +320,7 @@
       "templateKey": "michaels.r1.pass1s.semantic",
       "displayText": "Pass: No Michaels/Unusual action over 1S",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preferHearts2h",
@@ -399,9 +328,7 @@
       "templateKey": "michaels.adv.preferHearts2h.semantic",
       "displayText": "2H: Prefer hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preferSpades2s",
@@ -409,9 +336,7 @@
       "templateKey": "michaels.adv.preferSpades2s.semantic",
       "displayText": "2S: Prefer spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preemptHearts3h",
@@ -419,9 +344,7 @@
       "templateKey": "michaels.adv.preemptHearts3h.semantic",
       "displayText": "3H: Invitational raise in hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preemptSpades3s",
@@ -429,9 +352,7 @@
       "templateKey": "michaels.adv.preemptSpades3s.semantic",
       "displayText": "3S: Invitational raise in spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.gameHearts4h",
@@ -439,9 +360,7 @@
       "templateKey": "michaels.adv.gameHearts4h.semantic",
       "displayText": "4H: Game in hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.gameSpades4s",
@@ -449,9 +368,7 @@
       "templateKey": "michaels.adv.gameSpades4s.semantic",
       "displayText": "4S: Game in spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.acceptSpades2s",
@@ -459,9 +376,7 @@
       "templateKey": "michaels.adv.acceptSpades2s.semantic",
       "displayText": "2S: Accept spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.relay2nt1h",
@@ -469,9 +384,7 @@
       "templateKey": "michaels.adv.relay2nt1h.semantic",
       "displayText": "2NT: Ask partner to show the minor",
       "preferredLevel": "mechanical",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.inviteSpades3s1h",
@@ -479,9 +392,7 @@
       "templateKey": "michaels.adv.inviteSpades3s1h.semantic",
       "displayText": "3S: Invitational raise in spades (over 1H Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.gameSpades4s1h",
@@ -489,9 +400,7 @@
       "templateKey": "michaels.adv.gameSpades4s1h.semantic",
       "displayText": "4S: Game in spades (over 1H Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.passOrCorrect3c1h",
@@ -499,9 +408,7 @@
       "templateKey": "michaels.adv.passOrCorrect3c1h.semantic",
       "displayText": "3C: Pass-or-correct — escape to partner's minor (over 1H Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.acceptHearts3h",
@@ -509,9 +416,7 @@
       "templateKey": "michaels.adv.acceptHearts3h.semantic",
       "displayText": "3H: Accept hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.relay2nt1s",
@@ -519,9 +424,7 @@
       "templateKey": "michaels.adv.relay2nt1s.semantic",
       "displayText": "2NT: Ask partner to show the minor (over 1S Michaels)",
       "preferredLevel": "mechanical",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.gameHearts4h1s",
@@ -529,9 +432,7 @@
       "templateKey": "michaels.adv.gameHearts4h1s.semantic",
       "displayText": "4H: Game in hearts (over 1S Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.passOrCorrect3c1s",
@@ -539,9 +440,7 @@
       "templateKey": "michaels.adv.passOrCorrect3c1s.semantic",
       "displayText": "3C: Pass-or-correct — escape to partner's minor (over 1S Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preferClubs3c",
@@ -549,9 +448,7 @@
       "templateKey": "michaels.adv.preferClubs3c.semantic",
       "displayText": "3C: Prefer clubs (Unusual 2NT response)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.preferDiamonds3d",
@@ -559,9 +456,7 @@
       "templateKey": "michaels.adv.preferDiamonds3d.semantic",
       "displayText": "3D: Prefer diamonds (Unusual 2NT response)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.game5c",
@@ -569,9 +464,7 @@
       "templateKey": "michaels.adv.game5c.semantic",
       "displayText": "5C: Game in clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.game5d",
@@ -579,9 +472,7 @@
       "templateKey": "michaels.adv.game5d.semantic",
       "displayText": "5D: Game in diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.passUnusual",
@@ -589,9 +480,7 @@
       "templateKey": "michaels.adv.passUnusual.semantic",
       "displayText": "Pass: Take partner's revealed minor",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.reveal.clubs",
@@ -599,9 +488,7 @@
       "templateKey": "michaels.reveal.clubs.semantic",
       "displayText": "3C: The minor is clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.reveal.diamonds",
@@ -609,9 +496,7 @@
       "templateKey": "michaels.reveal.diamonds.semantic",
       "displayText": "3D: The minor is diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.inviteHearts3h1s",
@@ -619,9 +504,7 @@
       "templateKey": "michaels.adv.inviteHearts3h1s.semantic",
       "displayText": "3H: Invitational raise in hearts (over 1S Michaels)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.raiseClubs4c",
@@ -629,9 +512,7 @@
       "templateKey": "michaels.adv.raiseClubs4c.semantic",
       "displayText": "4C: Raise clubs after the relay reveal",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.raiseDiamonds4d",
@@ -639,9 +520,7 @@
       "templateKey": "michaels.adv.raiseDiamonds4d.semantic",
       "displayText": "4D: Raise diamonds after the relay reveal",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.sacrificeClubs5c",
@@ -649,9 +528,7 @@
       "templateKey": "michaels.adv.sacrificeClubs5c.semantic",
       "displayText": "5C: Sacrifice in clubs after the relay reveal",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "michaels.adv.sacrificeDiamonds5d",
@@ -659,9 +536,7 @@
       "templateKey": "michaels.adv.sacrificeDiamonds5d.semantic",
       "displayText": "5D: Sacrifice in diamonds after the relay reveal",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -3575,9 +3450,7 @@
     "declaredCapabilities": {
       "opponent.suit": "active"
     },
-    "allowedDealers": [
-      "E"
-    ],
+    "allowedDealers": ["E"],
     "supportsRoleSelection": false,
     "teaching": {
       "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
@@ -3595,33 +3468,25 @@
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": [
-            "1C"
-          ]
+          "calls": ["1C"]
         }
       },
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": [
-            "1D"
-          ]
+          "calls": ["1D"]
         }
       },
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": [
-            "1H"
-          ]
+          "calls": ["1H"]
         }
       },
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": [
-            "1S"
-          ]
+          "calls": ["1S"]
         }
       }
     ]
@@ -3635,9 +3500,7 @@
         "description": "5+ hearts and 5+ spades",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3667,9 +3530,7 @@
         "description": "5+ clubs and 5+ diamonds",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3699,9 +3560,7 @@
         "description": "5+ spades and 5+ in a minor",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3744,9 +3603,7 @@
         "description": "5+ hearts and 5+ in a minor",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3789,10 +3646,7 @@
         "description": "The minor suit is clubs (clubs >= diamonds)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitLength", "suitRelation"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3823,10 +3677,7 @@
         "description": "The minor suit is diamonds (diamonds > clubs)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitLength", "suitRelation"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3857,9 +3708,7 @@
         "description": "HCP in overcall range (NV: 6-15, Vul: 8-15)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -3929,9 +3778,7 @@
         "description": "3+ hearts to support partner",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3948,9 +3795,7 @@
         "description": "3+ spades to support partner",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3967,9 +3812,7 @@
         "description": "3+ clubs to support partner",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3986,9 +3829,7 @@
         "description": "3+ diamonds to support partner",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4005,9 +3846,7 @@
         "description": "Fewer than 3 spades (no spade support)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4024,9 +3863,7 @@
         "description": "Fewer than 3 hearts (no heart support)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4043,9 +3880,7 @@
         "description": "10+ HCP (game values as advancer)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4062,9 +3897,7 @@
         "description": "8-9 HCP (invite values as advancer)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -4094,9 +3927,7 @@
         "description": "0-7 HCP (weak as advancer)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "primitive",
           "clause": {

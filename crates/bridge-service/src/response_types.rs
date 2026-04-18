@@ -11,7 +11,7 @@ use bridge_session::inference::types::{
 use bridge_session::session::{
     AiBidEntry, AiPlayEntry, BidGrade, BidHistoryEntryView, BiddingViewport, DebugLogEntry,
 };
-use bridge_session::types::{GamePhase, PlayPreference, PracticeMode};
+use bridge_session::types::{GamePhase, PlayPreference, PracticeMode, PracticeRole};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -87,6 +87,7 @@ pub struct ConventionInfo {
     pub name: String,
     pub description: String,
     pub category: String,
+    pub default_role: PracticeRole,
     pub module_ids: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub module_descriptions: Option<std::collections::HashMap<String, String>>,
@@ -688,6 +689,7 @@ mod tests {
             name: "1NT Responses".to_string(),
             description: "Practice responding to 1NT openings".to_string(),
             category: "constructive".to_string(),
+            default_role: PracticeRole::Responder,
             module_ids: vec!["stayman".to_string(), "jacoby-transfers".to_string()],
             module_descriptions: None,
             teaching: None,
@@ -695,6 +697,7 @@ mod tests {
         let json = serde_json::to_string(&ci).unwrap();
         let rt: ConventionInfo = serde_json::from_str(&json).unwrap();
         assert_eq!(rt.id, "nt-bundle");
+        assert_eq!(rt.default_role, PracticeRole::Responder);
         assert_eq!(rt.module_ids.len(), 2);
     }
 

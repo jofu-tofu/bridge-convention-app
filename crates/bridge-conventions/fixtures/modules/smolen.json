@@ -2,6 +2,7 @@
   "moduleId": "smolen",
   "displayName": "Smolen",
   "category": "notrump-responses",
+  "defaultRole": "responder",
   "fixtureVersion": 1,
   "description": "Jump to 3H/3S after Stayman denial to show 5-4 in majors, game-forcing",
   "purpose": "Handle the 5-4 major hand with game values after Stayman gets a 2D denial — let opener choose the fit while keeping the strong hand as declarer",
@@ -45,10 +46,7 @@
       "contrastiveTemplateKey": "nt.smolen.fiveHearts.whyNot",
       "contrastiveDisplayText": "Does not have exactly 5 hearts",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nt.smolen.fiveSpades",
@@ -58,10 +56,7 @@
       "contrastiveTemplateKey": "nt.smolen.fiveSpades.whyNot",
       "contrastiveDisplayText": "Does not have exactly 5 spades",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nt.smolen.fourHearts",
@@ -71,10 +66,7 @@
       "contrastiveTemplateKey": "nt.smolen.fourHearts.whyNot",
       "contrastiveDisplayText": "Does not have 4 hearts",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nt.smolen.fourSpades",
@@ -84,10 +76,7 @@
       "contrastiveTemplateKey": "nt.smolen.fourSpades.whyNot",
       "contrastiveDisplayText": "Does not have 4 spades",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nt.smolen.openerHeartFit",
@@ -97,10 +86,7 @@
       "contrastiveTemplateKey": "nt.smolen.openerHeartFit.whyNot",
       "contrastiveDisplayText": "Opener has fewer than 3 hearts",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nt.smolen.openerSpadesFit",
@@ -110,10 +96,7 @@
       "contrastiveTemplateKey": "nt.smolen.openerSpadesFit.whyNot",
       "contrastiveDisplayText": "Opener has fewer than 3 spades",
       "preferredLevel": "mechanical",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "nt.smolen.bidShortHearts",
@@ -121,9 +104,7 @@
       "templateKey": "nt.smolen.bidShortHearts.semantic",
       "displayText": "Smolen 3♥: shows exactly 4 hearts and exactly 5 spades, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.smolen.bidShortSpades",
@@ -131,9 +112,7 @@
       "templateKey": "nt.smolen.bidShortSpades.semantic",
       "displayText": "Smolen 3♠: shows exactly 4 spades and exactly 5 hearts, game-forcing",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.smolen.placeFourHearts",
@@ -141,9 +120,7 @@
       "templateKey": "nt.smolen.placeFourHearts.semantic",
       "displayText": "Place 4♥: opener confirms heart fit after Smolen 3♠",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.smolen.acceptSpades3s",
@@ -151,9 +128,7 @@
       "templateKey": "nt.smolen.acceptSpades3s.semantic",
       "displayText": "Accept 3♠: opener confirms spade fit after Smolen 3♥ (slow try)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.smolen.acceptHearts3h",
@@ -161,9 +136,7 @@
       "templateKey": "nt.smolen.acceptHearts3h.semantic",
       "displayText": "Accept 3♥: opener confirms heart fit after Smolen 3♠ (slow try)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.smolen.placeFourSpades",
@@ -171,9 +144,7 @@
       "templateKey": "nt.smolen.placeFourSpades.semantic",
       "displayText": "Place 4♠: opener confirms spade fit after Smolen 3♥",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.smolen.responderPlaceFourSpades",
@@ -181,9 +152,7 @@
       "templateKey": "nt.smolen.responderPlaceFourSpades.semantic",
       "displayText": "Place 4♠: responder completes to game after opener's 3♠ acceptance",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.smolen.responderPlaceFourHearts",
@@ -191,9 +160,7 @@
       "templateKey": "nt.smolen.responderPlaceFourHearts.semantic",
       "displayText": "Place 4♥: responder completes to game after opener's 3♥ acceptance",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.smolen.placeThreeNtNoHeartFit",
@@ -201,9 +168,7 @@
       "templateKey": "nt.smolen.placeThreeNtNoHeartFit.semantic",
       "displayText": "Place 3NT: opener has no heart fit after Smolen 3♠",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.smolen.placeThreeNtNoSpadeFit",
@@ -211,9 +176,7 @@
       "templateKey": "nt.smolen.placeThreeNtNoSpadeFit.semantic",
       "displayText": "Place 3NT: opener has no spade fit after Smolen 3♥",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.smolen.staymanEntry5h4s",
@@ -221,9 +184,7 @@
       "templateKey": "nt.smolen.staymanEntry5h4s.semantic",
       "displayText": "Stayman 2♣ with 5 hearts + 4 spades, planning Smolen",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.smolen.staymanEntry5s4h",
@@ -231,9 +192,7 @@
       "templateKey": "nt.smolen.staymanEntry5s4h.semantic",
       "displayText": "Stayman 2♣ with 5 spades + 4 hearts, planning Smolen",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -1333,13 +1292,8 @@
         "world": "acting-hand",
         "description": "Hand has exactly 5 hearts (for 3♠ Smolen showing long hearts)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.hearts"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.hearts"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -1355,13 +1309,8 @@
         "world": "acting-hand",
         "description": "Hand has exactly 5 spades (for 3♥ Smolen showing long spades)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.spades"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.spades"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -1377,13 +1326,8 @@
         "world": "acting-hand",
         "description": "Hand has exactly 4 spades (short major for 3♠ Smolen: 4♠+5♥)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.spades"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.spades"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -1399,13 +1343,8 @@
         "world": "acting-hand",
         "description": "Hand has exactly 4 hearts (short major for 3♥ Smolen: 4♥+5♠)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.hearts"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.hearts"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -1421,13 +1360,8 @@
         "world": "acting-hand",
         "description": "Opener has 3+ hearts (heart fit for Smolen placement)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.hearts"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.hearts"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -1443,13 +1377,8 @@
         "world": "acting-hand",
         "description": "Opener has 3+ spades (spade fit for Smolen placement)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.spades"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.spades"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {

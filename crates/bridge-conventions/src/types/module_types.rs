@@ -17,6 +17,15 @@ use super::fact_id::FactId;
 use super::fact_types::{FactComposition, FactDefinitionSet};
 use super::rule_types::{LocalFsm, StateEntry};
 
+/// Default practice role metadata for a module fixture.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum PracticeRole {
+    Responder,
+    Opener,
+    Both,
+}
+
 /// Role an explanation plays in a given context.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -535,6 +544,7 @@ pub struct ConventionModule {
     /// required once all module fixtures are backfilled.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub bidding_context: Option<BiddingContext>,
+    pub default_role: PracticeRole,
 
     // Declaration
     pub facts: FactDefinitionSet,
@@ -619,6 +629,7 @@ mod tests {
         let json = include_str!("../../fixtures/modules/stayman.json");
         let module: ConventionModule = serde_json::from_str(json).unwrap();
         let reference = &module.reference;
+        assert_eq!(module.default_role, PracticeRole::Responder);
 
         assert_eq!(
             reference.summary_card.trigger,

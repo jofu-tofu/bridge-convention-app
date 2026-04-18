@@ -33,10 +33,11 @@ Every convention bundle must satisfy all items:
 2. **`factExtensions` for module-derived facts.** Facts not in shared `BRIDGE_DERIVED_FACTS` must be defined in `facts.ts`. Use factory helpers (`defineBooleanFact`, `definePerSuitFacts`, `defineHcpRangeFact`, `buildExtension`) from `conventions/pipeline/fact-factory.ts`.
 3. **`modules` for surface selection.** `ConventionModule[]` with `local` (LocalFsm) and `states` (StateEntry[]).
 4. **`systemProfile` for activation.**
-5. **Deal constraints are auto-derived, not authored.** The runtime unions surface preconditions across target-bundle + base-system modules (`fact_dsl::inversion::derive_deal_constraints`) and rejection-samples deals until the user's expected bid lands on a target-module surface. Never add `dealConstraints` / `offConventionConstraints` to a bundle fixture — those fields no longer exist. Your only input is the surface clauses themselves; make them tight enough to describe the lesson and the generator will find hands.
-6. **`category` and `description`** required on `ConventionBundle`.
-7. **`explanationCatalog` entries.** Template-keyed explanations for teaching projections.
-8. **`semantic-classes.ts` constants.** Module-local, not in central registry.
+5. **`defaultRole` for practice defaults.** Every module fixture needs a top-level `defaultRole` with one of `"opener"`, `"responder"`, or `"both"`. This is module-level metadata, not a per-system override.
+6. **Deal constraints are auto-derived, not authored.** The runtime unions surface preconditions across target-bundle + base-system modules (`fact_dsl::inversion::derive_deal_constraints`) and rejection-samples deals until the user's expected bid lands on a target-module surface. Never add `dealConstraints` / `offConventionConstraints` to a bundle fixture — those fields no longer exist. Your only input is the surface clauses themselves; make them tight enough to describe the lesson and the generator will find hands.
+7. **`category` and `description`** required on `ConventionBundle`.
+8. **`explanationCatalog` entries.** Template-keyed explanations for teaching projections.
+9. **`semantic-classes.ts` constants.** Module-local, not in central registry.
 
 ## Adding a New Convention Bundle (Step by Step)
 
@@ -175,6 +176,21 @@ Shape:
 - `competitive: true` when the module's trigger requires an intervening overcall/double (e.g. Negative Doubles). For uncontested triggers (Stayman, Jacoby transfers), set `false`.
 
 The integration test `bidding_context_consistency.rs` asserts the authored tuple agrees with the FSM idle-exit edge where that's derivable (single-hop Inquire/Transfer → 1NT; single-hop Open → level+strain). Multi-hop modules are pinned via an allowlist in the test. If the test fails with a "not derivable and not in allowlist" message, either add `level`/`strain` to the FSM edge or add an allowlist entry.
+
+## Authoring `defaultRole`
+
+Every module fixture carries a required top-level `defaultRole`. This seeds the `/practice` Auto role selection and must be authored explicitly as `"opener"`, `"responder"`, or `"both"`.
+
+Use this derivation table as the starting point:
+
+| fixture shape                                                | `defaultRole` seed |
+| ------------------------------------------------------------ | ------------------ |
+| `biddingContext.openerRole: "partner"` + `competitive: true` | `Both`             |
+| `biddingContext.openerRole: "partner"`                       | `Responder`        |
+| `biddingContext.openerRole: "opponent"`                      | `Opener`           |
+| no `biddingContext` block                                    | `Opener`           |
+
+If ConventionForge verification disagrees with the heuristic, author the explicit `defaultRole` value from the authority and record the reason in the fixture's existing note metadata (for example `_notes` or a sibling variant-notes file when the fixture already uses one).
 
 ## Reference Block Authoring
 

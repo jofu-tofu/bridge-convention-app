@@ -2,6 +2,7 @@
   "moduleId": "strong-2c",
   "displayName": "Strong 2♣",
   "category": "opening-bids",
+  "defaultRole": "responder",
   "fixtureVersion": 1,
   "description": "Open 2C with a hand too strong for a one-level opening, then use waiting and positive-suit responses to keep the auction organized.",
   "purpose": "Teach Larry-style strong 2C structure: responder waits with 2D unless holding 8+ HCP and a good 5+ suit, opener clarifies shape, and the later 2NT rebid hands off to the normal notrump methods.",
@@ -45,10 +46,7 @@
       "contrastiveTemplateKey": "strong2c.qualifiesForOpen.whyNot",
       "contrastiveDisplayText": "Does not have the balanced strength or playing tricks for the core strong 2C opening rule",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.isWaitingResponse",
@@ -58,10 +56,7 @@
       "contrastiveTemplateKey": "strong2c.isWaitingResponse.whyNot",
       "contrastiveDisplayText": "Has a real positive suit response available",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.isPositiveResponse",
@@ -71,10 +66,7 @@
       "contrastiveTemplateKey": "strong2c.isPositiveResponse.whyNot",
       "contrastiveDisplayText": "No good 5+ suit strong enough for an immediate positive response",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.hasGoodHearts",
@@ -84,10 +76,7 @@
       "contrastiveTemplateKey": "strong2c.hasGoodHearts.whyNot",
       "contrastiveDisplayText": "Heart suit is too weak for an immediate positive response",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.hasGoodSpades",
@@ -97,10 +86,7 @@
       "contrastiveTemplateKey": "strong2c.hasGoodSpades.whyNot",
       "contrastiveDisplayText": "Spade suit is too weak for an immediate positive response",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.hasGoodClubs",
@@ -110,10 +96,7 @@
       "contrastiveTemplateKey": "strong2c.hasGoodClubs.whyNot",
       "contrastiveDisplayText": "Club suit is too weak for an immediate positive response",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.hasGoodDiamonds",
@@ -123,10 +106,7 @@
       "contrastiveTemplateKey": "strong2c.hasGoodDiamonds.whyNot",
       "contrastiveDisplayText": "Diamond suit is too weak for an immediate positive response",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.balanced23to24",
@@ -136,10 +116,7 @@
       "contrastiveTemplateKey": "strong2c.balanced23to24.whyNot",
       "contrastiveDisplayText": "Not 23-24 HCP balanced",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.balanced22to24",
@@ -149,10 +126,7 @@
       "contrastiveTemplateKey": "strong2c.balanced22to24.whyNot",
       "contrastiveDisplayText": "Not 22-24 HCP balanced",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.balanced25to27",
@@ -162,10 +136,7 @@
       "contrastiveTemplateKey": "strong2c.balanced25to27.whyNot",
       "contrastiveDisplayText": "Not 25-27 HCP balanced",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.responderGameValues",
@@ -175,10 +146,7 @@
       "contrastiveTemplateKey": "strong2c.responderGameValues.whyNot",
       "contrastiveDisplayText": "Does not have 3-7 HCP game values",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.responderSlamValues",
@@ -188,10 +156,7 @@
       "contrastiveTemplateKey": "strong2c.responderSlamValues.whyNot",
       "contrastiveDisplayText": "Fewer than 8 HCP — not enough for slam try",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.hasHeartSupport",
@@ -201,10 +166,7 @@
       "contrastiveTemplateKey": "strong2c.hasHeartSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 hearts to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.hasSpadeSupport",
@@ -214,10 +176,7 @@
       "contrastiveTemplateKey": "strong2c.hasSpadeSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 spades to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.hasClubSupport",
@@ -227,10 +186,7 @@
       "contrastiveTemplateKey": "strong2c.hasClubSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 clubs to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.hasDiamondSupport",
@@ -240,10 +196,7 @@
       "contrastiveTemplateKey": "strong2c.hasDiamondSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 diamonds to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "strong2c.r1.open2c",
@@ -251,9 +204,7 @@
       "templateKey": "strong2c.r1.open2c.semantic",
       "displayText": "Open 2C: strong artificial opening, then describe shape",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "strong2c.r2.waiting2d",
@@ -261,9 +212,7 @@
       "templateKey": "strong2c.r2.waiting2d.semantic",
       "displayText": "2D waiting: artificial catch-all when no suit-quality positive is available",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "strong2c.r2.positive2h",
@@ -271,9 +220,7 @@
       "templateKey": "strong2c.r2.positive2h.semantic",
       "displayText": "2H positive: 8+ HCP with a good 5+ heart suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "strong2c.r2.positive2s",
@@ -281,9 +228,7 @@
       "templateKey": "strong2c.r2.positive2s.semantic",
       "displayText": "2S positive: 8+ HCP with a good 5+ spade suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "strong2c.r2.positive3c",
@@ -291,9 +236,7 @@
       "templateKey": "strong2c.r2.positive3c.semantic",
       "displayText": "3C positive: 8+ HCP with a good 5+ club suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "strong2c.r2.positive3d",
@@ -301,9 +244,7 @@
       "templateKey": "strong2c.r2.positive3d.semantic",
       "displayText": "3D positive: 8+ HCP with a good 5+ diamond suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "strong2c.r3.rebid2nt",
@@ -311,9 +252,7 @@
       "templateKey": "strong2c.r3.rebid2nt.semantic",
       "displayText": "2NT rebid: 22-24 HCP balanced after 2D waiting",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "strong2c.r3.rebid3nt",
@@ -321,9 +260,7 @@
       "templateKey": "strong2c.r3.rebid3nt.semantic",
       "displayText": "3NT rebid: 25-27 HCP balanced after 2D waiting",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "strong2c.r4.secondNegative3c",
@@ -331,9 +268,7 @@
       "templateKey": "strong2c.r4.secondNegative3c.semantic",
       "displayText": "Second negative 3♣: 0-3 HCP, no values",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -2705,10 +2640,7 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": [
-          "pointRange",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["pointRange", "suitLength"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -2773,14 +2705,8 @@
         "world": "acting-hand",
         "description": "2D is the catch-all waiting bid when responder lacks a Larry-style positive suit response",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.strong2c.isPositiveResponse"
-        ],
-        "constrainsDimensions": [
-          "pointRange",
-          "suitLength",
-          "suitQuality"
-        ],
+        "derivesFrom": ["module.strong2c.isPositiveResponse"],
+        "constrainsDimensions": ["pointRange", "suitLength", "suitQuality"],
         "composition": {
           "kind": "not",
           "operand": {
@@ -2799,14 +2725,8 @@
         "world": "acting-hand",
         "description": "8+ HCP with a good 5+ suit (positive response)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.hcp"
-        ],
-        "constrainsDimensions": [
-          "pointRange",
-          "suitLength",
-          "suitQuality"
-        ],
+        "derivesFrom": ["hand.hcp"],
+        "constrainsDimensions": ["pointRange", "suitLength", "suitQuality"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2864,13 +2784,8 @@
         "world": "acting-hand",
         "description": "Hearts suit quality passes Larry's positive-response standard: 5+ cards with 2 of top 3 honors (A/K/Q) or 3 of top 5 honors (A/K/Q/J/T)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.hearts"
-        ],
-        "constrainsDimensions": [
-          "suitLength",
-          "suitQuality"
-        ],
+        "derivesFrom": ["hand.suitLength.hearts"],
+        "constrainsDimensions": ["suitLength", "suitQuality"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2914,13 +2829,8 @@
         "world": "acting-hand",
         "description": "Spades suit quality passes Larry's positive-response standard: 5+ cards with 2 of top 3 honors (A/K/Q) or 3 of top 5 honors (A/K/Q/J/T)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.spades"
-        ],
-        "constrainsDimensions": [
-          "suitLength",
-          "suitQuality"
-        ],
+        "derivesFrom": ["hand.suitLength.spades"],
+        "constrainsDimensions": ["suitLength", "suitQuality"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2964,13 +2874,8 @@
         "world": "acting-hand",
         "description": "Clubs suit quality passes Larry's positive-response standard: 5+ cards with 2 of top 3 honors (A/K/Q) or 3 of top 5 honors (A/K/Q/J/T)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.clubs"
-        ],
-        "constrainsDimensions": [
-          "suitLength",
-          "suitQuality"
-        ],
+        "derivesFrom": ["hand.suitLength.clubs"],
+        "constrainsDimensions": ["suitLength", "suitQuality"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3014,13 +2919,8 @@
         "world": "acting-hand",
         "description": "Diamonds suit quality passes Larry's positive-response standard: 5+ cards with 2 of top 3 honors (A/K/Q) or 3 of top 5 honors (A/K/Q/J/T)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.diamonds"
-        ],
-        "constrainsDimensions": [
-          "suitLength",
-          "suitQuality"
-        ],
+        "derivesFrom": ["hand.suitLength.diamonds"],
+        "constrainsDimensions": ["suitLength", "suitQuality"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3071,10 +2971,7 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": [
-          "pointRange",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["pointRange", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3142,10 +3039,7 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": [
-          "pointRange",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["pointRange", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3213,10 +3107,7 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": [
-          "pointRange",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["pointRange", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3277,12 +3168,8 @@
         "world": "acting-hand",
         "description": "3-7 HCP (game values opposite 22-24)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.hcp"
-        ],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "derivesFrom": ["hand.hcp"],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -3311,12 +3198,8 @@
         "world": "acting-hand",
         "description": "8+ HCP (slam try values)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.hcp"
-        ],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "derivesFrom": ["hand.hcp"],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3332,12 +3215,8 @@
         "world": "acting-hand",
         "description": "3+ hearts to support partner",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.hearts"
-        ],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.hearts"],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3353,12 +3232,8 @@
         "world": "acting-hand",
         "description": "3+ spades to support partner",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.spades"
-        ],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.spades"],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3374,12 +3249,8 @@
         "world": "acting-hand",
         "description": "3+ clubs to support partner",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.clubs"
-        ],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.clubs"],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3395,12 +3266,8 @@
         "world": "acting-hand",
         "description": "3+ diamonds to support partner",
         "valueType": "boolean",
-        "derivesFrom": [
-          "hand.suitLength.diamonds"
-        ],
-        "constrainsDimensions": [
-          "suitLength"
-        ],
+        "derivesFrom": ["hand.suitLength.diamonds"],
+        "constrainsDimensions": ["suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -3634,9 +3501,7 @@
     "declaredCapabilities": {
       "opening.strong-2c": "active"
     },
-    "allowedDealers": [
-      "S"
-    ],
+    "allowedDealers": ["S"],
     "supportsRoleSelection": false,
     "teaching": {
       "purpose": "Open very strong hands with an artificial 2C bid, then use the waiting or positive-suit structure to describe shape.",
@@ -3654,9 +3519,7 @@
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": [
-            "2C"
-          ]
+          "calls": ["2C"]
         }
       }
     ]

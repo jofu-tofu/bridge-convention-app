@@ -1,16 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { filterConventions } from "../filter-conventions";
-import { ConventionCategory } from "../../../service";
+import { ConventionCategory, PracticeRole } from "../../../service";
 import type { ConventionInfo } from "../../../service";
 
-function makeConvention(
-  overrides: Partial<ConventionInfo>,
-): ConventionInfo {
+function makeConvention(overrides: Partial<ConventionInfo>): ConventionInfo {
   return {
     id: "test",
     name: "Test Convention",
     description: "A test convention for testing",
     category: ConventionCategory.Asking,
+    defaultRole: PracticeRole.Opener,
     ...overrides,
   };
 }

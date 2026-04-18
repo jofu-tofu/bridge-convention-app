@@ -2,6 +2,7 @@
   "moduleId": "dont",
   "displayName": "DONT",
   "category": "competitive",
+  "defaultRole": "opener",
   "fixtureVersion": 1,
   "description": "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns. VARIANT: this fixture encodes the modern DONT variant where 2S is a natural single-suit spade overcall as a direct overcall, and module.dont.singleSuited explicitly excludes spades. The original Bergen version treats spades as a single-suit type revealed via takeout double (a reveal-spades-2S surface under wait-reveal). Verify runs that anchor on the original Bergen authority will flag a missing reveal-spades-2S surface — this is intentional. See fixtures/modules/dont.variant-notes.md for details.",
   "purpose": "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
@@ -45,10 +46,7 @@
       "contrastiveTemplateKey": "dont.bothMajors.whyNot",
       "contrastiveDisplayText": "Does not hold 5-4 or better in both majors",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.diamondsAndMajor",
@@ -58,10 +56,7 @@
       "contrastiveTemplateKey": "dont.diamondsAndMajor.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ diamonds with a 4+ card major",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.clubsAndHigher",
@@ -71,10 +66,7 @@
       "contrastiveTemplateKey": "dont.clubsAndHigher.whyNot",
       "contrastiveDisplayText": "Does not hold 5+ clubs with a 4+ card higher suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.naturalSpades",
@@ -84,10 +76,7 @@
       "contrastiveTemplateKey": "dont.naturalSpades.whyNot",
       "contrastiveDisplayText": "Does not hold 6+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.singleSuited",
@@ -97,10 +86,7 @@
       "contrastiveTemplateKey": "dont.singleSuited.whyNot",
       "contrastiveDisplayText": "Does not hold a single-suited hand (non-spades) without a secondary suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.singleSuitClubs",
@@ -110,10 +96,7 @@
       "contrastiveTemplateKey": "dont.singleSuitClubs.whyNot",
       "contrastiveDisplayText": "The single suit is not clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.singleSuitDiamonds",
@@ -123,10 +106,7 @@
       "contrastiveTemplateKey": "dont.singleSuitDiamonds.whyNot",
       "contrastiveDisplayText": "The single suit is not diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.singleSuitHearts",
@@ -136,10 +116,7 @@
       "contrastiveTemplateKey": "dont.singleSuitHearts.whyNot",
       "contrastiveDisplayText": "The single suit is not hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.clubsHigherDiamonds",
@@ -149,10 +126,7 @@
       "contrastiveTemplateKey": "dont.clubsHigherDiamonds.whyNot",
       "contrastiveDisplayText": "The higher suit is not diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.clubsHigherHearts",
@@ -162,10 +136,7 @@
       "contrastiveTemplateKey": "dont.clubsHigherHearts.whyNot",
       "contrastiveDisplayText": "The higher suit is not hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.clubsHigherSpades",
@@ -175,10 +146,7 @@
       "contrastiveTemplateKey": "dont.clubsHigherSpades.whyNot",
       "contrastiveDisplayText": "The higher suit is not spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.diamondsMajorHearts",
@@ -188,10 +156,7 @@
       "contrastiveTemplateKey": "dont.diamondsMajorHearts.whyNot",
       "contrastiveDisplayText": "The major is not hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.diamondsMajorSpades",
@@ -201,10 +166,7 @@
       "contrastiveTemplateKey": "dont.diamondsMajorSpades.whyNot",
       "contrastiveDisplayText": "The major is not spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.heartSupport",
@@ -214,10 +176,7 @@
       "contrastiveTemplateKey": "dont.heartSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 hearts to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.spadeSupport",
@@ -227,10 +186,7 @@
       "contrastiveTemplateKey": "dont.spadeSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 spades to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.diamondSupport",
@@ -240,10 +196,7 @@
       "contrastiveTemplateKey": "dont.diamondSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 diamonds to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.clubSupport",
@@ -253,10 +206,7 @@
       "contrastiveTemplateKey": "dont.clubSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 3 clubs to support partner",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.hasLongMinor",
@@ -266,10 +216,7 @@
       "contrastiveTemplateKey": "dont.hasLongMinor.whyNot",
       "contrastiveDisplayText": "Does not hold 6+ in either minor",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longMinorIsClubs",
@@ -279,10 +226,7 @@
       "contrastiveTemplateKey": "dont.longMinorIsClubs.whyNot",
       "contrastiveDisplayText": "Longer minor is not clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longMinorIsDiamonds",
@@ -292,10 +236,7 @@
       "contrastiveTemplateKey": "dont.longMinorIsDiamonds.whyNot",
       "contrastiveDisplayText": "Longer minor is not diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longDiamonds",
@@ -305,10 +246,7 @@
       "contrastiveTemplateKey": "dont.longDiamonds.whyNot",
       "contrastiveDisplayText": "Fewer than 6 diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longHearts",
@@ -318,10 +256,7 @@
       "contrastiveTemplateKey": "dont.longHearts.whyNot",
       "contrastiveDisplayText": "Fewer than 6 hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longSpades",
@@ -331,10 +266,7 @@
       "contrastiveTemplateKey": "dont.longSpades.whyNot",
       "contrastiveDisplayText": "Fewer than 6 spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.longClubs",
@@ -344,10 +276,7 @@
       "contrastiveTemplateKey": "dont.longClubs.whyNot",
       "contrastiveDisplayText": "Fewer than 6 clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.majorMinorMonster",
@@ -357,10 +286,7 @@
       "contrastiveTemplateKey": "dont.majorMinorMonster.whyNot",
       "contrastiveDisplayText": "Does not hold a major-minor two-suiter of 6-5 or better",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.majorTwoSuiterMonster",
@@ -370,10 +296,7 @@
       "contrastiveTemplateKey": "dont.majorTwoSuiterMonster.whyNot",
       "contrastiveDisplayText": "Does not hold both majors 6-5 or better",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.gameInterest",
@@ -383,10 +306,7 @@
       "contrastiveTemplateKey": "dont.gameInterest.whyNot",
       "contrastiveDisplayText": "Not strong enough for the jump-rebid game try",
       "preferredLevel": "semantic",
-      "roles": [
-        "supporting",
-        "blocking"
-      ]
+      "roles": ["supporting", "blocking"]
     },
     {
       "explanationId": "dont.stub.opponent1nt",
@@ -402,9 +322,7 @@
       "templateKey": "dont.r1.bothMajors.semantic",
       "displayText": "2H: Both majors (5-4 or better)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.diamondsMajor",
@@ -412,9 +330,7 @@
       "templateKey": "dont.r1.diamondsMajor.semantic",
       "displayText": "2D: Diamonds plus a major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.clubsHigher",
@@ -422,9 +338,7 @@
       "templateKey": "dont.r1.clubsHigher.semantic",
       "displayText": "2C: Clubs plus a higher suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.naturalSpades",
@@ -432,9 +346,7 @@
       "templateKey": "dont.r1.naturalSpades.semantic",
       "displayText": "2S: Natural 6+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.singleSuited",
@@ -442,9 +354,7 @@
       "templateKey": "dont.r1.singleSuited.semantic",
       "displayText": "Double: One long suit (6+), relay for identity",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.majorMinorMonster",
@@ -452,9 +362,7 @@
       "templateKey": "dont.r1.majorMinorMonster.semantic",
       "displayText": "2NT: Major-minor two-suiter, 6-5 or better, monster hand",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.preemptClubs",
@@ -462,9 +370,7 @@
       "templateKey": "dont.r1.preemptClubs.semantic",
       "displayText": "3C: Preemptive long club suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.preemptDiamonds",
@@ -472,9 +378,7 @@
       "templateKey": "dont.r1.preemptDiamonds.semantic",
       "displayText": "3D: Preemptive long diamond suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.preemptHearts",
@@ -482,9 +386,7 @@
       "templateKey": "dont.r1.preemptHearts.semantic",
       "displayText": "3H: Preemptive long heart suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.preemptSpades",
@@ -492,9 +394,7 @@
       "templateKey": "dont.r1.preemptSpades.semantic",
       "displayText": "3S: Preemptive long spade suit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.majorTwoSuiterMonster",
@@ -502,9 +402,7 @@
       "templateKey": "dont.r1.majorTwoSuiterMonster.semantic",
       "displayText": "3NT: Major two-suiter, 6-5 or better, monster hand",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.r1.overcallerPass",
@@ -512,9 +410,7 @@
       "templateKey": "dont.r1.overcallerPass.semantic",
       "displayText": "Pass: No DONT action (hand does not qualify)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.acceptHearts",
@@ -522,9 +418,7 @@
       "templateKey": "dont.adv.acceptHearts.semantic",
       "displayText": "Pass: Accept hearts as trump",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.preferSpades",
@@ -532,9 +426,7 @@
       "templateKey": "dont.adv.preferSpades.semantic",
       "displayText": "2S: Prefer spades (3+ spades, fewer than 3 hearts)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.escapeClubs",
@@ -542,9 +434,7 @@
       "templateKey": "dont.adv.escapeClubs.semantic",
       "displayText": "3C: Escape to long clubs (6+), no major fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.escapeDiamonds",
@@ -552,9 +442,7 @@
       "templateKey": "dont.adv.escapeDiamonds.semantic",
       "displayText": "3D: Escape to long diamonds (6+), no major fit",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.acceptDiamonds",
@@ -562,9 +450,7 @@
       "templateKey": "dont.adv.acceptDiamonds.semantic",
       "displayText": "Pass: Accept diamonds as trump (3+ diamonds)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.relay2hAfter2d",
@@ -572,9 +458,7 @@
       "templateKey": "dont.adv.relay2hAfter2d.semantic",
       "displayText": "2H: Relay asking which major partner holds",
       "preferredLevel": "mechanical",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypass2sAfter2d",
@@ -582,9 +466,7 @@
       "templateKey": "dont.adv.bypass2sAfter2d.semantic",
       "displayText": "2S: Bypass relay with 6+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.acceptClubs",
@@ -592,9 +474,7 @@
       "templateKey": "dont.adv.acceptClubs.semantic",
       "displayText": "Pass: Accept clubs as trump (3+ clubs)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.relay2dAfter2c",
@@ -602,9 +482,7 @@
       "templateKey": "dont.adv.relay2dAfter2c.semantic",
       "displayText": "2D: Relay asking which higher suit partner holds",
       "preferredLevel": "mechanical",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypass2hAfter2c",
@@ -612,9 +490,7 @@
       "templateKey": "dont.adv.bypass2hAfter2c.semantic",
       "displayText": "2H: Bypass relay with 6+ hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypass2sAfter2c",
@@ -622,9 +498,7 @@
       "templateKey": "dont.adv.bypass2sAfter2c.semantic",
       "displayText": "2S: Bypass relay with 6+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.acceptSpades",
@@ -632,9 +506,7 @@
       "templateKey": "dont.adv.acceptSpades.semantic",
       "displayText": "Pass: Accept spades as trump (3+ spades)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.acceptSpadesFallback",
@@ -642,9 +514,7 @@
       "templateKey": "dont.adv.acceptSpadesFallback.semantic",
       "displayText": "Pass: Accept spades by default (no better option)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.escape3cAfter2s",
@@ -652,9 +522,7 @@
       "templateKey": "dont.adv.escape3cAfter2s.semantic",
       "displayText": "3C: Escape to 6+ clubs (no spade fit)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.escape3dAfter2s",
@@ -662,9 +530,7 @@
       "templateKey": "dont.adv.escape3dAfter2s.semantic",
       "displayText": "3D: Escape to 6+ diamonds (no spade fit)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.escape3hAfter2s",
@@ -672,9 +538,7 @@
       "templateKey": "dont.adv.escape3hAfter2s.semantic",
       "displayText": "3H: Escape to 6+ hearts (no spade fit)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.forcedRelay",
@@ -682,9 +546,7 @@
       "templateKey": "dont.adv.forcedRelay.semantic",
       "displayText": "2C: Forced relay after partner's double",
       "preferredLevel": "mechanical",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.monsterRelay",
@@ -692,9 +554,7 @@
       "templateKey": "dont.adv.monsterRelay.semantic",
       "displayText": "3C: Forced relay after partner's 2NT monster overcall",
       "preferredLevel": "mechanical",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypassDiamonds",
@@ -702,9 +562,7 @@
       "templateKey": "dont.adv.bypassDiamonds.semantic",
       "displayText": "2D: Bypass relay with 6+ diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypassHearts",
@@ -712,9 +570,7 @@
       "templateKey": "dont.adv.bypassHearts.semantic",
       "displayText": "2H: Bypass relay with 6+ hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.bypassSpades",
@@ -722,9 +578,7 @@
       "templateKey": "dont.adv.bypassSpades.semantic",
       "displayText": "2S: Bypass relay with 6+ spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.reveal.clubs",
@@ -732,9 +586,7 @@
       "templateKey": "dont.reveal.clubs.semantic",
       "displayText": "Pass: 6+ clubs (was the mystery suit)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.reveal.diamonds",
@@ -742,9 +594,7 @@
       "templateKey": "dont.reveal.diamonds.semantic",
       "displayText": "2D: 6+ diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.reveal.hearts",
@@ -752,9 +602,7 @@
       "templateKey": "dont.reveal.hearts.semantic",
       "displayText": "2H: 6+ hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.reveal.jumpClubs",
@@ -762,9 +610,7 @@
       "templateKey": "dont.reveal.jumpClubs.semantic",
       "displayText": "3C: Clubs with game interest after the relay",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.reveal.jumpDiamonds",
@@ -772,9 +618,7 @@
       "templateKey": "dont.reveal.jumpDiamonds.semantic",
       "displayText": "3D: Diamonds with game interest after the relay",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.reveal.jumpHearts",
@@ -782,9 +626,7 @@
       "templateKey": "dont.reveal.jumpHearts.semantic",
       "displayText": "3H: Hearts with game interest after the relay",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.strongInviteClubs",
@@ -792,9 +634,7 @@
       "templateKey": "dont.adv.strongInviteClubs.semantic",
       "displayText": "2NT: Strong invitation after partner reveals clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.strongInviteDiamonds",
@@ -802,9 +642,7 @@
       "templateKey": "dont.adv.strongInviteDiamonds.semantic",
       "displayText": "2NT: Strong invitation after partner reveals diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.adv.strongInviteHearts",
@@ -812,9 +650,7 @@
       "templateKey": "dont.adv.strongInviteHearts.semantic",
       "displayText": "2NT: Strong invitation after partner reveals hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.relay2c.diamondsPass",
@@ -822,9 +658,7 @@
       "templateKey": "dont.relay2c.diamondsPass.semantic",
       "displayText": "Pass: Higher suit is diamonds (already bid via relay)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.relay2c.hearts2h",
@@ -832,9 +666,7 @@
       "templateKey": "dont.relay2c.hearts2h.semantic",
       "displayText": "2H: Higher suit is hearts",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.relay2c.spades2s",
@@ -842,9 +674,7 @@
       "templateKey": "dont.relay2c.spades2s.semantic",
       "displayText": "2S: Higher suit is spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.relay2d.heartsPass",
@@ -852,9 +682,7 @@
       "templateKey": "dont.relay2d.heartsPass.semantic",
       "displayText": "Pass: The major is hearts (already bid via relay)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "dont.relay2d.spades2s",
@@ -862,9 +690,7 @@
       "templateKey": "dont.relay2d.spades2s.semantic",
       "displayText": "2S: The major is spades",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {
@@ -5930,9 +5756,7 @@
     "declaredCapabilities": {
       "opponent.1nt": "active"
     },
-    "allowedDealers": [
-      "E"
-    ],
+    "allowedDealers": ["E"],
     "supportsRoleSelection": false,
     "teaching": {
       "purpose": "Compete against opponent's 1NT opening with distributional hands, showing two-suited or single-suited holdings via conventional bids and doubles",
@@ -5950,9 +5774,7 @@
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": [
-            "1NT"
-          ]
+          "calls": ["1NT"]
         }
       }
     ]
@@ -5966,11 +5788,7 @@
         "description": "H5+S4+ or S5+H4+ — both majors for 2H bid",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -6026,11 +5844,7 @@
         "description": "D5+ and (H4+ or S4+) — diamonds + a major for 2D bid",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -6073,11 +5887,7 @@
         "description": "C5+ and (D4+ or H4+ or S4+) — clubs + higher suit for 2C bid",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -6128,10 +5938,7 @@
         "description": "S6+ — natural spades for 2S bid",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -6148,11 +5955,7 @@
         "description": "One suit 6+, no other suit 4+, longest suit is not spades — for double",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "shapeClass",
-          "suitLength",
-          "suitIdentity"
-        ],
+        "constrainsDimensions": ["shapeClass", "suitLength", "suitIdentity"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -6277,10 +6080,7 @@
         "description": "D6+ — long diamonds for bypass/escape",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -6297,10 +6097,7 @@
         "description": "H6+ — long hearts for bypass/escape",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -6317,10 +6114,7 @@
         "description": "S6+ — long spades for bypass/escape",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -6337,10 +6131,7 @@
         "description": "C6+ — long clubs for escape",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -6357,11 +6148,7 @@
         "description": "Major-minor two-suiter, 6-5 or better",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -6543,11 +6330,7 @@
         "description": "Hearts and spades, 6-5 or better",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -6603,9 +6386,7 @@
         "description": "11+ HCP — game interest after partner's forced relay",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -6622,9 +6403,7 @@
         "description": "8-10 HCP — minimum DONT range for forcing-inquiry replies",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -6654,9 +6433,7 @@
         "description": "11-15 HCP — maximum DONT range for forcing-inquiry replies",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "pointRange"
-        ],
+        "constrainsDimensions": ["pointRange"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -6685,14 +6462,8 @@
         "world": "acting-hand",
         "description": "With diamonds and a major, the major is longer than diamonds",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.diamondsAndMajor"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "derivesFrom": ["module.dont.diamondsAndMajor"],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -6749,14 +6520,8 @@
         "world": "acting-hand",
         "description": "With both majors, spades are longer than hearts",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.bothMajors"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "suitRelation"
-        ],
+        "derivesFrom": ["module.dont.bothMajors"],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -6786,13 +6551,8 @@
         "world": "acting-hand",
         "description": "The 6+ single suit is clubs",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.singleSuited"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.singleSuited"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -6828,13 +6588,8 @@
         "world": "acting-hand",
         "description": "The 6+ single suit is diamonds",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.singleSuited"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.singleSuited"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -6870,13 +6625,8 @@
         "world": "acting-hand",
         "description": "The 6+ single suit is hearts",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.singleSuited"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.singleSuited"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -6912,13 +6662,8 @@
         "world": "acting-hand",
         "description": "With clubs as anchor, higher suit is diamonds",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.clubsAndHigher"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.clubsAndHigher"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -6957,13 +6702,8 @@
         "world": "acting-hand",
         "description": "With clubs as anchor, higher suit is hearts",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.clubsAndHigher"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.clubsAndHigher"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -7002,13 +6742,8 @@
         "world": "acting-hand",
         "description": "With clubs as anchor, higher suit is spades",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.clubsAndHigher"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.clubsAndHigher"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -7047,13 +6782,8 @@
         "world": "acting-hand",
         "description": "With diamonds as anchor, the major is hearts",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.diamondsAndMajor"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.diamondsAndMajor"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -7083,13 +6813,8 @@
         "world": "acting-hand",
         "description": "With diamonds as anchor, the major is spades",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.diamondsAndMajor"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "derivesFrom": ["module.dont.diamondsAndMajor"],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -7120,10 +6845,7 @@
         "description": "3+ hearts, or equal length in both majors (2-2)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -7167,10 +6889,7 @@
         "description": "3+ spades",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -7187,10 +6906,7 @@
         "description": "3+ diamonds",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -7207,10 +6923,7 @@
         "description": "3+ clubs",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -7228,10 +6941,7 @@
         "valueType": "boolean",
         "forTeachingOnly": true,
         "derivesFrom": [],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength"
-        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength"],
         "composition": {
           "kind": "or",
           "operands": [
@@ -7260,14 +6970,8 @@
         "world": "acting-hand",
         "description": "Longer minor is clubs (for 3C escape)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.hasLongMinor"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "shapeClass"
-        ],
+        "derivesFrom": ["module.dont.hasLongMinor"],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "shapeClass"],
         "composition": {
           "kind": "and",
           "operands": [
@@ -7297,14 +7001,8 @@
         "world": "acting-hand",
         "description": "Longer minor is diamonds (for 3D escape)",
         "valueType": "boolean",
-        "derivesFrom": [
-          "module.dont.hasLongMinor"
-        ],
-        "constrainsDimensions": [
-          "suitIdentity",
-          "suitLength",
-          "shapeClass"
-        ],
+        "derivesFrom": ["module.dont.hasLongMinor"],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "shapeClass"],
         "composition": {
           "kind": "and",
           "operands": [

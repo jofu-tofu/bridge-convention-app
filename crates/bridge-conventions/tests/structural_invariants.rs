@@ -16,7 +16,7 @@
 //! - Opted-in symmetric state pairs must stay aligned
 //! - Reachable fixture states must declare explicit scope in source JSON
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 
 use bridge_conventions::fact_catalog::{get_fact_catalog_entry, partition_discriminants, FactKind};
@@ -27,7 +27,7 @@ use bridge_conventions::types::meaning::{
 };
 use bridge_conventions::types::module_types::{
     CellBinding, ConventionModule, ModuleReferenceInterference, ModuleReferenceQuickReference,
-    QuickReferenceAxis,
+    PracticeRole, QuickReferenceAxis,
 };
 use bridge_conventions::types::rule_types::{PhaseRef, StateEntry};
 use bridge_conventions::BaseSystemId;
@@ -792,6 +792,78 @@ fn reachable_states_declare_scope_in_source() {
     if !failures.is_empty() {
         panic!(
             "\n\nReachable states missing explicit scope ({} failures):\n{}\n",
+            failures.len(),
+            failures.join("\n")
+        );
+    }
+}
+
+#[test]
+fn all_module_fixtures_declare_default_role_in_source_and_samples_match() {
+    let dir = PathBuf::from(MODULE_FIXTURE_DIR);
+    let mut failures: Vec<String> = Vec::new();
+
+    for entry in std::fs::read_dir(&dir).expect("Failed to read module fixture directory") {
+        let entry = entry.expect("Failed to read directory entry");
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("json") {
+            continue;
+        }
+
+        let filename = path.file_name().unwrap().to_string_lossy().into_owned();
+        let json_str = std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("Failed to read {filename}: {e}"));
+        let raw: serde_json::Value = serde_json::from_str(&json_str)
+            .unwrap_or_else(|e| panic!("Failed to parse {filename}: {e}"));
+
+        match raw.get("defaultRole").and_then(|value| value.as_str()) {
+            Some("opener" | "responder" | "both") => {}
+            Some(other) => failures.push(format!(
+                "  {filename}: defaultRole must be opener|responder|both, got '{other}'"
+            )),
+            None => failures.push(format!(
+                "  {filename}: missing required top-level defaultRole"
+            )),
+        }
+    }
+
+    let all_modules = load_all_modules();
+    let by_id: HashMap<&str, PracticeRole> = all_modules
+        .iter()
+        .map(|(_, module)| (module.module_id.as_str(), module.default_role))
+        .collect();
+
+    let expected_samples = [
+        ("stayman", PracticeRole::Responder),
+        ("jacoby-transfers", PracticeRole::Responder),
+        ("jacoby-4way", PracticeRole::Responder),
+        ("weak-twos", PracticeRole::Opener),
+        ("strong-2c", PracticeRole::Responder),
+        ("negative-doubles", PracticeRole::Both),
+        ("blackwood", PracticeRole::Both),
+        ("michaels-unusual", PracticeRole::Opener),
+        ("bergen", PracticeRole::Responder),
+        ("dont", PracticeRole::Opener),
+        ("new-minor-forcing", PracticeRole::Responder),
+        ("smolen", PracticeRole::Responder),
+        ("stayman-garbage", PracticeRole::Responder),
+        ("natural-bids", PracticeRole::Opener),
+    ];
+
+    for (module_id, expected_role) in expected_samples {
+        match by_id.get(module_id).copied() {
+            Some(actual_role) if actual_role == expected_role => {}
+            Some(actual_role) => failures.push(format!(
+                "  module '{module_id}': expected {:?}, got {:?}",
+                expected_role, actual_role
+            )),
+            None => failures.push(format!("  missing sample module '{module_id}'")),
+        }
+    }
+
+    if !failures.is_empty() {
+        panic!(
+            "\n\ndefaultRole fixture failures ({} failures):\n{}\n",
             failures.len(),
             failures.join("\n")
         );

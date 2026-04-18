@@ -2,6 +2,7 @@
   "moduleId": "natural-bids",
   "displayName": "Natural Bids",
   "category": "opening-bids",
+  "defaultRole": "opener",
   "fixtureVersion": 1,
   "description": "Standard natural bids: one-level opening bids and natural notrump invite/game raises. This is an umbrella baseline — responder actions to 1-of-a-suit openings and opener rebid continuations are intentionally out of scope for this module and are handled by dedicated response/opening modules.",
   "purpose": "Learn the baseline one-level opening bids and natural notrump raises that apply when no specialized convention changes the meaning of a call",
@@ -39,9 +40,7 @@
       "templateKey": "nt.naturalNt.opening.semantic",
       "displayText": "1NT opening: balanced hand with 15-17 HCP",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.naturalNt.invite",
@@ -49,9 +48,7 @@
       "templateKey": "nt.naturalNt.invite.semantic",
       "displayText": "2NT invite: invitational values, no 4-card major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "nt.naturalNt.to3nt",
@@ -59,9 +56,7 @@
       "templateKey": "nt.naturalNt.to3nt.semantic",
       "displayText": "3NT game: game values, no 4-card major",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "natural.open.1c",
@@ -69,9 +64,7 @@
       "templateKey": "natural.open.1c.semantic",
       "displayText": "1♣ opening: 12+ HCP, 3+ clubs",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "natural.open.1d",
@@ -79,9 +72,7 @@
       "templateKey": "natural.open.1d.semantic",
       "displayText": "1♦ opening: 12+ HCP, 4+ diamonds",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "natural.open.1h",
@@ -89,9 +80,7 @@
       "templateKey": "natural.open.1h.semantic",
       "displayText": "1♥ opening: 12+ HCP, 5+ hearts (SAYC/2-over-1) or 4+ (Acol)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     },
     {
       "explanationId": "natural.open.1s",
@@ -99,9 +88,7 @@
       "templateKey": "natural.open.1s.semantic",
       "displayText": "1♠ opening: 12+ HCP, 5+ spades (SAYC/2-over-1) or 4+ (Acol)",
       "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
+      "roles": ["pedagogical"]
     }
   ],
   "local": {

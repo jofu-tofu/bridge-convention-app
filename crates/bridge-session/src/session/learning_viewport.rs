@@ -1342,6 +1342,7 @@ mod tests {
                 related_links: Vec::new(),
             },
             bundle_metadata: Default::default(),
+            default_role: bridge_conventions::types::module_types::PracticeRole::Responder,
             facts: FactDefinitionSet {
                 definitions: Vec::new(),
             },
@@ -1467,6 +1468,7 @@ mod tests {
                 related_links: Vec::new(),
             },
             bundle_metadata: Default::default(),
+            default_role: bridge_conventions::types::module_types::PracticeRole::Responder,
             facts: FactDefinitionSet {
                 definitions: Vec::new(),
             },
