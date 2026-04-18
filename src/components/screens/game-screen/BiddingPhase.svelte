@@ -7,7 +7,6 @@
   import AuctionTable from "../../game/AuctionTable.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
   import BiddingSidePanel from "./BiddingSidePanel.svelte";
-  import SettingsDialog from "./SettingsDialog.svelte";
   import { buildContextSummary } from "./context-banner";
 
   interface Props {
@@ -23,8 +22,6 @@
   const layout = getLayoutConfig();
   const appStore = getAppStore();
   const gameStore = getGameStore();
-
-  let settingsDialogRef = $state<ReturnType<typeof SettingsDialog>>();
 
   const contextSummary = $derived(buildContextSummary(viewport));
 </script>
@@ -55,9 +52,6 @@
     <BiddingSidePanel
       {onNewDeal}
       lifecycleDisabled={gameStore.isTransitioning}
-      onOpenSettings={() => settingsDialogRef?.open()}
     />
   </aside>
 </div>
-
-<SettingsDialog bind:this={settingsDialogRef} />

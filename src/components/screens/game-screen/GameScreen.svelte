@@ -4,7 +4,7 @@
   import { Seat, PracticeMode, PromptMode } from "../../../service";
   import type { Call } from "../../../service";
   import { buildConventionCardPanel, buildAcblCardPanel } from "../../../service";
-  import { getGameStore, getAppStore, setLayoutConfig, getService, getCustomSystemsStore } from "../../../stores/context";
+  import { getGameStore, getAppStore, setLayoutConfig, getCustomSystemsStore } from "../../../stores/context";
   import { resolveSystemForSession } from "../../../stores/custom-systems.svelte";
   import type { SessionConfig } from "../../../service";
 
@@ -22,7 +22,6 @@
 
   const DEV = import.meta.env.DEV;
 
-  const service = getService();
   const gameStore = getGameStore();
   const appStore = getAppStore();
   const customSystemsStore = getCustomSystemsStore();
@@ -146,14 +145,6 @@
     if (gameStore.practiceMode !== PracticeMode.Learn) return;
     if (gameStore.phase !== "BIDDING" || !gameStore.isInitialized) return;
     void gameStore.skipToPhase("review");
-  });
-
-  // Sync play profile changes to the active session — swaps PlayStrategyProvider mid-game
-  $effect(() => {
-    const profileId = appStore.playProfileId;
-    const handle = gameStore.activeHandle;
-    if (!profileId || !handle) return;
-    void service.updatePlayProfile(handle, profileId);
   });
 
   // Defer debug drawer until game is initialized (avoids DebugDrawer $derived

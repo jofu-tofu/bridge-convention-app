@@ -255,10 +255,6 @@ export function createAppStore() {
       return prefs.drill.practiceMode;
     },
 
-    setUserPracticeMode(mode: PracticeMode) {
-      updateDrill({ practiceMode: mode });
-    },
-
     setPracticeMode(mode: PracticeMode | null) {
       devPracticeMode = mode;
     },

@@ -4,16 +4,13 @@
   import BidFeedbackPanel from "../../game/bid-feedback/BidFeedbackPanel.svelte";
   import Spinner from "../../shared/Spinner.svelte";
   import SectionHeader from "../../shared/SectionHeader.svelte";
-  import SettingsButton from "../../shared/SettingsButton.svelte";
   interface Props {
     onNewDeal: () => void;
-    onOpenSettings: () => void;
     lifecycleDisabled?: boolean;
   }
 
   let {
     onNewDeal,
-    onOpenSettings,
     lifecycleDisabled = false,
   }: Props = $props();
 
@@ -50,7 +47,6 @@
 </div>
 
   <div class="shrink-0 pt-3 mt-auto border-t border-border-subtle flex flex-col gap-2">
-    <SettingsButton onclick={onOpenSettings} testId="bidding-open-settings" />
     <button
       class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-[--radius-md] font-medium text-[--text-body] transition-colors bg-accent-primary hover:bg-accent-primary-hover text-text-on-accent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       onclick={onNewDeal}

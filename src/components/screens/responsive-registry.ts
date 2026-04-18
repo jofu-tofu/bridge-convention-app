@@ -192,18 +192,6 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "Scrollable flex child, min-w-0 prevents overflow",
   },
   {
-    path: "game-screen/SettingsDialog.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Modal dialog overlay; adapts to viewport via max-w-sm and max-h-[80vh]",
-  },
-  {
-    path: "game-screen/BiddingSettingsPanel.svelte",
-    mobileStrategy: "embedded",
-    minWidth: 280,
-    mobileNotes: "Compact settings panel; hidden on mobile (lg:flex), settings available via Settings screen",
-  },
-  {
     path: "game-screen/PlaySidePanel.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,

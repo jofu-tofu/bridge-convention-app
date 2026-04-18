@@ -5,13 +5,11 @@
   import Button from "../../shared/Button.svelte";
   import Spinner from "../../shared/Spinner.svelte";
   import SectionHeader from "../../shared/SectionHeader.svelte";
-  import SettingsButton from "../../shared/SettingsButton.svelte";
 
   interface Props extends TrickScoreProps {
     contract: Contract | null;
     onSkipToReview: () => void;
     onRestartPlay: () => void;
-    onOpenSettings: () => void;
     disabled?: boolean;
   }
 
@@ -21,7 +19,6 @@
     defenderTricksWon,
     onSkipToReview,
     onRestartPlay,
-    onOpenSettings,
     disabled = false,
   }: Props = $props();
 </script>
@@ -46,7 +43,6 @@
 </section>
 
 <div class="mt-auto flex flex-col gap-2">
-  <SettingsButton onclick={onOpenSettings} testId="play-open-settings" />
   <button
     class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-[--radius-md] font-medium text-[--text-body] transition-colors border border-border-subtle text-text-secondary hover:text-text-primary hover:border-border-default cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
     onclick={onRestartPlay}
