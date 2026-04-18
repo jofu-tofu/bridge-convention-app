@@ -30,15 +30,15 @@
   <p class="text-fb-correct-emphasis font-mono text-[--text-value] mt-1">
     {formatCall(feedback.userCall)}
   </p>
-  {#if feedback.correctBidExplanation}
+  {#if isAcceptable && feedback.correctBidExplanation}
     <p class="text-fb-correct-dim/70 text-[--text-label] mt-1">{feedback.correctBidExplanation}</p>
   {/if}
-  {#if feedback.grade === ViewportBidGrade.Acceptable && teaching?.primaryBid}
+  {#if isAcceptable && teaching?.primaryBid}
     <p class="text-fb-correct-dim/70 text-[--text-label] mt-1" data-testid="not-preferred-note">
       Though <span class="font-mono font-semibold">{formatCall(teaching.primaryBid)}</span> is preferred
     </p>
   {/if}
-  {#if passedConditions.length > 0}
+  {#if isAcceptable && passedConditions.length > 0}
     <div class="mt-1.5 flex flex-col gap-0.5">
       {#each passedConditions as cond (cond.description)}
         <p class="text-fb-correct-dim/60 text-[--text-annotation]">✓ {cond.description}</p>
