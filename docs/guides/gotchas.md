@@ -139,6 +139,15 @@ will fail.
 Only `now >= current_period_end` flips the user to `Expired`. Do not simplify this
 to a status-only check without product sign-off.
 
+### Pricing Page Uses A Deliberate Two-Tap Flow For Logged-Out Users
+`/billing/pricing` intentionally does NOT auto-subscribe after `AuthModal`
+closes on successful sign-in. A logged-out user sees "Sign in to subscribe",
+signs in, and then taps the button again — by which point it has re-rendered
+to "Subscribe — $5.99 / month". Do not "optimize" this into a post-close
+auto-redirect: chaining the checkout call to the modal's close event races
+with `auth.isLoggedIn` reactivity on a revenue-critical surface. The extra
+tap is cheap; a misfired redirect is not.
+
 ### Free Bundle Allowlist Is Mirrored In Rust And TypeScript
 The free practice bundle ID lives in two places and they must stay synchronized:
 

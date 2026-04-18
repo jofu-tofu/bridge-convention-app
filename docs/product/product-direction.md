@@ -46,6 +46,16 @@ content authoring better than one-time sales, Stripe handles payment retries and
 dunning automatically, and the Customer Portal reduces support load for cancel /
 payment-method changes.
 
+`/billing/pricing` is the canonical pre-Stripe conversion surface: benefits,
+price, and the subscribe CTA all live there. `PaywallOverlay` is the
+"you-hit-a-locked-bundle" nudge and navigates to `/billing/pricing` rather than
+invoking checkout directly, so users always see price and pitch before the
+Stripe hop. The display string `MONTHLY_PRICE_DISPLAY` in
+`src/routes/(app)/billing/pricing/+page.svelte` is the single on-page source of
+truth for "$5.99 / month"; the billed amount is configured via
+`STRIPE_PRICE_ID_MONTHLY` on the bridge-api server. If the monthly price
+changes, update both sites in the same patch.
+
 ## SEO Strategy
 
 Hybrid architecture: static content ring around the WASM interactive core. Learn pages (`/learn/<moduleId>/`) are pre-rendered as static HTML at build time — crawlable by search engines and AI crawlers without JS execution. Practice and game screens remain client-side WASM (no SEO needed for interactive features). The static pages serve as the primary discovery and conversion surface, linking users into the SPA for hands-on practice.

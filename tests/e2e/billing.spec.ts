@@ -31,6 +31,28 @@ test.describe("billing + auth", () => {
     await page.getByTestId(`practice-${PAID_BUNDLE}`).click();
 
     await expect(page.getByTestId("paywall-overlay-subscribe")).toBeVisible();
+    await page.getByTestId("paywall-overlay-subscribe").click();
+    await expect(page).toHaveURL(/\/billing\/pricing$/);
+  });
+
+  test("pricing page subscribe redirects to Stripe checkout", async ({ page }) => {
+    await page.context().clearCookies();
+    await devLogin(page, {});
+
+    await page.route("**/dev-stripe.local/**", (route) =>
+      route.fulfill({ status: 200, body: "checkout-stub" }),
+    );
+    const checkoutRequest = page.waitForRequest(
+      (req) =>
+        req.url().includes("dev-stripe.local/checkout/") && req.isNavigationRequest(),
+    );
+
+    await page.goto("/billing/pricing?e2e=1");
+    await expect(page.getByText("$5.99 / month").first()).toBeVisible();
+    await page.getByTestId("pricing-subscribe").click();
+
+    const req = await checkoutRequest;
+    expect(req.url()).toContain("dev-stripe.local/checkout/");
   });
 
   test("paid user can open the Stripe portal", async ({ page }) => {

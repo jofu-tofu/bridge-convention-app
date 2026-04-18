@@ -1,39 +1,19 @@
 <script lang="ts">
-  import { getDataPort } from "../../stores/context";
-
-  const dataPort = getDataPort();
+  import { goto } from "$app/navigation";
 
   let dialogRef = $state<HTMLDialogElement>();
-  let errorMessage = $state<string | null>(null);
-  let isStartingCheckout = $state(false);
 
   export function open() {
-    errorMessage = null;
     dialogRef?.showModal();
   }
 
   export function close() {
-    errorMessage = null;
     dialogRef?.close();
   }
 
-  async function handleSubscribe() {
-    errorMessage = null;
-    isStartingCheckout = true;
-
-    try {
-      const { url } = await dataPort.startCheckout("monthly");
-      if (!url) {
-        // eslint-disable-next-line no-console -- explicit dev-mode no-op for local billing-disabled flows
-        console.warn("Billing disabled in dev");
-        return;
-      }
-      window.location.href = url;
-    } catch {
-      errorMessage = "Unable to start checkout. Please try again.";
-    } finally {
-      isStartingCheckout = false;
-    }
+  function handleShowPricing() {
+    close();
+    void goto("/billing/pricing");
   }
 </script>
 
@@ -63,12 +43,11 @@
     <div class="flex flex-col gap-2">
       <button
         class="w-full py-2.5 rounded-[--radius-md] text-sm font-semibold transition-colors cursor-pointer
-          text-text-on-accent bg-accent-primary hover:bg-accent-primary-hover shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
-        disabled={isStartingCheckout}
-        onclick={() => void handleSubscribe()}
+          text-text-on-accent bg-accent-primary hover:bg-accent-primary-hover shadow-sm"
+        onclick={handleShowPricing}
         data-testid="paywall-overlay-subscribe"
       >
-        {isStartingCheckout ? "Redirecting…" : "Subscribe"}
+        See pricing
       </button>
       <button
         class="w-full py-2 rounded-[--radius-md] text-sm font-medium transition-colors cursor-pointer
@@ -79,10 +58,6 @@
         Maybe later
       </button>
     </div>
-
-    {#if errorMessage}
-      <p class="mt-3 text-xs text-red-400" role="alert">{errorMessage}</p>
-    {/if}
   </div>
 </dialog>
 
