@@ -395,15 +395,16 @@ export const PLAY_PROFILES: Record<PlayProfileId, PlayProfile> = {
 export interface DrillSettings {
   readonly opponentMode: OpponentMode;
   readonly tuning: DrillTuning;
+  readonly practiceRole: PracticeRole | "auto";
   readonly playProfileId?: PlayProfileId;
   readonly practiceMode?: PracticeMode;
   readonly playPreference?: PlayPreference;
-  readonly practiceRole?: PracticeRole;
 }
 
 export const DEFAULT_DRILL_SETTINGS: DrillSettings = {
   opponentMode: OpponentMode.None,
   tuning: DEFAULT_DRILL_TUNING,
+  practiceRole: "auto",
   playProfileId: "world-class",
 };
 

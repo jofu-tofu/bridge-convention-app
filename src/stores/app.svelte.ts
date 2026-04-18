@@ -2,6 +2,7 @@ import type { ConventionInfo, SystemSelectionId, VulnerabilityDistribution, Dril
 import { OpponentMode, DEFAULT_DRILL_TUNING, DEFAULT_DRILL_SETTINGS, AVAILABLE_BASE_SYSTEMS, DEFAULT_PRACTICE_PREFERENCES, DEFAULT_DISPLAY_PREFERENCES } from "../service";
 import { canonicalBundleId } from "./bundle-id-migration";
 import { loadFromStorage, saveToStorage } from "./local-storage";
+import type { DrillLaunchConfig } from "./types";
 
 // ─── Persistence ────────────────────────────────────────────
 
@@ -57,16 +58,18 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
   const practiceMode = drill?.practiceMode && VALID_PRACTICE_MODES.has(drill.practiceMode) ? drill.practiceMode : undefined;
 
   // Validate practiceRole
-  const VALID_PRACTICE_ROLES = new Set<string>(["responder", "opener", "both"]);
-  const practiceRole = drill?.practiceRole && VALID_PRACTICE_ROLES.has(drill.practiceRole) ? drill.practiceRole : undefined;
+  const VALID_PRACTICE_ROLES = new Set<string>(["auto", "responder", "opener", "both"]);
+  const practiceRole = drill?.practiceRole && VALID_PRACTICE_ROLES.has(drill.practiceRole)
+    ? drill.practiceRole
+    : DEFAULT_DRILL_SETTINGS.practiceRole;
 
   return {
     baseSystemId,
     drill: {
       opponentMode,
+      practiceRole,
       ...(playProfileId ? { playProfileId } : {}),
       ...(practiceMode ? { practiceMode } : {}),
-      ...(practiceRole ? { practiceRole } : {}),
       tuning: {
         ...DEFAULT_DRILL_TUNING,
         ...tuningRaw,
@@ -123,9 +126,22 @@ export function createAppStore() {
   let devPracticeMode = $state<PracticeMode | null>(null);
   /** Dev-override practice role from URL param (?practiceRole=). */
   let devPracticeRole = $state<PracticeRole | null>(null);
+  let activeLaunch = $state<DrillLaunchConfig | null>(null);
 
   // All persisted practice preferences — single blob
   let prefs = $state<PracticePreferences>(loadPreferences());
+
+  function setSessionPracticeMode(mode: PracticeMode | undefined) {
+    prefs = { ...prefs, drill: { ...prefs.drill, ...(mode ? { practiceMode: mode } : { practiceMode: undefined }) } };
+  }
+
+  function setSessionPracticeRole(role: PracticeRole | "auto") {
+    prefs = { ...prefs, drill: { ...prefs.drill, practiceRole: role } };
+  }
+
+  function setSessionBaseSystemId(id: SystemSelectionId) {
+    prefs = { ...prefs, baseSystemId: id };
+  }
 
   function updateDrill(patch: Partial<DrillSettings>) {
     prefs = { ...prefs, drill: { ...prefs.drill, ...patch } };
@@ -256,7 +272,8 @@ export function createAppStore() {
     },
 
     setUserPracticeMode(mode: PracticeMode) {
-      updateDrill({ practiceMode: mode });
+      setSessionPracticeMode(mode);
+      savePreferences(prefs);
     },
 
     setPracticeMode(mode: PracticeMode | null) {
@@ -267,12 +284,22 @@ export function createAppStore() {
       return devPracticeRole;
     },
 
-    get userPracticeRole(): PracticeRole | undefined {
+    get practiceRole(): PracticeRole | "auto" {
       return prefs.drill.practiceRole;
     },
 
+    setPracticeRole(role: PracticeRole | "auto") {
+      setSessionPracticeRole(role);
+      savePreferences(prefs);
+    },
+
+    get userPracticeRole(): PracticeRole | undefined {
+      return prefs.drill.practiceRole === "auto" ? undefined : prefs.drill.practiceRole;
+    },
+
     setUserPracticeRole(role: PracticeRole) {
-      updateDrill({ practiceRole: role });
+      setSessionPracticeRole(role);
+      savePreferences(prefs);
     },
 
     setDevPracticeRole(role: PracticeRole | null) {
@@ -308,8 +335,28 @@ export function createAppStore() {
     },
 
     setBaseSystemId(id: SystemSelectionId) {
-      prefs = { ...prefs, baseSystemId: id };
+      setSessionBaseSystemId(id);
       savePreferences(prefs);
+    },
+
+    get activeLaunch() {
+      return activeLaunch;
+    },
+
+    applyDrillSession(config: DrillLaunchConfig, conventions: readonly ConventionInfo[]) {
+      const firstModule = conventions.find((convention) => convention.id === config.moduleIds[0]);
+      if (!firstModule) {
+        throw new Error(`Unknown module: ${config.moduleIds[0]}`);
+      }
+
+      const resolvedRole = config.practiceRole === "auto"
+        ? firstModule.defaultRole
+        : config.practiceRole;
+
+      setSessionPracticeMode(config.practiceMode);
+      setSessionPracticeRole(resolvedRole);
+      setSessionBaseSystemId(config.systemSelectionId);
+      activeLaunch = config;
     },
 
     get drillTuning() {

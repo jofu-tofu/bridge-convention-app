@@ -17,7 +17,7 @@ import type {
   Suit,
 } from "../service";
 import type { DevServicePort, DrillHandle, SessionConfig } from "../service";
-import type { GamePhase, ServicePublicBeliefState, PracticeMode, PromptMode } from "../service";
+import type { ConventionInfo, GamePhase, ServicePublicBeliefState, PracticeMode, PracticeRole, PromptMode, SystemSelectionId } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import type {
   BidFeedback,
@@ -32,6 +32,14 @@ export interface SessionStats {
   readonly correct: number;
   readonly incorrect: number;
   readonly streak: number;
+}
+
+export interface DrillLaunchConfig {
+  moduleIds: string[];
+  practiceMode: PracticeMode;
+  practiceRole: PracticeRole | "auto";
+  systemSelectionId: SystemSelectionId;
+  sourceDrillId: string | null;
 }
 
 // ── Game Store ──────────────────────────────────────────────────────
@@ -114,4 +122,12 @@ export interface GameStore {
   dismissFeedback(): void;
   getExpectedBid(): Promise<{ call: Call } | null>;
   reset(): void;
+}
+
+export interface DrillLaunchStore {
+  readonly activeLaunch: DrillLaunchConfig | null;
+  applyDrillSession(
+    config: DrillLaunchConfig,
+    conventions: readonly ConventionInfo[],
+  ): void;
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { listConventions, ConventionCategory, displayConventionName } from "../../service";
+  import { listConventions, ConventionCategory, displayConventionName, PracticeMode, PracticeRole } from "../../service";
   import type { ConventionInfo } from "../../service";
   import { getAppStore, getAuthStore, getDrillsStore } from "../../stores/context";
   import { canPractice } from "../../stores/entitlements";
@@ -13,6 +13,7 @@
   import SectionHeader from "../shared/SectionHeader.svelte";
   import SavedDrillsShelf from "./SavedDrillsShelf.svelte";
   import DrillPresetDialog from "./DrillPresetDialog.svelte";
+  import DrillSettingsPanel from "./DrillSettingsPanel.svelte";
   import AppScreen from "../shared/AppScreen.svelte";
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
 
@@ -55,7 +56,21 @@
       paywallOverlay?.open();
       return;
     }
+
+    const practiceRole =
+      appStore.practiceRole === "auto" ? config.defaultRole : appStore.practiceRole;
+
     appStore.selectConvention(config);
+    appStore.applyDrillSession(
+      {
+        moduleIds: [config.id],
+        practiceMode: appStore.userPracticeMode ?? PracticeMode.DecisionDrill,
+        practiceRole,
+        systemSelectionId: appStore.baseSystemId,
+        sourceDrillId: null,
+      },
+      allConventions,
+    );
     void goto("/game");
   }
 
@@ -69,10 +84,17 @@
       return;
     }
     drillsStore.markLaunched(drill.id);
-    appStore.setPracticeMode(drill.practiceMode);
-    appStore.setDevPracticeRole(drill.practiceRole === "auto" ? null : drill.practiceRole);
-    appStore.setBaseSystemId(drill.systemSelectionId);
     appStore.selectConvention(convention);
+    appStore.applyDrillSession(
+      {
+        moduleIds: drill.moduleIds,
+        practiceMode: drill.practiceMode,
+        practiceRole: drill.practiceRole,
+        systemSelectionId: drill.systemSelectionId,
+        sourceDrillId: drill.id,
+      },
+      allConventions,
+    );
     void goto("/game");
   }
 
@@ -85,6 +107,17 @@
   }
 
   const displayName = displayConventionName;
+
+  function roleBadgeLabel(role: PracticeRole): string {
+    switch (role) {
+      case PracticeRole.Opener:
+        return "Opener";
+      case PracticeRole.Responder:
+        return "Responder";
+      case PracticeRole.Both:
+        return "Opener or responder";
+    }
+  }
 </script>
 
 <svelte:window bind:innerWidth={innerW} />
@@ -114,118 +147,136 @@
       {/if}
   {/snippet}
 
-  <div class="shrink-0">
-    {#if showMyDrillsLink}
-      <div class="mb-2 flex justify-end">
-        <a
-          href="/practice/drill"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-secondary border border-border-subtle bg-bg-card no-underline transition-all hover:text-text-primary hover:border-border-default hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
-        >
-          My drills
-          <span aria-hidden="true" class="text-accent-primary">→</span>
-        </a>
+  <div class="grid gap-4 md:grid-cols-[19rem,minmax(0,1fr)] xl:grid-cols-[20rem,minmax(0,1fr)]">
+    <aside class="hidden md:block">
+      <div class="sticky top-0">
+        <DrillSettingsPanel />
       </div>
-    {/if}
+    </aside>
 
-    <!-- Search -->
-    <div class="mb-4">
-      <div
-        class="flex items-center gap-3 bg-bg-card border border-border-subtle rounded-[--radius-lg] px-4 py-3 transition-colors focus-within:border-accent-primary/40"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="text-text-muted shrink-0"
-          aria-hidden="true"
-          ><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg
+    <div class="min-w-0">
+      {#if showMyDrillsLink}
+        <div class="mb-2 flex justify-end">
+          <a
+            href="/practice/drill"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium text-text-secondary border border-border-subtle bg-bg-card no-underline transition-all hover:text-text-primary hover:border-border-default hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
+          >
+            My drills
+            <span aria-hidden="true" class="text-accent-primary">→</span>
+          </a>
+        </div>
+      {/if}
+
+      <div class="mb-4">
+        <div
+          class="flex items-center gap-3 bg-bg-card border border-border-subtle rounded-[--radius-lg] px-4 py-3 transition-colors focus-within:border-accent-primary/40"
         >
-        <input
-          type="text"
-          placeholder="Search conventions..."
-          aria-label="Search conventions"
-          bind:value={searchQuery}
-          class="w-full bg-transparent text-text-primary placeholder-text-muted outline-none"
-        />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="text-text-muted shrink-0"
+            aria-hidden="true"
+            ><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg
+          >
+          <input
+            type="text"
+            placeholder="Search conventions..."
+            aria-label="Search conventions"
+            bind:value={searchQuery}
+            class="w-full bg-transparent text-text-primary placeholder-text-muted outline-none"
+          />
+        </div>
       </div>
-    </div>
 
-  </div>
-
-  <div>
-    {#if !searchQuery}
-      <SavedDrillsShelf onLaunch={launchDrill} onEdit={openEditDialog} />
-    {/if}
-
-    {#if filteredConventions.length > 0}
-      {#each groupedConventions as group (group.category)}
-        <section class="mb-6">
-          <SectionHeader level="h2">{group.category}</SectionHeader>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-            {#each group.items as convention (convention.id)}
-              <ItemCard testId="convention-{convention.id}" interactive={false} class="!rounded-[--radius-xl]">
-                <div class="flex items-start justify-between gap-2">
-                  <h2 class="text-lg font-semibold text-text-primary leading-tight">
-                    {displayName(convention.name)}
-                  </h2>
-                  <div class="flex items-center gap-1.5 shrink-0">
-                    {#if convention.variesBySystem}
-                      <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
-                        Varies by system
-                      </span>
-                    {/if}
-                  </div>
-                </div>
-                <p class="text-sm text-text-secondary mt-1 leading-relaxed line-clamp-2">
-                  {convention.description}
-                </p>
-                {@const locked = !canPractice(auth.user, convention.id)}
-                <div class="flex items-center justify-end gap-1.5 mt-2">
-                  <button
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
-                      transition-all shadow-sm
-                      {locked
-                        ? 'text-text-muted bg-bg-elevated cursor-pointer border border-border-subtle'
-                        : 'text-text-on-accent bg-accent-primary hover:bg-accent-primary-hover cursor-pointer'}"
-                    data-testid="practice-{convention.id}"
-                    aria-label="{locked ? 'Unlock' : 'Practice'} {displayName(convention.name)}"
-                    onclick={() => handleSelect(convention)}
-                  >
-                    {#if locked}
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    {:else}
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                    {/if}
-                    <span class="hidden sm:inline">{locked ? "Locked" : "Practice"}</span>
-                  </button>
-                  <button
-                    class="flex items-center justify-center p-1.5 rounded-[--radius-md] text-xs font-medium
-                      text-text-secondary bg-bg-elevated hover:text-accent-primary hover:bg-accent-primary/10
-                      transition-all cursor-pointer border border-transparent hover:border-accent-primary/20
-                      min-w-[--size-touch-target] min-h-[--size-touch-target]"
-                    data-testid="configure-{convention.id}"
-                    aria-label="Configure and save drill for {displayName(convention.name)}"
-                    onclick={() => openConfigureDialog(convention)}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
-                  </button>
-                </div>
-              </ItemCard>
-            {/each}
+      {#if isMobile}
+        <details class="mb-4 overflow-hidden rounded-[--radius-xl] border border-border-subtle bg-bg-card">
+          <summary class="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-text-primary">
+            Practice settings
+          </summary>
+          <div class="border-t border-border-subtle p-3">
+            <DrillSettingsPanel showHeader={false} />
           </div>
-        </section>
-      {/each}
-    {:else}
-      <div class="text-center py-12">
-        <p class="text-text-muted">No conventions match your search.</p>
-      </div>
-    {/if}
+        </details>
+      {/if}
+
+      {#if !searchQuery}
+        <SavedDrillsShelf onLaunch={launchDrill} onEdit={openEditDialog} />
+      {/if}
+
+      {#if filteredConventions.length > 0}
+        {#each groupedConventions as group (group.category)}
+          <section class="mb-6">
+            <SectionHeader level="h2">{group.category}</SectionHeader>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+              {#each group.items as convention (convention.id)}
+                <ItemCard testId="convention-{convention.id}" interactive={false} class="!rounded-[--radius-xl]">
+                  <div class="flex items-start justify-between gap-2">
+                    <h2 class="text-lg font-semibold text-text-primary leading-tight">
+                      {displayName(convention.name)}
+                    </h2>
+                    <div class="flex flex-wrap justify-end gap-1.5 shrink-0">
+                      <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
+                        {roleBadgeLabel(convention.defaultRole)}
+                      </span>
+                      {#if convention.variesBySystem}
+                        <span class="text-xs font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
+                          Varies by system
+                        </span>
+                      {/if}
+                    </div>
+                  </div>
+                  <p class="text-sm text-text-secondary mt-1 leading-relaxed line-clamp-2">
+                    {convention.description}
+                  </p>
+                  {@const locked = !canPractice(auth.user, convention.id)}
+                  <div class="flex items-center justify-end gap-1.5 mt-2">
+                    <button
+                      class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
+                        transition-all shadow-sm
+                        {locked
+                          ? 'text-text-muted bg-bg-elevated cursor-pointer border border-border-subtle'
+                          : 'text-text-on-accent bg-accent-primary hover:bg-accent-primary-hover cursor-pointer'}"
+                      data-testid="practice-{convention.id}"
+                      aria-label="{locked ? 'Unlock' : 'Practice'} {displayName(convention.name)}"
+                      onclick={() => handleSelect(convention)}
+                    >
+                      {#if locked}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      {:else}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                      {/if}
+                      <span class="hidden sm:inline">{locked ? "Locked" : "Practice"}</span>
+                    </button>
+                    <button
+                      class="flex items-center justify-center p-1.5 rounded-[--radius-md] text-xs font-medium
+                        text-text-secondary bg-bg-elevated hover:text-accent-primary hover:bg-accent-primary/10
+                        transition-all cursor-pointer border border-transparent hover:border-accent-primary/20
+                        min-w-[--size-touch-target] min-h-[--size-touch-target]"
+                      data-testid="configure-{convention.id}"
+                      aria-label="Configure and save drill for {displayName(convention.name)}"
+                      onclick={() => openConfigureDialog(convention)}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+                    </button>
+                  </div>
+                </ItemCard>
+              {/each}
+            </div>
+          </section>
+        {/each}
+      {:else}
+        <div class="text-center py-12">
+          <p class="text-text-muted">No conventions match your search.</p>
+        </div>
+      {/if}
+    </div>
   </div>
   <AuthModal bind:this={authModal} />
   <PaywallOverlay bind:this={paywallOverlay} />

@@ -36,7 +36,8 @@ Two sibling primitives, not one universal wrapper: the overflow chains differ en
 AppReady.svelte                      Root app shell — creates engine/stores, sets context, nav chrome
 components/
   screens/
-    ConventionSelectScreen.svelte    search + category-sectioned card grid (sections derived from `ConventionCategory` enum order). Practice-only surface: no Learn buttons, no Continue strip (those live on the logged-in landing). Practice buttons show lock state for non-paid bundles; PaywallOverlay opens on locked practice attempt. Renders `SavedDrillsShelf` above category sections; each card exposes a `⋯` configure action that opens `DrillPresetDialog` in create mode. Single-module saved drills launch from the unified `drillsStore`.
+    ConventionSelectScreen.svelte    search + category-sectioned card grid (sections derived from `ConventionCategory` enum order). Practice-only surface: no Learn buttons, no Continue strip (those live on the logged-in landing). Practice buttons show lock state for non-paid bundles; PaywallOverlay opens on locked practice attempt. Desktop renders `DrillSettingsPanel` as a sticky left rail and mobile shows it in a disclosure above the grid. Renders `SavedDrillsShelf` above category sections; each card exposes a `⋯` configure action that opens `DrillPresetDialog` in create mode plus a descriptive role badge from `convention.defaultRole`. All launch paths on this screen route through `appStore.applyDrillSession()` so session state changes do not persist to practice preferences.
+    DrillSettingsPanel.svelte        `/practice` side settings panel for mode, role (Auto/Opener/Responder/Both), system, opponents, play skill, and educational annotations. Reuses `ToggleGroup`, `SectionHeader`, and the existing settings-screen custom-system picker pattern. Reads/writes through `appStore`.
     SavedDrillsShelf.svelte          Horizontal chip strip of saved single-module drills (MRU). Hidden when empty. Each chip: click to launch (`onLaunch`), `⋯` opens menu (Launch / Rename / Edit configuration / Delete). Data from `getDrillsStore()`, filtered to `moduleIds.length === 1`.
     DrillPresetDialog.svelte         Native `<dialog>` with four fields (mode / role / system / name) + three actions (Cancel / Save / Save & Launch). `open({ mode: "create", convention })` or `open({ mode: "edit", presetId })`. Convention field read-only in edit mode. Saves a single-module `Drill` into the unified `drillsStore`; launch runs via parent-provided `onLaunch` callback.
     CustomDrillForm.svelte           Full-page create/edit form for legacy `/practice/drill` routes. Props: `mode: "create" | "edit"`, optional `drill`. Saves a single-module `Drill` into `drillsStore` then `goto("/practice/drill")`. No launch button this phase.
@@ -137,7 +138,7 @@ components/
     shared/                          Shared component tests
       reference/                     Behavior tests for the reference-page components (schema, anchor ids, null/print contracts)
     game/                            Game component tests
-    screens/                         Screen component tests
+    screens/                         Screen component tests, including context-backed wrappers such as `DrillSettingsPanelTestWrapper.svelte` for store-driven screen pieces
 ```
 
 **Screen flow:** SvelteKit `(app)/+layout.svelte` owns the full app layout — loads WASM, renders `AppReady.svelte` which provides context setup + nav chrome. File-based routing replaces store-driven screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop (dev only)/Settings icons. Learn links to `/learn` (conventions reference); the NavRail flyout also exposes `/lessons` and `/systems`. Mobile: bottom tab bar (BottomTabBar) with Home/Learn/Workshop (dev only)/Settings tabs (3 tabs in production, 4 in dev). Workshop tab is the home for system/convention/practice pack management, gated behind `FEATURES.workshop`. `?profiles=true` backward compat alias redirects to `/workshop`. Workshop = management (fork, edit, delete, configure). Learn = study (teaching content, flow trees, surfaces).
@@ -188,4 +189,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `AppReady.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-18 | version=22 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-18 | version=23 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->
