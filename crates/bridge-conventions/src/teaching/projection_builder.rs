@@ -263,6 +263,8 @@ fn build_why_not(
                     .as_ref()
                     .map(|e| e.gate_id.clone())
                     .unwrap_or_else(|| "unknown".into()),
+                module_id: carrier.proposal().module_id.clone(),
+                meaning_label: carrier.proposal().teaching_label.name.to_string(),
             });
         }
     }
@@ -452,5 +454,135 @@ mod tests {
 
         assert_eq!(projection.meaning_views.len(), 1);
         assert_eq!(projection.meaning_views[0].display_label, "Bid 2C");
+    }
+
+    #[test]
+    fn why_not_carries_module_and_meaning_label_for_each_eliminated_surface() {
+        // When several meanings land on the same call (e.g., natural 3NT and
+        // Jacoby-transfer-accepted 3NT), the whyNot entry must identify which
+        // meaning failed — otherwise the UI shows an acceptable-labelled row
+        // with the failed conditions of a different, unrelated surface.
+        // Auction: 1NT-P-2D-P-2H-P-? ; natural `bridge:to-3nt` fails hasFiveCardMajor.
+        use crate::pipeline::evaluation::types::MeaningClause;
+        use crate::types::meaning::{ConstraintValue, FactOperator};
+
+        let call_3nt = Call::Bid {
+            level: 3,
+            strain: BidSuit::NoTrump,
+        };
+
+        let make_carrier = |meaning: &str,
+                            module: &str,
+                            clauses: Vec<MeaningClause>,
+                            satisfied: bool|
+         -> PipelineCarrier {
+            let proposal = MeaningProposal {
+                meaning_id: meaning.to_string(),
+                semantic_class_id: meaning.to_string(),
+                module_id: module.to_string(),
+                ranking: RankingMetadata {
+                    recommendation_band: RecommendationBand::Must,
+                    module_precedence: Some(0),
+                    declaration_order: 0,
+                    specificity: 1.0,
+                },
+                clauses,
+                all_satisfied: satisfied,
+                disclosure: Disclosure::Natural,
+                source_intent: SourceIntent {
+                    intent_type: "Test".to_string(),
+                    params: std::collections::HashMap::new(),
+                },
+                teaching_label: TeachingLabel {
+                    name: BidName::new(meaning),
+                    summary: BidSummary::new(""),
+                },
+                surface_bindings: None,
+                encoding: BidEncoding {
+                    default_call: call_3nt.clone(),
+                    alternate_encodings: None,
+                },
+                evidence: None,
+            };
+            PipelineCarrier {
+                encoded: EncodedProposal {
+                    proposal,
+                    call: call_3nt.clone(),
+                    is_default_encoding: true,
+                    legal: true,
+                    all_encodings: vec![],
+                    eligibility: CandidateEligibility {
+                        hand: HandEligibility {
+                            satisfied,
+                            failed_conditions: vec![],
+                        },
+                        encoding: EncodingEligibility {
+                            legal: true,
+                            reason: None,
+                        },
+                        pedagogical: PedagogicalEligibility {
+                            acceptable: satisfied,
+                            reasons: vec![],
+                        },
+                    },
+                },
+                traces: CarrierTraces {
+                    encoding: EncodingTrace {
+                        encoder_kind: EncoderKind::DefaultCall,
+                        considered_calls: None,
+                        blocked_calls: None,
+                    },
+                    legality: LegalityTrace {
+                        legal: true,
+                        reason: None,
+                    },
+                    elimination: None,
+                },
+            }
+        };
+
+        let selected_carrier =
+            make_carrier("transfer:nt-game-hearts", "jacoby-transfers", vec![], true);
+
+        let failing_clause = MeaningClause {
+            fact_id: "bridge.hasFiveCardMajor".to_string(),
+            operator: FactOperator::Eq,
+            value: ConstraintValue::Bool(false),
+            satisfied: false,
+            clause_id: Some("bridge.hasFiveCardMajor:boolean:false".to_string()),
+            description: Some("No 5-card major".to_string()),
+            observed_value: Some(serde_json::json!(true)),
+            is_public: Some(true),
+        };
+        let eliminated_carrier = make_carrier(
+            "bridge:to-3nt",
+            "natural-bids",
+            vec![failing_clause],
+            false,
+        );
+
+        let result = PipelineResult {
+            selected: Some(selected_carrier.clone()),
+            truth_set: vec![selected_carrier],
+            acceptable_set: vec![],
+            recommended: vec![],
+            eliminated: vec![eliminated_carrier],
+            applicability: ApplicabilityEvidence {
+                total_surfaces: 2,
+                matched_count: 1,
+                eliminated_count: 1,
+            },
+            activation: vec![],
+            arbitration: vec![],
+            handoffs: vec![],
+            evidence_bundle: None,
+        };
+
+        let projection = project_teaching(&result, None);
+
+        assert_eq!(projection.why_not.len(), 1);
+        let entry = &projection.why_not[0];
+        assert_eq!(entry.module_id, "natural-bids");
+        assert_eq!(entry.meaning_label, "bridge:to-3nt");
     }
 }

@@ -129,6 +129,13 @@ pub struct WhyNotEntry {
     pub grade: WhyNotGrade,
     pub explanation: Vec<ExplanationNode>,
     pub elimination_stage: String,
+    /// Module that authored this meaning — lets the UI disambiguate when
+    /// several conventions both propose the same call (e.g., natural 3NT vs
+    /// Jacoby-transfer 3NT). Raw fixture id; UI maps to display name.
+    pub module_id: String,
+    /// Teaching label for this specific meaning — e.g., "3NT game" vs
+    /// "3NT choice" — so the user can tell which interpretation failed.
+    pub meaning_label: String,
 }
 
 /// Why-not grade.

@@ -442,6 +442,8 @@ pub struct ServiceWhyNotEntryDTO {
     pub grade: String,
     pub explanation: Vec<ServiceExplanationNodeDTO>,
     pub elimination_stage: String,
+    pub module_id: String,
+    pub meaning_label: String,
 }
 
 /// Convention contribution DTO.

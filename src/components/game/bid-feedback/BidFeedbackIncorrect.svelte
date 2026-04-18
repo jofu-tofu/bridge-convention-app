@@ -3,7 +3,7 @@
   import type { Call, ServiceExplanationNode } from "../../../service";
   import type { BidFeedbackInteractiveProps } from "./types";
   import type { ViewportBidFeedback } from "../../../service";
-  import { formatCall } from "../../../service";
+  import { formatCall, listModules } from "../../../service";
   import { callsMatch } from "../../../service";
   import {
     whyNotGradeClasses,
@@ -37,6 +37,17 @@
   let showMoreDetails = $state(false);
   let expandedWhyNot = new SvelteSet<number>();
   const acceptableBids = $derived(teaching?.acceptableBids ?? []);
+
+  // Map moduleId → displayName so whyNot rows can identify which convention
+  // each eliminated meaning came from (e.g., Natural 3NT vs Jacoby 3NT).
+  const moduleDisplayNames = $derived.by(() => {
+    const map = new Map<string, string>();
+    for (const m of listModules()) map.set(m.moduleId, m.displayName);
+    return map;
+  });
+  function moduleDisplayName(moduleId: string): string {
+    return moduleDisplayNames.get(moduleId) ?? moduleId;
+  }
 
   // Meaning display label from the live meaning view
   const liveMeaning = $derived(
@@ -561,6 +572,8 @@
                   </p>
                   <div class="space-y-1">
                     {#each filteredOtherWhyNot as entry, wi (wi)}
+                      {@const gradeStyle = whyNotGradeClasses(entry.grade)}
+                      {@const callAlsoAcceptable = isAcceptableWhyNot(entry.call)}
                       <div class="text-[--text-label]">
                         <button
                           type="button"
@@ -577,20 +590,30 @@
                           <span class="font-mono font-bold {vc('dim/80')}"
                             >{formatCall(entry.call)}</span
                           >
-                          {#if isAcceptableWhyNot(entry.call)}
+                          <span
+                            class="rounded border px-1.5 py-0.5 tracking-wide text-[--text-annotation] uppercase {gradeStyle.badge}"
+                          >
+                            {gradeStyle.label}
+                          </span>
+                          {#if entry.meaningLabel}
+                            <span class="{vc('dim/70')} text-[--text-label]"
+                              >as {entry.meaningLabel}</span
+                            >
+                          {/if}
+                          {#if entry.moduleId}
+                            <span
+                              class="{vc(
+                                'text/40',
+                              )} text-[--text-annotation] italic"
+                              >({moduleDisplayName(entry.moduleId)})</span
+                            >
+                          {/if}
+                          {#if callAlsoAcceptable}
                             <span
                               class="bg-fb-acceptable-surface/70 border-fb-acceptable/40 text-fb-acceptable-dim rounded border px-1.5 py-0.5 tracking-wide text-[--text-annotation] uppercase"
+                              title="This call is valid via another meaning"
                             >
-                              acceptable
-                            </span>
-                          {:else}
-                            {@const gradeStyle = whyNotGradeClasses(
-                              entry.grade,
-                            )}
-                            <span
-                              class="rounded border px-1.5 py-0.5 tracking-wide text-[--text-annotation] uppercase {gradeStyle.badge}"
-                            >
-                              {gradeStyle.label}
+                              other meaning OK
                             </span>
                           {/if}
                         </button>

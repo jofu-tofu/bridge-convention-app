@@ -112,6 +112,8 @@ pub fn assemble_teaching_detail(
                     })
                     .collect(),
                 elimination_stage: e.elimination_stage.clone(),
+                module_id: e.module_id.clone(),
+                meaning_label: e.meaning_label.clone(),
             })
             .collect()
     });
@@ -744,6 +746,8 @@ mod tests {
                         template_key: None,
                     }],
                     elimination_stage: "clause-check".to_string(),
+                    module_id: "jacoby-transfers".to_string(),
+                    meaning_label: "Transfer to spades".to_string(),
                 },
                 WhyNotEntry {
                     call: Call::Pass,
@@ -756,6 +760,8 @@ mod tests {
                         template_key: None,
                     }],
                     elimination_stage: "natural-fallback".to_string(),
+                    module_id: "natural-bids".to_string(),
+                    meaning_label: "Pass".to_string(),
                 },
             ],
             conventions_applied: vec![ConventionContribution {

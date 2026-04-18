@@ -107,6 +107,11 @@ export interface ServiceWhyNotEntry {
   readonly grade: "near-miss" | "wrong";
   readonly explanation: readonly ServiceExplanationNode[];
   readonly eliminationStage: string;
+  /** Module that authored this meaning. Disambiguates when several modules
+   * propose the same call (e.g., natural 3NT vs Jacoby-transfer-rebid 3NT). */
+  readonly moduleId: string;
+  /** Teaching label for this specific meaning (e.g. "3NT game" vs "3NT choice"). */
+  readonly meaningLabel: string;
 }
 
 /** Convention contribution — service-owned mirror of teaching-types ConventionContribution. */
