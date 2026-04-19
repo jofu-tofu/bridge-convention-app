@@ -176,6 +176,15 @@
               "clauseId": "hand.isBalanced:boolean:true",
               "description": "Balanced",
               "isPublic": true
+            },
+            {
+              "factId": "module.natural.notStrongTwoCHand",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.natural.notStrongTwoCHand:boolean:true",
+              "description": "Hand does not qualify for a Strong 2C opening",
+              "rationale": "Classic Goren / SAYC: Strong 2C outranks any natural one-level opening whenever the hand qualifies (22+ HCP balanced or 9+ playing tricks).",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -214,11 +223,47 @@
               "isPublic": true
             },
             {
-              "factId": "hand.clubs",
+              "factId": "hand.suitLength.clubs",
               "operator": "gte",
               "value": 3,
-              "clauseId": "hand.clubs:gte:3",
+              "clauseId": "hand.suitLength.clubs:gte:3",
               "description": "3+ clubs",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:lte:4",
+              "description": "At most 4 spades",
+              "rationale": "Deny a 5-card spade suit so 1S wins on any 5+ spade hand.",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:lte:4",
+              "description": "At most 4 hearts",
+              "rationale": "Deny a 5-card heart suit so 1H wins on any 5+ heart hand.",
+              "isPublic": true
+            },
+            {
+              "factId": "module.natural.openOneDiamondPreferred",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.natural.openOneDiamondPreferred:boolean:false",
+              "description": "1D is not preferred",
+              "rationale": "SAYC opens 1C on 3-3 minors and on minor hands where diamonds are shorter than clubs. 1D is preferred on 4-4 minors, longer diamonds, and the 4=4=3=2 shape.",
+              "isPublic": true
+            },
+            {
+              "factId": "module.natural.notStrongTwoCHand",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.natural.notStrongTwoCHand:boolean:true",
+              "description": "Hand does not qualify for a Strong 2C opening",
+              "rationale": "Classic Goren / SAYC: Strong 2C outranks any natural one-level opening whenever the hand qualifies (22+ HCP balanced or 9+ playing tricks).",
               "isPublic": true
             }
           ],
@@ -236,7 +281,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1♣ opening",
-            "summary": "Open 1♣ and 3+ clubs"
+            "summary": "Open 1♣ with opening values, no 5-card major, and minor shape where diamonds are not preferred"
           }
         },
         {
@@ -260,11 +305,39 @@
               "isPublic": true
             },
             {
-              "factId": "hand.diamonds",
-              "operator": "gte",
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
               "value": 4,
-              "clauseId": "hand.diamonds:gte:4",
-              "description": "4+ diamonds",
+              "clauseId": "hand.suitLength.spades:lte:4",
+              "description": "At most 4 spades",
+              "rationale": "Deny a 5-card spade suit so 1S wins on any 5+ spade hand.",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:lte:4",
+              "description": "At most 4 hearts",
+              "rationale": "Deny a 5-card heart suit so 1H wins on any 5+ heart hand.",
+              "isPublic": true
+            },
+            {
+              "factId": "module.natural.openOneDiamondPreferred",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.natural.openOneDiamondPreferred:boolean:true",
+              "description": "1D is preferred",
+              "rationale": "SAYC opens 1D with four or more diamonds at least as long as clubs (covering 4-4 minors), and on the balanced 4=4=3=2 shape where partner is told clubs could be three.",
+              "isPublic": true
+            },
+            {
+              "factId": "module.natural.notStrongTwoCHand",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.natural.notStrongTwoCHand:boolean:true",
+              "description": "Hand does not qualify for a Strong 2C opening",
+              "rationale": "Classic Goren / SAYC: Strong 2C outranks any natural one-level opening whenever the hand qualifies (22+ HCP balanced or 9+ playing tricks).",
               "isPublic": true
             }
           ],
@@ -282,7 +355,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1♦ opening",
-            "summary": "Open 1♦ and 4+ diamonds"
+            "summary": "Open 1♦ with opening values, no 5-card major, and minor shape where diamonds are preferred"
           }
         },
         {
@@ -306,11 +379,29 @@
               "isPublic": true
             },
             {
-              "factId": "hand.hearts",
+              "factId": "hand.suitLength.hearts",
               "operator": "gte",
               "value": 5,
-              "clauseId": "hand.hearts:gte:5",
+              "clauseId": "hand.suitLength.hearts:gte:5",
               "description": "5+ hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "module.natural.heartsBeatsSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.natural.heartsBeatsSpades:boolean:true",
+              "description": "Hearts beats spades",
+              "rationale": "SAYC opens 1H when hearts is strictly longer than spades, or when spades is below a 5-card major; with 5-5 majors, 1S wins as the higher of equal long suits.",
+              "isPublic": true
+            },
+            {
+              "factId": "module.natural.notStrongTwoCHand",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.natural.notStrongTwoCHand:boolean:true",
+              "description": "Hand does not qualify for a Strong 2C opening",
+              "rationale": "Classic Goren / SAYC: Strong 2C outranks any natural one-level opening whenever the hand qualifies (22+ HCP balanced or 9+ playing tricks).",
               "isPublic": true
             }
           ],
@@ -328,7 +419,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1♥ opening",
-            "summary": "Open 1♥ and a 5-card or longer heart suit"
+            "summary": "Open 1♥ with opening values, a 5-card or longer heart suit, and hearts at least as long as spades except for the 5-5 tie"
           }
         },
         {
@@ -352,11 +443,20 @@
               "isPublic": true
             },
             {
-              "factId": "hand.spades",
+              "factId": "hand.suitLength.spades",
               "operator": "gte",
               "value": 5,
-              "clauseId": "hand.spades:gte:5",
+              "clauseId": "hand.suitLength.spades:gte:5",
               "description": "5+ spades",
+              "isPublic": true
+            },
+            {
+              "factId": "module.natural.notStrongTwoCHand",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.natural.notStrongTwoCHand:boolean:true",
+              "description": "Hand does not qualify for a Strong 2C opening",
+              "rationale": "Classic Goren / SAYC: Strong 2C outranks any natural one-level opening whenever the hand qualifies (22+ HCP balanced or 9+ playing tricks).",
               "isPublic": true
             }
           ],
@@ -374,7 +474,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1♠ opening",
-            "summary": "Open 1♠ and a 5-card or longer spade suit"
+            "summary": "Open 1♠ with opening values and a 5-card or longer spade suit"
           }
         }
       ],
@@ -617,6 +717,191 @@
     ]
   },
   "facts": {
-    "definitions": []
+    "definitions": [
+      {
+        "id": "module.natural.openOneDiamondPreferred",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "SAYC prefers 1D over 1C: four-plus diamonds with diamonds at least as long as clubs (covers 4-4 minors and longer diamonds), or the 4=4=3=2 balanced exception.",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.spades",
+          "hand.suitLength.hearts",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.clubs"
+        ],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 4
+                  }
+                },
+                {
+                  "kind": "extended",
+                  "clause": {
+                    "clauseKind": "suitCompare",
+                    "a": "D",
+                    "op": "gte",
+                    "b": "C"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "eq",
+                    "value": 4
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "eq",
+                    "value": 4
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "eq",
+                    "value": 3
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "eq",
+                    "value": 2
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.natural.heartsBeatsSpades",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "1H takes priority over 1S: spades is not a 5-card major, or hearts is strictly longer than spades.",
+        "valueType": "boolean",
+        "derivesFrom": ["hand.suitLength.hearts", "hand.suitLength.spades"],
+        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
+        "composition": {
+          "kind": "or",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "suitCompare",
+                "a": "H",
+                "op": "gt",
+                "b": "S"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.natural.notStrongTwoCHand",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Hand does not qualify for a Strong 2C opening — fewer than 22 HCP balanced AND fewer than nine playing tricks. Every natural one-level opening requires this because Strong 2C outranks any natural one-level opening whenever the hand qualifies.",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.hcp",
+          "hand.suitLength.spades",
+          "hand.suitLength.hearts",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.clubs"
+        ],
+        "constrainsDimensions": ["pointRange", "suitLength"],
+        "composition": {
+          "kind": "not",
+          "operand": {
+            "kind": "or",
+            "operands": [
+              {
+                "kind": "and",
+                "operands": [
+                  {
+                    "kind": "primitive",
+                    "clause": {
+                      "factId": "hand.hcp",
+                      "operator": "gte",
+                      "value": 22
+                    }
+                  },
+                  {
+                    "kind": "primitive",
+                    "clause": {
+                      "factId": "hand.suitLength.spades",
+                      "operator": "lte",
+                      "value": 4
+                    }
+                  },
+                  {
+                    "kind": "primitive",
+                    "clause": {
+                      "factId": "hand.suitLength.hearts",
+                      "operator": "lte",
+                      "value": 4
+                    }
+                  },
+                  {
+                    "kind": "primitive",
+                    "clause": {
+                      "factId": "hand.suitLength.diamonds",
+                      "operator": "lte",
+                      "value": 4
+                    }
+                  },
+                  {
+                    "kind": "primitive",
+                    "clause": {
+                      "factId": "hand.suitLength.clubs",
+                      "operator": "lte",
+                      "value": 4
+                    }
+                  }
+                ]
+              },
+              {
+                "kind": "extended",
+                "clause": {
+                  "clauseKind": "playingTricks",
+                  "min": 9
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
   }
 }

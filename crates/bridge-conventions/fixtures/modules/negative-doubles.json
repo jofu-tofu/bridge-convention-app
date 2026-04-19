@@ -1817,11 +1817,19 @@
               "isPublic": true
             },
             {
-              "factId": "module.negdbl.has4Major",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.negdbl.has4Major:boolean:true",
-              "description": "4+ cards in at least one major",
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
               "isPublic": true
             }
           ],
@@ -2715,7 +2723,8 @@
         "kind": "last",
         "pattern": {
           "act": "overcall",
-          "suit": "clubs"
+          "suit": "clubs",
+          "level": 2
         }
       },
       "surfaces": [
@@ -2990,7 +2999,8 @@
         "kind": "last",
         "pattern": {
           "act": "overcall",
-          "suit": "clubs"
+          "suit": "clubs",
+          "level": 2
         }
       },
       "surfaces": [
@@ -3073,7 +3083,8 @@
         "kind": "last",
         "pattern": {
           "act": "overcall",
-          "suit": "diamonds"
+          "suit": "diamonds",
+          "level": 2
         }
       },
       "surfaces": [
@@ -3090,9 +3101,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 9,
-              "clauseId": "hand.hcp:gte:9",
-              "description": "9+ HCP",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
               "isPublic": true
             },
             {
@@ -3100,7 +3111,15 @@
               "operator": "gte",
               "value": 4,
               "clauseId": "hand.suitLength.spades:gte:4",
-              "description": "4+ spades",
+              "description": "4 spades",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:lte:4",
+              "description": "No more than 4 spades",
               "isPublic": true
             }
           ],
@@ -3116,7 +3135,57 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows 4+ spades with competitive values (2-level, needs)"
+            "summary": "Shows exactly 4 spades over a 2D overcall (6+ HCP)"
+          }
+        },
+        {
+          "meaningId": "negdbl:double-after-1h-2d",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 9,
+              "clauseId": "hand.hcp:lte:9",
+              "description": "At most 9 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "5+ spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows 5+ spades when too weak to bid 2S directly (6-9 HCP)"
           }
         },
         {
@@ -3132,7 +3201,7 @@
           "ranking": {
             "recommendationBand": "may",
             "modulePrecedence": 0,
-            "declarationOrder": 1
+            "declarationOrder": 2
           },
           "sourceIntent": {
             "type": "NegDblResponderPass",
@@ -3156,7 +3225,8 @@
         "kind": "last",
         "pattern": {
           "act": "overcall",
-          "suit": "clubs"
+          "suit": "clubs",
+          "level": 2
         }
       },
       "surfaces": [
@@ -3239,7 +3309,8 @@
         "kind": "last",
         "pattern": {
           "act": "overcall",
-          "suit": "diamonds"
+          "suit": "diamonds",
+          "level": 2
         }
       },
       "surfaces": [
@@ -3322,7 +3393,8 @@
         "kind": "last",
         "pattern": {
           "act": "overcall",
-          "suit": "hearts"
+          "suit": "hearts",
+          "level": 2
         }
       },
       "surfaces": [
@@ -3898,6 +3970,434 @@
         },
         {
           "meaningId": "negdbl:pass-after-1s-3h",
+          "semanticClassId": "negdbl:responder-pass",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-oc-1d",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "clubs",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1d-3c",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows both majors (4-4+) after RHO's preemptive 3C overcall"
+          }
+        },
+        {
+          "meaningId": "negdbl:pass-after-1d-3c",
+          "semanticClassId": "negdbl:responder-pass",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-oc-1h",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "clubs",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1h-3c",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows 4+ spades after RHO's preemptive 3C overcall"
+          }
+        },
+        {
+          "meaningId": "negdbl:pass-after-1h-3c",
+          "semanticClassId": "negdbl:responder-pass",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-oc-1h",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "diamonds",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1h-3d",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows 4+ spades after RHO's preemptive 3D overcall"
+          }
+        },
+        {
+          "meaningId": "negdbl:pass-after-1h-3d",
+          "semanticClassId": "negdbl:responder-pass",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-oc-1s",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "clubs",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1s-3c",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows 4+ hearts after RHO's preemptive 3C overcall"
+          }
+        },
+        {
+          "meaningId": "negdbl:pass-after-1s-3c",
+          "semanticClassId": "negdbl:responder-pass",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-oc-1s",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "diamonds",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1s-3d",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows 4+ hearts after RHO's preemptive 3D overcall"
+          }
+        },
+        {
+          "meaningId": "negdbl:pass-after-1s-3d",
           "semanticClassId": "negdbl:responder-pass",
           "moduleId": "negative-doubles",
           "encoding": {

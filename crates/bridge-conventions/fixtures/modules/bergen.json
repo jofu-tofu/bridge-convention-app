@@ -496,7 +496,7 @@
       "explanationId": "bergen.splinter.revealClubsSpades",
       "meaningId": "bergen:splinter-reveal-clubs-spades",
       "templateKey": "bergen.splinter.revealClubsSpades.semantic",
-      "displayText": "4♣: shortness in clubs",
+      "displayText": "3NT: shortness in clubs",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -504,7 +504,7 @@
       "explanationId": "bergen.splinter.revealDiamondsSpades",
       "meaningId": "bergen:splinter-reveal-diamonds-spades",
       "templateKey": "bergen.splinter.revealDiamondsSpades.semantic",
-      "displayText": "4♦: shortness in diamonds",
+      "displayText": "4♣: shortness in diamonds",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -512,7 +512,23 @@
       "explanationId": "bergen.splinter.revealHeartsSpades",
       "meaningId": "bergen:splinter-reveal-hearts-spades",
       "templateKey": "bergen.splinter.revealHeartsSpades.semantic",
-      "displayText": "4♥: shortness in the other major (hearts)",
+      "displayText": "4♦: shortness in the other major (hearts)",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "bergen.splinter.minSignoffHearts",
+      "meaningId": "bergen:splinter-min-signoff-hearts",
+      "templateKey": "bergen.splinter.minSignoffHearts.semantic",
+      "displayText": "Opener signs off in 4♥ with a minimum — no slam interest after the splinter",
+      "preferredLevel": "semantic",
+      "roles": ["pedagogical"]
+    },
+    {
+      "explanationId": "bergen.splinter.minSignoffSpades",
+      "meaningId": "bergen:splinter-min-signoff-spades",
+      "templateKey": "bergen.splinter.minSignoffSpades.semantic",
+      "displayText": "Opener signs off in 4♠ with a minimum — no slam interest after the splinter",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     }
@@ -589,6 +605,15 @@
         }
       },
       {
+        "from": "after-splinter-hearts",
+        "to": "done",
+        "on": {
+          "act": "raise",
+          "strain": "hearts",
+          "strength": "game"
+        }
+      },
+      {
         "from": "after-splinter-hearts-relay",
         "to": "done",
         "on": {
@@ -654,6 +679,15 @@
         "on": {
           "act": "inquire",
           "feature": "shortage"
+        }
+      },
+      {
+        "from": "after-splinter-spades",
+        "to": "done",
+        "on": {
+          "act": "raise",
+          "strain": "spades",
+          "strength": "game"
         }
       },
       {
@@ -2610,7 +2644,17 @@
               "strain": "NT"
             }
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "Extra values for slam exploration",
+              "rationale": "extras for slam",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "may",
             "modulePrecedence": 0,
@@ -2624,6 +2668,48 @@
           "teachingLabel": {
             "name": "3NT relay (ask short suit)",
             "summary": "Cheapest step over responder's 3♠ ambiguous splinter asks which suit is short"
+          }
+        },
+        {
+          "meaningId": "bergen:splinter-min-signoff-hearts",
+          "semanticClassId": "bergen:splinter-min-signoff",
+          "moduleId": "bergen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 13,
+              "clauseId": "hand.hcp:lte:13",
+              "description": "Minimum opening with no slam interest",
+              "rationale": "minimum, no slam interest",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SignoffWithFit",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4♥ (minimum signoff, no slam interest)",
+            "summary": "Sign off in game with a minimum — decline to explore slam after the splinter"
+          },
+          "surfaceBindings": {
+            "suit": "hearts"
           }
         }
       ],
@@ -2654,7 +2740,17 @@
               "strain": "S"
             }
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "Extra values for slam exploration",
+              "rationale": "extras for slam",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "may",
             "modulePrecedence": 0,
@@ -2668,6 +2764,48 @@
           "teachingLabel": {
             "name": "3♠ relay (ask short suit)",
             "summary": "Cheapest step over responder's 3♥ ambiguous splinter asks which suit is short"
+          }
+        },
+        {
+          "meaningId": "bergen:splinter-min-signoff-spades",
+          "semanticClassId": "bergen:splinter-min-signoff",
+          "moduleId": "bergen",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 13,
+              "clauseId": "hand.hcp:lte:13",
+              "description": "Minimum opening with no slam interest",
+              "rationale": "minimum, no slam interest",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SignoffWithFit",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4♠ (minimum signoff, no slam interest)",
+            "summary": "Sign off in game with a minimum — decline to explore slam after the splinter"
+          },
+          "surfaceBindings": {
+            "suit": "spades"
           }
         }
       ],
@@ -2828,8 +2966,8 @@
           "encoding": {
             "defaultCall": {
               "type": "bid",
-              "level": 4,
-              "strain": "C"
+              "level": 3,
+              "strain": "NT"
             }
           },
           "clauses": [
@@ -2856,7 +2994,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4♣ (shortness in clubs)",
+            "name": "3NT (shortness in clubs)",
             "summary": "Reveal club shortness after opener's relay"
           }
         },
@@ -2868,7 +3006,7 @@
             "defaultCall": {
               "type": "bid",
               "level": 4,
-              "strain": "D"
+              "strain": "C"
             }
           },
           "clauses": [
@@ -2895,7 +3033,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4♦ (shortness in diamonds)",
+            "name": "4♣ (shortness in diamonds)",
             "summary": "Reveal diamond shortness after opener's relay"
           }
         },
@@ -2907,7 +3045,7 @@
             "defaultCall": {
               "type": "bid",
               "level": 4,
-              "strain": "H"
+              "strain": "D"
             }
           },
           "clauses": [
@@ -2934,7 +3072,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4♥ (shortness in the other major)",
+            "name": "4♦ (shortness in the other major)",
             "summary": "Reveal shortness in the other major (hearts) after opener's relay"
           }
         }

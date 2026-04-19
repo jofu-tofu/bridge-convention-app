@@ -145,22 +145,22 @@
       "roles": ["supporting", "blocking"]
     },
     {
-      "explanationId": "michaels.noSpadeSupport",
-      "factId": "module.michaels.noSpadeSupport",
-      "templateKey": "michaels.noSpadeSupport.supporting",
-      "displayText": "Fewer than 3 spades (no spade fit)",
-      "contrastiveTemplateKey": "michaels.noSpadeSupport.whyNot",
-      "contrastiveDisplayText": "3+ spades available",
+      "explanationId": "michaels.hasTwoPlusHeartSupport",
+      "factId": "module.michaels.hasTwoPlusHeartSupport",
+      "templateKey": "michaels.hasTwoPlusHeartSupport.supporting",
+      "displayText": "2+ hearts — minimum to accept partner's known major or prefer hearts at the lowest level",
+      "contrastiveTemplateKey": "michaels.hasTwoPlusHeartSupport.whyNot",
+      "contrastiveDisplayText": "Fewer than 2 hearts",
       "preferredLevel": "semantic",
       "roles": ["supporting", "blocking"]
     },
     {
-      "explanationId": "michaels.noHeartSupport",
-      "factId": "module.michaels.noHeartSupport",
-      "templateKey": "michaels.noHeartSupport.supporting",
-      "displayText": "Fewer than 3 hearts (no heart fit)",
-      "contrastiveTemplateKey": "michaels.noHeartSupport.whyNot",
-      "contrastiveDisplayText": "3+ hearts available",
+      "explanationId": "michaels.hasTwoPlusSpadeSupport",
+      "factId": "module.michaels.hasTwoPlusSpadeSupport",
+      "templateKey": "michaels.hasTwoPlusSpadeSupport.supporting",
+      "displayText": "2+ spades — minimum to accept partner's known major or prefer spades at the lowest level",
+      "contrastiveTemplateKey": "michaels.hasTwoPlusSpadeSupport.whyNot",
+      "contrastiveDisplayText": "Fewer than 2 spades",
       "preferredLevel": "semantic",
       "roles": ["supporting", "blocking"]
     },
@@ -403,14 +403,6 @@
       "roles": ["pedagogical"]
     },
     {
-      "explanationId": "michaels.adv.passOrCorrect3c1h",
-      "meaningId": "michaels:adv-pass-or-correct-3c-1h",
-      "templateKey": "michaels.adv.passOrCorrect3c1h.semantic",
-      "displayText": "3C: Pass-or-correct — escape to partner's minor (over 1H Michaels)",
-      "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
-    },
-    {
       "explanationId": "michaels.adv.acceptHearts3h",
       "meaningId": "michaels:adv-accept-hearts-3h",
       "templateKey": "michaels.adv.acceptHearts3h.semantic",
@@ -431,14 +423,6 @@
       "meaningId": "michaels:adv-game-hearts-4h-1s",
       "templateKey": "michaels.adv.gameHearts4h1s.semantic",
       "displayText": "4H: Game in hearts (over 1S Michaels)",
-      "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
-    },
-    {
-      "explanationId": "michaels.adv.passOrCorrect3c1s",
-      "meaningId": "michaels:adv-pass-or-correct-3c-1s",
-      "templateKey": "michaels.adv.passOrCorrect3c1s.semantic",
-      "displayText": "3C: Pass-or-correct — escape to partner's minor (over 1S Michaels)",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -1459,11 +1443,11 @@
           },
           "clauses": [
             {
-              "factId": "module.michaels.hasHeartSupport",
+              "factId": "module.michaels.hasTwoPlusHeartSupport",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
-              "description": "3+ hearts to support partner",
+              "clauseId": "module.michaels.hasTwoPlusHeartSupport:boolean:true",
+              "description": "2+ hearts — minimum to choose hearts at the lowest level",
               "isPublic": true
             },
             {
@@ -1487,7 +1471,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2H — prefer hearts",
-            "summary": "Choose hearts at the lowest available level and 3+ heart support"
+            "summary": "Choose hearts at the lowest available level; advancer cannot pass and needs only 2+ heart support (Walker)"
           }
         },
         {
@@ -1503,11 +1487,11 @@
           },
           "clauses": [
             {
-              "factId": "module.michaels.hasSpadeSupport",
+              "factId": "module.michaels.hasTwoPlusSpadeSupport",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
-              "description": "3+ spades to support partner",
+              "clauseId": "module.michaels.hasTwoPlusSpadeSupport:boolean:true",
+              "description": "2+ spades — minimum to choose spades at the lowest level",
               "isPublic": true
             },
             {
@@ -1531,7 +1515,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2S — prefer spades",
-            "summary": "Choose spades at the lowest available level and 3+ spade support"
+            "summary": "Choose spades at the lowest available level; advancer cannot pass and needs only 2+ spade support (Walker)"
           }
         },
         {
@@ -1779,11 +1763,11 @@
           },
           "clauses": [
             {
-              "factId": "module.michaels.hasSpadeSupport",
+              "factId": "module.michaels.hasTwoPlusSpadeSupport",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
-              "description": "3+ spades to support partner",
+              "clauseId": "module.michaels.hasTwoPlusSpadeSupport:boolean:true",
+              "description": "2+ spades — Walker allows the acceptance with 3+-card or 2-card support",
               "isPublic": true
             },
             {
@@ -1807,7 +1791,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2S — accept spades",
-            "summary": "Accept the known spade suit at the lowest available level and 3+ spade support"
+            "summary": "Accept the known spade suit at the lowest available level; Walker allows 3+-card or 2-card support"
           }
         },
         {
@@ -1948,50 +1932,6 @@
             "name": "4S — game in spades",
             "summary": "Bid game in spades and 3+ spade support"
           }
-        },
-        {
-          "meaningId": "michaels:adv-pass-or-correct-3c-1h",
-          "semanticClassId": "michaels:adv-pass-or-correct",
-          "moduleId": "michaels-unusual",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "C"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "module.michaels.advancerWeak",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
-              "isPublic": true
-            },
-            {
-              "factId": "module.michaels.noSpadeSupport",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.noSpadeSupport:boolean:true",
-              "description": "Fewer than 3 spades (no spade fit)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 4
-          },
-          "sourceIntent": {
-            "type": "MichaelsAdvancerPassOrCorrect",
-            "params": {}
-          },
-          "disclosure": "alert",
-          "teachingLabel": {
-            "name": "3C — pass-or-correct",
-            "summary": "Bid 3C asking partner to pass with clubs or correct to 3D with diamonds — escape to the minor with no spade fit"
-          }
         }
       ],
       "scope": {
@@ -2014,11 +1954,11 @@
           },
           "clauses": [
             {
-              "factId": "module.michaels.hasHeartSupport",
+              "factId": "module.michaels.hasTwoPlusHeartSupport",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
-              "description": "3+ hearts to support partner",
+              "clauseId": "module.michaels.hasTwoPlusHeartSupport:boolean:true",
+              "description": "2+ hearts — Walker allows the acceptance with 3+-card or 2-card support",
               "isPublic": true
             },
             {
@@ -2042,7 +1982,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3H — accept hearts",
-            "summary": "Accept the known heart suit at the lowest available level and 3+ heart support"
+            "summary": "Accept the known heart suit at the lowest available level; Walker allows 3+-card or 2-card support"
           }
         },
         {
@@ -2182,50 +2122,6 @@
           "teachingLabel": {
             "name": "4H — game in hearts",
             "summary": "Bid game in hearts and 3+ heart support"
-          }
-        },
-        {
-          "meaningId": "michaels:adv-pass-or-correct-3c-1s",
-          "semanticClassId": "michaels:adv-pass-or-correct",
-          "moduleId": "michaels-unusual",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "C"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "module.michaels.advancerWeak",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerWeak:boolean:true",
-              "description": "0-7 HCP (weak hand)",
-              "isPublic": true
-            },
-            {
-              "factId": "module.michaels.noHeartSupport",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.noHeartSupport:boolean:true",
-              "description": "Fewer than 3 hearts (no heart fit)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 4
-          },
-          "sourceIntent": {
-            "type": "MichaelsAdvancerPassOrCorrect",
-            "params": {}
-          },
-          "disclosure": "alert",
-          "teachingLabel": {
-            "name": "3C — pass-or-correct",
-            "summary": "Bid 3C asking partner to pass with clubs or correct to 3D with diamonds — escape to the minor with no heart fit"
           }
         }
       ],
@@ -3705,7 +3601,7 @@
         "id": "module.michaels.inOvercallRange",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "HCP in overcall range (NV: 6-15, Vul: 8-15)",
+        "description": "HCP sufficient for a Michaels overcall (NV: 6+, Vul: 8+); no upper bound — Walker allows strong two-suiters that jump to game after partner's preference",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": ["pointRange"],
@@ -3729,14 +3625,6 @@
                     "operator": "gte",
                     "value": 6
                   }
-                },
-                {
-                  "kind": "primitive",
-                  "clause": {
-                    "factId": "hand.hcp",
-                    "operator": "lte",
-                    "value": 15
-                  }
                 }
               ]
             },
@@ -3756,14 +3644,6 @@
                     "factId": "hand.hcp",
                     "operator": "gte",
                     "value": 8
-                  }
-                },
-                {
-                  "kind": "primitive",
-                  "clause": {
-                    "factId": "hand.hcp",
-                    "operator": "lte",
-                    "value": 15
                   }
                 }
               ]
@@ -3789,6 +3669,23 @@
         }
       },
       {
+        "id": "module.michaels.hasTwoPlusHeartSupport",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "2+ hearts — minimum support to accept partner's known major or to choose hearts at the lowest level",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": ["suitLength"],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.hearts",
+            "operator": "gte",
+            "value": 2
+          }
+        }
+      },
+      {
         "id": "module.michaels.hasSpadeSupport",
         "layer": "module-derived",
         "world": "acting-hand",
@@ -3802,6 +3699,23 @@
             "factId": "hand.suitLength.spades",
             "operator": "gte",
             "value": 3
+          }
+        }
+      },
+      {
+        "id": "module.michaels.hasTwoPlusSpadeSupport",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "2+ spades — minimum support to accept partner's known major or to choose spades at the lowest level",
+        "valueType": "boolean",
+        "derivesFrom": [],
+        "constrainsDimensions": ["suitLength"],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.spades",
+            "operator": "gte",
+            "value": 2
           }
         }
       },
@@ -3836,40 +3750,6 @@
             "factId": "hand.suitLength.diamonds",
             "operator": "gte",
             "value": 3
-          }
-        }
-      },
-      {
-        "id": "module.michaels.noSpadeSupport",
-        "layer": "module-derived",
-        "world": "acting-hand",
-        "description": "Fewer than 3 spades (no spade support)",
-        "valueType": "boolean",
-        "derivesFrom": [],
-        "constrainsDimensions": ["suitLength"],
-        "composition": {
-          "kind": "primitive",
-          "clause": {
-            "factId": "hand.suitLength.spades",
-            "operator": "lte",
-            "value": 2
-          }
-        }
-      },
-      {
-        "id": "module.michaels.noHeartSupport",
-        "layer": "module-derived",
-        "world": "acting-hand",
-        "description": "Fewer than 3 hearts (no heart support)",
-        "valueType": "boolean",
-        "derivesFrom": [],
-        "constrainsDimensions": ["suitLength"],
-        "composition": {
-          "kind": "primitive",
-          "clause": {
-            "factId": "hand.suitLength.hearts",
-            "operator": "lte",
-            "value": 2
           }
         }
       },

@@ -133,5 +133,73 @@
       "principle": "Finding an 8-card major fit is worth more than notrump; Stayman, transfers, and Smolen are tools to find that fit while keeping the strong hand as declarer",
       "roles": "Responder is captain after 1NT — opener describes, responder decides the final contract"
     }
+  },
+  {
+    "id": "strong-2c-bundle",
+    "name": "Strong 2♣",
+    "memberIds": [
+      "strong-2c",
+      "stayman",
+      "jacoby-transfers"
+    ],
+    "systemProfile": {
+      "profileId": "strong-2c-sayc",
+      "baseSystem": "sayc",
+      "modules": [
+        {
+          "moduleId": "strong-2c",
+          "kind": "add-on",
+          "attachments": []
+        },
+        {
+          "moduleId": "stayman",
+          "kind": "add-on",
+          "attachments": [
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "2C",
+                  "2D",
+                  "2NT"
+                ]
+              },
+              "requiresCapabilities": []
+            }
+          ]
+        },
+        {
+          "moduleId": "jacoby-transfers",
+          "kind": "add-on",
+          "attachments": [
+            {
+              "whenAuction": {
+                "kind": "sequence",
+                "calls": [
+                  "2C",
+                  "2D",
+                  "2NT"
+                ]
+              },
+              "requiresCapabilities": []
+            }
+          ]
+        }
+      ]
+    },
+    "category": "Constructive",
+    "description": "Open 2C with a hand too strong for a one-level opening, then use waiting and positive-suit responses to keep the auction organized.",
+    "teaching": {
+      "purpose": "Open very strong hands with an artificial 2C bid, then use the waiting or positive-suit structure to describe shape.",
+      "whenToUse": "Open 2C with a balanced 22+ count or an unbalanced hand with roughly 9+ playing tricks. As responder, bid 2D waiting unless you have 8+ HCP and a good 5+ suit.",
+      "whenNotToUse": [
+        "With 20-21 balanced HCP — open 2NT instead",
+        "With a weak hand and a long suit — use a Weak Two instead",
+        "2C is always artificial here — never open 2C to show clubs"
+      ],
+      "tradeoff": "2C loses its natural club meaning in exchange for a forcing opening that prevents being passed out with a monster hand.",
+      "principle": "Start with the waiting 2D reply unless responder has real suit quality; opener then clarifies balanced versus natural-suit routes. After 2C-2D-2NT, continue with ordinary NT methods (Stayman and Jacoby transfers).",
+      "roles": "Opener describes the monster; responder decides whether to drive to game, slam, or settle."
+    }
   }
 ]

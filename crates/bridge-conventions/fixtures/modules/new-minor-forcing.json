@@ -2643,6 +2643,15 @@
               "clauseId": "hand.suitLength.spades:lte:3",
               "description": "No 4-card spade support",
               "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:lte:5",
+              "description": "Exactly 5 hearts (with 6+ hearts opener rebids 2H)",
+              "rationale": "denies a 6-card heart rebid available path",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -2657,7 +2666,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1NT rebid",
-            "summary": "Minimum (12-15) balanced rebid, no 4-card spade support"
+            "summary": "Minimum (12-15) balanced rebid, no 4-card spade support, exactly 5 hearts (6+ would rebid 2♥)"
           }
         }
       ],
@@ -3050,10 +3059,10 @@
             {
               "factId": "hand.suitLength.hearts",
               "operator": "gte",
-              "value": 6,
-              "clauseId": "hand.suitLength.hearts:gte:6",
-              "description": "6+ hearts (rebiddable suit)",
-              "rationale": "rebid own 6+ card suit",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts (opened major)",
+              "rationale": "last-resort rebid of the opened major when no higher priority applies",
               "isPublic": true
             },
             {
@@ -3079,7 +3088,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2♥ rebid own suit",
-            "summary": "Priority 5: rebid the opened major with 6+ card length"
+            "summary": "Priority 5 (last resort): rebid the opened major with 5+ hearts when no spade support, no NT stopper, and no 4-card NMF-minor raise is available"
           }
         }
       ],

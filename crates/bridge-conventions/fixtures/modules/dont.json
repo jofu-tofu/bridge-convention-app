@@ -1016,6 +1016,20 @@
         }
       },
       {
+        "from": "after-one-suit-reveal",
+        "to": "done",
+        "on": {
+          "act": "accept"
+        }
+      },
+      {
+        "from": "after-one-suit-reveal",
+        "to": "done",
+        "on": {
+          "act": "show"
+        }
+      },
+      {
         "from": "wait-2d-relay",
         "to": "done",
         "on": {
@@ -3013,6 +3027,84 @@
       },
       "surfaces": [
         {
+          "meaningId": "dont:signoff-pass-after-club-reveal",
+          "semanticClassId": "dont:accept-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.hasClubSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasClubSupport:boolean:true",
+              "description": "Club support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTAcceptClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass — signoff in clubs",
+            "summary": "Pass partner's 2C reveal with club support and no game interest"
+          }
+        },
+        {
+          "meaningId": "dont:preemptive-raise-3c-after-club-reveal",
+          "semanticClassId": "dont:preemptive-raise",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.hasClubSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasClubSupport:boolean:true",
+              "description": "Club support",
+              "isPublic": true
+            },
+            {
+              "factId": "module.dont.minimumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.minimumRange:boolean:true",
+              "description": "Minimum range (not strong enough for 2NT invite)",
+              "rationale": "minor-suit raise is preemptive, not invitational"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTShowClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3C — preemptive raise",
+            "summary": "Raise clubs preemptively with a fit and minimum values"
+          }
+        },
+        {
           "meaningId": "dont:strong-invite-2nt-after-club-reveal",
           "semanticClassId": "dont:strong-invite",
           "moduleId": "dont",
@@ -3043,7 +3135,7 @@
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 0
+            "declarationOrder": 2
           },
           "sourceIntent": {
             "type": "DONTStrongInvite2NT",
@@ -3072,6 +3164,84 @@
         }
       },
       "surfaces": [
+        {
+          "meaningId": "dont:signoff-pass-after-diamond-reveal",
+          "semanticClassId": "dont:accept-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.hasDiamondSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasDiamondSupport:boolean:true",
+              "description": "Diamond support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTAcceptDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass — signoff in diamonds",
+            "summary": "Pass partner's 2D reveal with diamond support and no game interest"
+          }
+        },
+        {
+          "meaningId": "dont:preemptive-raise-3d-after-diamond-reveal",
+          "semanticClassId": "dont:preemptive-raise",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.hasDiamondSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasDiamondSupport:boolean:true",
+              "description": "Diamond support",
+              "isPublic": true
+            },
+            {
+              "factId": "module.dont.minimumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.minimumRange:boolean:true",
+              "description": "Minimum range (not strong enough for 2NT invite)",
+              "rationale": "minor-suit raise is preemptive, not invitational"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTShowDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3D — preemptive raise",
+            "summary": "Raise diamonds preemptively with a fit and minimum values"
+          }
+        },
         {
           "meaningId": "dont:strong-invite-2nt-after-diamond-reveal",
           "semanticClassId": "dont:strong-invite",
@@ -3103,7 +3273,7 @@
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 0
+            "declarationOrder": 2
           },
           "sourceIntent": {
             "type": "DONTStrongInvite2NT",
@@ -3132,6 +3302,84 @@
         }
       },
       "surfaces": [
+        {
+          "meaningId": "dont:signoff-pass-after-heart-reveal",
+          "semanticClassId": "dont:accept-suit",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasHeartSupport:boolean:true",
+              "description": "Heart support",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "DONTAcceptHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass — signoff in hearts",
+            "summary": "Pass partner's 2H reveal with heart support and no game interest"
+          }
+        },
+        {
+          "meaningId": "dont:invitational-raise-3h-after-heart-reveal",
+          "semanticClassId": "dont:invitational-raise",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.hasHeartSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasHeartSupport:boolean:true",
+              "description": "Heart support",
+              "isPublic": true
+            },
+            {
+              "factId": "module.dont.minimumRange",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.minimumRange:boolean:true",
+              "description": "Minimum range (not strong enough for 2NT game-forcing invite)",
+              "rationale": "mild major-suit invitation, short of 2NT strong invite"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTShowHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H — mild game invitation",
+            "summary": "Raise hearts to three as a mild game try with a fit"
+          }
+        },
         {
           "meaningId": "dont:strong-invite-2nt-after-heart-reveal",
           "semanticClassId": "dont:strong-invite",
@@ -3163,7 +3411,7 @@
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 0
+            "declarationOrder": 2
           },
           "sourceIntent": {
             "type": "DONTStrongInvite2NT",

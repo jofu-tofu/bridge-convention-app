@@ -3148,10 +3148,139 @@
       "negotiationDelta": {
         "forcing": "none"
       },
-      "surfaces": [],
+      "surfaces": [
+        {
+          "meaningId": "weak-two:nsf-support-spades-over-hearts",
+          "semanticClassId": "weak-two:nsf-support",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.suitLength.spades:gte:3",
+              "description": "3+ spades — support for responder's new suit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NsfSupport",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Raise responder's suit (3S)",
+            "summary": "Raise responder's forcing new suit with 3+ card support"
+          },
+          "surfaceBindings": {
+            "suit": "hearts"
+          }
+        },
+        {
+          "meaningId": "weak-two:nsf-nt-over-hearts",
+          "semanticClassId": "weak-two:nsf-nt-rebid",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.isBalanced",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "hand.isBalanced:boolean:true",
+              "description": "Balanced hand with outside stopper",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.spades:lte:2",
+              "description": "Fewer than 3 spades — no support for responder",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NaturalNtResponse",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Natural 2NT",
+            "summary": "Rebid 2NT with a balanced hand and no fit for responder's new suit"
+          },
+          "surfaceBindings": {
+            "suit": "hearts"
+          }
+        },
+        {
+          "meaningId": "weak-two:nsf-min-rebid-hearts",
+          "semanticClassId": "weak-two:nsf-min-rebid",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.spades:lte:2",
+              "description": "Fewer than 3 spades — no support for responder",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "NsfRebid",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Rebid own suit (3H)",
+            "summary": "Rebid the weak-two suit with no fit for responder and no balanced NT hand"
+          },
+          "surfaceBindings": {
+            "suit": "hearts"
+          }
+        }
+      ],
       "scope": {
-        "kind": "out_of_scope",
-        "reason": "Larry says opener rebids naturally after a forcing new-suit response; this fixture does not enumerate that natural tree."
+        "kind": "enumerated"
       }
     },
     {
@@ -3160,10 +3289,139 @@
       "negotiationDelta": {
         "forcing": "none"
       },
-      "surfaces": [],
+      "surfaces": [
+        {
+          "meaningId": "weak-two:nsf-support-clubs-over-spades",
+          "semanticClassId": "weak-two:nsf-support",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.suitLength.clubs:gte:3",
+              "description": "3+ clubs — support for responder's new suit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NsfSupport",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Raise responder's suit (4C)",
+            "summary": "Raise responder's forcing new suit with 3+ card support"
+          },
+          "surfaceBindings": {
+            "suit": "spades"
+          }
+        },
+        {
+          "meaningId": "weak-two:nsf-nt-over-spades",
+          "semanticClassId": "weak-two:nsf-nt-rebid",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.isBalanced",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "hand.isBalanced:boolean:true",
+              "description": "Balanced hand with outside stopper",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.clubs:lte:2",
+              "description": "Fewer than 3 clubs — no support for responder",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NaturalNtResponse",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Natural 3NT",
+            "summary": "Rebid 3NT with a balanced hand and no fit for responder's new suit"
+          },
+          "surfaceBindings": {
+            "suit": "spades"
+          }
+        },
+        {
+          "meaningId": "weak-two:nsf-min-rebid-spades",
+          "semanticClassId": "weak-two:nsf-min-rebid",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.clubs:lte:2",
+              "description": "Fewer than 3 clubs — no support for responder",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "NsfRebid",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Rebid own suit (3S)",
+            "summary": "Rebid the weak-two suit with no fit for responder and no balanced NT hand"
+          },
+          "surfaceBindings": {
+            "suit": "spades"
+          }
+        }
+      ],
       "scope": {
-        "kind": "out_of_scope",
-        "reason": "Larry says opener rebids naturally after a forcing new-suit response; this fixture does not enumerate that natural tree."
+        "kind": "enumerated"
       }
     },
     {
@@ -3172,10 +3430,139 @@
       "negotiationDelta": {
         "forcing": "none"
       },
-      "surfaces": [],
+      "surfaces": [
+        {
+          "meaningId": "weak-two:nsf-support-hearts-over-diamonds",
+          "semanticClassId": "weak-two:nsf-support",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.suitLength.hearts:gte:3",
+              "description": "3+ hearts — support for responder's new suit",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NsfSupport",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Raise responder's suit (3H)",
+            "summary": "Raise responder's forcing new suit with 3+ card support"
+          },
+          "surfaceBindings": {
+            "suit": "diamonds"
+          }
+        },
+        {
+          "meaningId": "weak-two:nsf-nt-over-diamonds",
+          "semanticClassId": "weak-two:nsf-nt-rebid",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.isBalanced",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "hand.isBalanced:boolean:true",
+              "description": "Balanced hand with outside stopper",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.hearts:lte:2",
+              "description": "Fewer than 3 hearts — no support for responder",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NaturalNtResponse",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Natural 2NT",
+            "summary": "Rebid 2NT with a balanced hand and no fit for responder's new suit"
+          },
+          "surfaceBindings": {
+            "suit": "diamonds"
+          }
+        },
+        {
+          "meaningId": "weak-two:nsf-min-rebid-diamonds",
+          "semanticClassId": "weak-two:nsf-min-rebid",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.hearts:lte:2",
+              "description": "Fewer than 3 hearts — no support for responder",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "NsfRebid",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Rebid own suit (3D)",
+            "summary": "Rebid the weak-two suit with no fit for responder and no balanced NT hand"
+          },
+          "surfaceBindings": {
+            "suit": "diamonds"
+          }
+        }
+      ],
       "scope": {
-        "kind": "out_of_scope",
-        "reason": "Larry says opener rebids naturally after a forcing new-suit response; this fixture does not enumerate that natural tree."
+        "kind": "enumerated"
       }
     },
     {

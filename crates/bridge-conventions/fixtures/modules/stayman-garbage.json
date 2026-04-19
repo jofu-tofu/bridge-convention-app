@@ -145,7 +145,7 @@
       "explanationId": "nt.stayman.crawlingPassHearts",
       "meaningId": "stayman:crawling-pass-hearts",
       "templateKey": "nt.stayman.crawlingPassHearts.semantic",
-      "displayText": "Pass 2♥ with three hearts after Crawling Stayman",
+      "displayText": "Pass 2♥ as the default pass-or-correct resolution after Crawling Stayman",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -739,17 +739,7 @@
               "type": "pass"
             }
           },
-          "clauses": [
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
-              "value": 3,
-              "clauseId": "hand.suitLength.hearts:gte:3",
-              "description": "3+ hearts",
-              "rationale": "After 1NT-2♣-2♦-2♥, opener passes with three hearts.",
-              "isPublic": true
-            }
-          ],
+          "clauses": [],
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
@@ -764,7 +754,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Pass 2♥",
-            "summary": "Pass with three hearts and let the crawling auction stop there."
+            "summary": "Pass 2♥ as the default pass-or-correct resolution; the 2♠ correction branch is the more specific alternative."
           }
         },
         {

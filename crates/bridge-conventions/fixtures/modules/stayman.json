@@ -207,7 +207,7 @@
       "explanationId": "nt.stayman.showFiveHeartsAfterDenial",
       "meaningId": "stayman:show-five-hearts-after-denial",
       "templateKey": "nt.stayman.showFiveHeartsAfterDenial.semantic",
-      "displayText": "Bid 2♥ as Garbage Stayman: opener must pass or correct",
+      "displayText": "Bid 2♥ showing 5 hearts and 4 spades (invitational, non-forcing)",
       "preferredLevel": "semantic",
       "roles": ["pedagogical"]
     },
@@ -1837,7 +1837,7 @@
         },
         {
           "meaningId": "stayman:show-five-hearts-after-denial",
-          "semanticClassId": "stayman:crawling-stayman",
+          "semanticClassId": "stayman:show-five-card-major",
           "moduleId": "stayman",
           "encoding": {
             "defaultCall": {
@@ -1848,21 +1848,21 @@
           },
           "clauses": [
             {
-              "factId": "system.responder.weakHand",
+              "factId": "system.responder.inviteValues",
               "operator": "boolean",
               "value": true,
-              "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand",
-              "rationale": "Garbage Stayman, pass or correct",
+              "clauseId": "system.responder.inviteValues:boolean:true",
+              "description": "Invite values",
+              "rationale": "invite values",
               "isPublic": true
             },
             {
               "factId": "hand.suitLength.hearts",
               "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.hearts:gte:4",
-              "description": "4+ hearts",
-              "rationale": "Garbage Stayman uses both majors",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts (show the 5-card major after denial)",
+              "rationale": "show the 5-card major after denial",
               "isPublic": true
             },
             {
@@ -1870,17 +1870,8 @@
               "operator": "gte",
               "value": 4,
               "clauseId": "hand.suitLength.spades:gte:4",
-              "description": "4+ spades",
-              "rationale": "Garbage Stayman uses both majors",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.diamonds",
-              "operator": "lte",
-              "value": 2,
-              "clauseId": "hand.suitLength.diamonds:lte:2",
-              "description": "Short diamonds",
-              "rationale": "opener must pass hearts or correct to spades",
+              "description": "4+ spades (had 5-4 pattern for Stayman entry)",
+              "rationale": "had 5-4 pattern for Stayman entry",
               "isPublic": true
             }
           ],
@@ -1890,16 +1881,15 @@
             "declarationOrder": 1
           },
           "sourceIntent": {
-            "type": "Signoff",
+            "type": "ShowFiveCardMajor",
             "params": {
-              "suit": "hearts",
-              "reason": "crawling-stayman"
+              "suit": "hearts"
             }
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Crawling Stayman 2♥",
-            "summary": "Garbage Stayman after 2♦ denial: opener must pass hearts or correct to spades"
+            "name": "5-4 majors",
+            "summary": "Show 5 hearts after denial, seeking a 3-card heart fit from opener"
           }
         },
         {
