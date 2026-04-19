@@ -25,6 +25,7 @@
 
   let innerW = $state(window.innerWidth);
   const isMobile = $derived(innerW < DESKTOP_MIN);
+  let mobileSettingsOpen = $state(false);
 
   const initial = $derived(
     auth.user?.display_name?.charAt(0).toUpperCase() ?? null,
@@ -149,13 +150,7 @@
       {/if}
   {/snippet}
 
-  <div class="grid gap-4 md:grid-cols-[19rem,minmax(0,1fr)] xl:grid-cols-[20rem,minmax(0,1fr)]">
-    <aside class="hidden md:block">
-      <div class="sticky top-0">
-        <QuickPracticeSettingsPanel />
-      </div>
-    </aside>
-
+  <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_20rem]">
     <div class="min-w-0">
       {#if showMyDrillsLink}
         <div class="mb-2 flex justify-end">
@@ -196,17 +191,6 @@
           />
         </div>
       </div>
-
-      {#if isMobile}
-        <details class="mb-4 overflow-hidden rounded-[--radius-xl] border border-border-subtle bg-bg-card">
-          <summary class="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-text-primary">
-            Practice settings
-          </summary>
-          <div class="border-t border-border-subtle p-3">
-            <QuickPracticeSettingsPanel showHeader={false} />
-          </div>
-        </details>
-      {/if}
 
       {#if !searchQuery}
         <SavedDrillsShelf onLaunch={launchDrill} onEdit={openEditDrill} />
@@ -279,7 +263,61 @@
         </div>
       {/if}
     </div>
+
+    <aside class="hidden md:block">
+      <div class="sticky top-0">
+        <QuickPracticeSettingsPanel />
+      </div>
+    </aside>
   </div>
+
+  {#if isMobile}
+    <button
+      type="button"
+      class="fixed right-0 top-1/2 z-30 -translate-y-1/2 rounded-l-[--radius-md] border border-r-0 border-border-subtle bg-bg-card px-2 py-3 text-xs font-semibold text-text-primary shadow-md cursor-pointer"
+      aria-label="Open practice settings"
+      aria-expanded={mobileSettingsOpen}
+      aria-controls="mobile-practice-settings"
+      onclick={() => (mobileSettingsOpen = true)}
+    >
+      <span class="[writing-mode:vertical-rl] [transform:rotate(180deg)]">Settings</span>
+    </button>
+
+    {#if mobileSettingsOpen}
+      <div
+        class="fixed inset-0 z-40 bg-black/50"
+        role="button"
+        tabindex="0"
+        aria-label="Close practice settings"
+        onclick={() => (mobileSettingsOpen = false)}
+        onkeydown={(e) => {
+          if (e.key === "Escape" || e.key === "Enter" || e.key === " ") {
+            mobileSettingsOpen = false;
+          }
+        }}
+      ></div>
+      <aside
+        id="mobile-practice-settings"
+        class="fixed right-0 top-0 z-50 flex h-full w-[min(20rem,90vw)] flex-col overflow-y-auto border-l border-border-subtle bg-bg-card shadow-xl"
+      >
+        <div class="flex items-center justify-between border-b border-border-subtle px-4 py-3">
+          <span class="text-sm font-semibold text-text-primary">Practice settings</span>
+          <button
+            type="button"
+            class="rounded-[--radius-md] p-1 text-text-muted hover:text-text-primary cursor-pointer"
+            aria-label="Close practice settings"
+            onclick={() => (mobileSettingsOpen = false)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="p-3">
+          <QuickPracticeSettingsPanel showHeader={false} />
+        </div>
+      </aside>
+    {/if}
+  {/if}
+
   <AuthModal bind:this={authModal} />
   <PaywallOverlay bind:this={paywallOverlay} />
 </AppScreen>
