@@ -114,8 +114,6 @@ export function createAppStore() {
   let coverageBundle = $state<string | null>(null);
   let editingModuleId = $state<string | null>(null);
   let editingModuleIsNew = $state(false);
-  let editingPackId = $state<string | null>(null);
-  let editingPackBasedOn = $state<string | null>(null);
 
   // Dev flags parsed from ?dev= comma-separated param
   let debugExpanded = $state(false);
@@ -178,16 +176,12 @@ export function createAppStore() {
     clearSelection() {
       selectedConvention = null;
       editingModuleId = null;
-      editingPackId = null;
-      editingPackBasedOn = null;
     },
 
     /** Clear workshop editing state. Does NOT navigate. */
     clearWorkshopState() {
       editingModuleId = null;
       editingModuleIsNew = false;
-      editingPackId = null;
-      editingPackBasedOn = null;
     },
 
     get editingModuleId() {
@@ -202,20 +196,6 @@ export function createAppStore() {
     setEditingModule(moduleId: string | null, isNew = false) {
       editingModuleId = moduleId;
       editingModuleIsNew = isNew;
-    },
-
-    get editingPackId() {
-      return editingPackId;
-    },
-
-    get editingPackBasedOn() {
-      return editingPackBasedOn;
-    },
-
-    /** Set practice pack editor state. Does NOT navigate. */
-    setEditingPack(packId: string | null, basedOn?: string | null) {
-      editingPackId = packId;
-      editingPackBasedOn = basedOn ?? null;
     },
 
     setDevSeed(seed: number | null) {

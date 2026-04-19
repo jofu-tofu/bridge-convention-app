@@ -17,7 +17,7 @@ import type {
   Suit,
 } from "../service";
 import type { DevServicePort, DrillHandle, SessionConfig } from "../service";
-import type { ConventionInfo, GamePhase, ServicePublicBeliefState, PracticeMode, PracticeRole, PromptMode, SystemSelectionId } from "../service";
+import type { GamePhase, ServicePublicBeliefState, PracticeMode, PracticeRole, PromptMode, SystemSelectionId } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import type {
   BidFeedback,
@@ -125,10 +125,3 @@ export interface GameStore {
   reset(): void;
 }
 
-export interface DrillLaunchStore {
-  readonly activeLaunch: DrillLaunchConfig | null;
-  applyDrillSession(
-    config: DrillLaunchConfig,
-    conventions: readonly ConventionInfo[],
-  ): void;
-}

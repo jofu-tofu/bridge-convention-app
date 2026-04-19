@@ -3,7 +3,7 @@
  * Pure functions — no store or Svelte imports.
  */
 
-import type { ModuleCatalogEntry, ConventionInfo } from "../../service";
+import type { ModuleCatalogEntry } from "../../service";
 import { AVAILABLE_BASE_SYSTEMS, getSystemConfig } from "../../service";
 import { mergeModules, groupByCategory } from "./module-catalog";
 
@@ -52,20 +52,4 @@ export function buildConventionPickerCategories(
     });
   }
   return result;
-}
-
-export function buildPracticePackPickerCategories(
-  bundles: ConventionInfo[],
-): PickerCategory[] {
-  return [
-    {
-      name: "Built-in Packs",
-      items: bundles.map((b) => ({
-        id: b.id,
-        label: b.name,
-        description: b.description,
-        detail: `${b.moduleDescriptions?.size ?? 0} conventions`,
-      })),
-    },
-  ];
 }
