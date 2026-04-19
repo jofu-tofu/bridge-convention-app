@@ -2,15 +2,30 @@
  * Drills store — unified replacement for drill-presets, custom-drills, and
  * practice-packs.
  *
- * A Drill is a saved practice configuration: one or more convention modules
- * plus mode/role/system. Single-convention drills cover the lightweight MRU
- * "preset" surface; multi-convention drills cover what practice packs did.
+ * Two branches share one public API:
+ * - Anonymous (no auth.user): reads/writes localStorage `bridge-app:drills`,
+ *   migrates legacy keys on first load, and runs synchronously underneath
+ *   the Promise-shaped methods.
+ * - Authenticated (auth.user !== null): reads/writes via the injected
+ *   DataPort. Pessimistic mutations — the in-memory list updates only after
+ *   the server response lands. Never writes `bridge-app:drills`.
  *
- * Persists `SystemSelectionId` (TS-only), never a serialized `SystemConfig`.
- * MRU sort: lastUsedAt DESC (nulls last), updatedAt DESC tiebreaker.
- * No soft cap (evidence-map §3 — bimodal usage).
+ * Public API: create, update, delete, rename, markLaunched, getById, list,
+ * validateName, drills, migrationSkipped, plus loadStatus and isSaving
+ * getters and a refresh() method for the auth-load-error retry path.
+ *
+ * Auth transitions are guarded by an internal `authGeneration` counter.
+ * Late server responses from a previous auth state are discarded so they
+ * cannot leak data across accounts or back into the anonymous list.
  */
 
+import type {
+  AuthUser,
+  DataPort,
+  DrillCreatePayload,
+  DrillDto,
+  DrillUpdatePayload,
+} from "../service";
 import { OpponentMode, PracticeMode, PracticeRole } from "../service";
 import type { PlayProfileId, SystemSelectionId, VulnerabilityDistribution } from "../service";
 import { AVAILABLE_BASE_SYSTEMS } from "../service";
@@ -50,12 +65,12 @@ export interface Drill {
   lastUsedAt: string | null;
 }
 
-/**
- * Snapshot of practice preferences captured at drill-store construction.
- * Used once for healing legacy drills that pre-date the four gameplay
- * tunable fields. After healing, drills carry fully explicit values and
- * the store never reads `appStore.prefs` again.
- */
+export type DrillsLoadStatus =
+  | "loading"
+  | "anonymous-ready"
+  | "authenticated-ready"
+  | "auth-load-error";
+
 export interface DrillSeed {
   readonly opponentMode: OpponentMode;
   readonly playProfileId: PlayProfileId;
@@ -109,10 +124,6 @@ function isVulnerabilityDistribution(v: unknown): v is VulnerabilityDistribution
   );
 }
 
-/**
- * Strict validator — used after healing. Records that pass this validator
- * carry every field explicitly; no fallbacks at read time.
- */
 function validateStoredDrill(d: unknown): d is Drill {
   if (!d || typeof d !== "object") return false;
   const r = d as Record<string, unknown>;
@@ -133,11 +144,6 @@ function validateStoredDrill(d: unknown): d is Drill {
   return true;
 }
 
-/**
- * Pre-healing validator: a record is "old-schema valid" when every field
- * required by the previous schema is present and well-typed. Records that
- * pass this but fail strict validation are eligible for one-time healing.
- */
 function isLegacyDrillRecord(d: unknown): boolean {
   if (!d || typeof d !== "object") return false;
   const r = d as Record<string, unknown>;
@@ -162,12 +168,6 @@ interface LoadResult {
   skipped: number;
 }
 
-/**
- * Read raw records from `localStorage`, then either validate strictly,
- * heal legacy-schema records by filling the four new fields from the
- * provided seed, or skip malformed records. Healed records are written
- * back at the end of the pass.
- */
 function loadDrillsWithHealing(seed: DrillSeed): LoadResult {
   const drills: Drill[] = [];
   let healed = 0;
@@ -282,6 +282,42 @@ function warnMigration(message: string, value: unknown): void {
   console.warn(message, value);
 }
 
+function dtoToDrill(dto: DrillDto): Drill {
+  return {
+    id: dto.id as `drill:${string}`,
+    name: dto.name,
+    moduleIds: dto.moduleIds.map(canonicalBundleId),
+    practiceMode: dto.practiceMode as PracticeMode,
+    practiceRole: dto.practiceRole as DrillPracticeRole,
+    systemSelectionId: dto.systemSelectionId as SystemSelectionId,
+    opponentMode: dto.opponentMode as OpponentMode,
+    playProfileId: dto.playProfileId as PlayProfileId,
+    vulnerabilityDistribution: dto.vulnerabilityDistribution,
+    showEducationalAnnotations: dto.showEducationalAnnotations,
+    createdAt: dto.createdAt,
+    updatedAt: dto.updatedAt,
+    lastUsedAt: dto.lastUsedAt,
+  };
+}
+
+function paramsToPayload(
+  params: CreateDrillParams,
+  id: string | undefined = undefined,
+): DrillCreatePayload {
+  return {
+    ...(id ? { id } : {}),
+    name: params.name.trim(),
+    moduleIds: params.moduleIds.map(canonicalBundleId).filter((m) => m.length > 0),
+    practiceMode: params.practiceMode,
+    practiceRole: params.practiceRole,
+    systemSelectionId: params.systemSelectionId,
+    opponentMode: params.opponentMode,
+    playProfileId: params.playProfileId,
+    vulnerabilityDistribution: params.vulnerabilityDistribution,
+    showEducationalAnnotations: params.showEducationalAnnotations,
+  };
+}
+
 // ─── Legacy migration ──────────────────────────────────────
 
 interface LegacyPreset {
@@ -383,7 +419,6 @@ function migrateFromLegacy(
     showEducationalAnnotations: seed.showEducationalAnnotations,
   };
 
-  // Presets
   try {
     const raw = localStorage.getItem(LEGACY_PRESETS_KEY);
     if (raw) {
@@ -420,7 +455,6 @@ function migrateFromLegacy(
     warnMigration("[drills] failed to read legacy presets", err);
   }
 
-  // Custom drills
   try {
     const raw = localStorage.getItem(LEGACY_CUSTOM_DRILLS_KEY);
     if (raw) {
@@ -457,7 +491,6 @@ function migrateFromLegacy(
     warnMigration("[drills] failed to read legacy custom drills", err);
   }
 
-  // Practice packs
   try {
     const raw = localStorage.getItem(LEGACY_PACKS_KEY);
     if (raw) {
@@ -547,23 +580,248 @@ export interface UpdateDrillParams {
   showEducationalAnnotations?: boolean;
 }
 
+/** Reactive auth handle. Avoids importing the concrete auth-store class. */
+export interface DrillsAuthHandle {
+  readonly user: AuthUser | null;
+}
+
 export interface CreateDrillsStoreArgs {
   defaultSystemId: SystemSelectionId;
-  /**
-   * One-time snapshot of practice preferences used to heal legacy drill
-   * records that pre-date the four gameplay tunable fields. The store
-   * never reads `appStore.prefs` after construction — drills carry
-   * fully explicit values from this point on.
-   */
   seedFromPrefs: DrillSeed;
+  /** Optional reactive auth source. When omitted, the store stays anonymous. */
+  auth?: DrillsAuthHandle;
+  /** Required when `auth` is provided. */
+  dataPort?: DataPort;
 }
 
 export function createDrillsStore(args: CreateDrillsStoreArgs) {
   const initial = loadOrMigrate(args.defaultSystemId, args.seedFromPrefs);
-  let drills = $state<Drill[]>(sortMru(initial.drills));
 
-  function save(): void {
+  let drills = $state<Drill[]>(sortMru(initial.drills));
+  let loadStatus = $state<DrillsLoadStatus>("anonymous-ready");
+  let isSaving = $state(false);
+  const migrationSkipped = initial.skipped;
+
+  // Snapshot of the anonymous list at the moment we transition to authenticated.
+  // Restored on logout so anonymous data is never silently lost.
+  let anonymousSnapshot: Drill[] = sortMru(initial.drills);
+  let authGeneration = 0;
+  let lastUserId: string | null = null;
+
+  function setAnonymousState(): void {
+    drills = sortMru(anonymousSnapshot);
+    loadStatus = "anonymous-ready";
+    isSaving = false;
+  }
+
+  async function hydrateAuthenticated(generation: number): Promise<void> {
+    if (!args.dataPort) {
+      throw new Error("Authenticated drills store requires a DataPort");
+    }
+    loadStatus = "loading";
+    try {
+      const dtos = await args.dataPort.listDrills();
+      if (generation !== authGeneration) return;
+      drills = sortMru(dtos.map(dtoToDrill));
+      loadStatus = "authenticated-ready";
+    } catch {
+      if (generation !== authGeneration) return;
+      loadStatus = "auth-load-error";
+    }
+  }
+
+  function onAuthChange(user: AuthUser | null): void {
+    if (user?.id === lastUserId) return;
+    authGeneration++;
+    const generation = authGeneration;
+    if (user === null) {
+      lastUserId = null;
+      setAnonymousState();
+      return;
+    }
+    lastUserId = user.id;
+    drills = []; // start empty while loading; previous list belongs to a different account
+    void hydrateAuthenticated(generation);
+  }
+
+  // Subscribe via $effect.root so we can observe args.auth.user without a
+  // component lifecycle. Manual pre-fire so initial state matches synchronously.
+  if (args.auth) {
+    onAuthChange(args.auth.user);
+    $effect.root(() => {
+      $effect(() => {
+        if (!args.auth) return;
+        onAuthChange(args.auth.user);
+      });
+    });
+  }
+
+  function ensureCanMutate(): void {
+    if (loadStatus === "auth-load-error") {
+      throw new Error("Drill list failed to load — retry before mutating");
+    }
+  }
+
+  function isAuthenticated(): boolean {
+    return Boolean(args.auth?.user);
+  }
+
+  async function createImpl(params: CreateDrillParams): Promise<Drill> {
+    ensureCanMutate();
+    const moduleIds = params.moduleIds.map(canonicalBundleId).filter((m) => m.length > 0);
+    if (moduleIds.length === 0) {
+      throw new Error("Drill requires at least one module");
+    }
+    if (!isVulnerabilityDistribution(params.vulnerabilityDistribution)) {
+      throw new Error("Drill vulnerability distribution must have at least one non-zero weight");
+    }
+
+    if (isAuthenticated() && args.dataPort) {
+      const generation = authGeneration;
+      isSaving = true;
+      try {
+        const dto = await args.dataPort.createDrill(paramsToPayload({ ...params, moduleIds }));
+        if (generation !== authGeneration) {
+          return dtoToDrill(dto);
+        }
+        const drill = dtoToDrill(dto);
+        drills = sortMru([...drills, drill]);
+        return drill;
+      } finally {
+        if (generation === authGeneration) isSaving = false;
+      }
+    }
+
+    const now = new Date().toISOString();
+    const drill: Drill = {
+      id: generateId(),
+      name: params.name.trim(),
+      moduleIds,
+      practiceMode: params.practiceMode,
+      practiceRole: params.practiceRole,
+      systemSelectionId: params.systemSelectionId,
+      opponentMode: params.opponentMode,
+      playProfileId: params.playProfileId,
+      vulnerabilityDistribution: params.vulnerabilityDistribution,
+      showEducationalAnnotations: params.showEducationalAnnotations,
+      createdAt: now,
+      updatedAt: now,
+      lastUsedAt: null,
+    };
+    drills = sortMru([...drills, drill]);
+    anonymousSnapshot = drills;
     persist(drills);
+    return drill;
+  }
+
+  async function updateImpl(id: string, patch: UpdateDrillParams): Promise<void> {
+    ensureCanMutate();
+    if (
+      patch.vulnerabilityDistribution !== undefined &&
+      !isVulnerabilityDistribution(patch.vulnerabilityDistribution)
+    ) {
+      throw new Error("Drill vulnerability distribution must have at least one non-zero weight");
+    }
+
+    const existing = drills.find((d) => d.id === id);
+    if (!existing) {
+      // For unknown ids, fall through silently (matches prior sync behavior).
+      return;
+    }
+
+    const merged: Drill = {
+      ...existing,
+      ...(patch.name !== undefined ? { name: patch.name.trim() } : {}),
+      ...(patch.moduleIds !== undefined
+        ? { moduleIds: patch.moduleIds.map(canonicalBundleId).filter((m) => m.length > 0) }
+        : {}),
+      ...(patch.practiceMode !== undefined ? { practiceMode: patch.practiceMode } : {}),
+      ...(patch.practiceRole !== undefined ? { practiceRole: patch.practiceRole } : {}),
+      ...(patch.systemSelectionId !== undefined ? { systemSelectionId: patch.systemSelectionId } : {}),
+      ...(patch.opponentMode !== undefined ? { opponentMode: patch.opponentMode } : {}),
+      ...(patch.playProfileId !== undefined ? { playProfileId: patch.playProfileId } : {}),
+      ...(patch.vulnerabilityDistribution !== undefined
+        ? { vulnerabilityDistribution: patch.vulnerabilityDistribution }
+        : {}),
+      ...(patch.showEducationalAnnotations !== undefined
+        ? { showEducationalAnnotations: patch.showEducationalAnnotations }
+        : {}),
+    };
+
+    if (isAuthenticated() && args.dataPort) {
+      const generation = authGeneration;
+      isSaving = true;
+      try {
+        const payload: DrillUpdatePayload = {
+          name: merged.name,
+          moduleIds: merged.moduleIds,
+          practiceMode: merged.practiceMode,
+          practiceRole: merged.practiceRole,
+          systemSelectionId: merged.systemSelectionId,
+          opponentMode: merged.opponentMode,
+          playProfileId: merged.playProfileId,
+          vulnerabilityDistribution: merged.vulnerabilityDistribution,
+          showEducationalAnnotations: merged.showEducationalAnnotations,
+        };
+        const dto = await args.dataPort.updateDrill(id, payload);
+        if (generation !== authGeneration) return;
+        const next = dtoToDrill(dto);
+        drills = sortMru(drills.map((d) => (d.id === id ? next : d)));
+      } finally {
+        if (generation === authGeneration) isSaving = false;
+      }
+      return;
+    }
+
+    const now = new Date().toISOString();
+    drills = sortMru(drills.map((d) => (d.id === id ? { ...merged, updatedAt: now } : d)));
+    anonymousSnapshot = drills;
+    persist(drills);
+  }
+
+  async function deleteImpl(id: string): Promise<void> {
+    ensureCanMutate();
+    if (isAuthenticated() && args.dataPort) {
+      const generation = authGeneration;
+      isSaving = true;
+      try {
+        await args.dataPort.deleteDrill(id);
+        if (generation !== authGeneration) return;
+        drills = drills.filter((d) => d.id !== id);
+      } finally {
+        if (generation === authGeneration) isSaving = false;
+      }
+      return;
+    }
+    drills = drills.filter((d) => d.id !== id);
+    anonymousSnapshot = drills;
+    persist(drills);
+  }
+
+  async function markLaunchedImpl(id: string): Promise<void> {
+    ensureCanMutate();
+    if (isAuthenticated() && args.dataPort) {
+      const generation = authGeneration;
+      try {
+        const dto = await args.dataPort.markDrillLaunched(id);
+        if (generation !== authGeneration) return;
+        const next = dtoToDrill(dto);
+        drills = sortMru(drills.map((d) => (d.id === id ? next : d)));
+      } catch {
+        // Launch-mark failures are non-fatal; the drill still launches client-side.
+      }
+      return;
+    }
+    const now = new Date().toISOString();
+    drills = sortMru(drills.map((d) => (d.id === id ? { ...d, lastUsedAt: now } : d)));
+    anonymousSnapshot = drills;
+    persist(drills);
+  }
+
+  function getStatus(): DrillsLoadStatus {
+    if (!args.auth) return "anonymous-ready";
+    if (args.auth.user === null) return "anonymous-ready";
+    return loadStatus;
   }
 
   return {
@@ -572,7 +830,20 @@ export function createDrillsStore(args: CreateDrillsStoreArgs) {
     },
 
     get migrationSkipped(): number {
-      return initial.skipped;
+      return migrationSkipped;
+    },
+
+    get loadStatus(): DrillsLoadStatus {
+      return getStatus();
+    },
+
+    get isSaving(): boolean {
+      return isSaving;
+    },
+
+    /** True when create/update/delete are currently disabled (auth-load-error). */
+    get mutationsDisabled(): boolean {
+      return getStatus() === "auth-load-error";
     },
 
     getById(id: string): Drill | undefined {
@@ -592,87 +863,50 @@ export function createDrillsStore(args: CreateDrillsStoreArgs) {
       return null;
     },
 
-    create(params: CreateDrillParams): Drill {
-      const now = new Date().toISOString();
-      const moduleIds = params.moduleIds.map(canonicalBundleId).filter((m) => m.length > 0);
-      if (moduleIds.length === 0) {
-        throw new Error("Drill requires at least one module");
+    create(params: CreateDrillParams): Promise<Drill> {
+      return createImpl(params);
+    },
+
+    update(id: string, patch: UpdateDrillParams): Promise<void> {
+      return updateImpl(id, patch);
+    },
+
+    rename(id: string, name: string): Promise<void> {
+      return updateImpl(id, { name });
+    },
+
+    delete(id: string): Promise<void> {
+      return deleteImpl(id);
+    },
+
+    markLaunched(id: string): Promise<void> {
+      return markLaunchedImpl(id);
+    },
+
+    /** Re-run hydration after an auth-load-error. Anonymous mode no-ops. */
+    refresh(): Promise<void> {
+      if (!args.auth?.user || !args.dataPort) {
+        return Promise.resolve();
       }
-      if (!isVulnerabilityDistribution(params.vulnerabilityDistribution)) {
-        throw new Error("Drill vulnerability distribution must have at least one non-zero weight");
-      }
-      const drill: Drill = {
-        id: generateId(),
-        name: params.name.trim(),
-        moduleIds,
-        practiceMode: params.practiceMode,
-        practiceRole: params.practiceRole,
-        systemSelectionId: params.systemSelectionId,
-        opponentMode: params.opponentMode,
-        playProfileId: params.playProfileId,
-        vulnerabilityDistribution: params.vulnerabilityDistribution,
-        showEducationalAnnotations: params.showEducationalAnnotations,
-        createdAt: now,
-        updatedAt: now,
-        lastUsedAt: null,
-      };
-      drills = sortMru([...drills, drill]);
-      save();
-      return drill;
+      authGeneration++;
+      return hydrateAuthenticated(authGeneration);
     },
 
-    update(id: string, patch: UpdateDrillParams): void {
-      const now = new Date().toISOString();
-      if (
-        patch.vulnerabilityDistribution !== undefined &&
-        !isVulnerabilityDistribution(patch.vulnerabilityDistribution)
-      ) {
-        throw new Error("Drill vulnerability distribution must have at least one non-zero weight");
-      }
-      drills = sortMru(
-        drills.map((d) => {
-          if (d.id !== id) return d;
-          return {
-            ...d,
-            ...(patch.name !== undefined ? { name: patch.name.trim() } : {}),
-            ...(patch.moduleIds !== undefined
-              ? { moduleIds: patch.moduleIds.map(canonicalBundleId).filter((m) => m.length > 0) }
-              : {}),
-            ...(patch.practiceMode !== undefined ? { practiceMode: patch.practiceMode } : {}),
-            ...(patch.practiceRole !== undefined ? { practiceRole: patch.practiceRole } : {}),
-            ...(patch.systemSelectionId !== undefined
-              ? { systemSelectionId: patch.systemSelectionId }
-              : {}),
-            ...(patch.opponentMode !== undefined ? { opponentMode: patch.opponentMode } : {}),
-            ...(patch.playProfileId !== undefined ? { playProfileId: patch.playProfileId } : {}),
-            ...(patch.vulnerabilityDistribution !== undefined
-              ? { vulnerabilityDistribution: patch.vulnerabilityDistribution }
-              : {}),
-            ...(patch.showEducationalAnnotations !== undefined
-              ? { showEducationalAnnotations: patch.showEducationalAnnotations }
-              : {}),
-            updatedAt: now,
-          };
-        }),
-      );
-      save();
+    /** Explicit anonymous-mode fallback (used by tests). */
+    _resetAnonymousForTests(): void {
+      authGeneration++;
+      lastUserId = null;
+      setAnonymousState();
     },
 
-    rename(id: string, name: string): void {
-      this.update(id, { name });
-    },
-
-    delete(id: string): void {
-      drills = drills.filter((d) => d.id !== id);
-      save();
-    },
-
-    markLaunched(id: string): void {
-      const now = new Date().toISOString();
-      drills = sortMru(
-        drills.map((d) => (d.id === id ? { ...d, lastUsedAt: now } : d)),
-      );
-      save();
+    /**
+     * Manually re-evaluate the auth handle. Production code uses the
+     * `$effect` set up at construction; tests with non-rune stubs call
+     * this to drive transitions.
+     */
+    _syncAuth(): void {
+      if (!args.auth) return;
+      onAuthChange(args.auth.user);
     },
   };
 }

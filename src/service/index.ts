@@ -130,8 +130,22 @@ export { slugifyMeaningId } from "./display/util/slugify-meaning-id";
 export { delay } from "./util/delay";
 
 // ── 8. Auth & Billing (DataPort) ───────────────────────────────────
-export { DataPortClient, DevDataPort, SubscriptionTier } from "./auth";
-export type { DataPort, AuthUser } from "./auth";
+export {
+  DataPortClient,
+  DevDataPort,
+  SubscriptionTier,
+  DrillEntitlementError,
+  DrillUnknownModuleError,
+  DrillNotFoundError,
+  DrillUnauthenticatedError,
+} from "./auth";
+export type {
+  DataPort,
+  AuthUser,
+  DrillDto,
+  DrillCreatePayload,
+  DrillUpdatePayload,
+} from "./auth";
 export { AuthRequiredError, SubscriptionRequiredError } from "./billing";
 export type { BillingPlan, DataPortBilling } from "./billing";
 

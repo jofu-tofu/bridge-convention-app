@@ -71,10 +71,10 @@ afterEach(() => {
 });
 
 describe("drills store", () => {
-  it("supports create, update, rename, markLaunched, and delete", () => {
+  it("supports create, update, rename, markLaunched, and delete", async () => {
     const store = createDrillsStore({ defaultSystemId: "sayc", seedFromPrefs: TEST_DRILL_SEED });
 
-    const created = store.create({
+    const created = await store.create({
       name: " Stayman practice ",
       moduleIds: ["nt-stayman"],
       practiceMode: PracticeMode.DecisionDrill,
@@ -87,7 +87,7 @@ describe("drills store", () => {
     expect(created.name).toBe("Stayman practice");
     expect(created.moduleIds).toEqual(["stayman-bundle"]);
 
-    store.update(created.id, {
+    await store.update(created.id, {
       name: "Transfers practice",
       moduleIds: ["nt-transfers"],
       practiceMode: PracticeMode.FullAuction,
@@ -105,13 +105,13 @@ describe("drills store", () => {
       systemSelectionId: "two-over-one",
     });
 
-    store.rename(created.id, "  Renamed drill  ");
+    await store.rename(created.id, "  Renamed drill  ");
     expect(store.getById(created.id)?.name).toBe("Renamed drill");
 
-    store.markLaunched(created.id);
+    await store.markLaunched(created.id);
     expect(store.getById(created.id)?.lastUsedAt).not.toBeNull();
 
-    store.delete(created.id);
+    await store.delete(created.id);
     expect(store.list()).toHaveLength(0);
   });
 
@@ -191,7 +191,7 @@ describe("drills store", () => {
 
   it("markLaunched updates lastUsedAt and moves the drill to the front", async () => {
     const store = createDrillsStore({ defaultSystemId: "sayc", seedFromPrefs: TEST_DRILL_SEED });
-    const first = store.create({
+    const first = await store.create({
       name: "First",
       moduleIds: ["stayman-bundle"],
       practiceMode: PracticeMode.DecisionDrill,
@@ -200,7 +200,7 @@ describe("drills store", () => {
       ...TEST_DRILL_TUNABLES,
     });
     await pause();
-    const second = store.create({
+    const second = await store.create({
       name: "Second",
       moduleIds: ["jacoby-transfers-bundle"],
       practiceMode: PracticeMode.DecisionDrill,
@@ -212,7 +212,7 @@ describe("drills store", () => {
     expect(store.list()[0]?.id).toBe(second.id);
 
     await pause();
-    store.markLaunched(first.id);
+    await store.markLaunched(first.id);
 
     expect(store.list()[0]?.id).toBe(first.id);
     expect(store.getById(first.id)?.lastUsedAt).not.toBeNull();
@@ -378,9 +378,9 @@ describe("drills store", () => {
     expect(persisted.drills[0]?.playProfileId).toBe("expert");
   });
 
-  it("create stores the four gameplay tunables and update mutates them", () => {
+  it("create stores the four gameplay tunables and update mutates them", async () => {
     const store = createDrillsStore({ defaultSystemId: "sayc", seedFromPrefs: TEST_DRILL_SEED });
-    const drill = store.create({
+    const drill = await store.create({
       name: "With tunables",
       moduleIds: ["stayman-bundle"],
       practiceMode: PracticeMode.DecisionDrill,
@@ -399,7 +399,7 @@ describe("drills store", () => {
       showEducationalAnnotations: false,
     });
 
-    store.update(drill.id, {
+    await store.update(drill.id, {
       opponentMode: OpponentMode.None,
       playProfileId: "world-class",
       vulnerabilityDistribution: { none: 0, ours: 0, theirs: 1, both: 1 },
@@ -414,9 +414,9 @@ describe("drills store", () => {
     });
   });
 
-  it("create rejects vulnerability distribution with all-zero weights", () => {
+  it("create rejects vulnerability distribution with all-zero weights", async () => {
     const store = createDrillsStore({ defaultSystemId: "sayc", seedFromPrefs: TEST_DRILL_SEED });
-    expect(() =>
+    await expect(
       store.create({
         name: "Bad vuln",
         moduleIds: ["stayman-bundle"],
@@ -426,6 +426,6 @@ describe("drills store", () => {
         ...TEST_DRILL_TUNABLES,
         vulnerabilityDistribution: { none: 0, ours: 0, theirs: 0, both: 0 },
       }),
-    ).toThrow(/non-zero/);
+    ).rejects.toThrow(/non-zero/);
   });
 });

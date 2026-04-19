@@ -26,6 +26,71 @@ export enum SubscriptionTier {
   Expired = "expired",
 }
 
+/** Wire-shape of a server-persisted drill record. Mirrors `Drill` in `src/stores/drills.svelte.ts`. */
+export interface DrillDto {
+  id: string;
+  name: string;
+  moduleIds: string[];
+  practiceMode: string;
+  practiceRole: string;
+  systemSelectionId: string;
+  opponentMode: string;
+  playProfileId: string;
+  vulnerabilityDistribution: { none: number; ours: number; theirs: number; both: number };
+  showEducationalAnnotations: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastUsedAt: string | null;
+}
+
+export interface DrillCreatePayload {
+  /** Optional client-supplied id; server assigns one when omitted. */
+  id?: string;
+  name: string;
+  moduleIds: string[];
+  practiceMode: string;
+  practiceRole: string;
+  systemSelectionId: string;
+  opponentMode: string;
+  playProfileId: string;
+  vulnerabilityDistribution: { none: number; ours: number; theirs: number; both: number };
+  showEducationalAnnotations: boolean;
+}
+
+export type DrillUpdatePayload = DrillCreatePayload;
+
+export class DrillEntitlementError extends Error {
+  readonly kind = "convention_locked" as const;
+  constructor(public readonly blockedModuleIds: string[]) {
+    super(`Convention locked: ${blockedModuleIds.join(", ")}`);
+    this.name = "DrillEntitlementError";
+  }
+}
+
+export class DrillUnknownModuleError extends Error {
+  readonly kind = "unknown_module" as const;
+  constructor(public readonly moduleIds: string[]) {
+    super(`Unknown module: ${moduleIds.join(", ")}`);
+    this.name = "DrillUnknownModuleError";
+  }
+}
+
+export class DrillNotFoundError extends Error {
+  readonly kind = "not_found" as const;
+  constructor() {
+    super("Drill not found");
+    this.name = "DrillNotFoundError";
+  }
+}
+
+export class DrillUnauthenticatedError extends Error {
+  readonly kind = "unauthenticated" as const;
+  constructor() {
+    super("Not signed in");
+    this.name = "DrillUnauthenticatedError";
+  }
+}
+
 /**
  * Client-side DataPort interface — the boundary between UI/stores and the
  * bridge-api server. Auth, billing, entitlements, progress sync, etc.
@@ -36,6 +101,12 @@ export interface DataPort extends DataPortBilling {
   logout(): Promise<void>;
   /** Dev-only: re-authenticate as the dev user without OAuth. Only set on DevDataPort. */
   devLogin?(): Promise<void>;
+
+  listDrills(): Promise<DrillDto[]>;
+  createDrill(payload: DrillCreatePayload): Promise<DrillDto>;
+  updateDrill(id: string, payload: DrillUpdatePayload): Promise<DrillDto>;
+  deleteDrill(id: string): Promise<void>;
+  markDrillLaunched(id: string): Promise<DrillDto>;
 }
 
 async function parseJsonResponse<T>(response: Response): Promise<T> {
@@ -105,6 +176,80 @@ export class DataPortClient implements DataPort {
 
     return parseJsonResponse<unknown>(response);
   }
+
+  async listDrills(): Promise<DrillDto[]> {
+    const response = await fetch("/api/drills", { credentials: "same-origin" });
+    await throwTypedDrillError(response);
+    const body = (await response.json()) as { drills: DrillDto[] };
+    return body.drills;
+  }
+
+  async createDrill(payload: DrillCreatePayload): Promise<DrillDto> {
+    const response = await fetch("/api/drills", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    await throwTypedDrillError(response);
+    const body = (await response.json()) as { drill: DrillDto };
+    return body.drill;
+  }
+
+  async updateDrill(id: string, payload: DrillUpdatePayload): Promise<DrillDto> {
+    const response = await fetch(`/api/drills/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    await throwTypedDrillError(response);
+    const body = (await response.json()) as { drill: DrillDto };
+    return body.drill;
+  }
+
+  async deleteDrill(id: string): Promise<void> {
+    const response = await fetch(`/api/drills/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      credentials: "same-origin",
+    });
+    await throwTypedDrillError(response);
+  }
+
+  async markDrillLaunched(id: string): Promise<DrillDto> {
+    const response = await fetch(`/api/drills/${encodeURIComponent(id)}/launched`, {
+      method: "POST",
+      credentials: "same-origin",
+    });
+    await throwTypedDrillError(response);
+    const body = (await response.json()) as { drill: DrillDto };
+    return body.drill;
+  }
+}
+
+interface ServerErrorBody {
+  error?: string;
+  blocked_module_ids?: string[];
+  module_ids?: string[];
+}
+
+async function throwTypedDrillError(response: Response): Promise<void> {
+  if (response.ok || response.status === 204) return;
+  let body: ServerErrorBody = {};
+  try {
+    body = (await response.clone().json()) as ServerErrorBody;
+  } catch {
+    /* fall through to generic error */
+  }
+  if (response.status === 401) throw new DrillUnauthenticatedError();
+  if (response.status === 404) throw new DrillNotFoundError();
+  if (response.status === 403 && body.error === "convention_locked") {
+    throw new DrillEntitlementError(body.blocked_module_ids ?? []);
+  }
+  if (response.status === 400 && body.error === "unknown_module") {
+    throw new DrillUnknownModuleError(body.module_ids ?? []);
+  }
+  throw new Error(`Drill request failed (${response.status})`);
 }
 
 /**
@@ -192,5 +337,25 @@ export class DevDataPort implements DataPort {
 
   fetchConventionDefinition(bundleId: string): Promise<unknown> {
     return this.inner.fetchConventionDefinition(bundleId);
+  }
+
+  listDrills(): Promise<DrillDto[]> {
+    return this.inner.listDrills();
+  }
+
+  createDrill(payload: DrillCreatePayload): Promise<DrillDto> {
+    return this.inner.createDrill(payload);
+  }
+
+  updateDrill(id: string, payload: DrillUpdatePayload): Promise<DrillDto> {
+    return this.inner.updateDrill(id, payload);
+  }
+
+  deleteDrill(id: string): Promise<void> {
+    return this.inner.deleteDrill(id);
+  }
+
+  markDrillLaunched(id: string): Promise<DrillDto> {
+    return this.inner.markDrillLaunched(id);
   }
 }

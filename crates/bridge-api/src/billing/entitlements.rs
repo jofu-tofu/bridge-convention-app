@@ -2,7 +2,6 @@
 // Core SAYC base-system bundles (Stayman, Jacoby Transfers, Smolen, Strong 2C,
 // Weak Twos, Blackwood) are free. Optional add-on conventions (Bergen, DONT,
 // Michaels, Negative Doubles, NMF) remain paid.
-#[allow(dead_code)]
 pub const FREE_BUNDLE_IDS: &[&str] = &[
     "nt-bundle",
     "stayman-bundle",

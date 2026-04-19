@@ -7,6 +7,7 @@
     selectedBidStep: number | null;
     onSelectBidStep: (step: number | null) => void;
     totalBids: number;
+    showEducationalAnnotations?: boolean;
   }
 
   const {
@@ -14,6 +15,7 @@
     selectedBidStep,
     onSelectBidStep,
     totalBids,
+    showEducationalAnnotations = true,
   }: Props = $props();
 
   const isStepping = $derived(selectedBidStep !== null);
@@ -140,6 +142,7 @@
     visibleUpTo={selectedBidStep}
     highlightIndex={selectedBidStep !== null && selectedBidStep > 0 ? selectedBidStep - 1 : null}
     onBidClick={handleBidClick}
+    {showEducationalAnnotations}
   />
 </div>
 

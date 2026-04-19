@@ -106,7 +106,7 @@ describe("DrillForm", () => {
     const appStore = createAppStore();
     const customSystemsStore = createCustomSystemsStore();
     const drillsStore = createDrillsStore({ defaultSystemId: "sayc", seedFromPrefs: TEST_DRILL_SEED });
-    const drill = drillsStore.create({
+    const drill = await drillsStore.create({
       name: "Original drill",
       moduleIds: [firstConvention!.id],
       practiceMode: PracticeMode.DecisionDrill,

@@ -172,6 +172,21 @@ crates/
                        for container build. Optional `dev-tools` cargo feature mounts
                        `/api/dev/login` and swaps `LiveStripeOps` for an in-process mock;
                        absent from release builds, intended for Playwright e2e only.
+                       **`drills/` module:** auth-required CRUD on user-owned drills
+                       (`GET/POST /api/drills`, `PUT/DELETE /api/drills/:id`,
+                       `POST /api/drills/:id/launched`). Soft delete via `deleted_at`. Per-request
+                       entitlement gate against `billing::entitlements::FREE_BUNDLE_IDS`; PUT only
+                       gates modules being **added**, never modules already on the stored drill.
+                       Server validates `moduleId`s against a hardcoded `KNOWN_BUNDLE_IDS` /
+                       `KNOWN_MODULE_IDS` set in `drills/entitlement.rs` — the server does NOT
+                       mirror the TS `canonicalBundleId` alias map; non-canonical legacy IDs
+                       return 400 `unknown_module`. Schema in
+                       `migrations/004_user_drills.sql` (table `user_drills` + child
+                       `user_drill_modules`); `vulnerability_distribution` is a JSON TEXT column
+                       pinned to v1 by `vulnerability_distribution_version`.
+                       Parity test `tests/entitlement_parity.rs` regex-parses
+                       `src/stores/entitlements.ts` to assert TS `FREE_PRACTICE_BUNDLES` set
+                       equals Rust `FREE_BUNDLE_IDS` — CI-only textual check, no runtime call.
   bridge-static/       Static data extractor — outputs convention JSON for build-time
                        HTML generation. Thin binary that calls bridge-session viewport
                        builders — MUST NOT contain convention logic or data.

@@ -5,6 +5,7 @@ pub mod conventions;
 pub mod db;
 #[cfg(feature = "dev-tools")]
 pub mod dev;
+pub mod drills;
 pub mod error;
 pub mod test_support;
 pub mod user;
@@ -62,14 +63,21 @@ pub fn app(state: AppState) -> Router {
     let cors = CorsLayer::new()
         .allow_origin(AllowOrigin::list(origins))
         .allow_credentials(true)
-        .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::OPTIONS])
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS,
+        ])
         .allow_headers([header::CONTENT_TYPE, header::COOKIE, header::AUTHORIZATION]);
 
     let router = Router::new()
         .route("/api/health", get(health))
         .merge(auth::auth_routes())
         .merge(billing::billing_routes())
-        .merge(conventions::conventions_routes());
+        .merge(conventions::conventions_routes())
+        .merge(drills::routes());
 
     #[cfg(feature = "dev-tools")]
     let router = router.merge(dev::dev_routes());

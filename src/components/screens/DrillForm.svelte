@@ -10,7 +10,9 @@
     listConventions,
   } from "../../service";
   import type { ConventionInfo, PlayProfileId, SystemSelectionId, VulnerabilityDistribution } from "../../service";
-  import { getAppStore, getCustomSystemsStore, getDrillsStore } from "../../stores/context";
+  import { DrillEntitlementError } from "../../service";
+  import { getAppStore, getAuthStoreOptional, getCustomSystemsStore, getDrillsStore } from "../../stores/context";
+  import { canPractice } from "../../stores/entitlements";
   import { DRILL_NAME_MAX } from "../../stores/drills.svelte";
   import type { Drill, DrillPracticeRole } from "../../stores/drills.svelte";
   import SectionHeader from "../shared/SectionHeader.svelte";
@@ -28,7 +30,17 @@
   const appStore = getAppStore();
   const customSystems = getCustomSystemsStore();
   const drillsStore = getDrillsStore();
+  const authStore = getAuthStoreOptional();
   const allConventions = listConventions();
+
+  function isLocked(moduleId: string): boolean {
+    return !canPractice(authStore?.user ?? null, moduleId);
+  }
+
+  function conventionDisplay(moduleId: string): string {
+    const match = allConventions.find((c) => c.id === moduleId);
+    return match ? displayConventionName(match.name) : moduleId;
+  }
 
   const availableConventionIds = new Set(allConventions.map((convention) => convention.id));
   const initialModuleIds =
@@ -66,6 +78,8 @@
   let nameError = $state<string | null>(null);
   let selectionError = $state<string | null>(null);
   let vulnError = $state<string | null>(null);
+  let entitlementError = $state<string[] | null>(null);
+  let saving = $state(false);
 
   const selectedConventions = $derived(
     selectedModuleIds
@@ -144,14 +158,36 @@
     vulnError = isValidVulnDistribution(vulnerabilityDistribution)
       ? null
       : "Pick at least one vulnerability state";
+    const lockedSelected = selectedModuleIds.filter(isLocked);
+    if (lockedSelected.length > 0) {
+      entitlementError = lockedSelected;
+      return false;
+    }
+    entitlementError = null;
     return !nextNameError && !selectionError && !vulnError;
   }
 
-  function persistDrill(): Drill | null {
+  async function persistDrill(): Promise<Drill | null> {
     if (!validateForm()) return null;
 
-    if (mode === "edit" && drill) {
-      drillsStore.update(drill.id, {
+    saving = true;
+    try {
+      if (mode === "edit" && drill) {
+        await drillsStore.update(drill.id, {
+          name,
+          moduleIds: selectedModuleIds,
+          practiceMode,
+          practiceRole,
+          systemSelectionId,
+          opponentMode,
+          playProfileId,
+          vulnerabilityDistribution,
+          showEducationalAnnotations,
+        });
+        return drillsStore.getById(drill.id) ?? null;
+      }
+
+      return await drillsStore.create({
         name,
         moduleIds: selectedModuleIds,
         practiceMode,
@@ -162,30 +198,25 @@
         vulnerabilityDistribution,
         showEducationalAnnotations,
       });
-      return drillsStore.getById(drill.id) ?? null;
+    } catch (err) {
+      if (err instanceof DrillEntitlementError) {
+        entitlementError = err.blockedModuleIds;
+        return null;
+      }
+      throw err;
+    } finally {
+      saving = false;
     }
-
-    return drillsStore.create({
-      name,
-      moduleIds: selectedModuleIds,
-      practiceMode,
-      practiceRole,
-      systemSelectionId,
-      opponentMode,
-      playProfileId,
-      vulnerabilityDistribution,
-      showEducationalAnnotations,
-    });
   }
 
   async function saveOnly(): Promise<void> {
-    const saved = persistDrill();
+    const saved = await persistDrill();
     if (!saved) return;
     await goto("/practice/drills");
   }
 
   async function saveAndLaunch(): Promise<void> {
-    const saved = persistDrill();
+    const saved = await persistDrill();
     if (!saved) return;
 
     const firstConvention = allConventions.find((convention) => convention.id === saved.moduleIds[0]);
@@ -208,7 +239,7 @@
       },
       allConventions,
     );
-    drillsStore.markLaunched(saved.id);
+    void drillsStore.markLaunched(saved.id);
     await goto("/game");
   }
 
@@ -277,24 +308,47 @@
     <div class="grid gap-2 sm:grid-cols-2">
       {#each allConventions as convention (convention.id)}
         {@const selected = selectedModuleIds.includes(convention.id)}
+        {@const locked = isLocked(convention.id)}
         <button
           type="button"
+          disabled={locked && !selected}
           class="rounded-[--radius-md] border px-3 py-2 text-left transition-colors cursor-pointer
-            {selected
-              ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
-              : 'border-border-subtle bg-bg-base text-text-primary hover:border-border-default'}"
-          onclick={() => toggleConvention(convention.id)}
+            {locked && !selected
+              ? 'opacity-60 cursor-not-allowed border-border-subtle bg-bg-base text-text-muted'
+              : selected
+                ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
+                : 'border-border-subtle bg-bg-base text-text-primary hover:border-border-default'}"
+          onclick={() => { if (!locked || selected) toggleConvention(convention.id); }}
           data-testid="drill-form-convention-{convention.id}"
           aria-pressed={selected}
         >
-          <span class="block text-sm font-medium">{displayConventionName(convention.name)}</span>
+          <span class="block text-sm font-medium">
+            {displayConventionName(convention.name)}
+            {#if locked}
+              <span class="ml-1 text-[10px] uppercase tracking-wide text-text-muted">Locked</span>
+            {/if}
+          </span>
           <span class="mt-0.5 block text-xs text-text-muted">{convention.description}</span>
+          {#if locked}
+            <a
+              href="/billing/pricing"
+              class="mt-1 inline-block text-xs font-medium text-accent-primary underline hover:text-accent-primary-hover"
+              onclick={(event) => event.stopPropagation()}
+            >
+              Subscribe to unlock
+            </a>
+          {/if}
         </button>
       {/each}
     </div>
 
     {#if selectionError}
       <p class="text-xs text-red-400" role="alert">{selectionError}</p>
+    {/if}
+    {#if entitlementError}
+      <p class="text-xs text-red-400" role="alert">
+        Subscribe to add: {entitlementError.map(conventionDisplay).join(", ")}
+      </p>
     {/if}
   </div>
 
@@ -414,19 +468,21 @@
     </button>
     <button
       type="button"
-      class="rounded-[--radius-md] border border-border-subtle px-3 py-1.5 text-sm font-medium text-text-primary hover:border-border-default cursor-pointer"
+      disabled={saving || drillsStore.mutationsDisabled}
+      class="rounded-[--radius-md] border border-border-subtle px-3 py-1.5 text-sm font-medium text-text-primary hover:border-border-default cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
       onclick={() => void saveOnly()}
       data-testid="drill-form-save"
     >
-      Save
+      {saving ? "Saving…" : "Save"}
     </button>
     <button
       type="button"
-      class="rounded-[--radius-md] bg-accent-primary px-3 py-1.5 text-sm font-medium text-text-on-accent hover:bg-accent-primary-hover cursor-pointer"
+      disabled={saving || drillsStore.mutationsDisabled}
+      class="rounded-[--radius-md] bg-accent-primary px-3 py-1.5 text-sm font-medium text-text-on-accent hover:bg-accent-primary-hover cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
       onclick={() => void saveAndLaunch()}
       data-testid="drill-form-save-launch"
     >
-      Save &amp; Launch
+      {saving ? "Saving…" : "Save & Launch"}
     </button>
   </div>
 </form>

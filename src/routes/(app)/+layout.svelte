@@ -9,7 +9,7 @@
   import { createCustomSystemsStore } from "../../stores/custom-systems.svelte";
   import { createUserModuleStore } from "../../stores/user-modules.svelte";
   import { createDrillsStore } from "../../stores/drills.svelte";
-  import { getAuthStore } from "../../stores/context";
+  import { getAuthStore, getDataPort } from "../../stores/context";
   import AppShell from "../../components/navigation/AppShell.svelte";
   import AppReady from "../../AppReady.svelte";
 
@@ -24,6 +24,7 @@
   let userModuleStore = $state<ReturnType<typeof createUserModuleStore> | null>(null);
   let drillsStore = $state<ReturnType<typeof createDrillsStore> | null>(null);
   const authStore = getAuthStore();
+  const dataPort = getDataPort();
 
   function readDefaultSystemId(): SystemSelectionId {
     try {
@@ -67,6 +68,8 @@
             vulnerabilityDistribution: drillSettings.tuning.vulnerabilityDistribution,
             showEducationalAnnotations: store.displaySettings.showEducationalAnnotations,
           },
+          auth: authStore,
+          dataPort,
         });
         // Validate stored custom system selection still exists
         if (!customSystemsStore.isValidSelection(store.baseSystemId)) {

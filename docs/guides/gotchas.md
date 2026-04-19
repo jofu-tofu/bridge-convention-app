@@ -219,3 +219,24 @@ transition pattern(s) that expect to advance on it. `Open` and `Raise` have no
 `feature` field — transitions like `{act: "open", feature: "strength"}` are
 unmatchable and must be rewritten to `{act: "open", strain: "..."}` or split
 into multiple actions.
+
+
+## Drills (server-side persistence)
+
+### Canonical bundle IDs: client canonicalizes, server rejects non-canonical
+The TS client runs `canonicalBundleId()` (`src/stores/bundle-id-migration.ts`) on every
+moduleId before saving a drill — so legacy aliases like `nt-stayman` get rewritten to
+`stayman-bundle`. The Rust server does **NOT** mirror this alias map; it validates each
+moduleId against `KNOWN_BUNDLE_IDS` / `KNOWN_MODULE_IDS` in
+`crates/bridge-api/src/drills/entitlement.rs` and returns 400
+`{"error":"unknown_module","module_ids":[...]}` on unknown input. If you see
+`unknown_module` 400s in production, the migration layer has a hole — fix
+`canonicalBundleId` rather than adding aliases to the Rust set.
+
+### Downgraded-user PUT delta rule: only added modules trigger the gate
+`PUT /api/drills/:id` only entitlement-checks moduleIds present in the request but absent
+from the stored drill. Renames, tuning edits, and removing paid modules from a downgraded
+user's drill all succeed. Adding a new paid module returns 403 `convention_locked`. This
+prevents free users from being locked out of their own data after a downgrade — they keep
+their drills (now flagged "Locked" in the list, un-launchable) and can still edit them as
+long as they don't expand the paid surface.

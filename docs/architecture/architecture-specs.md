@@ -97,3 +97,33 @@ This is the current shipped boundary. The factor-graph/query-port redesign descr
 - Multi-system support is wired end-to-end. The backend accepts full `SystemConfig`, and the UI exposes system selection in settings/workshop flows.
 - Activation traces exist and are populated from matched surfaces in the protocol adapter.
 - Host attachments exist in the module and agreement types; the remaining work is adoption/exercise, not missing infrastructure.
+
+## User-drill server persistence (2026-04)
+
+Drills authored by signed-in users are persisted server-side via `bridge-api`'s
+`drills/` module (`/api/drills*`). Anonymous (signed-out) users still keep drills in
+`localStorage` only.
+
+**No-merge account model (Type 1 decision).** Signed-out localStorage drills and signed-in
+DB drills are kept as separate accounts with no merge path. On first sign-in, the drills
+list shows whatever the server returned (fresh empty list for new users); a one-time
+dismissable info banner ("You have drills saved on this device — sign out to access them")
+points the user at the local drills. Anonymous data is preserved on the device, so a
+future merge path still has data to work with if we change our minds. The merge path was
+rejected because of ID-collision edge cases and unsubscribe/resubscribe ambiguity; see
+the active plan in
+`_output/contexts/260418-0732-figure-saved-database-users-editing-browser-local-st/plans/`.
+
+**Soft delete (Type 1 decision).** `DELETE /api/drills/:id` sets `deleted_at` instead of
+physically removing rows. List/read queries filter `WHERE deleted_at IS NULL`. Idempotent
+on already-deleted drills (returns 204). Background hard-purge of soft-deleted rows is
+deferred until either a user-facing Trash UI or a retention-policy product decision
+arrives — whichever comes first.
+
+**Entitlement parity test.** TS `FREE_PRACTICE_BUNDLES` (`src/stores/entitlements.ts`)
+and Rust `FREE_BUNDLE_IDS` (`crates/bridge-api/src/billing/entitlements.rs`) are kept in
+lockstep by the integration test
+`crates/bridge-api/tests/entitlement_parity.rs`, which regex-parses the TS file at test
+time and asserts set equality. CI-only textual check; no runtime cross-layer call. A
+future refactor could generate one from the other at build time, but is out of scope for
+this pass.

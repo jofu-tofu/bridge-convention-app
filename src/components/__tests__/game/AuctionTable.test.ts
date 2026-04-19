@@ -34,7 +34,9 @@ describe("AuctionTable", () => {
     });
     const cells = container.querySelectorAll("td");
     expect(cells[0]?.textContent).toContain("1NT");
-    expect(cells[1]?.textContent).toContain("Pass");
+    // "Pass" abbreviates to "P" in the boxed rendering
+    expect(cells[1]?.textContent?.trim()).toContain("P");
+    expect(cells[1]?.textContent).not.toContain("Pass");
     expect(cells[2]?.textContent).toContain("2\u2663");
   });
 
@@ -48,7 +50,7 @@ describe("AuctionTable", () => {
     const cells = container.querySelectorAll("td");
     expect(cells[0]?.textContent).toContain("\u2014");
     expect(cells[1]?.textContent).toContain("\u2014");
-    expect(cells[2]?.textContent).toContain("Pass");
+    expect(cells[2]?.textContent?.trim()).toContain("P");
   });
 
   it("applies suit color classes to bid cells", () => {
@@ -61,11 +63,11 @@ describe("AuctionTable", () => {
     const { container } = render(AuctionTable, {
       props: { entries, dealer: Seat.North },
     });
-    const cells = container.querySelectorAll("td");
-    expect(cells[0]?.className).toContain("text-suit-hearts");
+    const box = container.querySelector("[data-bid-box]");
+    expect(box?.className).toContain("text-suit-hearts");
   });
 
-  it("renders tooltip for alertable bids with meaning", () => {
+  it("renders corner badge with announce type for alertable bids", () => {
     const entries: AuctionEntry[] = [
       { seat: Seat.North, call: { type: "bid", level: 1, strain: BidSuit.NoTrump } },
     ];
@@ -83,12 +85,17 @@ describe("AuctionTable", () => {
     const { container } = render(AuctionTable, {
       props: { entries, dealer: Seat.North, bidHistory },
     });
-    const tooltip = container.querySelector("[role='tooltip']");
+    const badge = container.querySelector("[data-bid-badge][data-annotation-type='announce']");
+    expect(badge).not.toBeNull();
+    // Popover content renders with alertLabel + publicConditions
+    const tooltip = badge?.querySelector("[role='tooltip']");
     expect(tooltip).not.toBeNull();
+    expect(tooltip?.textContent).toContain("15 to 17");
     expect(tooltip?.textContent).toContain("15-17 HCP");
+    expect(tooltip?.textContent).toContain("Balanced");
   });
 
-  it("does not render tooltip for educational annotations", () => {
+  it("hides educational badges when showEducationalAnnotations is false", () => {
     const entries: AuctionEntry[] = [
       { seat: Seat.North, call: { type: "bid", level: 2, strain: BidSuit.Clubs } },
     ];
@@ -103,13 +110,53 @@ describe("AuctionTable", () => {
       },
     ];
     const { container } = render(AuctionTable, {
-      props: { entries, dealer: Seat.North, bidHistory },
+      props: { entries, dealer: Seat.North, bidHistory, showEducationalAnnotations: false },
     });
-    const tooltip = container.querySelector("[role='tooltip']");
-    expect(tooltip).toBeNull();
+    const badge = container.querySelector("td [data-bid-badge]");
+    expect(badge).toBeNull();
   });
 
-  it("does not render tooltip for bids without meaning", () => {
+  it("shows educational badges when showEducationalAnnotations is true", () => {
+    const entries: AuctionEntry[] = [
+      { seat: Seat.North, call: { type: "bid", level: 2, strain: BidSuit.Clubs } },
+    ];
+    const bidHistory: BidHistoryEntry[] = [
+      {
+        seat: Seat.North,
+        call: { type: "bid", level: 2, strain: BidSuit.Clubs },
+        isUser: false,
+        meaning: "Stayman",
+        alertLabel: "Asking for majors",
+        annotationType: "educational",
+      },
+    ];
+    const { container } = render(AuctionTable, {
+      props: { entries, dealer: Seat.North, bidHistory, showEducationalAnnotations: true },
+    });
+    const badge = container.querySelector("td [data-bid-badge][data-annotation-type='educational']");
+    expect(badge).not.toBeNull();
+  });
+
+  it("does not render badge for bids without alertLabel", () => {
+    const entries: AuctionEntry[] = [
+      { seat: Seat.North, call: { type: "bid", level: 1, strain: BidSuit.NoTrump } },
+    ];
+    const bidHistory: BidHistoryEntry[] = [
+      {
+        seat: Seat.North,
+        call: { type: "bid", level: 1, strain: BidSuit.NoTrump },
+        isUser: false,
+        annotationType: "announce",
+      },
+    ];
+    const { container } = render(AuctionTable, {
+      props: { entries, dealer: Seat.North, bidHistory },
+    });
+    const badge = container.querySelector("td [data-bid-badge]");
+    expect(badge).toBeNull();
+  });
+
+  it("renders badge in minimal mode when annotation present", () => {
     const entries: AuctionEntry[] = [
       { seat: Seat.North, call: { type: "bid", level: 1, strain: BidSuit.NoTrump } },
     ];
@@ -120,13 +167,14 @@ describe("AuctionTable", () => {
         isUser: false,
         alertLabel: "15 to 17",
         annotationType: "announce",
+        publicConditions: ["15-17 HCP"],
       },
     ];
     const { container } = render(AuctionTable, {
-      props: { entries, dealer: Seat.North, bidHistory },
+      props: { entries, dealer: Seat.North, bidHistory, minimal: true },
     });
-    const tooltip = container.querySelector("[role='tooltip']");
-    expect(tooltip).toBeNull();
+    const badge = container.querySelector("td [data-bid-badge][data-annotation-type='announce']");
+    expect(badge).not.toBeNull();
   });
 
   it("handles compact mode", () => {

@@ -126,18 +126,41 @@
           <p class="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-2">{category.name}</p>
           <div class="space-y-2">
             {#each category.items as item (item.id)}
-              <ItemCard
-                onclick={() => handleSelect(item.id)}
-                testId="creation-picker-item-{item.id}"
-              >
-                <p class="font-semibold text-text-primary text-sm">{item.label}</p>
-                {#if item.description}
-                  <p class="text-xs text-text-secondary mt-0.5">{item.description}</p>
-                {/if}
-                {#if item.detail}
-                  <p class="text-xs text-text-muted mt-0.5">{item.detail}</p>
-                {/if}
-              </ItemCard>
+              {#if item.locked}
+                <ItemCard
+                  interactive={false}
+                  testId="creation-picker-item-{item.id}"
+                  class="opacity-60"
+                >
+                  <p class="font-semibold text-text-muted text-sm">{item.label}</p>
+                  {#if item.description}
+                    <p class="text-xs text-text-muted mt-0.5">{item.description}</p>
+                  {/if}
+                  {#if item.detail}
+                    <p class="text-xs text-text-muted mt-0.5">{item.detail}</p>
+                  {/if}
+                  <a
+                    href="/billing/pricing"
+                    class="mt-1 inline-block text-xs font-medium text-accent-primary underline hover:text-accent-primary-hover"
+                    data-testid="creation-picker-unlock-{item.id}"
+                  >
+                    Subscribe to unlock
+                  </a>
+                </ItemCard>
+              {:else}
+                <ItemCard
+                  onclick={() => handleSelect(item.id)}
+                  testId="creation-picker-item-{item.id}"
+                >
+                  <p class="font-semibold text-text-primary text-sm">{item.label}</p>
+                  {#if item.description}
+                    <p class="text-xs text-text-secondary mt-0.5">{item.description}</p>
+                  {/if}
+                  {#if item.detail}
+                    <p class="text-xs text-text-muted mt-0.5">{item.detail}</p>
+                  {/if}
+                </ItemCard>
+              {/if}
             {/each}
           </div>
         </div>

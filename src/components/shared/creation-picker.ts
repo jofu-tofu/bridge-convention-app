@@ -12,6 +12,8 @@ export interface PickerItem {
   label: string;
   description?: string;
   detail?: string;
+  /** When true, the item renders greyed-out and non-interactive with an upgrade link. */
+  locked?: boolean;
 }
 
 export interface PickerCategory {
