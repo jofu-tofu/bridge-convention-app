@@ -30,12 +30,12 @@
     "competitive": true
   },
   "fixtureVersion": 1,
-  "description": "After partner opens 1-of-a-suit and the opponent overcalls, responder's double is conventional — showing values and unbid suits rather than penalty. Opener rebids after `after-neg-dbl` are synthesized at load time in `crates/bridge-conventions/src/registry/module_registry.rs`.",
+  "description": "After partner opens 1-of-a-suit and the opponent overcalls, responder's double is conventional \u2014 showing values and unbid suits rather than penalty. Opener rebids after `after-neg-dbl` are synthesized at load time in `crates/bridge-conventions/src/registry/module_registry.rs`.",
   "purpose": "Keep the bidding alive when opponents overcall, showing the unbid suits (especially majors) that a natural response would have shown",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/negative-doubles",
-      "label": "Larry Cohen — authoritative on modern negative double practice and level-dependent thresholds"
+      "label": "Larry Cohen \u2014 authoritative on modern negative double practice and level-dependent thresholds"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/negative_double.php"
@@ -59,7 +59,7 @@
       },
       {
         "text": "Do not assume every negative double shows both majors.",
-        "reason": "Promises vary by auction; for example, after 1♥-(1♠) the negative double typically shows the minors rather than an unbid major."
+        "reason": "Promises vary by auction; for example, after 1\u2665-(1\u2660) the negative double typically shows the minors rather than an unbid major."
       }
     ]
   },
@@ -72,7 +72,10 @@
       "contrastiveTemplateKey": "negdbl.minHcp1Level.whyNot",
       "contrastiveDisplayText": "Fewer than 6 HCP for 1-level double",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "negdbl.minHcp2Level",
@@ -82,7 +85,10 @@
       "contrastiveTemplateKey": "negdbl.minHcp2Level.whyNot",
       "contrastiveDisplayText": "Fewer than 9 HCP for 2-level double",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "negdbl.has4Hearts",
@@ -92,7 +98,10 @@
       "contrastiveTemplateKey": "negdbl.has4Hearts.whyNot",
       "contrastiveDisplayText": "Fewer than 4 hearts",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "negdbl.has4Spades",
@@ -102,7 +111,10 @@
       "contrastiveTemplateKey": "negdbl.has4Spades.whyNot",
       "contrastiveDisplayText": "Fewer than 4 spades",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "negdbl.has4Major",
@@ -112,7 +124,10 @@
       "contrastiveTemplateKey": "negdbl.has4Major.whyNot",
       "contrastiveDisplayText": "No 4-card major",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "negdbl.stub.partnerOpens1c",
@@ -152,7 +167,9 @@
       "templateKey": "negdbl.double.after1c1d.semantic",
       "displayText": "Double: Shows both majors over 1D overcall of 1C",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1c1h",
@@ -160,7 +177,9 @@
       "templateKey": "negdbl.double.after1c1h.semantic",
       "displayText": "Double: Shows 4+ spades over 1H overcall of 1C",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1c1s",
@@ -168,7 +187,9 @@
       "templateKey": "negdbl.double.after1c1s.semantic",
       "displayText": "Double: Shows 4+ hearts over 1S overcall of 1C",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1c2d",
@@ -176,7 +197,9 @@
       "templateKey": "negdbl.double.after1c2d.semantic",
       "displayText": "Double: Shows at least one major over 2D overcall of 1C",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1c2h",
@@ -184,7 +207,9 @@
       "templateKey": "negdbl.double.after1c2h.semantic",
       "displayText": "Double: Shows exactly 4 spades over 2H overcall of 1C",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1c2s",
@@ -192,7 +217,9 @@
       "templateKey": "negdbl.double.after1c2s.semantic",
       "displayText": "Double: Shows 4+ hearts over 2S overcall of 1C",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1d1h",
@@ -200,7 +227,9 @@
       "templateKey": "negdbl.double.after1d1h.semantic",
       "displayText": "Double: Shows 4+ spades over 1H overcall of 1D",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1d1s",
@@ -208,7 +237,9 @@
       "templateKey": "negdbl.double.after1d1s.semantic",
       "displayText": "Double: Shows 4+ hearts over 1S overcall of 1D",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1d2c",
@@ -216,7 +247,9 @@
       "templateKey": "negdbl.double.after1d2c.semantic",
       "displayText": "Double: Shows at least one major over 2C overcall of 1D",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1d2h",
@@ -224,7 +257,9 @@
       "templateKey": "negdbl.double.after1d2h.semantic",
       "displayText": "Double: Shows 4 spades with 6+ points or 5+ spades with 6-9 points over 2H overcall of 1D",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1d2s",
@@ -232,7 +267,9 @@
       "templateKey": "negdbl.double.after1d2s.semantic",
       "displayText": "Double: Shows 4+ hearts over 2S overcall of 1D",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1h1s",
@@ -240,7 +277,9 @@
       "templateKey": "negdbl.double.after1h1s.semantic",
       "displayText": "Double: Shows minors over 1S overcall of 1H",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1h2c",
@@ -248,7 +287,9 @@
       "templateKey": "negdbl.double.after1h2c.semantic",
       "displayText": "Double: Shows 4+ spades over 2C overcall of 1H",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1h2d",
@@ -256,7 +297,9 @@
       "templateKey": "negdbl.double.after1h2d.semantic",
       "displayText": "Double: Shows 4+ spades over 2D overcall of 1H",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1h2s",
@@ -264,7 +307,9 @@
       "templateKey": "negdbl.double.after1h2s.semantic",
       "displayText": "Double: Shows minors without 3-card heart support over 2S overcall of 1H",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1s2c",
@@ -272,7 +317,9 @@
       "templateKey": "negdbl.double.after1s2c.semantic",
       "displayText": "Double: Shows 4+ hearts over 2C overcall of 1S",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1s2d",
@@ -280,7 +327,9 @@
       "templateKey": "negdbl.double.after1s2d.semantic",
       "displayText": "Double: Shows 4+ hearts over 2D overcall of 1S",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.double.after1s2h",
@@ -288,7 +337,9 @@
       "templateKey": "negdbl.double.after1s2h.semantic",
       "displayText": "Double: Shows minors over 2H overcall of 1S",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.openerRaise",
@@ -296,7 +347,9 @@
       "templateKey": "negdbl.openerRaise.semantic",
       "displayText": "Opener raises responder's implied suit with support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.openerRebid",
@@ -304,7 +357,9 @@
       "templateKey": "negdbl.openerRebid.semantic",
       "displayText": "Opener rebids own suit with extra length",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.openerNt",
@@ -312,7 +367,9 @@
       "templateKey": "negdbl.openerNt.semantic",
       "displayText": "Opener bids NT showing balanced minimum",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "negdbl.openerPass",
@@ -320,7 +377,9 @@
       "templateKey": "negdbl.openerPass.semantic",
       "displayText": "Opener passes with minimum and no fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     }
   ],
   "local": {
@@ -387,21 +446,36 @@
         }
       },
       {
-        "from": ["after-oc-1c", "after-oc-1d", "after-oc-1h", "after-oc-1s"],
+        "from": [
+          "after-oc-1c",
+          "after-oc-1d",
+          "after-oc-1h",
+          "after-oc-1s"
+        ],
         "to": "after-neg-dbl",
         "on": {
           "act": "double"
         }
       },
       {
-        "from": ["after-oc-1c", "after-oc-1d", "after-oc-1h", "after-oc-1s"],
+        "from": [
+          "after-oc-1c",
+          "after-oc-1d",
+          "after-oc-1h",
+          "after-oc-1s"
+        ],
         "to": "done",
         "on": {
           "act": "pass"
         }
       },
       {
-        "from": ["after-oc-1c", "after-oc-1d", "after-oc-1h", "after-oc-1s"],
+        "from": [
+          "after-oc-1c",
+          "after-oc-1d",
+          "after-oc-1h",
+          "after-oc-1s"
+        ],
         "to": "done",
         "on": {
           "act": "show"
@@ -5608,7 +5682,7 @@
               "level": 1,
               "strain": "H"
             },
-            "rationale": "Right-hand opponent overcalls 1♥."
+            "rationale": "Right-hand opponent overcalls 1\u2665."
           },
           {
             "seat": "S",
@@ -5639,7 +5713,7 @@
               "level": 1,
               "strain": "C"
             },
-            "rationale": "Opener begins with 1♣."
+            "rationale": "Opener begins with 1\u2663."
           },
           {
             "seat": "E",
@@ -5648,7 +5722,7 @@
               "level": 1,
               "strain": "D"
             },
-            "rationale": "The opponents overcall 1♦."
+            "rationale": "The opponents overcall 1\u2666."
           },
           {
             "seat": "S",
@@ -5714,15 +5788,17 @@
     "declaredCapabilities": {
       "competitive.negative-doubles": "active"
     },
-    "allowedDealers": ["N"],
+    "allowedDealers": [
+      "N"
+    ],
     "supportsRoleSelection": true,
     "teaching": {
       "purpose": "When opponents overcall partner's opening bid, use a conventional double to show the unbid suits (especially majors) and competitive values instead of passing or overbidding",
       "whenToUse": "Partner opens 1C/1D/1H/1S and RHO overcalls. You have 6+ HCP (at 1-level), about 9+ HCP on the 2-level, and stronger competitive values as the overcall climbs, plus length in the unbid suits.",
       "whenNotToUse": [
         "You have a natural bid available (5+ card suit you can bid at the appropriate level)",
-        "You want to penalize the overcaller — pass and hope partner reopens with a double",
-        "The exact auction does not fit your hand — negative doubles stay sequence-specific even when the overcall comes high"
+        "You want to penalize the overcaller \u2014 pass and hope partner reopens with a double",
+        "The exact auction does not fit your hand \u2014 negative doubles stay sequence-specific even when the overcall comes high"
       ],
       "tradeoff": "Negative doubles give up the penalty double of the overcall at low levels in exchange for showing the unbid suits efficiently",
       "principle": "After an overcall, double shows the unbid suits (especially unbid majors) with competitive values. The specific suits shown depend on which suits are already bid.",
@@ -5732,25 +5808,33 @@
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": ["1C"]
+          "calls": [
+            "1C"
+          ]
         }
       },
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": ["1D"]
+          "calls": [
+            "1D"
+          ]
         }
       },
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": ["1H"]
+          "calls": [
+            "1H"
+          ]
         }
       },
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": ["1S"]
+          "calls": [
+            "1S"
+          ]
         }
       }
     ]
@@ -5764,8 +5848,12 @@
         "description": "Minimum HCP for negative double at 1-level",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": ["hand.hcp"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -5782,8 +5870,12 @@
         "description": "Minimum HCP for negative double at 2-level",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": ["hand.hcp"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -5800,8 +5892,12 @@
         "description": "Has 4+ hearts",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": ["hand.suitLength.hearts"],
-        "constrainsDimensions": ["suitLength"],
+        "derivesFrom": [
+          "hand.suitLength.hearts"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -5818,8 +5914,12 @@
         "description": "Has 4+ spades",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": ["hand.suitLength.spades"],
-        "constrainsDimensions": ["suitLength"],
+        "derivesFrom": [
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -5835,8 +5935,13 @@
         "world": "acting-hand",
         "description": "Has 4+ cards in at least one major",
         "valueType": "boolean",
-        "derivesFrom": ["hand.suitLength.hearts", "hand.suitLength.spades"],
-        "constrainsDimensions": ["suitLength"],
+        "derivesFrom": [
+          "hand.suitLength.hearts",
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "or",
           "operands": [

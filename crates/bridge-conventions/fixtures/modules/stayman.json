@@ -20,7 +20,7 @@
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/stayman",
-      "label": "Larry Cohen — Stayman (bridge-articles/stayman)"
+      "label": "Larry Cohen \u2014 Stayman (bridge-articles/stayman)"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/stayman.php"
@@ -28,7 +28,7 @@
   },
   "teaching": {
     "tradeoff": "Using the ask as Stayman means the partnership cannot play the ask in its natural strain.",
-    "principle": "Always check for a four-card major fit before settling in notrump — majors score better and play easier with a trump suit.",
+    "principle": "Always check for a four-card major fit before settling in notrump \u2014 majors score better and play easier with a trump suit.",
     "commonMistakes": [
       {
         "text": "Do not use Stayman with a flat hand and no ruffing value.",
@@ -57,7 +57,11 @@
       "contrastiveTemplateKey": "nt.stayman.eligible.whyNot",
       "contrastiveDisplayText": "Not eligible for Stayman",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking", "pedagogical"]
+      "roles": [
+        "supporting",
+        "blocking",
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.preferred",
@@ -65,7 +69,10 @@
       "templateKey": "nt.stayman.preferred.supporting",
       "displayText": "Stayman is the preferred convention",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "inferential"]
+      "roles": [
+        "supporting",
+        "inferential"
+      ]
     },
     {
       "explanationId": "nt.stayman.nsHaveEightCardFitLikely",
@@ -95,9 +102,11 @@
       "explanationId": "nt.stayman.askMajor",
       "meaningId": "stayman:ask-major",
       "templateKey": "nt.stayman.askMajor.semantic",
-      "displayText": "Stayman 2♣: asks opener for a 4-card major",
+      "displayText": "Stayman 2\u2663: asks opener for a 4-card major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.showHearts",
@@ -105,7 +114,9 @@
       "templateKey": "nt.stayman.showHearts.semantic",
       "displayText": "Opener shows 4+ hearts in response to Stayman",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.showSpades",
@@ -113,39 +124,49 @@
       "templateKey": "nt.stayman.showSpades.semantic",
       "displayText": "Opener shows 4+ spades in response to Stayman",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.denyMajor",
       "meaningId": "stayman:deny-major",
       "templateKey": "nt.stayman.denyMajor.semantic",
-      "displayText": "Opener bids 2♦ to deny holding a 4-card major",
+      "displayText": "Opener bids 2\u2666 to deny holding a 4-card major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.raiseGameHearts",
       "meaningId": "stayman:raise-game-hearts",
       "templateKey": "nt.stayman.raiseGameHearts.semantic",
-      "displayText": "Raise to 4♥ with game values and a heart fit",
+      "displayText": "Raise to 4\u2665 with game values and a heart fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.raiseInviteHearts",
       "meaningId": "stayman:raise-invite-hearts",
       "templateKey": "nt.stayman.raiseInviteHearts.semantic",
-      "displayText": "Invite in hearts (3♥) with invitational values and a heart fit",
+      "displayText": "Invite in hearts (3\u2665) with invitational values and a heart fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.ntGameNoFit",
       "meaningId": "stayman:nt-game-no-fit",
       "templateKey": "nt.stayman.ntGameNoFit.semantic",
-      "displayText": "Bid 3NT with game values but no heart fit",
+      "displayText": "Bid 3NT with game values, four spades, and no heart fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.ntInviteNoFit",
@@ -153,23 +174,29 @@
       "templateKey": "nt.stayman.ntInviteNoFit.semantic",
       "displayText": "Bid 2NT to invite game with no heart fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.raiseGameSpades",
       "meaningId": "stayman:raise-game-spades",
       "templateKey": "nt.stayman.raiseGameSpades.semantic",
-      "displayText": "Raise to 4♠ with game values and a spade fit",
+      "displayText": "Raise to 4\u2660 with game values and a spade fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.raiseInviteSpades",
       "meaningId": "stayman:raise-invite-spades",
       "templateKey": "nt.stayman.raiseInviteSpades.semantic",
-      "displayText": "Invite in spades (3♠) with invitational values and a spade fit",
+      "displayText": "Invite in spades (3\u2660) with invitational values and a spade fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.ntGameNoFit2S",
@@ -177,7 +204,9 @@
       "templateKey": "nt.stayman.ntGameNoFit2S.semantic",
       "displayText": "Bid 3NT to play with game values and four hearts after opener shows spades",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.ntInviteNoFit2S",
@@ -185,7 +214,9 @@
       "templateKey": "nt.stayman.ntInviteNoFit2S.semantic",
       "displayText": "Bid 2NT to invite game with no spade fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.ntGameAfterDenial",
@@ -193,7 +224,9 @@
       "templateKey": "nt.stayman.ntGameAfterDenial.semantic",
       "displayText": "Bid 3NT with game values after opener denies a major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.ntInviteAfterDenial",
@@ -201,71 +234,89 @@
       "templateKey": "nt.stayman.ntInviteAfterDenial.semantic",
       "displayText": "Bid 2NT to invite game after opener denies a major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.showFiveHeartsAfterDenial",
       "meaningId": "stayman:show-five-hearts-after-denial",
       "templateKey": "nt.stayman.showFiveHeartsAfterDenial.semantic",
-      "displayText": "Bid 2♥ showing 5 hearts and 4 spades (invitational, non-forcing)",
+      "displayText": "Bid 2\u2665 showing 5 hearts and 4 spades (invitational, non-forcing)",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.showFiveSpadesAfterDenial",
       "meaningId": "stayman:show-five-spades-after-denial",
       "templateKey": "nt.stayman.showFiveSpadesAfterDenial.semantic",
-      "displayText": "Bid 2♠ showing 5 spades and 4 hearts (invitational, non-forcing)",
+      "displayText": "Bid 2\u2660 showing 5 spades and 4 hearts (invitational, non-forcing)",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.showFiveHeartsGfAfterDenial",
       "meaningId": "stayman:show-five-hearts-gf-after-denial",
       "templateKey": "nt.stayman.showFiveHeartsGfAfterDenial.semantic",
-      "displayText": "Bid 3♥ showing 5 hearts and 4 spades, game-forcing",
+      "displayText": "Bid 3\u2665 showing 5 hearts and 4 spades, game-forcing",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.showFiveSpadesGfAfterDenial",
       "meaningId": "stayman:show-five-spades-gf-after-denial",
       "templateKey": "nt.stayman.showFiveSpadesGfAfterDenial.semantic",
-      "displayText": "Bid 3♠ showing 5 spades and 4 hearts, game-forcing",
+      "displayText": "Bid 3\u2660 showing 5 spades and 4 hearts, game-forcing",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.crossMajorInvite2SAfter2H",
       "meaningId": "stayman:cross-major-invite-2s-after-2h",
       "templateKey": "nt.stayman.crossMajorInvite2SAfter2H.semantic",
-      "displayText": "Bid 2♠ showing 4 spades, presumed invitational",
+      "displayText": "Bid 2\u2660 showing 4 spades, presumed invitational",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2H",
       "meaningId": "stayman:minor-gf-3c-after-2h",
       "templateKey": "nt.stayman.minorGF3CAfter2H.semantic",
-      "displayText": "Bid 3♣ weak to play",
+      "displayText": "Bid 3\u2663: game-forcing clubs with 4 spades",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2H",
       "meaningId": "stayman:minor-gf-3d-after-2h",
       "templateKey": "nt.stayman.minorGF3DAfter2H.semantic",
-      "displayText": "Bid 3♦ weak to play",
+      "displayText": "Bid 3\u2666: game-forcing diamonds with 4 spades",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.crossMajorGF3SAfter2H",
       "meaningId": "stayman:cross-major-gf-3s-after-2h",
       "templateKey": "nt.stayman.crossMajorGF3SAfter2H.semantic",
-      "displayText": "Bid 3♠: artificial slam-interest raise of hearts",
+      "displayText": "Bid 3\u2660: artificial slam-interest raise of hearts",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2H",
@@ -273,47 +324,59 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2H.semantic",
       "displayText": "Bid 4NT quantitative with at least one major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.splinter4CAfter2H",
       "meaningId": "stayman:splinter-4c-after-2h",
       "templateKey": "nt.stayman.splinter4CAfter2H.semantic",
-      "displayText": "Bid 4♣: club shortness with heart support and slam interest",
+      "displayText": "Bid 4\u2663: club shortness with heart support and slam interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.splinter4DAfter2H",
       "meaningId": "stayman:splinter-4d-after-2h",
       "templateKey": "nt.stayman.splinter4DAfter2H.semantic",
-      "displayText": "Bid 4♦: diamond shortness with heart support and slam interest",
+      "displayText": "Bid 4\u2666: diamond shortness with heart support and slam interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2S",
       "meaningId": "stayman:minor-gf-3c-after-2s",
       "templateKey": "nt.stayman.minorGF3CAfter2S.semantic",
-      "displayText": "Bid 3♣ weak to play",
+      "displayText": "Bid 3\u2663: game-forcing clubs with 4 hearts",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2S",
       "meaningId": "stayman:minor-gf-3d-after-2s",
       "templateKey": "nt.stayman.minorGF3DAfter2S.semantic",
-      "displayText": "Bid 3♦ weak to play",
+      "displayText": "Bid 3\u2666: game-forcing diamonds with 4 hearts",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.crossMajorGF3HAfter2S",
       "meaningId": "stayman:cross-major-gf-3h-after-2s",
       "templateKey": "nt.stayman.crossMajorGF3HAfter2S.semantic",
-      "displayText": "Bid 3♥: artificial slam-interest raise of spades",
+      "displayText": "Bid 3\u2665: artificial slam-interest raise of spades",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2S",
@@ -321,55 +384,69 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2S.semantic",
       "displayText": "Bid 4NT quantitative with at least one major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.splinter4CAfter2S",
       "meaningId": "stayman:splinter-4c-after-2s",
       "templateKey": "nt.stayman.splinter4CAfter2S.semantic",
-      "displayText": "Bid 4♣: club shortness with spade support and slam interest",
+      "displayText": "Bid 4\u2663: club shortness with spade support and slam interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.splinter4DAfter2S",
       "meaningId": "stayman:splinter-4d-after-2s",
       "templateKey": "nt.stayman.splinter4DAfter2S.semantic",
-      "displayText": "Bid 4♦: diamond shortness with spade support and slam interest",
+      "displayText": "Bid 4\u2666: diamond shortness with spade support and slam interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.minorGF3CAfter2D",
       "meaningId": "stayman:minor-gf-3c-after-2d",
       "templateKey": "nt.stayman.minorGF3CAfter2D.semantic",
-      "displayText": "Bid 3♣ weak to play",
+      "displayText": "Bid 3\u2663: natural game force, usually 5+ clubs with a 4-card major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.minorGF3DAfter2D",
       "meaningId": "stayman:minor-gf-3d-after-2d",
       "templateKey": "nt.stayman.minorGF3DAfter2D.semantic",
-      "displayText": "Bid 3♦ weak to play",
+      "displayText": "Bid 3\u2666: natural game force, usually 5+ diamonds with a 4-card major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.majorSignoff4HAfter2D",
       "meaningId": "stayman:major-signoff-4h-after-2d",
       "templateKey": "nt.stayman.majorSignoff4HAfter2D.semantic",
-      "displayText": "Bid 4♥ to play with 6 hearts and 4 spades",
+      "displayText": "Bid 4\u2665 to play with 6 hearts and 4 spades",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.majorSignoff4SAfter2D",
       "meaningId": "stayman:major-signoff-4s-after-2d",
       "templateKey": "nt.stayman.majorSignoff4SAfter2D.semantic",
-      "displayText": "Bid 4♠ to play with 6 spades and 4 hearts",
+      "displayText": "Bid 4\u2660 to play with 6 spades and 4 hearts",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.quantitative4NTAfter2D",
@@ -377,7 +454,9 @@
       "templateKey": "nt.stayman.quantitative4NTAfter2D.semantic",
       "displayText": "Bid 4NT quantitative, inviting 6NT after denial",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     }
   ],
   "local": {
@@ -498,7 +577,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "Stayman 2♣",
+            "name": "Stayman 2\u2663",
             "summary": "Start regular Stayman while avoiding the flat 4-3-3-3 one-major exception"
           }
         },
@@ -562,7 +641,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "Stayman 2♣",
+            "name": "Stayman 2\u2663",
             "summary": "Start regular Stayman with both majors when later rebids will sort out the best strain"
           }
         }
@@ -694,7 +773,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "Deny major (2♦)",
+            "name": "Deny major (2\u2666)",
             "summary": "Deny holding a 4-card major in response to Stayman"
           }
         }
@@ -825,12 +904,21 @@
               "isPublic": true
             },
             {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades (the other major)",
+              "rationale": "four spades after opener shows hearts",
+              "isPublic": true
+            },
+            {
               "factId": "hand.suitLength.hearts",
               "operator": "lte",
               "value": 3,
               "clauseId": "hand.suitLength.hearts:lte:3",
               "description": "At most 3 hearts (no fit)",
-              "rationale": "no fit",
+              "rationale": "no heart fit",
               "isPublic": true
             }
           ],
@@ -847,8 +935,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3NT (no heart fit)",
-            "summary": "Place the contract in 3NT after opener shows hearts but responder lacks support"
+            "name": "3NT with four spades",
+            "summary": "Place the contract in 3NT with game values and four spades after opener shows hearts"
           }
         },
         {
@@ -943,13 +1031,13 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2♠ invite (4♠)",
+            "name": "2\u2660 invite (4\u2660)",
             "summary": "Show four spades with invitational values after opener shows hearts"
           }
         },
         {
           "meaningId": "stayman:minor-gf-3c-after-2h",
-          "semanticClassId": "stayman:minor-signoff",
+          "semanticClassId": "stayman:new-suit-gf",
           "moduleId": "stayman",
           "encoding": {
             "defaultCall": {
@@ -960,12 +1048,12 @@
           },
           "clauses": [
             {
-              "factId": "system.responder.weakHand",
+              "factId": "system.responder.gameValues",
               "operator": "boolean",
               "value": true,
-              "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand",
-              "rationale": "weak to play",
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Game forcing",
+              "rationale": "game forcing",
               "isPublic": true
             },
             {
@@ -973,31 +1061,40 @@
               "operator": "gte",
               "value": 5,
               "clauseId": "hand.suitLength.clubs:gte:5",
-              "description": "5+ clubs (long club suit)",
-              "rationale": "long club suit",
+              "description": "5+ clubs (natural club suit)",
+              "rationale": "natural club suit",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades (the other major)",
+              "rationale": "shows the other major with the forcing minor rebid",
               "isPublic": true
             }
           ],
           "ranking": {
-            "recommendationBand": "may",
+            "recommendationBand": "should",
             "modulePrecedence": 0,
             "declarationOrder": 5
           },
           "sourceIntent": {
-            "type": "Signoff",
+            "type": "NewSuitGameForce",
             "params": {
               "suit": "clubs"
             }
           },
-          "disclosure": "natural",
+          "disclosure": "alert",
           "teachingLabel": {
-            "name": "3♣ weak to play",
-            "summary": "Sign off in clubs with a weak hand after opener shows hearts"
+            "name": "3\u2663 game force",
+            "summary": "Show a natural club suit with game-forcing values and four spades after opener shows hearts"
           }
         },
         {
           "meaningId": "stayman:minor-gf-3d-after-2h",
-          "semanticClassId": "stayman:minor-signoff",
+          "semanticClassId": "stayman:new-suit-gf",
           "moduleId": "stayman",
           "encoding": {
             "defaultCall": {
@@ -1008,12 +1105,12 @@
           },
           "clauses": [
             {
-              "factId": "system.responder.weakHand",
+              "factId": "system.responder.gameValues",
               "operator": "boolean",
               "value": true,
-              "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand",
-              "rationale": "weak to play",
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Game forcing",
+              "rationale": "game forcing",
               "isPublic": true
             },
             {
@@ -1021,26 +1118,35 @@
               "operator": "gte",
               "value": 5,
               "clauseId": "hand.suitLength.diamonds:gte:5",
-              "description": "5+ diamonds (long diamond suit)",
-              "rationale": "long diamond suit",
+              "description": "5+ diamonds (natural diamond suit)",
+              "rationale": "natural diamond suit",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades (the other major)",
+              "rationale": "shows the other major with the forcing minor rebid",
               "isPublic": true
             }
           ],
           "ranking": {
-            "recommendationBand": "may",
+            "recommendationBand": "should",
             "modulePrecedence": 0,
             "declarationOrder": 6
           },
           "sourceIntent": {
-            "type": "Signoff",
+            "type": "NewSuitGameForce",
             "params": {
               "suit": "diamonds"
             }
           },
-          "disclosure": "natural",
+          "disclosure": "alert",
           "teachingLabel": {
-            "name": "3♦ weak to play",
-            "summary": "Sign off in diamonds with a weak hand after opener shows hearts"
+            "name": "3\u2666 game force",
+            "summary": "Show a natural diamond suit with game-forcing values and four spades after opener shows hearts"
           }
         },
         {
@@ -1087,7 +1193,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3♠ slam try in hearts",
+            "name": "3\u2660 slam try in hearts",
             "summary": "Artificial slam-interest raise of hearts; the spade bid does not promise spades"
           }
         },
@@ -1192,7 +1298,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4♣ splinter",
+            "name": "4\u2663 splinter",
             "summary": "Show club shortness with heart support and slam interest"
           }
         },
@@ -1249,7 +1355,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4♦ splinter",
+            "name": "4\u2666 splinter",
             "summary": "Show diamond shortness with heart support and slam interest"
           }
         }
@@ -1465,7 +1571,7 @@
         },
         {
           "meaningId": "stayman:minor-gf-3c-after-2s",
-          "semanticClassId": "stayman:minor-signoff",
+          "semanticClassId": "stayman:new-suit-gf",
           "moduleId": "stayman",
           "encoding": {
             "defaultCall": {
@@ -1476,12 +1582,12 @@
           },
           "clauses": [
             {
-              "factId": "system.responder.weakHand",
+              "factId": "system.responder.gameValues",
               "operator": "boolean",
               "value": true,
-              "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand",
-              "rationale": "weak to play",
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Game forcing",
+              "rationale": "game forcing",
               "isPublic": true
             },
             {
@@ -1489,31 +1595,40 @@
               "operator": "gte",
               "value": 5,
               "clauseId": "hand.suitLength.clubs:gte:5",
-              "description": "5+ clubs (long club suit)",
-              "rationale": "long club suit",
+              "description": "5+ clubs (natural club suit)",
+              "rationale": "natural club suit",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts (the other major)",
+              "rationale": "shows the other major with the forcing minor rebid",
               "isPublic": true
             }
           ],
           "ranking": {
-            "recommendationBand": "may",
+            "recommendationBand": "should",
             "modulePrecedence": 0,
             "declarationOrder": 4
           },
           "sourceIntent": {
-            "type": "Signoff",
+            "type": "NewSuitGameForce",
             "params": {
               "suit": "clubs"
             }
           },
-          "disclosure": "natural",
+          "disclosure": "alert",
           "teachingLabel": {
-            "name": "3♣ weak to play",
-            "summary": "Sign off in clubs with a weak hand after opener shows spades"
+            "name": "3\u2663 game force",
+            "summary": "Show a natural club suit with game-forcing values and four hearts after opener shows spades"
           }
         },
         {
           "meaningId": "stayman:minor-gf-3d-after-2s",
-          "semanticClassId": "stayman:minor-signoff",
+          "semanticClassId": "stayman:new-suit-gf",
           "moduleId": "stayman",
           "encoding": {
             "defaultCall": {
@@ -1524,12 +1639,12 @@
           },
           "clauses": [
             {
-              "factId": "system.responder.weakHand",
+              "factId": "system.responder.gameValues",
               "operator": "boolean",
               "value": true,
-              "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand",
-              "rationale": "weak to play",
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Game forcing",
+              "rationale": "game forcing",
               "isPublic": true
             },
             {
@@ -1537,26 +1652,35 @@
               "operator": "gte",
               "value": 5,
               "clauseId": "hand.suitLength.diamonds:gte:5",
-              "description": "5+ diamonds (long diamond suit)",
-              "rationale": "long diamond suit",
+              "description": "5+ diamonds (natural diamond suit)",
+              "rationale": "natural diamond suit",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts (the other major)",
+              "rationale": "shows the other major with the forcing minor rebid",
               "isPublic": true
             }
           ],
           "ranking": {
-            "recommendationBand": "may",
+            "recommendationBand": "should",
             "modulePrecedence": 0,
             "declarationOrder": 5
           },
           "sourceIntent": {
-            "type": "Signoff",
+            "type": "NewSuitGameForce",
             "params": {
               "suit": "diamonds"
             }
           },
-          "disclosure": "natural",
+          "disclosure": "alert",
           "teachingLabel": {
-            "name": "3♦ weak to play",
-            "summary": "Sign off in diamonds with a weak hand after opener shows spades"
+            "name": "3\u2666 game force",
+            "summary": "Show a natural diamond suit with game-forcing values and four hearts after opener shows spades"
           }
         },
         {
@@ -1603,7 +1727,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3♥ slam try in spades",
+            "name": "3\u2665 slam try in spades",
             "summary": "Artificial slam-interest raise of spades; the heart bid does not promise hearts"
           }
         },
@@ -1708,7 +1832,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4♣ splinter",
+            "name": "4\u2663 splinter",
             "summary": "Show club shortness with spade support and slam interest"
           }
         },
@@ -1765,7 +1889,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4♦ splinter",
+            "name": "4\u2666 splinter",
             "summary": "Show diamond shortness with spade support and slam interest"
           }
         }
@@ -2002,7 +2126,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3♥ GF (5-4 majors)",
+            "name": "3\u2665 GF (5-4 majors)",
             "summary": "Force to game showing 5 hearts and 4 spades after opener denies a major"
           }
         },
@@ -2059,7 +2183,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3♠ GF (5-4 majors)",
+            "name": "3\u2660 GF (5-4 majors)",
             "summary": "Force to game showing 5 spades and 4 hearts after opener denies a major"
           }
         },
@@ -2104,7 +2228,7 @@
         },
         {
           "meaningId": "stayman:minor-gf-3c-after-2d",
-          "semanticClassId": "stayman:minor-signoff",
+          "semanticClassId": "stayman:new-suit-gf",
           "moduleId": "stayman",
           "encoding": {
             "defaultCall": {
@@ -2115,12 +2239,21 @@
           },
           "clauses": [
             {
-              "factId": "system.responder.weakHand",
+              "factId": "system.responder.gameValues",
               "operator": "boolean",
               "value": true,
-              "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand",
-              "rationale": "weak to play",
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Game forcing",
+              "rationale": "game forcing",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.hasFourCardMajor",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "bridge.hasFourCardMajor:boolean:true",
+              "description": "A 4-card major to go with the minor",
+              "rationale": "usually accompanies a 4-card major after the denial",
               "isPublic": true
             },
             {
@@ -2128,31 +2261,31 @@
               "operator": "gte",
               "value": 5,
               "clauseId": "hand.suitLength.clubs:gte:5",
-              "description": "5+ clubs (long club suit)",
-              "rationale": "long club suit",
+              "description": "5+ clubs (natural club suit)",
+              "rationale": "natural club suit",
               "isPublic": true
             }
           ],
           "ranking": {
-            "recommendationBand": "may",
+            "recommendationBand": "should",
             "modulePrecedence": 0,
             "declarationOrder": 4
           },
           "sourceIntent": {
-            "type": "Signoff",
+            "type": "NewSuitGameForce",
             "params": {
               "suit": "clubs"
             }
           },
-          "disclosure": "natural",
+          "disclosure": "alert",
           "teachingLabel": {
-            "name": "3♣ weak to play",
-            "summary": "Sign off in clubs with a weak hand after opener denies a major"
+            "name": "3\u2663 game force",
+            "summary": "Show a natural club suit with game-forcing values, usually alongside a 4-card major, after opener denies a major"
           }
         },
         {
           "meaningId": "stayman:minor-gf-3d-after-2d",
-          "semanticClassId": "stayman:minor-signoff",
+          "semanticClassId": "stayman:new-suit-gf",
           "moduleId": "stayman",
           "encoding": {
             "defaultCall": {
@@ -2163,12 +2296,21 @@
           },
           "clauses": [
             {
-              "factId": "system.responder.weakHand",
+              "factId": "system.responder.gameValues",
               "operator": "boolean",
               "value": true,
-              "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand",
-              "rationale": "weak to play",
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Game forcing",
+              "rationale": "game forcing",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.hasFourCardMajor",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "bridge.hasFourCardMajor:boolean:true",
+              "description": "A 4-card major to go with the minor",
+              "rationale": "usually accompanies a 4-card major after the denial",
               "isPublic": true
             },
             {
@@ -2176,26 +2318,26 @@
               "operator": "gte",
               "value": 5,
               "clauseId": "hand.suitLength.diamonds:gte:5",
-              "description": "5+ diamonds (long diamond suit)",
-              "rationale": "long diamond suit",
+              "description": "5+ diamonds (natural diamond suit)",
+              "rationale": "natural diamond suit",
               "isPublic": true
             }
           ],
           "ranking": {
-            "recommendationBand": "may",
+            "recommendationBand": "should",
             "modulePrecedence": 0,
             "declarationOrder": 5
           },
           "sourceIntent": {
-            "type": "Signoff",
+            "type": "NewSuitGameForce",
             "params": {
               "suit": "diamonds"
             }
           },
-          "disclosure": "natural",
+          "disclosure": "alert",
           "teachingLabel": {
-            "name": "3♦ weak to play",
-            "summary": "Sign off in diamonds with a weak hand after opener denies a major"
+            "name": "3\u2666 game force",
+            "summary": "Show a natural diamond suit with game-forcing values, usually alongside a 4-card major, after opener denies a major"
           }
         },
         {
@@ -2251,7 +2393,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4♥ signoff (6-4 majors)",
+            "name": "4\u2665 signoff (6-4 majors)",
             "summary": "Sign off in 4H with 6 hearts and 4 spades after opener denies a major"
           }
         },
@@ -2308,7 +2450,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4♠ signoff (6-4 majors)",
+            "name": "4\u2660 signoff (6-4 majors)",
             "summary": "Sign off in 4S with 6 spades and 4 hearts after opener denies a major"
           }
         },
@@ -2374,7 +2516,9 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitIdentity"],
+        "constrainsDimensions": [
+          "suitIdentity"
+        ],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2497,7 +2641,9 @@
           "hand.suitLength.hearts",
           "hand.suitLength.spades"
         ],
-        "constrainsDimensions": ["suitIdentity"],
+        "constrainsDimensions": [
+          "suitIdentity"
+        ],
         "composition": {
           "kind": "and",
           "operands": [
@@ -2965,7 +3111,7 @@
               "level": 4,
               "strain": "H"
             },
-            "rationale": "Responder steers to 4♥ because the fit was found, but 3NT was cold while 4♥ needed a finesse and went down."
+            "rationale": "Responder steers to 4\u2665 because the fit was found, but 3NT was cold while 4\u2665 needed a finesse and went down."
           }
         ]
       }
@@ -3265,23 +3411,27 @@
     },
     "supportsRoleSelection": true,
     "teaching": {
-      "purpose": "Use 2♣ over 1NT to ask about majors and access Larry Cohen's regular Stayman follow-ups.",
+      "purpose": "Use 2\u2663 over 1NT to ask about majors and access Larry Cohen's regular Stayman follow-ups.",
       "whenToUse": "Partner opens 1NT (15-17 HCP balanced). You have invitational or game values and are not the flat 4-3-3-3 one-major exception; invitational or game-forcing 5-4 major hands are also legal.",
       "whenNotToUse": [
         "Weak hand without the separate Garbage Stayman agreement",
         "Flat 4-3-3-3 hand with only one four-card major",
         "Single five-card major hands that belong in Jacoby Transfers"
       ],
-      "principle": "2♣ asks opener about majors, but the ask itself does not guarantee responder holds a four-card major.",
-      "roles": "Responder is captain — asks opener to describe, then decides the final contract"
+      "principle": "2\u2663 asks opener about majors, but the ask itself does not guarantee responder holds a four-card major.",
+      "roles": "Responder is captain \u2014 asks opener to describe, then decides the final contract"
     },
     "attachments": [
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": ["1NT"]
+          "calls": [
+            "1NT"
+          ]
         },
-        "requiresCapabilities": ["opening.1nt"]
+        "requiresCapabilities": [
+          "opening.1nt"
+        ]
       }
     ]
   }

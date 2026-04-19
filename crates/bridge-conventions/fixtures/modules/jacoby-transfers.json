@@ -20,7 +20,7 @@
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/jacoby-transfer",
-      "label": "Larry Cohen — Jacoby Transfer (bridge-articles/jacoby-transfer)"
+      "label": "Larry Cohen \u2014 Jacoby Transfer (bridge-articles/jacoby-transfer)"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/jacoby_transfers.php"
@@ -53,7 +53,11 @@
       "contrastiveTemplateKey": "nt.transfer.eligible.whyNot",
       "contrastiveDisplayText": "Not eligible for transfer",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking", "pedagogical"]
+      "roles": [
+        "supporting",
+        "blocking",
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.preferred",
@@ -61,7 +65,10 @@
       "templateKey": "nt.transfer.preferred.supporting",
       "displayText": "Transfer is the preferred convention",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "inferential"]
+      "roles": [
+        "supporting",
+        "inferential"
+      ]
     },
     {
       "explanationId": "nt.transfer.targetSuit",
@@ -69,7 +76,9 @@
       "templateKey": "nt.transfer.targetSuit.supporting",
       "displayText": "Transfer target suit determined by longest major",
       "preferredLevel": "mechanical",
-      "roles": ["supporting"]
+      "roles": [
+        "supporting"
+      ]
     },
     {
       "explanationId": "nt.transfer.openerHasHeartFit",
@@ -79,7 +88,10 @@
       "contrastiveTemplateKey": "nt.transfer.openerHasHeartFit.whyNot",
       "contrastiveDisplayText": "Opener lacks heart fit (fewer than 3 hearts)",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "nt.transfer.openerHasSpadesFit",
@@ -89,23 +101,30 @@
       "contrastiveTemplateKey": "nt.transfer.openerHasSpadesFit.whyNot",
       "contrastiveDisplayText": "Opener lacks spade fit (fewer than 3 spades)",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "nt.transfer.toHearts",
       "meaningId": "transfer:to-hearts",
       "templateKey": "nt.transfer.toHearts.semantic",
-      "displayText": "Transfer to hearts: bid 2♦ to show 5+ hearts",
+      "displayText": "Transfer to hearts: bid 2\u2666 to show 5+ hearts",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.toSpades",
       "meaningId": "transfer:to-spades",
       "templateKey": "nt.transfer.toSpades.semantic",
-      "displayText": "Transfer to spades: bid 2♥ to show 5+ spades",
+      "displayText": "Transfer to spades: bid 2\u2665 to show 5+ spades",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.accept",
@@ -113,7 +132,9 @@
       "templateKey": "nt.transfer.accept.semantic",
       "displayText": "Accept transfer: bid the target major (hearts)",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.acceptSpades",
@@ -121,23 +142,29 @@
       "templateKey": "nt.transfer.acceptSpades.semantic",
       "displayText": "Accept transfer: bid the target major (spades)",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.superAcceptHearts",
       "meaningId": "transfer:super-accept-hearts",
       "templateKey": "nt.transfer.superAcceptHearts.semantic",
-      "displayText": "Jump to 3♥: maximum notrump with four-card heart support",
+      "displayText": "Jump to 3\u2665: maximum notrump with four-card heart support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.superAcceptSpades",
       "meaningId": "transfer:super-accept-spades",
       "templateKey": "nt.transfer.superAcceptSpades.semantic",
-      "displayText": "Jump to 3♠: maximum notrump with four-card spade support",
+      "displayText": "Jump to 3\u2660: maximum notrump with four-card spade support",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.signoffHearts",
@@ -145,31 +172,39 @@
       "templateKey": "nt.transfer.signoffHearts.semantic",
       "displayText": "Sign off in hearts: weak hand, pass and play in the major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.gameHearts",
       "meaningId": "transfer:game-hearts",
       "templateKey": "nt.transfer.gameHearts.semantic",
-      "displayText": "Raise to 4♥: game values with 5+ hearts",
+      "displayText": "Raise to 4\u2665: game values with 5+ hearts",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.ntGameHearts",
       "meaningId": "transfer:nt-game-hearts",
       "templateKey": "nt.transfer.ntGameHearts.semantic",
-      "displayText": "Bid 3NT: game values, offers opener choice between 3NT and 4♥",
+      "displayText": "Bid 3NT: game values, offers opener choice between 3NT and 4\u2665",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.inviteRaiseHearts",
       "meaningId": "transfer:invite-raise-hearts",
       "templateKey": "nt.transfer.inviteRaiseHearts.semantic",
-      "displayText": "Raise to 3♥: invitational with 6+ hearts, opener decides game",
+      "displayText": "Raise to 3\u2665: invitational with 6+ hearts, opener decides game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.inviteHearts",
@@ -177,39 +212,49 @@
       "templateKey": "nt.transfer.inviteHearts.semantic",
       "displayText": "Bid 2NT: invitational with exactly 5 hearts, opener decides",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.inviteMajorsHearts",
       "meaningId": "transfer:invite-majors-hearts",
       "templateKey": "nt.transfer.inviteMajorsHearts.semantic",
-      "displayText": "Bid 2♠: invitational with 5 hearts and 5 spades, non-forcing",
+      "displayText": "Bid 2\u2660: invitational with 5 hearts and 5 spades, non-forcing",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.newSuitClubsHearts",
       "meaningId": "transfer:new-suit-clubs-hearts",
       "templateKey": "nt.transfer.newSuitClubsHearts.semantic",
-      "displayText": "Bid 3♣: game forcing with 5+ hearts and 4+ clubs",
+      "displayText": "Bid 3\u2663: game forcing with 5+ hearts and 4+ clubs",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.newSuitDiamondsHearts",
       "meaningId": "transfer:new-suit-diamonds-hearts",
       "templateKey": "nt.transfer.newSuitDiamondsHearts.semantic",
-      "displayText": "Bid 3♦: game forcing with 5+ hearts and 4+ diamonds",
+      "displayText": "Bid 3\u2666: game forcing with 5+ hearts and 4+ diamonds",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.splinterSpades",
       "meaningId": "transfer:splinter-spades",
       "templateKey": "nt.transfer.splinterSpades.semantic",
-      "displayText": "Bid 3♠: singleton/void in spades with slam interest",
+      "displayText": "Bid 3\u2660: singleton/void in spades with slam interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.quantitativeHearts",
@@ -217,7 +262,9 @@
       "templateKey": "nt.transfer.quantitativeHearts.semantic",
       "displayText": "Bid 4NT: quantitative slam invite in hearts or notrump",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.signoffSpades",
@@ -225,31 +272,39 @@
       "templateKey": "nt.transfer.signoffSpades.semantic",
       "displayText": "Sign off in spades: weak hand, pass and play in the major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.gameSpades",
       "meaningId": "transfer:game-spades",
       "templateKey": "nt.transfer.gameSpades.semantic",
-      "displayText": "Raise to 4♠: game values with 5+ spades",
+      "displayText": "Raise to 4\u2660: game values with 5+ spades",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.ntGameSpades",
       "meaningId": "transfer:nt-game-spades",
       "templateKey": "nt.transfer.ntGameSpades.semantic",
-      "displayText": "Bid 3NT: game values, offers opener choice between 3NT and 4♠",
+      "displayText": "Bid 3NT: game values, offers opener choice between 3NT and 4\u2660",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.inviteRaiseSpades",
       "meaningId": "transfer:invite-raise-spades",
       "templateKey": "nt.transfer.inviteRaiseSpades.semantic",
-      "displayText": "Raise to 3♠: invitational with 6+ spades, opener decides game",
+      "displayText": "Raise to 3\u2660: invitational with 6+ spades, opener decides game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.inviteSpades",
@@ -257,39 +312,49 @@
       "templateKey": "nt.transfer.inviteSpades.semantic",
       "displayText": "Bid 2NT: invitational with exactly 5 spades, opener decides",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.newSuitClubsSpades",
       "meaningId": "transfer:new-suit-clubs-spades",
       "templateKey": "nt.transfer.newSuitClubsSpades.semantic",
-      "displayText": "Bid 3♣: game forcing with 5+ spades and 4+ clubs",
+      "displayText": "Bid 3\u2663: game forcing with 5+ spades and 4+ clubs",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.newSuitDiamondsSpades",
       "meaningId": "transfer:new-suit-diamonds-spades",
       "templateKey": "nt.transfer.newSuitDiamondsSpades.semantic",
-      "displayText": "Bid 3♦: game forcing with 5+ spades and 4+ diamonds",
+      "displayText": "Bid 3\u2666: game forcing with 5+ spades and 4+ diamonds",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.slamTryHearts",
       "meaningId": "transfer:slam-try-hearts",
       "templateKey": "nt.transfer.slamTryHearts.semantic",
-      "displayText": "Bid 3♥: 5-5 majors with slam interest (stronger than 4♥)",
+      "displayText": "Bid 3\u2665: 5-5 majors with slam interest (stronger than 4\u2665)",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.gameOtherMajorSpades",
       "meaningId": "transfer:game-other-major-spades",
       "templateKey": "nt.transfer.gameOtherMajorSpades.semantic",
-      "displayText": "Bid 4♥: game values with 5+ spades and 5+ hearts",
+      "displayText": "Bid 4\u2665: game values with 5+ spades and 5+ hearts",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.quantitativeSpades",
@@ -297,39 +362,49 @@
       "templateKey": "nt.transfer.quantitativeSpades.semantic",
       "displayText": "Bid 4NT: quantitative slam invite in spades or notrump",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.chooseHeartsInviteMajors",
       "meaningId": "transfer:choose-hearts-invite-majors",
       "templateKey": "nt.transfer.chooseHeartsInviteMajors.semantic",
-      "displayText": "Bid 3♥: choose hearts with a minimum after the 5-5 invitational relay",
+      "displayText": "Bid 3\u2665: choose hearts with a minimum after the 5-5 invitational relay",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.acceptHeartsInviteMajors",
       "meaningId": "transfer:accept-hearts-invite-majors",
       "templateKey": "nt.transfer.acceptHeartsInviteMajors.semantic",
-      "displayText": "Bid 4♥: accept the 5-5 invitational relay by choosing hearts",
+      "displayText": "Bid 4\u2665: accept the 5-5 invitational relay by choosing hearts",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.chooseSpadesInviteMajors",
       "meaningId": "transfer:choose-spades-invite-majors",
       "templateKey": "nt.transfer.chooseSpadesInviteMajors.semantic",
-      "displayText": "Bid 3♠: choose spades with a minimum and a spade fit",
+      "displayText": "Bid 3\u2660: choose spades with a minimum and a spade fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.acceptSpadesInviteMajors",
       "meaningId": "transfer:accept-spades-invite-majors",
       "templateKey": "nt.transfer.acceptSpadesInviteMajors.semantic",
-      "displayText": "Bid 4♠: accept the 5-5 invitational relay by choosing spades",
+      "displayText": "Bid 4\u2660: accept the 5-5 invitational relay by choosing spades",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.place3NTOverNewSuitHearts",
@@ -337,15 +412,19 @@
       "templateKey": "nt.transfer.place3NTOverNewSuitHearts.semantic",
       "displayText": "Bid 3NT: no heart fit after responder's game-forcing side suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.place4HOverNewSuit",
       "meaningId": "transfer:place-4h-over-new-suit",
       "templateKey": "nt.transfer.place4HOverNewSuit.semantic",
-      "displayText": "Bid 4♥: take the known heart fit after responder's game-forcing side suit",
+      "displayText": "Bid 4\u2665: take the known heart fit after responder's game-forcing side suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.place3NTOverNewSuitSpades",
@@ -353,47 +432,59 @@
       "templateKey": "nt.transfer.place3NTOverNewSuitSpades.semantic",
       "displayText": "Bid 3NT: no spade fit after responder's game-forcing side suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.place4SOverNewSuit",
       "meaningId": "transfer:place-4s-over-new-suit",
       "templateKey": "nt.transfer.place4SOverNewSuit.semantic",
-      "displayText": "Bid 4♠: take the known spade fit after responder's game-forcing side suit",
+      "displayText": "Bid 4\u2660: take the known spade fit after responder's game-forcing side suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.signoff4HOverSplinter",
       "meaningId": "transfer:signoff-4h-over-splinter",
       "templateKey": "nt.transfer.signoff4HOverSplinter.semantic",
-      "displayText": "Bid 4♥: sign off opposite the splinter without enough extra strength for slam",
+      "displayText": "Bid 4\u2665: sign off opposite the splinter without enough extra strength for slam",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.place6HOverSplinter",
       "meaningId": "transfer:place-6h-over-splinter",
       "templateKey": "nt.transfer.place6HOverSplinter.semantic",
-      "displayText": "Bid 6♥: accept the splinter and place the contract in small slam",
+      "displayText": "Bid 6\u2665: accept the splinter and place the contract in small slam",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.signoff4SOverSlamTry",
       "meaningId": "transfer:signoff-4s-over-slam-try",
       "templateKey": "nt.transfer.signoff4SOverSlamTry.semantic",
-      "displayText": "Bid 4♠: sign off opposite the 5-5 slam try",
+      "displayText": "Bid 4\u2660: sign off opposite the 5-5 slam try",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.place6SOverSlamTry",
       "meaningId": "transfer:place-6s-over-slam-try",
       "templateKey": "nt.transfer.place6SOverSlamTry.semantic",
-      "displayText": "Bid 6♠: accept the 5-5 slam try and place the contract in small slam",
+      "displayText": "Bid 6\u2660: accept the 5-5 slam try and place the contract in small slam",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.pass4NTQuantitativeHearts",
@@ -401,7 +492,9 @@
       "templateKey": "nt.transfer.pass4NTQuantitativeHearts.semantic",
       "displayText": "Pass 4NT: decline the quantitative invitation with a non-maximum notrump",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.accept4NTQuantitativeHearts",
@@ -409,7 +502,9 @@
       "templateKey": "nt.transfer.accept4NTQuantitativeHearts.semantic",
       "displayText": "Bid 6NT: accept the quantitative invitation with a maximum notrump",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.pass4NTQuantitativeSpades",
@@ -417,7 +512,9 @@
       "templateKey": "nt.transfer.pass4NTQuantitativeSpades.semantic",
       "displayText": "Pass 4NT: decline the quantitative invitation after the spade transfer",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.accept4NTQuantitativeSpades",
@@ -425,15 +522,19 @@
       "templateKey": "nt.transfer.accept4NTQuantitativeSpades.semantic",
       "displayText": "Bid 6NT: accept the quantitative invitation after the spade transfer",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.correctTo4H",
       "meaningId": "transfer:correct-to-4h",
       "templateKey": "nt.transfer.correctTo4H.semantic",
-      "displayText": "Correct to 4♥: opener has 3+ hearts, prefer the major game",
+      "displayText": "Correct to 4\u2665: opener has 3+ hearts, prefer the major game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.pass3NTHearts",
@@ -441,15 +542,19 @@
       "templateKey": "nt.transfer.pass3NTHearts.semantic",
       "displayText": "Pass 3NT: opener lacks heart fit, stay in notrump",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.correctTo4S",
       "meaningId": "transfer:correct-to-4s",
       "templateKey": "nt.transfer.correctTo4S.semantic",
-      "displayText": "Correct to 4♠: opener has 3+ spades, prefer the major game",
+      "displayText": "Correct to 4\u2660: opener has 3+ spades, prefer the major game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.pass3NTSpades",
@@ -457,15 +562,19 @@
       "templateKey": "nt.transfer.pass3NTSpades.semantic",
       "displayText": "Pass 3NT: opener lacks spade fit, stay in notrump",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.acceptInviteGameHearts",
       "meaningId": "transfer:accept-invite-game-hearts",
       "templateKey": "nt.transfer.acceptInviteGameHearts.semantic",
-      "displayText": "Accept heart invite: bid 4♥ with maximum and heart fit",
+      "displayText": "Accept heart invite: bid 4\u2665 with maximum and heart fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.acceptInviteHearts",
@@ -473,15 +582,19 @@
       "templateKey": "nt.transfer.acceptInviteHearts.semantic",
       "displayText": "Accept heart invite: bid 3NT with maximum but no heart fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.signoffWithFitHearts",
       "meaningId": "transfer:signoff-with-fit-hearts",
       "templateKey": "nt.transfer.signoffWithFitHearts.semantic",
-      "displayText": "Sign off in 3♥: minimum hand but 3+ hearts (fit found)",
+      "displayText": "Sign off in 3\u2665: minimum hand but 3+ hearts (fit found)",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.declineInviteHearts",
@@ -489,15 +602,19 @@
       "templateKey": "nt.transfer.declineInviteHearts.semantic",
       "displayText": "Decline heart invite: pass 2NT with minimum and no heart fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.acceptInviteGameSpades",
       "meaningId": "transfer:accept-invite-game-spades",
       "templateKey": "nt.transfer.acceptInviteGameSpades.semantic",
-      "displayText": "Accept spade invite: bid 4♠ with maximum and spade fit",
+      "displayText": "Accept spade invite: bid 4\u2660 with maximum and spade fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.acceptInviteSpades",
@@ -505,15 +622,19 @@
       "templateKey": "nt.transfer.acceptInviteSpades.semantic",
       "displayText": "Accept spade invite: bid 3NT with maximum but no spade fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.signoffWithFitSpades",
       "meaningId": "transfer:signoff-with-fit-spades",
       "templateKey": "nt.transfer.signoffWithFitSpades.semantic",
-      "displayText": "Sign off in 3♠: minimum hand but 3+ spades (fit found)",
+      "displayText": "Sign off in 3\u2660: minimum hand but 3+ spades (fit found)",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.declineInviteSpades",
@@ -521,39 +642,49 @@
       "templateKey": "nt.transfer.declineInviteSpades.semantic",
       "displayText": "Decline spade invite: pass 2NT with minimum and no spade fit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.acceptInviteRaiseHearts",
       "meaningId": "transfer:accept-invite-raise-hearts",
       "templateKey": "nt.transfer.acceptInviteRaiseHearts.semantic",
-      "displayText": "Accept heart invite raise: bid 4♥ with maximum, fit and extras",
+      "displayText": "Accept heart invite raise: bid 4\u2665 with maximum, fit and extras",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.declineInviteRaiseHearts",
       "meaningId": "transfer:decline-invite-raise-hearts",
       "templateKey": "nt.transfer.declineInviteRaiseHearts.semantic",
-      "displayText": "Decline heart invite raise: pass 3♥ with minimum",
+      "displayText": "Decline heart invite raise: pass 3\u2665 with minimum",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.acceptInviteRaiseSpades",
       "meaningId": "transfer:accept-invite-raise-spades",
       "templateKey": "nt.transfer.acceptInviteRaiseSpades.semantic",
-      "displayText": "Accept spade invite raise: bid 4♠ with maximum, fit and extras",
+      "displayText": "Accept spade invite raise: bid 4\u2660 with maximum, fit and extras",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.transfer.declineInviteRaiseSpades",
       "meaningId": "transfer:decline-invite-raise-spades",
       "templateKey": "nt.transfer.declineInviteRaiseSpades.semantic",
-      "displayText": "Decline spade invite raise: pass 3♠ with minimum",
+      "displayText": "Decline spade invite raise: pass 3\u2660 with minimum",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     }
   ],
   "local": {
@@ -848,7 +979,7 @@
               "value": 17,
               "clauseId": "hand.hcp:eq:17",
               "description": "Maximum 1NT (17 HCP)",
-              "rationale": "maximum of a 15-17 notrump opening — the only hands that can afford a level jump over a possible weak hand opposite",
+              "rationale": "maximum of a 15-17 notrump opening \u2014 the only hands that can afford a level jump over a possible weak hand opposite",
               "isPublic": true
             },
             {
@@ -941,7 +1072,7 @@
               "value": 17,
               "clauseId": "hand.hcp:eq:17",
               "description": "Maximum 1NT (17 HCP)",
-              "rationale": "maximum of a 15-17 notrump opening — the only hands that can afford a level jump over a possible weak hand opposite",
+              "rationale": "maximum of a 15-17 notrump opening \u2014 the only hands that can afford a level jump over a possible weak hand opposite",
               "isPublic": true
             },
             {
@@ -1076,6 +1207,24 @@
               "clauseId": "bridge.hasShortage:boolean:false",
               "description": "No short suit (balanced enough for NT invite)",
               "rationale": "balanced enough for NT invite",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "At least five hearts",
+              "rationale": "the transfer invite keeps exactly five hearts in the major",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:lte:5",
+              "description": "No more than five hearts",
+              "rationale": "six-card invites belong in the raise-to-three-hearts lane",
               "isPublic": true
             }
           ],
@@ -1583,6 +1732,24 @@
               "clauseId": "bridge.hasShortage:boolean:false",
               "description": "No short suit (balanced enough for NT invite)",
               "rationale": "balanced enough for NT invite",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "At least five spades",
+              "rationale": "the transfer invite keeps exactly five spades in the major",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:lte:5",
+              "description": "No more than five spades",
+              "rationale": "six-card invites belong in the raise-to-three-spades lane",
               "isPublic": true
             }
           ],
@@ -2881,7 +3048,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4♥ heart fit",
+            "name": "4\u2665 heart fit",
             "summary": "Correct to 4H with 3+ hearts, choosing the major fit over 3NT"
           }
         },
@@ -2966,7 +3133,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4♠ spade fit",
+            "name": "4\u2660 spade fit",
             "summary": "Correct to 4S with 3+ spades, choosing the major fit over 3NT"
           }
         },
@@ -3594,7 +3761,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand — pass the super-accept",
+              "description": "Weak hand \u2014 pass the super-accept",
               "rationale": "weak hand; even opposite a maximum super-accept, no game try warranted",
               "isPublic": true
             }
@@ -3613,7 +3780,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Signoff after super-accept",
-            "summary": "Pass 3H with a weak hand — opener's super-accept already buys the ninth trump"
+            "summary": "Pass 3H with a weak hand \u2014 opener's super-accept already buys the ninth trump"
           }
         },
         {
@@ -3686,7 +3853,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand — pass the super-accept",
+              "description": "Weak hand \u2014 pass the super-accept",
               "rationale": "weak hand; even opposite a maximum super-accept, no game try warranted",
               "isPublic": true
             }
@@ -3705,7 +3872,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Signoff after super-accept",
-            "summary": "Pass 3S with a weak hand — opener's super-accept already buys the ninth trump"
+            "summary": "Pass 3S with a weak hand \u2014 opener's super-accept already buys the ninth trump"
           }
         },
         {
@@ -4090,19 +4257,23 @@
       "purpose": "Transfer the contract to opener's hand when responder has a 5+ card major after 1NT opening",
       "whenToUse": "Partner opens 1NT (15-17 HCP balanced). You have a 5+ card major suit.",
       "whenNotToUse": [
-        "Only a 4-card major — use Stayman instead",
-        "No major suits — bid notrump directly"
+        "Only a 4-card major \u2014 use Stayman instead",
+        "No major suits \u2014 bid notrump directly"
       ],
-      "principle": "2D transfers to hearts, 2H transfers to spades — opener always accepts, making the strong hand declarer",
+      "principle": "2D transfers to hearts, 2H transfers to spades \u2014 opener always accepts, making the strong hand declarer",
       "roles": "Responder initiates the transfer; opener mechanically accepts; responder then decides the final contract level"
     },
     "attachments": [
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": ["1NT"]
+          "calls": [
+            "1NT"
+          ]
         },
-        "requiresCapabilities": ["opening.1nt"]
+        "requiresCapabilities": [
+          "opening.1nt"
+        ]
       }
     ]
   },
@@ -4115,8 +4286,14 @@
         "description": "Transfer target suit (hearts, spades, or none)",
         "valueType": "string",
         "forTeachingOnly": true,
-        "derivesFrom": ["hand.suitLength.hearts", "hand.suitLength.spades"],
-        "constrainsDimensions": ["suitIdentity", "suitLength"],
+        "derivesFrom": [
+          "hand.suitLength.hearts",
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ],
         "composition": {
           "kind": "match",
           "cases": [
@@ -4153,8 +4330,13 @@
         "description": "Eligible for Jacoby transfer (5+ card major)",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": ["bridge.hasFiveCardMajor"],
-        "constrainsDimensions": ["suitIdentity", "suitLength"],
+        "derivesFrom": [
+          "bridge.hasFiveCardMajor"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ],
         "composition": {
           "kind": "extended",
           "clause": {
@@ -4171,8 +4353,13 @@
         "description": "Transfer preferred (eligible with 5+ card suit)",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": ["module.transfer.eligible"],
-        "constrainsDimensions": ["suitIdentity", "suitLength"],
+        "derivesFrom": [
+          "module.transfer.eligible"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ],
         "composition": {
           "kind": "extended",
           "clause": {
@@ -4188,8 +4375,13 @@
         "world": "acting-hand",
         "description": "Opener has 3+ hearts (fit with responder's 5-card suit)",
         "valueType": "boolean",
-        "derivesFrom": ["hand.suitLength.hearts"],
-        "constrainsDimensions": ["suitIdentity", "suitLength"],
+        "derivesFrom": [
+          "hand.suitLength.hearts"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4205,8 +4397,13 @@
         "world": "acting-hand",
         "description": "Opener has 3+ spades (fit with responder's 5-card suit)",
         "valueType": "boolean",
-        "derivesFrom": ["hand.suitLength.spades"],
-        "constrainsDimensions": ["suitIdentity", "suitLength"],
+        "derivesFrom": [
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -4218,5 +4415,10 @@
       }
     ]
   },
-  "symmetricPairs": [["invite-raised-hearts", "invite-raised-spades"]]
+  "symmetricPairs": [
+    [
+      "invite-raised-hearts",
+      "invite-raised-spades"
+    ]
+  ]
 }

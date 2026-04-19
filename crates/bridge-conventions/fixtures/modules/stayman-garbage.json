@@ -10,7 +10,7 @@
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/notrump-opening-bids-part-1-of-3-footnote-1",
-      "label": "Larry Cohen — Stayman Continuations / Garbage Stayman (bridge-articles/notrump-opening-bids-part-1-of-3-footnote-1)"
+      "label": "Larry Cohen \u2014 Stayman Continuations / Garbage Stayman (bridge-articles/notrump-opening-bids-part-1-of-3-footnote-1)"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/garbage_stayman.php"
@@ -43,7 +43,11 @@
       "contrastiveTemplateKey": "nt.stayman.eligible.whyNot",
       "contrastiveDisplayText": "Not eligible for Garbage Stayman",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking", "pedagogical"]
+      "roles": [
+        "supporting",
+        "blocking",
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.preferred",
@@ -51,7 +55,10 @@
       "templateKey": "nt.stayman.preferred.supporting",
       "displayText": "Garbage Stayman fits the published escape shapes",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "inferential"]
+      "roles": [
+        "supporting",
+        "inferential"
+      ]
     },
     {
       "explanationId": "nt.stayman.nsHaveEightCardFitLikely",
@@ -83,7 +90,9 @@
       "templateKey": "nt.stayman.askMajor.semantic",
       "displayText": "Garbage Stayman 2C: weak escape asking opener for a major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.showHearts",
@@ -91,7 +100,9 @@
       "templateKey": "nt.stayman.showHearts.semantic",
       "displayText": "Opener shows 4+ hearts in response to Garbage Stayman",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.showSpades",
@@ -99,7 +110,9 @@
       "templateKey": "nt.stayman.showSpades.semantic",
       "displayText": "Opener shows 4+ spades in response to Garbage Stayman",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.denyMajor",
@@ -107,55 +120,69 @@
       "templateKey": "nt.stayman.denyMajor.semantic",
       "displayText": "Opener bids 2D to deny a 4-card major over Garbage Stayman",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.garbagePassAfterHearts",
       "meaningId": "stayman:garbage-pass-after-hearts",
       "templateKey": "nt.stayman.garbagePassAfterHearts.semantic",
-      "displayText": "Pass opener's 2♥ — Garbage Stayman escape with a weak hand",
+      "displayText": "Pass opener's 2\u2665 \u2014 Garbage Stayman escape with a weak hand",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.garbagePassAfterSpades",
       "meaningId": "stayman:garbage-pass-after-spades",
       "templateKey": "nt.stayman.garbagePassAfterSpades.semantic",
-      "displayText": "Pass opener's 2♠ — Garbage Stayman escape with a weak hand",
+      "displayText": "Pass opener's 2\u2660 \u2014 Garbage Stayman escape with a weak hand",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.crawlingAfterDenial",
       "meaningId": "stayman:crawling-2h-after-denial",
       "templateKey": "nt.stayman.crawlingAfterDenial.semantic",
-      "displayText": "Bid 2♥ after 2♦ — Crawling Stayman asks opener to choose a major",
+      "displayText": "Bid 2\u2665 after 2\u2666 \u2014 Crawling Stayman asks opener to choose a major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.garbagePassAfterDenial",
       "meaningId": "stayman:garbage-pass-after-denial",
       "templateKey": "nt.stayman.garbagePassAfterDenial.semantic",
-      "displayText": "Pass opener's 2♦ denial — Garbage Stayman escape to diamonds with a weak hand",
+      "displayText": "Pass opener's 2\u2666 denial \u2014 Garbage Stayman escape to diamonds with a weak hand",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.crawlingPassHearts",
       "meaningId": "stayman:crawling-pass-hearts",
       "templateKey": "nt.stayman.crawlingPassHearts.semantic",
-      "displayText": "Pass 2♥ as the default pass-or-correct resolution after Crawling Stayman",
+      "displayText": "Pass 2\u2665 as the default pass-or-correct resolution after Crawling Stayman",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.stayman.crawlingCorrectSpades",
       "meaningId": "stayman:crawling-correct-spades",
       "templateKey": "nt.stayman.crawlingCorrectSpades.semantic",
-      "displayText": "Correct to 2♠ with three spades after Crawling Stayman",
+      "displayText": "Correct to 2\u2660 with three spades after Crawling Stayman",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     }
   ],
   "local": {
@@ -256,66 +283,21 @@
           },
           "clauses": [
             {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 7,
-              "clauseId": "hand.hcp:lte:7",
-              "description": "0–7 HCP (weak hand)",
-              "rationale": "Garbage Stayman is a weak escape only",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
-              "value": 3,
-              "clauseId": "hand.suitLength.hearts:gte:3",
-              "description": "At least 3 hearts",
-              "rationale": "Published garbage shapes can be 4-4, 4-3, or 3-4 in the majors",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.spades",
-              "operator": "gte",
-              "value": 3,
-              "clauseId": "hand.suitLength.spades:gte:3",
-              "description": "At least 3 spades",
-              "rationale": "Published garbage shapes can be 4-4, 4-3, or 3-4 in the majors",
-              "isPublic": true
-            },
-            {
-              "factId": "bridge.hasFourCardMajor",
+              "factId": "system.responder.weakHand",
               "operator": "boolean",
               "value": true,
-              "clauseId": "bridge.hasFourCardMajor:boolean:true",
-              "description": "At least one 4-card major",
-              "rationale": "Responder needs a real major-suit escape when opener answers Stayman",
+              "clauseId": "system.responder.weakHand:boolean:true",
+              "description": "Weak hand (0\u20137 HCP)",
+              "rationale": "Garbage Stayman is a weak escape only.",
               "isPublic": true
             },
             {
-              "factId": "bridge.hasFiveCardMajor",
+              "factId": "module.stayman.preferred",
               "operator": "boolean",
-              "value": false,
-              "clauseId": "bridge.hasFiveCardMajor:boolean:false",
-              "description": "No 5-card major",
-              "rationale": "Weak hands with a 5-card major use Jacoby transfers instead",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.clubs",
-              "operator": "lte",
-              "value": 2,
-              "clauseId": "hand.suitLength.clubs:lte:2",
-              "description": "At most 2 clubs",
-              "rationale": "Garbage Stayman starts from a short-club escape shape",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.diamonds",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.diamonds:gte:4",
-              "description": "4+ diamonds",
-              "rationale": "Responder must be able to pass 2♦ when opener denies a major",
+              "value": true,
+              "clauseId": "module.stayman.preferred:boolean:true",
+              "description": "Published Garbage Stayman shapes only",
+              "rationale": "Use only the published short-club shapes 4-4-4-1, 4-4-5-0, 3-4-5-1, and 4-3-5-1.",
               "isPublic": true
             }
           ],
@@ -332,7 +314,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "Garbage Stayman 2♣",
+            "name": "Garbage Stayman 2\u2663",
             "summary": "Escape 1NT with a weak short-club hand: classic shapes are 4-4-4-1 / 4-4-5-0, with 3-4-5-1 and 4-3-5-1 also acceptable."
           }
         }
@@ -464,7 +446,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "Deny major (2♦)",
+            "name": "Deny major (2\u2666)",
             "summary": "Deny holding a 4-card major in response to Stayman"
           }
         }
@@ -492,7 +474,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand (0–7 HCP)",
+              "description": "Weak hand (0\u20137 HCP)",
               "rationale": "Garbage Stayman: pass any response with a weak hand",
               "isPublic": true
             },
@@ -502,7 +484,7 @@
               "value": 2,
               "clauseId": "hand.suitLength.clubs:lte:2",
               "description": "At most 2 clubs",
-              "rationale": "Garbage Stayman starts from a short-club escape shape; pass 2♥ when that weak hand can live there.",
+              "rationale": "Garbage Stayman starts from a short-club escape shape; pass 2\u2665 when that weak hand can live there.",
               "isPublic": true
             }
           ],
@@ -520,7 +502,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (Garbage Stayman)",
-            "summary": "Pass opener's 2♥ response and take the cheapest safe major partscore."
+            "summary": "Pass opener's 2\u2665 response and take the cheapest safe major partscore."
           }
         }
       ],
@@ -547,7 +529,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand (0–7 HCP)",
+              "description": "Weak hand (0\u20137 HCP)",
               "rationale": "Garbage Stayman: pass any response with a weak hand",
               "isPublic": true
             },
@@ -557,7 +539,7 @@
               "value": 2,
               "clauseId": "hand.suitLength.clubs:lte:2",
               "description": "At most 2 clubs",
-              "rationale": "Garbage Stayman starts from a short-club escape shape; pass 2♠ when that weak hand can live there.",
+              "rationale": "Garbage Stayman starts from a short-club escape shape; pass 2\u2660 when that weak hand can live there.",
               "isPublic": true
             }
           ],
@@ -575,7 +557,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (Garbage Stayman)",
-            "summary": "Pass opener's 2♠ response and take the cheapest safe major partscore."
+            "summary": "Pass opener's 2\u2660 response and take the cheapest safe major partscore."
           }
         }
       ],
@@ -602,7 +584,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand (0–7 HCP)",
+              "description": "Weak hand (0\u20137 HCP)",
               "rationale": "Garbage Stayman: pass any response with a weak hand",
               "isPublic": true
             },
@@ -620,8 +602,8 @@
               "operator": "gte",
               "value": 4,
               "clauseId": "hand.suitLength.diamonds:gte:4",
-              "description": "4+ diamonds (safe escape to 2♦)",
-              "rationale": "Passing 2♦ needs a diamond length to make the contract playable",
+              "description": "4+ diamonds (safe escape to 2\u2666)",
+              "rationale": "Passing 2\u2666 needs a diamond length to make the contract playable",
               "isPublic": true
             }
           ],
@@ -639,7 +621,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (Garbage Stayman)",
-            "summary": "Pass opener's 2♦ denial when diamonds are the safe escape suit."
+            "summary": "Pass opener's 2\u2666 denial when diamonds are the safe escape suit."
           }
         },
         {
@@ -659,7 +641,7 @@
               "operator": "lte",
               "value": 7,
               "clauseId": "hand.hcp:lte:7",
-              "description": "0–7 HCP (weak hand)",
+              "description": "0\u20137 HCP (weak hand)",
               "rationale": "Crawling Stayman is still part of the garbage escape treatment",
               "isPublic": true
             },
@@ -669,7 +651,7 @@
               "value": 4,
               "clauseId": "hand.suitLength.hearts:gte:4",
               "description": "4+ hearts",
-              "rationale": "Opener may pass 2♥ as the chosen major",
+              "rationale": "Opener may pass 2\u2665 as the chosen major",
               "isPublic": true
             },
             {
@@ -678,7 +660,7 @@
               "value": 4,
               "clauseId": "hand.suitLength.spades:gte:4",
               "description": "4+ spades",
-              "rationale": "Opener may correct to 2♠ as the chosen major",
+              "rationale": "Opener may correct to 2\u2660 as the chosen major",
               "isPublic": true
             },
             {
@@ -696,7 +678,7 @@
               "value": 2,
               "clauseId": "hand.suitLength.diamonds:lte:2",
               "description": "At most 2 diamonds",
-              "rationale": "Responder cannot safely pass opener's 2♦ denial",
+              "rationale": "Responder cannot safely pass opener's 2\u2666 denial",
               "isPublic": true
             }
           ],
@@ -714,8 +696,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Crawling Stayman 2♥",
-            "summary": "After 2♦, rebid 2♥ with a weak 4-4 majors hand and short diamonds so opener can pass hearts or correct to spades."
+            "name": "Crawling Stayman 2\u2665",
+            "summary": "After 2\u2666, rebid 2\u2665 with a weak 4-4 majors hand and short diamonds so opener can pass hearts or correct to spades."
           }
         }
       ],
@@ -753,8 +735,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Pass 2♥",
-            "summary": "Pass 2♥ as the default pass-or-correct resolution; the 2♠ correction branch is the more specific alternative."
+            "name": "Pass 2\u2665",
+            "summary": "Pass 2\u2665 as the default pass-or-correct resolution; the 2\u2660 correction branch is the more specific alternative."
           }
         },
         {
@@ -775,7 +757,7 @@
               "value": 3,
               "clauseId": "hand.suitLength.spades:gte:3",
               "description": "3+ spades",
-              "rationale": "After 1NT-2♣-2♦-2♥, opener corrects to 2♠ with three spades.",
+              "rationale": "After 1NT-2\u2663-2\u2666-2\u2665, opener corrects to 2\u2660 with three spades.",
               "isPublic": true
             },
             {
@@ -801,7 +783,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Correct to 2♠",
+            "name": "Correct to 2\u2660",
             "summary": "Correct to spades when three spades make that major the better resting place."
           }
         }
@@ -1159,7 +1141,9 @@
           "bridge.hasFourCardMajor",
           "bridge.hasFiveCardMajor"
         ],
-        "constrainsDimensions": ["suitIdentity"],
+        "constrainsDimensions": [
+          "suitIdentity"
+        ],
         "composition": {
           "kind": "and",
           "operands": [
@@ -1216,9 +1200,14 @@
         "derivesFrom": [
           "module.stayman.eligible",
           "hand.suitLength.hearts",
-          "hand.suitLength.spades"
+          "hand.suitLength.spades",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitIdentity"],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength"
+        ],
         "composition": {
           "kind": "and",
           "operands": [
@@ -1231,20 +1220,157 @@
               }
             },
             {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.suitLength.hearts",
-                "operator": "gte",
-                "value": 3
-              }
-            },
-            {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.suitLength.spades",
-                "operator": "gte",
-                "value": 3
-              }
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "eq",
+                        "value": 1
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "eq",
+                        "value": 5
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "eq",
+                        "value": 0
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "eq",
+                        "value": 5
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "eq",
+                        "value": 1
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "eq",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "eq",
+                        "value": 5
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "eq",
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }

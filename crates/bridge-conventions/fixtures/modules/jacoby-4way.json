@@ -10,7 +10,7 @@
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/showing-a-minor-after-partners-1nt",
-      "label": "Larry Cohen — Showing a Minor After Partner's 1NT (bridge-articles/showing-a-minor-after-partners-1nt)"
+      "label": "Larry Cohen \u2014 Showing a Minor After Partner's 1NT (bridge-articles/showing-a-minor-after-partners-1nt)"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/four_suit_transfers.php"
@@ -41,7 +41,9 @@
       "templateKey": "j4w.rangeAsk2s.semantic",
       "displayText": "2S as a range ask for an invitational notrump hand",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.transferClubsWeak",
@@ -49,7 +51,9 @@
       "templateKey": "j4w.transferClubsWeak.semantic",
       "displayText": "2S as a weak transfer route to clubs",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.transferClubsStrong",
@@ -57,7 +61,9 @@
       "templateKey": "j4w.transferClubsStrong.semantic",
       "displayText": "2S as a strong club transfer with slam interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.transferDiamondsWeak",
@@ -65,7 +71,9 @@
       "templateKey": "j4w.transferDiamondsWeak.semantic",
       "displayText": "2NT as a weak transfer to diamonds",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.transferDiamondsStrong",
@@ -73,7 +81,9 @@
       "templateKey": "j4w.transferDiamondsStrong.semantic",
       "displayText": "2NT as a strong diamond transfer with slam interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.clubsMinimum2nt",
@@ -81,7 +91,9 @@
       "templateKey": "j4w.clubsMinimum2nt.semantic",
       "displayText": "2NT shows a minimum response to the 2S range ask",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.acceptClubs",
@@ -89,7 +101,9 @@
       "templateKey": "j4w.acceptClubs.semantic",
       "displayText": "3C is the maximum response / club acceptance",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.superacceptDiamonds",
@@ -97,7 +111,9 @@
       "templateKey": "j4w.superacceptDiamonds.semantic",
       "displayText": "3C is the lower-step super-accept for diamonds",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.acceptDiamonds",
@@ -105,7 +121,9 @@
       "templateKey": "j4w.acceptDiamonds.semantic",
       "displayText": "3D is the routine diamond acceptance",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.signoffClubs",
@@ -113,7 +131,9 @@
       "templateKey": "j4w.signoffClubs.semantic",
       "displayText": "Pass 3C to sign off in clubs",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.signoffDiamonds",
@@ -121,7 +141,9 @@
       "templateKey": "j4w.signoffDiamonds.semantic",
       "displayText": "Pass 3D to sign off in diamonds",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.inviteAfterClubsMax",
@@ -129,7 +151,9 @@
       "templateKey": "j4w.inviteAfterClubsMax.semantic",
       "displayText": "3NT over 3C shows the invitational range-ask hand",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.correctClubs",
@@ -137,7 +161,9 @@
       "templateKey": "j4w.correctClubs.semantic",
       "displayText": "3C corrects opener back to clubs after 2NT",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.correctDiamonds",
@@ -145,7 +171,9 @@
       "templateKey": "j4w.correctDiamonds.semantic",
       "displayText": "3D corrects opener back to diamonds after 3C",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.strongDiamonds3nt",
@@ -153,7 +181,9 @@
       "templateKey": "j4w.strongDiamonds3nt.semantic",
       "displayText": "3NT shows the balanced strong diamond branch",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.clubsShowDiamonds",
@@ -161,7 +191,9 @@
       "templateKey": "j4w.clubsShowDiamonds.semantic",
       "displayText": "A new suit after clubs shows a strong secondary diamond feature",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.clubsShowHearts",
@@ -169,7 +201,9 @@
       "templateKey": "j4w.clubsShowHearts.semantic",
       "displayText": "A new suit after clubs shows a strong secondary heart feature",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.clubsShowSpades",
@@ -177,7 +211,9 @@
       "templateKey": "j4w.clubsShowSpades.semantic",
       "displayText": "A new suit after clubs shows a strong secondary spade feature",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.diamondsShowClubs",
@@ -185,7 +221,9 @@
       "templateKey": "j4w.diamondsShowClubs.semantic",
       "displayText": "A new suit after diamonds shows a strong secondary club feature",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.diamondsShowHearts",
@@ -193,7 +231,9 @@
       "templateKey": "j4w.diamondsShowHearts.semantic",
       "displayText": "A new suit after diamonds shows a strong secondary heart feature",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "j4w.diamondsShowSpades",
@@ -201,7 +241,9 @@
       "templateKey": "j4w.diamondsShowSpades.semantic",
       "displayText": "A new suit after diamonds shows a strong secondary spade feature",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     }
   ],
   "facts": {
@@ -988,7 +1030,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3NT invite after 3C",
-            "summary": "Convert opener’s 3C maximum response to 3NT with the balanced invitational hand."
+            "summary": "Convert opener\u2019s 3C maximum response to 3NT with the balanced invitational hand."
           }
         },
         {
@@ -1474,7 +1516,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass 2NT",
-            "summary": "Pass opener’s 2NT minimum response with the balanced invitational hand."
+            "summary": "Pass opener\u2019s 2NT minimum response with the balanced invitational hand."
           }
         },
         {
@@ -1494,7 +1536,7 @@
               "operator": "boolean",
               "value": true,
               "description": "Weak hand",
-              "rationale": "The weak club hand corrects opener’s 2NT minimum back to clubs.",
+              "rationale": "The weak club hand corrects opener\u2019s 2NT minimum back to clubs.",
               "isPublic": true
             },
             {
@@ -1520,7 +1562,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3C weak correction",
-            "summary": "Correct opener’s 2NT minimum back to 3C with the weak club signoff hand."
+            "summary": "Correct opener\u2019s 2NT minimum back to 3C with the weak club signoff hand."
           }
         }
       ]
@@ -1578,7 +1620,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3D weak correction",
-            "summary": "Correct opener’s 3C super-accept back to 3D with the weak diamond signoff hand."
+            "summary": "Correct opener\u2019s 3C super-accept back to 3D with the weak diamond signoff hand."
           }
         },
         {

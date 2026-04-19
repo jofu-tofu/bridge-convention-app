@@ -9,7 +9,7 @@
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/responding-to-weak-2-bids",
-      "label": "Larry Cohen — Responding to Weak 2-Bids (bridge-articles/responding-to-weak-2-bids)"
+      "label": "Larry Cohen \u2014 Responding to Weak 2-Bids (bridge-articles/responding-to-weak-2-bids)"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/weak_two.php"
@@ -46,7 +46,10 @@
       "contrastiveTemplateKey": "weakTwo.hcp.opener.whyNot",
       "contrastiveDisplayText": "HCP not in weak two opening range",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.feature.isMinimum",
@@ -54,9 +57,12 @@
       "templateKey": "weakTwo.feature.isMinimum.supporting",
       "displayText": "Minimum weak two for the Feature rebid structure",
       "contrastiveTemplateKey": "weakTwo.feature.isMinimum.whyNot",
-      "contrastiveDisplayText": "Not minimum — opener can show a feature or solid suit",
+      "contrastiveDisplayText": "Not minimum \u2014 opener can show a feature or solid suit",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.feature.hasFeature.clubs",
@@ -64,7 +70,10 @@
       "templateKey": "weakTwo.feature.hasFeature.clubs.supporting",
       "displayText": "Has an outside clubs feature headed by an ace or king",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.feature.hasFeature.diamonds",
@@ -72,7 +81,10 @@
       "templateKey": "weakTwo.feature.hasFeature.diamonds.supporting",
       "displayText": "Has an outside diamonds feature headed by an ace or king",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.feature.hasFeature.hearts",
@@ -80,7 +92,10 @@
       "templateKey": "weakTwo.feature.hasFeature.hearts.supporting",
       "displayText": "Has an outside hearts feature headed by an ace or king",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.feature.hasFeature.spades",
@@ -88,7 +103,10 @@
       "templateKey": "weakTwo.feature.hasFeature.spades.supporting",
       "displayText": "Has an outside spades feature headed by an ace or king",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.feature.trumpSolid.hearts",
@@ -98,7 +116,10 @@
       "contrastiveTemplateKey": "weakTwo.feature.trumpSolid.hearts.whyNot",
       "contrastiveDisplayText": "Hearts suit is not solid enough for the 3NT reply",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.feature.trumpSolid.spades",
@@ -108,7 +129,10 @@
       "contrastiveTemplateKey": "weakTwo.feature.trumpSolid.spades.whyNot",
       "contrastiveDisplayText": "Spades suit is not solid enough for the 3NT reply",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.feature.trumpSolid.diamonds",
@@ -118,7 +142,10 @@
       "contrastiveTemplateKey": "weakTwo.feature.trumpSolid.diamonds.whyNot",
       "contrastiveDisplayText": "Diamonds suit is not solid enough for the 3NT reply",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.hasNewSuit.hearts",
@@ -126,7 +153,10 @@
       "templateKey": "weakTwo.hasNewSuit.hearts.supporting",
       "displayText": "Has 5+ cards in a suit other than hearts",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.hasNewSuit.spades",
@@ -134,7 +164,10 @@
       "templateKey": "weakTwo.hasNewSuit.spades.supporting",
       "displayText": "Has 5+ cards in a suit other than spades",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.hasNewSuit.diamonds",
@@ -142,7 +175,10 @@
       "templateKey": "weakTwo.hasNewSuit.diamonds.supporting",
       "displayText": "Has 5+ cards in a suit other than diamonds",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking"]
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
     },
     {
       "explanationId": "weakTwo.r1.open2h",
@@ -150,7 +186,9 @@
       "templateKey": "weakTwo.r1.open2h.semantic",
       "displayText": "Open 2H: exactly 6 hearts, weak-two values, and reasonable suit quality",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.featureAsk.hearts",
@@ -158,7 +196,9 @@
       "templateKey": "weakTwo.r2.featureAsk.hearts.semantic",
       "displayText": "Feature 2NT over 2H: ask opener whether the weak two is minimum or holds a useful side feature",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.newSuitForcing.hearts",
@@ -166,15 +206,19 @@
       "templateKey": "weakTwo.r2.newSuitForcing.hearts.semantic",
       "displayText": "New suit forcing over 2H: natural game-interest action with a real side suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.supportRaise.hearts",
       "meaningId": "weak-two:support-raise-hearts",
       "templateKey": "weakTwo.r2.supportRaise.hearts.semantic",
-      "displayText": "3H raise: further the preempt with 4-card support and no game drive",
+      "displayText": "3H raise: further the preempt with 3+ card support and no game drive",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.furtherRaise.hearts",
@@ -182,7 +226,9 @@
       "templateKey": "weakTwo.r2.furtherRaise.hearts.semantic",
       "displayText": "4H raise: pressure bid with 4+ trumps and enough offense to go one level higher",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.weakPass.hearts",
@@ -190,7 +236,9 @@
       "templateKey": "weakTwo.r2.weakPass.hearts.semantic",
       "displayText": "Pass over 2H: no fit-based raise and no Feature-game interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureMinimum.hearts",
@@ -198,7 +246,9 @@
       "templateKey": "weakTwo.r3.featureMinimum.hearts.semantic",
       "displayText": "Rebid 3H: minimum weak two, whatever the side honors look like",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureReply.clubs.over.hearts",
@@ -206,7 +256,9 @@
       "templateKey": "weakTwo.r3.featureReply.clubs.over.hearts.semantic",
       "displayText": "Show a clubs feature over 2H-2NT: non-minimum hand with an outside ace or king",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureReply.diamonds.over.hearts",
@@ -214,7 +266,9 @@
       "templateKey": "weakTwo.r3.featureReply.diamonds.over.hearts.semantic",
       "displayText": "Show a diamonds feature over 2H-2NT: non-minimum hand with an outside ace or king",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureReply.spades.over.hearts",
@@ -222,7 +276,9 @@
       "templateKey": "weakTwo.r3.featureReply.spades.over.hearts.semantic",
       "displayText": "Show a spades feature over 2H-2NT: non-minimum hand with an outside ace or king",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureSolid.hearts",
@@ -230,7 +286,9 @@
       "templateKey": "weakTwo.r3.featureSolid.hearts.semantic",
       "displayText": "Rebid 3NT over 2H-2NT: non-minimum balanced hand with a solid hearts suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r1.open2s",
@@ -238,7 +296,9 @@
       "templateKey": "weakTwo.r1.open2s.semantic",
       "displayText": "Open 2S: exactly 6 spades, weak-two values, and reasonable suit quality",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.featureAsk.spades",
@@ -246,7 +306,9 @@
       "templateKey": "weakTwo.r2.featureAsk.spades.semantic",
       "displayText": "Feature 2NT over 2S: ask opener whether the weak two is minimum or holds a useful side feature",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.newSuitForcing.spades",
@@ -254,15 +316,19 @@
       "templateKey": "weakTwo.r2.newSuitForcing.spades.semantic",
       "displayText": "New suit forcing over 2S: natural game-interest action with a real side suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.supportRaise.spades",
       "meaningId": "weak-two:support-raise-spades",
       "templateKey": "weakTwo.r2.supportRaise.spades.semantic",
-      "displayText": "3S raise: further the preempt with 4-card support and no game drive",
+      "displayText": "3S raise: further the preempt with 3+ card support and no game drive",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.furtherRaise.spades",
@@ -270,7 +336,9 @@
       "templateKey": "weakTwo.r2.furtherRaise.spades.semantic",
       "displayText": "4S raise: pressure bid with 4+ trumps and enough offense to go one level higher",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.weakPass.spades",
@@ -278,7 +346,9 @@
       "templateKey": "weakTwo.r2.weakPass.spades.semantic",
       "displayText": "Pass over 2S: no fit-based raise and no Feature-game interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureMinimum.spades",
@@ -286,7 +356,9 @@
       "templateKey": "weakTwo.r3.featureMinimum.spades.semantic",
       "displayText": "Rebid 3S: minimum weak two, whatever the side honors look like",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureReply.clubs.over.spades",
@@ -294,7 +366,9 @@
       "templateKey": "weakTwo.r3.featureReply.clubs.over.spades.semantic",
       "displayText": "Show a clubs feature over 2S-2NT: non-minimum hand with an outside ace or king",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureReply.diamonds.over.spades",
@@ -302,7 +376,9 @@
       "templateKey": "weakTwo.r3.featureReply.diamonds.over.spades.semantic",
       "displayText": "Show a diamonds feature over 2S-2NT: non-minimum hand with an outside ace or king",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureReply.hearts.over.spades",
@@ -310,7 +386,9 @@
       "templateKey": "weakTwo.r3.featureReply.hearts.over.spades.semantic",
       "displayText": "Show a hearts feature over 2S-2NT: non-minimum hand with an outside ace or king",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureSolid.spades",
@@ -318,7 +396,9 @@
       "templateKey": "weakTwo.r3.featureSolid.spades.semantic",
       "displayText": "Rebid 3NT over 2S-2NT: non-minimum balanced hand with a solid spades suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r1.open2d",
@@ -326,7 +406,9 @@
       "templateKey": "weakTwo.r1.open2d.semantic",
       "displayText": "Open 2D: exactly 6 diamonds, weak-two values, and reasonable suit quality",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.featureAsk.diamonds",
@@ -334,7 +416,9 @@
       "templateKey": "weakTwo.r2.featureAsk.diamonds.semantic",
       "displayText": "Feature 2NT over 2D: ask opener whether the weak two is minimum or holds a useful side feature",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.newSuitForcing.diamonds",
@@ -342,15 +426,19 @@
       "templateKey": "weakTwo.r2.newSuitForcing.diamonds.semantic",
       "displayText": "New suit forcing over 2D: natural game-interest action with a real side suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.supportRaise.diamonds",
       "meaningId": "weak-two:support-raise-diamonds",
       "templateKey": "weakTwo.r2.supportRaise.diamonds.semantic",
-      "displayText": "3D raise: further the preempt with 4-card support and no game drive",
+      "displayText": "3D raise: further the preempt with 3+ card support and no game drive",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.furtherRaise.diamonds",
@@ -358,7 +446,9 @@
       "templateKey": "weakTwo.r2.furtherRaise.diamonds.semantic",
       "displayText": "4D raise: pressure bid with 4+ trumps and enough offense to go one level higher",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r2.weakPass.diamonds",
@@ -366,7 +456,9 @@
       "templateKey": "weakTwo.r2.weakPass.diamonds.semantic",
       "displayText": "Pass over 2D: no fit-based raise and no Feature-game interest",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureMinimum.diamonds",
@@ -374,7 +466,9 @@
       "templateKey": "weakTwo.r3.featureMinimum.diamonds.semantic",
       "displayText": "Rebid 3D: minimum weak two, whatever the side honors look like",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureReply.clubs.over.diamonds",
@@ -382,7 +476,9 @@
       "templateKey": "weakTwo.r3.featureReply.clubs.over.diamonds.semantic",
       "displayText": "Show a clubs feature over 2D-2NT: non-minimum hand with an outside ace or king",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureReply.hearts.over.diamonds",
@@ -390,7 +486,9 @@
       "templateKey": "weakTwo.r3.featureReply.hearts.over.diamonds.semantic",
       "displayText": "Show a hearts feature over 2D-2NT: non-minimum hand with an outside ace or king",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureReply.spades.over.diamonds",
@@ -398,7 +496,9 @@
       "templateKey": "weakTwo.r3.featureReply.spades.over.diamonds.semantic",
       "displayText": "Show a spades feature over 2D-2NT: non-minimum hand with an outside ace or king",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r3.featureSolid.diamonds",
@@ -406,7 +506,9 @@
       "templateKey": "weakTwo.r3.featureSolid.diamonds.semantic",
       "displayText": "Rebid 3NT over 2D-2NT: non-minimum balanced hand with a solid diamonds suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.minimum.hearts",
@@ -414,7 +516,9 @@
       "templateKey": "weakTwo.r4.pass.minimum.hearts.semantic",
       "displayText": "Pass after opener's minimum Feature reply over 2H",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.game.minimum.hearts",
@@ -422,7 +526,9 @@
       "templateKey": "weakTwo.r4.game.minimum.hearts.semantic",
       "displayText": "Correct to 4H after opener's minimum Feature reply when the trump game is right",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.solid.hearts",
@@ -430,7 +536,9 @@
       "templateKey": "weakTwo.r4.pass.solid.hearts.semantic",
       "displayText": "Pass after opener's solid Feature reply over 2H",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.game.solid.hearts",
@@ -438,7 +546,9 @@
       "templateKey": "weakTwo.r4.game.solid.hearts.semantic",
       "displayText": "Correct to 4H after opener's solid Feature reply when the trump game is right",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.clubs.over.hearts",
@@ -446,7 +556,9 @@
       "templateKey": "weakTwo.r4.pass.clubs.over.hearts.semantic",
       "displayText": "Pass opener's clubs feature reply when that partscore is playable",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.signoff.clubs.over.hearts",
@@ -454,7 +566,9 @@
       "templateKey": "weakTwo.r4.signoff.clubs.over.hearts.semantic",
       "displayText": "Sign off in opener's hearts after the clubs feature reply",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameTrump.clubs.over.hearts",
@@ -462,7 +576,9 @@
       "templateKey": "weakTwo.r4.gameTrump.clubs.over.hearts.semantic",
       "displayText": "Bid 4H after opener's clubs feature reply when the trump game rates to make",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameFeature.clubs.over.hearts",
@@ -470,7 +586,9 @@
       "templateKey": "weakTwo.r4.gameFeature.clubs.over.hearts.semantic",
       "displayText": "Bid 5C when opener's clubs feature pinpoints the best game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.diamonds.over.hearts",
@@ -478,7 +596,9 @@
       "templateKey": "weakTwo.r4.pass.diamonds.over.hearts.semantic",
       "displayText": "Pass opener's diamonds feature reply when that partscore is playable",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.signoff.diamonds.over.hearts",
@@ -486,7 +606,9 @@
       "templateKey": "weakTwo.r4.signoff.diamonds.over.hearts.semantic",
       "displayText": "Sign off in opener's hearts after the diamonds feature reply",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameTrump.diamonds.over.hearts",
@@ -494,7 +616,9 @@
       "templateKey": "weakTwo.r4.gameTrump.diamonds.over.hearts.semantic",
       "displayText": "Bid 4H after opener's diamonds feature reply when the trump game rates to make",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameFeature.diamonds.over.hearts",
@@ -502,7 +626,9 @@
       "templateKey": "weakTwo.r4.gameFeature.diamonds.over.hearts.semantic",
       "displayText": "Bid 5D when opener's diamonds feature pinpoints the best game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.spades.over.hearts",
@@ -510,7 +636,9 @@
       "templateKey": "weakTwo.r4.pass.spades.over.hearts.semantic",
       "displayText": "Pass opener's spades feature reply when that partscore is playable",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.signoff.spades.over.hearts",
@@ -518,7 +646,9 @@
       "templateKey": "weakTwo.r4.signoff.spades.over.hearts.semantic",
       "displayText": "Sign off in opener's hearts after the spades feature reply",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameTrump.spades.over.hearts",
@@ -526,7 +656,9 @@
       "templateKey": "weakTwo.r4.gameTrump.spades.over.hearts.semantic",
       "displayText": "Bid 4H after opener's spades feature reply when the trump game rates to make",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameFeature.spades.over.hearts",
@@ -534,7 +666,9 @@
       "templateKey": "weakTwo.r4.gameFeature.spades.over.hearts.semantic",
       "displayText": "Bid 4S when opener's spades feature pinpoints the best game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.minimum.spades",
@@ -542,7 +676,9 @@
       "templateKey": "weakTwo.r4.pass.minimum.spades.semantic",
       "displayText": "Pass after opener's minimum Feature reply over 2S",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.game.minimum.spades",
@@ -550,7 +686,9 @@
       "templateKey": "weakTwo.r4.game.minimum.spades.semantic",
       "displayText": "Correct to 4S after opener's minimum Feature reply when the trump game is right",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.solid.spades",
@@ -558,7 +696,9 @@
       "templateKey": "weakTwo.r4.pass.solid.spades.semantic",
       "displayText": "Pass after opener's solid Feature reply over 2S",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.game.solid.spades",
@@ -566,7 +706,9 @@
       "templateKey": "weakTwo.r4.game.solid.spades.semantic",
       "displayText": "Correct to 4S after opener's solid Feature reply when the trump game is right",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.clubs.over.spades",
@@ -574,7 +716,9 @@
       "templateKey": "weakTwo.r4.pass.clubs.over.spades.semantic",
       "displayText": "Pass opener's clubs feature reply when that partscore is playable",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.signoff.clubs.over.spades",
@@ -582,7 +726,9 @@
       "templateKey": "weakTwo.r4.signoff.clubs.over.spades.semantic",
       "displayText": "Sign off in opener's spades after the clubs feature reply",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameTrump.clubs.over.spades",
@@ -590,7 +736,9 @@
       "templateKey": "weakTwo.r4.gameTrump.clubs.over.spades.semantic",
       "displayText": "Bid 4S after opener's clubs feature reply when the trump game rates to make",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameFeature.clubs.over.spades",
@@ -598,7 +746,9 @@
       "templateKey": "weakTwo.r4.gameFeature.clubs.over.spades.semantic",
       "displayText": "Bid 5C when opener's clubs feature pinpoints the best game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.diamonds.over.spades",
@@ -606,7 +756,9 @@
       "templateKey": "weakTwo.r4.pass.diamonds.over.spades.semantic",
       "displayText": "Pass opener's diamonds feature reply when that partscore is playable",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.signoff.diamonds.over.spades",
@@ -614,7 +766,9 @@
       "templateKey": "weakTwo.r4.signoff.diamonds.over.spades.semantic",
       "displayText": "Sign off in opener's spades after the diamonds feature reply",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameTrump.diamonds.over.spades",
@@ -622,7 +776,9 @@
       "templateKey": "weakTwo.r4.gameTrump.diamonds.over.spades.semantic",
       "displayText": "Bid 4S after opener's diamonds feature reply when the trump game rates to make",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameFeature.diamonds.over.spades",
@@ -630,7 +786,9 @@
       "templateKey": "weakTwo.r4.gameFeature.diamonds.over.spades.semantic",
       "displayText": "Bid 5D when opener's diamonds feature pinpoints the best game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.hearts.over.spades",
@@ -638,7 +796,9 @@
       "templateKey": "weakTwo.r4.pass.hearts.over.spades.semantic",
       "displayText": "Pass opener's hearts feature reply when that partscore is playable",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.signoff.hearts.over.spades",
@@ -646,7 +806,9 @@
       "templateKey": "weakTwo.r4.signoff.hearts.over.spades.semantic",
       "displayText": "Sign off in opener's spades after the hearts feature reply",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameTrump.hearts.over.spades",
@@ -654,7 +816,9 @@
       "templateKey": "weakTwo.r4.gameTrump.hearts.over.spades.semantic",
       "displayText": "Bid 4S after opener's hearts feature reply when the trump game rates to make",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameFeature.hearts.over.spades",
@@ -662,7 +826,9 @@
       "templateKey": "weakTwo.r4.gameFeature.hearts.over.spades.semantic",
       "displayText": "Bid 4H when opener's hearts feature pinpoints the best game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.minimum.diamonds",
@@ -670,7 +836,9 @@
       "templateKey": "weakTwo.r4.pass.minimum.diamonds.semantic",
       "displayText": "Pass after opener's minimum Feature reply over 2D",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.game.minimum.diamonds",
@@ -678,7 +846,9 @@
       "templateKey": "weakTwo.r4.game.minimum.diamonds.semantic",
       "displayText": "Correct to 5D after opener's minimum Feature reply when the trump game is right",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.solid.diamonds",
@@ -686,7 +856,9 @@
       "templateKey": "weakTwo.r4.pass.solid.diamonds.semantic",
       "displayText": "Pass after opener's solid Feature reply over 2D",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.game.solid.diamonds",
@@ -694,7 +866,9 @@
       "templateKey": "weakTwo.r4.game.solid.diamonds.semantic",
       "displayText": "Correct to 5D after opener's solid Feature reply when the trump game is right",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.clubs.over.diamonds",
@@ -702,7 +876,9 @@
       "templateKey": "weakTwo.r4.pass.clubs.over.diamonds.semantic",
       "displayText": "Pass opener's clubs feature reply when that partscore is playable",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.signoff.clubs.over.diamonds",
@@ -710,7 +886,9 @@
       "templateKey": "weakTwo.r4.signoff.clubs.over.diamonds.semantic",
       "displayText": "Sign off in opener's diamonds after the clubs feature reply",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameTrump.clubs.over.diamonds",
@@ -718,7 +896,9 @@
       "templateKey": "weakTwo.r4.gameTrump.clubs.over.diamonds.semantic",
       "displayText": "Bid 5D after opener's clubs feature reply when the trump game rates to make",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameFeature.clubs.over.diamonds",
@@ -726,7 +906,9 @@
       "templateKey": "weakTwo.r4.gameFeature.clubs.over.diamonds.semantic",
       "displayText": "Bid 5C when opener's clubs feature pinpoints the best game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.hearts.over.diamonds",
@@ -734,7 +916,9 @@
       "templateKey": "weakTwo.r4.pass.hearts.over.diamonds.semantic",
       "displayText": "Pass opener's hearts feature reply when that partscore is playable",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.signoff.hearts.over.diamonds",
@@ -742,7 +926,9 @@
       "templateKey": "weakTwo.r4.signoff.hearts.over.diamonds.semantic",
       "displayText": "Sign off in opener's diamonds after the hearts feature reply",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameTrump.hearts.over.diamonds",
@@ -750,7 +936,9 @@
       "templateKey": "weakTwo.r4.gameTrump.hearts.over.diamonds.semantic",
       "displayText": "Bid 5D after opener's hearts feature reply when the trump game rates to make",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameFeature.hearts.over.diamonds",
@@ -758,7 +946,9 @@
       "templateKey": "weakTwo.r4.gameFeature.hearts.over.diamonds.semantic",
       "displayText": "Bid 4H when opener's hearts feature pinpoints the best game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.pass.spades.over.diamonds",
@@ -766,7 +956,9 @@
       "templateKey": "weakTwo.r4.pass.spades.over.diamonds.semantic",
       "displayText": "Pass opener's spades feature reply when that partscore is playable",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.signoff.spades.over.diamonds",
@@ -774,7 +966,9 @@
       "templateKey": "weakTwo.r4.signoff.spades.over.diamonds.semantic",
       "displayText": "Sign off in opener's diamonds after the spades feature reply",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameTrump.spades.over.diamonds",
@@ -782,7 +976,9 @@
       "templateKey": "weakTwo.r4.gameTrump.spades.over.diamonds.semantic",
       "displayText": "Bid 5D after opener's spades feature reply when the trump game rates to make",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "weakTwo.r4.gameFeature.spades.over.diamonds",
@@ -790,7 +986,9 @@
       "templateKey": "weakTwo.r4.gameFeature.spades.over.diamonds.semantic",
       "displayText": "Bid 4S when opener's spades feature pinpoints the best game",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     }
   ],
   "local": {
@@ -1772,9 +1970,9 @@
             {
               "factId": "hand.suitLength.$suit",
               "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.$suit:gte:4",
-              "description": "4+ hearts",
+              "value": 3,
+              "clauseId": "hand.suitLength.$suit:gte:3",
+              "description": "3+ hearts",
               "isPublic": true
             },
             {
@@ -1801,7 +1999,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Support raise (3H)",
-            "summary": "Further the preempt with 4-card support and no game drive"
+            "summary": "Further the preempt with 3+ card support and no game drive"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -2035,9 +2233,9 @@
             {
               "factId": "hand.suitLength.$suit",
               "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.$suit:gte:4",
-              "description": "4+ spades",
+              "value": 3,
+              "clauseId": "hand.suitLength.$suit:gte:3",
+              "description": "3+ spades",
               "isPublic": true
             },
             {
@@ -2064,7 +2262,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Support raise (3S)",
-            "summary": "Further the preempt with 4-card support and no game drive"
+            "summary": "Further the preempt with 3+ card support and no game drive"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -2298,9 +2496,9 @@
             {
               "factId": "hand.suitLength.$suit",
               "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.$suit:gte:4",
-              "description": "4+ diamonds",
+              "value": 3,
+              "clauseId": "hand.suitLength.$suit:gte:3",
+              "description": "3+ diamonds",
               "isPublic": true
             },
             {
@@ -2327,7 +2525,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Support raise (3D)",
-            "summary": "Further the preempt with 4-card support and no game drive"
+            "summary": "Further the preempt with 3+ card support and no game drive"
           },
           "surfaceBindings": {
             "suit": "diamonds"
@@ -3166,7 +3364,7 @@
               "operator": "gte",
               "value": 3,
               "clauseId": "hand.suitLength.spades:gte:3",
-              "description": "3+ spades — support for responder's new suit",
+              "description": "3+ spades \u2014 support for responder's new suit",
               "isPublic": true
             }
           ],
@@ -3215,7 +3413,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.spades:lte:2",
-              "description": "Fewer than 3 spades — no support for responder",
+              "description": "Fewer than 3 spades \u2014 no support for responder",
               "isPublic": true
             }
           ],
@@ -3254,7 +3452,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.spades:lte:2",
-              "description": "Fewer than 3 spades — no support for responder",
+              "description": "Fewer than 3 spades \u2014 no support for responder",
               "isPublic": true
             }
           ],
@@ -3307,7 +3505,7 @@
               "operator": "gte",
               "value": 3,
               "clauseId": "hand.suitLength.clubs:gte:3",
-              "description": "3+ clubs — support for responder's new suit",
+              "description": "3+ clubs \u2014 support for responder's new suit",
               "isPublic": true
             }
           ],
@@ -3356,7 +3554,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.clubs:lte:2",
-              "description": "Fewer than 3 clubs — no support for responder",
+              "description": "Fewer than 3 clubs \u2014 no support for responder",
               "isPublic": true
             }
           ],
@@ -3395,7 +3593,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.clubs:lte:2",
-              "description": "Fewer than 3 clubs — no support for responder",
+              "description": "Fewer than 3 clubs \u2014 no support for responder",
               "isPublic": true
             }
           ],
@@ -3448,7 +3646,7 @@
               "operator": "gte",
               "value": 3,
               "clauseId": "hand.suitLength.hearts:gte:3",
-              "description": "3+ hearts — support for responder's new suit",
+              "description": "3+ hearts \u2014 support for responder's new suit",
               "isPublic": true
             }
           ],
@@ -3497,7 +3695,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.hearts:lte:2",
-              "description": "Fewer than 3 hearts — no support for responder",
+              "description": "Fewer than 3 hearts \u2014 no support for responder",
               "isPublic": true
             }
           ],
@@ -3536,7 +3734,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.hearts:lte:2",
-              "description": "Fewer than 3 hearts — no support for responder",
+              "description": "Fewer than 3 hearts \u2014 no support for responder",
               "isPublic": true
             }
           ],
@@ -5855,7 +6053,9 @@
         "description": "Hearts suit quality passes authority: 2 of top 3 honors (A/K/Q) OR 3 of top 5 honors (A/K/Q/J/T)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitQuality"],
+        "constrainsDimensions": [
+          "suitQuality"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -5887,7 +6087,9 @@
         "description": "Spades suit quality passes authority: 2 of top 3 honors (A/K/Q) OR 3 of top 5 honors (A/K/Q/J/T)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitQuality"],
+        "constrainsDimensions": [
+          "suitQuality"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -5919,7 +6121,9 @@
         "description": "Diamonds suit quality passes authority: 2 of top 3 honors (A/K/Q) OR 3 of top 5 honors (A/K/Q/J/T)",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitQuality"],
+        "constrainsDimensions": [
+          "suitQuality"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -5950,8 +6154,13 @@
         "world": "acting-hand",
         "description": "Opener is minimum for the Feature structure (5-7 NV, 6-7 vul)",
         "valueType": "boolean",
-        "derivesFrom": ["hand.hcp", "bridge.isVulnerable"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp",
+          "bridge.isVulnerable"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -6020,8 +6229,13 @@
         "world": "acting-hand",
         "description": "HCP in weak two opening range (5-11 NV, 6-11 vul)",
         "valueType": "boolean",
-        "derivesFrom": ["hand.hcp", "bridge.isVulnerable"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp",
+          "bridge.isVulnerable"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -6163,7 +6377,10 @@
         "description": "Has an outside clubs feature led by an ace or king",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitIdentity", "suitQuality"],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitQuality"
+        ],
         "composition": {
           "kind": "extended",
           "clause": {
@@ -6181,7 +6398,10 @@
         "description": "Has an outside diamonds feature led by an ace or king",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitIdentity", "suitQuality"],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitQuality"
+        ],
         "composition": {
           "kind": "extended",
           "clause": {
@@ -6199,7 +6419,10 @@
         "description": "Has an outside hearts feature led by an ace or king",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitIdentity", "suitQuality"],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitQuality"
+        ],
         "composition": {
           "kind": "extended",
           "clause": {
@@ -6217,7 +6440,10 @@
         "description": "Has an outside spades feature led by an ace or king",
         "valueType": "boolean",
         "derivesFrom": [],
-        "constrainsDimensions": ["suitIdentity", "suitQuality"],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitQuality"
+        ],
         "composition": {
           "kind": "extended",
           "clause": {
@@ -6241,7 +6467,9 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitLength"],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -6285,7 +6513,9 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitLength"],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -6329,7 +6559,9 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitLength"],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -6578,15 +6810,17 @@
     "declaredCapabilities": {
       "opening.weak-two": "active"
     },
-    "allowedDealers": ["N"],
+    "allowedDealers": [
+      "N"
+    ],
     "supportsRoleSelection": true,
     "teaching": {
       "purpose": "Open light hands with a disciplined six-card suit at the 2-level, then let responder use support-driven raises or a Feature 2NT ask to judge game.",
-      "whenToUse": "Open 2D/2H/2S with exactly six cards in the suit and 5-11 HCP. As responder, further the preempt with four-card support, or use 2NT as the Feature ask when the Rule of 17 suggests game interest.",
+      "whenToUse": "Open 2D/2H/2S with exactly six cards in the suit and 5-11 HCP. As responder, make a direct support raise with trump support, or use 2NT as the Feature ask when the Rule of 17 suggests game interest.",
       "whenNotToUse": [
-        "2C is reserved for strong openings — never open 2C as a weak two",
-        "With a hand too strong for a weak two (12+ HCP) — open at the 1-level instead",
-        "After opponent interference — standard competitive actions apply"
+        "2C is reserved for strong openings \u2014 never open 2C as a weak two",
+        "With a hand too strong for a weak two (12+ HCP) \u2014 open at the 1-level instead",
+        "After opponent interference \u2014 standard competitive actions apply"
       ],
       "tradeoff": "2-level openings lose their natural strong meaning in favor of disciplined preemptive action.",
       "principle": "Weak twos obstruct the opponents first; the Feature ask lets responder decide whether the hand belongs in partscore, game, or a different strain.",
@@ -6596,19 +6830,25 @@
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": ["2D"]
+          "calls": [
+            "2D"
+          ]
         }
       },
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": ["2H"]
+          "calls": [
+            "2H"
+          ]
         }
       },
       {
         "whenAuction": {
           "kind": "sequence",
-          "calls": ["2S"]
+          "calls": [
+            "2S"
+          ]
         }
       }
     ]

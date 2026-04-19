@@ -4,23 +4,23 @@
   "category": "opening-bids",
   "defaultRole": "opener",
   "fixtureVersion": 1,
-  "description": "Standard natural bids: one-level opening bids and natural notrump invite/game raises. This is an umbrella baseline — responder actions to 1-of-a-suit openings and opener rebid continuations are intentionally out of scope for this module and are handled by dedicated response/opening modules.",
+  "description": "Standard natural bids: one-level opening bids and natural notrump invite/game raises. This is an umbrella baseline \u2014 responder actions to 1-of-a-suit openings and opener rebid continuations are intentionally out of scope for this module and are handled by dedicated response/opening modules.",
   "purpose": "Learn the baseline one-level opening bids and natural notrump raises that apply when no specialized convention changes the meaning of a call",
   "references": {
     "authority": {
       "url": "https://web2.acbl.org/documentlibrary/play/SP3%20(bk)%20single%20pages.pdf",
-      "label": "ACBL — SAYC System Booklet (SP3, rev. Jan 2006)"
+      "label": "ACBL \u2014 SAYC System Booklet (SP3, rev. Jan 2006)"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/sayc.php"
     }
   },
   "teaching": {
-    "tradeoff": "There is no special tradeoff here — these bids keep their usual natural meanings",
-    "principle": "When no major fit exists, raise notrump to the level your combined HCP supports — 25 total for game.",
+    "tradeoff": "There is no special tradeoff here \u2014 these bids keep their usual natural meanings",
+    "principle": "When no major fit exists, raise notrump to the level your combined HCP supports \u2014 25 total for game.",
     "commonMistakes": [
       {
-        "text": "Don't jump to three notrump with a worthless doubleton — consider whether a suit contract might play better",
+        "text": "Don't jump to three notrump with a worthless doubleton \u2014 consider whether a suit contract might play better",
         "reason": "Notrump games need controls on the side suits; a bare doubleton in responder's hand can concede the first trick and set up a long suit for the defence."
       },
       {
@@ -40,7 +40,9 @@
       "templateKey": "nt.naturalNt.opening.semantic",
       "displayText": "1NT opening: balanced hand with 15-17 HCP",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.naturalNt.invite",
@@ -48,7 +50,9 @@
       "templateKey": "nt.naturalNt.invite.semantic",
       "displayText": "2NT invite: invitational values, no 4-card major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "nt.naturalNt.to3nt",
@@ -56,39 +60,49 @@
       "templateKey": "nt.naturalNt.to3nt.semantic",
       "displayText": "3NT game: game values, no 4-card major",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "natural.open.1c",
       "meaningId": "bridge:1c-opening",
       "templateKey": "natural.open.1c.semantic",
-      "displayText": "1♣ opening: 12+ HCP, 3+ clubs",
+      "displayText": "1\u2663 opening: 12+ HCP, 3+ clubs",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "natural.open.1d",
       "meaningId": "bridge:1d-opening",
       "templateKey": "natural.open.1d.semantic",
-      "displayText": "1♦ opening: 12+ HCP, 4+ diamonds",
+      "displayText": "1\u2666 opening: 12+ HCP, 4+ diamonds",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "natural.open.1h",
       "meaningId": "bridge:1h-opening",
       "templateKey": "natural.open.1h.semantic",
-      "displayText": "1♥ opening: 12+ HCP, 5+ hearts (SAYC/2-over-1) or 4+ (Acol)",
+      "displayText": "1\u2665 opening: 12+ HCP, 5+ hearts (SAYC/2-over-1) or 4+ (Acol)",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "natural.open.1s",
       "meaningId": "bridge:1s-opening",
       "templateKey": "natural.open.1s.semantic",
-      "displayText": "1♠ opening: 12+ HCP, 5+ spades (SAYC/2-over-1) or 4+ (Acol)",
+      "displayText": "1\u2660 opening: 12+ HCP, 5+ spades (SAYC/2-over-1) or 4+ (Acol)",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     }
   ],
   "local": {
@@ -280,8 +294,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "1♣ opening",
-            "summary": "Open 1♣ with opening values, no 5-card major, and minor shape where diamonds are not preferred"
+            "name": "1\u2663 opening",
+            "summary": "Open 1\u2663 with opening values, no 5-card major, and minor shape where diamonds are not preferred"
           }
         },
         {
@@ -354,8 +368,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "1♦ opening",
-            "summary": "Open 1♦ with opening values, no 5-card major, and minor shape where diamonds are preferred"
+            "name": "1\u2666 opening",
+            "summary": "Open 1\u2666 with opening values, no 5-card major, and minor shape where diamonds are preferred"
           }
         },
         {
@@ -418,8 +432,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "1♥ opening",
-            "summary": "Open 1♥ with opening values, a 5-card or longer heart suit, and hearts at least as long as spades except for the 5-5 tie"
+            "name": "1\u2665 opening",
+            "summary": "Open 1\u2665 with opening values, a 5-card or longer heart suit, and hearts at least as long as spades except for the 5-5 tie"
           }
         },
         {
@@ -473,8 +487,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "1♠ opening",
-            "summary": "Open 1♠ with opening values and a 5-card or longer spade suit"
+            "name": "1\u2660 opening",
+            "summary": "Open 1\u2660 with opening values and a 5-card or longer spade suit"
           }
         }
       ],
@@ -730,7 +744,11 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength",
+          "suitRelation"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -802,8 +820,15 @@
         "world": "acting-hand",
         "description": "1H takes priority over 1S: spades is not a 5-card major, or hearts is strictly longer than spades.",
         "valueType": "boolean",
-        "derivesFrom": ["hand.suitLength.hearts", "hand.suitLength.spades"],
-        "constrainsDimensions": ["suitIdentity", "suitLength", "suitRelation"],
+        "derivesFrom": [
+          "hand.suitLength.hearts",
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitIdentity",
+          "suitLength",
+          "suitRelation"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -831,7 +856,7 @@
         "id": "module.natural.notStrongTwoCHand",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "Hand does not qualify for a Strong 2C opening — fewer than 22 HCP balanced AND fewer than nine playing tricks. Every natural one-level opening requires this because Strong 2C outranks any natural one-level opening whenever the hand qualifies.",
+        "description": "Hand does not qualify for a Strong 2C opening \u2014 fewer than 22 HCP balanced AND fewer than nine playing tricks. Every natural one-level opening requires this because Strong 2C outranks any natural one-level opening whenever the hand qualifies.",
         "valueType": "boolean",
         "derivesFrom": [
           "hand.hcp",
@@ -840,7 +865,10 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["pointRange", "suitLength"],
+        "constrainsDimensions": [
+          "pointRange",
+          "suitLength"
+        ],
         "composition": {
           "kind": "not",
           "operand": {

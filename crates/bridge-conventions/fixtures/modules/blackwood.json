@@ -9,7 +9,7 @@
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/blackwood",
-      "label": "Larry Cohen — Blackwood (bridge-articles/blackwood)"
+      "label": "Larry Cohen \u2014 Blackwood (bridge-articles/blackwood)"
     },
     "discovery": {
       "url": "https://www.bridgebum.com/blackwood.php"
@@ -17,10 +17,10 @@
   },
   "teaching": {
     "tradeoff": "Using 4NT as Blackwood means you can't use it as a natural quantitative raise to slam.",
-    "principle": "Before bidding slam, check for aces — missing two aces means the opponents can cash two tricks immediately.",
+    "principle": "Before bidding slam, check for aces \u2014 missing two aces means the opponents can cash two tricks immediately.",
     "commonMistakes": [
-      "Don't bid Blackwood without an agreed trump fit — you need a fit before asking for aces",
-      "5NT king ask guarantees all four aces are accounted for — never bid 5NT missing an ace"
+      "Don't bid Blackwood without an agreed trump fit \u2014 you need a fit before asking for aces",
+      "5NT king ask guarantees all four aces are accounted for \u2014 never bid 5NT missing an ace"
     ]
   },
   "explanationEntries": [
@@ -32,7 +32,11 @@
       "contrastiveTemplateKey": "blackwood.slamInterest.whyNot",
       "contrastiveDisplayText": "Not enough strength for slam exploration",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking", "pedagogical"]
+      "roles": [
+        "supporting",
+        "blocking",
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.hasVoid",
@@ -42,7 +46,11 @@
       "contrastiveTemplateKey": "blackwood.hasVoid.whyNot",
       "contrastiveDisplayText": "A void makes plain Blackwood a misleading ace ask",
       "preferredLevel": "semantic",
-      "roles": ["supporting", "blocking", "pedagogical"]
+      "roles": [
+        "supporting",
+        "blocking",
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.aceCount",
@@ -50,7 +58,9 @@
       "templateKey": "blackwood.aceCount.mechanical",
       "displayText": "Number of aces held",
       "preferredLevel": "mechanical",
-      "roles": ["supporting"]
+      "roles": [
+        "supporting"
+      ]
     },
     {
       "explanationId": "blackwood.kingCount",
@@ -58,7 +68,9 @@
       "templateKey": "blackwood.kingCount.mechanical",
       "displayText": "Number of kings held",
       "preferredLevel": "mechanical",
-      "roles": ["supporting"]
+      "roles": [
+        "supporting"
+      ]
     },
     {
       "explanationId": "blackwood.askAces",
@@ -66,47 +78,59 @@
       "templateKey": "blackwood.askAces.semantic",
       "displayText": "Blackwood 4NT: asks partner how many aces they hold",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.response0Aces",
       "meaningId": "blackwood:response-0-aces",
       "templateKey": "blackwood.response0Aces.semantic",
-      "displayText": "5♣ shows 0 (or 4) aces",
+      "displayText": "5\u2663 shows 0 (or 4) aces",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.response4Aces",
       "meaningId": "blackwood:response-4-aces",
       "templateKey": "blackwood.response4Aces.semantic",
-      "displayText": "5♣ shows 0 (or 4) aces",
+      "displayText": "5\u2663 shows 0 (or 4) aces",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.response1Ace",
       "meaningId": "blackwood:response-1-ace",
       "templateKey": "blackwood.response1Ace.semantic",
-      "displayText": "5♦ shows 1 ace",
+      "displayText": "5\u2666 shows 1 ace",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.response2Aces",
       "meaningId": "blackwood:response-2-aces",
       "templateKey": "blackwood.response2Aces.semantic",
-      "displayText": "5♥ shows 2 aces",
+      "displayText": "5\u2665 shows 2 aces",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.response3Aces",
       "meaningId": "blackwood:response-3-aces",
       "templateKey": "blackwood.response3Aces.semantic",
-      "displayText": "5♠ shows 3 aces",
+      "displayText": "5\u2660 shows 3 aces",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.askKings",
@@ -114,7 +138,9 @@
       "templateKey": "blackwood.askKings.semantic",
       "displayText": "5NT asks for kings (guarantees all aces are held)",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.signoffSmallSlam",
@@ -122,7 +148,9 @@
       "templateKey": "blackwood.signoffSmallSlam.semantic",
       "displayText": "Sign off at small slam in the agreed trump suit",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.signoffNoGrand",
@@ -130,7 +158,9 @@
       "templateKey": "blackwood.signoffNoGrand.semantic",
       "displayText": "Pass and accept partner's king reply when grand slam is not right",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.signoffGrandSlam",
@@ -138,55 +168,69 @@
       "templateKey": "blackwood.signoffGrandSlam.semantic",
       "displayText": "Bid grand slam in the agreed trump suit with all aces and kings",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.signoff5Level",
       "meaningId": "blackwood:signoff-5-level",
       "templateKey": "blackwood.signoff5Level.semantic",
-      "displayText": "Stop at 5-level — partnership is missing too many aces for slam",
+      "displayText": "Stop at 5-level \u2014 partnership is missing too many aces for slam",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.kingResponse0",
       "meaningId": "blackwood:king-response-0",
       "templateKey": "blackwood.kingResponse0.semantic",
-      "displayText": "6♣ shows 0 (or 4) kings",
+      "displayText": "6\u2663 shows 0 (or 4) kings",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.kingResponse4",
       "meaningId": "blackwood:king-response-4",
       "templateKey": "blackwood.kingResponse4.semantic",
-      "displayText": "6♣ shows 0 (or 4) kings",
+      "displayText": "6\u2663 shows 0 (or 4) kings",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.kingResponse1",
       "meaningId": "blackwood:king-response-1",
       "templateKey": "blackwood.kingResponse1.semantic",
-      "displayText": "6♦ shows 1 king",
+      "displayText": "6\u2666 shows 1 king",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.kingResponse2",
       "meaningId": "blackwood:king-response-2",
       "templateKey": "blackwood.kingResponse2.semantic",
-      "displayText": "6♥ shows 2 kings",
+      "displayText": "6\u2665 shows 2 kings",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     },
     {
       "explanationId": "blackwood.kingResponse3",
       "meaningId": "blackwood:king-response-3",
       "templateKey": "blackwood.kingResponse3.semantic",
-      "displayText": "6♠ shows 3 kings",
+      "displayText": "6\u2660 shows 3 kings",
       "preferredLevel": "semantic",
-      "roles": ["pedagogical"]
+      "roles": [
+        "pedagogical"
+      ]
     }
   ],
   "local": {
@@ -345,7 +389,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "5♣ — 0 (or 4) aces",
+            "name": "5\u2663 \u2014 0 (or 4) aces",
             "summary": "Show zero aces in response to partner's Blackwood ask"
           }
         },
@@ -383,7 +427,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "5♣ — 4 aces",
+            "name": "5\u2663 \u2014 4 aces",
             "summary": "Show all four aces in response to partner's Blackwood ask"
           }
         },
@@ -421,7 +465,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "5♦ — 1 ace",
+            "name": "5\u2666 \u2014 1 ace",
             "summary": "Show exactly one ace in response to partner's Blackwood ask"
           }
         },
@@ -459,7 +503,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "5♥ — 2 aces",
+            "name": "5\u2665 \u2014 2 aces",
             "summary": "Show exactly two aces in response to partner's Blackwood ask"
           }
         },
@@ -497,7 +541,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "5♠ — 3 aces",
+            "name": "5\u2660 \u2014 3 aces",
             "summary": "Show exactly three aces in response to partner's Blackwood ask"
           }
         }
@@ -723,7 +767,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6♣ — 0 kings",
+            "name": "6\u2663 \u2014 0 kings",
             "summary": "Show zero kings in response to partner's king ask"
           }
         },
@@ -761,8 +805,8 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6♣ — 4 kings",
-            "summary": "Share the same 6♣ reply used for 0 or 4 kings in plain Blackwood"
+            "name": "6\u2663 \u2014 4 kings",
+            "summary": "Share the same 6\u2663 reply used for 0 or 4 kings in plain Blackwood"
           }
         },
         {
@@ -799,7 +843,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6♦ — 1 king",
+            "name": "6\u2666 \u2014 1 king",
             "summary": "Show exactly one king in response to partner's king ask"
           }
         },
@@ -837,7 +881,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6♥ — 2 kings",
+            "name": "6\u2665 \u2014 2 kings",
             "summary": "Show exactly two kings in response to partner's king ask"
           }
         },
@@ -875,7 +919,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6♠ — 3 kings",
+            "name": "6\u2660 \u2014 3 kings",
             "summary": "Show exactly three kings in response to partner's king ask"
           }
         }
@@ -965,50 +1009,6 @@
           }
         },
         {
-          "meaningId": "blackwood:signoff-no-grand",
-          "semanticClassId": "blackwood:signoff",
-          "moduleId": "blackwood",
-          "encoding": {
-            "defaultCall": {
-              "type": "pass"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "module.blackwood.combinedAceCount",
-              "operator": "eq",
-              "value": 4,
-              "clauseId": "module.blackwood.combinedAceCount:eq:4",
-              "description": "Partnership holds all four aces",
-              "isPublic": true
-            },
-            {
-              "factId": "module.blackwood.combinedKingCount",
-              "operator": "lte",
-              "value": 3,
-              "clauseId": "module.blackwood.combinedKingCount:lte:3",
-              "description": "Partnership is still short of all four kings",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 1
-          },
-          "sourceIntent": {
-            "type": "BlackwoodSignoff",
-            "params": {
-              "level": "no-grand"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Pass — no grand slam",
-            "summary": "Pass when partner's king reply is already the right natural small-slam contract"
-          }
-        },
-        {
           "meaningId": "blackwood:signoff-grand-slam",
           "semanticClassId": "blackwood:signoff",
           "moduleId": "blackwood",
@@ -1070,7 +1070,7 @@
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 2
+            "declarationOrder": 1
           },
           "sourceIntent": {
             "type": "BlackwoodSignoff",
@@ -1088,6 +1088,270 @@
       "scope": {
         "kind": "enumerated"
       }
+    },
+    {
+      "phase": "king-responded",
+      "turn": "responder",
+      "kernel": {
+        "kind": "fit",
+        "strain": "clubs"
+      },
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "show",
+          "feature": "control",
+          "strain": "clubs",
+          "level": 6
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "blackwood:signoff-no-grand",
+          "semanticClassId": "blackwood:signoff",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.combinedAceCount",
+              "operator": "eq",
+              "value": 4,
+              "clauseId": "module.blackwood.combinedAceCount:eq:4",
+              "description": "Partnership holds all four aces",
+              "isPublic": true
+            },
+            {
+              "factId": "module.blackwood.combinedKingCount",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "module.blackwood.combinedKingCount:lte:3",
+              "description": "Partnership is still short of all four kings",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "BlackwoodSignoff",
+            "params": {
+              "level": "no-grand"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass \u2014 no grand slam",
+            "summary": "Pass when partner's king reply is already the right natural small-slam contract"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "king-responded",
+      "turn": "responder",
+      "kernel": {
+        "kind": "fit",
+        "strain": "diamonds"
+      },
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "show",
+          "feature": "control",
+          "strain": "diamonds",
+          "level": 6
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "blackwood:signoff-no-grand",
+          "semanticClassId": "blackwood:signoff",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.combinedAceCount",
+              "operator": "eq",
+              "value": 4,
+              "clauseId": "module.blackwood.combinedAceCount:eq:4",
+              "description": "Partnership holds all four aces",
+              "isPublic": true
+            },
+            {
+              "factId": "module.blackwood.combinedKingCount",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "module.blackwood.combinedKingCount:lte:3",
+              "description": "Partnership is still short of all four kings",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "BlackwoodSignoff",
+            "params": {
+              "level": "no-grand"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass \u2014 no grand slam",
+            "summary": "Pass when partner's king reply is already the right natural small-slam contract"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "king-responded",
+      "turn": "responder",
+      "kernel": {
+        "kind": "fit",
+        "strain": "hearts"
+      },
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "show",
+          "feature": "control",
+          "strain": "hearts",
+          "level": 6
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "blackwood:signoff-no-grand",
+          "semanticClassId": "blackwood:signoff",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.combinedAceCount",
+              "operator": "eq",
+              "value": 4,
+              "clauseId": "module.blackwood.combinedAceCount:eq:4",
+              "description": "Partnership holds all four aces",
+              "isPublic": true
+            },
+            {
+              "factId": "module.blackwood.combinedKingCount",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "module.blackwood.combinedKingCount:lte:3",
+              "description": "Partnership is still short of all four kings",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "BlackwoodSignoff",
+            "params": {
+              "level": "no-grand"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass \u2014 no grand slam",
+            "summary": "Pass when partner's king reply is already the right natural small-slam contract"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "king-responded",
+      "turn": "responder",
+      "kernel": {
+        "kind": "fit",
+        "strain": "spades"
+      },
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "show",
+          "feature": "control",
+          "strain": "spades",
+          "level": 6
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "blackwood:signoff-no-grand",
+          "semanticClassId": "blackwood:signoff",
+          "moduleId": "blackwood",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.blackwood.combinedAceCount",
+              "operator": "eq",
+              "value": 4,
+              "clauseId": "module.blackwood.combinedAceCount:eq:4",
+              "description": "Partnership holds all four aces",
+              "isPublic": true
+            },
+            {
+              "factId": "module.blackwood.combinedKingCount",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "module.blackwood.combinedKingCount:lte:3",
+              "description": "Partnership is still short of all four kings",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "BlackwoodSignoff",
+            "params": {
+              "level": "no-grand"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass \u2014 no grand slam",
+            "summary": "Pass when partner's king reply is already the right natural small-slam contract"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
   "facts": {
@@ -1099,8 +1363,12 @@
         "description": "Hand has slam-level values (17+ HCP consistent with partnership slam values)",
         "valueType": "boolean",
         "forTeachingOnly": true,
-        "derivesFrom": ["hand.hcp"],
-        "constrainsDimensions": ["pointRange"],
+        "derivesFrom": [
+          "hand.hcp"
+        ],
+        "constrainsDimensions": [
+          "pointRange"
+        ],
         "composition": {
           "kind": "primitive",
           "clause": {
@@ -1122,7 +1390,9 @@
           "hand.suitLength.diamonds",
           "hand.suitLength.clubs"
         ],
-        "constrainsDimensions": ["shapeClass"],
+        "constrainsDimensions": [
+          "shapeClass"
+        ],
         "composition": {
           "kind": "or",
           "operands": [
@@ -1654,7 +1924,7 @@
           "spades": "A K Q J x",
           "hearts": "K x x x",
           "diamonds": "Q x x",
-          "clubs": "—"
+          "clubs": "\u2014"
         },
         "calls": [
           {
@@ -1691,7 +1961,7 @@
               "level": 5,
               "strain": "H"
             },
-            "rationale": "Responder shows two aces — but classic Blackwood cannot reveal which two."
+            "rationale": "Responder shows two aces \u2014 but classic Blackwood cannot reveal which two."
           },
           {
             "seat": "N",
