@@ -21,42 +21,41 @@
   const appStore = getAppStore();
   const customSystems = getCustomSystemsStore();
 
-  const modeOptions: { id: PracticeMode; label: string; testId: string }[] = [
+  type ToggleOption<T> = { id: T; label: string; title?: string; testId: string };
+
+  const modeOptions: ToggleOption<PracticeMode>[] = [
     { id: PracticeMode.DecisionDrill, label: "Decision", testId: "practice-settings-mode-decision" },
-    { id: PracticeMode.FullAuction, label: "Full auction", testId: "practice-settings-mode-full" },
+    { id: PracticeMode.FullAuction, label: "Auction", title: "Full auction", testId: "practice-settings-mode-full" },
     { id: PracticeMode.Learn, label: "Learn", testId: "practice-settings-mode-learn" },
   ];
 
-  const roleOptions: { id: PracticeRole | "auto"; label: string; testId: string }[] = [
+  const roleOptions: ToggleOption<PracticeRole | "auto">[] = [
     { id: "auto", label: "Auto", testId: "practice-settings-role-auto" },
     { id: PracticeRole.Opener, label: "Opener", testId: "practice-settings-role-opener" },
     { id: PracticeRole.Responder, label: "Responder", testId: "practice-settings-role-responder" },
     { id: PracticeRole.Both, label: "Both", testId: "practice-settings-role-both" },
   ];
 
-  const opponentOptions: { id: OpponentMode; label: string; testId: string }[] = [
+  const opponentOptions: ToggleOption<OpponentMode>[] = [
     { id: OpponentMode.Natural, label: "Natural", testId: "practice-settings-opponents-natural" },
     { id: OpponentMode.None, label: "Silent", testId: "practice-settings-opponents-silent" },
   ];
 
-  const profileOptions: { id: PlayProfileId; label: string; testId: string }[] = [
+  const profileOptions: ToggleOption<PlayProfileId>[] = [
     { id: "beginner", label: "Beginner", testId: "practice-settings-skill-beginner" },
     { id: "club-player", label: "Club", testId: "practice-settings-skill-club" },
     { id: "expert", label: "Expert", testId: "practice-settings-skill-expert" },
-    { id: "world-class", label: "World Class", testId: "practice-settings-skill-world-class" },
+    { id: "world-class", label: "World", title: "World Class", testId: "practice-settings-skill-world-class" },
   ];
 </script>
 
-<section class="rounded-[--radius-xl] border border-border-subtle bg-bg-card p-4 shadow-sm">
-  <div class="space-y-5">
+<section class="rounded-[--radius-xl] border border-border-subtle bg-bg-card p-3 shadow-sm">
+  <div class="space-y-2.5">
     {#if showHeader}
-      <div class="space-y-1">
-        <SectionHeader level="h2">Quick Practice Settings</SectionHeader>
-        <p class="text-sm text-text-secondary">Defaults for ad-hoc sessions launched from the convention picker. Saved drills carry their own values.</p>
-      </div>
+      <SectionHeader level="h2">Quick Practice Settings</SectionHeader>
     {/if}
 
-    <div class="space-y-2">
+    <div class="space-y-1">
       <SectionHeader level="h3">Mode</SectionHeader>
       <ToggleGroup
         items={modeOptions}
@@ -65,10 +64,9 @@
         ariaLabel="Practice mode"
         compact
       />
-      <p class="text-xs text-text-muted">Decision jumps to the key choice. Learn walks through the full auction.</p>
     </div>
 
-    <div class="space-y-2">
+    <div class="space-y-1">
       <SectionHeader level="h3">Role</SectionHeader>
       <ToggleGroup
         items={roleOptions}
@@ -77,10 +75,9 @@
         ariaLabel="Practice role"
         compact
       />
-      <p class="text-xs text-text-muted">Auto picks the convention&apos;s default seat.</p>
     </div>
 
-    <div class="space-y-2">
+    <div class="space-y-1">
       <SectionHeader level="h3">System</SectionHeader>
       <ToggleGroup
         items={AVAILABLE_BASE_SYSTEMS.map((system) => ({
@@ -95,10 +92,10 @@
         compact
       />
       {#if customSystems.systems.length > 0}
-        <div class="space-y-1.5">
+        <div class="space-y-1.5 pt-1">
           {#each customSystems.systems as system (system.id)}
             <button
-              class="w-full rounded-[--radius-md] border px-3 py-2 text-left text-sm transition-colors cursor-pointer
+              class="w-full rounded-[--radius-md] border px-3 py-1.5 text-left text-sm transition-colors cursor-pointer
                 {appStore.baseSystemId === system.id
                   ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
                   : 'border-border-subtle bg-bg-base text-text-primary hover:border-border-default'}"
@@ -116,10 +113,9 @@
       >
         + Create custom system
       </button>
-      <p class="text-xs text-text-muted">Pick a stock system or one of your custom forks.</p>
     </div>
 
-    <div class="space-y-2">
+    <div class="space-y-1">
       <SectionHeader level="h3">Opponents</SectionHeader>
       <ToggleGroup
         items={opponentOptions}
@@ -128,10 +124,9 @@
         ariaLabel="Opponent mode"
         compact
       />
-      <p class="text-xs text-text-muted">Natural opponents compete. Silent opponents always pass.</p>
     </div>
 
-    <div class="space-y-2">
+    <div class="space-y-1">
       <SectionHeader level="h3">Play Skill</SectionHeader>
       <ToggleGroup
         items={profileOptions}
@@ -140,22 +135,18 @@
         ariaLabel="Opponent play skill"
         compact
       />
-      <p class="text-xs text-text-muted">{PLAY_PROFILES[appStore.playProfileId ?? "world-class"].description}</p>
+      <p class="text-xs text-text-muted leading-snug line-clamp-2">{PLAY_PROFILES[appStore.playProfileId ?? "world-class"].description}</p>
     </div>
 
-    <div class="space-y-2">
-      <SectionHeader level="h3">Educational Annotations</SectionHeader>
-      <label class="flex items-center gap-3 rounded-[--radius-md] border border-border-subtle bg-bg-base px-3 py-2 cursor-pointer">
-        <input
-          type="checkbox"
-          class="h-4 w-4 rounded-[--radius-sm] accent-accent-primary"
-          checked={appStore.displaySettings.showEducationalAnnotations}
-          onchange={(event) => appStore.setShowEducationalAnnotations(event.currentTarget.checked)}
-          data-testid="practice-settings-annotations"
-        />
-        <span class="text-sm text-text-primary">Show educational labels</span>
-      </label>
-      <p class="text-xs text-text-muted">Keeps teaching callouts visible during review and learn mode.</p>
-    </div>
+    <label class="flex items-center gap-3 rounded-[--radius-md] border border-border-subtle bg-bg-base px-3 py-2 cursor-pointer">
+      <input
+        type="checkbox"
+        class="h-4 w-4 rounded-[--radius-sm] accent-accent-primary"
+        checked={appStore.displaySettings.showEducationalAnnotations}
+        onchange={(event) => appStore.setShowEducationalAnnotations(event.currentTarget.checked)}
+        data-testid="practice-settings-annotations"
+      />
+      <span class="text-sm text-text-primary">Show educational labels</span>
+    </label>
   </div>
 </section>

@@ -125,7 +125,7 @@
 
 <svelte:window bind:innerWidth={innerW} />
 
-<AppScreen title="Practice">
+<AppScreen title="Practice" scroll={false} contentClass="flex flex-col">
   {#snippet actions()}
       {#if isMobile}
         <button
@@ -150,8 +150,8 @@
       {/if}
   {/snippet}
 
-  <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_20rem]">
-    <div class="min-w-0">
+  <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_20rem] flex-1 min-h-0">
+    <div class="min-w-0 overflow-y-auto min-h-0 pb-4">
       {#if showMyDrillsLink}
         <div class="mb-2 flex justify-end">
           <a
@@ -264,10 +264,8 @@
       {/if}
     </div>
 
-    <aside class="hidden md:block">
-      <div class="sticky top-0">
-        <QuickPracticeSettingsPanel />
-      </div>
+    <aside class="hidden md:flex md:flex-col min-h-0 overflow-y-auto pb-4">
+      <QuickPracticeSettingsPanel />
     </aside>
   </div>
 
