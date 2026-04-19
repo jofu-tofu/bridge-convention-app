@@ -55,11 +55,18 @@ Explicit `registerBundle()` calls are traceable and debuggable. Auto-discovery a
 ### Definitions: Two layers (Bundle → Config) not three
 BiddingSystem added no fields or behavior that ConventionBundle didn't already provide. The indirection created wiring fragility without architectural benefit.
 
-### Stores: Drill presets persist SystemSelectionId, not SystemConfig
-Saved drill presets (`bridge-app:drill-presets`) store a `SystemSelectionId`
-(TS-only type — either a `BaseSystemId` preset or `custom:${string}`), never a
-serialized `SystemConfig`. The config is resolved at session-start time via
+### Stores: Saved drills persist SystemSelectionId, not SystemConfig
+Saved drills (`bridge-app:drills`) store a `SystemSelectionId` (TS-only type —
+either a `BaseSystemId` preset or `custom:${string}`), never a serialized
+`SystemConfig`. The config is resolved at session-start time via
 `resolveSystemForSession()` in `custom-systems.svelte.ts`. This keeps stored
-presets robust against `SystemConfig` shape changes (Rust-origin, expected to
-evolve) and avoids bringing Rust-boundary types into localStorage. Presets
+drills robust against `SystemConfig` shape changes (Rust-origin, expected to
+evolve) and avoids bringing Rust-boundary types into localStorage. Saved drills
 never cross the WASM boundary.
+
+### Stores: Drill launches don't mutate user preferences
+Launch-time drill settings are applied in memory only. The single chokepoint is
+`appStore.applyDrillSession()` in `src/stores/app.svelte.ts`, which updates the
+active session without calling `savePreferences`. Rationale: changing one
+drill's settings should not rewrite the `/practice` panel defaults the user
+expects for the next launch.

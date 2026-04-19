@@ -134,7 +134,7 @@ components/
     shared/                          Shared component tests
       reference/                     Behavior tests for the reference-page components (schema, anchor ids, null/print contracts)
     game/                            Game component tests
-    screens/                         Screen component tests, including context-backed wrappers such as `DrillSettingsPanelTestWrapper.svelte` for store-driven screen pieces
+    screens/                         Screen component tests, including context-backed wrappers such as `DrillSettingsPanelTestWrapper.svelte`, `DrillFormTestWrapper.svelte`, and `ConventionSelectScreenTestWrapper.svelte` for store/router-backed screen pieces
 ```
 
 **Screen flow:** SvelteKit `(app)/+layout.svelte` owns the full app layout — loads WASM, renders `AppReady.svelte` which provides context setup + nav chrome. File-based routing replaces store-driven screen routing. All screens (including GameScreen) are wrapped by the nav layout. Desktop: thin left rail (NavRail) with Home/Learn/Workshop (dev only)/Settings icons. Learn links to `/learn` (conventions reference); the NavRail flyout also exposes `/lessons` and `/systems`. Mobile: bottom tab bar (BottomTabBar) with Home/Learn/Workshop (dev only)/Settings tabs (3 tabs in production, 4 in dev). Workshop tab is the home for system/convention management, gated behind `FEATURES.workshop`. `?profiles=true` backward compat alias redirects to `/workshop`. Workshop = management (fork, edit, delete, configure). Learn = study (teaching content, flow trees, surfaces).
@@ -187,4 +187,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `AppReady.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-18 | version=26 | dir-commits-at-audit=20 | tree-sig=dirs:11,files:60+,exts:svelte:45,ts:20+,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-18 | version=27 | dir-commits-at-audit=319 | tree-sig=dirs:17,files:173,exts:svelte:106,ts:66,md:1 -->

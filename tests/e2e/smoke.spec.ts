@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { startPracticeFromHome, waitForPhase } from "./helpers";
+import { expectNoSettingsButtonInGameShell, startPracticeFromHome, waitForPhase } from "./helpers";
 
 test.describe("app smoke", () => {
   test("home search narrows the convention list", async ({ page }) => {
@@ -19,8 +19,14 @@ test.describe("app smoke", () => {
     await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
   });
 
-  test("convention and learning deep links load their target screens directly", async ({ page }) => {
+  test("game shell does not expose an in-game settings button", async ({ page }) => {
     await page.goto("/practice?convention=bergen-bundle&seed=1");
+    await waitForPhase(page, "Bidding");
+    await expectNoSettingsButtonInGameShell(page);
+  });
+
+  test("convention and learning deep links load their target screens directly", async ({ page }) => {
+    await page.goto("/practice?convention=bergen-bundle&seed=3");
     await waitForPhase(page, "Bidding");
     await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
 
@@ -32,16 +38,17 @@ test.describe("app smoke", () => {
     await page.goto("/practice?convention=bergen-bundle&seed=1");
     await waitForPhase(page, "Bidding");
 
-    await page.getByTestId("bid-P").click();
+    await page.getByTestId("bid-7NT").click();
 
     const feedback = page.locator("[role='alert']");
     await expect(feedback).toBeVisible({ timeout: 5_000 });
+    await expect(feedback).toContainText("Incorrect", { timeout: 3_000 });
 
-    const tryAgain = page.getByRole("button", { name: /try again/i });
+    const tryAgain = feedback.locator("[aria-label='Try again']");
     await expect(tryAgain).toBeVisible({ timeout: 3_000 });
     await tryAgain.click();
 
-    await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
+    await expect(page.getByTestId("bid-7NT")).toBeEnabled({ timeout: 5_000 });
   });
 
   test("settings and home navigation remain reachable", async ({ page }) => {

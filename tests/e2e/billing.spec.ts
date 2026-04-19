@@ -14,14 +14,9 @@ test.describe("billing + auth", () => {
     await page.goto("/practice?e2e=1");
     await page.getByTestId(`practice-${PAID_BUNDLE}`).click();
 
-    // Either auth-modal or paywall-overlay proves the UI blocked entry to a
-    // paid bundle for an anon user. In practice anon users hit the paywall
-    // because `canPractice` gates client-side before the 402 fetch.
-    // `<dialog>` elements rendered via `showModal()` sometimes confuse
-    // Playwright's visibility heuristic — match the button inside the dialog.
-    await expect(
-      page.getByRole("button", { name: /subscribe|continue with google/i }),
-    ).toBeVisible();
+    await expect(page.getByTestId("paywall-overlay")).toBeVisible();
+    await expect(page.getByTestId("paywall-overlay-subscribe")).toBeVisible();
+    await expect(page.getByTestId("paywall-overlay-dismiss")).toBeVisible();
   });
 
   test("free-tier user sees paywall overlay on paid bundle", async ({ page }) => {

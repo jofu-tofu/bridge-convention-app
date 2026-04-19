@@ -37,6 +37,8 @@ describe("DrillSettingsPanel", () => {
       },
     });
 
+    expect(getByTestId("practice-settings-role-auto").getAttribute("aria-pressed")).toBe("true");
+
     await fireEvent.click(getByTestId("practice-settings-mode-full"));
 
     expect(appStore.userPracticeMode).toBe(PracticeMode.FullAuction);

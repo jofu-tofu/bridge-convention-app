@@ -131,6 +131,7 @@ export default tseslint.config(
           allowDefaultProject: [
             "playwright.config.ts",
             "tests/e2e/billing.spec.ts",
+            "tests/e2e/drill-flow.spec.ts",
             "tests/e2e/helpers.ts",
             "tests/e2e/representative-conventions.spec.ts",
             "tests/e2e/responsive-layout.spec.ts",

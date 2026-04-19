@@ -119,6 +119,14 @@ System facts (`system.responder.inviteValues`, etc.) use `fitAgreed` from the ne
 
 SEO content pages (`/guides`, `/guides/[slug]`, `/learn/[moduleId]`) live under `src/routes/(content)/` and are prerendered to static HTML with a minimal "BridgeLab" header and no WASM boot. WASM app screens (the game, settings, coverage, workshop) live under `src/routes/(app)/` with `ssr=false` and full app chrome (NavRail / BottomTabBar). Moving a route between these groups is a user-visible chrome change — the navigation across groups is a full document load, not a SvelteKit client-side transition. Treat `(content)` as the home for anything that needs to be crawlable or linkable from outside the app.
 
+## Practice UX
+
+### Drill launches freeze practice settings
+Practice session settings (mode/role/system/opponents/play-skill/annotations)
+are immutable once a drill launches. Edit them on `/practice` before starting.
+`appStore.applyDrillSession()` is the invariant chokepoint — see
+`docs/architecture/design-philosophy.md`.
+
 ## Billing
 
 ### Stripe Webhook Requires Raw Request Body
