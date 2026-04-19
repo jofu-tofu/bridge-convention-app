@@ -129,6 +129,8 @@
       baseModuleIds,
       targetModuleId: currentConvention.id,
       opponentMode: drill.opponentMode,
+      vulnerabilityDistribution: drill.tuning.vulnerabilityDistribution,
+      ...(drill.playProfileId ? { playProfileId: drill.playProfileId } : {}),
       ...(drill.playPreference ? { playPreference: drill.playPreference } : {}),
       ...(practiceMode ? { practiceMode } : {}),
       ...(practiceRole ? { practiceRole } : {}),

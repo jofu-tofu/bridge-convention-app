@@ -7,7 +7,7 @@
  */
 
 import type { Seat, Vulnerability } from "../engine/types";
-import type { OpponentMode, PlayPreference, PracticeMode, PracticeRole, SystemConfig } from "./session-types";
+import type { OpponentMode, PlayPreference, PlayProfileId, PracticeMode, PracticeRole, SystemConfig, VulnerabilityDistribution } from "./session-types";
 
 // ── Drill Handle ───────────────────────────────────────────────────
 
@@ -43,4 +43,8 @@ export interface SessionConfig {
   readonly opponentMode?: OpponentMode;
   /** Vulnerability override. */
   readonly vulnerability?: Vulnerability;
+  /** Opponent play skill — selects MC+DDS profile. */
+  readonly playProfileId?: PlayProfileId;
+  /** Probability weights over the four vulnerability states; the deal generator samples from this. */
+  readonly vulnerabilityDistribution?: VulnerabilityDistribution;
 }

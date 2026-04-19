@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PracticeMode } from "../../../service";
 import { createCustomSystemsStore } from "../../../stores/custom-systems.svelte";
 import { createAppStore } from "../../../stores/app.svelte";
-import DrillSettingsPanelTestWrapper from "./DrillSettingsPanelTestWrapper.svelte";
+import QuickPracticeSettingsPanelTestWrapper from "./QuickPracticeSettingsPanelTestWrapper.svelte";
 
 function createStorage(): Storage {
   let store: Record<string, string> = {};
@@ -17,7 +17,7 @@ function createStorage(): Storage {
   };
 }
 
-describe("DrillSettingsPanel", () => {
+describe("QuickPracticeSettingsPanel", () => {
   beforeEach(() => {
     vi.stubGlobal("localStorage", createStorage());
   });
@@ -30,7 +30,7 @@ describe("DrillSettingsPanel", () => {
     const appStore = createAppStore();
     const customSystemsStore = createCustomSystemsStore();
 
-    const { getByTestId } = render(DrillSettingsPanelTestWrapper, {
+    const { getByTestId } = render(QuickPracticeSettingsPanelTestWrapper, {
       props: {
         appStore,
         customSystemsStore,

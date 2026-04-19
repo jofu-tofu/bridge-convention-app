@@ -2,17 +2,20 @@
   import { goto } from "$app/navigation";
   import {
     AVAILABLE_BASE_SYSTEMS,
+    OpponentMode,
+    PLAY_PROFILES,
     PracticeMode,
     PracticeRole,
     displayConventionName,
     listConventions,
   } from "../../service";
-  import type { ConventionInfo, SystemSelectionId } from "../../service";
+  import type { ConventionInfo, PlayProfileId, SystemSelectionId, VulnerabilityDistribution } from "../../service";
   import { getAppStore, getCustomSystemsStore, getDrillsStore } from "../../stores/context";
   import { DRILL_NAME_MAX } from "../../stores/drills.svelte";
   import type { Drill, DrillPracticeRole } from "../../stores/drills.svelte";
   import SectionHeader from "../shared/SectionHeader.svelte";
   import ToggleGroup from "../shared/ToggleGroup.svelte";
+  import VulnerabilityPicker from "../shared/VulnerabilityPicker.svelte";
 
   interface Props {
     mode: "create" | "edit";
@@ -48,8 +51,21 @@
   let systemSelectionId = $state<SystemSelectionId>(
     drill?.systemSelectionId ?? appStore.baseSystemId,
   );
+  let opponentMode = $state<OpponentMode>(
+    drill?.opponentMode ?? appStore.opponentMode,
+  );
+  let playProfileId = $state<PlayProfileId>(
+    drill?.playProfileId ?? appStore.playProfileId ?? "world-class",
+  );
+  let vulnerabilityDistribution = $state<VulnerabilityDistribution>(
+    drill?.vulnerabilityDistribution ?? appStore.drillTuning.vulnerabilityDistribution,
+  );
+  let showEducationalAnnotations = $state<boolean>(
+    drill?.showEducationalAnnotations ?? appStore.displaySettings.showEducationalAnnotations,
+  );
   let nameError = $state<string | null>(null);
   let selectionError = $state<string | null>(null);
+  let vulnError = $state<string | null>(null);
 
   const selectedConventions = $derived(
     selectedModuleIds
@@ -90,6 +106,22 @@
     { id: PracticeRole.Both, label: "Both", testId: "drill-form-role-both" },
   ];
 
+  const opponentOptions: { id: OpponentMode; label: string; testId: string }[] = [
+    { id: OpponentMode.Natural, label: "Natural", testId: "drill-form-opponents-natural" },
+    { id: OpponentMode.None, label: "Silent", testId: "drill-form-opponents-silent" },
+  ];
+
+  const playProfileOptions: { id: PlayProfileId; label: string; testId: string }[] = [
+    { id: "beginner", label: "Beginner", testId: "drill-form-skill-beginner" },
+    { id: "club-player", label: "Club", testId: "drill-form-skill-club" },
+    { id: "expert", label: "Expert", testId: "drill-form-skill-expert" },
+    { id: "world-class", label: "World Class", testId: "drill-form-skill-world-class" },
+  ];
+
+  function isValidVulnDistribution(d: VulnerabilityDistribution): boolean {
+    return d.none + d.ours + d.theirs + d.both > 0;
+  }
+
   $effect(() => {
     if (!suggestedName) return;
     if (nameTouched && name !== lastSuggestedName) return;
@@ -109,7 +141,10 @@
     nameTouched = true;
     nameError = nextNameError;
     selectionError = selectedModuleIds.length > 0 ? null : "Select at least one convention";
-    return !nextNameError && !selectionError;
+    vulnError = isValidVulnDistribution(vulnerabilityDistribution)
+      ? null
+      : "Pick at least one vulnerability state";
+    return !nextNameError && !selectionError && !vulnError;
   }
 
   function persistDrill(): Drill | null {
@@ -122,6 +157,10 @@
         practiceMode,
         practiceRole,
         systemSelectionId,
+        opponentMode,
+        playProfileId,
+        vulnerabilityDistribution,
+        showEducationalAnnotations,
       });
       return drillsStore.getById(drill.id) ?? null;
     }
@@ -132,6 +171,10 @@
       practiceMode,
       practiceRole,
       systemSelectionId,
+      opponentMode,
+      playProfileId,
+      vulnerabilityDistribution,
+      showEducationalAnnotations,
     });
   }
 
@@ -157,6 +200,10 @@
         practiceMode: saved.practiceMode,
         practiceRole: saved.practiceRole,
         systemSelectionId: saved.systemSelectionId,
+        opponentMode: saved.opponentMode,
+        playProfileId: saved.playProfileId,
+        vulnerabilityDistribution: saved.vulnerabilityDistribution,
+        showEducationalAnnotations: saved.showEducationalAnnotations,
         sourceDrillId: saved.id,
       },
       allConventions,
@@ -300,6 +347,61 @@
         {/each}
       </div>
     {/if}
+  </div>
+
+  <div class="space-y-2">
+    <SectionHeader level="h3">Opponents</SectionHeader>
+    <ToggleGroup
+      items={opponentOptions}
+      active={opponentMode}
+      onSelect={(id) => { opponentMode = id as OpponentMode; }}
+      ariaLabel="Opponent mode"
+      compact
+    />
+    <p class="text-xs text-text-muted">Natural opponents compete. Silent opponents always pass.</p>
+  </div>
+
+  <div class="space-y-2">
+    <SectionHeader level="h3">Play Skill</SectionHeader>
+    <ToggleGroup
+      items={playProfileOptions}
+      active={playProfileId}
+      onSelect={(id) => { playProfileId = id as PlayProfileId; }}
+      ariaLabel="Opponent play skill"
+      compact
+    />
+    <p class="text-xs text-text-muted">{PLAY_PROFILES[playProfileId].description}</p>
+  </div>
+
+  <div class="space-y-2">
+    <SectionHeader level="h3">Vulnerability</SectionHeader>
+    <VulnerabilityPicker
+      value={vulnerabilityDistribution}
+      onChange={(next) => {
+        vulnerabilityDistribution = next;
+        vulnError = isValidVulnDistribution(next) ? null : "Pick at least one vulnerability state";
+      }}
+      label="Distribution"
+      testIdPrefix="drill-form-vuln"
+    />
+    {#if vulnError}
+      <p class="text-xs text-red-400" role="alert">{vulnError}</p>
+    {/if}
+  </div>
+
+  <div class="space-y-2">
+    <SectionHeader level="h3">Educational Annotations</SectionHeader>
+    <label class="flex items-center gap-3 rounded-[--radius-md] border border-border-subtle bg-bg-base px-3 py-2 cursor-pointer">
+      <input
+        type="checkbox"
+        class="h-4 w-4 rounded-[--radius-sm] accent-accent-primary"
+        checked={showEducationalAnnotations}
+        onchange={(event) => { showEducationalAnnotations = event.currentTarget.checked; }}
+        data-testid="drill-form-annotations"
+      />
+      <span class="text-sm text-text-primary">Show educational labels</span>
+    </label>
+    <p class="text-xs text-text-muted">Keeps teaching callouts visible during review and learn mode.</p>
   </div>
 
   <div class="flex flex-wrap justify-end gap-2 pt-2">

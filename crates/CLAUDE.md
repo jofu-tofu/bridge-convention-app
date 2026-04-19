@@ -147,6 +147,17 @@ crates/
                        — that path now indicates a genuine bug, not routine UI churn. The
                        negative-doubles bundle retains its own custom predicate + budget and skips
                        witness selection entirely.
+                       **Per-drill gameplay tunables:** `SessionConfig` carries `play_profile_id`
+                       (selects the MC+DDS / heuristic play profile) and `vulnerability_distribution`
+                       (probability weights `{none, ours, theirs, both}`) alongside the existing
+                       `opponent_mode`. `config_resolver` defaults `play_profile_id` to `ClubPlayer`
+                       when absent and writes the requested distribution into
+                       `StartDrillOptions.tuning.vulnerability_distribution` so
+                       `start_drill::pick_vulnerability` is the single sampler. An explicit
+                       `vulnerability` override is collapsed to a single-bucket distribution
+                       (matching `pick_vulnerability`'s NS/EW orientation rules) so it
+                       deterministically wins. `drill_setup` plumbs the resolved `play_profile_id`
+                       into `SessionState::new` (was hard-coded to `ClubPlayer`).
   bridge-wasm/         WASM bindings via wasm-bindgen — WasmServicePort wraps ServicePortImpl
                        for browser deployment. All 20 ServicePort methods + async DDS play
                        methods (play_card_dds, needs_dds_play, set_dds_solver) +

@@ -12,7 +12,7 @@
   import ItemCard from "../shared/ItemCard.svelte";
   import SectionHeader from "../shared/SectionHeader.svelte";
   import SavedDrillsShelf from "./SavedDrillsShelf.svelte";
-  import DrillSettingsPanel from "./DrillSettingsPanel.svelte";
+  import QuickPracticeSettingsPanel from "./QuickPracticeSettingsPanel.svelte";
   import AppScreen from "../shared/AppScreen.svelte";
   import { DESKTOP_MIN } from "../shared/breakpoints.svelte";
 
@@ -65,6 +65,10 @@
         practiceMode: appStore.userPracticeMode ?? PracticeMode.DecisionDrill,
         practiceRole,
         systemSelectionId: appStore.baseSystemId,
+        opponentMode: appStore.opponentMode,
+        playProfileId: appStore.playProfileId ?? "world-class",
+        vulnerabilityDistribution: appStore.drillTuning.vulnerabilityDistribution,
+        showEducationalAnnotations: appStore.displaySettings.showEducationalAnnotations,
         sourceDrillId: null,
       },
       allConventions,
@@ -89,6 +93,10 @@
         practiceMode: drill.practiceMode,
         practiceRole: drill.practiceRole,
         systemSelectionId: drill.systemSelectionId,
+        opponentMode: drill.opponentMode,
+        playProfileId: drill.playProfileId,
+        vulnerabilityDistribution: drill.vulnerabilityDistribution,
+        showEducationalAnnotations: drill.showEducationalAnnotations,
         sourceDrillId: drill.id,
       },
       allConventions,
@@ -144,7 +152,7 @@
   <div class="grid gap-4 md:grid-cols-[19rem,minmax(0,1fr)] xl:grid-cols-[20rem,minmax(0,1fr)]">
     <aside class="hidden md:block">
       <div class="sticky top-0">
-        <DrillSettingsPanel />
+        <QuickPracticeSettingsPanel />
       </div>
     </aside>
 
@@ -195,7 +203,7 @@
             Practice settings
           </summary>
           <div class="border-t border-border-subtle p-3">
-            <DrillSettingsPanel showHeader={false} />
+            <QuickPracticeSettingsPanel showHeader={false} />
           </div>
         </details>
       {/if}

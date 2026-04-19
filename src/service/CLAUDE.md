@@ -24,7 +24,7 @@ WASM proxy layer — the **sole interface** between UI/CLI and the Rust backend 
 |------|------|
 | `index.ts` | Barrel organized by consumer concern: (1) port & impl, (2) viewports/responses, (3) engine primitives, (4) convention catalog, (5) coverage utils, (6) session config, (7) display, (8) evaluation facade, (9) cross-cutting. Debug types route through `debug-types.ts`. |
 | `debug-types.ts` | Debug-only types for DevServicePort — allowed to import backend types by design. |
-| `request-types.ts` | Request DTOs: DrillHandle, SessionConfig (includes `practiceMode` and `targetModuleId`) |
+| `request-types.ts` | Request DTOs: DrillHandle, SessionConfig (includes `practiceMode`, `targetModuleId`, `playProfileId`, `vulnerabilityDistribution`). `playProfileId` selects the MC+DDS / heuristic profile for AI seats. `vulnerabilityDistribution` is a probability weight `{none, ours, theirs, both}` that drives Rust's `pick_vulnerability` sampler. An explicit `vulnerability` override (tests/dev) outranks the distribution. |
 | `response-types.ts` | Response DTOs: DrillStartResult, BidSubmitResult, PlayCardResult, viewports, ModuleCatalogEntry, ModuleLearningViewport, FlowTreeNode, etc. |
 | `session-types.ts` | Stub type definitions matching Rust JSON schema — TS interfaces for types that cross the WASM boundary |
 | `port.ts` | ServicePort + DevServicePort interfaces |

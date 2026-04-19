@@ -11,8 +11,8 @@
 
 use std::collections::HashSet;
 
-use bridge_conventions::registry::{list_bundle_inputs, system_configs::get_system_config};
 use bridge_conventions::registry::module_registry::BASE_MODULE_IDS;
+use bridge_conventions::registry::{list_bundle_inputs, system_configs::get_system_config};
 use bridge_conventions::types::system_config::BaseSystemId;
 use bridge_engine::types::Seat;
 use bridge_service::error::ServiceError;
@@ -46,6 +46,8 @@ fn make_config(bundle_id: &str, seed: u64) -> SessionConfig {
         play_preference: None,
         opponent_mode: None,
         vulnerability: None,
+        play_profile_id: None,
+        vulnerability_distribution: None,
     }
 }
 

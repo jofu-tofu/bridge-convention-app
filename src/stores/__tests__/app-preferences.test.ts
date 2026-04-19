@@ -180,6 +180,10 @@ describe("setter behavior", () => {
         practiceMode: PracticeMode.FullAuction,
         practiceRole: "auto",
         systemSelectionId: "two-over-one",
+        opponentMode: OpponentMode.Natural,
+        playProfileId: "expert",
+        vulnerabilityDistribution: { none: 1, ours: 0, theirs: 0, both: 0 },
+        showEducationalAnnotations: false,
         sourceDrillId: "drill:stayman",
       },
       [

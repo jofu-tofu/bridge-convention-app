@@ -7,6 +7,7 @@ import { createAppStore } from "../../../stores/app.svelte";
 import { createCustomSystemsStore } from "../../../stores/custom-systems.svelte";
 import { createDrillsStore } from "../../../stores/drills.svelte";
 import ConventionSelectScreenTestWrapper from "./ConventionSelectScreenTestWrapper.svelte";
+import { TEST_DRILL_SEED } from "../../../test-support/fixtures";
 
 const { gotoMock } = vi.hoisted(() => ({
   gotoMock: vi.fn(),
@@ -91,7 +92,7 @@ describe("ConventionSelectScreen", () => {
   it("renders the convention default role badge and links the configure action to the drill form", () => {
     const appStore = createAppStore();
     const customSystemsStore = createCustomSystemsStore();
-    const drillsStore = createDrillsStore({ defaultSystemId: "sayc" });
+    const drillsStore = createDrillsStore({ defaultSystemId: "sayc", seedFromPrefs: TEST_DRILL_SEED });
 
     const { getByTestId } = render(ConventionSelectScreenTestWrapper, {
       props: {
@@ -120,7 +121,7 @@ describe("ConventionSelectScreen", () => {
   it("launches practice through applyDrillSession using the convention default role", async () => {
     const appStore = createAppStore();
     const customSystemsStore = createCustomSystemsStore();
-    const drillsStore = createDrillsStore({ defaultSystemId: "sayc" });
+    const drillsStore = createDrillsStore({ defaultSystemId: "sayc", seedFromPrefs: TEST_DRILL_SEED });
     const applyDrillSessionSpy = vi.spyOn(appStore, "applyDrillSession");
 
     const { getByTestId } = render(ConventionSelectScreenTestWrapper, {
@@ -144,13 +145,13 @@ describe("ConventionSelectScreen", () => {
     await fireEvent.click(getByTestId("practice-stayman-bundle"));
 
     expect(applyDrillSessionSpy).toHaveBeenCalledWith(
-      {
+      expect.objectContaining({
         moduleIds: ["stayman-bundle"],
         practiceMode: PracticeMode.DecisionDrill,
         practiceRole: PracticeRole.Responder,
         systemSelectionId: "sayc",
         sourceDrillId: null,
-      },
+      }),
       expect.arrayContaining([
         expect.objectContaining({
           id: "stayman-bundle",
@@ -158,6 +159,13 @@ describe("ConventionSelectScreen", () => {
         }),
       ]),
     );
+    const sentLaunchConfig = applyDrillSessionSpy.mock.calls[0]?.[0];
+    expect(sentLaunchConfig).toMatchObject({
+      opponentMode: expect.any(String),
+      playProfileId: expect.any(String),
+      vulnerabilityDistribution: expect.any(Object),
+      showEducationalAnnotations: expect.any(Boolean),
+    });
     expect(appStore.activeLaunch).toMatchObject({
       moduleIds: ["stayman-bundle"],
       sourceDrillId: null,

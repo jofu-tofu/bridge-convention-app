@@ -51,8 +51,8 @@
   <div class="space-y-5">
     {#if showHeader}
       <div class="space-y-1">
-        <SectionHeader level="h2">Practice Settings</SectionHeader>
-        <p class="text-sm text-text-secondary">Set the next session before you launch.</p>
+        <SectionHeader level="h2">Quick Practice Settings</SectionHeader>
+        <p class="text-sm text-text-secondary">Defaults for ad-hoc sessions launched from the convention picker. Saved drills carry their own values.</p>
       </div>
     {/if}
 

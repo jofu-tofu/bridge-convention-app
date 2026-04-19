@@ -4,7 +4,13 @@ use bridge_conventions::types::system_config::SystemConfig;
 use bridge_engine::types::{Seat, Vulnerability};
 use serde::{Deserialize, Serialize};
 
+use bridge_session::heuristics::play_profiles::PlayProfileId;
 use bridge_session::types::{OpponentMode, PlayPreference, PracticeMode, PracticeRole};
+
+/// Re-exported from `bridge_session::types::VulnerabilityDistribution` so
+/// the service request types and the drill-options sampler share one
+/// definition. Mirrors TS `VulnerabilityDistribution`.
+pub use bridge_session::types::VulnerabilityDistribution;
 
 /// Opaque session identifier.
 pub type DrillHandle = String;
@@ -44,7 +50,15 @@ pub struct SessionConfig {
     /// Opponent behavior mode.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub opponent_mode: Option<OpponentMode>,
-    /// Vulnerability override.
+    /// Vulnerability override (a single, deterministic value). When set,
+    /// trumps `vulnerability_distribution`. Used by tests and dev tools.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub vulnerability: Option<Vulnerability>,
+    /// Opponent play skill — selects which MC+DDS / heuristic profile drives AI play.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub play_profile_id: Option<PlayProfileId>,
+    /// Probability weights over the four vulnerability states. Sampled per
+    /// drill creation. Ignored when `vulnerability` is set.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub vulnerability_distribution: Option<VulnerabilityDistribution>,
 }

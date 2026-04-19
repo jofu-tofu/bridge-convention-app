@@ -1,12 +1,13 @@
 import { fireEvent, render } from "@testing-library/svelte";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { listConventions, PracticeMode, PracticeRole } from "../../../service";
+import { listConventions, OpponentMode, PracticeMode, PracticeRole } from "../../../service";
 import { ConventionCategory } from "../../../service/session-types";
 import { setWasmModule } from "../../../service/service-helpers";
 import { createAppStore } from "../../../stores/app.svelte";
 import { createCustomSystemsStore } from "../../../stores/custom-systems.svelte";
 import { createDrillsStore } from "../../../stores/drills.svelte";
 import DrillFormTestWrapper from "./DrillFormTestWrapper.svelte";
+import { TEST_DRILL_SEED, TEST_DRILL_TUNABLES } from "../../../test-support/fixtures";
 
 function createStorage(): Storage {
   let store: Record<string, string> = {};
@@ -71,7 +72,7 @@ describe("DrillForm", () => {
 
     const appStore = createAppStore();
     const customSystemsStore = createCustomSystemsStore();
-    const drillsStore = createDrillsStore({ defaultSystemId: "sayc" });
+    const drillsStore = createDrillsStore({ defaultSystemId: "sayc", seedFromPrefs: TEST_DRILL_SEED });
 
     const { getByTestId } = render(DrillFormTestWrapper, {
       props: {
@@ -104,13 +105,14 @@ describe("DrillForm", () => {
 
     const appStore = createAppStore();
     const customSystemsStore = createCustomSystemsStore();
-    const drillsStore = createDrillsStore({ defaultSystemId: "sayc" });
+    const drillsStore = createDrillsStore({ defaultSystemId: "sayc", seedFromPrefs: TEST_DRILL_SEED });
     const drill = drillsStore.create({
       name: "Original drill",
       moduleIds: [firstConvention!.id],
       practiceMode: PracticeMode.DecisionDrill,
       practiceRole: PracticeRole.Responder,
       systemSelectionId: "sayc",
+      ...TEST_DRILL_TUNABLES,
     });
 
     const { getByTestId } = render(DrillFormTestWrapper, {
@@ -135,5 +137,38 @@ describe("DrillForm", () => {
       moduleIds: [firstConvention!.id, secondConvention!.id],
       practiceRole: PracticeRole.Opener,
     });
+  });
+
+  it("captures opponents, play skill, vulnerability and annotations on save", async () => {
+    const [firstConvention] = listConventions();
+    expect(firstConvention).toBeDefined();
+
+    const appStore = createAppStore();
+    const customSystemsStore = createCustomSystemsStore();
+    const drillsStore = createDrillsStore({ defaultSystemId: "sayc", seedFromPrefs: TEST_DRILL_SEED });
+
+    const { getByTestId } = render(DrillFormTestWrapper, {
+      props: {
+        appStore,
+        customSystemsStore,
+        drillsStore,
+        mode: "create",
+        prefillConvention: firstConvention!.id,
+      },
+    });
+
+    await fireEvent.input(getByTestId("drill-form-name"), { target: { value: "Tuned drill" } });
+    await fireEvent.click(getByTestId("drill-form-opponents-natural"));
+    await fireEvent.click(getByTestId("drill-form-skill-beginner"));
+    await fireEvent.click(getByTestId("drill-form-vuln-toggle-both"));
+    await fireEvent.click(getByTestId("drill-form-annotations"));
+    await fireEvent.click(getByTestId("drill-form-save"));
+
+    expect(drillsStore.drills).toHaveLength(1);
+    const saved = drillsStore.drills[0]!;
+    expect(saved.opponentMode).toBe(OpponentMode.Natural);
+    expect(saved.playProfileId).toBe("beginner");
+    expect(saved.vulnerabilityDistribution.both).toBeGreaterThan(0);
+    expect(saved.showEducationalAnnotations).toBe(false);
   });
 });

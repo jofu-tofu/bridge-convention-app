@@ -17,7 +17,7 @@ import type {
   Suit,
 } from "../service";
 import type { DevServicePort, DrillHandle, SessionConfig } from "../service";
-import type { GamePhase, ServicePublicBeliefState, PracticeMode, PracticeRole, PromptMode, SystemSelectionId } from "../service";
+import type { GamePhase, OpponentMode, PlayProfileId, ServicePublicBeliefState, PracticeMode, PracticeRole, PromptMode, SystemSelectionId, VulnerabilityDistribution } from "../service";
 import type { BiddingViewport, DeclarerPromptViewport, PlayingViewport, ExplanationViewport, ViewportBidFeedback, TeachingDetail } from "../service";
 import type {
   BidFeedback,
@@ -39,6 +39,10 @@ export interface DrillLaunchConfig {
   practiceMode: PracticeMode;
   practiceRole: PracticeRole | "auto";
   systemSelectionId: SystemSelectionId;
+  opponentMode: OpponentMode;
+  playProfileId: PlayProfileId;
+  vulnerabilityDistribution: VulnerabilityDistribution;
+  showEducationalAnnotations: boolean;
   sourceDrillId: string | null;
 }
 

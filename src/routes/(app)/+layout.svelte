@@ -52,9 +52,22 @@
         resolvedService = svc;
         customSystemsStore = createCustomSystemsStore();
         userModuleStore = createUserModuleStore();
-        drillsStore = createDrillsStore({ defaultSystemId: readDefaultSystemId() });
+        // Construct appStore first so its hydrated `prefs` snapshot can
+        // seed drillsStore for one-time legacy-record healing. After
+        // construction, drillsStore never reads appStore again — drills
+        // carry fully explicit values.
         const store = createAppStore();
         appStore = store;
+        const drillSettings = store.drillSettings;
+        drillsStore = createDrillsStore({
+          defaultSystemId: readDefaultSystemId(),
+          seedFromPrefs: {
+            opponentMode: drillSettings.opponentMode,
+            playProfileId: drillSettings.playProfileId ?? "world-class",
+            vulnerabilityDistribution: drillSettings.tuning.vulnerabilityDistribution,
+            showEducationalAnnotations: store.displaySettings.showEducationalAnnotations,
+          },
+        });
         // Validate stored custom system selection still exists
         if (!customSystemsStore.isValidSelection(store.baseSystemId)) {
           store.setBaseSystemId("sayc");

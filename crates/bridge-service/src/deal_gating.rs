@@ -123,7 +123,12 @@ pub(crate) fn build_witness_acceptance_predicate(
         for sc in &dc.seats {
             tracing::debug!(
                 "projected constraint: {:?} hcp={:?}-{:?} balanced={:?} minLen={:?} maxLen={:?}",
-                sc.seat, sc.min_hcp, sc.max_hcp, sc.balanced, sc.min_length, sc.max_length
+                sc.seat,
+                sc.min_hcp,
+                sc.max_hcp,
+                sc.balanced,
+                sc.min_length,
+                sc.max_length
             );
         }
     } else {
@@ -189,7 +194,8 @@ pub(crate) fn build_witness_acceptance_predicate(
             if entry.call != Call::Pass {
                 tracing::debug!(
                     "reject: pre-seeded entry {:?} at {:?} is non-pass and doesn't match witness",
-                    entry.call, entry.seat
+                    entry.call,
+                    entry.seat
                 );
                 return false;
             }
@@ -251,7 +257,8 @@ pub(crate) fn build_witness_acceptance_predicate(
                 // Opponent auto-played non-pass; breaks the witness sequence.
                 tracing::debug!(
                     "reject: opponent {:?} auto-played {:?} instead of Pass (hcp={})",
-                    cursor, call,
+                    cursor,
+                    call,
                     evaluate_hand_hcp(&deal.hands[&cursor]).hcp
                 );
                 return false;
@@ -262,7 +269,11 @@ pub(crate) fn build_witness_acceptance_predicate(
         }
 
         if cursor != user_seat {
-            tracing::debug!("reject: cursor {:?} != user_seat {:?} after prefix replay", cursor, user_seat);
+            tracing::debug!(
+                "reject: cursor {:?} != user_seat {:?} after prefix replay",
+                cursor,
+                user_seat
+            );
             return false;
         }
 
@@ -271,7 +282,8 @@ pub(crate) fn build_witness_acceptance_predicate(
         if witness_idx != witness.prefix.len() {
             tracing::debug!(
                 "reject: witness_idx {} != prefix len {} — not all partnership steps consumed",
-                witness_idx, witness.prefix.len()
+                witness_idx,
+                witness.prefix.len()
             );
             return false;
         }
@@ -296,12 +308,14 @@ pub(crate) fn build_witness_acceptance_predicate(
                 // (extension modules like stayman-garbage author surfaces with
                 // the base module's ID, not the containing module ID).
                 let ok = sid == witness.target_surface_id
-                    && (mid == witness.target_module_id
-                        || mid == witness.target_surface_module_id);
+                    && (mid == witness.target_module_id || mid == witness.target_surface_module_id);
                 if !ok {
                     tracing::debug!(
                         "reject: pipeline selected {}/{} but witness targets {}/{}",
-                        mid, sid, witness.target_module_id, witness.target_surface_id
+                        mid,
+                        sid,
+                        witness.target_module_id,
+                        witness.target_surface_id
                     );
                 }
                 ok
@@ -347,6 +361,8 @@ mod tests {
             opponent_mode: None,
             user_seat: None,
             vulnerability: None,
+            play_profile_id: None,
+            vulnerability_distribution: None,
             seed: Some(seed),
         }
     }
@@ -392,6 +408,8 @@ mod tests {
                 opponent_mode: None,
                 user_seat: None,
                 vulnerability: None,
+                play_profile_id: None,
+                vulnerability_distribution: None,
                 seed: Some(seed),
             };
             match service.create_drill_session(config) {

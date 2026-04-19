@@ -53,7 +53,7 @@ export const SCREEN_REGISTRY: readonly ScreenEntry[] = [
     mobileNotes: "max-w-4xl centered container, single-column grid",
   },
   {
-    path: "DrillSettingsPanel.svelte",
+    path: "QuickPracticeSettingsPanel.svelte",
     mobileStrategy: "embedded",
     minWidth: 280,
     mobileNotes: "Desktop sticky rail content that the parent screen renders inside a mobile disclosure above the convention grid",

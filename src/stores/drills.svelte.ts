@@ -11,12 +11,19 @@
  * No soft cap (evidence-map §3 — bimodal usage).
  */
 
-import { PracticeMode, PracticeRole } from "../service";
-import type { SystemSelectionId } from "../service";
+import { OpponentMode, PracticeMode, PracticeRole } from "../service";
+import type { PlayProfileId, SystemSelectionId, VulnerabilityDistribution } from "../service";
 import { AVAILABLE_BASE_SYSTEMS } from "../service";
 import { listConventions, listModules } from "../service";
 import { canonicalBundleId } from "./bundle-id-migration";
-import { loadFromStorage, saveToStorage } from "./local-storage";
+import { saveToStorage } from "./local-storage";
+
+const VALID_PLAY_PROFILE_IDS: ReadonlySet<string> = new Set([
+  "beginner",
+  "club-player",
+  "expert",
+  "world-class",
+]);
 
 const STORAGE_KEY = "bridge-app:drills";
 const LEGACY_PRESETS_KEY = "bridge-app:drill-presets";
@@ -34,9 +41,26 @@ export interface Drill {
   practiceMode: PracticeMode;
   practiceRole: DrillPracticeRole;
   systemSelectionId: SystemSelectionId;
+  opponentMode: OpponentMode;
+  playProfileId: PlayProfileId;
+  vulnerabilityDistribution: VulnerabilityDistribution;
+  showEducationalAnnotations: boolean;
   createdAt: string;
   updatedAt: string;
   lastUsedAt: string | null;
+}
+
+/**
+ * Snapshot of practice preferences captured at drill-store construction.
+ * Used once for healing legacy drills that pre-date the four gameplay
+ * tunable fields. After healing, drills carry fully explicit values and
+ * the store never reads `appStore.prefs` again.
+ */
+export interface DrillSeed {
+  readonly opponentMode: OpponentMode;
+  readonly playProfileId: PlayProfileId;
+  readonly vulnerabilityDistribution: VulnerabilityDistribution;
+  readonly showEducationalAnnotations: boolean;
 }
 
 interface StoredDrills {
@@ -64,7 +88,57 @@ function isSystemSelectionId(v: unknown): v is SystemSelectionId {
   return AVAILABLE_BASE_SYSTEMS.some((s) => s.id === v);
 }
 
+function isOpponentMode(v: unknown): v is OpponentMode {
+  return v === OpponentMode.Natural || v === OpponentMode.None;
+}
+
+function isPlayProfileId(v: unknown): v is PlayProfileId {
+  return typeof v === "string" && VALID_PLAY_PROFILE_IDS.has(v);
+}
+
+function isVulnerabilityDistribution(v: unknown): v is VulnerabilityDistribution {
+  if (!v || typeof v !== "object") return false;
+  const r = v as Record<string, unknown>;
+  return (
+    typeof r.none === "number" &&
+    typeof r.ours === "number" &&
+    typeof r.theirs === "number" &&
+    typeof r.both === "number" &&
+    r.none >= 0 && r.ours >= 0 && r.theirs >= 0 && r.both >= 0 &&
+    (r.none + r.ours + r.theirs + r.both) > 0
+  );
+}
+
+/**
+ * Strict validator — used after healing. Records that pass this validator
+ * carry every field explicitly; no fallbacks at read time.
+ */
 function validateStoredDrill(d: unknown): d is Drill {
+  if (!d || typeof d !== "object") return false;
+  const r = d as Record<string, unknown>;
+  if (typeof r.id !== "string" || !r.id.startsWith("drill:")) return false;
+  if (typeof r.name !== "string" || !r.name.trim()) return false;
+  if (!Array.isArray(r.moduleIds) || r.moduleIds.length === 0) return false;
+  if (!r.moduleIds.every((m) => typeof m === "string" && m.length > 0)) return false;
+  if (!isPracticeMode(r.practiceMode)) return false;
+  if (!isDrillPracticeRole(r.practiceRole)) return false;
+  if (!isSystemSelectionId(r.systemSelectionId)) return false;
+  if (!isOpponentMode(r.opponentMode)) return false;
+  if (!isPlayProfileId(r.playProfileId)) return false;
+  if (!isVulnerabilityDistribution(r.vulnerabilityDistribution)) return false;
+  if (typeof r.showEducationalAnnotations !== "boolean") return false;
+  if (typeof r.createdAt !== "string") return false;
+  if (typeof r.updatedAt !== "string") return false;
+  if (r.lastUsedAt !== null && typeof r.lastUsedAt !== "string") return false;
+  return true;
+}
+
+/**
+ * Pre-healing validator: a record is "old-schema valid" when every field
+ * required by the previous schema is present and well-typed. Records that
+ * pass this but fail strict validation are eligible for one-time healing.
+ */
+function isLegacyDrillRecord(d: unknown): boolean {
   if (!d || typeof d !== "object") return false;
   const r = d as Record<string, unknown>;
   if (typeof r.id !== "string" || !r.id.startsWith("drill:")) return false;
@@ -82,17 +156,84 @@ function validateStoredDrill(d: unknown): d is Drill {
 
 // ─── Persistence ────────────────────────────────────────────
 
-function loadDrills(): Drill[] {
-  return loadFromStorage(STORAGE_KEY, [] as Drill[], (raw) => {
-    const parsed = raw as StoredDrills;
-    if (!Array.isArray(parsed?.drills)) return undefined;
-    return parsed.drills
-      .filter(validateStoredDrill)
-      .map((d) => ({
-        ...d,
-        moduleIds: d.moduleIds.map(canonicalBundleId),
-      }));
-  });
+interface LoadResult {
+  drills: Drill[];
+  healed: number;
+  skipped: number;
+}
+
+/**
+ * Read raw records from `localStorage`, then either validate strictly,
+ * heal legacy-schema records by filling the four new fields from the
+ * provided seed, or skip malformed records. Healed records are written
+ * back at the end of the pass.
+ */
+function loadDrillsWithHealing(seed: DrillSeed): LoadResult {
+  const drills: Drill[] = [];
+  let healed = 0;
+  let skipped = 0;
+  let raw: string | null = null;
+  try {
+    raw = localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return { drills, healed: 0, skipped: 0 };
+  }
+  if (raw === null) return { drills, healed: 0, skipped: 0 };
+
+  let parsed: StoredDrills | undefined;
+  try {
+    parsed = JSON.parse(raw) as StoredDrills;
+  } catch {
+    return { drills, healed: 0, skipped: 0 };
+  }
+  if (!parsed || !Array.isArray(parsed.drills)) return { drills, healed: 0, skipped: 0 };
+
+  for (const entry of parsed.drills) {
+    if (validateStoredDrill(entry)) {
+      drills.push({ ...entry, moduleIds: entry.moduleIds.map(canonicalBundleId) });
+      continue;
+    }
+    if (isLegacyDrillRecord(entry)) {
+      const r = entry as Record<string, unknown>;
+      const opponentMode = isOpponentMode(r.opponentMode) ? r.opponentMode : seed.opponentMode;
+      const playProfileId = isPlayProfileId(r.playProfileId) ? r.playProfileId : seed.playProfileId;
+      const vulnerabilityDistribution = isVulnerabilityDistribution(r.vulnerabilityDistribution)
+        ? r.vulnerabilityDistribution
+        : seed.vulnerabilityDistribution;
+      const showEducationalAnnotations = typeof r.showEducationalAnnotations === "boolean"
+        ? r.showEducationalAnnotations
+        : seed.showEducationalAnnotations;
+      const healedDrill: Drill = {
+        id: r.id as `drill:${string}`,
+        name: r.name as string,
+        moduleIds: (r.moduleIds as string[]).map(canonicalBundleId),
+        practiceMode: r.practiceMode as PracticeMode,
+        practiceRole: r.practiceRole as DrillPracticeRole,
+        systemSelectionId: r.systemSelectionId as SystemSelectionId,
+        opponentMode,
+        playProfileId,
+        vulnerabilityDistribution,
+        showEducationalAnnotations,
+        createdAt: r.createdAt as string,
+        updatedAt: r.updatedAt as string,
+        lastUsedAt: (r.lastUsedAt ?? null) as string | null,
+      };
+      drills.push(healedDrill);
+      healed++;
+      continue;
+    }
+    skipped++;
+    warnMigration("[drills] skipping malformed drill record", entry);
+  }
+
+  if (healed > 0) {
+    try {
+      saveToStorage(STORAGE_KEY, { drills } satisfies StoredDrills);
+    } catch {
+      // ignore — heal-on-next-load is fine
+    }
+  }
+  return { drills, healed, skipped };
 }
 
 function persist(drills: Drill[]): void {
@@ -225,13 +366,22 @@ function isLegacyPack(p: unknown): p is LegacyPack {
   );
 }
 
-function migrateFromLegacy(defaultSystemId: SystemSelectionId): {
+function migrateFromLegacy(
+  defaultSystemId: SystemSelectionId,
+  seed: DrillSeed,
+): {
   drills: Drill[];
   skipped: number;
 } {
   const migrated: Drill[] = [];
   let skipped = 0;
   const knownModuleIds = loadKnownModuleIds();
+  const tunableDefaults = {
+    opponentMode: seed.opponentMode,
+    playProfileId: seed.playProfileId,
+    vulnerabilityDistribution: seed.vulnerabilityDistribution,
+    showEducationalAnnotations: seed.showEducationalAnnotations,
+  };
 
   // Presets
   try {
@@ -259,6 +409,7 @@ function migrateFromLegacy(defaultSystemId: SystemSelectionId): {
           practiceMode: entry.practiceMode,
           practiceRole: entry.practiceRole,
           systemSelectionId: entry.systemSelectionId,
+          ...tunableDefaults,
           createdAt: entry.createdAt,
           updatedAt: entry.createdAt,
           lastUsedAt: entry.lastUsedAt ?? null,
@@ -295,6 +446,7 @@ function migrateFromLegacy(defaultSystemId: SystemSelectionId): {
           practiceMode: PracticeMode.DecisionDrill,
           practiceRole: entry.practiceRole,
           systemSelectionId: entry.systemSelectionId,
+          ...tunableDefaults,
           createdAt: entry.createdAt,
           updatedAt: entry.updatedAt,
           lastUsedAt: null,
@@ -334,6 +486,7 @@ function migrateFromLegacy(defaultSystemId: SystemSelectionId): {
           practiceMode: PracticeMode.DecisionDrill,
           practiceRole: "auto",
           systemSelectionId: defaultSystemId,
+          ...tunableDefaults,
           createdAt: entry.createdAt,
           updatedAt: entry.updatedAt,
           lastUsedAt: null,
@@ -347,20 +500,21 @@ function migrateFromLegacy(defaultSystemId: SystemSelectionId): {
   return { drills: migrated, skipped };
 }
 
-function loadOrMigrate(defaultSystemId: SystemSelectionId): {
+function loadOrMigrate(defaultSystemId: SystemSelectionId, seed: DrillSeed): {
   drills: Drill[];
   migrated: boolean;
   skipped: number;
 } {
   try {
     if (localStorage.getItem(STORAGE_KEY) !== null) {
-      return { drills: loadDrills(), migrated: false, skipped: 0 };
+      const result = loadDrillsWithHealing(seed);
+      return { drills: result.drills, migrated: false, skipped: result.skipped };
     }
   } catch {
     return { drills: [], migrated: false, skipped: 0 };
   }
 
-  const { drills, skipped } = migrateFromLegacy(defaultSystemId);
+  const { drills, skipped } = migrateFromLegacy(defaultSystemId, seed);
   if (drills.length > 0 || skipped > 0) {
     persist(drills);
   }
@@ -375,6 +529,10 @@ export interface CreateDrillParams {
   practiceMode: PracticeMode;
   practiceRole: DrillPracticeRole;
   systemSelectionId: SystemSelectionId;
+  opponentMode: OpponentMode;
+  playProfileId: PlayProfileId;
+  vulnerabilityDistribution: VulnerabilityDistribution;
+  showEducationalAnnotations: boolean;
 }
 
 export interface UpdateDrillParams {
@@ -383,14 +541,25 @@ export interface UpdateDrillParams {
   practiceMode?: PracticeMode;
   practiceRole?: DrillPracticeRole;
   systemSelectionId?: SystemSelectionId;
+  opponentMode?: OpponentMode;
+  playProfileId?: PlayProfileId;
+  vulnerabilityDistribution?: VulnerabilityDistribution;
+  showEducationalAnnotations?: boolean;
 }
 
 export interface CreateDrillsStoreArgs {
   defaultSystemId: SystemSelectionId;
+  /**
+   * One-time snapshot of practice preferences used to heal legacy drill
+   * records that pre-date the four gameplay tunable fields. The store
+   * never reads `appStore.prefs` after construction — drills carry
+   * fully explicit values from this point on.
+   */
+  seedFromPrefs: DrillSeed;
 }
 
 export function createDrillsStore(args: CreateDrillsStoreArgs) {
-  const initial = loadOrMigrate(args.defaultSystemId);
+  const initial = loadOrMigrate(args.defaultSystemId, args.seedFromPrefs);
   let drills = $state<Drill[]>(sortMru(initial.drills));
 
   function save(): void {
@@ -429,6 +598,9 @@ export function createDrillsStore(args: CreateDrillsStoreArgs) {
       if (moduleIds.length === 0) {
         throw new Error("Drill requires at least one module");
       }
+      if (!isVulnerabilityDistribution(params.vulnerabilityDistribution)) {
+        throw new Error("Drill vulnerability distribution must have at least one non-zero weight");
+      }
       const drill: Drill = {
         id: generateId(),
         name: params.name.trim(),
@@ -436,6 +608,10 @@ export function createDrillsStore(args: CreateDrillsStoreArgs) {
         practiceMode: params.practiceMode,
         practiceRole: params.practiceRole,
         systemSelectionId: params.systemSelectionId,
+        opponentMode: params.opponentMode,
+        playProfileId: params.playProfileId,
+        vulnerabilityDistribution: params.vulnerabilityDistribution,
+        showEducationalAnnotations: params.showEducationalAnnotations,
         createdAt: now,
         updatedAt: now,
         lastUsedAt: null,
@@ -447,6 +623,12 @@ export function createDrillsStore(args: CreateDrillsStoreArgs) {
 
     update(id: string, patch: UpdateDrillParams): void {
       const now = new Date().toISOString();
+      if (
+        patch.vulnerabilityDistribution !== undefined &&
+        !isVulnerabilityDistribution(patch.vulnerabilityDistribution)
+      ) {
+        throw new Error("Drill vulnerability distribution must have at least one non-zero weight");
+      }
       drills = sortMru(
         drills.map((d) => {
           if (d.id !== id) return d;
@@ -460,6 +642,14 @@ export function createDrillsStore(args: CreateDrillsStoreArgs) {
             ...(patch.practiceRole !== undefined ? { practiceRole: patch.practiceRole } : {}),
             ...(patch.systemSelectionId !== undefined
               ? { systemSelectionId: patch.systemSelectionId }
+              : {}),
+            ...(patch.opponentMode !== undefined ? { opponentMode: patch.opponentMode } : {}),
+            ...(patch.playProfileId !== undefined ? { playProfileId: patch.playProfileId } : {}),
+            ...(patch.vulnerabilityDistribution !== undefined
+              ? { vulnerabilityDistribution: patch.vulnerabilityDistribution }
+              : {}),
+            ...(patch.showEducationalAnnotations !== undefined
+              ? { showEducationalAnnotations: patch.showEducationalAnnotations }
               : {}),
             updatedAt: now,
           };

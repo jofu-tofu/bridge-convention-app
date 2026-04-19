@@ -1180,6 +1180,8 @@ mod tests {
             play_preference: None,
             opponent_mode: None,
             vulnerability: None,
+            play_profile_id: None,
+            vulnerability_distribution: None,
         };
         let handle = match service.create_drill_session(config) {
             Ok(h) => h,

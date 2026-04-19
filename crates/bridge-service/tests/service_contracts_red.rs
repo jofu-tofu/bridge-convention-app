@@ -27,6 +27,8 @@ fn make_config(convention_id: &str, seed: u64) -> SessionConfig {
         // Force opponents to pass so convention bids aren't blocked by interference
         opponent_mode: Some(bridge_session::types::OpponentMode::None),
         vulnerability: None,
+        play_profile_id: None,
+        vulnerability_distribution: None,
     }
 }
 
@@ -56,6 +58,8 @@ fn make_competitive_config(convention_id: &str, seed: u64) -> SessionConfig {
         play_preference: None,
         opponent_mode: Some(bridge_session::types::OpponentMode::Natural),
         vulnerability: None,
+        play_profile_id: None,
+        vulnerability_distribution: None,
     }
 }
 

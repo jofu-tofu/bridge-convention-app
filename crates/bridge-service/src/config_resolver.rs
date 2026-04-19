@@ -8,9 +8,11 @@ use std::collections::HashMap;
 use bridge_conventions::types::system_config::SystemConfig;
 use bridge_engine::constants::{next_seat, partner_seat};
 use bridge_engine::types::Seat;
+use bridge_session::heuristics::play_profiles::PlayProfileId;
+use bridge_engine::types::Vulnerability;
 use bridge_session::session::start_drill::StartDrillOptions;
 use bridge_session::session::SeatStrategy;
-use bridge_session::types::{OpponentMode, PracticeMode, PracticeRole};
+use bridge_session::types::{DrillTuning, OpponentMode, PracticeMode, PracticeRole, VulnerabilityDistribution};
 
 use crate::request_types::SessionConfig;
 
@@ -22,6 +24,7 @@ pub(crate) struct ResolvedConfig {
     pub base_module_ids: Vec<String>,
     pub user_seat: Seat,
     pub opponent_mode: OpponentMode,
+    pub play_profile_id: PlayProfileId,
     pub options: StartDrillOptions,
 }
 
@@ -33,12 +36,51 @@ pub(crate) fn resolve_config(config: &SessionConfig) -> ResolvedConfig {
     let practice_mode = config.practice_mode.unwrap_or(PracticeMode::DecisionDrill);
     let practice_role = config.practice_role.unwrap_or(PracticeRole::Responder);
     let opponent_mode = config.opponent_mode.unwrap_or(OpponentMode::Natural);
+    let play_profile_id = config.play_profile_id.unwrap_or(PlayProfileId::ClubPlayer);
+
+    // An explicit `vulnerability` override (used by tests / dev tools)
+    // outranks the per-drill distribution: collapse the distribution to a
+    // single non-zero bucket matching the requested vulnerability so that
+    // `start_drill::pick_vulnerability` returns it deterministically. The
+    // sampler in `start_drill` is the single point of vulnerability
+    // selection — we can't bypass it, so we shape its input instead.
+    let user_is_ns = matches!(user_seat, Seat::North | Seat::South);
+    let tuning = if let Some(forced) = config.vulnerability {
+        let dist = match forced {
+            Vulnerability::None => VulnerabilityDistribution { none: 1.0, ours: 0.0, theirs: 0.0, both: 0.0 },
+            Vulnerability::Both => VulnerabilityDistribution { none: 0.0, ours: 0.0, theirs: 0.0, both: 1.0 },
+            Vulnerability::NorthSouth => {
+                if user_is_ns {
+                    VulnerabilityDistribution { none: 0.0, ours: 1.0, theirs: 0.0, both: 0.0 }
+                } else {
+                    VulnerabilityDistribution { none: 0.0, ours: 0.0, theirs: 1.0, both: 0.0 }
+                }
+            }
+            Vulnerability::EastWest => {
+                if user_is_ns {
+                    VulnerabilityDistribution { none: 0.0, ours: 0.0, theirs: 1.0, both: 0.0 }
+                } else {
+                    VulnerabilityDistribution { none: 0.0, ours: 1.0, theirs: 0.0, both: 0.0 }
+                }
+            }
+        };
+        DrillTuning { vulnerability_distribution: dist, module_weights: None }
+    } else {
+        match config.vulnerability_distribution.clone() {
+            Some(dist) => DrillTuning {
+                vulnerability_distribution: dist,
+                module_weights: None,
+            },
+            None => DrillTuning::default(),
+        }
+    };
 
     let options = StartDrillOptions {
         practice_mode,
         practice_role,
         play_preference: config.play_preference,
         opponent_mode,
+        tuning,
         seed: config.seed,
         ..Default::default()
     };
@@ -48,6 +90,7 @@ pub(crate) fn resolve_config(config: &SessionConfig) -> ResolvedConfig {
         base_module_ids: config.base_module_ids.clone(),
         user_seat,
         opponent_mode,
+        play_profile_id,
         options,
     }
 }

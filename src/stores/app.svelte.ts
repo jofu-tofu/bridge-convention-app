@@ -141,6 +141,22 @@ export function createAppStore() {
     prefs = { ...prefs, baseSystemId: id };
   }
 
+  function setSessionOpponentMode(mode: OpponentMode) {
+    prefs = { ...prefs, drill: { ...prefs.drill, opponentMode: mode } };
+  }
+
+  function setSessionPlayProfileId(id: PlayProfileId) {
+    prefs = { ...prefs, drill: { ...prefs.drill, playProfileId: id } };
+  }
+
+  function setSessionVulnerabilityDistribution(dist: VulnerabilityDistribution) {
+    prefs = { ...prefs, drill: { ...prefs.drill, tuning: { ...prefs.drill.tuning, vulnerabilityDistribution: dist } } };
+  }
+
+  function setSessionShowEducationalAnnotations(show: boolean) {
+    prefs = { ...prefs, display: { ...prefs.display, showEducationalAnnotations: show } };
+  }
+
   function updateDrill(patch: Partial<DrillSettings>) {
     prefs = { ...prefs, drill: { ...prefs.drill, ...patch } };
     savePreferences(prefs);
@@ -336,6 +352,10 @@ export function createAppStore() {
       setSessionPracticeMode(config.practiceMode);
       setSessionPracticeRole(resolvedRole);
       setSessionBaseSystemId(config.systemSelectionId);
+      setSessionOpponentMode(config.opponentMode);
+      setSessionPlayProfileId(config.playProfileId);
+      setSessionVulnerabilityDistribution(config.vulnerabilityDistribution);
+      setSessionShowEducationalAnnotations(config.showEducationalAnnotations);
       activeLaunch = config;
     },
 

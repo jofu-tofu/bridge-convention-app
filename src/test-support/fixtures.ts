@@ -6,6 +6,27 @@
  */
 import { Seat, Suit, Rank, Vulnerability } from "../engine/types";
 import type { Card, Deal } from "../engine/types";
+import { OpponentMode } from "../service";
+import type { DrillSeed } from "../stores/drills.svelte";
+
+/**
+ * Default snapshot used by drill-store tests. Mirrors the production
+ * defaults so legacy-record healing produces predictable values.
+ */
+export const TEST_DRILL_SEED: DrillSeed = {
+  opponentMode: OpponentMode.None,
+  playProfileId: "world-class",
+  vulnerabilityDistribution: { none: 1, ours: 0, theirs: 0, both: 0 },
+  showEducationalAnnotations: true,
+};
+
+/** Strict-validator-passing field bundle for `drillsStore.create({...})` calls. */
+export const TEST_DRILL_TUNABLES = {
+  opponentMode: TEST_DRILL_SEED.opponentMode,
+  playProfileId: TEST_DRILL_SEED.playProfileId,
+  vulnerabilityDistribution: TEST_DRILL_SEED.vulnerabilityDistribution,
+  showEducationalAnnotations: TEST_DRILL_SEED.showEducationalAnnotations,
+} as const;
 
 function makeCard(suit: Suit, rank: Rank): Card {
   return { suit, rank };

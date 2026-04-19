@@ -60,7 +60,7 @@ test.describe("billing + auth", () => {
     });
 
     await page.goto("/settings?e2e=1");
-    await page.getByTestId("settings-tab-account").click();
+    await expect(page.getByTestId("account-section")).toBeVisible();
 
     const portalRequest = page.waitForRequest(
       (req) =>

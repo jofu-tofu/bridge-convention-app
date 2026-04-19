@@ -239,7 +239,7 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
         drill_bundle.practice_mode,
         drill_bundle.practice_focus,
         drill_bundle.play_preference,
-        bridge_session::heuristics::play_profiles::PlayProfileId::ClubPlayer,
+        resolved.play_profile_id,
         seed,
     );
 
