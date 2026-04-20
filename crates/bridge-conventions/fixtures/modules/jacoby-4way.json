@@ -7,10 +7,15 @@
   "variantOf": "jacoby-transfers",
   "description": "Minor-suit extension layered on top of jacoby-transfers: 2S is range ask or clubs, 2NT transfers to diamonds, and the major-suit transfer branches are delegated back to jacoby-transfers. This Larry-pinned fixture enumerates the weak signoff and balanced range-ask routes; invitational six-card minor continuations and strong follow-ups stay partnership-defined unless Larry gives a specific table.",
   "purpose": "Teach the minor-suit half of four-way transfers after 1NT without re-encoding the base major-suit Jacoby transfer structure, while keeping non-Larry continuations out of the authored tree.",
+  "scopeNote": "Larry-minimal four-way transfers after 1NT: `2S` = range ask or clubs (opener bids 2NT min / 3C max), `2NT` = diamond transfer. Encodes the core Larry structure only. Bridgebum-style advanced continuations (strong new-suit branches from `2S` / `2NT` such as `j4w:clubs-show-*` / `j4w:diamonds-show-*`, the diamond super-accept tree) are partnership-agreement extensions retained for coverage rather than authority requirements. Major-suit transfers live in the `jacoby-transfers` module, not here.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/showing-a-minor-after-partners-1nt",
-      "label": "Larry Cohen \u2014 Showing a Minor After Partner's 1NT (bridge-articles/showing-a-minor-after-partners-1nt)"
+      "label": "Larry Cohen — Showing a Minor After Partner's 1NT (bridge-articles/showing-a-minor-after-partners-1nt)",
+      "snapshot": {
+        "text": "# Showing a Minor After Partner's 1NT\n\nBy: Larry Cohen\n\nPartner opens 1NT and you have 5 or more cards in a minor suit. What should you do?\n\nUnfortunately, some of this depends on methods. You need to know how your partnership shows a minor. Do you play 4-suit transfers? There are many possibilities, but for this article, let's assume you use what is currently most popular:\n\n1NT-2♠ = Range ask or Clubs\n1NT-2NT = Transfer to Diamonds\n\nAfter 1NT-2♠, opener bids 2NT with a minimum or 3♣ with a maximum. If the responder just has an invite to 3NT (like a flat 9-count), he either passes 2NT, or converts 3♣ to 3NT. If responder has clubs, he can pass 3♣ to make that the contract, or bid anything but 3NT (showing clubs).\n\nYou and your partner should also discuss what it means in each of these situations:\n\n1) You start with 2♠ or 2NT and next bid a major suit on the 3-level. For example:\n\nOPENER | RESPONDER\n---|---\n1NT | 2♠\n3♣ | 3♥\n\nOne possibility is \"natural\" (5+♣ and 4♥).\n\nAnother possibility is \"shortness\" with a hand such as:\n♠ A65\n♥ 3\n♦ K76\n♣ KQ7654\n\n2) What does it mean if you start with Stayman and later bid a minor?\n\nOPENER | RESPONDER\n---|---\n1NT | 2♣\nanswer | 3♣\n\nIs that forcing, invitational or sign-off?\n\nThis area can get complicated (as hinted at above), but none of it is the purpose of this article.\n\nAll I want to show here is *if/when* you should actually show your minor.\n\nSo, partner opens 1NT and you hold each of the following hands:\n\n1)\n♠ 542\n♥ J4\n♦ J65\n♣ J8764\n\n2)\n♠ 32\n♥ 2\n♦ J765432\n♣ 652\n\n3)\n♠ K1076\n♥ 43\n♦ 2\n♣ AQJ765\n\n4)\n♠ J4\n♥ Q7\n♦ AQ10765\n♣ J32\n\n5)\n♠ K32\n♥ K2\n♦ KQJ109\n♣ 654\n\nWith #1, Pass and let partner suffer. \"You 'never' transfer to a minor with a flat (5-3-3-2) hand.\" The only possibly exception might be if you wanted to eventually look for a slam.\n\nWith #2, you want to play in 3♦. That has to be better than 1NT. It is now just a matter of methods. Make sure you and your partner know how in your system the responder signs off in 3-of-a-minor.\n\nWith #3, you want to look for a 4-4 spade fit and if it isn't found, show your clubs. Again, you have to know how to do this in your system. Do you start with Stayman and then bid 3♣? Do you start with a transfer to clubs and then bid your spades?\n\nWith #4, you have no interest in playing in your minor. Just bid 3NT. You can \"show\" your diamonds when you table the dummy.\n\nWith #5, again you have no reason to show the minor in the auction. Just raise 1NT to 3NT (or, if you play Puppet Stayman, you can look for a 5-3 spade fit).\n\n---\n\nThis article just covers some basics. In the real world, there is much more confusion awaiting you. For example, what do you do with a very weak hand with a 4-card major and a 6-card minor? Hint: It depends on your system/agreements.\n\nHere is a summary of your approach when you hold a 5+ card minor and partner opens 1NT:\n\n**No game interest**\n\nWith only a 5-card minor, usually pass 1NT.\nWith a 6+ card minor, transfer to play in 3 of the minor\n\n**Game invitational**\n\nWith a 5-card minor and no 4-card major, just invite in notrump\nWith a 5+card minor and a 4-card major, start with Stayman\nWith a 6-card minor (and no 4-card major), start with a transfer (likely your methods will allow opener to show min/max)\n\n**Game force**\n\nWith a flat hand, don't bother showing the minor unless you have slam interest\nWith shape (6+ card minor or 4-card major and 5+ card minor), use Stayman or a transfer to start\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/four_suit_transfers.php"
@@ -908,7 +913,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3NT invite after 3C",
-            "summary": "Convert opener\u2019s 3C maximum response to 3NT with the balanced invitational hand."
+            "summary": "Convert opener’s 3C maximum response to 3NT with the balanced invitational hand."
           }
         },
         {
@@ -1394,7 +1399,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass 2NT",
-            "summary": "Pass opener\u2019s 2NT minimum response with the balanced invitational hand."
+            "summary": "Pass opener’s 2NT minimum response with the balanced invitational hand."
           }
         },
         {
@@ -1414,7 +1419,7 @@
               "operator": "boolean",
               "value": true,
               "description": "Weak hand",
-              "rationale": "The weak club hand corrects opener\u2019s 2NT minimum back to clubs.",
+              "rationale": "The weak club hand corrects opener’s 2NT minimum back to clubs.",
               "isPublic": true
             },
             {
@@ -1440,7 +1445,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3C weak correction",
-            "summary": "Correct opener\u2019s 2NT minimum back to 3C with the weak club signoff hand."
+            "summary": "Correct opener’s 2NT minimum back to 3C with the weak club signoff hand."
           }
         }
       ]

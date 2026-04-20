@@ -5,11 +5,16 @@
   "defaultRole": "responder",
   "fixtureVersion": 1,
   "description": "Jump to 3H/3S after Stayman denial to show 5-4 in majors, game-forcing",
-  "purpose": "Handle the 5-4 major hand with game values after Stayman gets a 2D denial \u2014 let opener choose the fit while keeping the strong hand as declarer",
+  "purpose": "Handle the 5-4 major hand with game values after Stayman gets a 2D denial — let opener choose the fit while keeping the strong hand as declarer",
+  "scopeNote": "Responder shows 5-4 majors, game-forcing, after `1NT-2C-2D` (and mirrored after 2NT and strong-NT overcalls) by jumping in the 4-card major to right-side the contract. The BridgeBum-backed 'slow' 3M acceptance branch and the responder 4M follow-ups are retained as discovery-pinned extensions, not authority mechanics. Whether 2NT / natural-NT-overcall applicability belongs in this module vs a separate module is deferred.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/smolen",
-      "label": "Larry Cohen \u2014 Smolen: bid the shorter major at the 3-level after 1NT\u20132C\u20132D to right-side game"
+      "label": "Larry Cohen — Smolen: bid the shorter major at the 3-level after 1NT–2C–2D to right-side game",
+      "snapshot": {
+        "text": "# Smolen Convention Article\n\n**By: Larry Cohen**\n\nSmolen is a convention used by a responder to a notrump opening bid (or natural notrump overcall). It applies when the responder holds 5-4 in the majors (either distribution) with enough strength for game.\n\n## Example Hand\n\nAfter partner opens 1NT with:\n- Spades: AJ542\n- Hearts: KJ87\n- Diamonds: 2\n- Clubs: J103\n\nBegin with Stayman. If opener shows a 4-card major, the hand is straightforward. However, if opener responds 2♦ (denying a major), the situation becomes more complex.\n\nWhile 4♥ is no longer possible (no 4-4 fit), 4♠ remains viable (a 5-3 fit could exist). The responder must indicate possession of 5 spades and must force to game.\n\nIn Standard bidding, responder jumps to 3♠, announcing 5 spades and game-forcing values. By inference, this shows 4 hearts (otherwise, a plain transfer to spades would have been used instead of Stayman). The sequence 1NT–2♣–2♦–3-of-Major shows 5 in that major, 4 in the other major, and game strength. Opener then chooses between 3NT or responder's 5-card major.\n\n## The Smolen Advantage\n\nThe Smolen convention improves on this auction. Instead of jumping from 2♦ into his five-card major, responder jumps into his four-card major. This approach ensures the strong hand plays the contract when the five-card major is chosen—advantageous for opening lead purposes.\n\nUsing Smolen, the sequence 1NT–2♣–2♦–3-of-a-Major shows 5 cards in the other major and, by inference, four cards in the major bid.\n\n## Smolen After 2NT\n\nSmolen also applies after 2NT–3♣–3♦. Responder bids the major where he holds 4 cards, thereby showing 5 in the other major and potentially \"right-siding\" the contract.\n\nAdditionally, Smolen applies after a natural strong notrump overcall (systems on).\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/smolen.php"
@@ -17,7 +22,7 @@
   },
   "teaching": {
     "tradeoff": "Smolen uses jump bids (3H/3S) that could otherwise be used as natural invitational bids.",
-    "principle": "Bid the shorter major at the 3-level \u2014 this tells opener about both majors and lets the strong hand declare.",
+    "principle": "Bid the shorter major at the 3-level — this tells opener about both majors and lets the strong hand declare.",
     "commonMistakes": [
       {
         "text": "Do not forget that the jump shows the short major.",
@@ -120,7 +125,7 @@
       "explanationId": "nt.smolen.bidShortHearts",
       "meaningId": "smolen:bid-short-hearts",
       "templateKey": "nt.smolen.bidShortHearts.semantic",
-      "displayText": "Smolen 3\u2665: shows exactly 4 hearts and exactly 5 spades, game-forcing",
+      "displayText": "Smolen 3♥: shows exactly 4 hearts and exactly 5 spades, game-forcing",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -130,7 +135,7 @@
       "explanationId": "nt.smolen.bidShortSpades",
       "meaningId": "smolen:bid-short-spades",
       "templateKey": "nt.smolen.bidShortSpades.semantic",
-      "displayText": "Smolen 3\u2660: shows exactly 4 spades and exactly 5 hearts, game-forcing",
+      "displayText": "Smolen 3♠: shows exactly 4 spades and exactly 5 hearts, game-forcing",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -140,7 +145,7 @@
       "explanationId": "nt.smolen.placeFourHearts",
       "meaningId": "smolen:place-four-hearts",
       "templateKey": "nt.smolen.placeFourHearts.semantic",
-      "displayText": "Place 4\u2665: opener confirms heart fit after Smolen 3\u2660",
+      "displayText": "Place 4♥: opener confirms heart fit after Smolen 3♠",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -150,7 +155,7 @@
       "explanationId": "nt.smolen.acceptSpades3s",
       "meaningId": "smolen:accept-spades-3s",
       "templateKey": "nt.smolen.acceptSpades3s.semantic",
-      "displayText": "Accept 3\u2660: opener confirms spade fit after Smolen 3\u2665 (slow try)",
+      "displayText": "Accept 3♠: opener confirms spade fit after Smolen 3♥ (slow try)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -160,7 +165,7 @@
       "explanationId": "nt.smolen.acceptHearts3h",
       "meaningId": "smolen:accept-hearts-3h",
       "templateKey": "nt.smolen.acceptHearts3h.semantic",
-      "displayText": "Accept 3\u2665: opener confirms heart fit after Smolen 3\u2660 (slow try)",
+      "displayText": "Accept 3♥: opener confirms heart fit after Smolen 3♠ (slow try)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -170,7 +175,7 @@
       "explanationId": "nt.smolen.placeFourSpades",
       "meaningId": "smolen:place-four-spades",
       "templateKey": "nt.smolen.placeFourSpades.semantic",
-      "displayText": "Place 4\u2660: opener confirms spade fit after Smolen 3\u2665",
+      "displayText": "Place 4♠: opener confirms spade fit after Smolen 3♥",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -180,7 +185,7 @@
       "explanationId": "nt.smolen.responderPlaceFourSpades",
       "meaningId": "smolen:responder-place-four-spades",
       "templateKey": "nt.smolen.responderPlaceFourSpades.semantic",
-      "displayText": "Place 4\u2660: responder completes to game after opener's 3\u2660 acceptance",
+      "displayText": "Place 4♠: responder completes to game after opener's 3♠ acceptance",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -190,7 +195,7 @@
       "explanationId": "nt.smolen.responderPlaceFourHearts",
       "meaningId": "smolen:responder-place-four-hearts",
       "templateKey": "nt.smolen.responderPlaceFourHearts.semantic",
-      "displayText": "Place 4\u2665: responder completes to game after opener's 3\u2665 acceptance",
+      "displayText": "Place 4♥: responder completes to game after opener's 3♥ acceptance",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -200,7 +205,7 @@
       "explanationId": "nt.smolen.placeThreeNtNoHeartFit",
       "meaningId": "smolen:place-three-nt-no-heart-fit",
       "templateKey": "nt.smolen.placeThreeNtNoHeartFit.semantic",
-      "displayText": "Place 3NT: opener has no heart fit after Smolen 3\u2660",
+      "displayText": "Place 3NT: opener has no heart fit after Smolen 3♠",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -210,7 +215,7 @@
       "explanationId": "nt.smolen.placeThreeNtNoSpadeFit",
       "meaningId": "smolen:place-three-nt-no-spade-fit",
       "templateKey": "nt.smolen.placeThreeNtNoSpadeFit.semantic",
-      "displayText": "Place 3NT: opener has no spade fit after Smolen 3\u2665",
+      "displayText": "Place 3NT: opener has no spade fit after Smolen 3♥",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -220,7 +225,7 @@
       "explanationId": "nt.smolen.staymanEntry5h4s",
       "meaningId": "smolen:stayman-entry-5h4s",
       "templateKey": "nt.smolen.staymanEntry5h4s.semantic",
-      "displayText": "Stayman 2\u2663 with 5 hearts + 4 spades, planning Smolen",
+      "displayText": "Stayman 2♣ with 5 hearts + 4 spades, planning Smolen",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -230,7 +235,7 @@
       "explanationId": "nt.smolen.staymanEntry5s4h",
       "meaningId": "smolen:stayman-entry-5s4h",
       "templateKey": "nt.smolen.staymanEntry5s4h.semantic",
-      "displayText": "Stayman 2\u2663 with 5 spades + 4 hearts, planning Smolen",
+      "displayText": "Stayman 2♣ with 5 spades + 4 hearts, planning Smolen",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -408,7 +413,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Stayman 2\u2663",
+            "name": "Stayman 2♣",
             "summary": "Initiate Stayman with exactly 5 hearts and exactly 4 spades, planning a Smolen jump if opener denies"
           }
         },
@@ -463,7 +468,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Stayman 2\u2663",
+            "name": "Stayman 2♣",
             "summary": "Initiate Stayman with exactly 5 spades and exactly 4 hearts, planning a Smolen jump if opener denies"
           }
         }
@@ -550,7 +555,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Smolen 3\u2665",
+            "name": "Smolen 3♥",
             "summary": "Show exactly 5 spades and exactly 4 hearts with game-forcing values after Stayman denial"
           }
         }
@@ -637,7 +642,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Smolen 3\u2660",
+            "name": "Smolen 3♠",
             "summary": "Show exactly 5 hearts and exactly 4 spades with game-forcing values after Stayman denial"
           }
         }
@@ -693,7 +698,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "4S (spade fit found)",
-            "summary": "Place the contract in 4\u2660 after confirming a fit with responder's 5-card spade suit"
+            "summary": "Place the contract in 4♠ after confirming a fit with responder's 5-card spade suit"
           }
         },
         {
@@ -732,7 +737,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3S (spade fit found)",
-            "summary": "Partnership extension: confirm a spade fit at the three-level after responder's Smolen 3\u2665 showed 5 spades"
+            "summary": "Partnership extension: confirm a spade fit at the three-level after responder's Smolen 3♥ showed 5 spades"
           }
         },
         {
@@ -826,7 +831,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "4H (heart fit found)",
-            "summary": "Place the contract in 4\u2665 after confirming a fit with responder's 5-card heart suit"
+            "summary": "Place the contract in 4♥ after confirming a fit with responder's 5-card heart suit"
           }
         },
         {
@@ -865,7 +870,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3H (heart fit found)",
-            "summary": "Partnership extension: confirm a heart fit at the three-level after responder's Smolen 3\u2660 showed 5 hearts"
+            "summary": "Partnership extension: confirm a heart fit at the three-level after responder's Smolen 3♠ showed 5 hearts"
           }
         },
         {
@@ -942,7 +947,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "4S (complete to game)",
-            "summary": "Raise opener's 3\u2660 acceptance to the 4\u2660 game contract"
+            "summary": "Raise opener's 3♠ acceptance to the 4♠ game contract"
           }
         }
       ],
@@ -980,7 +985,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "4H (complete to game)",
-            "summary": "Raise opener's 3\u2665 acceptance to the 4\u2665 game contract"
+            "summary": "Raise opener's 3♥ acceptance to the 4♥ game contract"
           }
         }
       ],
@@ -1332,7 +1337,7 @@
         "id": "module.smolen.hasFiveHearts",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "Hand has exactly 5 hearts (for 3\u2660 Smolen showing long hearts)",
+        "description": "Hand has exactly 5 hearts (for 3♠ Smolen showing long hearts)",
         "valueType": "boolean",
         "derivesFrom": [
           "hand.suitLength.hearts"
@@ -1354,7 +1359,7 @@
         "id": "module.smolen.hasFiveSpades",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "Hand has exactly 5 spades (for 3\u2665 Smolen showing long spades)",
+        "description": "Hand has exactly 5 spades (for 3♥ Smolen showing long spades)",
         "valueType": "boolean",
         "derivesFrom": [
           "hand.suitLength.spades"
@@ -1376,7 +1381,7 @@
         "id": "module.smolen.hasFourSpades",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "Hand has exactly 4 spades (short major for 3\u2660 Smolen: 4\u2660+5\u2665)",
+        "description": "Hand has exactly 4 spades (short major for 3♠ Smolen: 4♠+5♥)",
         "valueType": "boolean",
         "derivesFrom": [
           "hand.suitLength.spades"
@@ -1398,7 +1403,7 @@
         "id": "module.smolen.hasFourHearts",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "Hand has exactly 4 hearts (short major for 3\u2665 Smolen: 4\u2665+5\u2660)",
+        "description": "Hand has exactly 4 hearts (short major for 3♥ Smolen: 4♥+5♠)",
         "valueType": "boolean",
         "derivesFrom": [
           "hand.suitLength.hearts"

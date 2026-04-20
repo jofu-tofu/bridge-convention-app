@@ -1,7 +1,7 @@
 # Authority Policy and Module Composition
 
 **Status:** Active guidance. Supersedes the "Authoritative Bridge Rules Sources" section of `docs/guides/convention-authoring.md`.
-**Last reviewed:** 2026-04-17
+**Last reviewed:** 2026-04-19
 
 This doc captures two coupled decisions the project has made about how convention modules relate to their sources and to each other. The two decisions interact: a module's authority determines what it should teach, and its composition pattern determines how it teaches things without duplicating other modules.
 
@@ -36,6 +36,17 @@ These are enforced by `tests/structural_invariants.rs`:
 1. Every module fixture has a non-null `references.authority.url` and `references.discovery.url`.
 2. `authority.url` must not equal `discovery.url` (this is the `jacoby-4way` bug from before 2026-04-17).
 3. `discovery.url` should be on `bridgebum.com` unless explicitly flagged otherwise.
+4. Every module fixture has a non-empty top-level `scopeNote` naming intentional exclusions.
+5. Every module fixture has `references.authority.snapshot = { text, fetchedAt }` with non-empty `text` and `fetchedAt` as ISO-8601 `YYYY-MM-DD`.
+
+### Snapshot and scopeNote (2026-04-19)
+
+Two coupled fields deterministically pin what each module says and what it declines to cover:
+
+- **`references.authority.snapshot`** freezes the authority prose at Build time (`text` captured via `webfetch` or `pdftotext`, `fetchedAt` stamped ISO). Verify compares fixture surfaces against this snapshot rather than re-fetching the URL. Dead or reshaped pages no longer change findings mid-review; `fetchedAt` older than ~180 days is advisory only and prompts a refresh rather than a re-author.
+- **`scopeNote`** is a 1–4 sentence free-text field at the fixture root declaring what is intentionally out of scope (variant families excluded, level cutoffs, partner conventions owned by other modules, editorial calls that otherwise look like authority gaps). Verify reads `scopeNote` before flagging missing surfaces and does not reopen decisions listed there.
+
+Before these fields existed, every Verify run re-fetched the live authority and re-derived scope from commit messages and out-of-tree `followups-*.md` notes, so fresh agents ping-ponged on the same decisions (see `_output/contexts/260419-2027-recent-sessions-lot-convention-forge-skill-diffeence/notes/combined-synthesis.md`). Build must capture both at authoring time; fix passes that make new scope calls must update `scopeNote` in the same edit.
 
 ### Category A vs Category B
 

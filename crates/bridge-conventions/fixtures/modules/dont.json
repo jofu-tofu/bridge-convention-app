@@ -4,23 +4,28 @@
   "category": "competitive",
   "defaultRole": "opener",
   "fixtureVersion": 1,
-  "description": "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns. VARIANT: this fixture encodes the modern DONT variant where 2S is a natural single-suit spade overcall as a direct overcall, and module.dont.singleSuited explicitly excludes spades. The original Bergen version treats spades as a single-suit type revealed via takeout double (a reveal-spades-2S surface under wait-reveal). Verify runs that anchor on the original Bergen authority will flag a missing reveal-spades-2S surface \u2014 this is intentional. See fixtures/modules/dont.variant-notes.md for details.",
+  "description": "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns. VARIANT: this fixture encodes the modern DONT variant where 2S is a natural single-suit spade overcall as a direct overcall, and module.dont.singleSuited explicitly excludes spades. The original Bergen version treats spades as a single-suit type revealed via takeout double (a reveal-spades-2S surface under wait-reveal). Verify runs that anchor on the original Bergen authority will flag a missing reveal-spades-2S surface — this is intentional. See fixtures/modules/dont.variant-notes.md for details.",
   "purpose": "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
+  "scopeNote": "Encodes the modern DONT variant used at Karen Walker's page: direct `2S` is a natural spade one-suiter, `module.dont.singleSuited` excludes spades, and there is no `reveal-spades-2S` surface under `wait-reveal`. The original Bergen DONT treats spades as a hidden one-suiter behind double-then-relay; that variant is intentionally excluded. Full monster-reveal (`2NT` relay) coverage and the spade-reveal branch after double-then-relay are out of scope; the `5+` natural-suit-thresholds are authored at `6+` as a house call rather than a literal authority quote.",
   "references": {
     "authority": {
       "url": "https://kwbridge.com/dont.htm",
-      "label": "Karen Walker \u2014 DONT overcalls against a strong 1NT, with suit-pair meanings and the short-spade treatment"
+      "label": "Karen Walker — DONT overcalls against a strong 1NT, with suit-pair meanings and the short-spade treatment",
+      "snapshot": {
+        "text": "# DONT Convention Summary\n\nThe DONT convention (\"Disturb the Opponents' Notrump\") is employed in direct or balancing positions after strong notrump openings (14+ HCPs) or 2NT bids.\n\n## Overview of DONT Actions\n\n**Double** indicates an unspecified one-suiter, relaying responder to 2C.\n\n**2C, 2D, 2H** represent two-suiters (typically 5-4 or better), showing the named suit plus a higher-ranking suit.\n\n**2S** shows a spade one-suiter.\n\n**2NT** indicates a major-minor two-suiter (6-5 or better) with a monster hand, relaying partner to 3C.\n\n**3C, 3D, 3H, 3S** display long suits (usually 7+ cards) with preemptive intent.\n\n**3NT** shows a major two-suiter (6-5 or better), monster hand.\n\n## One-Suited Hands\n\nA double forces partner to relay at 2C, allowing the doubler to identify his suit. The doubler may pass with clubs or bid 2D, 2H, or 2S. Strong hands can jump to three of the suit.\n\nBergen cautions that partner should \"never\" leave the double in, though exceptions exist for responders holding their own suit (6-card or strong 5-card) with extreme shortness elsewhere.\n\nA direct 2S overcall distinguishes from double-then-2S sequences through partnership agreements regarding minimum strength versus extra high-card values or suit length characteristics.\n\n## Two-Suited Hands\n\nAfter 2C, 2D, or 2H overcalls, partner's options include:\n\n**Pass** = Content with the bid suit, typically holding shortness in higher-ranking suits.\n\n**Next cheapest suit** = Prefers the other suit; usually has 3+ cards in all higher-ranking suits.\n\n**New non-cheapest suit** = Natural, showing a 6-card suit or strong 5-carder.\n\n**Raises** of minors tend preemptive; raises of majors show mild game invitations.\n\n**2NT** = Strong game invitation requesting the three-level (or four-level for majors).\n\nPartner should assume the second suit is where shortness likely exists, remembering the overcaller may hold only 5-4 distribution.\n\n## Over Opponents' Interference\n\nWhen the 1NT opener's partner intervenes, responder must double or redouble to request the unnamed suit.\n\n**Pass** = Content with the current contract.\n\n**Redouble** (over opponent's double) = Prefers the second suit.\n\n**Double** (natural bid) = Wants the second suit; shows high-card strength and tolerance.\n\n**Double** (artificial bid) = Lead-directing or equivalent to natural double.\n\n**Any suit bid** = Natural, showing responder's own long suit.\n\n## Defending Against DONT\n\nWhen opening 1NT and facing DONT interference:\n\n**Over any DONT overcall or double:** Texas 4-level transfers remain \"on.\"\n\n**Over a double:** Use normal response system (Stayman, transfers).\n\n**Over 2C:** Play standard responses; use double for Stayman.\n\n**Over 2D or 2S:** Treat as natural one-suiters; double is penalty; Lebensohl is \"on.\"\n\n**Over 2H:**\n- Double = \"Cards\" (8+ points) with 2+ hearts\n- 2S = Minor-suit Stayman\n- 2NT = Lebensohl\n- 3C/3D = Natural and invitational\n- 3H/3S = Singleton in that suit, game-forcing\n- 3NT = To play, no major-suit stoppers\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/dont.php"
     },
     "variantNotes": {
       "url": "./dont.variant-notes.md",
-      "label": "Modern vs. original Bergen DONT variant selection \u2014 documents why this fixture has no reveal-spades-2S surface"
+      "label": "Modern vs. original Bergen DONT variant selection — documents why this fixture has no reveal-spades-2S surface"
     }
   },
   "teaching": {
-    "tradeoff": "DONT overcalls commit to the 2-level immediately \u2014 if partner has a misfit, you may go down.",
+    "tradeoff": "DONT overcalls commit to the 2-level immediately — if partner has a misfit, you may go down.",
     "principle": "Against a strong 1NT, disrupting their communication is more valuable than finding your own perfect contract.",
     "commonMistakes": [
       {
@@ -32,8 +37,8 @@
         "reason": "If you are not showing a genuine one-suiter or two-suiter, you help declarer more than partner."
       },
       {
-        "text": "Do not treat this fixture's 2\u2660 call as Bergen's spades-plus-a-minor agreement.",
-        "reason": "This module uses a natural 6+ spade overcall, so partnerships expecting the two-suited 2\u2660 treatment will be on different continuations immediately."
+        "text": "Do not treat this fixture's 2♠ call as Bergen's spades-plus-a-minor agreement.",
+        "reason": "This module uses a natural 6+ spade overcall, so partnerships expecting the two-suited 2♠ treatment will be on different continuations immediately."
       }
     ]
   },
@@ -1319,7 +1324,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 major-minor monster",
+            "name": "2NT — major-minor monster",
             "summary": "Show a major-minor two-suiter, 6-5 or better, with monster playing strength"
           }
         },
@@ -1362,7 +1367,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3NT \u2014 major two-suiter monster",
+            "name": "3NT — major two-suiter monster",
             "summary": "Show both majors, 6-5 or better, with monster playing strength"
           }
         },
@@ -1405,7 +1410,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 preemptive clubs",
+            "name": "3C — preemptive clubs",
             "summary": "Preempt directly with a seven-card or longer club suit"
           }
         },
@@ -1448,7 +1453,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 preemptive diamonds",
+            "name": "3D — preemptive diamonds",
             "summary": "Preempt directly with a seven-card or longer diamond suit"
           }
         },
@@ -1491,7 +1496,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 preemptive hearts",
+            "name": "3H — preemptive hearts",
             "summary": "Preempt directly with a seven-card or longer heart suit"
           }
         },
@@ -1534,7 +1539,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 preemptive spades",
+            "name": "3S — preemptive spades",
             "summary": "Preempt directly with a seven-card or longer spade suit"
           }
         },
@@ -1577,7 +1582,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2H \u2014 both majors",
+            "name": "2H — both majors",
             "summary": "Show both majors (5-4 or better either way) over opponent's 1NT"
           }
         },
@@ -1620,7 +1625,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2D \u2014 diamonds + a major",
+            "name": "2D — diamonds + a major",
             "summary": "Show diamonds plus an unspecified major over opponent's 1NT"
           }
         },
@@ -1663,7 +1668,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2C \u2014 clubs + higher suit",
+            "name": "2C — clubs + higher suit",
             "summary": "Show clubs plus an unspecified higher suit over opponent's 1NT"
           }
         },
@@ -1706,7 +1711,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2S \u2014 natural spades",
+            "name": "2S — natural spades",
             "summary": "Overcall naturally with a 6+ card spade suit over opponent's 1NT"
           }
         },
@@ -1747,8 +1752,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "X \u2014 single suited (not spades)",
-            "summary": "Show a single long suit (6+, not spades) \u2014 advancer must relay 2C to discover which"
+            "name": "X — single suited (not spades)",
+            "summary": "Show a single long suit (6+, not spades) — advancer must relay 2C to discover which"
           }
         },
         {
@@ -1773,7 +1778,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (no DONT bid)",
-            "summary": "Decline to compete \u2014 hand does not meet DONT overcall requirements"
+            "summary": "Decline to compete — hand does not meet DONT overcall requirements"
           }
         }
       ],
@@ -1814,7 +1819,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 accept hearts",
+            "name": "Pass — accept hearts",
             "summary": "Accept hearts as trumps with 3+ card support for overcaller's major"
           }
         },
@@ -1841,7 +1846,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 prefer spades",
+            "name": "2S — prefer spades",
             "summary": "Correct to spades when lacking heart support after overcaller's both-majors bid"
           }
         },
@@ -1877,7 +1882,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 forcing inquiry",
+            "name": "2NT — forcing inquiry",
             "summary": "Force to game and ask overcaller to clarify whether spades are longer than hearts"
           }
         },
@@ -1922,7 +1927,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3C \u2014 minor escape",
+            "name": "3C — minor escape",
             "summary": "Escape to clubs with a long suit when lacking support for either major"
           }
         },
@@ -1967,7 +1972,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3D \u2014 minor escape",
+            "name": "3D — minor escape",
             "summary": "Escape to diamonds with a long suit when lacking support for either major"
           }
         }
@@ -2009,7 +2014,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 accept diamonds",
+            "name": "Pass — accept diamonds",
             "summary": "Accept diamonds as trumps with 3+ card support for overcaller's minor"
           }
         },
@@ -2045,7 +2050,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 bypass (6+ spades)",
+            "name": "2S — bypass (6+ spades)",
             "summary": "Bypass the relay with 6+ spades, placing the contract directly"
           }
         },
@@ -2072,7 +2077,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2H \u2014 relay (ask for major)",
+            "name": "2H — relay (ask for major)",
             "summary": "Ask overcaller to reveal which major they hold alongside diamonds"
           }
         },
@@ -2108,7 +2113,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 forcing inquiry",
+            "name": "2NT — forcing inquiry",
             "summary": "Force to game and ask whether overcaller's major is longer than diamonds"
           }
         },
@@ -2144,7 +2149,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 escape (6+ clubs)",
+            "name": "3C — escape (6+ clubs)",
             "summary": "Escape to clubs with a 6+ card suit when diamonds is not the resting spot"
           }
         },
@@ -2180,7 +2185,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 escape (6+ diamonds)",
+            "name": "3D — escape (6+ diamonds)",
             "summary": "Compete to 3D with a long diamond suit and no better descriptive action"
           }
         },
@@ -2216,7 +2221,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 escape (6+ hearts)",
+            "name": "3H — escape (6+ hearts)",
             "summary": "Bid hearts naturally at the 3-level with a self-sufficient suit"
           }
         },
@@ -2252,7 +2257,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 escape (6+ spades)",
+            "name": "3S — escape (6+ spades)",
             "summary": "Bid spades naturally at the 3-level when the hand is better described by a long suit"
           }
         }
@@ -2294,7 +2299,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 accept clubs",
+            "name": "Pass — accept clubs",
             "summary": "Accept clubs as trumps with 3+ card support for overcaller's minor"
           }
         },
@@ -2330,7 +2335,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 bypass (6+ hearts)",
+            "name": "2H — bypass (6+ hearts)",
             "summary": "Bypass the relay with 6+ hearts, placing the contract directly"
           }
         },
@@ -2366,7 +2371,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 bypass (6+ spades)",
+            "name": "2S — bypass (6+ spades)",
             "summary": "Bypass the relay with 6+ spades, placing the contract directly"
           }
         },
@@ -2393,7 +2398,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2D \u2014 relay (ask for higher suit)",
+            "name": "2D — relay (ask for higher suit)",
             "summary": "Ask overcaller to reveal which higher suit they hold alongside clubs"
           }
         },
@@ -2429,7 +2434,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 forcing inquiry",
+            "name": "2NT — forcing inquiry",
             "summary": "Force to game and ask overcaller to clarify strength and the higher suit"
           }
         },
@@ -2465,7 +2470,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 escape (6+ clubs)",
+            "name": "3C — escape (6+ clubs)",
             "summary": "Compete to 3C with a self-sufficient club suit"
           }
         },
@@ -2501,7 +2506,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 escape (6+ diamonds)",
+            "name": "3D — escape (6+ diamonds)",
             "summary": "Bid diamonds naturally at the 3-level to avoid defending clubs"
           }
         },
@@ -2537,7 +2542,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 escape (6+ hearts)",
+            "name": "3H — escape (6+ hearts)",
             "summary": "Bid hearts naturally at the 3-level with a long self-sufficient suit"
           }
         },
@@ -2573,7 +2578,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 escape (6+ spades)",
+            "name": "3S — escape (6+ spades)",
             "summary": "Bid spades naturally at the 3-level with a long self-sufficient suit"
           }
         }
@@ -2615,7 +2620,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 accept spades",
+            "name": "Pass — accept spades",
             "summary": "Accept spades as trumps with 3+ card support for overcaller's suit"
           }
         },
@@ -2651,7 +2656,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 escape (6+ clubs)",
+            "name": "3C — escape (6+ clubs)",
             "summary": "Escape to clubs with a 6+ card suit, rejecting spades as trumps"
           }
         },
@@ -2687,7 +2692,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 escape (6+ diamonds)",
+            "name": "3D — escape (6+ diamonds)",
             "summary": "Escape to diamonds with a 6+ card suit, rejecting spades as trumps"
           }
         },
@@ -2723,7 +2728,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 escape (6+ hearts)",
+            "name": "3H — escape (6+ hearts)",
             "summary": "Escape to hearts with a 6+ card suit, rejecting spades as trumps"
           }
         },
@@ -2783,7 +2788,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3C \u2014 forced relay",
+            "name": "3C — forced relay",
             "summary": "Relay after the 2NT major-minor monster so overcaller can identify the suits"
           }
         }
@@ -2835,7 +2840,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2D \u2014 bypass (6+ diamonds)",
+            "name": "2D — bypass (6+ diamonds)",
             "summary": "Bypass the relay with 6+ diamonds, placing the contract directly"
           }
         },
@@ -2871,7 +2876,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 bypass (6+ hearts)",
+            "name": "2H — bypass (6+ hearts)",
             "summary": "Bypass the relay with 6+ hearts, placing the contract directly"
           }
         },
@@ -2907,7 +2912,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 bypass (6+ spades)",
+            "name": "2S — bypass (6+ spades)",
             "summary": "Bypass the relay with 6+ spades, placing the contract directly"
           }
         },
@@ -2934,7 +2939,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2C \u2014 forced relay after double",
+            "name": "2C — forced relay after double",
             "summary": "Relay to 2C so overcaller can reveal their single long suit"
           }
         }
@@ -2976,7 +2981,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Pass \u2014 clubs",
+            "name": "Pass — clubs",
             "summary": "Reveal clubs as the long suit by passing the 2C relay"
           }
         },
@@ -3012,7 +3017,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2D \u2014 diamonds",
+            "name": "2D — diamonds",
             "summary": "Reveal diamonds as the long suit by correcting from the 2C relay"
           }
         },
@@ -3048,7 +3053,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2H \u2014 hearts",
+            "name": "2H — hearts",
             "summary": "Reveal hearts as the long suit by correcting from the 2C relay"
           }
         },
@@ -3092,7 +3097,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3C \u2014 clubs, game interest",
+            "name": "3C — clubs, game interest",
             "summary": "Jump to three clubs after the relay to show clubs with game interest"
           }
         },
@@ -3136,7 +3141,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3D \u2014 diamonds, game interest",
+            "name": "3D — diamonds, game interest",
             "summary": "Jump to three diamonds after the relay to show diamonds with game interest"
           }
         },
@@ -3180,7 +3185,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3H \u2014 hearts, game interest",
+            "name": "3H — hearts, game interest",
             "summary": "Jump to three hearts after the relay to show hearts with game interest"
           }
         }
@@ -3231,7 +3236,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 signoff in clubs",
+            "name": "Pass — signoff in clubs",
             "summary": "Pass partner's 2C reveal with club support and no game interest"
           }
         },
@@ -3275,7 +3280,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 preemptive raise",
+            "name": "3C — preemptive raise",
             "summary": "Raise clubs preemptively with a fit and minimum values"
           }
         },
@@ -3318,7 +3323,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 strong invite",
+            "name": "2NT — strong invite",
             "summary": "Show a fit and a stronger game invitation after partner reveals clubs"
           }
         }
@@ -3369,7 +3374,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 signoff in diamonds",
+            "name": "Pass — signoff in diamonds",
             "summary": "Pass partner's 2D reveal with diamond support and no game interest"
           }
         },
@@ -3413,7 +3418,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 preemptive raise",
+            "name": "3D — preemptive raise",
             "summary": "Raise diamonds preemptively with a fit and minimum values"
           }
         },
@@ -3456,7 +3461,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 strong invite",
+            "name": "2NT — strong invite",
             "summary": "Show a fit and a stronger game invitation after partner reveals diamonds"
           }
         }
@@ -3507,7 +3512,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 signoff in hearts",
+            "name": "Pass — signoff in hearts",
             "summary": "Pass partner's 2H reveal with heart support and no game interest"
           }
         },
@@ -3551,7 +3556,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 mild game invitation",
+            "name": "3H — mild game invitation",
             "summary": "Raise hearts to three as a mild game try with a fit"
           }
         },
@@ -3594,7 +3599,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 strong invite",
+            "name": "2NT — strong invite",
             "summary": "Show a fit and a stronger game invitation after partner reveals hearts"
           }
         }
@@ -3636,7 +3641,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Pass \u2014 diamonds (from 2C+higher)",
+            "name": "Pass — diamonds (from 2C+higher)",
             "summary": "Reveal diamonds as the higher suit by passing the 2D relay"
           }
         },
@@ -3672,7 +3677,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2H \u2014 hearts (from 2C+higher)",
+            "name": "2H — hearts (from 2C+higher)",
             "summary": "Reveal hearts as the higher suit alongside clubs"
           }
         },
@@ -3708,7 +3713,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2S \u2014 spades (from 2C+higher)",
+            "name": "2S — spades (from 2C+higher)",
             "summary": "Reveal spades as the higher suit alongside clubs"
           }
         }
@@ -3750,7 +3755,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Pass \u2014 hearts (from 2D+major)",
+            "name": "Pass — hearts (from 2D+major)",
             "summary": "Reveal hearts as the major by passing the 2H relay"
           }
         },
@@ -3786,7 +3791,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2S \u2014 spades (from 2D+major)",
+            "name": "2S — spades (from 2D+major)",
             "summary": "Reveal spades as the major alongside diamonds"
           }
         }
@@ -3829,7 +3834,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3C \u2014 minimum",
+            "name": "3C — minimum",
             "summary": "Show a minimum hand after the forcing 2NT inquiry"
           }
         },
@@ -3871,7 +3876,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3D \u2014 diamonds and maximum",
+            "name": "3D — diamonds and maximum",
             "summary": "Show diamonds as the higher suit and a maximum-range overcall"
           }
         },
@@ -3913,7 +3918,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3H \u2014 hearts and maximum",
+            "name": "3H — hearts and maximum",
             "summary": "Show hearts as the higher suit and a maximum-range overcall"
           }
         },
@@ -3955,7 +3960,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3S \u2014 spades and maximum",
+            "name": "3S — spades and maximum",
             "summary": "Show spades as the higher suit and a maximum-range overcall"
           }
         }
@@ -4005,7 +4010,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3C \u2014 minimum, shorter or equal major",
+            "name": "3C — minimum, shorter or equal major",
             "summary": "Show a minimum hand with a major no longer than diamonds"
           }
         },
@@ -4047,7 +4052,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3D \u2014 minimum, longer major",
+            "name": "3D — minimum, longer major",
             "summary": "Show a minimum hand with a major longer than diamonds"
           }
         },
@@ -4089,7 +4094,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3H \u2014 hearts and maximum",
+            "name": "3H — hearts and maximum",
             "summary": "Show hearts as the major with a maximum-range overcall"
           }
         },
@@ -4131,7 +4136,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3S \u2014 spades and maximum",
+            "name": "3S — spades and maximum",
             "summary": "Show spades as the major with a maximum-range overcall"
           }
         }
@@ -4181,7 +4186,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3C \u2014 minimum, shorter or equal spades",
+            "name": "3C — minimum, shorter or equal spades",
             "summary": "Show a minimum hand with spades no longer than hearts"
           }
         },
@@ -4223,7 +4228,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3D \u2014 minimum, longer spades",
+            "name": "3D — minimum, longer spades",
             "summary": "Show a minimum hand with spades longer than hearts"
           }
         },
@@ -4265,7 +4270,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3H \u2014 maximum, shorter or equal spades",
+            "name": "3H — maximum, shorter or equal spades",
             "summary": "Show a maximum hand with spades no longer than hearts"
           }
         },
@@ -4307,7 +4312,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3S \u2014 maximum, longer spades",
+            "name": "3S — maximum, longer spades",
             "summary": "Show a maximum hand with spades longer than hearts"
           }
         }
@@ -4358,7 +4363,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 tolerate clubs",
+            "name": "Pass — tolerate clubs",
             "summary": "Pass with tolerance for clubs after the opponents double the 2C overcall"
           }
         },
@@ -4383,7 +4388,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "XX \u2014 SOS redouble",
+            "name": "XX — SOS redouble",
             "summary": "Ask overcaller to bid the other suit after the double"
           }
         },
@@ -4410,7 +4415,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 forcing inquiry",
+            "name": "2NT — forcing inquiry",
             "summary": "The artificial ask is still available, though rarely used after a double"
           }
         },
@@ -4446,7 +4451,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 natural",
+            "name": "3D — natural",
             "summary": "Compete naturally with a long diamond suit after the double"
           }
         },
@@ -4482,7 +4487,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 natural",
+            "name": "2H — natural",
             "summary": "Bid a long heart suit naturally after the double"
           }
         },
@@ -4518,7 +4523,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 natural",
+            "name": "2S — natural",
             "summary": "Bid a long spade suit naturally after the double"
           }
         }
@@ -4569,7 +4574,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 tolerate diamonds",
+            "name": "Pass — tolerate diamonds",
             "summary": "Pass with tolerance for diamonds after the opponents double the 2D overcall"
           }
         },
@@ -4594,7 +4599,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "XX \u2014 SOS redouble",
+            "name": "XX — SOS redouble",
             "summary": "Ask overcaller to bid the major after the double"
           }
         },
@@ -4621,7 +4626,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 forcing inquiry",
+            "name": "2NT — forcing inquiry",
             "summary": "The artificial ask is still available, though rarely used after a double"
           }
         },
@@ -4657,7 +4662,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 natural",
+            "name": "3C — natural",
             "summary": "Compete naturally with a long club suit after the double"
           }
         },
@@ -4693,7 +4698,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 natural",
+            "name": "3H — natural",
             "summary": "Bid a long heart suit naturally after the double"
           }
         },
@@ -4729,7 +4734,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 natural",
+            "name": "2S — natural",
             "summary": "Bid a long spade suit naturally after the double"
           }
         }
@@ -4780,7 +4785,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 tolerate hearts",
+            "name": "Pass — tolerate hearts",
             "summary": "Pass with tolerance for partner's suit after the opponents double the 2H overcall"
           }
         },
@@ -4805,7 +4810,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "XX \u2014 SOS redouble",
+            "name": "XX — SOS redouble",
             "summary": "Ask overcaller to bid the other major after the double"
           }
         },
@@ -4832,7 +4837,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 to play",
+            "name": "2S — to play",
             "summary": "Run to spades when hearts is not the right strain"
           }
         },
@@ -4859,7 +4864,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 forcing inquiry",
+            "name": "2NT — forcing inquiry",
             "summary": "The artificial ask is still available, though rarely used after a double"
           }
         },
@@ -4895,7 +4900,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 natural",
+            "name": "3C — natural",
             "summary": "Compete naturally with a long club suit after the double"
           }
         },
@@ -4931,7 +4936,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 natural",
+            "name": "3D — natural",
             "summary": "Compete naturally with a long diamond suit after the double"
           }
         }
@@ -4973,7 +4978,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "X \u2014 takeout",
+            "name": "X — takeout",
             "summary": "Ask overcaller to pass with the enemy suit stopped or bid the other suit"
           }
         },
@@ -5000,7 +5005,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 forcing inquiry",
+            "name": "2NT — forcing inquiry",
             "summary": "The artificial ask is still available, though rarely used after enemy bidding"
           }
         },
@@ -5036,7 +5041,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 natural",
+            "name": "2H — natural",
             "summary": "Bid a long heart suit naturally after enemy interference"
           }
         },
@@ -5072,7 +5077,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 natural",
+            "name": "2S — natural",
             "summary": "Bid a long spade suit naturally after enemy interference"
           }
         }
@@ -5114,7 +5119,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "X \u2014 takeout",
+            "name": "X — takeout",
             "summary": "Ask overcaller to pass with the enemy suit stopped or bid the major"
           }
         },
@@ -5141,7 +5146,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 forcing inquiry",
+            "name": "2NT — forcing inquiry",
             "summary": "The artificial ask is still available, though rarely used after enemy bidding"
           }
         },
@@ -5177,7 +5182,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 natural",
+            "name": "2S — natural",
             "summary": "Bid a long spade suit naturally after enemy interference"
           }
         },
@@ -5213,7 +5218,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 natural",
+            "name": "3C — natural",
             "summary": "Bid a long club suit naturally after enemy interference"
           }
         }
@@ -5255,7 +5260,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "X \u2014 takeout",
+            "name": "X — takeout",
             "summary": "Ask overcaller to bid the other major after enemy interference"
           }
         },
@@ -5282,7 +5287,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 forcing inquiry",
+            "name": "2NT — forcing inquiry",
             "summary": "The artificial ask is still available, though rarely used after enemy bidding"
           }
         },
@@ -5309,7 +5314,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 to play",
+            "name": "2S — to play",
             "summary": "Run to spades when hearts is not the right strain after enemy bidding"
           }
         },
@@ -5345,7 +5350,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 natural",
+            "name": "3C — natural",
             "summary": "Bid a long club suit naturally after enemy interference"
           }
         },
@@ -5381,7 +5386,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 natural",
+            "name": "3D — natural",
             "summary": "Bid a long diamond suit naturally after enemy interference"
           }
         }
@@ -5414,7 +5419,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 let partner run",
+            "name": "Pass — let partner run",
             "summary": "Stay quiet and let overcaller choose a suit after the redouble"
           }
         },
@@ -5450,7 +5455,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2C \u2014 natural",
+            "name": "2C — natural",
             "summary": "Bid a long club suit naturally after the redouble"
           }
         },
@@ -5486,7 +5491,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2D \u2014 natural",
+            "name": "2D — natural",
             "summary": "Bid a long diamond suit naturally after the redouble"
           }
         },
@@ -5522,7 +5527,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 natural",
+            "name": "2H — natural",
             "summary": "Bid a long heart suit naturally after the redouble"
           }
         },
@@ -5558,7 +5563,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 natural",
+            "name": "2S — natural",
             "summary": "Bid a long spade suit naturally after the redouble"
           }
         },
@@ -5585,7 +5590,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 forcing inquiry",
+            "name": "2NT — forcing inquiry",
             "summary": "The artificial ask is still available, though highly unusual after a redouble"
           }
         }
@@ -5618,7 +5623,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "X \u2014 takeout",
+            "name": "X — takeout",
             "summary": "Ask overcaller to pass with the enemy suit or bid their own"
           }
         },
@@ -5654,7 +5659,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2C \u2014 natural",
+            "name": "2C — natural",
             "summary": "Bid a long club suit naturally after enemy bidding"
           }
         },
@@ -5690,7 +5695,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2D \u2014 natural",
+            "name": "2D — natural",
             "summary": "Bid a long diamond suit naturally after enemy bidding"
           }
         },
@@ -5726,7 +5731,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 natural",
+            "name": "2H — natural",
             "summary": "Bid a long heart suit naturally after enemy bidding"
           }
         },
@@ -5762,7 +5767,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 natural",
+            "name": "2S — natural",
             "summary": "Bid a long spade suit naturally after enemy bidding"
           }
         },
@@ -5789,7 +5794,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 forcing inquiry",
+            "name": "2NT — forcing inquiry",
             "summary": "The artificial ask is still available, though highly unusual after enemy bidding"
           }
         }
@@ -6212,7 +6217,7 @@
         "id": "module.dont.bothMajors",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "H5+S4+ or S5+H4+ \u2014 both majors for 2H bid",
+        "description": "H5+S4+ or S5+H4+ — both majors for 2H bid",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -6272,7 +6277,7 @@
         "id": "module.dont.diamondsAndMajor",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "D5+ and (H4+ or S4+) \u2014 diamonds + a major for 2D bid",
+        "description": "D5+ and (H4+ or S4+) — diamonds + a major for 2D bid",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -6319,7 +6324,7 @@
         "id": "module.dont.clubsAndHigher",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "C5+ and (D4+ or H4+ or S4+) \u2014 clubs + higher suit for 2C bid",
+        "description": "C5+ and (D4+ or H4+ or S4+) — clubs + higher suit for 2C bid",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -6374,7 +6379,7 @@
         "id": "module.dont.naturalSpades",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "S6+ \u2014 natural spades for 2S bid",
+        "description": "S6+ — natural spades for 2S bid",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -6394,7 +6399,7 @@
         "id": "module.dont.singleSuited",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "One suit 6+, no other suit 4+, longest suit is not spades \u2014 for double",
+        "description": "One suit 6+, no other suit 4+, longest suit is not spades — for double",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -6523,7 +6528,7 @@
         "id": "module.dont.longDiamonds",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "D6+ \u2014 long diamonds for bypass/escape",
+        "description": "D6+ — long diamonds for bypass/escape",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -6543,7 +6548,7 @@
         "id": "module.dont.longHearts",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "H6+ \u2014 long hearts for bypass/escape",
+        "description": "H6+ — long hearts for bypass/escape",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -6563,7 +6568,7 @@
         "id": "module.dont.longSpades",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "S6+ \u2014 long spades for bypass/escape",
+        "description": "S6+ — long spades for bypass/escape",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -6583,7 +6588,7 @@
         "id": "module.dont.longClubs",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "C6+ \u2014 long clubs for escape",
+        "description": "C6+ — long clubs for escape",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -6849,7 +6854,7 @@
         "id": "module.dont.gameInterest",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "11+ HCP \u2014 game interest after partner's forced relay",
+        "description": "11+ HCP — game interest after partner's forced relay",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -6868,7 +6873,7 @@
         "id": "module.dont.minimumRange",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "8-10 HCP \u2014 minimum DONT range for forcing-inquiry replies",
+        "description": "8-10 HCP — minimum DONT range for forcing-inquiry replies",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -6900,7 +6905,7 @@
         "id": "module.dont.maximumRange",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "11-15 HCP \u2014 maximum DONT range for forcing-inquiry replies",
+        "description": "11-15 HCP — maximum DONT range for forcing-inquiry replies",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [

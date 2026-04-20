@@ -6,10 +6,15 @@
   "fixtureVersion": 1,
   "description": "Open 2D/2H/2S with exactly 6 cards and 5-11 HCP; responder uses support-driven raises and Feature 2NT",
   "purpose": "Preempt opponents with a disciplined six-card weak two while letting responder use support-based raises or a Feature 2NT ask to judge game",
+  "scopeNote": "Opener's weak-2 in D / H / S (5-11 HCP, 6-card suit) plus the Larry-standard Feature response to `2NT` and the LAW-driven raise ladder. Ogust asks are deliberately not supported — a separate variant would be required. New-suit responses are forcing (authored at `hand.hcp >= 14`; the Feature-ask floor is authored at `bridge.totalPointsForRaise >= 17`). Both numeric floors are repo-authored inferences rather than authority quotes. Opener rebids after a responder forcing new suit, responder follow-ups after Feature replies, and vulnerability-sensitive opening ranges are out of scope. Suit-quality is encoded as 'two of top three or three of top five'.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/responding-to-weak-2-bids",
-      "label": "Larry Cohen \u2014 Responding to Weak 2-Bids (bridge-articles/responding-to-weak-2-bids)"
+      "label": "Larry Cohen — Responding to Weak 2-Bids (bridge-articles/responding-to-weak-2-bids)",
+      "snapshot": {
+        "text": "# Responding to Weak 2-bids\n\nBy: Larry Cohen\n\nIf you've been with me all year, you are now reading the 12th article in this series. Last article we started with weak two bids. This month we respond—probably my most favorite (and famous) topic in bridge.\n\n## Responding to a weak 2-bid\n\n1. Possession of 13 points is no big deal; partner has fewer than 13. If you don't have at least 3-card support, and you have 13 HCP or fewer, you should pass partner's weak two-bid.\n\n2. Support with support. You don't need points to raise partner. Surely, most of my readers have heard of the LAW of Total Tricks. With 3 trumps, raise partner's weak two to the 3-level (if you don't have game interest). With 4 trumps, raise to the 4-level. To read all the why's and why-not's, click here.\n\n3. With an invitational hand, responder should bid 2NT to ask opener if he is minimum or not. Opener rebids his suit with a minimum; with more he identifies his outside Conventional 2NT response to a weak two-bid that asks opener to show a high card in a side suit if he is not with a minimum preempt feature (usually an A or K). This is called \"Feature.\" There are a small minority of players who use a different conventional response to the 2NT bid, typically Ogust.\n\n4. New suits by responder–forcing is Standard. Make sure you agree with your partner.\n\n## Practice Problems - Responding to 2♥\n\n**Hand 1:**\n♠ A 6 5 4\n♥ 2\n♦ K J 10 4\n♣ A J 5 4\n\n**Answer:** Pass. You are high enough.\n\n**Hand 2:**\n♠ 8 7 6\n♥ K 5 4\n♦ Q 9 7 6 5\n♣ 4 3\n\n**Answer:** 3♥. Follow the \"LAW\". With 9-trumps, raise to the 3-level.\n\n**Hand 3:**\n♠ 2\n♥ K Q 4 3\n♦ A Q J 5 3\n♣ K 5 3\n\n**Answer:** 4♥. One, you have 10 trumps, and two, you expect to make it.\n\n**Hand 4:**\n♠ 8 3\n♥ 8\n♦ A K Q J 9 7 6\n♣ A K 4\n\n**Answer:** 3♦. Make sure partner and you have agreed that new suits are forcing.\n\n**Hand 5:**\n♠ A 6 5\n♥ K 7 2\n♦ A K 9 7 6\n♣ K 3\n\n**Answer:** 4♥. Where you think you belong (don't use the \"LAW\" for games/slams).\n\n## After Partner Responds 2NT to our Weak 2-Bid\n\n- Opener's first responsibility is to clarify whether or not her hand is minimum. With a minimum hand, she rebids 3 of her suit. Note: Minimum or maximum depends on position, vulnerability and suit quality, but in general, 6-8 is minimum and 9-11 is maximum.\n\n- With more than a minimum, she shows an outside feature, normally an ace or king. She is also welcome to find another bid if pressed. With a maximum and no Conventional 2NT response to a weak two-bid that asks opener to show a high card in a side suit if he is not with a minimum preempt feature (thus a very good trump suit), bid 3NT.\n\n## Practice Problems - Opening 2♦ (nobody vul.) and Partner Bids 2NT\n\n**Hand 6:**\n♠ K 5 4\n♥ 10 7 6\n♦ Q J 10 8 7 5\n♣ 2\n\n**Answer:** 3♦. Holding a minimum, opener should not show a feature.\n\n**Hand 7:**\n♠ 10 4 3\n♥ 2\n♦ K Q J 9 7 6\n♣ K 5 4\n\n**Answer:** 3♣. With a maximum, show the feature.\n\n**Hand 8:**\n♠ A 4\n♥ 8 6 2\n♦ K Q 10 8 3 2\n♣ 8 7\n\n**Answer:** 3♠. Another maximum; show the feature.\n\n**Hand 9:**\n♠ 9 5\n♥ 8 6 5 2\n♦ A K Q 10 9 7\n♣ 2\n\n**Answer:** 3NT. A maximum without a feature—3NT shows something like this.\n\n**Hand 10:**\n♠ Q 10 4\n♥ 8 6 5 2\n♦ K J 10 9 8 4\n♣ --\n\n**Answer:** 3♦. This is a minimum (sort of).\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/weak_two.php"
@@ -57,7 +62,7 @@
       "templateKey": "weakTwo.feature.isMinimum.supporting",
       "displayText": "Minimum weak two for the Feature rebid structure",
       "contrastiveTemplateKey": "weakTwo.feature.isMinimum.whyNot",
-      "contrastiveDisplayText": "Not minimum \u2014 opener can show a feature or solid suit",
+      "contrastiveDisplayText": "Not minimum — opener can show a feature or solid suit",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -3658,7 +3663,7 @@
               "operator": "gte",
               "value": 3,
               "clauseId": "hand.suitLength.spades:gte:3",
-              "description": "3+ spades \u2014 support for responder's new suit",
+              "description": "3+ spades — support for responder's new suit",
               "isPublic": true
             }
           ],
@@ -3707,7 +3712,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.spades:lte:2",
-              "description": "Fewer than 3 spades \u2014 no support for responder",
+              "description": "Fewer than 3 spades — no support for responder",
               "isPublic": true
             }
           ],
@@ -3746,7 +3751,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.spades:lte:2",
-              "description": "Fewer than 3 spades \u2014 no support for responder",
+              "description": "Fewer than 3 spades — no support for responder",
               "isPublic": true
             }
           ],
@@ -3799,7 +3804,7 @@
               "operator": "gte",
               "value": 3,
               "clauseId": "hand.suitLength.clubs:gte:3",
-              "description": "3+ clubs \u2014 support for responder's new suit",
+              "description": "3+ clubs — support for responder's new suit",
               "isPublic": true
             }
           ],
@@ -3848,7 +3853,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.clubs:lte:2",
-              "description": "Fewer than 3 clubs \u2014 no support for responder",
+              "description": "Fewer than 3 clubs — no support for responder",
               "isPublic": true
             }
           ],
@@ -3887,7 +3892,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.clubs:lte:2",
-              "description": "Fewer than 3 clubs \u2014 no support for responder",
+              "description": "Fewer than 3 clubs — no support for responder",
               "isPublic": true
             }
           ],
@@ -3940,7 +3945,7 @@
               "operator": "gte",
               "value": 3,
               "clauseId": "hand.suitLength.hearts:gte:3",
-              "description": "3+ hearts \u2014 support for responder's new suit",
+              "description": "3+ hearts — support for responder's new suit",
               "isPublic": true
             }
           ],
@@ -3989,7 +3994,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.hearts:lte:2",
-              "description": "Fewer than 3 hearts \u2014 no support for responder",
+              "description": "Fewer than 3 hearts — no support for responder",
               "isPublic": true
             }
           ],
@@ -4028,7 +4033,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.hearts:lte:2",
-              "description": "Fewer than 3 hearts \u2014 no support for responder",
+              "description": "Fewer than 3 hearts — no support for responder",
               "isPublic": true
             }
           ],
@@ -7112,9 +7117,9 @@
       "purpose": "Open light hands with a disciplined six-card suit at the 2-level, then let responder use support-driven raises or a Feature 2NT ask to judge game.",
       "whenToUse": "Open 2D/2H/2S with exactly six cards in the suit and 5-11 HCP. As responder, make a direct support raise with trump support, or use 2NT as the Feature ask with invitational or stronger values when the final strain is still unclear.",
       "whenNotToUse": [
-        "2C is reserved for strong openings \u2014 never open 2C as a weak two",
-        "With a hand too strong for a weak two (12+ HCP) \u2014 open at the 1-level instead",
-        "After opponent interference \u2014 standard competitive actions apply"
+        "2C is reserved for strong openings — never open 2C as a weak two",
+        "With a hand too strong for a weak two (12+ HCP) — open at the 1-level instead",
+        "After opponent interference — standard competitive actions apply"
       ],
       "tradeoff": "2-level openings lose their natural strong meaning in favor of disciplined preemptive action.",
       "principle": "Weak twos obstruct the opponents first; the Feature ask lets responder decide whether the hand belongs in partscore, game, or a different strain.",

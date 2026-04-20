@@ -6,10 +6,15 @@
   "fixtureVersion": 1,
   "description": "Use 3C/3D as artificial raises after 1M to show different strength levels",
   "purpose": "Distinguish between weak, constructive, limit, and game-forcing raises of partner's major so opener can judge the right level",
+  "scopeNote": "Encodes the originally published Bergen Raises over a 1-of-major opening: `3C` = 6-10 with 4+ support, `3D` = limit raise with 4+ support, direct `3M` raise = 0-5 with 4+ support, plus the `3NT` = 13-15 balanced 4-3-3-3 add-on Larry recommends. The 'inversion revision' (swapping 3C / 3D), jump-to-3-of-other-major agreements, and 4-level splinter variants are noted by the authority as partnership choices and are not modeled as separate surfaces. Passed-hand and competitive usage are out of scope (Larry explicitly recommends not using Bergen there). Jacoby 2NT is a separate module.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/bergen-raises",
-      "label": "Larry Cohen \u2014 co-inventor of Bergen Raises, authoritative on standard vs reverse variants"
+      "label": "Larry Cohen — co-inventor of Bergen Raises, authoritative on standard vs reverse variants",
+      "snapshot": {
+        "text": "# Bergen Raises\n\nBy: Larry Cohen\n\n## BERGEN RAISES\n\nThis convention was first invented by my good friend, Marty Bergen, when we were bridge partners in the 1980's.\n\nAs first written and played, here were the responses to a 1-of-a-Major opening:\n\n3♣ = 6-10 in support and 4-card support\n\n3♦ = 11-12 in support (limit raise) and 4-card support\n\n3-of-the-major (raise) = 0-5 and 4-card support\n\nThere are many add-ons and revisions, some as follows:\n\nInversion revision (make sure you and your partner know if you are playing the original way or this way):\n\nThe 3♣ and 3♦ responses are reversed in meaning\n\n## Major Add-ons\n\nA jump to 3-of-the other major has a special meaning (there are many ways out there--I suggest not bidding it)\n\n3NT = 13-15 balanced with 4-3-3-3 (I recommend this)\n\n4-level = Many possibilities (In \"Standard\" it would just be a An unusual jump showing 0-1 in that suit and support for partner Splinter Bid).\n\n## PH and Competition\n\nIt is crucial to have agreements regarding if this convention is used by a Passed Hand (I recommend not) or after a double or overcall (I recommend not). Some variations use the convention in all of these situations.\n\nBecause of all the potential confusion (all 3 of the sections above), I don't recommend this convention (sorry, Marty). I actually like a jump to 3-of-a-lower suit to be natural and invitation. So, 1♠-3♦ shows something like:\n\n♠2\n♥32\n♦AQJ10876\n♣K32\n\nYou must decide with your partner if you are playing Bergen Raises, how you are playing them, or a possible alternative.\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/bergen_raises.php"
@@ -17,7 +22,7 @@
   },
   "teaching": {
     "tradeoff": "Uses 3C and 3D as conventional raises, giving up natural minor bids over 1M.",
-    "principle": "Immediately show trump support and strength \u2014 the Law of Total Tricks says bid to the level of your combined trump length.",
+    "principle": "Immediately show trump support and strength — the Law of Total Tricks says bid to the level of your combined trump length.",
     "commonMistakes": [
       {
         "text": "Do not treat Bergen as a three-card raise structure.",
@@ -25,7 +30,7 @@
       },
       {
         "text": "Do not confuse the constructive and limit steps.",
-        "reason": "Reversing 3\u2663 and 3\u2666 gives opener the wrong picture of responder's strength and game odds."
+        "reason": "Reversing 3♣ and 3♦ gives opener the wrong picture of responder's strength and game odds."
       },
       {
         "text": "Do not bury a game-forcing shortage hand inside Bergen.",
@@ -208,7 +213,7 @@
       "explanationId": "bergen.stub.opener1h",
       "meaningId": "bergen:opener-1h",
       "templateKey": "bergen.stub.opener1h.semantic",
-      "displayText": "Opening 1\u2665: 12+ HCP with 5+ hearts",
+      "displayText": "Opening 1♥: 12+ HCP with 5+ hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -218,7 +223,7 @@
       "explanationId": "bergen.stub.opener1s",
       "meaningId": "bergen:opener-1s",
       "templateKey": "bergen.stub.opener1s.semantic",
-      "displayText": "Opening 1\u2660: 12+ HCP with 5+ spades",
+      "displayText": "Opening 1♠: 12+ HCP with 5+ spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -238,7 +243,7 @@
       "explanationId": "bergen.r1.limitRaiseHearts",
       "meaningId": "bergen:limit-raise-hearts",
       "templateKey": "bergen.r1.limitRaiseHearts.semantic",
-      "displayText": "Bergen limit raise in hearts: 10-12 pts, 4-card support (3\u2666)",
+      "displayText": "Bergen limit raise in hearts: 10-12 pts, 4-card support (3♦)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -248,7 +253,7 @@
       "explanationId": "bergen.r1.constructiveRaiseHearts",
       "meaningId": "bergen:constructive-raise-hearts",
       "templateKey": "bergen.r1.constructiveRaiseHearts.semantic",
-      "displayText": "Bergen constructive raise in hearts: 7-10 pts, 4-card support (3\u2663)",
+      "displayText": "Bergen constructive raise in hearts: 7-10 pts, 4-card support (3♣)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -258,7 +263,7 @@
       "explanationId": "bergen.r1.preemptiveRaiseHearts",
       "meaningId": "bergen:preemptive-raise-hearts",
       "templateKey": "bergen.r1.preemptiveRaiseHearts.semantic",
-      "displayText": "Preemptive raise to 3\u2665: 0-6 pts, 4-card support",
+      "displayText": "Preemptive raise to 3♥: 0-6 pts, 4-card support",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -268,7 +273,7 @@
       "explanationId": "bergen.r1.natural1ntHearts",
       "meaningId": "bergen:natural-1nt-response-hearts",
       "templateKey": "bergen.r1.natural1ntHearts.semantic",
-      "displayText": "Natural 1NT response to 1\u2665: within system range, no 4-card support",
+      "displayText": "Natural 1NT response to 1♥: within system range, no 4-card support",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -288,7 +293,7 @@
       "explanationId": "bergen.r1.limitRaiseSpades",
       "meaningId": "bergen:limit-raise-spades",
       "templateKey": "bergen.r1.limitRaiseSpades.semantic",
-      "displayText": "Bergen limit raise in spades: 10-12 pts, 4-card support (3\u2666)",
+      "displayText": "Bergen limit raise in spades: 10-12 pts, 4-card support (3♦)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -298,7 +303,7 @@
       "explanationId": "bergen.r1.constructiveRaiseSpades",
       "meaningId": "bergen:constructive-raise-spades",
       "templateKey": "bergen.r1.constructiveRaiseSpades.semantic",
-      "displayText": "Bergen constructive raise in spades: 7-10 pts, 4-card support (3\u2663)",
+      "displayText": "Bergen constructive raise in spades: 7-10 pts, 4-card support (3♣)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -308,7 +313,7 @@
       "explanationId": "bergen.r1.preemptiveRaiseSpades",
       "meaningId": "bergen:preemptive-raise-spades",
       "templateKey": "bergen.r1.preemptiveRaiseSpades.semantic",
-      "displayText": "Preemptive raise to 3\u2660: 0-6 pts, 4-card support",
+      "displayText": "Preemptive raise to 3♠: 0-6 pts, 4-card support",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -318,7 +323,7 @@
       "explanationId": "bergen.r1.natural1ntSpades",
       "meaningId": "bergen:natural-1nt-response-spades",
       "templateKey": "bergen.r1.natural1ntSpades.semantic",
-      "displayText": "Natural 1NT response to 1\u2660: within system range, no 4-card support",
+      "displayText": "Natural 1NT response to 1♠: within system range, no 4-card support",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -328,7 +333,7 @@
       "explanationId": "bergen.r2.gameAfterConstructiveHearts",
       "meaningId": "bergen:opener-game-after-constructive-hearts",
       "templateKey": "bergen.r2.gameAfterConstructiveHearts.semantic",
-      "displayText": "Opener bids 4\u2665 after constructive raise (17+ HCP)",
+      "displayText": "Opener bids 4♥ after constructive raise (17+ HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -338,7 +343,7 @@
       "explanationId": "bergen.r2.gameTryAfterConstructiveHearts",
       "meaningId": "bergen:opener-game-try-after-constructive-hearts",
       "templateKey": "bergen.r2.gameTryAfterConstructiveHearts.semantic",
-      "displayText": "Opener makes a game try with 3\u2666 after constructive raise (14-16 HCP)",
+      "displayText": "Opener makes a game try with 3♦ after constructive raise (14-16 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -348,7 +353,7 @@
       "explanationId": "bergen.r2.slamTrySpadesAfterConstructiveHearts",
       "meaningId": "bergen:opener-spades-slam-try-after-constructive-hearts",
       "templateKey": "bergen.r2.slamTrySpadesAfterConstructiveHearts.semantic",
-      "displayText": "Opener bids 3\u2660 as a natural spade slam try after the constructive heart raise",
+      "displayText": "Opener bids 3♠ as a natural spade slam try after the constructive heart raise",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -358,7 +363,7 @@
       "explanationId": "bergen.r2.signoffAfterConstructiveHearts",
       "meaningId": "bergen:opener-signoff-after-constructive-hearts",
       "templateKey": "bergen.r2.signoffAfterConstructiveHearts.semantic",
-      "displayText": "Opener signs off in 3\u2665 after constructive raise",
+      "displayText": "Opener signs off in 3♥ after constructive raise",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -368,7 +373,7 @@
       "explanationId": "bergen.r2.gameAfterConstructiveSpades",
       "meaningId": "bergen:opener-game-after-constructive-spades",
       "templateKey": "bergen.r2.gameAfterConstructiveSpades.semantic",
-      "displayText": "Opener bids 4\u2660 after constructive raise (17+ HCP)",
+      "displayText": "Opener bids 4♠ after constructive raise (17+ HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -378,7 +383,7 @@
       "explanationId": "bergen.r2.gameTryAfterConstructiveSpades",
       "meaningId": "bergen:opener-game-try-after-constructive-spades",
       "templateKey": "bergen.r2.gameTryAfterConstructiveSpades.semantic",
-      "displayText": "Opener makes a game try with 3\u2665 after constructive raise (14-16 HCP)",
+      "displayText": "Opener makes a game try with 3♥ after constructive raise (14-16 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -388,7 +393,7 @@
       "explanationId": "bergen.r2.signoffAfterConstructiveSpades",
       "meaningId": "bergen:opener-signoff-after-constructive-spades",
       "templateKey": "bergen.r2.signoffAfterConstructiveSpades.semantic",
-      "displayText": "Opener signs off in 3\u2660 after constructive raise",
+      "displayText": "Opener signs off in 3♠ after constructive raise",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -398,7 +403,7 @@
       "explanationId": "bergen.r2.gameAfterLimitHearts",
       "meaningId": "bergen:opener-game-after-limit-hearts",
       "templateKey": "bergen.r2.gameAfterLimitHearts.semantic",
-      "displayText": "Opener accepts limit raise and bids 4\u2665 (15+ HCP)",
+      "displayText": "Opener accepts limit raise and bids 4♥ (15+ HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -408,7 +413,7 @@
       "explanationId": "bergen.r2.signoffAfterLimitHearts",
       "meaningId": "bergen:opener-signoff-after-limit-hearts",
       "templateKey": "bergen.r2.signoffAfterLimitHearts.semantic",
-      "displayText": "Opener declines limit raise and signs off in 3\u2665",
+      "displayText": "Opener declines limit raise and signs off in 3♥",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -418,7 +423,7 @@
       "explanationId": "bergen.r2.slamTrySpadesAfterLimitHearts",
       "meaningId": "bergen:opener-spades-slam-try-after-limit-hearts",
       "templateKey": "bergen.r2.slamTrySpadesAfterLimitHearts.semantic",
-      "displayText": "Opener bids 3\u2660 as a natural spade slam try after the limit heart raise",
+      "displayText": "Opener bids 3♠ as a natural spade slam try after the limit heart raise",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -428,7 +433,7 @@
       "explanationId": "bergen.r2.gameAfterLimitSpades",
       "meaningId": "bergen:opener-game-after-limit-spades",
       "templateKey": "bergen.r2.gameAfterLimitSpades.semantic",
-      "displayText": "Opener accepts limit raise and bids 4\u2660 (15+ HCP)",
+      "displayText": "Opener accepts limit raise and bids 4♠ (15+ HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -438,7 +443,7 @@
       "explanationId": "bergen.r2.gameTryHeartsAfterLimitSpades",
       "meaningId": "bergen:opener-game-try-hearts-after-limit-spades",
       "templateKey": "bergen.r2.gameTryHeartsAfterLimitSpades.semantic",
-      "displayText": "Opener makes a help-suit game try with 3\u2665 after the limit spade raise",
+      "displayText": "Opener makes a help-suit game try with 3♥ after the limit spade raise",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -448,7 +453,7 @@
       "explanationId": "bergen.r2.signoffAfterLimitSpades",
       "meaningId": "bergen:opener-signoff-after-limit-spades",
       "templateKey": "bergen.r2.signoffAfterLimitSpades.semantic",
-      "displayText": "Opener declines limit raise and signs off in 3\u2660",
+      "displayText": "Opener declines limit raise and signs off in 3♠",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -458,7 +463,7 @@
       "explanationId": "bergen.r2.gameAfterPreemptiveHearts",
       "meaningId": "bergen:opener-game-after-preemptive-hearts",
       "templateKey": "bergen.r2.gameAfterPreemptiveHearts.semantic",
-      "displayText": "Opener bids 4\u2665 despite preemptive raise (18+ total pts)",
+      "displayText": "Opener bids 4♥ despite preemptive raise (18+ total pts)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -468,7 +473,7 @@
       "explanationId": "bergen.r2.passAfterPreemptiveHearts",
       "meaningId": "bergen:opener-pass-after-preemptive-hearts",
       "templateKey": "bergen.r2.passAfterPreemptiveHearts.semantic",
-      "displayText": "Opener passes after preemptive raise to 3\u2665",
+      "displayText": "Opener passes after preemptive raise to 3♥",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -478,7 +483,7 @@
       "explanationId": "bergen.r2.gameAfterPreemptiveSpades",
       "meaningId": "bergen:opener-game-after-preemptive-spades",
       "templateKey": "bergen.r2.gameAfterPreemptiveSpades.semantic",
-      "displayText": "Opener bids 4\u2660 despite preemptive raise (18+ total pts)",
+      "displayText": "Opener bids 4♠ despite preemptive raise (18+ total pts)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -488,7 +493,7 @@
       "explanationId": "bergen.r2.passAfterPreemptiveSpades",
       "meaningId": "bergen:opener-pass-after-preemptive-spades",
       "templateKey": "bergen.r2.passAfterPreemptiveSpades.semantic",
-      "displayText": "Opener passes after preemptive raise to 3\u2660",
+      "displayText": "Opener passes after preemptive raise to 3♠",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -498,7 +503,7 @@
       "explanationId": "bergen.r3.tryAcceptHearts",
       "meaningId": "bergen:responder-try-accept-hearts",
       "templateKey": "bergen.r3.tryAcceptHearts.semantic",
-      "displayText": "Accept game try and bid 4\u2665",
+      "displayText": "Accept game try and bid 4♥",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -508,7 +513,7 @@
       "explanationId": "bergen.r3.tryAcceptSpades",
       "meaningId": "bergen:responder-try-accept-spades",
       "templateKey": "bergen.r3.tryAcceptSpades.semantic",
-      "displayText": "Accept game try and bid 4\u2660",
+      "displayText": "Accept game try and bid 4♠",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -518,7 +523,7 @@
       "explanationId": "bergen.r3.tryRejectHearts",
       "meaningId": "bergen:responder-try-reject-hearts",
       "templateKey": "bergen.r3.tryRejectHearts.semantic",
-      "displayText": "Reject game try and sign off in 3\u2665",
+      "displayText": "Reject game try and sign off in 3♥",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -528,7 +533,7 @@
       "explanationId": "bergen.r3.tryRejectSpades",
       "meaningId": "bergen:responder-try-reject-spades",
       "templateKey": "bergen.r3.tryRejectSpades.semantic",
-      "displayText": "Reject game try and sign off in 3\u2660",
+      "displayText": "Reject game try and sign off in 3♠",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -578,7 +583,7 @@
       "explanationId": "bergen.splinter.relaySpades",
       "meaningId": "bergen:splinter-relay-spades",
       "templateKey": "bergen.splinter.relaySpades.semantic",
-      "displayText": "Opener's 3\u2660 relay asks responder to reveal the short suit",
+      "displayText": "Opener's 3♠ relay asks responder to reveal the short suit",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -588,7 +593,7 @@
       "explanationId": "bergen.splinter.revealClubsHearts",
       "meaningId": "bergen:splinter-reveal-clubs-hearts",
       "templateKey": "bergen.splinter.revealClubsHearts.semantic",
-      "displayText": "4\u2663: shortness in clubs",
+      "displayText": "4♣: shortness in clubs",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -598,7 +603,7 @@
       "explanationId": "bergen.splinter.revealDiamondsHearts",
       "meaningId": "bergen:splinter-reveal-diamonds-hearts",
       "templateKey": "bergen.splinter.revealDiamondsHearts.semantic",
-      "displayText": "4\u2666: shortness in diamonds",
+      "displayText": "4♦: shortness in diamonds",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -608,7 +613,7 @@
       "explanationId": "bergen.splinter.revealSpadesHearts",
       "meaningId": "bergen:splinter-reveal-spades-hearts",
       "templateKey": "bergen.splinter.revealSpadesHearts.semantic",
-      "displayText": "4\u2665: shortness in the other major (spades)",
+      "displayText": "4♥: shortness in the other major (spades)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -628,7 +633,7 @@
       "explanationId": "bergen.splinter.revealDiamondsSpades",
       "meaningId": "bergen:splinter-reveal-diamonds-spades",
       "templateKey": "bergen.splinter.revealDiamondsSpades.semantic",
-      "displayText": "4\u2663: shortness in diamonds",
+      "displayText": "4♣: shortness in diamonds",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -638,7 +643,7 @@
       "explanationId": "bergen.splinter.revealHeartsSpades",
       "meaningId": "bergen:splinter-reveal-hearts-spades",
       "templateKey": "bergen.splinter.revealHeartsSpades.semantic",
-      "displayText": "4\u2666: shortness in the other major (hearts)",
+      "displayText": "4♦: shortness in the other major (hearts)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -648,7 +653,7 @@
       "explanationId": "bergen.splinter.minSignoffHearts",
       "meaningId": "bergen:splinter-min-signoff-hearts",
       "templateKey": "bergen.splinter.minSignoffHearts.semantic",
-      "displayText": "Opener signs off in 4\u2665 with a minimum \u2014 no slam interest after the splinter",
+      "displayText": "Opener signs off in 4♥ with a minimum — no slam interest after the splinter",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -658,7 +663,7 @@
       "explanationId": "bergen.splinter.minSignoffSpades",
       "meaningId": "bergen:splinter-min-signoff-spades",
       "templateKey": "bergen.splinter.minSignoffSpades.semantic",
-      "displayText": "Opener signs off in 4\u2660 with a minimum \u2014 no slam interest after the splinter",
+      "displayText": "Opener signs off in 4♠ with a minimum — no slam interest after the splinter",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -1074,7 +1079,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "1\u2665 opening",
+            "name": "1♥ opening",
             "summary": "Open 1 heart to show 5+ hearts and"
           }
         },
@@ -1120,7 +1125,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "1\u2660 opening",
+            "name": "1♠ opening",
             "summary": "Open 1 spade to show 5+ spades and"
           }
         }
@@ -1217,7 +1222,7 @@
                 "max": 12
               },
               "clauseId": "hand.hcp:range:10-12",
-              "description": "10\u201312 HCP",
+              "description": "10–12 HCP",
               "isPublic": true
             },
             {
@@ -1269,7 +1274,7 @@
                 "max": 10
               },
               "clauseId": "hand.hcp:range:7-10",
-              "description": "7\u201310 HCP",
+              "description": "7–10 HCP",
               "isPublic": true
             },
             {
@@ -1508,7 +1513,7 @@
                 "max": 12
               },
               "clauseId": "hand.hcp:range:10-12",
-              "description": "10\u201312 HCP",
+              "description": "10–12 HCP",
               "isPublic": true
             },
             {
@@ -1560,7 +1565,7 @@
                 "max": 10
               },
               "clauseId": "hand.hcp:range:7-10",
-              "description": "7\u201310 HCP",
+              "description": "7–10 HCP",
               "isPublic": true
             },
             {
@@ -1772,7 +1777,7 @@
                 "max": 16
               },
               "clauseId": "hand.hcp:range:14-16",
-              "description": "14\u201316 HCP",
+              "description": "14–16 HCP",
               "isPublic": true
             }
           ],
@@ -1956,7 +1961,7 @@
                 "max": 16
               },
               "clauseId": "hand.hcp:range:14-16",
-              "description": "14\u201316 HCP",
+              "description": "14–16 HCP",
               "isPublic": true
             }
           ],
@@ -2234,7 +2239,7 @@
                 "max": 16
               },
               "clauseId": "hand.hcp:range:14-16",
-              "description": "14\u201316 HCP",
+              "description": "14–16 HCP",
               "isPublic": true
             },
             {
@@ -2521,7 +2526,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Accept partner's game bid \u2192 pass",
+            "name": "Accept partner's game bid → pass",
             "summary": "Pass after opener bids game, accepting the final contract"
           }
         }
@@ -2558,7 +2563,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Accept partner's signoff \u2192 pass",
+            "name": "Accept partner's signoff → pass",
             "summary": "Pass after opener signs off, ending the auction at partscore"
           }
         }
@@ -2594,7 +2599,7 @@
                 "max": 10
               },
               "clauseId": "hand.hcp:range:9-10",
-              "description": "9\u201310 HCP",
+              "description": "9–10 HCP",
               "isPublic": true
             }
           ],
@@ -2611,7 +2616,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Accept game try \u2192 game (4H)",
+            "name": "Accept game try → game (4H)",
             "summary": "Accept opener's game try at the top of the constructive range"
           },
           "surfaceBindings": {
@@ -2638,7 +2643,7 @@
                 "max": 8
               },
               "clauseId": "hand.hcp:range:7-8",
-              "description": "7\u20138 HCP",
+              "description": "7–8 HCP",
               "isPublic": true
             }
           ],
@@ -2655,7 +2660,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Reject game try \u2192 signoff (3H)",
+            "name": "Reject game try → signoff (3H)",
             "summary": "Reject opener's game try, returning to the agreed trump suit"
           },
           "surfaceBindings": {
@@ -2694,7 +2699,7 @@
                 "max": 10
               },
               "clauseId": "hand.hcp:range:9-10",
-              "description": "9\u201310 HCP",
+              "description": "9–10 HCP",
               "isPublic": true
             }
           ],
@@ -2711,7 +2716,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Accept game try \u2192 game (4S)",
+            "name": "Accept game try → game (4S)",
             "summary": "Accept opener's game try at the top of the constructive range"
           },
           "surfaceBindings": {
@@ -2738,7 +2743,7 @@
                 "max": 8
               },
               "clauseId": "hand.hcp:range:7-8",
-              "description": "7\u20138 HCP",
+              "description": "7–8 HCP",
               "isPublic": true
             }
           ],
@@ -2755,7 +2760,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Reject game try \u2192 signoff (3S)",
+            "name": "Reject game try → signoff (3S)",
             "summary": "Reject opener's game try, returning to the agreed trump suit"
           },
           "surfaceBindings": {
@@ -2773,7 +2778,7 @@
       "surfaces": [],
       "scope": {
         "kind": "out_of_scope",
-        "reason": "BridgeBum treats opener's 3\u2660 rebid after a heart raise as a natural slam try. Responder's continuation is partnership judgment rather than a fixed Bergen table, so this fixture stops at opener's descriptive call."
+        "reason": "BridgeBum treats opener's 3♠ rebid after a heart raise as a natural slam try. Responder's continuation is partnership judgment rather than a fixed Bergen table, so this fixture stops at opener's descriptive call."
       }
     },
     {
@@ -2782,7 +2787,7 @@
       "surfaces": [],
       "scope": {
         "kind": "out_of_scope",
-        "reason": "BridgeBum gives 1\u2660-3\u2666-3\u2665 as a help-suit game try. Responder's follow-up depends on fit and honor evaluation, so this fixture stops at opener's descriptive call."
+        "reason": "BridgeBum gives 1♠-3♦-3♥ as a help-suit game try. Responder's follow-up depends on fit and honor evaluation, so this fixture stops at opener's descriptive call."
       }
     },
     {
@@ -2813,7 +2818,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Accept game try decision \u2192 pass",
+            "name": "Accept game try decision → pass",
             "summary": "Pass after responder decides on the game try, accepting their judgment"
           }
         }
@@ -2868,7 +2873,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3NT relay (ask short suit)",
-            "summary": "Cheapest step over responder's 3\u2660 ambiguous splinter asks which suit is short"
+            "summary": "Cheapest step over responder's 3♠ ambiguous splinter asks which suit is short"
           }
         },
         {
@@ -2906,8 +2911,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4\u2665 (minimum signoff, no slam interest)",
-            "summary": "Sign off in game with a minimum \u2014 decline to explore slam after the splinter"
+            "name": "4♥ (minimum signoff, no slam interest)",
+            "summary": "Sign off in game with a minimum — decline to explore slam after the splinter"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -2963,8 +2968,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3\u2660 relay (ask short suit)",
-            "summary": "Cheapest step over responder's 3\u2665 ambiguous splinter asks which suit is short"
+            "name": "3♠ relay (ask short suit)",
+            "summary": "Cheapest step over responder's 3♥ ambiguous splinter asks which suit is short"
           }
         },
         {
@@ -3002,8 +3007,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4\u2660 (minimum signoff, no slam interest)",
-            "summary": "Sign off in game with a minimum \u2014 decline to explore slam after the splinter"
+            "name": "4♠ (minimum signoff, no slam interest)",
+            "summary": "Sign off in game with a minimum — decline to explore slam after the splinter"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -3061,7 +3066,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4\u2663 (shortness in clubs)",
+            "name": "4♣ (shortness in clubs)",
             "summary": "Reveal club shortness after opener's relay"
           }
         },
@@ -3100,7 +3105,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4\u2666 (shortness in diamonds)",
+            "name": "4♦ (shortness in diamonds)",
             "summary": "Reveal diamond shortness after opener's relay"
           }
         },
@@ -3139,7 +3144,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4\u2665 (shortness in the other major)",
+            "name": "4♥ (shortness in the other major)",
             "summary": "Reveal shortness in the other major (spades) after opener's relay"
           }
         }
@@ -3234,7 +3239,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4\u2663 (shortness in diamonds)",
+            "name": "4♣ (shortness in diamonds)",
             "summary": "Reveal diamond shortness after opener's relay"
           }
         },
@@ -3273,7 +3278,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4\u2666 (shortness in the other major)",
+            "name": "4♦ (shortness in the other major)",
             "summary": "Reveal shortness in the other major (hearts) after opener's relay"
           }
         }
@@ -3591,9 +3596,9 @@
       "purpose": "Show the right level of support when partner opens 1 of a major and you have a 4-card fit",
       "whenToUse": "Partner opens 1H or 1S and you have 4 cards in their major. Choose between the preemptive raise (0-6), constructive raise (7-10), limit raise (10-12), and splinter branch (12+ with shortage).",
       "whenNotToUse": [
-        "Fewer than 4 cards in partner's major \u2014 look for other bids",
-        "Passed hand \u2014 Bergen raises are off after a passed hand",
-        "After opponent interference \u2014 standard raises apply instead"
+        "Fewer than 4 cards in partner's major — look for other bids",
+        "Passed hand — Bergen raises are off after a passed hand",
+        "After opponent interference — standard raises apply instead"
       ],
       "tradeoff": "3C and 3D lose their natural minor-suit meanings in favor of showing major support",
       "principle": "With a known trump fit, preempt with weakness, separate constructive and limit support precisely, and use the splinter branch when shortness changes opener's evaluation",

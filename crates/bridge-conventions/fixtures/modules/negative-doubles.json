@@ -30,12 +30,17 @@
     "competitive": true
   },
   "fixtureVersion": 1,
-  "description": "After partner opens 1-of-a-suit and the opponent overcalls, responder's double is conventional \u2014 showing values and unbid suits rather than penalty. Opener rebids after `after-neg-dbl` are synthesized at load time in `crates/bridge-conventions/src/registry/module_registry.rs`.",
+  "description": "After partner opens 1-of-a-suit and the opponent overcalls, responder's double is conventional — showing values and unbid suits rather than penalty. Opener rebids after `after-neg-dbl` are synthesized at load time in `crates/bridge-conventions/src/registry/module_registry.rs`.",
   "purpose": "Keep the bidding alive when opponents overcall, showing the unbid suits (especially majors) that a natural response would have shown",
+  "scopeNote": "Responder's double after partner's 1-level suit opening and an opponent suit overcall, through the 4-level only. Larry's 'through infinity' recommendation is intentionally capped here — 5-level+ negative doubles are out of scope. Encodes the two 'special' red-suit rules (`1C-(1D)-X` = 4+4 majors, `1m-(1H)-X` = exactly 4 spades). The `1C-(3D)-X` gap is known; 19 authored responder states / 39 surfaces flagged as unreachable are structural debt deferred. Opener rebids after negative double are synthesized in Rust (`module_registry.rs`), not authored in this fixture. Widening `1C-(2H)-X` to include weak 5+-spade hands is deferred.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/negative-doubles",
-      "label": "Larry Cohen \u2014 authoritative on modern negative double practice and level-dependent thresholds"
+      "label": "Larry Cohen — authoritative on modern negative double practice and level-dependent thresholds",
+      "snapshot": {
+        "text": "# Negative Doubles\n\nBy: Larry Cohen\n\nMany years ago, after our side opened the bidding and the opponents overcalled, a double was for penalty. This ineffective method was overturned when Al Roth invented what was first called Sputnik, named after the Russian satellite in the late 1950's. Now, when the opponents overcall, our responder's double is not for penalty. It is \"takeout,\" (\"negative\") with the focus on the other major.\n\nOpener | OPPONENT | RESPONDER\n1 anything | Suit Overcall | Double=\"Negative\"\n\nThere are three crucial issues and two smaller ones. First the big stuff:\n\n1. **Through what level?**\n\nMany players mark their convention card: \"through 2 spades\" or \"through 3 spades.\" This is not a good agreement. If you are writing \"through 3 spades,\" do you mean to tell me that when the opponents overcall, say, 4 clubs, that you all of a sudden expect to have a trump stack and want to double 4 clubs for penalties? Pretty silly. I recommend negative doubles \"through infinity.\" In fact, the higher they bid, the less likely you are to ever be dealt a penalty double. Doubles on any level should NOT show length/strength in the opponent's suit. They should all be takeout/cards.\n\n2. **What suits does the negative double show?**\n\nIn general, the other major(s) is promised. If responder can't stand a suit that opener selects, he needs to have a backup plan (often tolerance for opener's first suit). If the opening is 1-of-a-major and they overcall the other major, a negative double typically shows both minors.\n\n3. **How many points does the negative double show?**\n\nThis depends on the level. On the one-level, only 6+ points are required. The higher the level, the more points that are needed. On the two-level, about 9-10 is the minimum. The main point is that there is no upper range. A negative double can be made with 13, 17, or even 20+ points!\n\n## SPECIAL SEQUENCES:\n\nThe \"smaller\" issues are the following two specific auctions, which unfortunately require memorization:\n\n1)\n\nOpener | OPPONENT | RESPONDER\n1 club | 1 diamond | Double=4 hearts+4 spades\n\nBoth majors are promised when the overcall is 1 diamond. With only one 4-card major, just bid it. A double guarantees at least 4 cards in both majors.\n\n2)\n\nOpener | OPPONENT | RESPONDER\n1 club or 1 diamond | 1 heart | Double=Exactly 4 spades\n\nWhen the overcall is 1 heart, a negative double shows exactly 4 spades (no more, no less). A 1 spade bid would guarantee at least 5 spades.\n\nThese 2 auctions cause confusion among inexperienced players. There is no substitute or shortcut for these 2 \"special\" rules. They simply need to be studied, studied again, then practiced and memorized. If it helps, the only \"special\" auctions where a negative double GUARANTEES something specific is when the opponents overcall 1 of a RED SUIT.\n\nNo other negative doubles \":guarantee\" -- but they do tend to show the unbid suits, with the focus on the other major(s).\n\n## OTHER\n\nWhen playing negative doubles, what if the responder happens to have a penalty double? The way to \"get them\" is to pass (in tempo is a good idea) and hope the opening bidder can reopen with his own takeout double, to be converted for penalties.\n\nIf the negative doubler bids a new suit at his second turn it is weak (NF). With a good hand he would have bid the suit the first time (instead of a negative double).\n\n## WRAP-UP:\n\nThere is plenty more on this topic (such as follow-ups by opener and responder)—but this article is intended as just a brief summary. In my Larry Teaches Doubles book, I go into much more detail (with many practice quizzes). Everyone should play Negative Doubles, and they should be played on all levels (not just the 2- and 3-level). In general, the negative double shows the unbid suits, with the focus on the majors.\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/negative_double.php"
@@ -59,7 +64,7 @@
       },
       {
         "text": "Do not assume every negative double shows both majors.",
-        "reason": "Promises vary by auction; for example, after 1\u2665-(1\u2660) the negative double typically shows the minors rather than an unbid major."
+        "reason": "Promises vary by auction; for example, after 1♥-(1♠) the negative double typically shows the minors rather than an unbid major."
       }
     ]
   },
@@ -5754,7 +5759,7 @@
               "level": 1,
               "strain": "H"
             },
-            "rationale": "Right-hand opponent overcalls 1\u2665."
+            "rationale": "Right-hand opponent overcalls 1♥."
           },
           {
             "seat": "S",
@@ -5785,7 +5790,7 @@
               "level": 1,
               "strain": "C"
             },
-            "rationale": "Opener begins with 1\u2663."
+            "rationale": "Opener begins with 1♣."
           },
           {
             "seat": "E",
@@ -5794,7 +5799,7 @@
               "level": 1,
               "strain": "D"
             },
-            "rationale": "The opponents overcall 1\u2666."
+            "rationale": "The opponents overcall 1♦."
           },
           {
             "seat": "S",
@@ -5869,8 +5874,8 @@
       "whenToUse": "Partner opens 1C/1D/1H/1S and RHO overcalls. You have 6+ HCP (at 1-level), about 9+ HCP on the 2-level, and stronger competitive values as the overcall climbs, plus length in the unbid suits.",
       "whenNotToUse": [
         "You have a natural bid available (5+ card suit you can bid at the appropriate level)",
-        "You want to penalize the overcaller \u2014 pass and hope partner reopens with a double",
-        "The exact auction does not fit your hand \u2014 negative doubles stay sequence-specific even when the overcall comes high"
+        "You want to penalize the overcaller — pass and hope partner reopens with a double",
+        "The exact auction does not fit your hand — negative doubles stay sequence-specific even when the overcall comes high"
       ],
       "tradeoff": "Negative doubles give up the penalty double of the overcall at low levels in exchange for showing the unbid suits efficiently",
       "principle": "After an overcall, double shows the unbid suits (especially unbid majors) with competitive values. The specific suits shown depend on which suits are already bid.",

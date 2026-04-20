@@ -4,15 +4,17 @@
 
 ## First Principles
 
-1. **One authority per convention, not one-size-fits-all.** Each convention has a single designated authority stored in the module fixture's `references.authority` field. ACBL SAYC booklet is authority for standardized conventions (Stayman, Blackwood, Transfers). Larry Cohen is authority for conventions he co-invented (Bergen Raises, Negative Doubles). Bridge Guys is authority for conventions needing comprehensive continuation coverage (DONT, NMF, Michaels). Bridgebum.com (`references.discovery`) is a discovery source — useful for finding conventions and getting an overview, but never the authority for HCP thresholds or hand requirements. Never author surfaces from memory — always fetch and read the authority reference.
+1. **One authority per convention, captured as a frozen snapshot.** Each convention has a single designated authority stored in the module fixture's `references.authority` field (tier and source list in `docs/architecture/authority-and-module-composition.md`). At Build time the authority prose is captured into `references.authority.snapshot = { text, fetchedAt }` so Verify and later agents compare against a fixed reference instead of re-fetching and re-reading the live page. Never author surfaces from memory, and never change surfaces without updating the snapshot if the authority page has moved.
 
-2. **Build and Verify are complementary, not redundant.** Build creates or fills gaps in convention modules by translating reference material into code artifacts. Verify checks existing modules for correctness against the same references, then stress-tests them with expert playthrough agents. A convention should be Built first, then Verified.
+2. **Intentional scope is part of the fixture.** Every module carries a top-level `scopeNote` that names what is intentionally out of scope: variant families excluded, level cutoffs, partner conventions handled elsewhere, authority-independent editorial calls. Verify reads `scopeNote` before flagging "missing" surfaces and does not reopen decisions listed there. When a Build or Fix pass makes a new scope decision, update `scopeNote` in the same edit — commit messages and out-of-tree notes do not persist across sessions.
 
-3. **Reference comparison before playthrough.** Playthrough testing (BridgeExpertReview) only catches bugs in surfaces that exist. Missing surfaces silently fall through to Pass or wrong natural bids. Always compare against the reference first to catch completeness gaps, then run playthrough to catch correctness bugs in existing surfaces.
+3. **Build and Verify are complementary, not redundant.** Build creates or fills gaps in convention modules by translating reference material into code artifacts. Verify checks existing modules for correctness against the same references, then stress-tests them with expert playthrough agents. A convention should be Built first, then Verified.
 
-4. **Convention authoring follows the established checklist.** New modules follow `docs/guides/convention-authoring.md` exactly — surfaces, facts, FSM rules, explanation catalog, semantic classes, system profile, registration. The Build workflow doesn't invent new patterns; it translates reference material into the existing authoring framework.
+4. **Reference comparison before playthrough.** Playthrough testing (BridgeExpertReview) only catches bugs in surfaces that exist. Missing surfaces silently fall through to Pass or wrong natural bids. Always compare against the reference first to catch completeness gaps, then run playthrough to catch correctness bugs in existing surfaces.
 
-5. **Verify delegates playthrough to BridgeExpertReview.** ConventionForge doesn't reinvent the playthrough evaluation pipeline. Phase 2 of Verify invokes BridgeExpertReview with a targeted scope (specific bundle, 10 agents). This avoids duplicating the evaluation framework, agent prompt templates, and report compilation logic.
+5. **Convention authoring follows the established checklist.** New modules follow `docs/guides/convention-authoring.md` exactly — surfaces, facts, FSM rules, explanation catalog, semantic classes, system profile, registration. The Build workflow doesn't invent new patterns; it translates reference material into the existing authoring framework.
+
+6. **Verify delegates playthrough to BridgeExpertReview.** ConventionForge doesn't reinvent the playthrough evaluation pipeline. Phase 2 of Verify invokes BridgeExpertReview with a targeted scope (specific bundle, 10 agents). This avoids duplicating the evaluation framework, agent prompt templates, and report compilation logic.
 
 ## Problem This Skill Solves
 
@@ -44,5 +46,6 @@ Verification has a similar gap: selftest catches self-consistency errors but not
 - Surfaces are defined in JSON fixture files, not Rust code directly.
 - The Build workflow must follow `docs/guides/convention-authoring.md` for file structure and naming.
 - The Verify workflow's Phase 2 requires the BridgeExpertReview skill to be available.
-- All reference fetches use `webfetch` — never work from cached or memorized convention rules.
+- Build-time authority fetches use `webfetch` and are frozen into `references.authority.snapshot`. Verify and later passes compare against the snapshot, not a live fetch. Never author or verify from memorized convention rules.
+- Every fixture carries a non-empty `scopeNote` describing intentional exclusions. Structural invariants (`tests/structural_invariants.rs`) enforce both fields.
 - Convention modules follow the Rust/WASM architecture — no TS convention code.

@@ -6,10 +6,15 @@
   "fixtureVersion": 1,
   "description": "Michaels Cue Bids and Unusual 2NT: compete over opponent's suit opening with two-suited hands (5-5+)",
   "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
+  "scopeNote": "Direct-seat Michaels cuebids and Unusual 2NT only (not balancing, not after interference). Shape map: Michaels over minor = both majors; Michaels over major = other major + unspecified minor; Unusual 2NT over 1C = D+H; over 1D = C+H; over 1M = both minors. Single strength tier encoded as `7+` with playing-strength / vulnerability handled qualitatively. The weak-vs-strong Michaels split, typed `overcall.twoSuitedShape` partition, invitational minor-jump surfaces after exact-suit Unusual 2NT (`4D` / `4C`), and the tight `3+` preference thresholds after exact-suit advancer rebids are deferred to future variant work.",
   "references": {
     "authority": {
       "url": "https://kwbridge.com/michaels.htm",
-      "label": "Karen Walker \u2014 Michaels cuebid and Unusual 2NT overcalls with advancer responses"
+      "label": "Karen Walker — Michaels cuebid and Unusual 2NT overcalls with advancer responses",
+      "snapshot": {
+        "text": "# Michaels Cuebids & Unusual Notrump Overcalls\n\nAfter an opponent opens, it's often difficult to describe a hand with two long suits. The auction may get too high (or end too soon) for you to show both, or you may not have the strength to safely bid either suit.\n\n## Michaels Cuebid\n\nThis is a direct cuebid of the opponent's opened suit to show 5+-card length in two other suits. One of your suits is always a major, but the exact two you promise depend on the opening bid:\n\n- Over a minor-suit opening (1C-2C or 1D-2D), it shows both majors.\n- Over a major-suit opening (1H-2H or 1S-2S), it shows the other major and an unspecified minor.\n\nThe Michaels Cuebid replaces the Goren-style Strong Cuebid. If you have a very strong hand, you must start with a takeout double.\n\n## Unusual 2NT\n\nThis convention is a direct jump to 2NT over an opponent's opening bid to show \"the two lower-ranking unbid suits.\" You should have at least 5 cards in each suit:\n\n- Over a 1C opening, 2NT shows diamonds and hearts.\n- Over a 1D opening, 2NT shows clubs and hearts.\n- Over a 1H or 1S opening, 2NT shows both minors.\n\n## Strength Requirements\n\nThe strength you promise is about 7+ points, but \"suit quality and playing strength are more important than high-card points.\" These overcalls are usually preemptive in nature.\n\nVulnerability affects your decision. A vulnerable overcall \"should promise more playing strength\" than a non-vulnerable one.\n\n## Responding to Partner's Bid\n\n\"Remember that partner's Michaels Cuebid or 2NT overcall is artificial.\" If your RHO passes, you cannot pass. Bid your longer suit among partner's two offerings based on your strength and support level.\n\nIf partner makes a Michaels Cuebid over a major opening (showing the other major and an unspecified minor), you can bid 2NT to ask which minor he holds, signaling that as your preferred trump suit.\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/michaels_cuebid.php"
@@ -181,7 +186,7 @@
       "explanationId": "michaels.hasTwoPlusHeartSupport",
       "factId": "module.michaels.hasTwoPlusHeartSupport",
       "templateKey": "michaels.hasTwoPlusHeartSupport.supporting",
-      "displayText": "2+ hearts \u2014 minimum to accept partner's known major or prefer hearts at the lowest level",
+      "displayText": "2+ hearts — minimum to accept partner's known major or prefer hearts at the lowest level",
       "contrastiveTemplateKey": "michaels.hasTwoPlusHeartSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 2 hearts",
       "preferredLevel": "semantic",
@@ -194,7 +199,7 @@
       "explanationId": "michaels.hasTwoPlusSpadeSupport",
       "factId": "module.michaels.hasTwoPlusSpadeSupport",
       "templateKey": "michaels.hasTwoPlusSpadeSupport.supporting",
-      "displayText": "2+ spades \u2014 minimum to accept partner's known major or prefer spades at the lowest level",
+      "displayText": "2+ spades — minimum to accept partner's known major or prefer spades at the lowest level",
       "contrastiveTemplateKey": "michaels.hasTwoPlusSpadeSupport.whyNot",
       "contrastiveDisplayText": "Fewer than 2 spades",
       "preferredLevel": "semantic",
@@ -945,7 +950,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.spades:lte:2",
-              "description": "Fewer than 3 spades \u2014 relay only without support for the known major",
+              "description": "Fewer than 3 spades — relay only without support for the known major",
               "isPublic": true
             },
             {
@@ -999,7 +1004,7 @@
               "operator": "lte",
               "value": 2,
               "clauseId": "hand.suitLength.hearts:lte:2",
-              "description": "Fewer than 3 hearts \u2014 relay only without support for the known major",
+              "description": "Fewer than 3 hearts — relay only without support for the known major",
               "isPublic": true
             },
             {
@@ -1142,7 +1147,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2C \u2014 both majors over 1C",
+            "name": "2C — both majors over 1C",
             "summary": "Cue bid opponent's 1C to show 5-5 or better in both majors"
           }
         },
@@ -1194,7 +1199,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 diamonds + hearts over 1C",
+            "name": "2NT — diamonds + hearts over 1C",
             "summary": "Unusual 2NT to show 5-5 or better in diamonds and hearts"
           }
         },
@@ -1220,7 +1225,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (no action over 1C)",
-            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+            "summary": "Decline to compete — hand does not meet Michaels/Unusual 2NT requirements"
           }
         }
       ],
@@ -1271,7 +1276,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2D \u2014 both majors over 1D",
+            "name": "2D — both majors over 1D",
             "summary": "Cue bid opponent's 1D to show 5-5 or better in both majors"
           }
         },
@@ -1323,7 +1328,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 clubs + hearts over 1D",
+            "name": "2NT — clubs + hearts over 1D",
             "summary": "Unusual 2NT to show 5-5 or better in clubs and hearts"
           }
         },
@@ -1349,7 +1354,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (no action over 1D)",
-            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+            "summary": "Decline to compete — hand does not meet Michaels/Unusual 2NT requirements"
           }
         }
       ],
@@ -1400,7 +1405,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2H \u2014 spades + a minor over 1H",
+            "name": "2H — spades + a minor over 1H",
             "summary": "Cue bid opponent's 1H to show 5+ spades and 5+ in an unspecified minor"
           }
         },
@@ -1444,7 +1449,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 both minors over 1H",
+            "name": "2NT — both minors over 1H",
             "summary": "Unusual 2NT to show 5-5 or better in both minors"
           }
         },
@@ -1470,7 +1475,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (no action over 1H)",
-            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+            "summary": "Decline to compete — hand does not meet Michaels/Unusual 2NT requirements"
           }
         }
       ],
@@ -1521,7 +1526,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2S \u2014 hearts + a minor over 1S",
+            "name": "2S — hearts + a minor over 1S",
             "summary": "Cue bid opponent's 1S to show 5+ hearts and 5+ in an unspecified minor"
           }
         },
@@ -1565,7 +1570,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 both minors over 1S",
+            "name": "2NT — both minors over 1S",
             "summary": "Unusual 2NT to show 5-5 or better in both minors"
           }
         },
@@ -1591,7 +1596,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (no action over 1S)",
-            "summary": "Decline to compete \u2014 hand does not meet Michaels/Unusual 2NT requirements"
+            "summary": "Decline to compete — hand does not meet Michaels/Unusual 2NT requirements"
           }
         }
       ],
@@ -1619,7 +1624,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.michaels.hasTwoPlusHeartSupport:boolean:true",
-              "description": "2+ hearts \u2014 minimum to choose hearts at the lowest level",
+              "description": "2+ hearts — minimum to choose hearts at the lowest level",
               "isPublic": true
             },
             {
@@ -1642,7 +1647,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 prefer hearts",
+            "name": "2H — prefer hearts",
             "summary": "Choose hearts at the lowest available level; advancer cannot pass and needs only 2+ heart support (Walker)"
           }
         },
@@ -1663,7 +1668,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.michaels.hasTwoPlusSpadeSupport:boolean:true",
-              "description": "2+ spades \u2014 minimum to choose spades at the lowest level",
+              "description": "2+ spades — minimum to choose spades at the lowest level",
               "isPublic": true
             },
             {
@@ -1686,7 +1691,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 prefer spades",
+            "name": "2S — prefer spades",
             "summary": "Choose spades at the lowest available level; advancer cannot pass and needs only 2+ spade support (Walker)"
           }
         },
@@ -1730,7 +1735,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 preemptive hearts",
+            "name": "3H — preemptive hearts",
             "summary": "Preempt in hearts with weak values and about four-card support"
           }
         },
@@ -1774,7 +1779,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 preemptive spades",
+            "name": "3S — preemptive spades",
             "summary": "Preempt in spades with weak values and about four-card support"
           }
         },
@@ -1826,7 +1831,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4H \u2014 game in hearts",
+            "name": "4H — game in hearts",
             "summary": "Bid game in hearts and 3+ heart support"
           }
         },
@@ -1878,7 +1883,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4S \u2014 game in spades",
+            "name": "4S — game in spades",
             "summary": "Bid game in spades and 3+ spade support"
           }
         }
@@ -1907,7 +1912,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.michaels.hasTwoPlusSpadeSupport:boolean:true",
-              "description": "2+ spades \u2014 Walker allows the acceptance with 3+-card or 2-card support",
+              "description": "2+ spades — Walker allows the acceptance with 3+-card or 2-card support",
               "isPublic": true
             },
             {
@@ -1930,7 +1935,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 accept spades",
+            "name": "2S — accept spades",
             "summary": "Accept the known spade suit at the lowest available level; Walker allows 3+-card or 2-card support"
           }
         },
@@ -1951,7 +1956,7 @@
               "operator": "lte",
               "value": 1,
               "clauseId": "hand.suitLength.spades:lte:1",
-              "description": "Fewer than 2 spades \u2014 cannot support the known major",
+              "description": "Fewer than 2 spades — cannot support the known major",
               "isPublic": true
             },
             {
@@ -1982,7 +1987,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 ask for minor",
+            "name": "2NT — ask for minor",
             "summary": "Relay bid asking partner to reveal the unknown minor suit"
           }
         },
@@ -2019,7 +2024,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.michaels.hasTwoPlusSpadeSupport:boolean:true",
-              "description": "2+ spades \u2014 Walker allows invitational raises even on a good doubleton",
+              "description": "2+ spades — Walker allows invitational raises even on a good doubleton",
               "isPublic": true
             },
             {
@@ -2042,7 +2047,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 invitational spades",
+            "name": "3S — invitational spades",
             "summary": "Invite game in spades and 2+ spade support"
           }
         },
@@ -2071,7 +2076,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.michaels.hasTwoPlusSpadeSupport:boolean:true",
-              "description": "2+ spades \u2014 Walker allows game raises even on a good doubleton",
+              "description": "2+ spades — Walker allows game raises even on a good doubleton",
               "isPublic": true
             },
             {
@@ -2094,7 +2099,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4S \u2014 game in spades",
+            "name": "4S — game in spades",
             "summary": "Bid game in spades and 2+ spade support"
           }
         }
@@ -2123,7 +2128,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.michaels.hasTwoPlusHeartSupport:boolean:true",
-              "description": "2+ hearts \u2014 Walker allows the acceptance with 3+-card or 2-card support",
+              "description": "2+ hearts — Walker allows the acceptance with 3+-card or 2-card support",
               "isPublic": true
             },
             {
@@ -2146,7 +2151,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 accept hearts",
+            "name": "3H — accept hearts",
             "summary": "Accept the known heart suit at the lowest available level; Walker allows 3+-card or 2-card support"
           }
         },
@@ -2167,7 +2172,7 @@
               "operator": "lte",
               "value": 1,
               "clauseId": "hand.suitLength.hearts:lte:1",
-              "description": "Fewer than 2 hearts \u2014 cannot support the known major",
+              "description": "Fewer than 2 hearts — cannot support the known major",
               "isPublic": true
             },
             {
@@ -2198,7 +2203,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT \u2014 ask for minor",
+            "name": "2NT — ask for minor",
             "summary": "Relay bid asking partner to reveal the unknown minor suit"
           }
         },
@@ -2235,7 +2240,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.michaels.hasTwoPlusHeartSupport:boolean:true",
-              "description": "2+ hearts \u2014 Walker allows invitational raises even on a good doubleton",
+              "description": "2+ hearts — Walker allows invitational raises even on a good doubleton",
               "isPublic": true
             },
             {
@@ -2258,7 +2263,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 invitational hearts",
+            "name": "3H — invitational hearts",
             "summary": "Invite game in hearts and 2+ heart support"
           }
         },
@@ -2287,7 +2292,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.michaels.hasTwoPlusHeartSupport:boolean:true",
-              "description": "2+ hearts \u2014 Walker allows game raises even on a good doubleton",
+              "description": "2+ hearts — Walker allows game raises even on a good doubleton",
               "isPublic": true
             },
             {
@@ -2310,7 +2315,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4H \u2014 game in hearts",
+            "name": "4H — game in hearts",
             "summary": "Bid game in hearts and 2+ heart support"
           }
         }
@@ -2362,7 +2367,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 prefer diamonds",
+            "name": "3D — prefer diamonds",
             "summary": "Choose diamonds at the lowest available level and 3+ diamond support"
           }
         },
@@ -2406,7 +2411,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 choose hearts",
+            "name": "3H — choose hearts",
             "summary": "Choose hearts at the lowest available level and 3+ heart support"
           }
         },
@@ -2458,7 +2463,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4H \u2014 game in hearts",
+            "name": "4H — game in hearts",
             "summary": "Bid game in hearts and 3+ heart support"
           }
         },
@@ -2510,7 +2515,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "5D \u2014 game in diamonds",
+            "name": "5D — game in diamonds",
             "summary": "Bid game in diamonds and 3+ diamond support"
           }
         }
@@ -2562,7 +2567,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 prefer clubs",
+            "name": "3C — prefer clubs",
             "summary": "Choose clubs at the lowest available level and 3+ club support"
           }
         },
@@ -2606,7 +2611,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 choose hearts",
+            "name": "3H — choose hearts",
             "summary": "Choose hearts at the lowest available level and 3+ heart support"
           }
         },
@@ -2658,7 +2663,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4H \u2014 game in hearts",
+            "name": "4H — game in hearts",
             "summary": "Bid game in hearts and 3+ heart support"
           }
         },
@@ -2710,7 +2715,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "5C \u2014 game in clubs",
+            "name": "5C — game in clubs",
             "summary": "Bid game in clubs and 3+ club support"
           }
         }
@@ -2762,7 +2767,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 prefer clubs",
+            "name": "3C — prefer clubs",
             "summary": "Choose clubs at the lowest available level and 3+ club support"
           }
         },
@@ -2806,7 +2811,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 prefer diamonds",
+            "name": "3D — prefer diamonds",
             "summary": "Choose diamonds at the lowest available level and 3+ diamond support"
           }
         },
@@ -2858,7 +2863,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "5C \u2014 game in clubs",
+            "name": "5C — game in clubs",
             "summary": "Bid game in clubs and 3+ club support"
           }
         },
@@ -2910,7 +2915,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "5D \u2014 game in diamonds",
+            "name": "5D — game in diamonds",
             "summary": "Bid game in diamonds and 3+ diamond support"
           }
         }
@@ -2954,7 +2959,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 minor is clubs",
+            "name": "3C — minor is clubs",
             "summary": "Reveal the unknown minor as clubs in response to partner's 2NT relay"
           }
         },
@@ -2990,7 +2995,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 minor is diamonds",
+            "name": "3D — minor is diamonds",
             "summary": "Reveal the unknown minor as diamonds in response to partner's 2NT relay"
           }
         }
@@ -3023,7 +3028,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 take partner's revealed minor",
+            "name": "Pass — take partner's revealed minor",
             "summary": "Pass once partner has shown the minor you wanted to play"
           }
         },
@@ -3059,7 +3064,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4C \u2014 raise clubs",
+            "name": "4C — raise clubs",
             "summary": "Raise partner's revealed clubs with support when you want to compete higher"
           }
         },
@@ -3103,7 +3108,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "5C \u2014 sacrifice in clubs",
+            "name": "5C — sacrifice in clubs",
             "summary": "Compete one step higher in clubs as a sacrifice with support and a weak hand"
           }
         }
@@ -3136,7 +3141,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 take partner's revealed minor",
+            "name": "Pass — take partner's revealed minor",
             "summary": "Pass once partner has shown the minor you wanted to play"
           }
         },
@@ -3172,7 +3177,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4D \u2014 raise diamonds",
+            "name": "4D — raise diamonds",
             "summary": "Raise partner's revealed diamonds with support when you want to compete higher"
           }
         },
@@ -3216,7 +3221,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "5D \u2014 sacrifice in diamonds",
+            "name": "5D — sacrifice in diamonds",
             "summary": "Compete one step higher in diamonds as a sacrifice with support and a weak hand"
           }
         }
@@ -3426,7 +3431,7 @@
               "level": 2,
               "strain": "D"
             },
-            "rationale": "Michaels over 1\u2666 shows both majors with a 5-5 style hand."
+            "rationale": "Michaels over 1♦ shows both majors with a 5-5 style hand."
           },
           {
             "seat": "E",
@@ -3457,7 +3462,7 @@
               "level": 1,
               "strain": "H"
             },
-            "rationale": "The opponents open 1\u2665."
+            "rationale": "The opponents open 1♥."
           },
           {
             "seat": "N",
@@ -3544,9 +3549,9 @@
       "purpose": "Show a two-suited hand (5-5 or better) when an opponent opens a suit, enabling partner to choose the best fit at a competitive level",
       "whenToUse": "After opponent opens 1C/1D/1H/1S: cue-bid their suit to show a two-suited hand, or bid 2NT to show the two lower unbid suits. Over a minor opening, the cue bid shows both majors and Unusual 2NT shows diamonds+hearts over 1C or clubs+hearts over 1D. Over a major, the cue bid shows the other major plus an unspecified minor and 2NT shows both minors.",
       "whenNotToUse": [
-        "With only 5-4 shape \u2014 need 5-5 or better",
-        "With a strong balanced hand \u2014 don't confuse with a Western Cue Bid",
-        "Against 1NT \u2014 use DONT instead"
+        "With only 5-4 shape — need 5-5 or better",
+        "With a strong balanced hand — don't confuse with a Western Cue Bid",
+        "Against 1NT — use DONT instead"
       ],
       "tradeoff": "Michaels sacrifices the natural/strong meaning of the cue bid and 2NT in exchange for immediately showing a two-suited competitive hand",
       "principle": "Showing two suits simultaneously lets partner judge fit quickly. The vulnerability-gated HCP range (looser NV, tighter Vul) reflects the risk/reward of competing.",
@@ -3815,7 +3820,7 @@
         "id": "module.michaels.inOvercallRange",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "HCP sufficient for a Michaels overcall (NV: 6+, Vul: 8+); no upper bound \u2014 Walker allows strong two-suiters that jump to game after partner's preference",
+        "description": "HCP sufficient for a Michaels overcall (NV: 6+, Vul: 8+); no upper bound — Walker allows strong two-suiters that jump to game after partner's preference",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -3890,7 +3895,7 @@
         "id": "module.michaels.hasTwoPlusHeartSupport",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "2+ hearts \u2014 minimum support to accept partner's known major or to choose hearts at the lowest level",
+        "description": "2+ hearts — minimum support to accept partner's known major or to choose hearts at the lowest level",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [
@@ -3928,7 +3933,7 @@
         "id": "module.michaels.hasTwoPlusSpadeSupport",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "2+ spades \u2014 minimum support to accept partner's known major or to choose spades at the lowest level",
+        "description": "2+ spades — minimum support to accept partner's known major or to choose spades at the lowest level",
         "valueType": "boolean",
         "derivesFrom": [],
         "constrainsDimensions": [

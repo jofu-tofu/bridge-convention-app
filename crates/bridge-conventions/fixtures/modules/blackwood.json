@@ -6,10 +6,15 @@
   "fixtureVersion": 1,
   "description": "Use 4NT to ask for aces when considering slam",
   "purpose": "Determine whether the partnership has enough aces to bid slam safely",
+  "scopeNote": "Plain (Regular) Blackwood only: 4NT asks for aces with 5C/5D/5H/5S = 0-or-4 / 1 / 2 / 3 aces, then 5NT asks for kings one level higher. Roman Keycard Blackwood (RKC), Gerber, quantitative 4NT, DOPI / DEPO interference responses, void-showing, and exclusion Blackwood are intentionally out of scope. Post-response signoff thresholds (>=3 aces for small slam, ==4 aces for king ask, ==4 kings for grand) are repo-authored heuristics — the authority page does not pin them numerically.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/blackwood",
-      "label": "Larry Cohen \u2014 Blackwood (bridge-articles/blackwood)"
+      "label": "Larry Cohen — Blackwood (bridge-articles/blackwood)",
+      "snapshot": {
+        "text": "# Blackwood\n\nBy: Larry Cohen\n\nOnce a partnership is in the slam zone, either player might use Blackwood.\n\n**\"Regular\" (or \"Plain\") Blackwood:**\n\n4NT asks for aces and then:\n\n5♣ = 0 or 4 aces\n5♦ = 1 ace\n5♥ = 2 aces\n5♠ = 3 aces\n\nThe asker can then bid 5NT to ask for kings, with the same schedule of replies, one level higher.\n\nThis convention has been around since the 1940's. It is a most helpful convention, but is often misused and abused. A 4NT bid to ask for aces (or in RKC, keycards) should not be used as a crutch to determine if there is a slam, but more to make sure that you don't reach a slam off 2 aces (nor a grand slam off 1 ace).\n\nFor examples of the typical misuse of Blackwood, please read the article on slam bidding. A good rule of thumb:\n\n\"If the answer to A 4NT bid to ask for aces (or in RKC, keycards) won't tell you if you belong in slam, then don't use it.\"\n\nFor experienced players, Roman Keycard Blackwood (RKC) is also available.\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/blackwood.php"
@@ -17,10 +22,10 @@
   },
   "teaching": {
     "tradeoff": "Using 4NT as Blackwood means you can't use it as a natural quantitative raise to slam.",
-    "principle": "Before bidding slam, check for aces \u2014 missing two aces means the opponents can cash two tricks immediately.",
+    "principle": "Before bidding slam, check for aces — missing two aces means the opponents can cash two tricks immediately.",
     "commonMistakes": [
-      "Don't bid Blackwood without an agreed trump fit \u2014 you need a fit before asking for aces",
-      "5NT king ask guarantees all four aces are accounted for \u2014 never bid 5NT missing an ace"
+      "Don't bid Blackwood without an agreed trump fit — you need a fit before asking for aces",
+      "5NT king ask guarantees all four aces are accounted for — never bid 5NT missing an ace"
     ]
   },
   "explanationEntries": [
@@ -86,7 +91,7 @@
       "explanationId": "blackwood.response0Aces",
       "meaningId": "blackwood:response-0-aces",
       "templateKey": "blackwood.response0Aces.semantic",
-      "displayText": "5\u2663 shows 0 (or 4) aces",
+      "displayText": "5♣ shows 0 (or 4) aces",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -96,7 +101,7 @@
       "explanationId": "blackwood.response4Aces",
       "meaningId": "blackwood:response-4-aces",
       "templateKey": "blackwood.response4Aces.semantic",
-      "displayText": "5\u2663 shows 0 (or 4) aces",
+      "displayText": "5♣ shows 0 (or 4) aces",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -106,7 +111,7 @@
       "explanationId": "blackwood.response1Ace",
       "meaningId": "blackwood:response-1-ace",
       "templateKey": "blackwood.response1Ace.semantic",
-      "displayText": "5\u2666 shows 1 ace",
+      "displayText": "5♦ shows 1 ace",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -116,7 +121,7 @@
       "explanationId": "blackwood.response2Aces",
       "meaningId": "blackwood:response-2-aces",
       "templateKey": "blackwood.response2Aces.semantic",
-      "displayText": "5\u2665 shows 2 aces",
+      "displayText": "5♥ shows 2 aces",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -126,7 +131,7 @@
       "explanationId": "blackwood.response3Aces",
       "meaningId": "blackwood:response-3-aces",
       "templateKey": "blackwood.response3Aces.semantic",
-      "displayText": "5\u2660 shows 3 aces",
+      "displayText": "5♠ shows 3 aces",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -176,7 +181,7 @@
       "explanationId": "blackwood.signoff5Level",
       "meaningId": "blackwood:signoff-5-level",
       "templateKey": "blackwood.signoff5Level.semantic",
-      "displayText": "Stop at 5-level \u2014 partnership is missing too many aces for slam",
+      "displayText": "Stop at 5-level — partnership is missing too many aces for slam",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -186,7 +191,7 @@
       "explanationId": "blackwood.kingResponse0",
       "meaningId": "blackwood:king-response-0",
       "templateKey": "blackwood.kingResponse0.semantic",
-      "displayText": "6\u2663 shows 0 (or 4) kings",
+      "displayText": "6♣ shows 0 (or 4) kings",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -196,7 +201,7 @@
       "explanationId": "blackwood.kingResponse4",
       "meaningId": "blackwood:king-response-4",
       "templateKey": "blackwood.kingResponse4.semantic",
-      "displayText": "6\u2663 shows 0 (or 4) kings",
+      "displayText": "6♣ shows 0 (or 4) kings",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -206,7 +211,7 @@
       "explanationId": "blackwood.kingResponse1",
       "meaningId": "blackwood:king-response-1",
       "templateKey": "blackwood.kingResponse1.semantic",
-      "displayText": "6\u2666 shows 1 king",
+      "displayText": "6♦ shows 1 king",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -216,7 +221,7 @@
       "explanationId": "blackwood.kingResponse2",
       "meaningId": "blackwood:king-response-2",
       "templateKey": "blackwood.kingResponse2.semantic",
-      "displayText": "6\u2665 shows 2 kings",
+      "displayText": "6♥ shows 2 kings",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -226,7 +231,7 @@
       "explanationId": "blackwood.kingResponse3",
       "meaningId": "blackwood:king-response-3",
       "templateKey": "blackwood.kingResponse3.semantic",
-      "displayText": "6\u2660 shows 3 kings",
+      "displayText": "6♠ shows 3 kings",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -389,7 +394,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "5\u2663 \u2014 0 (or 4) aces",
+            "name": "5♣ — 0 (or 4) aces",
             "summary": "Show zero aces in response to partner's Blackwood ask"
           }
         },
@@ -427,7 +432,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "5\u2663 \u2014 4 aces",
+            "name": "5♣ — 4 aces",
             "summary": "Show all four aces in response to partner's Blackwood ask"
           }
         },
@@ -465,7 +470,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "5\u2666 \u2014 1 ace",
+            "name": "5♦ — 1 ace",
             "summary": "Show exactly one ace in response to partner's Blackwood ask"
           }
         },
@@ -503,7 +508,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "5\u2665 \u2014 2 aces",
+            "name": "5♥ — 2 aces",
             "summary": "Show exactly two aces in response to partner's Blackwood ask"
           }
         },
@@ -541,7 +546,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "5\u2660 \u2014 3 aces",
+            "name": "5♠ — 3 aces",
             "summary": "Show exactly three aces in response to partner's Blackwood ask"
           }
         }
@@ -767,7 +772,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6\u2663 \u2014 0 kings",
+            "name": "6♣ — 0 kings",
             "summary": "Show zero kings in response to partner's king ask"
           }
         },
@@ -805,8 +810,8 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6\u2663 \u2014 4 kings",
-            "summary": "Share the same 6\u2663 reply used for 0 or 4 kings in plain Blackwood"
+            "name": "6♣ — 4 kings",
+            "summary": "Share the same 6♣ reply used for 0 or 4 kings in plain Blackwood"
           }
         },
         {
@@ -843,7 +848,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6\u2666 \u2014 1 king",
+            "name": "6♦ — 1 king",
             "summary": "Show exactly one king in response to partner's king ask"
           }
         },
@@ -881,7 +886,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6\u2665 \u2014 2 kings",
+            "name": "6♥ — 2 kings",
             "summary": "Show exactly two kings in response to partner's king ask"
           }
         },
@@ -919,7 +924,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "6\u2660 \u2014 3 kings",
+            "name": "6♠ — 3 kings",
             "summary": "Show exactly three kings in response to partner's king ask"
           }
         }
@@ -1146,7 +1151,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 no grand slam",
+            "name": "Pass — no grand slam",
             "summary": "Pass when partner's king reply is already the right natural small-slam contract"
           }
         }
@@ -1212,7 +1217,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 no grand slam",
+            "name": "Pass — no grand slam",
             "summary": "Pass when partner's king reply is already the right natural small-slam contract"
           }
         }
@@ -1278,7 +1283,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 no grand slam",
+            "name": "Pass — no grand slam",
             "summary": "Pass when partner's king reply is already the right natural small-slam contract"
           }
         }
@@ -1344,7 +1349,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 no grand slam",
+            "name": "Pass — no grand slam",
             "summary": "Pass when partner's king reply is already the right natural small-slam contract"
           }
         }
@@ -1924,7 +1929,7 @@
           "spades": "A K Q J x",
           "hearts": "K x x x",
           "diamonds": "Q x x",
-          "clubs": "\u2014"
+          "clubs": "—"
         },
         "calls": [
           {
@@ -1961,7 +1966,7 @@
               "level": 5,
               "strain": "H"
             },
-            "rationale": "Responder shows two aces \u2014 but classic Blackwood cannot reveal which two."
+            "rationale": "Responder shows two aces — but classic Blackwood cannot reveal which two."
           },
           {
             "seat": "N",

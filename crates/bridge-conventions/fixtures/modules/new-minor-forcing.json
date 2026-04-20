@@ -6,10 +6,15 @@
   "fixtureVersion": 1,
   "description": "After opener rebids 1NT, bid the unbid minor as an artificial checkback to find major-suit fits or determine strength",
   "purpose": "After opener rebids 1NT, responder may need to explore for an 8-card major fit or determine whether to invite or bid game. NMF provides a one-round forcing mechanism to extract more information from opener, primarily after minor openings and in some partnerships after 1H-1S-1NT.",
+  "scopeNote": "Responder's second-round checkback via the unbid minor after the narrow `1m-1M-1NT` auction only, following Karen Walker's handout. Authored floor is `hand.hcp >= 10`; tightening toward 'good 10-11+' is deferred. Walker's broader non-1NT NMF branch (`1D-1H-1S-2C` and beyond), stopper promises on opener's NT rebids, explicit denial clauses on direct responder exits (`nmf:nt-invite` / `nmf:nt-game` / `nmf:responder-pass`), the missing raise-new-minor `3D` branch after club-opening routes, the orphaned `1S`-opening surface, and the game-forcing two-way NMF / XYZ variants are all deferred scope decisions.",
   "references": {
     "authority": {
       "url": "https://kwbridge.com/nmf.htm",
-      "label": "Karen Walker \u2014 New Minor Forcing handout covering the full opener rebid structure after 1m-1M-1NT"
+      "label": "Karen Walker — New Minor Forcing handout covering the full opener rebid structure after 1m-1M-1NT",
+      "snapshot": {
+        "text": "# New Minor Forcing in Bridge\n\nNew Minor Forcing is a bidding convention used by responder, typically on their second bid. According to the article, it's deployed when responder has \"at least invitational strength (a good 10-11+ points) and some doubt about what the final contract should be.\"\n\n## Core Mechanism\n\nThe convention works by having responder bid \"2 of the unbid ('new') minor\" after the opening bid and their first response. As the text explains, this bid \"doesn't promise club length or even a stopper -- it only asks opener to bid again and tell you more about his hand.\"\n\nThe primary question being asked is whether opener holds three cards in responder's major suit. The article notes this is similar to Stayman but with a key difference: unlike Stayman after 1NT, this convention asks specifically about \"3 cards in the major you've already bid.\"\n\n## Opener's Response Priorities\n\nWhen opener hears the forcing bid, they should follow this hierarchy:\n\n1. Show a three-card fit in responder's major by raising to two of that suit\n2. If lacking three cards, bid an unbid four-card major\n3. Otherwise, bid 2NT (with appropriate stoppers) or rebid their own suit\n\nJump rebids indicate extra strength and willingness to accept game invitations.\n\n## Responder's Follow-Up\n\nResponder's third bid clarifies whether they hold forcing (game-going) or invitational values, allowing the partnership to reach the appropriate contract level.\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/new_minor_forcing.php"
@@ -44,7 +49,7 @@
       "templateKey": "nmf.responderInviteOrBetter.supporting",
       "displayText": "Responder has invitational+ values (10+ HCP)",
       "contrastiveTemplateKey": "nmf.responderInviteOrBetter.whyNot",
-      "contrastiveDisplayText": "Not enough for NMF \u2014 need 10+ HCP",
+      "contrastiveDisplayText": "Not enough for NMF — need 10+ HCP",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -57,7 +62,7 @@
       "templateKey": "nmf.responderGameValues.supporting",
       "displayText": "Responder has game values (12+ HCP)",
       "contrastiveTemplateKey": "nmf.responderGameValues.whyNot",
-      "contrastiveDisplayText": "Not enough for game \u2014 need 12+ HCP",
+      "contrastiveDisplayText": "Not enough for game — need 12+ HCP",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -96,7 +101,7 @@
       "templateKey": "nmf.openerMinimum.supporting",
       "displayText": "Opener has minimum values (12-13 HCP)",
       "contrastiveTemplateKey": "nmf.openerMinimum.whyNot",
-      "contrastiveDisplayText": "Not minimum \u2014 opener has 14 HCP",
+      "contrastiveDisplayText": "Not minimum — opener has 14 HCP",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -109,7 +114,7 @@
       "templateKey": "nmf.openerMaximum.supporting",
       "displayText": "Opener has maximum values (14 HCP)",
       "contrastiveTemplateKey": "nmf.openerMaximum.whyNot",
-      "contrastiveDisplayText": "Not maximum \u2014 opener has 12-13 HCP",
+      "contrastiveDisplayText": "Not maximum — opener has 12-13 HCP",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -120,7 +125,7 @@
       "explanationId": "nmf.partnerOpens1c",
       "meaningId": "nmf:partner-opens-1c",
       "templateKey": "nmf.partnerOpens1c.semantic",
-      "displayText": "Open 1\u2663",
+      "displayText": "Open 1♣",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -130,7 +135,7 @@
       "explanationId": "nmf.partnerOpens1d",
       "meaningId": "nmf:partner-opens-1d",
       "templateKey": "nmf.partnerOpens1d.semantic",
-      "displayText": "Open 1\u2666",
+      "displayText": "Open 1♦",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -140,7 +145,7 @@
       "explanationId": "nmf.partnerOpens1h",
       "meaningId": "nmf:partner-opens-1h",
       "templateKey": "nmf.partnerOpens1h.semantic",
-      "displayText": "Open 1\u2665",
+      "displayText": "Open 1♥",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -150,7 +155,7 @@
       "explanationId": "nmf.partnerOpens1s",
       "meaningId": "nmf:partner-opens-1s",
       "templateKey": "nmf.partnerOpens1s.semantic",
-      "displayText": "Open 1\u2660",
+      "displayText": "Open 1♠",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -160,7 +165,7 @@
       "explanationId": "nmf.responder1h",
       "meaningId": "nmf:responder-1h",
       "templateKey": "nmf.responder1h.semantic",
-      "displayText": "Respond 1\u2665 showing 4+ hearts",
+      "displayText": "Respond 1♥ showing 4+ hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -170,7 +175,7 @@
       "explanationId": "nmf.responder1s",
       "meaningId": "nmf:responder-1s",
       "templateKey": "nmf.responder1s.semantic",
-      "displayText": "Respond 1\u2660 showing 4+ spades",
+      "displayText": "Respond 1♠ showing 4+ spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -180,7 +185,7 @@
       "explanationId": "nmf.openerRebid1sAfterHearts",
       "meaningId": "nmf:opener-rebid-1s-after-hearts",
       "templateKey": "nmf.openerRebid1sAfterHearts.semantic",
-      "displayText": "Opener rebids 1\u2660 with 4+ spades after 1\u2665 response",
+      "displayText": "Opener rebids 1♠ with 4+ spades after 1♥ response",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -200,7 +205,7 @@
       "explanationId": "nmf.askAfter1c",
       "meaningId": "nmf:ask-after-1c",
       "templateKey": "nmf.askAfter1c.semantic",
-      "displayText": "New Minor Forcing 2\u2666 \u2014 artificial checkback after 1\u2663 opening",
+      "displayText": "New Minor Forcing 2♦ — artificial checkback after 1♣ opening",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -210,7 +215,7 @@
       "explanationId": "nmf.askAfter1d",
       "meaningId": "nmf:ask-after-1d",
       "templateKey": "nmf.askAfter1d.semantic",
-      "displayText": "New Minor Forcing 2\u2663 \u2014 artificial checkback after 1\u2666 opening",
+      "displayText": "New Minor Forcing 2♣ — artificial checkback after 1♦ opening",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -220,7 +225,7 @@
       "explanationId": "nmf.signoff2h",
       "meaningId": "nmf:signoff-2h",
       "templateKey": "nmf.signoff2h.semantic",
-      "displayText": "Sign off in 2\u2665 with 5+ hearts and a weak hand",
+      "displayText": "Sign off in 2♥ with 5+ hearts and a weak hand",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -230,7 +235,7 @@
       "explanationId": "nmf.signoff2s",
       "meaningId": "nmf:signoff-2s",
       "templateKey": "nmf.signoff2s.semantic",
-      "displayText": "Sign off in 2\u2660 with 5+ spades and a weak hand",
+      "displayText": "Sign off in 2♠ with 5+ spades and a weak hand",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -240,7 +245,7 @@
       "explanationId": "nmf.ntInvite",
       "meaningId": "nmf:nt-invite",
       "templateKey": "nmf.ntInvite.semantic",
-      "displayText": "2NT invite \u2014 10-11 HCP balanced, no major fit preference",
+      "displayText": "2NT invite — 10-11 HCP balanced, no major fit preference",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -250,7 +255,7 @@
       "explanationId": "nmf.ntGame",
       "meaningId": "nmf:nt-game",
       "templateKey": "nmf.ntGame.semantic",
-      "displayText": "3NT game \u2014 12+ HCP with no major fit",
+      "displayText": "3NT game — 12+ HCP with no major fit",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -280,7 +285,7 @@
       "explanationId": "nmf.openerSupportHeartsMax",
       "meaningId": "nmf:opener-support-hearts-max",
       "templateKey": "nmf.openerSupportHeartsMax.semantic",
-      "displayText": "Jump raise to 3\u2665 \u2014 3-card heart support with maximum (14 HCP)",
+      "displayText": "Jump raise to 3♥ — 3-card heart support with maximum (14 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -300,7 +305,7 @@
       "explanationId": "nmf.openerNtMinAfterHearts",
       "meaningId": "nmf:opener-nt-min-after-hearts",
       "templateKey": "nmf.openerNtMinAfterHearts.semantic",
-      "displayText": "2NT minimum (12-13 HCP) \u2014 no major fit after NMF",
+      "displayText": "2NT minimum (12-13 HCP) — no major fit after NMF",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -310,7 +315,7 @@
       "explanationId": "nmf.openerNtMaxAfterHearts",
       "meaningId": "nmf:opener-nt-max-after-hearts",
       "templateKey": "nmf.openerNtMaxAfterHearts.semantic",
-      "displayText": "3NT maximum (14 HCP) \u2014 no major fit after NMF",
+      "displayText": "3NT maximum (14 HCP) — no major fit after NMF",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -330,7 +335,7 @@
       "explanationId": "nmf.openerSupportSpadesMax",
       "meaningId": "nmf:opener-support-spades-max",
       "templateKey": "nmf.openerSupportSpadesMax.semantic",
-      "displayText": "Jump raise to 3\u2660 \u2014 3-card spade support with maximum (14 HCP)",
+      "displayText": "Jump raise to 3♠ — 3-card spade support with maximum (14 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -350,7 +355,7 @@
       "explanationId": "nmf.openerNtMinAfterSpades",
       "meaningId": "nmf:opener-nt-min-after-spades",
       "templateKey": "nmf.openerNtMinAfterSpades.semantic",
-      "displayText": "2NT minimum (12-13 HCP) \u2014 no major fit after NMF",
+      "displayText": "2NT minimum (12-13 HCP) — no major fit after NMF",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -360,7 +365,7 @@
       "explanationId": "nmf.openerNtMaxAfterSpades",
       "meaningId": "nmf:opener-nt-max-after-spades",
       "templateKey": "nmf.openerNtMaxAfterSpades.semantic",
-      "displayText": "3NT maximum (14 HCP) \u2014 no major fit after NMF",
+      "displayText": "3NT maximum (14 HCP) — no major fit after NMF",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -370,7 +375,7 @@
       "explanationId": "nmf.responder1sOver1h",
       "meaningId": "nmf:responder-1s-over-1h",
       "templateKey": "nmf.responder1sOver1h.semantic",
-      "displayText": "Respond 1\u2660 over partner's 1\u2665 with 4+ spades, 6+ HCP",
+      "displayText": "Respond 1♠ over partner's 1♥ with 4+ spades, 6+ HCP",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -390,7 +395,7 @@
       "explanationId": "nmf.responderNmf2cOver1h",
       "meaningId": "nmf:responder-nmf-2c-over-1h",
       "templateKey": "nmf.responderNmf2cOver1h.semantic",
-      "displayText": "NMF 2\u2663: artificial invite+ after 1H-1S-1NT",
+      "displayText": "NMF 2♣: artificial invite+ after 1H-1S-1NT",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -400,7 +405,7 @@
       "explanationId": "nmf.responder2dNaturalOver1h",
       "meaningId": "nmf:responder-2d-natural-over-1h",
       "templateKey": "nmf.responder2dNaturalOver1h.semantic",
-      "displayText": "2\u2666: natural, 5+ diamonds, weak (6-9 HCP)",
+      "displayText": "2♦: natural, 5+ diamonds, weak (6-9 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -410,7 +415,7 @@
       "explanationId": "nmf.openerSupportSpadesMinFrom1h",
       "meaningId": "nmf:opener-support-spades-min-from-1h",
       "templateKey": "nmf.openerSupportSpadesMinFrom1h.semantic",
-      "displayText": "2\u2660: 3-card spade support, minimum (12-13 HCP)",
+      "displayText": "2♠: 3-card spade support, minimum (12-13 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -420,7 +425,7 @@
       "explanationId": "nmf.openerSupportSpadesMaxFrom1h",
       "meaningId": "nmf:opener-support-spades-max-from-1h",
       "templateKey": "nmf.openerSupportSpadesMaxFrom1h.semantic",
-      "displayText": "3\u2660: 3-card spade support, maximum (14 HCP)",
+      "displayText": "3♠: 3-card spade support, maximum (14 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -450,7 +455,7 @@
       "explanationId": "nmf.openerRaiseNmfMinorFrom1h",
       "meaningId": "nmf:opener-raise-nmf-minor-from-1h",
       "templateKey": "nmf.openerRaiseNmfMinorFrom1h.semantic",
-      "displayText": "3\u2663: raise NMF minor with 4-card support (priority 4)",
+      "displayText": "3♣: raise NMF minor with 4-card support (priority 4)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -460,7 +465,7 @@
       "explanationId": "nmf.openerRebidHeartsFrom1h",
       "meaningId": "nmf:opener-rebid-hearts-from-1h",
       "templateKey": "nmf.openerRebidHeartsFrom1h.semantic",
-      "displayText": "2\u2665: rebid own 6+ hearts (priority 5)",
+      "displayText": "2♥: rebid own 6+ hearts (priority 5)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -474,7 +479,7 @@
       "explanationId": "nmfOpenerRebidDiamondsMinAfterHearts",
       "meaningId": "nmf:opener-rebid-diamonds-min-after-hearts",
       "templateKey": "nmfOpenerRebidDiamondsMinAfterHearts.semantic",
-      "displayText": "2\u2666 rebid own diamonds \u2014 Minimum 12-13 HCP with 5+ diamonds and no major feature to show"
+      "displayText": "2♦ rebid own diamonds — Minimum 12-13 HCP with 5+ diamonds and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -484,7 +489,7 @@
       "explanationId": "nmfOpenerJumpClubsMaxAfterHearts",
       "meaningId": "nmf:opener-jump-clubs-max-after-hearts",
       "templateKey": "nmfOpenerJumpClubsMaxAfterHearts.semantic",
-      "displayText": "3\u2663 jump in clubs \u2014 Maximum 14 HCP with extra clubs length and no major feature to show"
+      "displayText": "3♣ jump in clubs — Maximum 14 HCP with extra clubs length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -494,7 +499,7 @@
       "explanationId": "nmfOpenerJumpDiamondsMaxAfterHearts",
       "meaningId": "nmf:opener-jump-diamonds-max-after-hearts",
       "templateKey": "nmfOpenerJumpDiamondsMaxAfterHearts.semantic",
-      "displayText": "3\u2666 jump rebid diamonds \u2014 Maximum 14 HCP with extra diamonds length and no major feature to show"
+      "displayText": "3♦ jump rebid diamonds — Maximum 14 HCP with extra diamonds length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -504,7 +509,7 @@
       "explanationId": "nmfOpenerJumpClubsOwnMaxAfterHearts",
       "meaningId": "nmf:opener-jump-clubs-own-max-after-hearts",
       "templateKey": "nmfOpenerJumpClubsOwnMaxAfterHearts.semantic",
-      "displayText": "3\u2663 jump rebid clubs \u2014 Maximum 14 HCP with extra clubs length and no major feature to show"
+      "displayText": "3♣ jump rebid clubs — Maximum 14 HCP with extra clubs length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -514,7 +519,7 @@
       "explanationId": "nmfOpenerRebidDiamondsMinAfterSpades",
       "meaningId": "nmf:opener-rebid-diamonds-min-after-spades",
       "templateKey": "nmfOpenerRebidDiamondsMinAfterSpades.semantic",
-      "displayText": "2\u2666 rebid own diamonds \u2014 Minimum 12-13 HCP with 5+ diamonds and no major feature to show"
+      "displayText": "2♦ rebid own diamonds — Minimum 12-13 HCP with 5+ diamonds and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -524,7 +529,7 @@
       "explanationId": "nmfOpenerJumpClubsMaxAfterSpades",
       "meaningId": "nmf:opener-jump-clubs-max-after-spades",
       "templateKey": "nmfOpenerJumpClubsMaxAfterSpades.semantic",
-      "displayText": "3\u2663 jump in clubs \u2014 Maximum 14 HCP with extra clubs length and no major feature to show"
+      "displayText": "3♣ jump in clubs — Maximum 14 HCP with extra clubs length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -534,7 +539,7 @@
       "explanationId": "nmfOpenerJumpDiamondsMaxAfterSpades",
       "meaningId": "nmf:opener-jump-diamonds-max-after-spades",
       "templateKey": "nmfOpenerJumpDiamondsMaxAfterSpades.semantic",
-      "displayText": "3\u2666 jump rebid diamonds \u2014 Maximum 14 HCP with extra diamonds length and no major feature to show"
+      "displayText": "3♦ jump rebid diamonds — Maximum 14 HCP with extra diamonds length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -544,7 +549,7 @@
       "explanationId": "nmfOpenerJumpClubsOwnMaxAfterSpades",
       "meaningId": "nmf:opener-jump-clubs-own-max-after-spades",
       "templateKey": "nmfOpenerJumpClubsOwnMaxAfterSpades.semantic",
-      "displayText": "3\u2663 jump rebid clubs \u2014 Maximum 14 HCP with extra clubs length and no major feature to show"
+      "displayText": "3♣ jump rebid clubs — Maximum 14 HCP with extra clubs length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -554,7 +559,7 @@
       "explanationId": "nmfResponderGameHeartsAfterSupportMin",
       "meaningId": "nmf:responder-game-hearts-after-support-min",
       "templateKey": "nmfResponderGameHeartsAfterSupportMin.semantic",
-      "displayText": "4\u2665 game \u2014 Game values with an uncovered hearts fit \u2014 bid game"
+      "displayText": "4♥ game — Game values with an uncovered hearts fit — bid game"
     },
     {
       "preferredLevel": "semantic",
@@ -564,7 +569,7 @@
       "explanationId": "nmfResponderInviteHeartsAfterSupportMin",
       "meaningId": "nmf:responder-invite-hearts-after-support-min",
       "templateKey": "nmfResponderInviteHeartsAfterSupportMin.semantic",
-      "displayText": "3\u2665 invite \u2014 Invitational 10-11 HCP with an uncovered hearts fit \u2014 invite game"
+      "displayText": "3♥ invite — Invitational 10-11 HCP with an uncovered hearts fit — invite game"
     },
     {
       "preferredLevel": "semantic",
@@ -574,7 +579,7 @@
       "explanationId": "nmfResponderGameHeartsAfterSupportMax",
       "meaningId": "nmf:responder-game-hearts-after-support-max",
       "templateKey": "nmfResponderGameHeartsAfterSupportMax.semantic",
-      "displayText": "4\u2665 game after acceptance \u2014 Opener has accepted the invitation; bid game in hearts"
+      "displayText": "4♥ game after acceptance — Opener has accepted the invitation; bid game in hearts"
     },
     {
       "preferredLevel": "semantic",
@@ -584,7 +589,7 @@
       "explanationId": "nmfResponderGameSpadesAfterSupportMin",
       "meaningId": "nmf:responder-game-spades-after-support-min",
       "templateKey": "nmfResponderGameSpadesAfterSupportMin.semantic",
-      "displayText": "4\u2660 game \u2014 Game values with an uncovered spades fit \u2014 bid game"
+      "displayText": "4♠ game — Game values with an uncovered spades fit — bid game"
     },
     {
       "preferredLevel": "semantic",
@@ -594,7 +599,7 @@
       "explanationId": "nmfResponderInviteSpadesAfterSupportMin",
       "meaningId": "nmf:responder-invite-spades-after-support-min",
       "templateKey": "nmfResponderInviteSpadesAfterSupportMin.semantic",
-      "displayText": "3\u2660 invite \u2014 Invitational 10-11 HCP with an uncovered spades fit \u2014 invite game"
+      "displayText": "3♠ invite — Invitational 10-11 HCP with an uncovered spades fit — invite game"
     },
     {
       "preferredLevel": "semantic",
@@ -604,7 +609,7 @@
       "explanationId": "nmfResponderGameSpadesAfterSupportMax",
       "meaningId": "nmf:responder-game-spades-after-support-max",
       "templateKey": "nmfResponderGameSpadesAfterSupportMax.semantic",
-      "displayText": "4\u2660 game after acceptance \u2014 Opener has accepted the invitation; bid game in spades"
+      "displayText": "4♠ game after acceptance — Opener has accepted the invitation; bid game in spades"
     },
     {
       "preferredLevel": "semantic",
@@ -614,7 +619,7 @@
       "explanationId": "nmfResponderGameSpadesAfterSupportMinFrom1h",
       "meaningId": "nmf:responder-game-spades-after-support-min-from-1h",
       "templateKey": "nmfResponderGameSpadesAfterSupportMinFrom1h.semantic",
-      "displayText": "4\u2660 game \u2014 Game values with an uncovered spades fit \u2014 bid game"
+      "displayText": "4♠ game — Game values with an uncovered spades fit — bid game"
     },
     {
       "preferredLevel": "semantic",
@@ -624,7 +629,7 @@
       "explanationId": "nmfResponderInviteSpadesAfterSupportMinFrom1h",
       "meaningId": "nmf:responder-invite-spades-after-support-min-from-1h",
       "templateKey": "nmfResponderInviteSpadesAfterSupportMinFrom1h.semantic",
-      "displayText": "3\u2660 invite \u2014 Invitational 10-11 HCP with an uncovered spades fit \u2014 invite game"
+      "displayText": "3♠ invite — Invitational 10-11 HCP with an uncovered spades fit — invite game"
     },
     {
       "preferredLevel": "semantic",
@@ -634,7 +639,7 @@
       "explanationId": "nmfResponderGameSpadesAfterSupportMaxFrom1h",
       "meaningId": "nmf:responder-game-spades-after-support-max-from-1h",
       "templateKey": "nmfResponderGameSpadesAfterSupportMaxFrom1h.semantic",
-      "displayText": "4\u2660 game after acceptance \u2014 Opener has accepted the invitation; bid game in spades"
+      "displayText": "4♠ game after acceptance — Opener has accepted the invitation; bid game in spades"
     },
     {
       "preferredLevel": "semantic",
@@ -644,7 +649,7 @@
       "explanationId": "nmfResponderGameHeartsAfterOtherMajor",
       "meaningId": "nmf:responder-game-hearts-after-other-major",
       "templateKey": "nmfResponderGameHeartsAfterOtherMajor.semantic",
-      "displayText": "4\u2665 game \u2014 Game values with an uncovered hearts fit \u2014 bid game"
+      "displayText": "4♥ game — Game values with an uncovered hearts fit — bid game"
     },
     {
       "preferredLevel": "semantic",
@@ -654,7 +659,7 @@
       "explanationId": "nmfResponderInviteHeartsAfterOtherMajor",
       "meaningId": "nmf:responder-invite-hearts-after-other-major",
       "templateKey": "nmfResponderInviteHeartsAfterOtherMajor.semantic",
-      "displayText": "3\u2665 invite \u2014 Invitational 10-11 HCP with an uncovered hearts fit \u2014 invite game"
+      "displayText": "3♥ invite — Invitational 10-11 HCP with an uncovered hearts fit — invite game"
     },
     {
       "preferredLevel": "semantic",
@@ -664,7 +669,7 @@
       "explanationId": "nmfResponder3ntAfterHeartsOtherMajorNoFit",
       "meaningId": "nmf:responder-3nt-after-hearts-other-major-no-fit",
       "templateKey": "nmfResponder3ntAfterHeartsOtherMajorNoFit.semantic",
-      "displayText": "3NT game \u2014 Game values and no hearts fit \u2014 place the contract in 3NT"
+      "displayText": "3NT game — Game values and no hearts fit — place the contract in 3NT"
     },
     {
       "preferredLevel": "semantic",
@@ -674,7 +679,7 @@
       "explanationId": "nmfResponder2ntAfterHeartsOtherMajorNoFit",
       "meaningId": "nmf:responder-2nt-after-hearts-other-major-no-fit",
       "templateKey": "nmfResponder2ntAfterHeartsOtherMajorNoFit.semantic",
-      "displayText": "2NT invite \u2014 Invitational 10-11 HCP without a major fit \u2014 invite in notrump"
+      "displayText": "2NT invite — Invitational 10-11 HCP without a major fit — invite in notrump"
     },
     {
       "preferredLevel": "semantic",
@@ -684,7 +689,7 @@
       "explanationId": "nmfResponderGameSpadesAfterOtherMajor",
       "meaningId": "nmf:responder-game-spades-after-other-major",
       "templateKey": "nmfResponderGameSpadesAfterOtherMajor.semantic",
-      "displayText": "4\u2660 game \u2014 Game values with an uncovered spades fit \u2014 bid game"
+      "displayText": "4♠ game — Game values with an uncovered spades fit — bid game"
     },
     {
       "preferredLevel": "semantic",
@@ -694,7 +699,7 @@
       "explanationId": "nmfResponderInviteSpadesAfterOtherMajor",
       "meaningId": "nmf:responder-invite-spades-after-other-major",
       "templateKey": "nmfResponderInviteSpadesAfterOtherMajor.semantic",
-      "displayText": "3\u2660 invite \u2014 Invitational 10-11 HCP with an uncovered spades fit \u2014 invite game"
+      "displayText": "3♠ invite — Invitational 10-11 HCP with an uncovered spades fit — invite game"
     },
     {
       "preferredLevel": "semantic",
@@ -704,7 +709,7 @@
       "explanationId": "nmfResponder3ntAfterSpadesOtherMajorNoFit",
       "meaningId": "nmf:responder-3nt-after-spades-other-major-no-fit",
       "templateKey": "nmfResponder3ntAfterSpadesOtherMajorNoFit.semantic",
-      "displayText": "3NT game \u2014 Game values and no spades fit \u2014 place the contract in 3NT"
+      "displayText": "3NT game — Game values and no spades fit — place the contract in 3NT"
     },
     {
       "preferredLevel": "semantic",
@@ -714,7 +719,7 @@
       "explanationId": "nmfResponder2ntAfterSpadesOtherMajorNoFit",
       "meaningId": "nmf:responder-2nt-after-spades-other-major-no-fit",
       "templateKey": "nmfResponder2ntAfterSpadesOtherMajorNoFit.semantic",
-      "displayText": "2NT invite \u2014 Invitational 10-11 HCP without a major fit \u2014 invite in notrump"
+      "displayText": "2NT invite — Invitational 10-11 HCP without a major fit — invite in notrump"
     },
     {
       "preferredLevel": "semantic",
@@ -724,7 +729,7 @@
       "explanationId": "nmfResponder3ntOver2ntMin",
       "meaningId": "nmf:responder-3nt-over-2nt-min",
       "templateKey": "nmfResponder3ntOver2ntMin.semantic",
-      "displayText": "3NT game \u2014 Game values and no major fit \u2014 place the contract in 3NT"
+      "displayText": "3NT game — Game values and no major fit — place the contract in 3NT"
     },
     {
       "preferredLevel": "semantic",
@@ -734,7 +739,7 @@
       "explanationId": "nmfResponderPassOver2ntMin",
       "meaningId": "nmf:responder-pass-over-2nt-min",
       "templateKey": "nmfResponderPassOver2ntMin.semantic",
-      "displayText": "Pass \u2014 Invitational 10-11 HCP: opener showed a minimum 2NT, so stop there"
+      "displayText": "Pass — Invitational 10-11 HCP: opener showed a minimum 2NT, so stop there"
     },
     {
       "preferredLevel": "semantic",
@@ -744,7 +749,7 @@
       "explanationId": "nmfResponderPassOver3ntMax",
       "meaningId": "nmf:responder-pass-over-3nt-max",
       "templateKey": "nmfResponderPassOver3ntMax.semantic",
-      "displayText": "Pass \u2014 Opener accepted the invitation by bidding 3NT; pass"
+      "displayText": "Pass — Opener accepted the invitation by bidding 3NT; pass"
     },
     {
       "preferredLevel": "semantic",
@@ -754,7 +759,7 @@
       "explanationId": "nmfResponder3ntOver2ntMinFrom1h",
       "meaningId": "nmf:responder-3nt-over-2nt-min-from-1h",
       "templateKey": "nmfResponder3ntOver2ntMinFrom1h.semantic",
-      "displayText": "3NT game \u2014 Game values and no major fit \u2014 place the contract in 3NT"
+      "displayText": "3NT game — Game values and no major fit — place the contract in 3NT"
     },
     {
       "preferredLevel": "semantic",
@@ -764,7 +769,7 @@
       "explanationId": "nmfResponderPassOver2ntMinFrom1h",
       "meaningId": "nmf:responder-pass-over-2nt-min-from-1h",
       "templateKey": "nmfResponderPassOver2ntMinFrom1h.semantic",
-      "displayText": "Pass \u2014 Invitational 10-11 HCP: opener showed a minimum 2NT, so stop there"
+      "displayText": "Pass — Invitational 10-11 HCP: opener showed a minimum 2NT, so stop there"
     },
     {
       "preferredLevel": "semantic",
@@ -774,7 +779,7 @@
       "explanationId": "nmfResponderPassOver3ntMaxFrom1h",
       "meaningId": "nmf:responder-pass-over-3nt-max-from-1h",
       "templateKey": "nmfResponderPassOver3ntMaxFrom1h.semantic",
-      "displayText": "Pass \u2014 Opener accepted the invitation by bidding 3NT; pass"
+      "displayText": "Pass — Opener accepted the invitation by bidding 3NT; pass"
     },
     {
       "preferredLevel": "semantic",
@@ -784,7 +789,7 @@
       "explanationId": "nmfResponder3ntOver2dMinorMin",
       "meaningId": "nmf:responder-3nt-over-2d-minor-min",
       "templateKey": "nmfResponder3ntOver2dMinorMin.semantic",
-      "displayText": "3NT game \u2014 Game values and no major fit \u2014 place the contract in 3NT"
+      "displayText": "3NT game — Game values and no major fit — place the contract in 3NT"
     },
     {
       "preferredLevel": "semantic",
@@ -794,7 +799,7 @@
       "explanationId": "nmfResponder2ntOver2dMinorMin",
       "meaningId": "nmf:responder-2nt-over-2d-minor-min",
       "templateKey": "nmfResponder2ntOver2dMinorMin.semantic",
-      "displayText": "2NT invite \u2014 Invitational 10-11 HCP without a major fit \u2014 invite in notrump"
+      "displayText": "2NT invite — Invitational 10-11 HCP without a major fit — invite in notrump"
     },
     {
       "preferredLevel": "semantic",
@@ -804,7 +809,7 @@
       "explanationId": "nmfResponder3ntOver3cMinorMax",
       "meaningId": "nmf:responder-3nt-over-3c-minor-max",
       "templateKey": "nmfResponder3ntOver3cMinorMax.semantic",
-      "displayText": "3NT game \u2014 Opener showed extras; place the contract in 3NT with opener's extra minor length"
+      "displayText": "3NT game — Opener showed extras; place the contract in 3NT with opener's extra minor length"
     },
     {
       "preferredLevel": "semantic",
@@ -814,7 +819,7 @@
       "explanationId": "nmfResponder3ntOver3dMinorMax",
       "meaningId": "nmf:responder-3nt-over-3d-minor-max",
       "templateKey": "nmfResponder3ntOver3dMinorMax.semantic",
-      "displayText": "3NT game \u2014 Opener showed extras; place the contract in 3NT with opener's extra minor length"
+      "displayText": "3NT game — Opener showed extras; place the contract in 3NT with opener's extra minor length"
     },
     {
       "preferredLevel": "semantic",
@@ -824,7 +829,7 @@
       "explanationId": "nmfResponder3ntOver2hOwnSuitFrom1h",
       "meaningId": "nmf:responder-3nt-over-2h-own-suit-from-1h",
       "templateKey": "nmfResponder3ntOver2hOwnSuitFrom1h.semantic",
-      "displayText": "3NT game \u2014 Game values and no spade fit \u2014 place the contract in 3NT"
+      "displayText": "3NT game — Game values and no spade fit — place the contract in 3NT"
     },
     {
       "preferredLevel": "semantic",
@@ -834,7 +839,7 @@
       "explanationId": "nmfResponder2ntOver2hOwnSuitFrom1h",
       "meaningId": "nmf:responder-2nt-over-2h-own-suit-from-1h",
       "templateKey": "nmfResponder2ntOver2hOwnSuitFrom1h.semantic",
-      "displayText": "2NT invite \u2014 Invitational 10-11 HCP without a major fit \u2014 invite in notrump"
+      "displayText": "2NT invite — Invitational 10-11 HCP without a major fit — invite in notrump"
     },
     {
       "preferredLevel": "semantic",
@@ -844,7 +849,7 @@
       "explanationId": "nmfResponder3ntOver3cMinorFrom1h",
       "meaningId": "nmf:responder-3nt-over-3c-minor-from-1h",
       "templateKey": "nmfResponder3ntOver3cMinorFrom1h.semantic",
-      "displayText": "3NT game \u2014 Opener showed extras; place the contract in 3NT with opener's club length"
+      "displayText": "3NT game — Opener showed extras; place the contract in 3NT with opener's club length"
     }
   ],
   "local": {
@@ -1662,7 +1667,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "New Minor Forcing 2D",
-            "summary": "Artificial checkback \u2014 asks opener to further describe their hand"
+            "summary": "Artificial checkback — asks opener to further describe their hand"
           }
         }
       ],
@@ -1714,7 +1719,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "New Minor Forcing 2C",
-            "summary": "Artificial checkback \u2014 asks opener to further describe their hand"
+            "summary": "Artificial checkback — asks opener to further describe their hand"
           }
         }
       ],
@@ -1777,7 +1782,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Sign off in 2H",
-            "summary": "Weak hand with 5+ hearts \u2014 sign off at the 2-level"
+            "summary": "Weak hand with 5+ hearts — sign off at the 2-level"
           }
         },
         {
@@ -1831,7 +1836,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Sign off in 2S",
-            "summary": "Weak hand with 5+ spades \u2014 sign off at the 2-level"
+            "summary": "Weak hand with 5+ spades — sign off at the 2-level"
           }
         },
         {
@@ -1875,7 +1880,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT invite",
-            "summary": "Invitational balanced \u2014 no major fit preference"
+            "summary": "Invitational balanced — no major fit preference"
           }
         },
         {
@@ -1911,7 +1916,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3NT game",
-            "summary": "Game values with no major fit \u2014 place the contract in 3NT"
+            "summary": "Game values with no major fit — place the contract in 3NT"
           }
         },
         {
@@ -1953,7 +1958,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass",
-            "summary": "Weak hand () with no 5-card major \u2014 play in 1NT"
+            "summary": "Weak hand () with no 5-card major — play in 1NT"
           }
         }
       ],
@@ -2077,7 +2082,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Jump raise hearts (max)",
-            "summary": "Maximum hand () with 3-card heart support \u2014 jump to 3H"
+            "summary": "Maximum hand () with 3-card heart support — jump to 3H"
           }
         },
         {
@@ -2139,7 +2144,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Show 4 spades (min)",
-            "summary": "Minimum hand, no heart support but 4+ spades \u2014 show the other major"
+            "summary": "Minimum hand, no heart support but 4+ spades — show the other major"
           }
         },
         {
@@ -2367,7 +2372,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Jump raise spades (max)",
-            "summary": "Maximum hand () with 3-card spade support \u2014 jump to 3S"
+            "summary": "Maximum hand () with 3-card spade support — jump to 3S"
           }
         },
         {
@@ -2429,7 +2434,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Show 4 hearts (min)",
-            "summary": "Minimum hand, no spade support but 4+ hearts \u2014 show the other major"
+            "summary": "Minimum hand, no spade support but 4+ hearts — show the other major"
           }
         },
         {
@@ -2658,7 +2663,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1NT rebid",
-            "summary": "Minimum (12-14) balanced rebid, no 4-card spade support, exactly 5 hearts (6+ would rebid 2\u2665)"
+            "summary": "Minimum (12-14) balanced rebid, no 4-card spade support, exactly 5 hearts (6+ would rebid 2♥)"
           }
         }
       ],
@@ -2702,7 +2707,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "NMF 2\u2663",
+            "name": "NMF 2♣",
             "summary": "Artificial invite+; asks opener to further describe (3-card spade support, hearts, or notrump)"
           }
         },
@@ -2756,7 +2761,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2\u2666 natural",
+            "name": "2♦ natural",
             "summary": "Natural weak signoff showing 5+ diamonds"
           }
         }
@@ -3032,7 +3037,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2663 raise NMF minor",
+            "name": "3♣ raise NMF minor",
             "summary": "Priority 4: raise the NMF minor with 4-card support, concentrated values, and"
           }
         },
@@ -3079,7 +3084,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2\u2665 rebid own suit",
+            "name": "2♥ rebid own suit",
             "summary": "Priority 5 (last resort): rebid the opened major with 5+ hearts when no spade support, no NT stopper, and no 4-card NMF-minor raise is available"
           }
         }
@@ -3180,7 +3185,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2\u2666 rebid own diamonds",
+            "name": "2♦ rebid own diamonds",
             "summary": "Minimum with 5+ diamonds and no major feature to show"
           }
         },
@@ -3243,7 +3248,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2663 jump in clubs",
+            "name": "3♣ jump in clubs",
             "summary": "Maximum with extra clubs length and no major feature to show"
           }
         },
@@ -3314,7 +3319,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2666 jump rebid diamonds",
+            "name": "3♦ jump rebid diamonds",
             "summary": "Maximum with extra diamonds length and no major feature to show"
           }
         }
@@ -3415,7 +3420,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2663 jump rebid clubs",
+            "name": "3♣ jump rebid clubs",
             "summary": "Maximum with extra clubs length and no major feature to show"
           }
         }
@@ -3516,7 +3521,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2\u2666 rebid own diamonds",
+            "name": "2♦ rebid own diamonds",
             "summary": "Minimum with 5+ diamonds and no major feature to show"
           }
         },
@@ -3579,7 +3584,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2663 jump in clubs",
+            "name": "3♣ jump in clubs",
             "summary": "Maximum with extra clubs length and no major feature to show"
           }
         },
@@ -3650,7 +3655,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2666 jump rebid diamonds",
+            "name": "3♦ jump rebid diamonds",
             "summary": "Maximum with extra diamonds length and no major feature to show"
           }
         }
@@ -3751,7 +3756,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2663 jump rebid clubs",
+            "name": "3♣ jump rebid clubs",
             "summary": "Maximum with extra clubs length and no major feature to show"
           }
         }
@@ -3815,8 +3820,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4\u2665 game",
-            "summary": "Game values with an uncovered hearts fit \u2014 bid game"
+            "name": "4♥ game",
+            "summary": "Game values with an uncovered hearts fit — bid game"
           }
         },
         {
@@ -3869,8 +3874,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2665 invite",
-            "summary": "Invitational with an uncovered hearts fit \u2014 invite game"
+            "name": "3♥ invite",
+            "summary": "Invitational with an uncovered hearts fit — invite game"
           }
         }
       ],
@@ -3947,7 +3952,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4\u2665 game after acceptance",
+            "name": "4♥ game after acceptance",
             "summary": "Opener has accepted the invitation; bid game in hearts"
           }
         }
@@ -4011,8 +4016,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4\u2660 game",
-            "summary": "Game values with an uncovered spades fit \u2014 bid game"
+            "name": "4♠ game",
+            "summary": "Game values with an uncovered spades fit — bid game"
           }
         },
         {
@@ -4065,8 +4070,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2660 invite",
-            "summary": "Invitational with an uncovered spades fit \u2014 invite game"
+            "name": "3♠ invite",
+            "summary": "Invitational with an uncovered spades fit — invite game"
           }
         }
       ],
@@ -4143,7 +4148,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4\u2660 game after acceptance",
+            "name": "4♠ game after acceptance",
             "summary": "Opener has accepted the invitation; bid game in spades"
           }
         }
@@ -4207,8 +4212,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4\u2660 game",
-            "summary": "Game values with an uncovered spades fit \u2014 bid game"
+            "name": "4♠ game",
+            "summary": "Game values with an uncovered spades fit — bid game"
           }
         },
         {
@@ -4261,8 +4266,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2660 invite",
-            "summary": "Invitational with an uncovered spades fit \u2014 invite game"
+            "name": "3♠ invite",
+            "summary": "Invitational with an uncovered spades fit — invite game"
           }
         }
       ],
@@ -4325,7 +4330,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4\u2660 game after acceptance",
+            "name": "4♠ game after acceptance",
             "summary": "Opener has accepted the invitation; bid game in spades"
           }
         }
@@ -4404,8 +4409,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4\u2665 game",
-            "summary": "Game values with an uncovered hearts fit \u2014 bid game"
+            "name": "4♥ game",
+            "summary": "Game values with an uncovered hearts fit — bid game"
           }
         },
         {
@@ -4458,8 +4463,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2665 invite",
-            "summary": "Invitational with an uncovered hearts fit \u2014 invite game"
+            "name": "3♥ invite",
+            "summary": "Invitational with an uncovered hearts fit — invite game"
           }
         },
         {
@@ -4495,7 +4500,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3NT game",
-            "summary": "Game values and no hearts fit \u2014 place the contract in 3NT"
+            "summary": "Game values and no hearts fit — place the contract in 3NT"
           }
         },
         {
@@ -4547,7 +4552,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT invite",
-            "summary": "Invitational without a major fit \u2014 invite in notrump"
+            "summary": "Invitational without a major fit — invite in notrump"
           }
         }
       ],
@@ -4625,8 +4630,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4\u2660 game",
-            "summary": "Game values with an uncovered spades fit \u2014 bid game"
+            "name": "4♠ game",
+            "summary": "Game values with an uncovered spades fit — bid game"
           }
         },
         {
@@ -4679,8 +4684,8 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3\u2660 invite",
-            "summary": "Invitational with an uncovered spades fit \u2014 invite game"
+            "name": "3♠ invite",
+            "summary": "Invitational with an uncovered spades fit — invite game"
           }
         },
         {
@@ -4716,7 +4721,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3NT game",
-            "summary": "Game values and no spades fit \u2014 place the contract in 3NT"
+            "summary": "Game values and no spades fit — place the contract in 3NT"
           }
         },
         {
@@ -4768,7 +4773,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT invite",
-            "summary": "Invitational without a major fit \u2014 invite in notrump"
+            "summary": "Invitational without a major fit — invite in notrump"
           }
         }
       ],
@@ -4822,7 +4827,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3NT game",
-            "summary": "Game values and no major fit \u2014 place the contract in 3NT"
+            "summary": "Game values and no major fit — place the contract in 3NT"
           }
         },
         {
@@ -4971,7 +4976,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3NT game",
-            "summary": "Game values and no major fit \u2014 place the contract in 3NT"
+            "summary": "Game values and no major fit — place the contract in 3NT"
           }
         },
         {
@@ -5121,7 +5126,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3NT game",
-            "summary": "Game values and no major fit \u2014 place the contract in 3NT"
+            "summary": "Game values and no major fit — place the contract in 3NT"
           }
         },
         {
@@ -5165,7 +5170,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT invite",
-            "summary": "Invitational without a major fit \u2014 invite in notrump"
+            "summary": "Invitational without a major fit — invite in notrump"
           }
         }
       ],
@@ -5330,7 +5335,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3NT game",
-            "summary": "Game values and no spade fit \u2014 place the contract in 3NT"
+            "summary": "Game values and no spade fit — place the contract in 3NT"
           }
         },
         {
@@ -5374,7 +5379,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "2NT invite",
-            "summary": "Invitational without a major fit \u2014 invite in notrump"
+            "summary": "Invitational without a major fit — invite in notrump"
           }
         }
       ],
@@ -5441,7 +5446,7 @@
     "summaryCard": {
       "trigger": "After opener rebids one notrump, responder checks back with the unbid minor to clarify major fits or strength.",
       "definingMeaningId": "nmf:ask-after-1c",
-      "partnership": "The new minor is whichever minor responder has not bid. This fixture covers the standard minor-opening structure and a common one-heart extension. Some partnerships treat it as invitational-or-better by default; others play strictly game-forcing or a two-way style that splits invitational and game-forcing across the two minors \u2014 confirm the agreement. The summary card shows the one-club branch."
+      "partnership": "The new minor is whichever minor responder has not bid. This fixture covers the standard minor-opening structure and a common one-heart extension. Some partnerships treat it as invitational-or-better by default; others play strictly game-forcing or a two-way style that splits invitational and game-forcing across the two minors — confirm the agreement. The summary card shows the one-club branch."
     },
     "whenToUse": [
       {
@@ -5750,7 +5755,7 @@
     ],
     "interference": {
       "status": "notApplicable",
-      "reason": "Opponent interference over 2\u2663/2\u2666 checkback is a partnership agreement \u2014 systems-on or penalty double; not covered here."
+      "reason": "Opponent interference over 2♣/2♦ checkback is a partnership agreement — systems-on or penalty double; not covered here."
     },
     "quickReference": {
       "kind": "list",
@@ -5801,9 +5806,9 @@
       "purpose": "After opener rebids 1NT (showing 12-14 balanced), use the unbid minor as an artificial forcing bid to find a 3-card major fit or determine the right game contract.",
       "whenToUse": "After the auction 1m - 1M - 1NT, bid 2D (if opened 1C) or 2C (if opened 1D) with 10+ HCP to ask opener for more information. Many partnerships also extend the idea after 1H - 1S - 1NT, using an unbid minor as the same checkback.",
       "whenNotToUse": [
-        "With a weak hand (6-9 HCP) \u2014 sign off in 2M or pass 1NT instead",
-        "When you already know the right contract \u2014 bid game directly",
-        "After interference \u2014 NMF does not apply when opponents have bid"
+        "With a weak hand (6-9 HCP) — sign off in 2M or pass 1NT instead",
+        "When you already know the right contract — bid game directly",
+        "After interference — NMF does not apply when opponents have bid"
       ],
       "tradeoff": "The unbid minor loses its natural meaning after opener's 1NT rebid in exchange for a forcing checkback mechanism.",
       "principle": "After a 1NT rebid, responder may need more information to choose between partscore, invite, and game. NMF provides a one-round force that asks opener to show 3-card major support, the other major, or notrump range.",

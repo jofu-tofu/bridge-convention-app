@@ -41,6 +41,17 @@ crates/
                        `registry/module_registry.rs` replaces the coarse `after-neg-dbl` opener states
                        with route-specific states keyed to the exact opening + overcall sequence. Edit
                        that synthesis table when changing opener rebid behavior or legal rebid levels.
+                       **Module fixtures require `scopeNote` and a frozen authority snapshot:** every
+                       `fixtures/modules/*.json` must carry a top-level `scopeNote` (non-empty free
+                       text naming intentional out-of-scope behavior) plus
+                       `references.authority.snapshot = { text, fetchedAt }` where `text` is captured
+                       authority prose and `fetchedAt` is ISO-8601 `YYYY-MM-DD`. Both are required
+                       by `ConventionModule` serde and by
+                       `tests/structural_invariants.rs::{modules_declare_scope_note,
+                       modules_have_required_references}`. ConventionForge Verify uses the snapshot
+                       (not a live fetch) and respects `scopeNote` to avoid re-reporting deliberate
+                       exclusions. In-process `ConventionModule` test constructions (see
+                       `bridge-session/src/session/learning_viewport.rs`) must set both fields.
                        **Authored reference facts are now catalog-backed:** `types/fact_id.rs`
                        validates authored `FactId`s at deserialize time against the closed
                        `fact_catalog/` static. Quick-reference axes are now `SystemFactLadder` or

@@ -7,10 +7,15 @@
   "variantOf": "stayman",
   "description": "Bid 2C over 1NT as a weak escape: short-club Garbage Stayman passes 2D/2H/2S, while short-diamond Crawling Stayman rebids 2H so opener can pass or correct to 2S.",
   "purpose": "Use Stayman only as a weak escape after 1NT, either passing a playable 2D/2H/2S partscore with a short-club garbage hand or, with both majors and short diamonds, rebidding 2H so opener can choose the better major.",
+  "scopeNote": "Narrow 'pass or correct' / crawling Stayman only (the `1NT-2C-2D-2H` footnote path plus related weak Stayman-then-signoff sequences). Constructive Stayman, 3-level invitational raises, 4-level splinters, quantitative 4NT, and keycard follow-ups all live in the `stayman` and slam modules. Re-pinned to the Larry Cohen NT follow-ups footnote; the Bridgebum constructive-Stayman coverage is intentionally excluded.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/notrump-opening-bids-part-1-of-3-footnote-1",
-      "label": "Larry Cohen \u2014 Stayman Continuations / Garbage Stayman (bridge-articles/notrump-opening-bids-part-1-of-3-footnote-1)"
+      "label": "Larry Cohen — Stayman Continuations / Garbage Stayman (bridge-articles/notrump-opening-bids-part-1-of-3-footnote-1)",
+      "snapshot": {
+        "text": "# NOTRUMP OPENING BIDS -- PART 1 OF 3\n\nBy: Larry Cohen\n\n## NOTRUMP OPENING BIDS -- Part I -- Follow-ups to Stayman\n\nSpelled out here are most of the likely follow-ups to Stayman:\n\n**After 2♣ (Stayman):**\n\nOpener answers Stayman and responder's subsequent 2-level bids are not forcing:\n\n- 1N-2♣-2♦-2♥ is \"Garbage Stayman\" -- meaning that opener must pass or correct.\n- 1N-2♣-2♦-2♠ is a 5-card spade suit and an off-shape invitational hand (likely 5-4 in the majors).\n- 1N-2♣-2♥-2♠ is multi-purpose. It shows 4♠ and is presumed to be an invitational hand.\n- 1N-2♣-2any-2NT is invitational to 3NT and doesn't guarantee a 4-card major (because 1N-2N directly=♦)\n\nOpener answers Stayman and responder's subsequent 3+ level bids are:\n\n- 3♣/3♦=Weak--To Play--presumably with a major, or would have just transferred. (example: 1NT-2♣-2♥-3♣)\n- 3-of-a-major-raise: Invitational (example: 1NT-2♣-2♥-3♥)\n- 3-of-the-other-major: Artificial Slam-Interest Raise (example: 1NT-2♣-2♥-3♠=Heart raise, slam interest)\n- Jump to 3-of-a-major after 1NT-2♣-2♦: 5-4 in the majors, Game Forcing (but see Smolen)\n- 3NT: To play (with 4 cards in the other major) (example: 1NT-2♣-2♥-3NT) note: Opener bids hearts first with 4-4.\n\nOpener answers Stayman and responder's subsequent 4+ level bids are:\n\n- 4 of a new lower ranking suit: An unusual jump showing 0-1 in that suit and support for partner Splinter (example: 1NT-2♣-2♥-4♣)\n- 4NT: Quantitative (With at least one major) (example: 1NT-2♣-2♥-4NT)\n\n**Note:** This covers 90% of Stayman auctions. Very serious partnerships can delve deeper. If you want to ask for Keycards after Stayman, first bid 3-of-the-other major to set trump, then use RKC.\n\n**Note:** Yes, for experts who play as regular partners week after week, there are more sophisticated methods available.\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/garbage_stayman.php"
@@ -128,7 +133,7 @@
       "explanationId": "nt.stayman.garbagePassAfterHearts",
       "meaningId": "stayman:garbage-pass-after-hearts",
       "templateKey": "nt.stayman.garbagePassAfterHearts.semantic",
-      "displayText": "Pass opener's 2\u2665 \u2014 Garbage Stayman escape with a weak hand",
+      "displayText": "Pass opener's 2♥ — Garbage Stayman escape with a weak hand",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -138,7 +143,7 @@
       "explanationId": "nt.stayman.garbagePassAfterSpades",
       "meaningId": "stayman:garbage-pass-after-spades",
       "templateKey": "nt.stayman.garbagePassAfterSpades.semantic",
-      "displayText": "Pass opener's 2\u2660 \u2014 Garbage Stayman escape with a weak hand",
+      "displayText": "Pass opener's 2♠ — Garbage Stayman escape with a weak hand",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -148,7 +153,7 @@
       "explanationId": "nt.stayman.crawlingAfterDenial",
       "meaningId": "stayman:crawling-2h-after-denial",
       "templateKey": "nt.stayman.crawlingAfterDenial.semantic",
-      "displayText": "Bid 2\u2665 after 2\u2666 \u2014 Crawling Stayman asks opener to choose a major",
+      "displayText": "Bid 2♥ after 2♦ — Crawling Stayman asks opener to choose a major",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -158,7 +163,7 @@
       "explanationId": "nt.stayman.garbagePassAfterDenial",
       "meaningId": "stayman:garbage-pass-after-denial",
       "templateKey": "nt.stayman.garbagePassAfterDenial.semantic",
-      "displayText": "Pass opener's 2\u2666 denial \u2014 Garbage Stayman escape to diamonds with a weak hand",
+      "displayText": "Pass opener's 2♦ denial — Garbage Stayman escape to diamonds with a weak hand",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -168,7 +173,7 @@
       "explanationId": "nt.stayman.crawlingPassHearts",
       "meaningId": "stayman:crawling-pass-hearts",
       "templateKey": "nt.stayman.crawlingPassHearts.semantic",
-      "displayText": "Pass 2\u2665 as the default pass-or-correct resolution after Crawling Stayman",
+      "displayText": "Pass 2♥ as the default pass-or-correct resolution after Crawling Stayman",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -178,7 +183,7 @@
       "explanationId": "nt.stayman.crawlingCorrectSpades",
       "meaningId": "stayman:crawling-correct-spades",
       "templateKey": "nt.stayman.crawlingCorrectSpades.semantic",
-      "displayText": "Correct to 2\u2660 with three spades after Crawling Stayman",
+      "displayText": "Correct to 2♠ with three spades after Crawling Stayman",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -287,7 +292,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand (0\u20137 HCP)",
+              "description": "Weak hand (0–7 HCP)",
               "rationale": "Garbage Stayman is a weak escape only.",
               "isPublic": true
             },
@@ -314,7 +319,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "Garbage Stayman 2\u2663",
+            "name": "Garbage Stayman 2♣",
             "summary": "Escape 1NT with one of the published weak shapes: either a short-club garbage hand or a short-diamond crawl hand with both majors."
           }
         }
@@ -446,7 +451,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "Deny major (2\u2666)",
+            "name": "Deny major (2♦)",
             "summary": "Deny holding a 4-card major in response to Stayman"
           }
         }
@@ -474,7 +479,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand (0\u20137 HCP)",
+              "description": "Weak hand (0–7 HCP)",
               "rationale": "Garbage Stayman: pass any response with a weak hand",
               "isPublic": true
             },
@@ -484,7 +489,7 @@
               "value": true,
               "clauseId": "module.stayman.eligible:boolean:true",
               "description": "Published Garbage or Crawling Stayman shape",
-              "rationale": "Both the short-club garbage hands and the short-diamond crawling hands pass a direct 2\u2665 reply.",
+              "rationale": "Both the short-club garbage hands and the short-diamond crawling hands pass a direct 2♥ reply.",
               "isPublic": true
             }
           ],
@@ -502,7 +507,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (Garbage Stayman)",
-            "summary": "Pass opener's 2\u2665 response and take the cheapest safe major partscore."
+            "summary": "Pass opener's 2♥ response and take the cheapest safe major partscore."
           }
         }
       ],
@@ -529,7 +534,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand (0\u20137 HCP)",
+              "description": "Weak hand (0–7 HCP)",
               "rationale": "Garbage Stayman: pass any response with a weak hand",
               "isPublic": true
             },
@@ -539,7 +544,7 @@
               "value": true,
               "clauseId": "module.stayman.eligible:boolean:true",
               "description": "Published Garbage or Crawling Stayman shape",
-              "rationale": "Both the short-club garbage hands and the short-diamond crawling hands pass a direct 2\u2660 reply.",
+              "rationale": "Both the short-club garbage hands and the short-diamond crawling hands pass a direct 2♠ reply.",
               "isPublic": true
             }
           ],
@@ -557,7 +562,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (Garbage Stayman)",
-            "summary": "Pass opener's 2\u2660 response and take the cheapest safe major partscore."
+            "summary": "Pass opener's 2♠ response and take the cheapest safe major partscore."
           }
         }
       ],
@@ -584,7 +589,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "system.responder.weakHand:boolean:true",
-              "description": "Weak hand (0\u20137 HCP)",
+              "description": "Weak hand (0–7 HCP)",
               "rationale": "Garbage Stayman: pass any response with a weak hand",
               "isPublic": true
             },
@@ -602,8 +607,8 @@
               "operator": "gte",
               "value": 4,
               "clauseId": "hand.suitLength.diamonds:gte:4",
-              "description": "4+ diamonds (safe escape to 2\u2666)",
-              "rationale": "Passing 2\u2666 needs a diamond length to make the contract playable",
+              "description": "4+ diamonds (safe escape to 2♦)",
+              "rationale": "Passing 2♦ needs a diamond length to make the contract playable",
               "isPublic": true
             }
           ],
@@ -621,7 +626,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass (Garbage Stayman)",
-            "summary": "Pass opener's 2\u2666 denial when diamonds are the safe escape suit."
+            "summary": "Pass opener's 2♦ denial when diamonds are the safe escape suit."
           }
         },
         {
@@ -641,7 +646,7 @@
               "operator": "lte",
               "value": 7,
               "clauseId": "hand.hcp:lte:7",
-              "description": "0\u20137 HCP (weak hand)",
+              "description": "0–7 HCP (weak hand)",
               "rationale": "Crawling Stayman is still part of the garbage escape treatment",
               "isPublic": true
             },
@@ -651,7 +656,7 @@
               "value": 4,
               "clauseId": "hand.suitLength.hearts:eq:4",
               "description": "Exactly 4 hearts",
-              "rationale": "Opener may pass 2\u2665 as the chosen major",
+              "rationale": "Opener may pass 2♥ as the chosen major",
               "isPublic": true
             },
             {
@@ -660,7 +665,7 @@
               "value": 4,
               "clauseId": "hand.suitLength.spades:eq:4",
               "description": "Exactly 4 spades",
-              "rationale": "Opener may correct to 2\u2660 as the chosen major",
+              "rationale": "Opener may correct to 2♠ as the chosen major",
               "isPublic": true
             },
             {
@@ -678,7 +683,7 @@
               "value": 1,
               "clauseId": "hand.suitLength.diamonds:lte:1",
               "description": "At most 1 diamond",
-              "rationale": "Responder cannot safely pass opener's 2\u2666 denial",
+              "rationale": "Responder cannot safely pass opener's 2♦ denial",
               "isPublic": true
             }
           ],
@@ -696,8 +701,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Crawling Stayman 2\u2665",
-            "summary": "After 2\u2666, rebid 2\u2665 with a weak 4-4 in the majors and a short diamond so opener can pass hearts or correct to spades."
+            "name": "Crawling Stayman 2♥",
+            "summary": "After 2♦, rebid 2♥ with a weak 4-4 in the majors and a short diamond so opener can pass hearts or correct to spades."
           }
         }
       ],
@@ -735,8 +740,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Pass 2\u2665",
-            "summary": "Pass 2\u2665 as the default pass-or-correct resolution; the 2\u2660 correction branch is the more specific alternative."
+            "name": "Pass 2♥",
+            "summary": "Pass 2♥ as the default pass-or-correct resolution; the 2♠ correction branch is the more specific alternative."
           }
         },
         {
@@ -757,7 +762,7 @@
               "value": 3,
               "clauseId": "hand.suitLength.spades:gte:3",
               "description": "3+ spades",
-              "rationale": "After 1NT-2\u2663-2\u2666-2\u2665, opener corrects to 2\u2660 with three spades.",
+              "rationale": "After 1NT-2♣-2♦-2♥, opener corrects to 2♠ with three spades.",
               "isPublic": true
             },
             {
@@ -783,7 +788,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "Correct to 2\u2660",
+            "name": "Correct to 2♠",
             "summary": "Correct to spades when three spades make that major the better resting place."
           }
         }

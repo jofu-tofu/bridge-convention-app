@@ -1,15 +1,20 @@
 {
   "moduleId": "strong-2c",
-  "displayName": "Strong 2\u2663",
+  "displayName": "Strong 2♣",
   "category": "opening-bids",
   "defaultRole": "responder",
   "fixtureVersion": 1,
   "description": "Open 2C with a hand too strong for a one-level opening, then use waiting, positive-suit responses, and second-negative continuations to keep the auction organized.",
   "purpose": "Teach Larry-style strong 2C structure: responder waits with 2D unless holding 8+ HCP and a good 5+ suit, opener clarifies balanced versus natural shape, and the second-negative structure still lets the partnership stop below game when opener repeats the suit.",
+  "scopeNote": "Larry's 2C opening with `2D` waiting as the near-universal response, plus first-round forcing rebids and the cheapest-new-suit-at-3-level 'second negative'. Balanced `2NT` / `3NT` rebid split is authored as `22-24` vs `25-27` (not pinned by the authority). Unbalanced strong-2C qualifier uses a `9+` playing-trick heuristic as a best-effort proxy for Larry's judgement-based rule. Opener stop-short continuations after second negative, natural continuation that cancels the second negative, post-positive / post-2NT extended continuation trees, the 2NT-positive branch (removed in b7981331), and competitive methods are all out of scope. Gerber after 2C openings is not modeled here.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/two-club-opening",
-      "label": "Larry Cohen \u2014 Two Club Opening (bridge-articles/two-club-opening)"
+      "label": "Larry Cohen — Two Club Opening (bridge-articles/two-club-opening)",
+      "snapshot": {
+        "text": "# Two Club Opening\n\nBy: Larry Cohen\n\nOne of Larry's significant concerns is assigning a specific point range to a 2♣ opening. He deliberately avoids placing a range on the convention card.\n\n## Point Requirements\n\nFor balanced hands, a clear range exists. Since 2NT shows 20-21 points, a 2♣ opening with a balanced hand requires 22 or more points, followed by a rebid of 2NT or 3NT.\n\nFor unbalanced hands, \"the HCP range is a matter of judgement.\" High card strength matters less than hand composition. Larry illustrates this with examples:\n\nHe *would* open 2♣ with an 18-point hand containing ♠AKQ10876 ♥AQ32 ♦K2 ♣— because avoiding a 1♠-P-P-P result justifies the bid.\n\nHe *would not* open 2♣ with a 22-point hand of ♠AKJ2 ♥AKJ2 ♦2 ♣AQ32 because describing this hand after starting with 2♣ becomes problematic.\n\n## Responses\n\nLarry opposes step or control responses, preferring:\n\n**2♦ = Waiting bid** (0+ HCP, any distribution), allowing opener room to further describe his hand.\n\nResponder deviates from 2♦ only with substantial strength *and* a quality suit: 8+ HCP with a decent five-card suit containing two or more top honors.\n\n## Continuations After 2♦\n\nOpener's rebids (except in notrump) force for one round. Partnerships can stop below game only through a \"2nd negative\"—the cheapest new suit at the three level, which is artificial and permits responder to pass if opener repeats his suit.\n\nExamples of partscore sequences:\n\n2♣-2♦-2♥-3♣-3♥\n\n2♣-2♦-3♣-3♦-4♣\n\nThese auctions occur \"once a decade.\"\n\nIf responder does anything other than issue a 2nd negative, game is forced. When responder uses a 2nd negative then repeats a suit, it becomes natural, showing genuine length in that suit.\n\nResponder raises of opener's rebids follow the principle of fast arrival. A jump raise like 2♣-2♦-2♥-4♥ shows weakness, while a slower raise like 2♣-2♦-2♥-3♥ shows greater strength.\n\n## In Competition\n\nResponder's double of an overcall shows a terrible hand (0-3 HCP). Pass by responder shows a game-forcing hand. Responder's free bid indicates 8+ HCP with a quality five-card suit. When opponents overcall and opener doubles, it is takeout.\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/strong_2c.php"
@@ -55,7 +60,7 @@
       "explanationId": "strong2c.isWaitingResponse",
       "factId": "module.strong2c.isWaitingResponse",
       "templateKey": "strong2c.isWaitingResponse.supporting",
-      "displayText": "No good 5+ suit to show \u2014 waiting 2D",
+      "displayText": "No good 5+ suit to show — waiting 2D",
       "contrastiveTemplateKey": "strong2c.isWaitingResponse.whyNot",
       "contrastiveDisplayText": "Has a real positive suit response available",
       "preferredLevel": "semantic",
@@ -68,7 +73,7 @@
       "explanationId": "strong2c.isPositiveResponse",
       "factId": "module.strong2c.isPositiveResponse",
       "templateKey": "strong2c.isPositiveResponse.supporting",
-      "displayText": "8+ HCP with a good 5+ suit \u2014 positive response",
+      "displayText": "8+ HCP with a good 5+ suit — positive response",
       "contrastiveTemplateKey": "strong2c.isPositiveResponse.whyNot",
       "contrastiveDisplayText": "No good 5+ suit strong enough for an immediate positive response",
       "preferredLevel": "semantic",
@@ -146,7 +151,7 @@
       "explanationId": "strong2c.balanced22to24",
       "factId": "module.strong2c.balanced22to24",
       "templateKey": "strong2c.balanced22to24.supporting",
-      "displayText": "22-24 HCP balanced \u2014 rebid 2NT",
+      "displayText": "22-24 HCP balanced — rebid 2NT",
       "contrastiveTemplateKey": "strong2c.balanced22to24.whyNot",
       "contrastiveDisplayText": "Not 22-24 HCP balanced",
       "preferredLevel": "semantic",
@@ -159,7 +164,7 @@
       "explanationId": "strong2c.balanced25to27",
       "factId": "module.strong2c.balanced25to27",
       "templateKey": "strong2c.balanced25to27.supporting",
-      "displayText": "25-27 HCP balanced \u2014 rebid 3NT",
+      "displayText": "25-27 HCP balanced — rebid 3NT",
       "contrastiveTemplateKey": "strong2c.balanced25to27.whyNot",
       "contrastiveDisplayText": "Not 25-27 HCP balanced",
       "preferredLevel": "semantic",
@@ -172,7 +177,7 @@
       "explanationId": "strong2c.balanced28to30",
       "factId": "module.strong2c.balanced28to30",
       "templateKey": "strong2c.balanced28to30.supporting",
-      "displayText": "28-30 HCP balanced \u2014 rebid 4NT",
+      "displayText": "28-30 HCP balanced — rebid 4NT",
       "contrastiveTemplateKey": "strong2c.balanced28to30.whyNot",
       "contrastiveDisplayText": "Not 28-30 HCP balanced",
       "preferredLevel": "semantic",
@@ -185,7 +190,7 @@
       "explanationId": "strong2c.balanced31plus",
       "factId": "module.strong2c.balanced31plus",
       "templateKey": "strong2c.balanced31plus.supporting",
-      "displayText": "31+ HCP balanced \u2014 rebid 5NT",
+      "displayText": "31+ HCP balanced — rebid 5NT",
       "contrastiveTemplateKey": "strong2c.balanced31plus.whyNot",
       "contrastiveDisplayText": "Not 31+ HCP balanced",
       "preferredLevel": "semantic",
@@ -198,7 +203,7 @@
       "explanationId": "strong2c.responderGameValues",
       "factId": "module.strong2c.responderGameValues",
       "templateKey": "strong2c.responderGameValues.supporting",
-      "displayText": "3-7 HCP \u2014 enough for game opposite 22-24",
+      "displayText": "3-7 HCP — enough for game opposite 22-24",
       "contrastiveTemplateKey": "strong2c.responderGameValues.whyNot",
       "contrastiveDisplayText": "Does not have 3-7 HCP game values",
       "preferredLevel": "semantic",
@@ -211,9 +216,9 @@
       "explanationId": "strong2c.responderSlamValues",
       "factId": "module.strong2c.responderSlamValues",
       "templateKey": "strong2c.responderSlamValues.supporting",
-      "displayText": "8+ HCP \u2014 slam interest opposite 22-24",
+      "displayText": "8+ HCP — slam interest opposite 22-24",
       "contrastiveTemplateKey": "strong2c.responderSlamValues.whyNot",
-      "contrastiveDisplayText": "Fewer than 8 HCP \u2014 not enough for slam try",
+      "contrastiveDisplayText": "Fewer than 8 HCP — not enough for slam try",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -376,7 +381,7 @@
       "explanationId": "strong2c.r4.secondNegative3c",
       "meaningId": "strong-2c:second-negative-c",
       "templateKey": "strong2c.r4.secondNegative3c.semantic",
-      "displayText": "Second negative 3\u2663: 0-3 HCP, no values",
+      "displayText": "Second negative 3♣: 0-3 HCP, no values",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -763,7 +768,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2C \u2014 strong artificial",
+            "name": "2C — strong artificial",
             "summary": "Open 2C with a hand too strong for a one-level opening, then use the forcing structure to describe shape"
           }
         }
@@ -808,7 +813,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2D \u2014 waiting/negative",
+            "name": "2D — waiting/negative",
             "summary": "Artificial waiting response used whenever responder lacks a good enough positive suit"
           }
         },
@@ -852,7 +857,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 positive with hearts",
+            "name": "2H — positive with hearts",
             "summary": "Natural positive response and a good 5+ hearts suit"
           }
         },
@@ -896,7 +901,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 positive with spades",
+            "name": "2S — positive with spades",
             "summary": "Natural positive response and a good 5+ spades suit"
           }
         },
@@ -940,7 +945,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 positive with clubs",
+            "name": "3C — positive with clubs",
             "summary": "Natural positive response and a good 5+ clubs suit"
           }
         },
@@ -984,7 +989,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 positive with diamonds",
+            "name": "3D — positive with diamonds",
             "summary": "Natural positive response and a good 5+ diamonds suit"
           }
         }
@@ -1029,7 +1034,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2H \u2014 natural rebid",
+            "name": "2H — natural rebid",
             "summary": "Show 5+ hearts, game-forcing after 2C-2D"
           }
         },
@@ -1065,7 +1070,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2S \u2014 natural rebid",
+            "name": "2S — natural rebid",
             "summary": "Show 5+ spades, game-forcing after 2C-2D"
           }
         },
@@ -1101,7 +1106,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 natural rebid",
+            "name": "3C — natural rebid",
             "summary": "Show 5+ clubs, game-forcing after 2C-2D"
           }
         },
@@ -1137,7 +1142,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 natural rebid",
+            "name": "3D — natural rebid",
             "summary": "Show 5+ diamonds, game-forcing after 2C-2D"
           }
         },
@@ -1173,7 +1178,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2NT \u2014",
+            "name": "2NT —",
             "summary": "Show balanced hand after 2C-2D"
           }
         },
@@ -1209,7 +1214,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3NT \u2014",
+            "name": "3NT —",
             "summary": "Show balanced hand after 2C-2D"
           }
         },
@@ -1245,7 +1250,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4NT \u2014",
+            "name": "4NT —",
             "summary": "Show 28-30 balanced after 2C-2D"
           }
         },
@@ -1281,7 +1286,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "5NT \u2014",
+            "name": "5NT —",
             "summary": "Show 31+ balanced after 2C-2D"
           }
         }
@@ -1333,7 +1338,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 very weak",
+            "name": "Pass — very weak",
             "summary": "Pass opener's 2NT rebid"
           }
         },
@@ -1385,7 +1390,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3NT \u2014 game values",
+            "name": "3NT — game values",
             "summary": "Raise to game opposite opener's"
           }
         },
@@ -1439,7 +1444,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4NT \u2014 quantitative slam try",
+            "name": "4NT — quantitative slam try",
             "summary": "Invite slam opposite opener's"
           }
         }
@@ -1502,7 +1507,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 raise hearts",
+            "name": "3H — raise hearts",
             "summary": "Single raise of opener's hearts: support with slam interest"
           }
         },
@@ -1538,7 +1543,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4H \u2014 weak fast arrival",
+            "name": "4H — weak fast arrival",
             "summary": "Double raise of opener's hearts: weak signoff after the waiting start"
           }
         },
@@ -1574,7 +1579,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 own suit",
+            "name": "3D — own suit",
             "summary": "Show 5+ diamonds, no fit for opener's suit"
           }
         },
@@ -1610,7 +1615,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 own suit",
+            "name": "3S — own suit",
             "summary": "Show 5+ spades, no fit for opener's suit"
           }
         },
@@ -1655,7 +1660,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3C \u2014 second negative",
+            "name": "3C — second negative",
             "summary": "Cheapest new suit on the three level: artificial second negative after opener rebids 2H"
           }
         }
@@ -1700,7 +1705,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 raise spades",
+            "name": "3S — raise spades",
             "summary": "Single raise of opener's spades: support with slam interest"
           }
         },
@@ -1736,7 +1741,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4S \u2014 weak fast arrival",
+            "name": "4S — weak fast arrival",
             "summary": "Double raise of opener's spades: weak signoff after the waiting start"
           }
         },
@@ -1772,7 +1777,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 own suit",
+            "name": "3D — own suit",
             "summary": "Show 5+ diamonds, no fit for opener's suit"
           }
         },
@@ -1808,7 +1813,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 own suit",
+            "name": "3H — own suit",
             "summary": "Show 5+ hearts, no fit for opener's suit"
           }
         },
@@ -1853,7 +1858,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3C \u2014 second negative",
+            "name": "3C — second negative",
             "summary": "Cheapest new suit on the three level: artificial second negative after opener rebids 2S"
           }
         }
@@ -1898,7 +1903,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4C \u2014 raise clubs",
+            "name": "4C — raise clubs",
             "summary": "Raise opener's clubs with 3+ card support"
           }
         },
@@ -1934,7 +1939,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 own suit",
+            "name": "3H — own suit",
             "summary": "Show 5+ hearts, no fit for opener's suit"
           }
         },
@@ -1970,7 +1975,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 own suit",
+            "name": "3S — own suit",
             "summary": "Show 5+ spades, no fit for opener's suit"
           }
         },
@@ -2015,7 +2020,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3D \u2014 second negative",
+            "name": "3D — second negative",
             "summary": "Cheapest new suit on the three level: artificial second negative after opener rebids 3C"
           }
         }
@@ -2060,7 +2065,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4D \u2014 raise diamonds",
+            "name": "4D — raise diamonds",
             "summary": "Raise opener's diamonds with 3+ card support"
           }
         },
@@ -2096,7 +2101,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 own suit",
+            "name": "3S — own suit",
             "summary": "Show 5+ spades, no fit for opener's suit"
           }
         },
@@ -2141,7 +2146,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3H \u2014 second negative",
+            "name": "3H — second negative",
             "summary": "Cheapest new suit on the three level: artificial second negative after opener rebids 3D"
           }
         }
@@ -2177,7 +2182,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 repeat hearts",
+            "name": "3H — repeat hearts",
             "summary": "Repeat opener's suit so responder may pass the second negative"
           }
         }
@@ -2213,7 +2218,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 repeat spades",
+            "name": "3S — repeat spades",
             "summary": "Repeat opener's suit so responder may pass the second negative"
           }
         }
@@ -2249,7 +2254,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4C \u2014 repeat clubs",
+            "name": "4C — repeat clubs",
             "summary": "Repeat opener's suit so responder may pass the second negative"
           }
         }
@@ -2285,7 +2290,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4D \u2014 repeat diamonds",
+            "name": "4D — repeat diamonds",
             "summary": "Repeat opener's suit so responder may pass the second negative"
           }
         }
@@ -2328,7 +2333,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 stop below game",
+            "name": "Pass — stop below game",
             "summary": "Pass opener's repeated suit when the second negative was a true bust"
           }
         },
@@ -2364,7 +2369,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4C \u2014 cancel the second negative",
+            "name": "4C — cancel the second negative",
             "summary": "Repeat the second-negative suit naturally to show real clubs"
           }
         }
@@ -2407,7 +2412,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 stop below game",
+            "name": "Pass — stop below game",
             "summary": "Pass opener's repeated suit when the second negative was a true bust"
           }
         },
@@ -2443,7 +2448,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4C \u2014 cancel the second negative",
+            "name": "4C — cancel the second negative",
             "summary": "Repeat the second-negative suit naturally to show real clubs"
           }
         }
@@ -2486,7 +2491,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 stop below game",
+            "name": "Pass — stop below game",
             "summary": "Pass opener's repeated suit when the second negative was a true bust"
           }
         },
@@ -2522,7 +2527,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4D \u2014 cancel the second negative",
+            "name": "4D — cancel the second negative",
             "summary": "Repeat the second-negative suit naturally to show real diamonds"
           }
         }
@@ -2565,7 +2570,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "Pass \u2014 stop below game",
+            "name": "Pass — stop below game",
             "summary": "Pass opener's repeated suit when the second negative was a true bust"
           }
         },
@@ -2601,7 +2606,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4H \u2014 cancel the second negative",
+            "name": "4H — cancel the second negative",
             "summary": "Repeat the second-negative suit naturally to show real hearts"
           }
         }
@@ -2646,7 +2651,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 raise partner's hearts",
+            "name": "3H — raise partner's hearts",
             "summary": "Raise responder's heart suit with 3+ card support"
           }
         },
@@ -2683,7 +2688,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2NT \u2014",
+            "name": "2NT —",
             "summary": "Show balanced after responder's positive major-suit response"
           }
         },
@@ -2720,7 +2725,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3NT \u2014",
+            "name": "3NT —",
             "summary": "Jump to 3NT balanced after responder's positive major-suit response"
           }
         },
@@ -2756,7 +2761,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 own suit",
+            "name": "3C — own suit",
             "summary": "Show 5+ clubs, no fit for responder's suit"
           }
         },
@@ -2792,7 +2797,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 own suit",
+            "name": "3D — own suit",
             "summary": "Show 5+ diamonds, no fit for responder's suit"
           }
         },
@@ -2828,7 +2833,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 own suit",
+            "name": "3S — own suit",
             "summary": "Show 5+ spades, no fit for responder's suit"
           }
         }
@@ -2873,7 +2878,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 raise partner's spades",
+            "name": "3S — raise partner's spades",
             "summary": "Raise responder's spade suit with 3+ card support"
           }
         },
@@ -2910,7 +2915,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "2NT \u2014",
+            "name": "2NT —",
             "summary": "Show balanced after responder's positive major-suit response"
           }
         },
@@ -2947,7 +2952,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3NT \u2014",
+            "name": "3NT —",
             "summary": "Jump to 3NT balanced after responder's positive major-suit response"
           }
         },
@@ -2983,7 +2988,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3C \u2014 own suit",
+            "name": "3C — own suit",
             "summary": "Show 5+ clubs, no fit for responder's suit"
           }
         },
@@ -3019,7 +3024,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 own suit",
+            "name": "3D — own suit",
             "summary": "Show 5+ diamonds, no fit for responder's suit"
           }
         },
@@ -3055,7 +3060,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 own suit",
+            "name": "3H — own suit",
             "summary": "Show 5+ hearts, no fit for responder's suit"
           }
         }
@@ -3100,7 +3105,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4C \u2014 raise partner's clubs",
+            "name": "4C — raise partner's clubs",
             "summary": "Raise responder's club suit with 3+ card support"
           }
         },
@@ -3137,7 +3142,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3NT \u2014",
+            "name": "3NT —",
             "summary": "Show balanced over responder's positive minor-suit response"
           }
         },
@@ -3173,7 +3178,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3D \u2014 own suit",
+            "name": "3D — own suit",
             "summary": "Show 5+ diamonds, no fit for responder's suit"
           }
         },
@@ -3209,7 +3214,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 own suit",
+            "name": "3H — own suit",
             "summary": "Show 5+ hearts, no fit for responder's suit"
           }
         },
@@ -3245,7 +3250,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 own suit",
+            "name": "3S — own suit",
             "summary": "Show 5+ spades, no fit for responder's suit"
           }
         }
@@ -3290,7 +3295,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "4D \u2014 raise partner's diamonds",
+            "name": "4D — raise partner's diamonds",
             "summary": "Raise responder's diamond suit with 3+ card support"
           }
         },
@@ -3327,7 +3332,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3NT \u2014",
+            "name": "3NT —",
             "summary": "Show balanced over responder's positive minor-suit response"
           }
         },
@@ -3363,7 +3368,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 own suit",
+            "name": "3H — own suit",
             "summary": "Show 5+ hearts, no fit for responder's suit"
           }
         },
@@ -3399,7 +3404,7 @@
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 own suit",
+            "name": "3S — own suit",
             "summary": "Show 5+ spades, no fit for responder's suit"
           }
         }
@@ -4595,9 +4600,9 @@
       "purpose": "Open very strong hands with an artificial 2C bid, then use the waiting, positive-suit, and second-negative structures to describe shape.",
       "whenToUse": "Open 2C with a balanced 22+ count or an unbalanced powerhouse with near-game tricks. As responder, bid 2D waiting unless you have 8+ HCP and a good 5+ suit.",
       "whenNotToUse": [
-        "With 20-21 balanced HCP \u2014 open 2NT instead",
-        "With a weak hand and a long suit \u2014 use a Weak Two instead",
-        "2C is always artificial here \u2014 never open 2C to show clubs"
+        "With 20-21 balanced HCP — open 2NT instead",
+        "With a weak hand and a long suit — use a Weak Two instead",
+        "2C is always artificial here — never open 2C to show clubs"
       ],
       "tradeoff": "2C loses its natural club meaning in exchange for a forcing opening that prevents being passed out with a monster hand.",
       "principle": "Start with the waiting 2D reply unless responder has real suit quality; opener then clarifies balanced versus natural-suit routes, and after a second negative repeats the suit so responder can pass or later show that suit naturally.",

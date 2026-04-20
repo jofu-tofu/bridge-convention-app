@@ -17,10 +17,15 @@
   "fixtureVersion": 1,
   "description": "Bid 2C over 1NT to find a 4-4 major-suit fit",
   "purpose": "Discover whether opener holds a 4-card major so the partnership can play in an 8-card major fit instead of notrump",
+  "scopeNote": "Follows Larry Cohen regular Stayman (LC Standard) after 1NT opener only; garbage / crawling Stayman lives in the separate `stayman-garbage` module and Smolen is its own module. The 2-level hybrid meanings (`1NT-2C-2H-2S`, `1NT-2C-2D-2H/2S`), 4-level signoffs after the 2D denial, and splinter jumps after a major response are partnership-style choices retained as LC Standard defaults rather than authority-pinned mechanics. Puppet Stayman is out of scope.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/stayman",
-      "label": "Larry Cohen \u2014 Stayman (bridge-articles/stayman)"
+      "label": "Larry Cohen — Stayman (bridge-articles/stayman)",
+      "snapshot": {
+        "text": "# Stayman\n\nBy Larry Cohen\n\nThis is probably the most well-known convention (this or Blackwood) in bridge. It is used after a notrump bid to look for an 8-card major suit fit. After partner's 1NT opening, responder will want to look for a 4-4 major suit fit, with say: ♠A Q 6 5, ♥6 5, ♦K J 8 7, ♣J 3 2. To ask opener if he has a 4-card major, he responds 2♣.\n\nAfter a 1NT opening (or overcall), 2♣ asks the 1NT bidder about majors.\n\nThe responses to 2♣ are:\n\n2♦ = No 4-card major\n2♥ = 4 (or 5) hearts\n2♠ = 4 (or 5) spades\n\n## After opener's rebid\n\nOn the 2-level, everything is natural and not forcing (example: 1N-2♣;2♦-2♥). This auction is \"pass or correct\" — sometimes referred to as \"Garbage Stayman\" or \"Crawling Stayman. The responder can have only 4-4 in the majors and just wants to stop in 2♥ or 2♠.\n\nOn the 3-level, responder's raise is invitational. Other 3-level bids (using LC Standard) are discussed in related materials.\n\nOn the 4-level, a raise to game is to play, other bids are splinter bids (example: 1N-2♣;2♥-4♣).\n\nThe Stayman bidder should usually have at least invitational values. The only exceptions would be:\n\nA) A hand that is willing to pass anything opener answers (including 2♦)\n\nB) A hand that has both majors (at least 4-4) and is willing to pass 2♥/2♠ or correct a 2♦ answer to 2♥ to show a weak hand with both majors\n\nAfter a 2NT opener (or non-jump overcall), 3♣ is Stayman with the same schedule of responses (a level higher).\n\n## Puppet Stayman\n\nSome partnerships use this variation of Stayman which uncovers not only 4-card majors, but also 5-card majors. This is recommended only for very experienced players, and only on the 3-level. The 2♣ bid should be regular Stayman because it allows for various weak responses (with the ability to stop on the 2-level). In LC Standard, Puppet Stayman is preferred only as a jump to 3♣ after 1NT. (After a 2NT opening, Puppet Stayman is not recommended because it is hard to show 5-4 in the majors).\n",
+        "fetchedAt": "2026-04-19"
+      }
     },
     "discovery": {
       "url": "https://www.bridgebum.com/stayman.php"
@@ -28,7 +33,7 @@
   },
   "teaching": {
     "tradeoff": "Using the ask as Stayman means the partnership cannot play the ask in its natural strain.",
-    "principle": "Always check for a four-card major fit before settling in notrump \u2014 majors score better and play easier with a trump suit.",
+    "principle": "Always check for a four-card major fit before settling in notrump — majors score better and play easier with a trump suit.",
     "commonMistakes": [
       {
         "text": "Do not use Stayman with a flat hand and no ruffing value.",
@@ -102,7 +107,7 @@
       "explanationId": "nt.stayman.askMajor",
       "meaningId": "stayman:ask-major",
       "templateKey": "nt.stayman.askMajor.semantic",
-      "displayText": "Stayman 2\u2663: asks opener for a 4-card major",
+      "displayText": "Stayman 2♣: asks opener for a 4-card major",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -132,7 +137,7 @@
       "explanationId": "nt.stayman.denyMajor",
       "meaningId": "stayman:deny-major",
       "templateKey": "nt.stayman.denyMajor.semantic",
-      "displayText": "Opener bids 2\u2666 to deny holding a 4-card major",
+      "displayText": "Opener bids 2♦ to deny holding a 4-card major",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -142,7 +147,7 @@
       "explanationId": "nt.stayman.raiseGameHearts",
       "meaningId": "stayman:raise-game-hearts",
       "templateKey": "nt.stayman.raiseGameHearts.semantic",
-      "displayText": "Raise to 4\u2665 with game values and a heart fit",
+      "displayText": "Raise to 4♥ with game values and a heart fit",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -152,7 +157,7 @@
       "explanationId": "nt.stayman.raiseInviteHearts",
       "meaningId": "stayman:raise-invite-hearts",
       "templateKey": "nt.stayman.raiseInviteHearts.semantic",
-      "displayText": "Invite in hearts (3\u2665) with invitational values and a heart fit",
+      "displayText": "Invite in hearts (3♥) with invitational values and a heart fit",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -182,7 +187,7 @@
       "explanationId": "nt.stayman.raiseGameSpades",
       "meaningId": "stayman:raise-game-spades",
       "templateKey": "nt.stayman.raiseGameSpades.semantic",
-      "displayText": "Raise to 4\u2660 with game values and a spade fit",
+      "displayText": "Raise to 4♠ with game values and a spade fit",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -192,7 +197,7 @@
       "explanationId": "nt.stayman.raiseInviteSpades",
       "meaningId": "stayman:raise-invite-spades",
       "templateKey": "nt.stayman.raiseInviteSpades.semantic",
-      "displayText": "Invite in spades (3\u2660) with invitational values and a spade fit",
+      "displayText": "Invite in spades (3♠) with invitational values and a spade fit",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -242,7 +247,7 @@
       "explanationId": "nt.stayman.showFiveHeartsAfterDenial",
       "meaningId": "stayman:show-five-hearts-after-denial",
       "templateKey": "nt.stayman.showFiveHeartsAfterDenial.semantic",
-      "displayText": "Bid 2\u2665 showing 5 hearts and 4 spades (invitational, non-forcing)",
+      "displayText": "Bid 2♥ showing 5 hearts and 4 spades (invitational, non-forcing)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -252,7 +257,7 @@
       "explanationId": "nt.stayman.showFiveSpadesAfterDenial",
       "meaningId": "stayman:show-five-spades-after-denial",
       "templateKey": "nt.stayman.showFiveSpadesAfterDenial.semantic",
-      "displayText": "Bid 2\u2660 showing 5 spades and 4 hearts (invitational, non-forcing)",
+      "displayText": "Bid 2♠ showing 5 spades and 4 hearts (invitational, non-forcing)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -262,7 +267,7 @@
       "explanationId": "nt.stayman.showFiveHeartsGfAfterDenial",
       "meaningId": "stayman:show-five-hearts-gf-after-denial",
       "templateKey": "nt.stayman.showFiveHeartsGfAfterDenial.semantic",
-      "displayText": "Bid 3\u2665 showing 5 hearts and 4 spades, game-forcing",
+      "displayText": "Bid 3♥ showing 5 hearts and 4 spades, game-forcing",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -272,7 +277,7 @@
       "explanationId": "nt.stayman.showFiveSpadesGfAfterDenial",
       "meaningId": "stayman:show-five-spades-gf-after-denial",
       "templateKey": "nt.stayman.showFiveSpadesGfAfterDenial.semantic",
-      "displayText": "Bid 3\u2660 showing 5 spades and 4 hearts, game-forcing",
+      "displayText": "Bid 3♠ showing 5 spades and 4 hearts, game-forcing",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -282,7 +287,7 @@
       "explanationId": "nt.stayman.crossMajorInvite2SAfter2H",
       "meaningId": "stayman:cross-major-invite-2s-after-2h",
       "templateKey": "nt.stayman.crossMajorInvite2SAfter2H.semantic",
-      "displayText": "Bid 2\u2660 showing 5 spades and 4 hearts (invitational, non-forcing)",
+      "displayText": "Bid 2♠ showing 5 spades and 4 hearts (invitational, non-forcing)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -292,7 +297,7 @@
       "explanationId": "nt.stayman.minorGF3CAfter2H",
       "meaningId": "stayman:minor-gf-3c-after-2h",
       "templateKey": "nt.stayman.minorGF3CAfter2H.semantic",
-      "displayText": "Bid 3\u2663: natural club game force after opener shows hearts",
+      "displayText": "Bid 3♣: natural club game force after opener shows hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -302,7 +307,7 @@
       "explanationId": "nt.stayman.minorGF3DAfter2H",
       "meaningId": "stayman:minor-gf-3d-after-2h",
       "templateKey": "nt.stayman.minorGF3DAfter2H.semantic",
-      "displayText": "Bid 3\u2666: natural diamond game force after opener shows hearts",
+      "displayText": "Bid 3♦: natural diamond game force after opener shows hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -312,7 +317,7 @@
       "explanationId": "nt.stayman.crossMajorGF3SAfter2H",
       "meaningId": "stayman:cross-major-gf-3s-after-2h",
       "templateKey": "nt.stayman.crossMajorGF3SAfter2H.semantic",
-      "displayText": "Bid 3\u2660: artificial slam-interest raise of hearts",
+      "displayText": "Bid 3♠: artificial slam-interest raise of hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -332,7 +337,7 @@
       "explanationId": "nt.stayman.splinter4CAfter2H",
       "meaningId": "stayman:splinter-4c-after-2h",
       "templateKey": "nt.stayman.splinter4CAfter2H.semantic",
-      "displayText": "Bid 4\u2663: club shortness with heart support and slam interest",
+      "displayText": "Bid 4♣: club shortness with heart support and slam interest",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -342,7 +347,7 @@
       "explanationId": "nt.stayman.splinter4DAfter2H",
       "meaningId": "stayman:splinter-4d-after-2h",
       "templateKey": "nt.stayman.splinter4DAfter2H.semantic",
-      "displayText": "Bid 4\u2666: diamond shortness with heart support and slam interest",
+      "displayText": "Bid 4♦: diamond shortness with heart support and slam interest",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -352,7 +357,7 @@
       "explanationId": "nt.stayman.minorGF3CAfter2S",
       "meaningId": "stayman:minor-gf-3c-after-2s",
       "templateKey": "nt.stayman.minorGF3CAfter2S.semantic",
-      "displayText": "Bid 3\u2663: natural club game force after opener shows spades",
+      "displayText": "Bid 3♣: natural club game force after opener shows spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -362,7 +367,7 @@
       "explanationId": "nt.stayman.minorGF3DAfter2S",
       "meaningId": "stayman:minor-gf-3d-after-2s",
       "templateKey": "nt.stayman.minorGF3DAfter2S.semantic",
-      "displayText": "Bid 3\u2666: natural diamond game force after opener shows spades",
+      "displayText": "Bid 3♦: natural diamond game force after opener shows spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -372,7 +377,7 @@
       "explanationId": "nt.stayman.crossMajorGF3HAfter2S",
       "meaningId": "stayman:cross-major-gf-3h-after-2s",
       "templateKey": "nt.stayman.crossMajorGF3HAfter2S.semantic",
-      "displayText": "Bid 3\u2665: artificial slam-interest raise of spades",
+      "displayText": "Bid 3♥: artificial slam-interest raise of spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -392,7 +397,7 @@
       "explanationId": "nt.stayman.splinter4CAfter2S",
       "meaningId": "stayman:splinter-4c-after-2s",
       "templateKey": "nt.stayman.splinter4CAfter2S.semantic",
-      "displayText": "Bid 4\u2663: club shortness with spade support and slam interest",
+      "displayText": "Bid 4♣: club shortness with spade support and slam interest",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -402,7 +407,7 @@
       "explanationId": "nt.stayman.splinter4DAfter2S",
       "meaningId": "stayman:splinter-4d-after-2s",
       "templateKey": "nt.stayman.splinter4DAfter2S.semantic",
-      "displayText": "Bid 4\u2666: diamond shortness with spade support and slam interest",
+      "displayText": "Bid 4♦: diamond shortness with spade support and slam interest",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -412,7 +417,7 @@
       "explanationId": "nt.stayman.minorGF3CAfter2D",
       "meaningId": "stayman:minor-gf-3c-after-2d",
       "templateKey": "nt.stayman.minorGF3CAfter2D.semantic",
-      "displayText": "Bid 3\u2663: natural club game force after opener denies a major",
+      "displayText": "Bid 3♣: natural club game force after opener denies a major",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -422,7 +427,7 @@
       "explanationId": "nt.stayman.minorGF3DAfter2D",
       "meaningId": "stayman:minor-gf-3d-after-2d",
       "templateKey": "nt.stayman.minorGF3DAfter2D.semantic",
-      "displayText": "Bid 3\u2666: natural diamond game force after opener denies a major",
+      "displayText": "Bid 3♦: natural diamond game force after opener denies a major",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -432,7 +437,7 @@
       "explanationId": "nt.stayman.majorSignoff4HAfter2D",
       "meaningId": "stayman:major-signoff-4h-after-2d",
       "templateKey": "nt.stayman.majorSignoff4HAfter2D.semantic",
-      "displayText": "Bid 4\u2665 to play with 6 hearts and 4 spades",
+      "displayText": "Bid 4♥ to play with 6 hearts and 4 spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -442,7 +447,7 @@
       "explanationId": "nt.stayman.majorSignoff4SAfter2D",
       "meaningId": "stayman:major-signoff-4s-after-2d",
       "templateKey": "nt.stayman.majorSignoff4SAfter2D.semantic",
-      "displayText": "Bid 4\u2660 to play with 6 spades and 4 hearts",
+      "displayText": "Bid 4♠ to play with 6 spades and 4 hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -577,7 +582,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "Stayman 2\u2663",
+            "name": "Stayman 2♣",
             "summary": "Start regular Stayman while avoiding the flat 4-3-3-3 one-major exception"
           }
         },
@@ -641,7 +646,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "Stayman 2\u2663",
+            "name": "Stayman 2♣",
             "summary": "Start regular Stayman with both majors when later rebids will sort out the best strain"
           }
         }
@@ -773,7 +778,7 @@
           },
           "disclosure": "standard",
           "teachingLabel": {
-            "name": "Deny major (2\u2666)",
+            "name": "Deny major (2♦)",
             "summary": "Deny holding a 4-card major in response to Stayman"
           }
         }
@@ -1040,7 +1045,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2\u2660 invite (5\u2660-4\u2665)",
+            "name": "2♠ invite (5♠-4♥)",
             "summary": "Show an invitational 5-spade hand, typically with four hearts, after opener shows hearts"
           }
         },
@@ -1088,7 +1093,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3\u2663 game force",
+            "name": "3♣ game force",
             "summary": "Show a natural club suit with game-forcing values after opener shows hearts"
           }
         },
@@ -1136,7 +1141,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3\u2666 game force",
+            "name": "3♦ game force",
             "summary": "Show a natural diamond suit with game-forcing values after opener shows hearts"
           }
         },
@@ -1184,7 +1189,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3\u2660 slam try in hearts",
+            "name": "3♠ slam try in hearts",
             "summary": "Artificial slam-interest raise of hearts; the spade bid does not promise spades"
           }
         },
@@ -1289,7 +1294,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4\u2663 splinter",
+            "name": "4♣ splinter",
             "summary": "Show club shortness with heart support and slam interest"
           }
         },
@@ -1346,7 +1351,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4\u2666 splinter",
+            "name": "4♦ splinter",
             "summary": "Show diamond shortness with heart support and slam interest"
           }
         }
@@ -1613,7 +1618,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3\u2663 game force",
+            "name": "3♣ game force",
             "summary": "Show a natural club suit with game-forcing values after opener shows spades"
           }
         },
@@ -1661,7 +1666,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3\u2666 game force",
+            "name": "3♦ game force",
             "summary": "Show a natural diamond suit with game-forcing values after opener shows spades"
           }
         },
@@ -1709,7 +1714,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3\u2665 slam try in spades",
+            "name": "3♥ slam try in spades",
             "summary": "Artificial slam-interest raise of spades; the heart bid does not promise hearts"
           }
         },
@@ -1814,7 +1819,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4\u2663 splinter",
+            "name": "4♣ splinter",
             "summary": "Show club shortness with spade support and slam interest"
           }
         },
@@ -1871,7 +1876,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4\u2666 splinter",
+            "name": "4♦ splinter",
             "summary": "Show diamond shortness with spade support and slam interest"
           }
         }
@@ -2108,7 +2113,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3\u2665 GF (5-4 majors)",
+            "name": "3♥ GF (5-4 majors)",
             "summary": "Force to game showing 5 hearts and 4 spades after opener denies a major"
           }
         },
@@ -2165,7 +2170,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3\u2660 GF (5-4 majors)",
+            "name": "3♠ GF (5-4 majors)",
             "summary": "Force to game showing 5 spades and 4 hearts after opener denies a major"
           }
         },
@@ -2252,7 +2257,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3\u2663 game force",
+            "name": "3♣ game force",
             "summary": "Show a natural club suit with game-forcing values after opener denies a major"
           }
         },
@@ -2300,7 +2305,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "3\u2666 game force",
+            "name": "3♦ game force",
             "summary": "Show a natural diamond suit with game-forcing values after opener denies a major"
           }
         },
@@ -2357,7 +2362,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4\u2665 signoff (6-4 majors)",
+            "name": "4♥ signoff (6-4 majors)",
             "summary": "Sign off in 4H with 6 hearts and 4 spades after opener denies a major"
           }
         },
@@ -2414,7 +2419,7 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "4\u2660 signoff (6-4 majors)",
+            "name": "4♠ signoff (6-4 majors)",
             "summary": "Sign off in 4S with 6 spades and 4 hearts after opener denies a major"
           }
         },
@@ -3075,7 +3080,7 @@
               "level": 4,
               "strain": "H"
             },
-            "rationale": "Responder steers to 4\u2665 because the fit was found, but 3NT was cold while 4\u2665 needed a finesse and went down."
+            "rationale": "Responder steers to 4♥ because the fit was found, but 3NT was cold while 4♥ needed a finesse and went down."
           }
         ]
       }
@@ -3375,15 +3380,15 @@
     },
     "supportsRoleSelection": true,
     "teaching": {
-      "purpose": "Use 2\u2663 over 1NT to ask about majors and access Larry Cohen's regular Stayman follow-ups.",
+      "purpose": "Use 2♣ over 1NT to ask about majors and access Larry Cohen's regular Stayman follow-ups.",
       "whenToUse": "Partner opens 1NT (15-17 HCP balanced). You have invitational or game values and are not the flat 4-3-3-3 one-major exception; invitational or game-forcing 5-4 major hands are also legal.",
       "whenNotToUse": [
         "Weak hand without the separate Garbage Stayman agreement",
         "Flat 4-3-3-3 hand with only one four-card major",
         "Single five-card major hands that belong in Jacoby Transfers"
       ],
-      "principle": "2\u2663 asks opener about majors, but the ask itself does not guarantee responder holds a four-card major.",
-      "roles": "Responder is captain \u2014 asks opener to describe, then decides the final contract"
+      "principle": "2♣ asks opener about majors, but the ask itself does not guarantee responder holds a four-card major.",
+      "roles": "Responder is captain — asks opener to describe, then decides the final contract"
     },
     "attachments": [
       {
