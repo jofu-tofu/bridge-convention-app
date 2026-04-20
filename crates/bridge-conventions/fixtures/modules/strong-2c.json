@@ -4,8 +4,8 @@
   "category": "opening-bids",
   "defaultRole": "responder",
   "fixtureVersion": 1,
-  "description": "Open 2C with a hand too strong for a one-level opening, then use waiting and positive-suit responses to keep the auction organized.",
-  "purpose": "Teach Larry-style strong 2C structure: responder waits with 2D unless holding 8+ HCP and a good 5+ suit, opener clarifies shape, and the later 2NT rebid hands off to the normal notrump methods.",
+  "description": "Open 2C with a hand too strong for a one-level opening, then use waiting, positive-suit responses, and second-negative continuations to keep the auction organized.",
+  "purpose": "Teach Larry-style strong 2C structure: responder waits with 2D unless holding 8+ HCP and a good 5+ suit, opener clarifies balanced versus natural shape, and the second-negative structure still lets the partnership stop below game when opener repeats the suit.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/two-club-opening",
@@ -17,7 +17,7 @@
   },
   "teaching": {
     "tradeoff": "Using 2C as a strong artificial opening means you lose the natural 2C bid, but the partnership gains a forcing structure for hands too strong to risk a quiet one-level opening.",
-    "principle": "Start with the catch-all 2D waiting response unless responder has both values and real suit quality; once opener shows a balanced hand, the usual notrump methods take over.",
+    "principle": "Start with the catch-all 2D waiting response unless responder has both values and real suit quality; after a second negative opener repeats the suit so responder can pass or later show that suit naturally, and once opener shows a balanced hand the usual notrump methods take over.",
     "commonMistakes": [
       {
         "text": "Do not treat 2D as a pure 0-7 response.",
@@ -42,9 +42,9 @@
       "explanationId": "strong2c.qualifiesForOpen",
       "factId": "module.strong2c.qualifiesForOpen",
       "templateKey": "strong2c.qualifiesForOpen.supporting",
-      "displayText": "22+ HCP balanced or 9+ playing tricks qualifies for strong 2C opening",
+      "displayText": "22+ HCP balanced or an unbalanced powerhouse with near-game tricks qualifies for strong 2C",
       "contrastiveTemplateKey": "strong2c.qualifiesForOpen.whyNot",
-      "contrastiveDisplayText": "Does not have the balanced strength or playing tricks for the core strong 2C opening rule",
+      "contrastiveDisplayText": "Does not have the balanced strength or trick-taking power for the core strong 2C opening rule",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -162,6 +162,32 @@
       "displayText": "25-27 HCP balanced \u2014 rebid 3NT",
       "contrastiveTemplateKey": "strong2c.balanced25to27.whyNot",
       "contrastiveDisplayText": "Not 25-27 HCP balanced",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "strong2c.balanced28to30",
+      "factId": "module.strong2c.balanced28to30",
+      "templateKey": "strong2c.balanced28to30.supporting",
+      "displayText": "28-30 HCP balanced \u2014 rebid 4NT",
+      "contrastiveTemplateKey": "strong2c.balanced28to30.whyNot",
+      "contrastiveDisplayText": "Not 28-30 HCP balanced",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "strong2c.balanced31plus",
+      "factId": "module.strong2c.balanced31plus",
+      "templateKey": "strong2c.balanced31plus.supporting",
+      "displayText": "31+ HCP balanced \u2014 rebid 5NT",
+      "contrastiveTemplateKey": "strong2c.balanced31plus.whyNot",
+      "contrastiveDisplayText": "Not 31+ HCP balanced",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -327,8 +353,28 @@
       ]
     },
     {
+      "explanationId": "strong2c.r3.rebid4nt",
+      "meaningId": "strong-2c:rebid-4nt",
+      "templateKey": "strong2c.r3.rebid4nt.semantic",
+      "displayText": "4NT rebid: 28-30 HCP balanced after 2D waiting",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "strong2c.r3.rebid5nt",
+      "meaningId": "strong-2c:rebid-5nt",
+      "templateKey": "strong2c.r3.rebid5nt.semantic",
+      "displayText": "5NT rebid: 31+ HCP balanced after 2D waiting",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
       "explanationId": "strong2c.r4.secondNegative3c",
-      "meaningId": "strong-2c:second-negative-3c",
+      "meaningId": "strong-2c:second-negative-c",
       "templateKey": "strong2c.r4.secondNegative3c.semantic",
       "displayText": "Second negative 3\u2663: 0-3 HCP, no values",
       "preferredLevel": "semantic",
@@ -408,6 +454,36 @@
           "feature": "balanced",
           "actor": "opener",
           "level": 2
+        }
+      },
+      {
+        "from": "after-2d-waiting",
+        "to": "done",
+        "on": {
+          "act": "show",
+          "feature": "balanced",
+          "actor": "opener",
+          "level": 3
+        }
+      },
+      {
+        "from": "after-2d-waiting",
+        "to": "done",
+        "on": {
+          "act": "show",
+          "feature": "balanced",
+          "actor": "opener",
+          "level": 4
+        }
+      },
+      {
+        "from": "after-2d-waiting",
+        "to": "done",
+        "on": {
+          "act": "show",
+          "feature": "balanced",
+          "actor": "opener",
+          "level": 5
         }
       },
       {
@@ -500,11 +576,121 @@
         }
       },
       {
+        "from": "after-2h-rebid",
+        "to": "after-2h-second-negative",
+        "on": {
+          "act": "show",
+          "feature": "strength",
+          "actor": "responder",
+          "level": 3
+        }
+      },
+      {
+        "from": "after-2s-rebid",
+        "to": "after-2s-second-negative",
+        "on": {
+          "act": "show",
+          "feature": "strength",
+          "actor": "responder",
+          "level": 3
+        }
+      },
+      {
+        "from": "after-3c-rebid",
+        "to": "after-3c-second-negative",
+        "on": {
+          "act": "show",
+          "feature": "strength",
+          "actor": "responder",
+          "level": 3
+        }
+      },
+      {
+        "from": "after-3d-rebid",
+        "to": "after-3d-second-negative",
+        "on": {
+          "act": "show",
+          "feature": "strength",
+          "actor": "responder",
+          "level": 3
+        }
+      },
+      {
         "from": [
           "after-2h-rebid",
           "after-2s-rebid",
           "after-3c-rebid",
           "after-3d-rebid"
+        ],
+        "to": "done",
+        "on": {
+          "act": "show",
+          "actor": "responder"
+        }
+      },
+      {
+        "from": "after-2h-second-negative",
+        "to": "after-repeat-3h",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "hearts",
+          "actor": "opener",
+          "level": 3
+        }
+      },
+      {
+        "from": "after-2s-second-negative",
+        "to": "after-repeat-3s",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "spades",
+          "actor": "opener",
+          "level": 3
+        }
+      },
+      {
+        "from": "after-3c-second-negative",
+        "to": "after-repeat-4c",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "clubs",
+          "actor": "opener",
+          "level": 4
+        }
+      },
+      {
+        "from": "after-3d-second-negative",
+        "to": "after-repeat-4d",
+        "on": {
+          "act": "show",
+          "feature": "heldSuit",
+          "suit": "diamonds",
+          "actor": "opener",
+          "level": 4
+        }
+      },
+      {
+        "from": [
+          "after-repeat-3h",
+          "after-repeat-3s",
+          "after-repeat-4c",
+          "after-repeat-4d"
+        ],
+        "to": "done",
+        "on": {
+          "act": "pass",
+          "actor": "responder"
+        }
+      },
+      {
+        "from": [
+          "after-repeat-3h",
+          "after-repeat-3s",
+          "after-repeat-4c",
+          "after-repeat-4d"
         ],
         "to": "done",
         "on": {
@@ -562,7 +748,7 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.strong2c.qualifiesForOpen:boolean:true",
-              "description": "22+ balanced or about 9+ playing tricks (core strong 2C rule)",
+              "description": "22+ balanced or an unbalanced powerhouse with near-game tricks",
               "isPublic": true
             }
           ],
@@ -1025,6 +1211,78 @@
           "teachingLabel": {
             "name": "3NT \u2014",
             "summary": "Show balanced hand after 2C-2D"
+          }
+        },
+        {
+          "meaningId": "strong-2c:rebid-4nt",
+          "semanticClassId": "strong-2c:balanced-rebid",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.strong2c.balanced28to30",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.strong2c.balanced28to30:boolean:true",
+              "description": "28-30 HCP balanced",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "Strong2CRebid3NT",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4NT \u2014",
+            "summary": "Show 28-30 balanced after 2C-2D"
+          }
+        },
+        {
+          "meaningId": "strong-2c:rebid-5nt",
+          "semanticClassId": "strong-2c:balanced-rebid",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 5,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.strong2c.balanced31plus",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.strong2c.balanced31plus:boolean:true",
+              "description": "31+ HCP balanced",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "Strong2CRebid3NT",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "5NT \u2014",
+            "summary": "Show 31+ balanced after 2C-2D"
           }
         }
       ],
@@ -1893,6 +2151,466 @@
       }
     },
     {
+      "phase": "after-2h-second-negative",
+      "turn": "opener",
+      "surfaces": [
+        {
+          "meaningId": "strong-2c:opener-repeat-3h",
+          "semanticClassId": "strong-2c:opener-repeat",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "Strong2CRebidHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3H \u2014 repeat hearts",
+            "summary": "Repeat opener's suit so responder may pass the second negative"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-2s-second-negative",
+      "turn": "opener",
+      "surfaces": [
+        {
+          "meaningId": "strong-2c:opener-repeat-3s",
+          "semanticClassId": "strong-2c:opener-repeat",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "Strong2CRebidSpades",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3S \u2014 repeat spades",
+            "summary": "Repeat opener's suit so responder may pass the second negative"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-3c-second-negative",
+      "turn": "opener",
+      "surfaces": [
+        {
+          "meaningId": "strong-2c:opener-repeat-4c",
+          "semanticClassId": "strong-2c:opener-repeat",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "C"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "Strong2CRebidClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4C \u2014 repeat clubs",
+            "summary": "Repeat opener's suit so responder may pass the second negative"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-3d-second-negative",
+      "turn": "opener",
+      "surfaces": [
+        {
+          "meaningId": "strong-2c:opener-repeat-4d",
+          "semanticClassId": "strong-2c:opener-repeat",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "D"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "Strong2CRebidDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4D \u2014 repeat diamonds",
+            "summary": "Repeat opener's suit so responder may pass the second negative"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-repeat-3h",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "strong-2c:pass-after-repeat-3h",
+          "semanticClassId": "strong-2c:pass-after-second-negative",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.clubs:lte:4",
+              "description": "No real club suit to cancel the second negative",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "Strong2CPass2NT",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass \u2014 stop below game",
+            "summary": "Pass opener's repeated suit when the second negative was a true bust"
+          }
+        },
+        {
+          "meaningId": "strong-2c:cancel-second-negative-4c",
+          "semanticClassId": "strong-2c:cancel-second-negative",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.clubs:gte:5",
+              "description": "5+ clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "Strong2CRespNewClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4C \u2014 cancel the second negative",
+            "summary": "Repeat the second-negative suit naturally to show real clubs"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-repeat-3s",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "strong-2c:pass-after-repeat-3s",
+          "semanticClassId": "strong-2c:pass-after-second-negative",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.clubs:lte:4",
+              "description": "No real club suit to cancel the second negative",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "Strong2CPass2NT",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass \u2014 stop below game",
+            "summary": "Pass opener's repeated suit when the second negative was a true bust"
+          }
+        },
+        {
+          "meaningId": "strong-2c:cancel-second-negative-4c-over-spades",
+          "semanticClassId": "strong-2c:cancel-second-negative",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.clubs:gte:5",
+              "description": "5+ clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "Strong2CRespNewClubs",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4C \u2014 cancel the second negative",
+            "summary": "Repeat the second-negative suit naturally to show real clubs"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-repeat-4c",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "strong-2c:pass-after-repeat-4c",
+          "semanticClassId": "strong-2c:pass-after-second-negative",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.diamonds:lte:4",
+              "description": "No real diamond suit to cancel the second negative",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "Strong2CPass2NT",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass \u2014 stop below game",
+            "summary": "Pass opener's repeated suit when the second negative was a true bust"
+          }
+        },
+        {
+          "meaningId": "strong-2c:cancel-second-negative-4d",
+          "semanticClassId": "strong-2c:cancel-second-negative",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.diamonds:gte:5",
+              "description": "5+ diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "Strong2CRespNewDiamonds",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4D \u2014 cancel the second negative",
+            "summary": "Repeat the second-negative suit naturally to show real diamonds"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-repeat-4d",
+      "turn": "responder",
+      "surfaces": [
+        {
+          "meaningId": "strong-2c:pass-after-repeat-4d",
+          "semanticClassId": "strong-2c:pass-after-second-negative",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:lte:4",
+              "description": "No real heart suit to cancel the second negative",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "Strong2CPass2NT",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass \u2014 stop below game",
+            "summary": "Pass opener's repeated suit when the second negative was a true bust"
+          }
+        },
+        {
+          "meaningId": "strong-2c:cancel-second-negative-4h",
+          "semanticClassId": "strong-2c:cancel-second-negative",
+          "moduleId": "strong-2c",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "Strong2CRespNewHearts",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "4H \u2014 cancel the second negative",
+            "summary": "Repeat the second-negative suit naturally to show real hearts"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
       "phase": "after-positive-hearts",
       "turn": "opener",
       "surfaces": [
@@ -2697,7 +3415,7 @@
         "id": "module.strong2c.qualifiesForOpen",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "22+ HCP balanced or 9+ playing tricks qualifies for the core strong 2C opening rule",
+        "description": "22+ HCP balanced or an unbalanced powerhouse with near-game tricks qualifies for the core strong 2C opening rule",
         "valueType": "boolean",
         "derivesFrom": [
           "hand.hcp",
@@ -2759,11 +3477,91 @@
               ]
             },
             {
-              "kind": "extended",
-              "clause": {
-                "clauseKind": "playingTricks",
-                "min": 9
-              }
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "gte",
+                        "value": 5
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "gte",
+                        "value": 5
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "gte",
+                        "value": 5
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "gte",
+                        "value": 5
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "or",
+                  "operands": [
+                    {
+                      "kind": "and",
+                      "operands": [
+                        {
+                          "kind": "primitive",
+                          "clause": {
+                            "factId": "hand.hcp",
+                            "operator": "gte",
+                            "value": 14
+                          }
+                        },
+                        {
+                          "kind": "extended",
+                          "clause": {
+                            "clauseKind": "playingTricks",
+                            "min": 9
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "and",
+                      "operands": [
+                        {
+                          "kind": "primitive",
+                          "clause": {
+                            "factId": "hand.hcp",
+                            "operator": "gte",
+                            "value": 18
+                          }
+                        },
+                        {
+                          "kind": "extended",
+                          "clause": {
+                            "clauseKind": "playingTricks",
+                            "min": 8
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -3273,6 +4071,140 @@
         }
       },
       {
+        "id": "module.strong2c.balanced28to30",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "28-30 HCP balanced",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.hcp",
+          "hand.suitLength.spades",
+          "hand.suitLength.hearts",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.clubs"
+        ],
+        "constrainsDimensions": [
+          "pointRange",
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 28
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "lte",
+                "value": 30
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "lte",
+                "value": 4
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.strong2c.balanced31plus",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "31+ HCP balanced",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.hcp",
+          "hand.suitLength.spades",
+          "hand.suitLength.hearts",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.clubs"
+        ],
+        "constrainsDimensions": [
+          "pointRange",
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.hcp",
+                "operator": "gte",
+                "value": 31
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "lte",
+                "value": 4
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "lte",
+                "value": 4
+              }
+            }
+          ]
+        }
+      },
+      {
         "id": "module.strong2c.responderGameValues",
         "layer": "module-derived",
         "world": "acting-hand",
@@ -3417,7 +4349,7 @@
     "summaryCard": {
       "trigger": "You open strong two clubs, partner responds",
       "definingMeaningId": "strong-2c:open-2c",
-      "partnership": "Agree that two diamonds is the default waiting reply and that positive suit responses need real suit quality. After opener rebids two notrump, Stayman and Jacoby Transfers come from the sibling no-trump modules rather than this fixture."
+      "partnership": "Agree that two diamonds is the default waiting reply, that positive suit responses need real suit quality, and that after a second negative opener repeats the suit so responder may pass or later show that suit naturally. After opener rebids two notrump, Stayman and Jacoby Transfers come from the sibling no-trump modules rather than this fixture."
     },
     "whenToUse": [
       {
@@ -3539,7 +4471,7 @@
       },
       {
         "kind": "negative",
-        "label": "Counter-example: five small cards are not a positive suit",
+        "label": "Counter-example: a weak long suit starts with waiting, then the second negative",
         "calls": [
           {
             "seat": "N",
@@ -3576,6 +4508,22 @@
               "strain": "C"
             },
             "rationale": "The cheapest new suit becomes the artificial second negative, not a natural club bid."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            },
+            "rationale": "Opener repeats hearts so the partnership may now stop below game."
+          },
+          {
+            "seat": "S",
+            "call": {
+              "type": "pass"
+            },
+            "rationale": "Responder passes when the second negative was genuine and there is no real club suit to reveal."
           }
         ]
       }
@@ -3613,6 +4561,10 @@
         {
           "recommendation": "After opener rebids two notrump, continue with the normal notrump methods.",
           "note": "This fixture stops owning the Stayman and transfer follow-ups at that point."
+        },
+        {
+          "recommendation": "After a second negative, expect opener to repeat the suit; only then does repeating that second-negative suit become natural.",
+          "note": "Larry's cancellation pattern turns the earlier artificial call back into a real suit once opener has given responder room to pass."
         }
       ]
     },
@@ -3640,16 +4592,16 @@
     ],
     "supportsRoleSelection": false,
     "teaching": {
-      "purpose": "Open very strong hands with an artificial 2C bid, then use the waiting or positive-suit structure to describe shape.",
-      "whenToUse": "Open 2C with a balanced 22+ count or an unbalanced hand with roughly 9+ playing tricks. As responder, bid 2D waiting unless you have 8+ HCP and a good 5+ suit.",
+      "purpose": "Open very strong hands with an artificial 2C bid, then use the waiting, positive-suit, and second-negative structures to describe shape.",
+      "whenToUse": "Open 2C with a balanced 22+ count or an unbalanced powerhouse with near-game tricks. As responder, bid 2D waiting unless you have 8+ HCP and a good 5+ suit.",
       "whenNotToUse": [
         "With 20-21 balanced HCP \u2014 open 2NT instead",
         "With a weak hand and a long suit \u2014 use a Weak Two instead",
         "2C is always artificial here \u2014 never open 2C to show clubs"
       ],
       "tradeoff": "2C loses its natural club meaning in exchange for a forcing opening that prevents being passed out with a monster hand.",
-      "principle": "Start with the waiting 2D reply unless responder has real suit quality; opener then clarifies balanced versus natural-suit routes.",
-      "roles": "Opener describes; responder evaluates. The auction is forcing except after 2C-2D-2NT, and the later no-trump continuations hand off to the normal NT modules."
+      "principle": "Start with the waiting 2D reply unless responder has real suit quality; opener then clarifies balanced versus natural-suit routes, and after a second negative repeats the suit so responder can pass or later show that suit naturally.",
+      "roles": "Opener describes; responder evaluates. The auction is forcing except after 2C-2D-2NT and the second-negative partscore escapes, and the later no-trump continuations hand off to the normal NT modules."
     },
     "attachments": [
       {

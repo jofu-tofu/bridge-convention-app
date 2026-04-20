@@ -5,8 +5,8 @@
   "defaultRole": "responder",
   "fixtureVersion": 1,
   "variantOf": "jacoby-transfers",
-  "description": "Minor-suit extension layered on top of jacoby-transfers: 2S is range ask or clubs, 2NT transfers to diamonds, and the major-suit transfer branches are delegated back to jacoby-transfers. Variant metadata is prose-only for now; runtime dependency enforcement is planned via a future requires field.",
-  "purpose": "Teach the minor-suit half of four-way transfers after 1NT without re-encoding the base major-suit Jacoby transfer structure.",
+  "description": "Minor-suit extension layered on top of jacoby-transfers: 2S is range ask or clubs, 2NT transfers to diamonds, and the major-suit transfer branches are delegated back to jacoby-transfers. This Larry-pinned fixture enumerates the weak signoff and balanced range-ask routes; invitational six-card minor continuations and strong follow-ups stay partnership-defined unless Larry gives a specific table.",
+  "purpose": "Teach the minor-suit half of four-way transfers after 1NT without re-encoding the base major-suit Jacoby transfer structure, while keeping non-Larry continuations out of the authored tree.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/showing-a-minor-after-partners-1nt",
@@ -17,8 +17,8 @@
     }
   },
   "teaching": {
-    "tradeoff": "Four-way transfers buy precise minor-suit signoffs and slam-try continuations, but the partnership must remember the special 2S range-ask route and the lower-step diamond super-accept.",
-    "principle": "Keep jacoby-transfers as the base module for majors, then use 2S and 2NT only to land in a minor cheaply or to start a slam-oriented minor-suit conversation.",
+    "tradeoff": "Four-way transfers buy precise minor-suit entries and cheap signoffs, but the partnership must remember the special 2S range-ask route and still agree which invitational or strong minor continuations are on beyond Larry's published table.",
+    "principle": "Keep jacoby-transfers as the base module for majors, then use 2S and 2NT only to start the minor-suit routes Larry defines clearly and leave any extra invitational or strong continuations to explicit partnership agreement.",
     "commonMistakes": [
       {
         "text": "Do not treat this module as a standalone replacement for jacoby-transfers.",
@@ -29,8 +29,12 @@
         "reason": "Natural invitational notrump hands route elsewhere; 2NT here is the diamond transfer."
       },
       {
-        "text": "Do not forget the weak correction after opener bids below your minor.",
-        "reason": "After 1NT-2S-2NT you correct to 3C, and after 1NT-2NT-3C you correct to 3D, to play the intended minor."
+        "text": "Do not assume this Larry-pinned fixture teaches a lower-step diamond super-accept.",
+        "reason": "Larry's article defines the transfer start but not a BridgeBum-style 1NT-2NT-3C super-accept structure, so opener just accepts diamonds at 3D here."
+      },
+      {
+        "text": "Do not assume invitational six-card minor follow-ups are fully enumerated here.",
+        "reason": "Larry says those hands should start with the transfer, but he leaves the continuation methods to partnership agreement rather than a fixed rebid table."
       }
     ]
   },
@@ -106,16 +110,6 @@
       ]
     },
     {
-      "explanationId": "j4w.superacceptDiamonds",
-      "meaningId": "j4w:super-accept-diamonds-3c",
-      "templateKey": "j4w.superacceptDiamonds.semantic",
-      "displayText": "3C is the lower-step super-accept for diamonds",
-      "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
-    },
-    {
       "explanationId": "j4w.acceptDiamonds",
       "meaningId": "transfer:accept-diamonds",
       "templateKey": "j4w.acceptDiamonds.semantic",
@@ -166,20 +160,10 @@
       ]
     },
     {
-      "explanationId": "j4w.correctDiamonds",
-      "meaningId": "j4w:correct-diamonds-after-3c",
-      "templateKey": "j4w.correctDiamonds.semantic",
-      "displayText": "3D corrects opener back to diamonds after 3C",
-      "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
-    },
-    {
       "explanationId": "j4w.strongDiamonds3nt",
       "meaningId": "j4w:strong-diamonds-3nt",
       "templateKey": "j4w.strongDiamonds3nt.semantic",
-      "displayText": "3NT shows the balanced strong diamond branch",
+      "displayText": "3NT is the partnership-defined balanced strong diamond continuation",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -189,7 +173,7 @@
       "explanationId": "j4w.clubsShowDiamonds",
       "meaningId": "j4w:clubs-show-diamonds",
       "templateKey": "j4w.clubsShowDiamonds.semantic",
-      "displayText": "A new suit after clubs shows a strong secondary diamond feature",
+      "displayText": "A partnership-defined new suit after clubs shows a strong secondary diamond feature",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -199,7 +183,7 @@
       "explanationId": "j4w.clubsShowHearts",
       "meaningId": "j4w:clubs-show-hearts",
       "templateKey": "j4w.clubsShowHearts.semantic",
-      "displayText": "A new suit after clubs shows a strong secondary heart feature",
+      "displayText": "A partnership-defined new suit after clubs shows a strong secondary heart feature",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -209,7 +193,7 @@
       "explanationId": "j4w.clubsShowSpades",
       "meaningId": "j4w:clubs-show-spades",
       "templateKey": "j4w.clubsShowSpades.semantic",
-      "displayText": "A new suit after clubs shows a strong secondary spade feature",
+      "displayText": "A partnership-defined new suit after clubs shows a strong secondary spade feature",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -219,7 +203,7 @@
       "explanationId": "j4w.diamondsShowClubs",
       "meaningId": "j4w:diamonds-show-clubs",
       "templateKey": "j4w.diamondsShowClubs.semantic",
-      "displayText": "A new suit after diamonds shows a strong secondary club feature",
+      "displayText": "A partnership-defined new suit after diamonds shows a strong secondary club feature",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -229,7 +213,7 @@
       "explanationId": "j4w.diamondsShowHearts",
       "meaningId": "j4w:diamonds-show-hearts",
       "templateKey": "j4w.diamondsShowHearts.semantic",
-      "displayText": "A new suit after diamonds shows a strong secondary heart feature",
+      "displayText": "A partnership-defined new suit after diamonds shows a strong secondary heart feature",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -239,7 +223,7 @@
       "explanationId": "j4w.diamondsShowSpades",
       "meaningId": "j4w:diamonds-show-spades",
       "templateKey": "j4w.diamondsShowSpades.semantic",
-      "displayText": "A new suit after diamonds shows a strong secondary spade feature",
+      "displayText": "A partnership-defined new suit after diamonds shows a strong secondary spade feature",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -344,16 +328,6 @@
       },
       {
         "from": "transferring-diamonds",
-        "to": "superaccepted-diamonds",
-        "on": {
-          "act": "show",
-          "feature": "heldSuit",
-          "suit": "clubs",
-          "level": 3
-        }
-      },
-      {
-        "from": "transferring-diamonds",
         "to": "accepted-diamonds",
         "on": {
           "act": "accept",
@@ -420,49 +394,6 @@
         }
       },
       {
-        "from": "superaccepted-diamonds",
-        "to": "corrected-diamonds",
-        "on": {
-          "act": "place",
-          "strain": "diamonds"
-        }
-      },
-      {
-        "from": "superaccepted-diamonds",
-        "to": "inactive",
-        "on": {
-          "act": "place",
-          "strain": "notrump"
-        }
-      },
-      {
-        "from": "superaccepted-diamonds",
-        "to": "inactive",
-        "on": {
-          "act": "show",
-          "feature": "heldSuit",
-          "suit": "clubs"
-        }
-      },
-      {
-        "from": "superaccepted-diamonds",
-        "to": "inactive",
-        "on": {
-          "act": "show",
-          "feature": "heldSuit",
-          "suit": "hearts"
-        }
-      },
-      {
-        "from": "superaccepted-diamonds",
-        "to": "inactive",
-        "on": {
-          "act": "show",
-          "feature": "heldSuit",
-          "suit": "spades"
-        }
-      },
-      {
         "from": "accepted-diamonds",
         "to": "inactive",
         "on": {
@@ -506,13 +437,6 @@
       },
       {
         "from": "corrected-clubs",
-        "to": "inactive",
-        "on": {
-          "act": "pass"
-        }
-      },
-      {
-        "from": "corrected-diamonds",
         "to": "inactive",
         "on": {
           "act": "pass"
@@ -661,7 +585,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "2S to show strong clubs",
-            "summary": "Bid 2S with a strong club hand and slam interest, then clarify with 3NT or a new suit."
+            "summary": "Bid 2S with a strong club hand and slam interest, then continue with the partnership-defined 3NT or new-suit follow-up your partnership plays."
           }
         },
         {
@@ -749,7 +673,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "2NT to show strong diamonds",
-            "summary": "Bid 2NT with a strong diamond hand and slam interest, then continue with 3NT or a new suit."
+            "summary": "Bid 2NT with a strong diamond hand and slam interest, then continue with the partnership-defined 3NT or new-suit follow-up your partnership plays."
           }
         }
       ]
@@ -859,52 +783,6 @@
       },
       "surfaces": [
         {
-          "meaningId": "j4w:super-accept-diamonds-3c",
-          "semanticClassId": "transfer:super-accept",
-          "moduleId": "jacoby-4way",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "C"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "eq",
-              "value": 17,
-              "description": "17 HCP",
-              "rationale": "The lower-step diamond super-accept starts with a maximum notrump.",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.diamonds",
-              "operator": "gte",
-              "value": 4,
-              "description": "4+ diamonds",
-              "rationale": "BridgeBum describes the lower-step super-accept with strong diamond support.",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "must",
-            "modulePrecedence": 0,
-            "declarationOrder": 0
-          },
-          "sourceIntent": {
-            "type": "ShowHeldSuit",
-            "params": {
-              "suit": "clubs"
-            }
-          },
-          "disclosure": "alert",
-          "teachingLabel": {
-            "name": "3C diamond super-accept",
-            "summary": "Bid 3C with a maximum and strong diamond support, giving responder room to correct or continue."
-          }
-        },
-        {
           "meaningId": "transfer:accept-diamonds",
           "semanticClassId": "transfer:accept-diamonds",
           "moduleId": "jacoby-4way",
@@ -930,7 +808,7 @@
           "disclosure": "standard",
           "teachingLabel": {
             "name": "3D accept",
-            "summary": "Bid 3D with the routine diamond acceptance when you do not make the lower-step super-accept."
+            "summary": "Bid 3D with the routine diamond acceptance; this Larry-pinned fixture does not teach a lower-step diamond super-accept."
           }
         }
       ]
@@ -1066,7 +944,7 @@
               "operator": "gte",
               "value": 4,
               "description": "4+ diamonds",
-              "rationale": "Use the new-suit continuation as the natural side suit by default.",
+              "rationale": "This fixture treats the new suit as a partnership-defined shape-showing continuation after the club transfer route.",
               "isPublic": true
             }
           ],
@@ -1120,7 +998,7 @@
               "operator": "gte",
               "value": 4,
               "description": "4+ hearts",
-              "rationale": "Use the new-suit continuation as the natural side suit by default.",
+              "rationale": "This fixture treats the new suit as a partnership-defined shape-showing continuation after the club transfer route.",
               "isPublic": true
             }
           ],
@@ -1174,7 +1052,7 @@
               "operator": "gte",
               "value": 4,
               "description": "4+ spades",
-              "rationale": "Use the new-suit continuation as the natural side suit by default.",
+              "rationale": "This fixture treats the new suit as a partnership-defined shape-showing continuation after the club transfer route.",
               "isPublic": true
             }
           ],
@@ -1268,7 +1146,7 @@
               "operator": "boolean",
               "value": true,
               "description": "Slam interest",
-              "rationale": "BridgeBum uses 3NT as the balanced strong branch after the diamond transfer.",
+              "rationale": "This fixture keeps 3NT as the partnership-defined balanced strong follow-up after the Larry-backed diamond transfer entry.",
               "isPublic": true
             },
             {
@@ -1284,7 +1162,7 @@
               "operator": "boolean",
               "value": false,
               "description": "No short suit",
-              "rationale": "The 3NT continuation is the balanced strong hand.",
+              "rationale": "Use 3NT only when the partnership treats the strong continuation as balanced rather than shape-showing.",
               "isPublic": true
             }
           ],
@@ -1300,7 +1178,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3NT balanced continuation",
-            "summary": "Bid 3NT with the balanced strong diamond hand after opener accepts at 3D."
+            "summary": "Use 3NT as the partnership-defined balanced strong continuation after opener accepts at 3D."
           }
         },
         {
@@ -1336,7 +1214,7 @@
               "operator": "gte",
               "value": 4,
               "description": "4+ hearts",
-              "rationale": "Use the new-suit continuation as the natural side suit by default.",
+              "rationale": "This fixture treats the new suit as a partnership-defined shape-showing continuation after the transfer is accepted.",
               "isPublic": true
             }
           ],
@@ -1390,7 +1268,7 @@
               "operator": "gte",
               "value": 4,
               "description": "4+ spades",
-              "rationale": "Use the new-suit continuation as the natural side suit by default.",
+              "rationale": "This fixture treats the new suit as a partnership-defined shape-showing continuation after the transfer is accepted.",
               "isPublic": true
             }
           ],
@@ -1444,7 +1322,7 @@
               "operator": "gte",
               "value": 4,
               "description": "4+ clubs",
-              "rationale": "Use the new-suit continuation as the natural side suit by default.",
+              "rationale": "This fixture treats the new suit as a partnership-defined shape-showing continuation after the transfer is accepted.",
               "isPublic": true
             }
           ],
@@ -1568,278 +1446,6 @@
       ]
     },
     {
-      "phase": "superaccepted-diamonds",
-      "turn": "responder",
-      "negotiationDelta": {
-        "captain": "responder"
-      },
-      "scope": {
-        "kind": "enumerated"
-      },
-      "surfaces": [
-        {
-          "meaningId": "j4w:correct-diamonds-after-3c",
-          "semanticClassId": "j4w:diamonds-correction",
-          "moduleId": "jacoby-4way",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "D"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "system.responder.weakHand",
-              "operator": "boolean",
-              "value": true,
-              "description": "Weak hand",
-              "rationale": "The weak diamond hand corrects the lower-step super-accept back to diamonds.",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.diamonds",
-              "operator": "gte",
-              "value": 6,
-              "description": "6+ diamonds",
-              "rationale": "This correction belongs to the real diamond signoff hand.",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "must",
-            "modulePrecedence": 0,
-            "declarationOrder": 0
-          },
-          "sourceIntent": {
-            "type": "PlacementCorrection",
-            "params": {
-              "suit": "diamonds"
-            }
-          },
-          "disclosure": "alert",
-          "teachingLabel": {
-            "name": "3D weak correction",
-            "summary": "Correct opener\u2019s 3C super-accept back to 3D with the weak diamond signoff hand."
-          }
-        },
-        {
-          "meaningId": "j4w:strong-diamonds-3nt",
-          "semanticClassId": "j4w:diamonds-3nt",
-          "moduleId": "jacoby-4way",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "NT"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "system.responder.slamValues",
-              "operator": "boolean",
-              "value": true,
-              "description": "Slam interest",
-              "rationale": "BridgeBum uses 3NT as the balanced strong branch after the diamond transfer.",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.diamonds",
-              "operator": "gte",
-              "value": 5,
-              "description": "5+ diamonds",
-              "rationale": "The strong branch still centers on a real diamond suit.",
-              "isPublic": true
-            },
-            {
-              "factId": "bridge.hasShortage",
-              "operator": "boolean",
-              "value": false,
-              "description": "No short suit",
-              "rationale": "The 3NT continuation is the balanced strong hand.",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 1
-          },
-          "sourceIntent": {
-            "type": "TransferNTGame",
-            "params": {}
-          },
-          "disclosure": "alert",
-          "teachingLabel": {
-            "name": "3NT balanced continuation",
-            "summary": "Bid 3NT with the balanced strong diamond hand after opener super-accepts at 3C."
-          }
-        },
-        {
-          "meaningId": "j4w:diamonds-show-hearts",
-          "semanticClassId": "j4w:diamonds-new-suit",
-          "moduleId": "jacoby-4way",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "H"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "system.responder.slamValues",
-              "operator": "boolean",
-              "value": true,
-              "description": "Slam interest",
-              "rationale": "Strong diamond hands continue by showing extra shape rather than signing off.",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.diamonds",
-              "operator": "gte",
-              "value": 5,
-              "description": "5+ diamonds",
-              "rationale": "The strong branch still centers on a real diamond suit.",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
-              "value": 4,
-              "description": "4+ hearts",
-              "rationale": "Use the new-suit continuation as the natural side suit by default.",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 2
-          },
-          "sourceIntent": {
-            "type": "NewSuitGameForce",
-            "params": {
-              "suit": "hearts"
-            }
-          },
-          "disclosure": "alert",
-          "teachingLabel": {
-            "name": "3H strong continuation",
-            "summary": "Show a strong secondary heart feature; partnerships may treat the new suit as natural or as shortness."
-          }
-        },
-        {
-          "meaningId": "j4w:diamonds-show-spades",
-          "semanticClassId": "j4w:diamonds-new-suit",
-          "moduleId": "jacoby-4way",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "S"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "system.responder.slamValues",
-              "operator": "boolean",
-              "value": true,
-              "description": "Slam interest",
-              "rationale": "Strong diamond hands continue by showing extra shape rather than signing off.",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.diamonds",
-              "operator": "gte",
-              "value": 5,
-              "description": "5+ diamonds",
-              "rationale": "The strong branch still centers on a real diamond suit.",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.spades",
-              "operator": "gte",
-              "value": 4,
-              "description": "4+ spades",
-              "rationale": "Use the new-suit continuation as the natural side suit by default.",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 3
-          },
-          "sourceIntent": {
-            "type": "NewSuitGameForce",
-            "params": {
-              "suit": "spades"
-            }
-          },
-          "disclosure": "alert",
-          "teachingLabel": {
-            "name": "3S strong continuation",
-            "summary": "Show a strong secondary spade feature; partnerships may treat the new suit as natural or as shortness."
-          }
-        },
-        {
-          "meaningId": "j4w:diamonds-show-clubs",
-          "semanticClassId": "j4w:diamonds-new-suit",
-          "moduleId": "jacoby-4way",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 4,
-              "strain": "C"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "system.responder.slamValues",
-              "operator": "boolean",
-              "value": true,
-              "description": "Slam interest",
-              "rationale": "Strong diamond hands continue by showing extra shape rather than signing off.",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.diamonds",
-              "operator": "gte",
-              "value": 5,
-              "description": "5+ diamonds",
-              "rationale": "The strong branch still centers on a real diamond suit.",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.clubs",
-              "operator": "gte",
-              "value": 4,
-              "description": "4+ clubs",
-              "rationale": "Use the new-suit continuation as the natural side suit by default.",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 4
-          },
-          "sourceIntent": {
-            "type": "NewSuitGameForce",
-            "params": {
-              "suit": "clubs"
-            }
-          },
-          "disclosure": "alert",
-          "teachingLabel": {
-            "name": "4C strong continuation",
-            "summary": "Show a strong secondary club feature; partnerships may treat the new suit as natural or as shortness."
-          }
-        }
-      ]
-    },
-    {
       "phase": "corrected-clubs",
       "turn": "opener",
       "scope": {
@@ -1874,40 +1480,6 @@
       ]
     },
     {
-      "phase": "corrected-diamonds",
-      "turn": "opener",
-      "scope": {
-        "kind": "enumerated"
-      },
-      "surfaces": [
-        {
-          "meaningId": "j4w:pass-corrected-diamonds",
-          "semanticClassId": "j4w:pass-corrected-diamonds",
-          "moduleId": "jacoby-4way",
-          "encoding": {
-            "defaultCall": {
-              "type": "pass"
-            }
-          },
-          "clauses": [],
-          "ranking": {
-            "recommendationBand": "must",
-            "modulePrecedence": 0,
-            "declarationOrder": 0
-          },
-          "sourceIntent": {
-            "type": "PlacementPass",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Pass 3D",
-            "summary": "Pass the weak correction to 3D."
-          }
-        }
-      ]
-    },
-    {
       "phase": "transferred-hearts",
       "turn": "opener",
       "scope": {
@@ -1930,30 +1502,120 @@
     "summaryCard": {
       "trigger": "Partner opens one notrump and you need the minor-suit half of four-way transfers",
       "definingMeaningId": "transfer:to-clubs-2s",
-      "partnership": "This fixture is the minor-suit extension layered on top of jacoby-transfers. Major-suit transfer continuations are delegated there; runtime enforcement of that dependency is still a planned requires-field change."
+      "partnership": "This fixture is the minor-suit extension layered on top of jacoby-transfers. Major-suit transfer continuations are delegated there, while invitational six-card minor continuations and strong follow-ups remain partnership-defined unless Larry gives a specific table."
     },
     "whenToUse": [
       {
         "predicate": {
-          "kind": "primitive",
-          "clause": {
-            "factId": "hand.suitLength.clubs",
-            "operator": "gte",
-            "value": 6
-          }
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.weakHand",
+                "expected": true
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 6
+              }
+            }
+          ]
         },
         "gloss": "Use two spades, then correct or pass, with a weak six-card club suit that wants to play in clubs."
       },
       {
         "predicate": {
-          "kind": "primitive",
-          "clause": {
-            "factId": "hand.suitLength.diamonds",
-            "operator": "gte",
-            "value": 6
-          }
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.weakHand",
+                "expected": true
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 6
+              }
+            }
+          ]
         },
-        "gloss": "Use two notrump, then pass or correct, with a weak six-card diamond suit that wants to play in diamonds."
+        "gloss": "Use two notrump, then pass three diamonds, with a weak six-card diamond suit that wants to play in diamonds."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.inviteValues",
+                "expected": true
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 6
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "bridge.hasFourCardMajor",
+                "expected": false
+              }
+            }
+          ]
+        },
+        "gloss": "With an invitational six-card club suit and no four-card major, Larry still wants the two-spade transfer start even though the continuation agreements are left to partnership discussion."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.responder.inviteValues",
+                "expected": true
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 6
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "bridge.hasFourCardMajor",
+                "expected": false
+              }
+            }
+          ]
+        },
+        "gloss": "With an invitational six-card diamond suit and no four-card major, Larry still wants the two-notrump transfer start even though the continuation agreements are left to partnership discussion."
       }
     ],
     "workedAuctions": [
@@ -2050,7 +1712,7 @@
       },
       {
         "kind": "positive",
-        "label": "Weak diamonds correct the lower-step super-accept",
+        "label": "Weak diamonds sign off over the routine acceptance",
         "calls": [
           {
             "seat": "N",
@@ -2075,25 +1737,16 @@
             "call": {
               "type": "bid",
               "level": 3,
-              "strain": "C"
+              "strain": "D"
             },
-            "rationale": "Opener super-accepts with a maximum and strong diamond support."
+            "rationale": "Opener makes the routine diamond acceptance that Larry's article defines."
           },
           {
             "seat": "S",
             "call": {
-              "type": "bid",
-              "level": 3,
-              "strain": "D"
-            },
-            "rationale": "Responder corrects back to diamonds to play there."
-          },
-          {
-            "seat": "N",
-            "call": {
               "type": "pass"
             },
-            "rationale": "Opener passes the correction."
+            "rationale": "Responder passes with the weak diamond signoff hand."
           }
         ]
       },
@@ -2152,11 +1805,15 @@
       "items": [
         {
           "recommendation": "Transfer to a six-card minor and sign off.",
-          "note": "Weak clubs use two spades, then three clubs if opener bids two notrump; weak diamonds use two notrump, then three diamonds if opener super-accepts with three clubs."
+          "note": "Weak clubs use two spades, then three clubs if opener bids two notrump; weak diamonds use two notrump, then pass three diamonds."
         },
         {
           "recommendation": "Use the two-spade range-ask route for the balanced invite.",
           "note": "Pass two notrump over a minimum or convert three clubs to three notrump over a maximum. Four-way methods do not keep two notrump natural."
+        },
+        {
+          "recommendation": "Start with the same transfer when you have an invitational six-card minor and no four-card major.",
+          "note": "Larry specifies the transfer start for those hands, but this fixture leaves the later rebids partnership-defined instead of pretending there is one fixed continuation table."
         },
         {
           "recommendation": "Usually choose direct three notrump or a Stayman route instead.",
@@ -2164,7 +1821,7 @@
         },
         {
           "recommendation": "Start with the minor transfer, then use three notrump or a new suit.",
-          "note": "Strong five-card minor hands keep room for balanced three notrump or a partnership-defined new-suit continuation that is natural or shortness."
+          "note": "Strong five-card minor hands keep room for a partnership-defined balanced three notrump continuation or a new suit that many pairs treat as natural or shortness."
         }
       ]
     },

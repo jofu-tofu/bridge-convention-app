@@ -288,7 +288,9 @@ fn enumerate_witnesses_blackwood_ask_aces_has_fit_establishing_prefix() {
         assert!(
             state.fit_agreed.is_some(),
             "dealer={:?}: replayed kernel has no fit: prefix={:?} state={:?}",
-            dealer, w.prefix, state
+            dealer,
+            w.prefix,
+            state
         );
 
         // Next seat after the last prefix entry must be the user's seat.
@@ -297,7 +299,9 @@ fn enumerate_witnesses_blackwood_ask_aces_has_fit_establishing_prefix() {
             next_seat(last.seat),
             user_seat,
             "dealer={:?}: prefix does not leave user next-to-act (last seat {:?}, user {:?})",
-            dealer, last.seat, user_seat
+            dealer,
+            last.seat,
+            user_seat
         );
 
         // Projection should produce at least one branch with an HCP
@@ -354,11 +358,26 @@ fn find_kernel_establishing_prefix_respects_specific_strain() {
             .prefix
             .iter()
             .filter_map(|e| match &e.call {
-                Call::Bid { strain: BidSuit::Hearts, .. } => Some(BidSuitName::Hearts),
-                Call::Bid { strain: BidSuit::Spades, .. } => Some(BidSuitName::Spades),
-                Call::Bid { strain: BidSuit::Diamonds, .. } => Some(BidSuitName::Diamonds),
-                Call::Bid { strain: BidSuit::Clubs, .. } => Some(BidSuitName::Clubs),
-                Call::Bid { strain: BidSuit::NoTrump, .. } => Some(BidSuitName::Notrump),
+                Call::Bid {
+                    strain: BidSuit::Hearts,
+                    ..
+                } => Some(BidSuitName::Hearts),
+                Call::Bid {
+                    strain: BidSuit::Spades,
+                    ..
+                } => Some(BidSuitName::Spades),
+                Call::Bid {
+                    strain: BidSuit::Diamonds,
+                    ..
+                } => Some(BidSuitName::Diamonds),
+                Call::Bid {
+                    strain: BidSuit::Clubs,
+                    ..
+                } => Some(BidSuitName::Clubs),
+                Call::Bid {
+                    strain: BidSuit::NoTrump,
+                    ..
+                } => Some(BidSuitName::Notrump),
                 _ => None,
             })
             .collect();
@@ -423,7 +442,9 @@ fn find_kernel_establishing_prefix_lands_on_target_turn_seat() {
                 next_seat(last.seat),
                 user_seat,
                 "dealer={:?}: prefix last seat {:?} + 1 should equal user seat {:?}",
-                dealer, last.seat, user_seat
+                dealer,
+                last.seat,
+                user_seat
             );
         }
     }

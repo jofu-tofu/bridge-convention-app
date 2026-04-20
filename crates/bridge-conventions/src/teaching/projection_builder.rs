@@ -554,12 +554,8 @@ mod tests {
             observed_value: Some(serde_json::json!(true)),
             is_public: Some(true),
         };
-        let eliminated_carrier = make_carrier(
-            "bridge:to-3nt",
-            "natural-bids",
-            vec![failing_clause],
-            false,
-        );
+        let eliminated_carrier =
+            make_carrier("bridge:to-3nt", "natural-bids", vec![failing_clause], false);
 
         let result = PipelineResult {
             selected: Some(selected_carrier.clone()),

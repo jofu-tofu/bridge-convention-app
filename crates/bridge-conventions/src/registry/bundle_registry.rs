@@ -457,7 +457,10 @@ mod tests {
         // Slam-category modules are auto-paired with fit-establishing
         // base modules so the live spec can reach an agreed trump fit
         // before the slam tool fires. See SLAM_FIT_DEPENDENCIES.
-        assert_eq!(b.member_ids, vec!["blackwood", "jacoby-transfers", "stayman"]);
+        assert_eq!(
+            b.member_ids,
+            vec!["blackwood", "jacoby-transfers", "stayman"]
+        );
         assert_eq!(b.modules.len(), 3);
         assert_eq!(b.modules[0].module_id, "blackwood");
         assert_eq!(b.category, ConventionCategory::Asking);

@@ -4,8 +4,8 @@
   "category": "constructive",
   "defaultRole": "responder",
   "fixtureVersion": 1,
-  "description": "After 1m-1M-1NT, bid the other minor as an artificial checkback to find major-suit fits or determine strength",
-  "purpose": "After opener rebids 1NT, responder may need to explore for an 8-card major fit or determine whether to invite or bid game. NMF provides a one-round forcing mechanism to extract more information from opener.",
+  "description": "After opener rebids 1NT, bid the unbid minor as an artificial checkback to find major-suit fits or determine strength",
+  "purpose": "After opener rebids 1NT, responder may need to explore for an 8-card major fit or determine whether to invite or bid game. NMF provides a one-round forcing mechanism to extract more information from opener, primarily after minor openings and in some partnerships after 1H-1S-1NT.",
   "references": {
     "authority": {
       "url": "https://kwbridge.com/nmf.htm",
@@ -16,7 +16,7 @@
     }
   },
   "teaching": {
-    "tradeoff": "After 1m-1M-1NT, the bid of the other minor loses its natural meaning in exchange for an artificial forcing checkback bid.",
+    "tradeoff": "After opener rebids 1NT, the unbid minor can lose its natural meaning in exchange for an artificial forcing checkback bid.",
     "principle": "After a 1NT rebid by opener, responder may still need to explore for an 8-card major fit or determine whether to invite or bid game. NMF provides a one-round forcing mechanism to extract more information.",
     "commonMistakes": [
       {
@@ -96,7 +96,7 @@
       "templateKey": "nmf.openerMinimum.supporting",
       "displayText": "Opener has minimum values (12-13 HCP)",
       "contrastiveTemplateKey": "nmf.openerMinimum.whyNot",
-      "contrastiveDisplayText": "Not minimum \u2014 opener has 14-15 HCP",
+      "contrastiveDisplayText": "Not minimum \u2014 opener has 14 HCP",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -107,7 +107,7 @@
       "explanationId": "nmf.openerMaximum",
       "factId": "module.nmf.openerMaximum",
       "templateKey": "nmf.openerMaximum.supporting",
-      "displayText": "Opener has maximum values (14-15 HCP)",
+      "displayText": "Opener has maximum values (14 HCP)",
       "contrastiveTemplateKey": "nmf.openerMaximum.whyNot",
       "contrastiveDisplayText": "Not maximum \u2014 opener has 12-13 HCP",
       "preferredLevel": "semantic",
@@ -190,7 +190,7 @@
       "explanationId": "nmf.openerRebid1nt",
       "meaningId": "nmf:opener-rebid-1nt",
       "templateKey": "nmf.openerRebid1nt.semantic",
-      "displayText": "Opener rebids 1NT showing 12-15 HCP balanced",
+      "displayText": "Opener rebids 1NT showing 12-14 HCP balanced",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -280,7 +280,7 @@
       "explanationId": "nmf.openerSupportHeartsMax",
       "meaningId": "nmf:opener-support-hearts-max",
       "templateKey": "nmf.openerSupportHeartsMax.semantic",
-      "displayText": "Jump raise to 3\u2665 \u2014 3-card heart support with maximum (14-15 HCP)",
+      "displayText": "Jump raise to 3\u2665 \u2014 3-card heart support with maximum (14 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -291,16 +291,6 @@
       "meaningId": "nmf:opener-show-spades-after-hearts",
       "templateKey": "nmf.openerShowSpadesAfterHearts.semantic",
       "displayText": "Show 4+ spades (no heart support) with minimum after NMF",
-      "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
-    },
-    {
-      "explanationId": "nmf.openerShowSpadesAfterHeartsMax",
-      "meaningId": "nmf:opener-show-spades-after-hearts-max",
-      "templateKey": "nmf.openerShowSpadesAfterHeartsMax.semantic",
-      "displayText": "Jump to 3\u2660 \u2014 4+ spades (no heart support) with maximum (14-15 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -320,7 +310,7 @@
       "explanationId": "nmf.openerNtMaxAfterHearts",
       "meaningId": "nmf:opener-nt-max-after-hearts",
       "templateKey": "nmf.openerNtMaxAfterHearts.semantic",
-      "displayText": "3NT maximum (14-15 HCP) \u2014 no major fit after NMF",
+      "displayText": "3NT maximum (14 HCP) \u2014 no major fit after NMF",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -340,7 +330,7 @@
       "explanationId": "nmf.openerSupportSpadesMax",
       "meaningId": "nmf:opener-support-spades-max",
       "templateKey": "nmf.openerSupportSpadesMax.semantic",
-      "displayText": "Jump raise to 3\u2660 \u2014 3-card spade support with maximum (14-15 HCP)",
+      "displayText": "Jump raise to 3\u2660 \u2014 3-card spade support with maximum (14 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -351,16 +341,6 @@
       "meaningId": "nmf:opener-show-hearts-after-spades",
       "templateKey": "nmf.openerShowHeartsAfterSpades.semantic",
       "displayText": "Show 4+ hearts (no spade support) with minimum after NMF",
-      "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ]
-    },
-    {
-      "explanationId": "nmf.openerShowHeartsAfterSpadesMax",
-      "meaningId": "nmf:opener-show-hearts-after-spades-max",
-      "templateKey": "nmf.openerShowHeartsAfterSpadesMax.semantic",
-      "displayText": "Jump to 3\u2665 \u2014 4+ hearts (no spade support) with maximum (14-15 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -380,7 +360,7 @@
       "explanationId": "nmf.openerNtMaxAfterSpades",
       "meaningId": "nmf:opener-nt-max-after-spades",
       "templateKey": "nmf.openerNtMaxAfterSpades.semantic",
-      "displayText": "3NT maximum (14-15 HCP) \u2014 no major fit after NMF",
+      "displayText": "3NT maximum (14 HCP) \u2014 no major fit after NMF",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -440,7 +420,7 @@
       "explanationId": "nmf.openerSupportSpadesMaxFrom1h",
       "meaningId": "nmf:opener-support-spades-max-from-1h",
       "templateKey": "nmf.openerSupportSpadesMaxFrom1h.semantic",
-      "displayText": "3\u2660: 3-card spade support, maximum (14-15 HCP)",
+      "displayText": "3\u2660: 3-card spade support, maximum (14 HCP)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -504,7 +484,7 @@
       "explanationId": "nmfOpenerJumpClubsMaxAfterHearts",
       "meaningId": "nmf:opener-jump-clubs-max-after-hearts",
       "templateKey": "nmfOpenerJumpClubsMaxAfterHearts.semantic",
-      "displayText": "3\u2663 jump in clubs \u2014 Maximum 14-15 HCP with extra clubs length and no major feature to show"
+      "displayText": "3\u2663 jump in clubs \u2014 Maximum 14 HCP with extra clubs length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -514,7 +494,7 @@
       "explanationId": "nmfOpenerJumpDiamondsMaxAfterHearts",
       "meaningId": "nmf:opener-jump-diamonds-max-after-hearts",
       "templateKey": "nmfOpenerJumpDiamondsMaxAfterHearts.semantic",
-      "displayText": "3\u2666 jump rebid diamonds \u2014 Maximum 14-15 HCP with extra diamonds length and no major feature to show"
+      "displayText": "3\u2666 jump rebid diamonds \u2014 Maximum 14 HCP with extra diamonds length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -524,7 +504,7 @@
       "explanationId": "nmfOpenerJumpClubsOwnMaxAfterHearts",
       "meaningId": "nmf:opener-jump-clubs-own-max-after-hearts",
       "templateKey": "nmfOpenerJumpClubsOwnMaxAfterHearts.semantic",
-      "displayText": "3\u2663 jump rebid clubs \u2014 Maximum 14-15 HCP with extra clubs length and no major feature to show"
+      "displayText": "3\u2663 jump rebid clubs \u2014 Maximum 14 HCP with extra clubs length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -544,7 +524,7 @@
       "explanationId": "nmfOpenerJumpClubsMaxAfterSpades",
       "meaningId": "nmf:opener-jump-clubs-max-after-spades",
       "templateKey": "nmfOpenerJumpClubsMaxAfterSpades.semantic",
-      "displayText": "3\u2663 jump in clubs \u2014 Maximum 14-15 HCP with extra clubs length and no major feature to show"
+      "displayText": "3\u2663 jump in clubs \u2014 Maximum 14 HCP with extra clubs length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -554,7 +534,7 @@
       "explanationId": "nmfOpenerJumpDiamondsMaxAfterSpades",
       "meaningId": "nmf:opener-jump-diamonds-max-after-spades",
       "templateKey": "nmfOpenerJumpDiamondsMaxAfterSpades.semantic",
-      "displayText": "3\u2666 jump rebid diamonds \u2014 Maximum 14-15 HCP with extra diamonds length and no major feature to show"
+      "displayText": "3\u2666 jump rebid diamonds \u2014 Maximum 14 HCP with extra diamonds length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -564,7 +544,7 @@
       "explanationId": "nmfOpenerJumpClubsOwnMaxAfterSpades",
       "meaningId": "nmf:opener-jump-clubs-own-max-after-spades",
       "templateKey": "nmfOpenerJumpClubsOwnMaxAfterSpades.semantic",
-      "displayText": "3\u2663 jump rebid clubs \u2014 Maximum 14-15 HCP with extra clubs length and no major feature to show"
+      "displayText": "3\u2663 jump rebid clubs \u2014 Maximum 14 HCP with extra clubs length and no major feature to show"
     },
     {
       "preferredLevel": "semantic",
@@ -701,26 +681,6 @@
       "roles": [
         "pedagogical"
       ],
-      "explanationId": "nmfResponderGameHeartsAfterOtherMajorMax",
-      "meaningId": "nmf:responder-game-hearts-after-other-major-max",
-      "templateKey": "nmfResponderGameHeartsAfterOtherMajorMax.semantic",
-      "displayText": "4\u2665 game after acceptance \u2014 Opener has accepted the invitation; bid game in hearts"
-    },
-    {
-      "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
-      "explanationId": "nmfResponder3ntAfterHeartsOtherMajorMaxNoFit",
-      "meaningId": "nmf:responder-3nt-after-hearts-other-major-max-no-fit",
-      "templateKey": "nmfResponder3ntAfterHeartsOtherMajorMaxNoFit.semantic",
-      "displayText": "3NT game \u2014 Opener showed extras; place the contract in 3NT with no hearts fit"
-    },
-    {
-      "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
       "explanationId": "nmfResponderGameSpadesAfterOtherMajor",
       "meaningId": "nmf:responder-game-spades-after-other-major",
       "templateKey": "nmfResponderGameSpadesAfterOtherMajor.semantic",
@@ -755,26 +715,6 @@
       "meaningId": "nmf:responder-2nt-after-spades-other-major-no-fit",
       "templateKey": "nmfResponder2ntAfterSpadesOtherMajorNoFit.semantic",
       "displayText": "2NT invite \u2014 Invitational 10-11 HCP without a major fit \u2014 invite in notrump"
-    },
-    {
-      "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
-      "explanationId": "nmfResponderGameSpadesAfterOtherMajorMax",
-      "meaningId": "nmf:responder-game-spades-after-other-major-max",
-      "templateKey": "nmfResponderGameSpadesAfterOtherMajorMax.semantic",
-      "displayText": "4\u2660 game after acceptance \u2014 Opener has accepted the invitation; bid game in spades"
-    },
-    {
-      "preferredLevel": "semantic",
-      "roles": [
-        "pedagogical"
-      ],
-      "explanationId": "nmfResponder3ntAfterSpadesOtherMajorMaxNoFit",
-      "meaningId": "nmf:responder-3nt-after-spades-other-major-max-no-fit",
-      "templateKey": "nmfResponder3ntAfterSpadesOtherMajorMaxNoFit.semantic",
-      "displayText": "3NT game \u2014 Opener showed extras; place the contract in 3NT with no spades fit"
     },
     {
       "preferredLevel": "semantic",
@@ -1558,9 +1498,9 @@
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             },
             {
@@ -1636,9 +1576,9 @@
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             },
             {
@@ -2111,15 +2051,15 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -2203,68 +2143,6 @@
           }
         },
         {
-          "meaningId": "nmf:opener-show-spades-after-hearts-max",
-          "semanticClassId": "nmf:opener-jump-other-major",
-          "moduleId": "new-minor-forcing",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "S"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.suitLength.spades",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.spades:gte:4",
-              "description": "4+ spades",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "lte",
-              "value": 2,
-              "clauseId": "hand.suitLength.hearts:lte:2",
-              "description": "No heart support",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 14,
-              "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 3
-          },
-          "sourceIntent": {
-            "type": "NMFOpenerJumpOtherMajor",
-            "params": {
-              "suit": "spades"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Jump to 3S (max)",
-            "summary": "Maximum hand (), no heart support but 4+ spades \u2014 jump to show strength"
-          }
-        },
-        {
           "meaningId": "nmf:opener-nt-min-after-hearts",
           "semanticClassId": "nmf:opener-nt-min",
           "moduleId": "new-minor-forcing",
@@ -2333,7 +2211,7 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
@@ -2347,9 +2225,9 @@
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -2463,15 +2341,15 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -2555,68 +2433,6 @@
           }
         },
         {
-          "meaningId": "nmf:opener-show-hearts-after-spades-max",
-          "semanticClassId": "nmf:opener-jump-other-major",
-          "moduleId": "new-minor-forcing",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "H"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.hearts:gte:4",
-              "description": "4+ hearts",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.spades",
-              "operator": "lte",
-              "value": 2,
-              "clauseId": "hand.suitLength.spades:lte:2",
-              "description": "No spade support",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 14,
-              "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "should",
-            "modulePrecedence": 0,
-            "declarationOrder": 3
-          },
-          "sourceIntent": {
-            "type": "NMFOpenerJumpOtherMajor",
-            "params": {
-              "suit": "hearts"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "Jump to 3H (max)",
-            "summary": "Maximum hand (), no spade support but 4+ hearts \u2014 jump to show strength"
-          }
-        },
-        {
           "meaningId": "nmf:opener-nt-min-after-spades",
           "semanticClassId": "nmf:opener-nt-min",
           "moduleId": "new-minor-forcing",
@@ -2685,7 +2501,7 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
@@ -2699,9 +2515,9 @@
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -2807,9 +2623,9 @@
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP (minimum balanced)",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP (minimum balanced)",
               "isPublic": true
             },
             {
@@ -2842,7 +2658,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "1NT rebid",
-            "summary": "Minimum (12-15) balanced rebid, no 4-card spade support, exactly 5 hearts (6+ would rebid 2\u2665)"
+            "summary": "Minimum (12-14) balanced rebid, no 4-card spade support, exactly 5 hearts (6+ would rebid 2\u2665)"
           }
         }
       ],
@@ -3032,15 +2848,15 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -3122,7 +2938,7 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
@@ -3136,9 +2952,9 @@
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -3191,15 +3007,15 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -3402,15 +3218,15 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -3473,15 +3289,15 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -3574,15 +3390,15 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -3738,15 +3554,15 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -3809,15 +3625,15 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -3910,15 +3726,15 @@
               "operator": "gte",
               "value": 14,
               "clauseId": "hand.hcp:gte:14",
-              "description": "14-15 HCP (maximum)",
+              "description": "14 HCP (maximum)",
               "isPublic": true
             },
             {
               "factId": "hand.hcp",
               "operator": "lte",
-              "value": 15,
-              "clauseId": "hand.hcp:lte:15",
-              "description": "At most 15 HCP",
+              "value": 14,
+              "clauseId": "hand.hcp:lte:14",
+              "description": "At most 14 HCP",
               "isPublic": true
             }
           ],
@@ -4750,120 +4566,6 @@
             "pattern": {
               "act": "show",
               "feature": "heldSuit",
-              "suit": "spades",
-              "actor": "responder"
-            }
-          },
-          {
-            "kind": "last",
-            "pattern": {
-              "actor": "opener",
-              "act": "raise",
-              "strain": "hearts",
-              "strength": "game"
-            }
-          }
-        ]
-      },
-      "surfaces": [
-        {
-          "meaningId": "nmf:responder-game-hearts-after-other-major-max",
-          "semanticClassId": "nmf:responder-major-game",
-          "moduleId": "new-minor-forcing",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 4,
-              "strain": "H"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 10,
-              "clauseId": "hand.hcp:gte:10",
-              "description": "10+ HCP (opener accepted the invitation)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.hearts:gte:4",
-              "description": "4+ hearts",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "must",
-            "modulePrecedence": 0,
-            "declarationOrder": 0
-          },
-          "sourceIntent": {
-            "type": "GameInMajor",
-            "params": {
-              "suit": "hearts"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "4\u2665 game after acceptance",
-            "summary": "Opener has accepted the invitation; bid game in hearts"
-          }
-        },
-        {
-          "meaningId": "nmf:responder-3nt-after-hearts-other-major-max-no-fit",
-          "semanticClassId": "nmf:responder-nt-game-after-nmf",
-          "moduleId": "new-minor-forcing",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "NT"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 10,
-              "clauseId": "hand.hcp:gte:10",
-              "description": "10+ HCP (opener showed extras)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "must",
-            "modulePrecedence": 0,
-            "declarationOrder": 1
-          },
-          "sourceIntent": {
-            "type": "NMFResponderNTGame",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "3NT game",
-            "summary": "Opener showed extras; place the contract in 3NT with no hearts fit"
-          }
-        }
-      ],
-      "scope": {
-        "kind": "enumerated"
-      }
-    },
-    {
-      "phase": "after-nmf-opener-rebid",
-      "turn": "responder",
-      "route": {
-        "kind": "and",
-        "exprs": [
-          {
-            "kind": "contains",
-            "pattern": {
-              "act": "show",
-              "feature": "heldSuit",
               "suit": "hearts",
               "actor": "responder"
             }
@@ -5067,120 +4769,6 @@
           "teachingLabel": {
             "name": "2NT invite",
             "summary": "Invitational without a major fit \u2014 invite in notrump"
-          }
-        }
-      ],
-      "scope": {
-        "kind": "enumerated"
-      }
-    },
-    {
-      "phase": "after-nmf-opener-rebid",
-      "turn": "responder",
-      "route": {
-        "kind": "and",
-        "exprs": [
-          {
-            "kind": "contains",
-            "pattern": {
-              "act": "show",
-              "feature": "heldSuit",
-              "suit": "hearts",
-              "actor": "responder"
-            }
-          },
-          {
-            "kind": "last",
-            "pattern": {
-              "actor": "opener",
-              "act": "raise",
-              "strain": "spades",
-              "strength": "game"
-            }
-          }
-        ]
-      },
-      "surfaces": [
-        {
-          "meaningId": "nmf:responder-game-spades-after-other-major-max",
-          "semanticClassId": "nmf:responder-major-game",
-          "moduleId": "new-minor-forcing",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 4,
-              "strain": "S"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 10,
-              "clauseId": "hand.hcp:gte:10",
-              "description": "10+ HCP (opener accepted the invitation)",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.spades",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.spades:gte:4",
-              "description": "4+ spades",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "must",
-            "modulePrecedence": 0,
-            "declarationOrder": 0
-          },
-          "sourceIntent": {
-            "type": "GameInMajor",
-            "params": {
-              "suit": "spades"
-            }
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "4\u2660 game after acceptance",
-            "summary": "Opener has accepted the invitation; bid game in spades"
-          }
-        },
-        {
-          "meaningId": "nmf:responder-3nt-after-spades-other-major-max-no-fit",
-          "semanticClassId": "nmf:responder-nt-game-after-nmf",
-          "moduleId": "new-minor-forcing",
-          "encoding": {
-            "defaultCall": {
-              "type": "bid",
-              "level": 3,
-              "strain": "NT"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 10,
-              "clauseId": "hand.hcp:gte:10",
-              "description": "10+ HCP (opener showed extras)",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "must",
-            "modulePrecedence": 0,
-            "declarationOrder": 1
-          },
-          "sourceIntent": {
-            "type": "NMFResponderNTGame",
-            "params": {}
-          },
-          "disclosure": "natural",
-          "teachingLabel": {
-            "name": "3NT game",
-            "summary": "Opener showed extras; place the contract in 3NT with no spades fit"
           }
         }
       ],
@@ -5851,9 +5439,9 @@
   ],
   "reference": {
     "summaryCard": {
-      "trigger": "After one minor, one major, and one notrump, responder checks back with the other minor.",
+      "trigger": "After opener rebids one notrump, responder checks back with the unbid minor to clarify major fits or strength.",
       "definingMeaningId": "nmf:ask-after-1c",
-      "partnership": "The new minor is whichever minor responder has not bid. Some partnerships treat it as invitational-or-better by default; others play strictly game-forcing or a two-way style that splits invitational and game-forcing across the two minors \u2014 confirm the agreement. The summary card shows the one-club branch."
+      "partnership": "The new minor is whichever minor responder has not bid. This fixture covers the standard minor-opening structure and a common one-heart extension. Some partnerships treat it as invitational-or-better by default; others play strictly game-forcing or a two-way style that splits invitational and game-forcing across the two minors \u2014 confirm the agreement. The summary card shows the one-club branch."
     },
     "whenToUse": [
       {
@@ -6210,16 +5798,16 @@
     ],
     "supportsRoleSelection": true,
     "teaching": {
-      "purpose": "After opener rebids 1NT (showing 12-14 balanced), use the other minor as an artificial forcing bid to find a 3-card major fit or determine the right game contract",
-      "whenToUse": "After the auction 1m - 1M - 1NT: bid 2D (if opened 1C) or 2C (if opened 1D) with 10+ HCP to ask opener for more information.",
+      "purpose": "After opener rebids 1NT (showing 12-14 balanced), use the unbid minor as an artificial forcing bid to find a 3-card major fit or determine the right game contract.",
+      "whenToUse": "After the auction 1m - 1M - 1NT, bid 2D (if opened 1C) or 2C (if opened 1D) with 10+ HCP to ask opener for more information. Many partnerships also extend the idea after 1H - 1S - 1NT, using an unbid minor as the same checkback.",
       "whenNotToUse": [
         "With a weak hand (6-9 HCP) \u2014 sign off in 2M or pass 1NT instead",
         "When you already know the right contract \u2014 bid game directly",
         "After interference \u2014 NMF does not apply when opponents have bid"
       ],
-      "tradeoff": "The other minor loses its natural meaning after 1m-1M-1NT in exchange for a forcing checkback mechanism",
-      "principle": "After 1NT rebid, responder may need more information to choose between partscore, invite, and game. NMF provides a one-round force that asks opener to show 3-card major support, the other major, or NT range.",
-      "roles": "Responder initiates NMF to gather information; opener describes hand further (major support \u2192 other major \u2192 NT min/max)"
+      "tradeoff": "The unbid minor loses its natural meaning after opener's 1NT rebid in exchange for a forcing checkback mechanism.",
+      "principle": "After a 1NT rebid, responder may need more information to choose between partscore, invite, and game. NMF provides a one-round force that asks opener to show 3-card major support, the other major, or notrump range.",
+      "roles": "Responder initiates NMF to gather information; opener describes hand further through major support, the other major, or notrump range."
     },
     "attachments": [
       {
@@ -6235,6 +5823,14 @@
           "kind": "sequence",
           "calls": [
             "1D"
+          ]
+        }
+      },
+      {
+        "whenAuction": {
+          "kind": "sequence",
+          "calls": [
+            "1H"
           ]
         }
       }
@@ -6488,7 +6084,7 @@
         "id": "module.nmf.openerMaximum",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "Opener has maximum values (14-15 HCP)",
+        "description": "Opener has maximum values (14 HCP)",
         "valueType": "boolean",
         "forTeachingOnly": true,
         "derivesFrom": [
@@ -6513,7 +6109,7 @@
               "clause": {
                 "factId": "hand.hcp",
                 "operator": "lte",
-                "value": 15
+                "value": 14
               }
             }
           ]

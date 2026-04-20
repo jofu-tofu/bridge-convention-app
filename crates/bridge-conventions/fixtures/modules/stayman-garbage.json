@@ -5,8 +5,8 @@
   "defaultRole": "responder",
   "fixtureVersion": 1,
   "variantOf": "stayman",
-  "description": "Bid 2C over 1NT as Garbage Stayman to escape with a weak short-club hand; after a 2D denial, Crawling Stayman lets opener pass 2H or correct to 2S.",
-  "purpose": "Use Stayman only as a weak escape after 1NT, passing a playable 2D/2H/2S partscore or, with both majors and short diamonds, rebidding 2H so opener can choose the better major.",
+  "description": "Bid 2C over 1NT as a weak escape: short-club Garbage Stayman passes 2D/2H/2S, while short-diamond Crawling Stayman rebids 2H so opener can pass or correct to 2S.",
+  "purpose": "Use Stayman only as a weak escape after 1NT, either passing a playable 2D/2H/2S partscore with a short-club garbage hand or, with both majors and short diamonds, rebidding 2H so opener can choose the better major.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/notrump-opening-bids-part-1-of-3-footnote-1",
@@ -18,11 +18,11 @@
   },
   "teaching": {
     "tradeoff": "Garbage Stayman gives up constructive Stayman on these weak hands so the partnership can escape 1NT into the least dangerous partscore.",
-    "principle": "Use 2C only with a weak short-club escape shape; pass 2H or 2S, pass 2D when diamonds are safe, and over 2D crawl to 2H only with both majors and short diamonds.",
+    "principle": "Use 2C only with one of the weak published escape shapes: short-club garbage hands pass a safe partscore, while short-diamond three-suiters with both majors crawl to 2H after the diamond denial.",
     "commonMistakes": [
       {
         "text": "Do not use Garbage Stayman with a weak 5-card major.",
-        "reason": "Those hands belong to Jacoby transfers, not to the short-club garbage escape."
+        "reason": "Those hands belong to Jacoby transfers, not to Garbage or Crawling Stayman."
       },
       {
         "text": "Do not rebid 2H over 2D unless you have both majors and short diamonds.",
@@ -39,9 +39,9 @@
       "explanationId": "nt.stayman.eligible",
       "factId": "module.stayman.eligible",
       "templateKey": "nt.stayman.eligible.supporting",
-      "displayText": "Eligible for Garbage Stayman",
+      "displayText": "Eligible for Garbage or Crawling Stayman",
       "contrastiveTemplateKey": "nt.stayman.eligible.whyNot",
-      "contrastiveDisplayText": "Not eligible for Garbage Stayman",
+      "contrastiveDisplayText": "Not eligible for Garbage or Crawling Stayman",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -53,7 +53,7 @@
       "explanationId": "nt.stayman.preferred",
       "factId": "module.stayman.preferred",
       "templateKey": "nt.stayman.preferred.supporting",
-      "displayText": "Garbage Stayman fits the published escape shapes",
+      "displayText": "Garbage or Crawling Stayman fits the published escape shapes",
       "preferredLevel": "semantic",
       "roles": [
         "supporting",
@@ -296,8 +296,8 @@
               "operator": "boolean",
               "value": true,
               "clauseId": "module.stayman.preferred:boolean:true",
-              "description": "Published Garbage Stayman shapes only",
-              "rationale": "Use only the published short-club shapes 4-4-4-1, 4-4-5-0, 3-4-5-1, and 4-3-5-1.",
+              "description": "Published Garbage or Crawling Stayman shapes only",
+              "rationale": "Use only the published short-club garbage shapes and the short-diamond crawling shapes.",
               "isPublic": true
             }
           ],
@@ -315,7 +315,7 @@
           "disclosure": "standard",
           "teachingLabel": {
             "name": "Garbage Stayman 2\u2663",
-            "summary": "Escape 1NT with a weak short-club hand: classic shapes are 4-4-4-1 / 4-4-5-0, with 3-4-5-1 and 4-3-5-1 also acceptable."
+            "summary": "Escape 1NT with one of the published weak shapes: either a short-club garbage hand or a short-diamond crawl hand with both majors."
           }
         }
       ],
@@ -479,12 +479,12 @@
               "isPublic": true
             },
             {
-              "factId": "hand.suitLength.clubs",
-              "operator": "lte",
-              "value": 2,
-              "clauseId": "hand.suitLength.clubs:lte:2",
-              "description": "At most 2 clubs",
-              "rationale": "Garbage Stayman starts from a short-club escape shape; pass 2\u2665 when that weak hand can live there.",
+              "factId": "module.stayman.eligible",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.stayman.eligible:boolean:true",
+              "description": "Published Garbage or Crawling Stayman shape",
+              "rationale": "Both the short-club garbage hands and the short-diamond crawling hands pass a direct 2\u2665 reply.",
               "isPublic": true
             }
           ],
@@ -534,12 +534,12 @@
               "isPublic": true
             },
             {
-              "factId": "hand.suitLength.clubs",
-              "operator": "lte",
-              "value": 2,
-              "clauseId": "hand.suitLength.clubs:lte:2",
-              "description": "At most 2 clubs",
-              "rationale": "Garbage Stayman starts from a short-club escape shape; pass 2\u2660 when that weak hand can live there.",
+              "factId": "module.stayman.eligible",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.stayman.eligible:boolean:true",
+              "description": "Published Garbage or Crawling Stayman shape",
+              "rationale": "Both the short-club garbage hands and the short-diamond crawling hands pass a direct 2\u2660 reply.",
               "isPublic": true
             }
           ],
@@ -647,37 +647,37 @@
             },
             {
               "factId": "hand.suitLength.hearts",
-              "operator": "gte",
+              "operator": "eq",
               "value": 4,
-              "clauseId": "hand.suitLength.hearts:gte:4",
-              "description": "4+ hearts",
+              "clauseId": "hand.suitLength.hearts:eq:4",
+              "description": "Exactly 4 hearts",
               "rationale": "Opener may pass 2\u2665 as the chosen major",
               "isPublic": true
             },
             {
               "factId": "hand.suitLength.spades",
-              "operator": "gte",
+              "operator": "eq",
               "value": 4,
-              "clauseId": "hand.suitLength.spades:gte:4",
-              "description": "4+ spades",
+              "clauseId": "hand.suitLength.spades:eq:4",
+              "description": "Exactly 4 spades",
               "rationale": "Opener may correct to 2\u2660 as the chosen major",
               "isPublic": true
             },
             {
               "factId": "hand.suitLength.clubs",
-              "operator": "lte",
-              "value": 2,
-              "clauseId": "hand.suitLength.clubs:lte:2",
-              "description": "At most 2 clubs",
-              "rationale": "Crawling Stayman still starts from the short-club garbage shape",
+              "operator": "gte",
+              "value": 4,
+              "clauseId": "hand.suitLength.clubs:gte:4",
+              "description": "4+ clubs",
+              "rationale": "Crawling Stayman is the short-diamond three-suiter, so clubs provide the long minor.",
               "isPublic": true
             },
             {
               "factId": "hand.suitLength.diamonds",
               "operator": "lte",
-              "value": 2,
-              "clauseId": "hand.suitLength.diamonds:lte:2",
-              "description": "At most 2 diamonds",
+              "value": 1,
+              "clauseId": "hand.suitLength.diamonds:lte:1",
+              "description": "At most 1 diamond",
               "rationale": "Responder cannot safely pass opener's 2\u2666 denial",
               "isPublic": true
             }
@@ -697,7 +697,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Crawling Stayman 2\u2665",
-            "summary": "After 2\u2666, rebid 2\u2665 with a weak 4-4 majors hand and short diamonds so opener can pass hearts or correct to spades."
+            "summary": "After 2\u2666, rebid 2\u2665 with a weak 4-4 in the majors and a short diamond so opener can pass hearts or correct to spades."
           }
         }
       ],
@@ -820,7 +820,7 @@
             "expected": true
           }
         },
-        "gloss": "Start with a short-club escape shape that can live in a major or in diamonds."
+        "gloss": "Start with a published weak escape shape: either short clubs with a safe diamond landing spot or short diamonds with both majors for the crawl."
       },
       {
         "predicate": {
@@ -831,7 +831,7 @@
             "expected": true
           }
         },
-        "gloss": "The classic patterns are short-club three-suiters with both majors or with one four-card major and the other three cards long."
+        "gloss": "The classic patterns are the short-club garbage shapes plus the short-diamond crawl shapes with both majors."
       },
       {
         "predicate": {
@@ -839,7 +839,7 @@
           "clause": {
             "factId": "hand.suitLength.diamonds",
             "operator": "lte",
-            "value": 2
+            "value": 1
           }
         },
         "gloss": "After the diamond denial, crawl to hearts only when diamonds are too short to pass and both majors are available."
@@ -1043,7 +1043,7 @@
               "level": 2,
               "strain": "C"
             },
-            "rationale": "Responder misuses Garbage Stayman with a 4-4-2-3 hand that lacks the short-club, long-diamond escape pattern."
+            "rationale": "Responder misuses Garbage Stayman with a 4-4-2-3 hand that fits neither approved branch: clubs are not short enough for garbage and diamonds are not short enough for the crawl."
           },
           {
             "seat": "N",
@@ -1098,7 +1098,7 @@
         },
         {
           "recommendation": "Garbage Stayman can be acceptable",
-          "note": "A short-club three-suiter with one or both four-card majors is the target hand type."
+          "note": "The target hands are the short-club garbage shapes and the short-diamond crawl shapes with both majors."
         },
         {
           "recommendation": "Use Jacoby Transfers instead",
@@ -1131,7 +1131,7 @@
         "id": "module.stayman.eligible",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "Eligible for Garbage Stayman (weak hand, short clubs, diamond escape, at least one 4-card major)",
+        "description": "Eligible for Garbage or Crawling Stayman (weak hand, no 5-card major, and either short clubs with diamond length or short diamonds with both majors)",
         "valueType": "boolean",
         "forTeachingOnly": true,
         "derivesFrom": [
@@ -1139,10 +1139,13 @@
           "hand.suitLength.clubs",
           "hand.suitLength.diamonds",
           "bridge.hasFourCardMajor",
-          "bridge.hasFiveCardMajor"
+          "bridge.hasFiveCardMajor",
+          "hand.suitLength.hearts",
+          "hand.suitLength.spades"
         ],
         "constrainsDimensions": [
-          "suitIdentity"
+          "suitIdentity",
+          "suitLength"
         ],
         "composition": {
           "kind": "and",
@@ -1156,22 +1159,6 @@
               }
             },
             {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.suitLength.clubs",
-                "operator": "lte",
-                "value": 2
-              }
-            },
-            {
-              "kind": "primitive",
-              "clause": {
-                "factId": "hand.suitLength.diamonds",
-                "operator": "gte",
-                "value": 4
-              }
-            },
-            {
               "kind": "extended",
               "clause": {
                 "clauseKind": "booleanFact",
@@ -1180,12 +1167,75 @@
               }
             },
             {
-              "kind": "extended",
-              "clause": {
-                "clauseKind": "booleanFact",
-                "fact_id": "bridge.hasFourCardMajor",
-                "expected": true
-              }
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "lte",
+                        "value": 2
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "gte",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "extended",
+                      "clause": {
+                        "clauseKind": "booleanFact",
+                        "fact_id": "bridge.hasFourCardMajor",
+                        "expected": true
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "lte",
+                        "value": 1
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "gte",
+                        "value": 4
+                      }
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -1194,7 +1244,7 @@
         "id": "module.stayman.preferred",
         "layer": "module-derived",
         "world": "acting-hand",
-        "description": "Published Garbage Stayman shapes (4-4-4-1, 4-4-5-0, 3-4-5-1, 4-3-5-1)",
+        "description": "Published Garbage and Crawling Stayman shapes (4-4-4-1, 4-4-5-0, 3-4-5-1, 4-3-5-1, 4-4-1-4, 4-4-0-5)",
         "valueType": "boolean",
         "forTeachingOnly": true,
         "derivesFrom": [
@@ -1366,6 +1416,80 @@
                         "factId": "hand.suitLength.clubs",
                         "operator": "eq",
                         "value": 1
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "eq",
+                        "value": 1
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    }
+                  ]
+                },
+                {
+                  "kind": "and",
+                  "operands": [
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.hearts",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.spades",
+                        "operator": "eq",
+                        "value": 4
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.diamonds",
+                        "operator": "eq",
+                        "value": 0
+                      }
+                    },
+                    {
+                      "kind": "primitive",
+                      "clause": {
+                        "factId": "hand.suitLength.clubs",
+                        "operator": "eq",
+                        "value": 5
                       }
                     }
                   ]

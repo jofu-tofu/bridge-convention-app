@@ -17,6 +17,16 @@ use super::fact_id::FactId;
 use super::fact_types::{FactComposition, FactDefinitionSet};
 use super::rule_types::{LocalFsm, StateEntry};
 
+/// Deserialize a required `String` that must be non-empty (after trim).
+fn deserialize_non_empty_string<'de, D: serde::Deserializer<'de>>(d: D) -> Result<String, D::Error> {
+    use serde::de::Error;
+    let s = String::deserialize(d)?;
+    if s.trim().is_empty() {
+        return Err(D::Error::custom("required field must be a non-empty string"));
+    }
+    Ok(s)
+}
+
 /// Default practice role metadata for a module fixture.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -465,6 +475,140 @@ pub struct ModuleReference {
     pub related_links: Vec<ModuleReferenceRelatedLink>,
 }
 
+/// Frozen snapshot of authority prose captured at fixture-Build time.
+///
+/// Verify sessions compare fixture surfaces against this snapshot instead of
+/// re-fetching the authority URL. Re-fetching produced non-deterministic
+/// "new findings" across sessions because site copy drifted and model reads
+/// varied; the snapshot gives every Verify run the same ground truth the
+/// fixture was authored against.
+///
+/// `text` must be non-empty. `fetched_at` must be an ISO-8601 `YYYY-MM-DD`
+/// date. Deserialization rejects missing/empty/malformed values.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AuthoritySnapshot {
+    pub text: String,
+    pub fetched_at: String,
+}
+
+impl<'de> Deserialize<'de> for AuthoritySnapshot {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase", deny_unknown_fields)]
+        struct Raw {
+            text: String,
+            fetched_at: String,
+        }
+
+        let raw = Raw::deserialize(d)?;
+        if raw.text.trim().is_empty() {
+            return Err(D::Error::custom(
+                "references.authority.snapshot.text must be non-empty",
+            ));
+        }
+        if !is_iso_date(&raw.fetched_at) {
+            return Err(D::Error::custom(format!(
+                "references.authority.snapshot.fetchedAt must be ISO-8601 YYYY-MM-DD, got '{}'",
+                raw.fetched_at
+            )));
+        }
+        Ok(AuthoritySnapshot {
+            text: raw.text,
+            fetched_at: raw.fetched_at,
+        })
+    }
+}
+
+fn is_iso_date(value: &str) -> bool {
+    // Strict YYYY-MM-DD: 10 chars, digits at positions 0..4, 5..7, 8..10, '-' at 4 and 7.
+    if value.len() != 10 {
+        return false;
+    }
+    let bytes = value.as_bytes();
+    if bytes[4] != b'-' || bytes[7] != b'-' {
+        return false;
+    }
+    for (i, b) in bytes.iter().enumerate() {
+        if i == 4 || i == 7 {
+            continue;
+        }
+        if !b.is_ascii_digit() {
+            return false;
+        }
+    }
+    let year: u32 = value[0..4].parse().unwrap_or(0);
+    let month: u32 = value[5..7].parse().unwrap_or(0);
+    let day: u32 = value[8..10].parse().unwrap_or(0);
+    if !(1000..=9999).contains(&year) {
+        return false;
+    }
+    if !(1..=12).contains(&month) {
+        return false;
+    }
+    if !(1..=31).contains(&day) {
+        return false;
+    }
+    true
+}
+
+/// Authority source block — the canonical rules reference for a convention.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AuthorityReference {
+    pub url: String,
+    pub label: String,
+    pub snapshot: AuthoritySnapshot,
+}
+
+impl<'de> Deserialize<'de> for AuthorityReference {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Raw {
+            url: String,
+            label: String,
+            snapshot: AuthoritySnapshot,
+        }
+
+        let raw = Raw::deserialize(d)?;
+        if raw.url.trim().is_empty() {
+            return Err(D::Error::custom(
+                "references.authority.url must be non-empty",
+            ));
+        }
+        if raw.label.trim().is_empty() {
+            return Err(D::Error::custom(
+                "references.authority.label must be non-empty",
+            ));
+        }
+        Ok(AuthorityReference {
+            url: raw.url,
+            label: raw.label,
+            snapshot: raw.snapshot,
+        })
+    }
+}
+
+/// Discovery source block — shorter overview / onboarding reference.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscoveryReference {
+    pub url: String,
+}
+
+/// Top-level `references` block on a convention module fixture.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReferencesBlock {
+    pub authority: AuthorityReference,
+    pub discovery: DiscoveryReference,
+}
+
 /// Author-opted symmetry check between two FSM state ids (phase names).
 pub type SymmetricStatePair = (String, String);
 
@@ -535,6 +679,19 @@ pub struct ConventionModule {
     pub variant_of: Option<String>,
     pub description: ModuleDescription,
     pub purpose: ModulePurpose,
+    /// Machine-readable intentional-scope exclusions for this module.
+    ///
+    /// Free-text (1–4 sentences) naming what is intentionally out of scope —
+    /// e.g. "Stops at the 4-level. Ogust continuations not supported. Smolen
+    /// is handled in a separate module." ConventionForge Verify reads this
+    /// first and does not flag anything listed here as missing.
+    ///
+    /// Required, non-empty. Deserialization rejects missing or blank values.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
+    pub scope_note: String,
+    /// Top-level `references` block. Required; both `authority` (with frozen
+    /// text snapshot) and `discovery` must be present.
+    pub references: ReferencesBlock,
     pub teaching: ModuleTeaching,
     pub reference: ModuleReference,
     #[serde(default, skip_serializing_if = "ModuleBundleMetadata::is_empty")]

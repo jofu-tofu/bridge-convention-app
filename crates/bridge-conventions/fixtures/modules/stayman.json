@@ -212,7 +212,7 @@
       "explanationId": "nt.stayman.ntInviteNoFit2S",
       "meaningId": "stayman:nt-invite-no-fit-2s",
       "templateKey": "nt.stayman.ntInviteNoFit2S.semantic",
-      "displayText": "Bid 2NT to invite game with no spade fit",
+      "displayText": "Bid 2NT to invite game, denying either major after opener shows spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -282,7 +282,7 @@
       "explanationId": "nt.stayman.crossMajorInvite2SAfter2H",
       "meaningId": "stayman:cross-major-invite-2s-after-2h",
       "templateKey": "nt.stayman.crossMajorInvite2SAfter2H.semantic",
-      "displayText": "Bid 2\u2660 showing 4 spades, presumed invitational",
+      "displayText": "Bid 2\u2660 showing 5 spades and 4 hearts (invitational, non-forcing)",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -292,7 +292,7 @@
       "explanationId": "nt.stayman.minorGF3CAfter2H",
       "meaningId": "stayman:minor-gf-3c-after-2h",
       "templateKey": "nt.stayman.minorGF3CAfter2H.semantic",
-      "displayText": "Bid 3\u2663: game-forcing clubs with 4 spades",
+      "displayText": "Bid 3\u2663: natural club game force after opener shows hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -302,7 +302,7 @@
       "explanationId": "nt.stayman.minorGF3DAfter2H",
       "meaningId": "stayman:minor-gf-3d-after-2h",
       "templateKey": "nt.stayman.minorGF3DAfter2H.semantic",
-      "displayText": "Bid 3\u2666: game-forcing diamonds with 4 spades",
+      "displayText": "Bid 3\u2666: natural diamond game force after opener shows hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -352,7 +352,7 @@
       "explanationId": "nt.stayman.minorGF3CAfter2S",
       "meaningId": "stayman:minor-gf-3c-after-2s",
       "templateKey": "nt.stayman.minorGF3CAfter2S.semantic",
-      "displayText": "Bid 3\u2663: game-forcing clubs with 4 hearts",
+      "displayText": "Bid 3\u2663: natural club game force after opener shows spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -362,7 +362,7 @@
       "explanationId": "nt.stayman.minorGF3DAfter2S",
       "meaningId": "stayman:minor-gf-3d-after-2s",
       "templateKey": "nt.stayman.minorGF3DAfter2S.semantic",
-      "displayText": "Bid 3\u2666: game-forcing diamonds with 4 hearts",
+      "displayText": "Bid 3\u2666: natural diamond game force after opener shows spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -412,7 +412,7 @@
       "explanationId": "nt.stayman.minorGF3CAfter2D",
       "meaningId": "stayman:minor-gf-3c-after-2d",
       "templateKey": "nt.stayman.minorGF3CAfter2D.semantic",
-      "displayText": "Bid 3\u2663: natural game force, usually 5+ clubs with a 4-card major",
+      "displayText": "Bid 3\u2663: natural club game force after opener denies a major",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -422,7 +422,7 @@
       "explanationId": "nt.stayman.minorGF3DAfter2D",
       "meaningId": "stayman:minor-gf-3d-after-2d",
       "templateKey": "nt.stayman.minorGF3DAfter2D.semantic",
-      "displayText": "Bid 3\u2666: natural game force, usually 5+ diamonds with a 4-card major",
+      "displayText": "Bid 3\u2666: natural diamond game force after opener denies a major",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -1011,10 +1011,19 @@
             {
               "factId": "hand.suitLength.spades",
               "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "5+ spades (off-shape invitational hand)",
+              "rationale": "show the long spade suit on the invitational branch",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
               "value": 4,
-              "clauseId": "hand.suitLength.spades:gte:4",
-              "description": "4+ spades (shows four spades)",
-              "rationale": "shows four spades",
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts (likely 5-4 majors)",
+              "rationale": "this invite keeps the off-shape major pattern in view",
               "isPublic": true
             }
           ],
@@ -1031,8 +1040,8 @@
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2\u2660 invite (4\u2660)",
-            "summary": "Show four spades with invitational values after opener shows hearts"
+            "name": "2\u2660 invite (5\u2660-4\u2665)",
+            "summary": "Show an invitational 5-spade hand, typically with four hearts, after opener shows hearts"
           }
         },
         {
@@ -1064,15 +1073,6 @@
               "description": "5+ clubs (natural club suit)",
               "rationale": "natural club suit",
               "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.spades",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.spades:gte:4",
-              "description": "4+ spades (the other major)",
-              "rationale": "shows the other major with the forcing minor rebid",
-              "isPublic": true
             }
           ],
           "ranking": {
@@ -1089,7 +1089,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3\u2663 game force",
-            "summary": "Show a natural club suit with game-forcing values and four spades after opener shows hearts"
+            "summary": "Show a natural club suit with game-forcing values after opener shows hearts"
           }
         },
         {
@@ -1121,15 +1121,6 @@
               "description": "5+ diamonds (natural diamond suit)",
               "rationale": "natural diamond suit",
               "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.spades",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.spades:gte:4",
-              "description": "4+ spades (the other major)",
-              "rationale": "shows the other major with the forcing minor rebid",
-              "isPublic": true
             }
           ],
           "ranking": {
@@ -1146,7 +1137,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3\u2666 game force",
-            "summary": "Show a natural diamond suit with game-forcing values and four spades after opener shows hearts"
+            "summary": "Show a natural diamond suit with game-forcing values after opener shows hearts"
           }
         },
         {
@@ -1547,8 +1538,17 @@
               "operator": "lte",
               "value": 3,
               "clauseId": "hand.suitLength.spades:lte:3",
-              "description": "At most 3 spades (no fit)",
-              "rationale": "no fit",
+              "description": "At most 3 spades (denies opener's spade suit)",
+              "rationale": "this delayed 2NT does not show a spade fit",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 3,
+              "clauseId": "hand.suitLength.hearts:lte:3",
+              "description": "At most 3 hearts (denies the other major too)",
+              "rationale": "this invitational branch denies either major",
               "isPublic": true
             }
           ],
@@ -1560,13 +1560,13 @@
           "sourceIntent": {
             "type": "StaymanNTInvite",
             "params": {
-              "reason": "no-spade-fit"
+              "reason": "deny-either-major"
             }
           },
           "disclosure": "alert",
           "teachingLabel": {
-            "name": "2NT invite (no spade fit)",
-            "summary": "Invite notrump game after opener shows spades but responder lacks support"
+            "name": "2NT invite (denies both majors)",
+            "summary": "Invite game after opener shows spades while denying four cards in either major"
           }
         },
         {
@@ -1598,15 +1598,6 @@
               "description": "5+ clubs (natural club suit)",
               "rationale": "natural club suit",
               "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.hearts:gte:4",
-              "description": "4+ hearts (the other major)",
-              "rationale": "shows the other major with the forcing minor rebid",
-              "isPublic": true
             }
           ],
           "ranking": {
@@ -1623,7 +1614,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3\u2663 game force",
-            "summary": "Show a natural club suit with game-forcing values and four hearts after opener shows spades"
+            "summary": "Show a natural club suit with game-forcing values after opener shows spades"
           }
         },
         {
@@ -1655,15 +1646,6 @@
               "description": "5+ diamonds (natural diamond suit)",
               "rationale": "natural diamond suit",
               "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.hearts",
-              "operator": "gte",
-              "value": 4,
-              "clauseId": "hand.suitLength.hearts:gte:4",
-              "description": "4+ hearts (the other major)",
-              "rationale": "shows the other major with the forcing minor rebid",
-              "isPublic": true
             }
           ],
           "ranking": {
@@ -1680,7 +1662,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3\u2666 game force",
-            "summary": "Show a natural diamond suit with game-forcing values and four hearts after opener shows spades"
+            "summary": "Show a natural diamond suit with game-forcing values after opener shows spades"
           }
         },
         {
@@ -2248,15 +2230,6 @@
               "isPublic": true
             },
             {
-              "factId": "bridge.hasFourCardMajor",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "bridge.hasFourCardMajor:boolean:true",
-              "description": "A 4-card major to go with the minor",
-              "rationale": "usually accompanies a 4-card major after the denial",
-              "isPublic": true
-            },
-            {
               "factId": "hand.suitLength.clubs",
               "operator": "gte",
               "value": 5,
@@ -2280,7 +2253,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3\u2663 game force",
-            "summary": "Show a natural club suit with game-forcing values, usually alongside a 4-card major, after opener denies a major"
+            "summary": "Show a natural club suit with game-forcing values after opener denies a major"
           }
         },
         {
@@ -2302,15 +2275,6 @@
               "clauseId": "system.responder.gameValues:boolean:true",
               "description": "Game forcing",
               "rationale": "game forcing",
-              "isPublic": true
-            },
-            {
-              "factId": "bridge.hasFourCardMajor",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "bridge.hasFourCardMajor:boolean:true",
-              "description": "A 4-card major to go with the minor",
-              "rationale": "usually accompanies a 4-card major after the denial",
               "isPublic": true
             },
             {
@@ -2337,7 +2301,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "3\u2666 game force",
-            "summary": "Show a natural diamond suit with game-forcing values, usually alongside a 4-card major, after opener denies a major"
+            "summary": "Show a natural diamond suit with game-forcing values after opener denies a major"
           }
         },
         {

@@ -12,6 +12,7 @@ picking a new authority or swapping an existing one. Quick summary:
 - Wikipedia and bridgebum.com are **discovery only**, never authority.
 - `references.authority.url` must not equal `references.discovery.url` (structural invariant).
 - Dead sites and Wayback snapshots are forbidden.
+- Every fixture must capture a **frozen authority snapshot** (`references.authority.snapshot.text` + `fetchedAt`) at Build time. ConventionForge Verify compares against the snapshot and does not re-fetch; see _Authority Snapshot_ below.
 
 Cross-reference for composition concepts (`variantOf`, `delegate_to`, `requires`)
 is in the same doc.
@@ -38,6 +39,8 @@ Every convention bundle must satisfy all items:
 7. **`category` and `description`** required on `ConventionBundle`.
 8. **`explanationCatalog` entries.** Template-keyed explanations for teaching projections.
 9. **`semantic-classes.ts` constants.** Module-local, not in central registry.
+10. **`scopeNote`** at the top level of every module fixture. Free text, 1–4 sentences, names what this module intentionally does not cover. Required, non-empty — deserialization fails if missing. See _Authoring `scopeNote`_ below.
+11. **`references.authority.snapshot`** on every module fixture — `{ text, fetchedAt }`. The frozen authority prose captured at Build time plus an ISO-8601 `YYYY-MM-DD` date. Required; `text` must be non-empty and `fetchedAt` must parse as a date. See _Authority Snapshot_ below.
 
 ## Adding a New Convention Bundle (Step by Step)
 
@@ -191,6 +194,61 @@ Use this derivation table as the starting point:
 | no `biddingContext` block                                    | `Opener`           |
 
 If ConventionForge verification disagrees with the heuristic, author the explicit `defaultRole` value from the authority and record the reason in the fixture's existing note metadata (for example `_notes` or a sibling variant-notes file when the fixture already uses one).
+
+## Authoring `scopeNote`
+
+Every module fixture carries a required top-level `scopeNote`. It is a free-text 1–4 sentence description of what this module intentionally does **not** cover. The field is machine-readable contract, not commentary: ConventionForge Verify reads it first and does not flag anything listed there as a missing surface.
+
+The field exists because Verify sessions repeatedly found "new issues" that were actually deliberate scope exclusions. Without `scopeNote`, every Verify pass re-discovers the same non-issues; with it, the scope decision is captured once, reviewed at authoring time, and respected by every subsequent audit.
+
+Shape (required, non-empty):
+
+```json
+"scopeNote": "Stops at the 4-level. Ogust continuations not supported. Smolen is handled in a separate module."
+```
+
+Authoring rules:
+
+- Write it during Build, **before authoring surfaces** — the act of naming scope clarifies the module boundary.
+- Name exclusions in terms the authority uses (e.g. "reverse Bergen", "Puppet Stayman", "balancing seat overcalls") so a reviewer reading both can cross-check.
+- If you remove a surface because it belongs in a different module, update `scopeNote` in the same change.
+- Do NOT use `scopeNote` to excuse bugs or half-built surfaces. It is for **intentional** out-of-scope behavior, not for "I'll get to it later." For temporary gaps use a tracked follow-up.
+- Verify may flag a `scopeNote` entry as a **scope-note review** item if the authority treats it as essential. That is a design discussion, not a build error — either expand scope or document why the authority's treatment does not apply here.
+
+## Authority Snapshot
+
+Every fixture must capture a frozen snapshot of its authority prose at Build time.
+
+```json
+"references": {
+  "authority": {
+    "url": "https://www.larryco.com/bridge-articles/stayman",
+    "label": "Larry Cohen — Stayman (bridge-articles/stayman)",
+    "snapshot": {
+      "text": "<captured authority prose, full text of the relevant sections>",
+      "fetchedAt": "2026-04-19"
+    }
+  },
+  "discovery": {
+    "url": "https://www.bridgebum.com/stayman.php"
+  }
+}
+```
+
+Both `snapshot.text` and `snapshot.fetchedAt` are **required and non-empty**; the `ConventionModule` deserializer rejects missing, blank, or malformed values, and the structural-invariants test enforces the same rules at the fixture-JSON level. `fetchedAt` must be strict ISO-8601 `YYYY-MM-DD`.
+
+Why it matters:
+
+- Verify compares fixture surfaces against the snapshot, **not** a live re-fetch. Re-fetching caused sessions to surface different "findings" each run because site copy drifts and model reads vary. The snapshot makes Verify deterministic.
+- The snapshot is the ground truth the fixture was authored against. If the fixture and snapshot disagree, the fixture is wrong; if the snapshot and live site disagree, the snapshot is stale but Verify findings against it are still valid for this revision of the fixture.
+
+Authoring rules:
+
+- Capture the full text of the authority's relevant sections during Build. Strip nav, ads, and site chrome, but keep the convention's rules, examples, and edge cases.
+- Stamp `fetchedAt` with the date you captured the text (ISO-8601 `YYYY-MM-DD`).
+- Treat the snapshot as **frozen** for the life of the fixture. Do not tweak it to match new site copy without also re-examining the fixture.
+- Refresh the snapshot (re-fetch, replace `text`, bump `fetchedAt`) as part of a Build pass when the authority page changes materially or Verify flags `snapshot review`. Do not refresh mid-Verify.
+- Verify will note a **stale snapshot** (typically >180 days old) as a one-line advisory, not as a finding. Schedule a refresh during the next Build pass — don't rush one in response to an advisory alone.
 
 ## Reference Block Authoring
 

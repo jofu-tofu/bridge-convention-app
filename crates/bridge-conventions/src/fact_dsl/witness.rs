@@ -853,11 +853,8 @@ fn find_kernel_establishing_prefix(
             // (captain != Undecided), since a captain=Undecided all-pass
             // prefix can never establish a kernel.
             if !require_opening {
-                let pass_step = synth_committed_step(
-                    current_seat,
-                    Call::Pass,
-                    vec![BidAction::Pass],
-                );
+                let pass_step =
+                    synth_committed_step(current_seat, Call::Pass, vec![BidAction::Pass]);
                 let new_phases =
                     advance_all_module_phases(modules, &phases, &pass_step, &steps_log);
                 let mut pass_prefix = prefix.clone();
@@ -871,13 +868,8 @@ fn find_kernel_establishing_prefix(
             }
         } else {
             // Opponent seat: automatic pass.
-            let pass_step = synth_committed_step(
-                current_seat,
-                Call::Pass,
-                vec![BidAction::Pass],
-            );
-            let new_phases =
-                advance_all_module_phases(modules, &phases, &pass_step, &steps_log);
+            let pass_step = synth_committed_step(current_seat, Call::Pass, vec![BidAction::Pass]);
+            let new_phases = advance_all_module_phases(modules, &phases, &pass_step, &steps_log);
             let mut new_prefix = prefix.clone();
             new_prefix.push(WitnessCall {
                 seat: current_seat,
@@ -973,7 +965,10 @@ fn pick_replay_surface<'m>(candidates: &[&'m BidMeaning]) -> &'m BidMeaning {
                 if score != best_score {
                     score > best_score
                 } else {
-                    let cur_key = (cur.module_id.as_deref().unwrap_or(""), cur.meaning_id.as_str());
+                    let cur_key = (
+                        cur.module_id.as_deref().unwrap_or(""),
+                        cur.meaning_id.as_str(),
+                    );
                     let new_key = (s.module_id.as_deref().unwrap_or(""), s.meaning_id.as_str());
                     new_key < cur_key
                 }
@@ -1226,7 +1221,8 @@ fn surfaces_emitting_call_with_phase_gate<'m>(
             // Look up candidate surfaces for this historical call (loose
             // match; used only as a hint for FSM advance). Prefer
             // fit-setting surfaces to match BFS pick-logic.
-            let candidates = surfaces_emitting_call(loaded_modules, &entry.call, entry.seat, dealer);
+            let candidates =
+                surfaces_emitting_call(loaded_modules, &entry.call, entry.seat, dealer);
             if candidates.is_empty() {
                 Vec::new()
             } else {
@@ -1528,7 +1524,8 @@ fn expand_composition(
             // module.* or bridge.*: expand via authored composition.
             if clause.fact_id.starts_with("module.") || clause.fact_id.starts_with("bridge.") {
                 if let Some(inner) = find_fact_composition(&clause.fact_id, loaded_modules) {
-                    let expanded = expand_composition(inner, loaded_modules, system_config, depth + 1);
+                    let expanded =
+                        expand_composition(inner, loaded_modules, system_config, depth + 1);
                     // Boolean Eq(0) on the fact = the negation of the composition.
                     match primitive_clause_as_boolean(clause) {
                         Some(true) => return expanded,
@@ -1882,10 +1879,7 @@ pub fn project_witness(
             .map(|s| invert_hand_only(s, loaded_modules, system_config))
             .max_by_key(specificity_score)
             .unwrap_or_default();
-        per_seat
-            .entry(witness.user_seat)
-            .or_default()
-            .push(best);
+        per_seat.entry(witness.user_seat).or_default().push(best);
     }
 
     // Prefix calls → bidder seat via base-module surface lookup.

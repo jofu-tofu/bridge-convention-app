@@ -418,7 +418,7 @@
       "explanationId": "michaels.adv.preemptHearts3h",
       "meaningId": "michaels:adv-preempt-hearts-3h",
       "templateKey": "michaels.adv.preemptHearts3h.semantic",
-      "displayText": "3H: Invitational raise in hearts",
+      "displayText": "3H: Preemptive raise in hearts",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -428,7 +428,7 @@
       "explanationId": "michaels.adv.preemptSpades3s",
       "meaningId": "michaels:adv-preempt-spades-3s",
       "templateKey": "michaels.adv.preemptSpades3s.semantic",
-      "displayText": "3S: Invitational raise in spades",
+      "displayText": "3S: Preemptive raise in spades",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -1692,7 +1692,7 @@
         },
         {
           "meaningId": "michaels:adv-preempt-hearts-3h",
-          "semanticClassId": "michaels:adv-invite-major",
+          "semanticClassId": "michaels:adv-preempt-major",
           "moduleId": "michaels-unusual",
           "encoding": {
             "defaultCall": {
@@ -1703,35 +1703,19 @@
           },
           "clauses": [
             {
-              "factId": "hand.hcp",
+              "factId": "hand.suitLength.hearts",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "At least 8 HCP",
+              "value": 4,
+              "clauseId": "hand.suitLength.hearts:gte:4",
+              "description": "4+ hearts for a preemptive raise",
               "isPublic": true
             },
             {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 9,
-              "clauseId": "hand.hcp:lte:9",
-              "description": "At most 9 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "module.michaels.hasHeartSupport",
+              "factId": "module.michaels.advancerWeak",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
-              "description": "3+ hearts to support partner",
-              "isPublic": true
-            },
-            {
-              "factId": "module.michaels.advancerInviteValues",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerInviteValues:boolean:true",
-              "description": "8-9 HCP (invitational values)",
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
               "isPublic": true
             }
           ],
@@ -1741,18 +1725,18 @@
             "declarationOrder": 2
           },
           "sourceIntent": {
-            "type": "MichaelsAdvancerInviteHearts",
+            "type": "MichaelsAdvancerPreemptHearts",
             "params": {}
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3H \u2014 invitational hearts",
-            "summary": "Invite game in hearts and 3+ heart support"
+            "name": "3H \u2014 preemptive hearts",
+            "summary": "Preempt in hearts with weak values and about four-card support"
           }
         },
         {
           "meaningId": "michaels:adv-preempt-spades-3s",
-          "semanticClassId": "michaels:adv-invite-major",
+          "semanticClassId": "michaels:adv-preempt-major",
           "moduleId": "michaels-unusual",
           "encoding": {
             "defaultCall": {
@@ -1763,35 +1747,19 @@
           },
           "clauses": [
             {
-              "factId": "hand.hcp",
+              "factId": "hand.suitLength.spades",
               "operator": "gte",
-              "value": 8,
-              "clauseId": "hand.hcp:gte:8",
-              "description": "At least 8 HCP",
+              "value": 4,
+              "clauseId": "hand.suitLength.spades:gte:4",
+              "description": "4+ spades for a preemptive raise",
               "isPublic": true
             },
             {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 9,
-              "clauseId": "hand.hcp:lte:9",
-              "description": "At most 9 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "module.michaels.hasSpadeSupport",
+              "factId": "module.michaels.advancerWeak",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
-              "description": "3+ spades to support partner",
-              "isPublic": true
-            },
-            {
-              "factId": "module.michaels.advancerInviteValues",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "module.michaels.advancerInviteValues:boolean:true",
-              "description": "8-9 HCP (invitational values)",
+              "clauseId": "module.michaels.advancerWeak:boolean:true",
+              "description": "0-7 HCP (weak hand)",
               "isPublic": true
             }
           ],
@@ -1801,13 +1769,13 @@
             "declarationOrder": 3
           },
           "sourceIntent": {
-            "type": "MichaelsAdvancerInviteSpades",
+            "type": "MichaelsAdvancerPreemptSpades",
             "params": {}
           },
           "disclosure": "natural",
           "teachingLabel": {
-            "name": "3S \u2014 invitational spades",
-            "summary": "Invite game in spades and 3+ spade support"
+            "name": "3S \u2014 preemptive spades",
+            "summary": "Preempt in spades with weak values and about four-card support"
           }
         },
         {
@@ -1977,7 +1945,32 @@
               "strain": "NT"
             }
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "lte",
+              "value": 1,
+              "clauseId": "hand.suitLength.spades:lte:1",
+              "description": "Fewer than 2 spades \u2014 cannot support the known major",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.suitLength.clubs:gte:3",
+              "description": "At least 3 clubs",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.suitLength.diamonds:gte:3",
+              "description": "At least 3 diamonds",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
@@ -2022,11 +2015,11 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.hasSpadeSupport",
+              "factId": "module.michaels.hasTwoPlusSpadeSupport",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
-              "description": "3+ spades to support partner",
+              "clauseId": "module.michaels.hasTwoPlusSpadeSupport:boolean:true",
+              "description": "2+ spades \u2014 Walker allows invitational raises even on a good doubleton",
               "isPublic": true
             },
             {
@@ -2050,7 +2043,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3S \u2014 invitational spades",
-            "summary": "Invite game in spades and 3+ spade support"
+            "summary": "Invite game in spades and 2+ spade support"
           }
         },
         {
@@ -2074,11 +2067,11 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.hasSpadeSupport",
+              "factId": "module.michaels.hasTwoPlusSpadeSupport",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.hasSpadeSupport:boolean:true",
-              "description": "3+ spades to support partner",
+              "clauseId": "module.michaels.hasTwoPlusSpadeSupport:boolean:true",
+              "description": "2+ spades \u2014 Walker allows game raises even on a good doubleton",
               "isPublic": true
             },
             {
@@ -2102,7 +2095,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "4S \u2014 game in spades",
-            "summary": "Bid game in spades and 3+ spade support"
+            "summary": "Bid game in spades and 2+ spade support"
           }
         }
       ],
@@ -2168,7 +2161,32 @@
               "strain": "NT"
             }
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "lte",
+              "value": 1,
+              "clauseId": "hand.suitLength.hearts:lte:1",
+              "description": "Fewer than 2 hearts \u2014 cannot support the known major",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.suitLength.clubs:gte:3",
+              "description": "At least 3 clubs",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.suitLength.diamonds:gte:3",
+              "description": "At least 3 diamonds",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
@@ -2213,11 +2231,11 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.hasHeartSupport",
+              "factId": "module.michaels.hasTwoPlusHeartSupport",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
-              "description": "3+ hearts to support partner",
+              "clauseId": "module.michaels.hasTwoPlusHeartSupport:boolean:true",
+              "description": "2+ hearts \u2014 Walker allows invitational raises even on a good doubleton",
               "isPublic": true
             },
             {
@@ -2241,7 +2259,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3H \u2014 invitational hearts",
-            "summary": "Invite game in hearts and 3+ heart support"
+            "summary": "Invite game in hearts and 2+ heart support"
           }
         },
         {
@@ -2265,11 +2283,11 @@
               "isPublic": true
             },
             {
-              "factId": "module.michaels.hasHeartSupport",
+              "factId": "module.michaels.hasTwoPlusHeartSupport",
               "operator": "boolean",
               "value": true,
-              "clauseId": "module.michaels.hasHeartSupport:boolean:true",
-              "description": "3+ hearts to support partner",
+              "clauseId": "module.michaels.hasTwoPlusHeartSupport:boolean:true",
+              "description": "2+ hearts \u2014 Walker allows game raises even on a good doubleton",
               "isPublic": true
             },
             {
@@ -2293,7 +2311,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "4H \u2014 game in hearts",
-            "summary": "Bid game in hearts and 3+ heart support"
+            "summary": "Bid game in hearts and 2+ heart support"
           }
         }
       ],
@@ -3495,11 +3513,11 @@
         },
         {
           "recommendation": "With invitational values, raise the known fit, or ask for the hidden minor only when advancing a major-opening Michaels cue-bid.",
-          "note": "Minor-opening Michaels already shows both majors, so advancer chooses between known suits instead of asking for a better major."
+          "note": "Minor-opening Michaels already shows both majors, so advancer chooses between known suits instead of asking for a better major. Over a major-opening Michaels cue-bid, the relay is only for hands that cannot support the known major and expect at least a three-three minor fit."
         },
         {
           "recommendation": "With game values, jump to game in the known fit or, after a major-opening Michaels cue-bid, relay before committing to partner's minor.",
-          "note": "The only authored relay is the major-opening Michaels path where partner's minor is still unknown."
+          "note": "The only authored relay is the major-opening Michaels path where partner's minor is still unknown. Natural side-suit advances, natural notrump continuations, balancing-seat uses, and higher-level unusual-notrump applications stay outside this direct-seat teaching fixture."
         }
       ]
     },

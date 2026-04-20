@@ -205,7 +205,7 @@
       "explanationId": "negdbl.double.after1c2h",
       "meaningId": "negdbl:double-after-1c-2h",
       "templateKey": "negdbl.double.after1c2h.semantic",
-      "displayText": "Double: Shows exactly 4 spades over 2H overcall of 1C",
+      "displayText": "Double: Shows spades over 2H overcall of 1C",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -295,7 +295,7 @@
       "explanationId": "negdbl.double.after1h2d",
       "meaningId": "negdbl:double-after-1h-2d",
       "templateKey": "negdbl.double.after1h2d.semantic",
-      "displayText": "Double: Shows 4+ spades over 2D overcall of 1H",
+      "displayText": "Double: Shows spades over 2D overcall of 1H",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -965,6 +965,60 @@
           }
         },
         {
+          "meaningId": "negdbl:opp-overcall-3d-after-1c",
+          "semanticClassId": "negdbl:opp-overcall",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.suitLength.diamonds:gte:6",
+              "description": "6+ diamonds (preemptive jump overcall)",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 6,
+              "clauseId": "hand.hcp:gte:6",
+              "description": "6+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 11,
+              "clauseId": "hand.hcp:lte:11",
+              "description": "At most 11 HCP (preemptive)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "NegDblOpponentOvercall",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent overcalls 3D",
+            "summary": "Opponent makes a preemptive 3D jump overcall over partner's 1C opening"
+          }
+        },
+        {
           "meaningId": "negdbl:opp-overcall-3h-after-1c",
           "semanticClassId": "negdbl:opp-overcall",
           "moduleId": "negative-doubles",
@@ -1004,7 +1058,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 6
+            "declarationOrder": 7
           },
           "sourceIntent": {
             "type": "NegDblOpponentOvercall",
@@ -1058,7 +1112,7 @@
           "ranking": {
             "recommendationBand": "must",
             "modulePrecedence": 0,
-            "declarationOrder": 7
+            "declarationOrder": 8
           },
           "sourceIntent": {
             "type": "NegDblOpponentOvercall",
@@ -2249,13 +2303,89 @@
               "clauseId": "hand.suitLength.spades:gte:4",
               "description": "4 spades",
               "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NegativeDouble",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Negative Double",
+            "summary": "Shows spades with competitive values over a 2H overcall"
+          }
+        },
+        {
+          "meaningId": "negdbl:pass-after-1c-2h",
+          "semanticClassId": "negdbl:responder-pass",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "NegDblResponderPass",
+            "params": {}
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "No suitable negative double available"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
+    },
+    {
+      "phase": "after-oc-1c",
+      "turn": "responder",
+      "route": {
+        "kind": "last",
+        "pattern": {
+          "act": "overcall",
+          "suit": "diamonds",
+          "level": 3
+        }
+      },
+      "surfaces": [
+        {
+          "meaningId": "negdbl:double-after-1c-3d",
+          "semanticClassId": "negdbl:negative-double",
+          "moduleId": "negative-doubles",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 11,
+              "clauseId": "hand.hcp:gte:11",
+              "description": "11+ HCP (3-level negative double promises stronger values)",
+              "isPublic": true
             },
             {
-              "factId": "hand.suitLength.spades",
-              "operator": "lte",
-              "value": 4,
-              "clauseId": "hand.suitLength.spades:lte:4",
-              "description": "No more than 4 spades",
+              "factId": "module.negdbl.has4Major",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.negdbl.has4Major:boolean:true",
+              "description": "4+ cards in at least one major",
               "isPublic": true
             }
           ],
@@ -2271,11 +2401,11 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows exactly 4 spades with competitive values (2-level, needs)"
+            "summary": "Shows at least one 4-card major after RHO's preemptive 3D overcall"
           }
         },
         {
-          "meaningId": "negdbl:pass-after-1c-2h",
+          "meaningId": "negdbl:pass-after-1c-3d",
           "semanticClassId": "negdbl:responder-pass",
           "moduleId": "negative-doubles",
           "encoding": {
@@ -3175,9 +3305,9 @@
             {
               "factId": "hand.hcp",
               "operator": "gte",
-              "value": 6,
-              "clauseId": "hand.hcp:gte:6",
-              "description": "6+ HCP",
+              "value": 9,
+              "clauseId": "hand.hcp:gte:9",
+              "description": "9+ HCP",
               "isPublic": true
             },
             {
@@ -3186,14 +3316,6 @@
               "value": 4,
               "clauseId": "hand.suitLength.spades:gte:4",
               "description": "4 spades",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.spades",
-              "operator": "lte",
-              "value": 4,
-              "clauseId": "hand.suitLength.spades:lte:4",
-              "description": "No more than 4 spades",
               "isPublic": true
             }
           ],
@@ -3209,57 +3331,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Negative Double",
-            "summary": "Shows exactly 4 spades over a 2D overcall (6+ HCP)"
-          }
-        },
-        {
-          "meaningId": "negdbl:double-after-1h-2d",
-          "semanticClassId": "negdbl:negative-double",
-          "moduleId": "negative-doubles",
-          "encoding": {
-            "defaultCall": {
-              "type": "double"
-            }
-          },
-          "clauses": [
-            {
-              "factId": "hand.hcp",
-              "operator": "gte",
-              "value": 6,
-              "clauseId": "hand.hcp:gte:6",
-              "description": "6+ HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.hcp",
-              "operator": "lte",
-              "value": 9,
-              "clauseId": "hand.hcp:lte:9",
-              "description": "At most 9 HCP",
-              "isPublic": true
-            },
-            {
-              "factId": "hand.suitLength.spades",
-              "operator": "gte",
-              "value": 5,
-              "clauseId": "hand.suitLength.spades:gte:5",
-              "description": "5+ spades",
-              "isPublic": true
-            }
-          ],
-          "ranking": {
-            "recommendationBand": "must",
-            "modulePrecedence": 0,
-            "declarationOrder": 1
-          },
-          "sourceIntent": {
-            "type": "NegativeDouble",
-            "params": {}
-          },
-          "disclosure": "alert",
-          "teachingLabel": {
-            "name": "Negative Double",
-            "summary": "Shows 5+ spades when too weak to bid 2S directly (6-9 HCP)"
+            "summary": "Shows spades with about opening-response values over a 2D overcall"
           }
         },
         {
@@ -3275,7 +3347,7 @@
           "ranking": {
             "recommendationBand": "may",
             "modulePrecedence": 0,
-            "declarationOrder": 2
+            "declarationOrder": 1
           },
           "sourceIntent": {
             "type": "NegDblResponderPass",

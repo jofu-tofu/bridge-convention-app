@@ -1303,6 +1303,20 @@ mod tests {
             variant_of: None,
             description: ModuleDescription::new("desc"),
             purpose: ModulePurpose::new("purpose"),
+            scope_note: "Smoke-test module; no authority scope applies.".to_string(),
+            references: bridge_conventions::types::module_types::ReferencesBlock {
+                authority: bridge_conventions::types::module_types::AuthorityReference {
+                    url: "https://example.com/list-smoke".to_string(),
+                    label: "Test fixture".to_string(),
+                    snapshot: bridge_conventions::types::module_types::AuthoritySnapshot {
+                        text: "Test snapshot text".to_string(),
+                        fetched_at: "2026-01-01".to_string(),
+                    },
+                },
+                discovery: bridge_conventions::types::module_types::DiscoveryReference {
+                    url: "https://www.bridgebum.com/list-smoke.php".to_string(),
+                },
+            },
             teaching: ModuleTeaching {
                 tradeoff: TeachingTradeoff::new(""),
                 principle: TeachingPrinciple::new(""),
@@ -1403,6 +1417,20 @@ mod tests {
             variant_of: None,
             description: ModuleDescription::new("desc"),
             purpose: ModulePurpose::new("purpose"),
+            scope_note: "Smoke-test module; no authority scope applies.".to_string(),
+            references: bridge_conventions::types::module_types::ReferencesBlock {
+                authority: bridge_conventions::types::module_types::AuthorityReference {
+                    url: "https://example.com/grid-smoke".to_string(),
+                    label: "Test fixture".to_string(),
+                    snapshot: bridge_conventions::types::module_types::AuthoritySnapshot {
+                        text: "Test snapshot text".to_string(),
+                        fetched_at: "2026-01-01".to_string(),
+                    },
+                },
+                discovery: bridge_conventions::types::module_types::DiscoveryReference {
+                    url: "https://www.bridgebum.com/grid-smoke.php".to_string(),
+                },
+            },
             teaching: ModuleTeaching {
                 tradeoff: TeachingTradeoff::new(""),
                 principle: TeachingPrinciple::new(""),

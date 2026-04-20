@@ -439,20 +439,29 @@ fn filename_matches_module_id() {
     }
 }
 
-/// Every module must have `references.authority` and `references.discovery` fields.
+/// Every module must have `references.authority` and `references.discovery` fields,
+/// plus a frozen `references.authority.snapshot` that Verify sessions compare against
+/// instead of re-fetching the authority URL.
 ///
-/// `authority` is the authoritative source for this convention's rules.
-/// `discovery` is the bridgebum.com URL for finding and overviewing the convention.
+/// `authority.url` / `authority.label` — canonical source URL + label.
+/// `authority.snapshot.text` — captured authority prose, frozen at Build time.
+/// `authority.snapshot.fetchedAt` — ISO-8601 `YYYY-MM-DD` date.
+/// `discovery.url` — bridgebum.com overview URL.
 ///
-/// These fields are metadata-only (not deserialized into ConventionModule), so this
-/// test reads the raw JSON to validate their presence.
+/// This test reads raw JSON (so the error messages point at exactly which field
+/// is missing) and also loads the file through `ConventionModule` to ensure the
+/// typed deserializer agrees.
 ///
-/// Catches: new modules added without reference URLs, or stale fixtures missing
-/// the required reference structure.
+/// Catches: new modules added without reference URLs or snapshots, stale
+/// fixtures missing the required reference structure, and malformed
+/// `fetchedAt` values.
 #[test]
 fn modules_have_required_references() {
     let dir = PathBuf::from(MODULE_FIXTURE_DIR);
     let mut failures: Vec<String> = Vec::new();
+
+    let iso_date_re =
+        Regex::new(r"^\d{4}-\d{2}-\d{2}$").expect("static regex should compile");
 
     for entry in std::fs::read_dir(&dir).expect("Failed to read module fixture directory") {
         let entry = entry.expect("Failed to read directory entry");
@@ -475,7 +484,7 @@ fn modules_have_required_references() {
                 failures.push(format!("  {filename}: missing `references` field entirely"));
             }
             Some(refs_obj) => {
-                // authority: must exist with a non-empty url
+                // authority: must exist with a non-empty url, label, and frozen snapshot
                 match refs_obj.get("authority") {
                     None => {
                         failures.push(format!("  {filename}: missing `references.authority`"));
@@ -494,6 +503,37 @@ fn modules_have_required_references() {
                             failures.push(format!(
                                 "  {filename}: `references.authority.label` is empty"
                             ));
+                        }
+                        match authority.get("snapshot") {
+                            None => {
+                                failures.push(format!(
+                                    "  {filename}: missing `references.authority.snapshot` (required — captures authority prose at Build time for deterministic Verify)"
+                                ));
+                            }
+                            Some(snapshot) => {
+                                let text = snapshot
+                                    .get("text")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or("");
+                                if text.trim().is_empty() {
+                                    failures.push(format!(
+                                        "  {filename}: `references.authority.snapshot.text` is empty"
+                                    ));
+                                }
+                                let fetched_at = snapshot
+                                    .get("fetchedAt")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or("");
+                                if fetched_at.is_empty() {
+                                    failures.push(format!(
+                                        "  {filename}: `references.authority.snapshot.fetchedAt` is missing or empty"
+                                    ));
+                                } else if !iso_date_re.is_match(fetched_at) {
+                                    failures.push(format!(
+                                        "  {filename}: `references.authority.snapshot.fetchedAt` '{fetched_at}' is not ISO-8601 YYYY-MM-DD"
+                                    ));
+                                }
+                            }
                         }
                     }
                 }
@@ -522,6 +562,53 @@ fn modules_have_required_references() {
     if !failures.is_empty() {
         panic!(
             "\n\nModule reference validation failures ({} failures):\n{}\n",
+            failures.len(),
+            failures.join("\n")
+        );
+    }
+}
+
+/// Every module must declare an intentional-scope exclusion note.
+///
+/// `scopeNote` is free text (1–4 sentences) naming what this module
+/// intentionally does not cover — e.g. "Stops at the 4-level. Ogust
+/// continuations not supported. Smolen is handled in a separate module."
+///
+/// ConventionForge Verify reads this first and does not flag anything listed
+/// here as missing. Missing/empty values fail loudly so an author must decide
+/// on scope before the fixture lands.
+#[test]
+fn modules_declare_scope_note() {
+    let dir = PathBuf::from(MODULE_FIXTURE_DIR);
+    let mut failures: Vec<String> = Vec::new();
+
+    for entry in std::fs::read_dir(&dir).expect("Failed to read module fixture directory") {
+        let entry = entry.expect("Failed to read directory entry");
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("json") {
+            continue;
+        }
+
+        let filename = path.file_name().unwrap().to_string_lossy().into_owned();
+        let json_str = std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("Failed to read {filename}: {e}"));
+        let raw: serde_json::Value = serde_json::from_str(&json_str)
+            .unwrap_or_else(|e| panic!("Failed to parse {filename}: {e}"));
+
+        match raw.get("scopeNote").and_then(|v| v.as_str()) {
+            Some(value) if !value.trim().is_empty() => {}
+            Some(_) => failures.push(format!(
+                "  {filename}: `scopeNote` is present but empty/whitespace"
+            )),
+            None => failures.push(format!(
+                "  {filename}: missing required top-level `scopeNote` (free-text note describing what is intentionally out of scope)"
+            )),
+        }
+    }
+
+    if !failures.is_empty() {
+        panic!(
+            "\n\nModule scopeNote failures ({} failures):\n{}\n",
             failures.len(),
             failures.join("\n")
         );

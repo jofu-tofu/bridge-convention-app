@@ -73,14 +73,18 @@ components/
     replay-state.ts                  Pure replay cursor logic: step↔position conversion, progressive reveal, decision point detection
     TrickReviewPanel.svelte          Trick-by-trick review panel with recommendation badges and trick stepper
     ConventionCardPanel.svelte       Convention card side drawer — format toggle (App accordion / ACBL bordered cards) via ToggleGroup. App mode: progressive disclosure. ACBL mode: 11 ACBL-standard sections, always visible, unavailable sections greyed out.
-    AuctionTable.svelte              4-column N/E/S/W grid, suit-colored. `minimal` prop for compact play-history rendering (no legend/annotations).
+    AuctionTable.svelte              4-column N/E/S/W grid, suit-colored. Each cell renders a fixed-width `BidBadge` box (rounded, bordered, `Pass`→`P`) with an optional corner annotation badge. `minimal` prop for compact play-history rendering (tighter padding, no caption); badges + popovers still render in minimal mode.
+    BidBadge.svelte                  Boxed bid cell primitive: `<span data-bid-box>` + absolute-positioned `BidAnnotationBadge` in the corner. Owns display-only abbreviation, suit coloring, border chrome. No popover logic.
+    BidBadge.ts                      Companion: `AnnotationType` type + `displayBidText()` (display-only `Pass`→`P` abbreviation — service `formatCall` is untouched).
+    BidAnnotationBadge.svelte        Corner glyph (`A` alert/amber, `A` underlined announce/blue, `i` educational/gray) with hover/focus-within/click-pinned popover of alertLabel + publicConditions. Used directly by `RoundBidList` and composed by `BidBadge`. Hover/focus previews are CSS-only; click pins via `[data-open="true"]` so the popover survives mouse-leave until dismissed.
+    bid-badge-state.svelte.ts        Module-level single-open registry for bid-annotation popovers. Canonical state `openEntryId`. Exports `isOpen`, `requestOpen`, `requestClose`, `closeAll`, `currentOpenId`. Registers one document-level keydown (Escape) + capture-phase click (outside-click → `closeAll`) at module load.
     BidPanel.svelte                  5-col grid + specials row, compact mode, data-testid on buttons
     BidFeedbackPanel.svelte          Two-branch bid feedback (Correct/Acceptable green → BidFeedbackCorrect, NearMiss amber/Incorrect red → BidFeedbackIncorrect) with show-answer toggle, acceptable badges on siblings, optional practical note, convention contribution badges, WhyNot grade distinction, multi-rationale indicator, encoding explanation, partner hand space summary, elimination stage annotations
     BidFeedbackPanel.ts              Companion .ts file with convention-agnostic display helpers for TeachingProjection rendering: formatAmbiguity, formatEliminationStage, formatModuleRole, roleColorClasses, whyNotGradeClasses, isArtificialEncoder, formatEncoderKind, FeedbackVariant type, variantClass color lookup
     bid-feedback/
       BidFeedbackCorrect.svelte      Correct bid feedback — green flash with explanation + passed conditions (shown as non-blocking feedback for all correct/acceptable bids)
       BidFeedbackIncorrect.svelte    Incorrect/near-miss bid feedback panel with variant coloring (red incorrect, amber near-miss)
-    RoundBidList.svelte              Shared round-by-round bid list (configurable expand state, expected result, test IDs, dimming/highlighting/click for stepping)
+    RoundBidList.svelte              Shared round-by-round bid list (configurable expand state, expected result, test IDs, dimming/highlighting/click for stepping). Renders a `BidAnnotationBadge` next to each annotated call, gated by the `showEducationalAnnotations` prop. Clickable rows use `role="button" tabindex="0"` (not a `<button>` wrapper) so the nested badge button remains valid HTML.
     AuctionStepPanel.svelte          Auction step-through panel: prev/next/show-all controls + RoundBidList with dim/highlight
     AuctionStepPanel.ts              Companion: computeVisibleSeats pure function for progressive hand reveal
     MakeableContractsTable.svelte    5x4 DDS tricks grid (NT/S/H/D/C × N/E/S/W)
@@ -167,6 +171,7 @@ components/
 - Dev-mode seeded RNG via `appStore.devSeed`; seed advances per deal.
 - **Practice picker: no mastery/progress affordances on convention cards.** Do not add mastery bars, streak counters, "X of Y" progress strings, or completion badges to `ConventionSelectScreen` cards. Research (see `docs/research/practice-page-redesign/evidence-map.md` §6 + finding #4) shows these harm intrinsic motivation for adult voluntary learners (Hanus & Fox 2015 RCT; overjustification effect). A descriptive "Last practiced: N days ago" line is acceptable; evaluative progress indicators are not. Progress/coverage belongs in a dedicated opt-in surface (e.g., `/coverage`), not the picker.
 - **Practice picker: category section order is coupled to the `ConventionCategory` enum.** `ConventionCategory` is re-exported from `src/service/` (Rust-origin, via WASM). The Practice picker renders category sections in `Object.values(ConventionCategory)` declaration order. Reordering or renaming values in the Rust enum silently changes the Practice-tab section order. If order matters, encode it explicitly rather than relying on enum declaration.
+- **Bid-annotation popovers share one global `openEntryId`.** `AuctionTable` badges, `RoundBidList` annotation badges, and the `AuctionTable` legend all route through `bid-badge-state.svelte.ts`. Opening any closes the others — intentional, so two overlays never clutter the screen simultaneously. Any new auction-rendering surface that displays annotation popovers **must** use `BidAnnotationBadge` (or call the registry directly) or this invariant breaks. Badge ids must be derived from stable input data (e.g., bid index, or the literal `"auction-legend"` for the legend), never from a module-level counter — otherwise ids drift across navigations and unmount cleanup fails.
 
 ---
 
@@ -189,4 +194,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `AppReady.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-18 | version=27 | dir-commits-at-audit=319 | tree-sig=dirs:17,files:173,exts:svelte:106,ts:66,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-19 | version=28 | dir-commits-at-audit=319 | tree-sig=dirs:17,files:177,exts:svelte:108,ts:68,md:1 -->

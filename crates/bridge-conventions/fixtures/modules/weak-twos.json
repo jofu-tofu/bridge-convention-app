@@ -25,11 +25,11 @@
       },
       {
         "text": "Do not treat a direct raise as an invitation.",
-        "reason": "In this treatment the invitational or game-try action is 2NT as a Feature ask; direct raises are support-driven preemptive actions."
+        "reason": "In this treatment direct raises are support-driven pressure bids; use 2NT when you need opener to clarify whether the weak two is minimum, feature-rich, or solid."
       },
       {
         "text": "Do not play Ogust step replies in this module.",
-        "reason": "This fixture is pure Feature: rebid the weak-two suit with a minimum, show a side ace or king with extras, or rebid 3NT with a solid trump suit and a balanced hand."
+        "reason": "This fixture is pure Feature: rebid the weak-two suit with a minimum, show a side ace or king with extras, or rebid 3NT with a solid trump suit."
       },
       {
         "text": "Do not forget that a new suit response is forcing for one round.",
@@ -214,7 +214,7 @@
       "explanationId": "weakTwo.r2.supportRaise.hearts",
       "meaningId": "weak-two:support-raise-hearts",
       "templateKey": "weakTwo.r2.supportRaise.hearts.semantic",
-      "displayText": "3H raise: further the preempt with 3+ card support and no game drive",
+      "displayText": "3H raise: support-driven further preempt when you are not using the Feature ask",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -224,7 +224,7 @@
       "explanationId": "weakTwo.r2.furtherRaise.hearts",
       "meaningId": "weak-two:further-raise-hearts",
       "templateKey": "weakTwo.r2.furtherRaise.hearts.semantic",
-      "displayText": "4H raise: pressure bid with 4+ trumps and enough offense to go one level higher",
+      "displayText": "4H raise: jump with 4+ trumps either to apply pressure or to place the game directly",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -284,7 +284,7 @@
       "explanationId": "weakTwo.r3.featureSolid.hearts",
       "meaningId": "weak-two:feature-solid-hearts",
       "templateKey": "weakTwo.r3.featureSolid.hearts.semantic",
-      "displayText": "Rebid 3NT over 2H-2NT: non-minimum balanced hand with a solid hearts suit",
+      "displayText": "Rebid 3NT over 2H-2NT: non-minimum hand with a very good hearts suit and no side feature to show",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -324,7 +324,7 @@
       "explanationId": "weakTwo.r2.supportRaise.spades",
       "meaningId": "weak-two:support-raise-spades",
       "templateKey": "weakTwo.r2.supportRaise.spades.semantic",
-      "displayText": "3S raise: further the preempt with 3+ card support and no game drive",
+      "displayText": "3S raise: support-driven further preempt when you are not using the Feature ask",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -334,7 +334,7 @@
       "explanationId": "weakTwo.r2.furtherRaise.spades",
       "meaningId": "weak-two:further-raise-spades",
       "templateKey": "weakTwo.r2.furtherRaise.spades.semantic",
-      "displayText": "4S raise: pressure bid with 4+ trumps and enough offense to go one level higher",
+      "displayText": "4S raise: jump with 4+ trumps either to apply pressure or to place the game directly",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -394,7 +394,7 @@
       "explanationId": "weakTwo.r3.featureSolid.spades",
       "meaningId": "weak-two:feature-solid-spades",
       "templateKey": "weakTwo.r3.featureSolid.spades.semantic",
-      "displayText": "Rebid 3NT over 2S-2NT: non-minimum balanced hand with a solid spades suit",
+      "displayText": "Rebid 3NT over 2S-2NT: non-minimum hand with a very good spades suit and no side feature to show",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -434,7 +434,7 @@
       "explanationId": "weakTwo.r2.supportRaise.diamonds",
       "meaningId": "weak-two:support-raise-diamonds",
       "templateKey": "weakTwo.r2.supportRaise.diamonds.semantic",
-      "displayText": "3D raise: further the preempt with 3+ card support and no game drive",
+      "displayText": "3D raise: support-driven further preempt when you are not using the Feature ask",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -444,7 +444,7 @@
       "explanationId": "weakTwo.r2.furtherRaise.diamonds",
       "meaningId": "weak-two:further-raise-diamonds",
       "templateKey": "weakTwo.r2.furtherRaise.diamonds.semantic",
-      "displayText": "4D raise: pressure bid with 4+ trumps and enough offense to go one level higher",
+      "displayText": "4D raise: jump with 4+ trumps either to apply pressure or to place the game directly",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -504,7 +504,7 @@
       "explanationId": "weakTwo.r3.featureSolid.diamonds",
       "meaningId": "weak-two:feature-solid-diamonds",
       "templateKey": "weakTwo.r3.featureSolid.diamonds.semantic",
-      "displayText": "Rebid 3NT over 2D-2NT: non-minimum balanced hand with a solid diamonds suit",
+      "displayText": "Rebid 3NT over 2D-2NT: non-minimum hand with a very good diamonds suit and no side feature to show",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -1799,9 +1799,9 @@
             {
               "factId": "bridge.totalPointsForRaise",
               "operator": "gte",
-              "value": 17,
-              "clauseId": "bridge.totalPointsForRaise:gte:17",
-              "description": "Rule of 17 game interest (17+ total points)",
+              "value": 14,
+              "clauseId": "bridge.totalPointsForRaise:gte:14",
+              "description": "Invitational or stronger values opposite the weak two",
               "isPublic": true
             }
           ],
@@ -1819,7 +1819,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Feature ask (2NT)",
-            "summary": "Ask opener to rebid the weak-two suit with a minimum, show a side feature with extras, or rebid 3NT with a solid balanced hand"
+            "summary": "Ask opener to rebid the weak-two suit with a minimum, show a side feature with extras, or rebid 3NT with a solid trump suit"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -1865,12 +1865,136 @@
               "description": "5+ cards in a new suit",
               "isPublic": true,
               "rationale": "natural one-round force"
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "5+ spades",
+              "isPublic": true
             }
           ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
             "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "NewSuitForcing",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "New suit forcing",
+            "summary": "Bid a real side suit with game interest; opener's natural rebids are outside this module"
+          },
+          "surfaceBindings": {
+            "suit": "hearts"
+          }
+        },
+        {
+          "meaningId": "weak-two:new-suit-forcing-hearts",
+          "semanticClassId": "weak-two:new-suit-forcing",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.weakTwo.hasNewSuit.hearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.weakTwo.hasNewSuit.hearts:boolean:true",
+              "description": "5+ cards in a new suit",
+              "isPublic": true,
+              "rationale": "natural one-round force"
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.clubs:gte:5",
+              "description": "5+ clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "NewSuitForcing",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "New suit forcing",
+            "summary": "Bid a real side suit with game interest; opener's natural rebids are outside this module"
+          },
+          "surfaceBindings": {
+            "suit": "hearts"
+          }
+        },
+        {
+          "meaningId": "weak-two:new-suit-forcing-hearts",
+          "semanticClassId": "weak-two:new-suit-forcing",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.weakTwo.hasNewSuit.hearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.weakTwo.hasNewSuit.hearts:boolean:true",
+              "description": "5+ cards in a new suit",
+              "isPublic": true,
+              "rationale": "natural one-round force"
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.diamonds:gte:5",
+              "description": "5+ diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
           },
           "sourceIntent": {
             "type": "NewSuitForcing",
@@ -1913,26 +2037,8 @@
               "operator": "gte",
               "value": 4,
               "clauseId": "hand.suitLength.$suit:gte:4",
-              "description": "4+ hearts",
+              "description": "Real fit for the jump raise",
               "isPublic": true
-            },
-            {
-              "factId": "bridge.totalPointsForRaise",
-              "operator": "gte",
-              "value": 8,
-              "clauseId": "bridge.totalPointsForRaise:gte:8",
-              "description": "Enough offense to pressure to the 4-level",
-              "isPublic": true,
-              "rationale": "support-driven with some offense"
-            },
-            {
-              "factId": "bridge.totalPointsForRaise",
-              "operator": "lte",
-              "value": 16,
-              "clauseId": "bridge.totalPointsForRaise:lte:16",
-              "description": "Below Feature-ask game-try values",
-              "isPublic": true,
-              "rationale": "2NT handles explicit game tries"
             }
           ],
           "ranking": {
@@ -1949,7 +2055,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Further raise (4H)",
-            "summary": "Raise to 4H with 4+ trumps and enough offense to pressure higher without using 2NT"
+            "summary": "Jump to 4H with 4+ trumps either as a pressure bid or to place the game directly"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -1978,11 +2084,11 @@
             {
               "factId": "bridge.totalPointsForRaise",
               "operator": "lte",
-              "value": 7,
-              "clauseId": "bridge.totalPointsForRaise:lte:7",
-              "description": "No game interest opposite a weak two",
+              "value": 13,
+              "clauseId": "bridge.totalPointsForRaise:lte:13",
+              "description": "About 6-13 total points opposite the weak two",
               "isPublic": true,
-              "rationale": "support-driven further preempt"
+              "rationale": "simple raise with support and no clear direct-game placement"
             }
           ],
           "ranking": {
@@ -1999,7 +2105,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Support raise (3H)",
-            "summary": "Further the preempt with 3+ card support and no game drive"
+            "summary": "Raise to 3H with support when you want the simple obstructive raise"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -2062,9 +2168,9 @@
             {
               "factId": "bridge.totalPointsForRaise",
               "operator": "gte",
-              "value": 17,
-              "clauseId": "bridge.totalPointsForRaise:gte:17",
-              "description": "Rule of 17 game interest (17+ total points)",
+              "value": 14,
+              "clauseId": "bridge.totalPointsForRaise:gte:14",
+              "description": "Invitational or stronger values opposite the weak two",
               "isPublic": true
             }
           ],
@@ -2082,7 +2188,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Feature ask (2NT)",
-            "summary": "Ask opener to rebid the weak-two suit with a minimum, show a side feature with extras, or rebid 3NT with a solid balanced hand"
+            "summary": "Ask opener to rebid the weak-two suit with a minimum, show a side feature with extras, or rebid 3NT with a solid trump suit"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -2128,12 +2234,136 @@
               "description": "5+ cards in a new suit",
               "isPublic": true,
               "rationale": "natural one-round force"
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.clubs:gte:5",
+              "description": "5+ clubs",
+              "isPublic": true
             }
           ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
             "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "NewSuitForcing",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "New suit forcing",
+            "summary": "Bid a real side suit with game interest; opener's natural rebids are outside this module"
+          },
+          "surfaceBindings": {
+            "suit": "spades"
+          }
+        },
+        {
+          "meaningId": "weak-two:new-suit-forcing-spades",
+          "semanticClassId": "weak-two:new-suit-forcing",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.weakTwo.hasNewSuit.spades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.weakTwo.hasNewSuit.spades:boolean:true",
+              "description": "5+ cards in a new suit",
+              "isPublic": true,
+              "rationale": "natural one-round force"
+            },
+            {
+              "factId": "hand.suitLength.diamonds",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.diamonds:gte:5",
+              "description": "5+ diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "NewSuitForcing",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "New suit forcing",
+            "summary": "Bid a real side suit with game interest; opener's natural rebids are outside this module"
+          },
+          "surfaceBindings": {
+            "suit": "spades"
+          }
+        },
+        {
+          "meaningId": "weak-two:new-suit-forcing-spades",
+          "semanticClassId": "weak-two:new-suit-forcing",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.weakTwo.hasNewSuit.spades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.weakTwo.hasNewSuit.spades:boolean:true",
+              "description": "5+ cards in a new suit",
+              "isPublic": true,
+              "rationale": "natural one-round force"
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
           },
           "sourceIntent": {
             "type": "NewSuitForcing",
@@ -2176,26 +2406,8 @@
               "operator": "gte",
               "value": 4,
               "clauseId": "hand.suitLength.$suit:gte:4",
-              "description": "4+ spades",
+              "description": "Real fit for the jump raise",
               "isPublic": true
-            },
-            {
-              "factId": "bridge.totalPointsForRaise",
-              "operator": "gte",
-              "value": 8,
-              "clauseId": "bridge.totalPointsForRaise:gte:8",
-              "description": "Enough offense to pressure to the 4-level",
-              "isPublic": true,
-              "rationale": "support-driven with some offense"
-            },
-            {
-              "factId": "bridge.totalPointsForRaise",
-              "operator": "lte",
-              "value": 16,
-              "clauseId": "bridge.totalPointsForRaise:lte:16",
-              "description": "Below Feature-ask game-try values",
-              "isPublic": true,
-              "rationale": "2NT handles explicit game tries"
             }
           ],
           "ranking": {
@@ -2212,7 +2424,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Further raise (4S)",
-            "summary": "Raise to 4S with 4+ trumps and enough offense to pressure higher without using 2NT"
+            "summary": "Jump to 4S with 4+ trumps either as a pressure bid or to place the game directly"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -2241,11 +2453,11 @@
             {
               "factId": "bridge.totalPointsForRaise",
               "operator": "lte",
-              "value": 7,
-              "clauseId": "bridge.totalPointsForRaise:lte:7",
-              "description": "No game interest opposite a weak two",
+              "value": 13,
+              "clauseId": "bridge.totalPointsForRaise:lte:13",
+              "description": "About 6-13 total points opposite the weak two",
               "isPublic": true,
-              "rationale": "support-driven further preempt"
+              "rationale": "simple raise with support and no clear direct-game placement"
             }
           ],
           "ranking": {
@@ -2262,7 +2474,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Support raise (3S)",
-            "summary": "Further the preempt with 3+ card support and no game drive"
+            "summary": "Raise to 3S with support when you want the simple obstructive raise"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -2325,9 +2537,9 @@
             {
               "factId": "bridge.totalPointsForRaise",
               "operator": "gte",
-              "value": 17,
-              "clauseId": "bridge.totalPointsForRaise:gte:17",
-              "description": "Rule of 17 game interest (17+ total points)",
+              "value": 14,
+              "clauseId": "bridge.totalPointsForRaise:gte:14",
+              "description": "Invitational or stronger values opposite the weak two",
               "isPublic": true
             }
           ],
@@ -2345,7 +2557,7 @@
           "disclosure": "alert",
           "teachingLabel": {
             "name": "Feature ask (2NT)",
-            "summary": "Ask opener to rebid the weak-two suit with a minimum, show a side feature with extras, or rebid 3NT with a solid balanced hand"
+            "summary": "Ask opener to rebid the weak-two suit with a minimum, show a side feature with extras, or rebid 3NT with a solid trump suit"
           },
           "surfaceBindings": {
             "suit": "diamonds"
@@ -2391,12 +2603,136 @@
               "description": "5+ cards in a new suit",
               "isPublic": true,
               "rationale": "natural one-round force"
+            },
+            {
+              "factId": "hand.suitLength.hearts",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.hearts:gte:5",
+              "description": "5+ hearts",
+              "isPublic": true
             }
           ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
             "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "NewSuitForcing",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "New suit forcing",
+            "summary": "Bid a real side suit with game interest; opener's natural rebids are outside this module"
+          },
+          "surfaceBindings": {
+            "suit": "diamonds"
+          }
+        },
+        {
+          "meaningId": "weak-two:new-suit-forcing-diamonds",
+          "semanticClassId": "weak-two:new-suit-forcing",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.weakTwo.hasNewSuit.diamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.weakTwo.hasNewSuit.diamonds:boolean:true",
+              "description": "5+ cards in a new suit",
+              "isPublic": true,
+              "rationale": "natural one-round force"
+            },
+            {
+              "factId": "hand.suitLength.spades",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.spades:gte:5",
+              "description": "5+ spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "NewSuitForcing",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "New suit forcing",
+            "summary": "Bid a real side suit with game interest; opener's natural rebids are outside this module"
+          },
+          "surfaceBindings": {
+            "suit": "diamonds"
+          }
+        },
+        {
+          "meaningId": "weak-two:new-suit-forcing-diamonds",
+          "semanticClassId": "weak-two:new-suit-forcing",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "hand.hcp:gte:14",
+              "description": "14+ HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.weakTwo.hasNewSuit.diamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.weakTwo.hasNewSuit.diamonds:boolean:true",
+              "description": "5+ cards in a new suit",
+              "isPublic": true,
+              "rationale": "natural one-round force"
+            },
+            {
+              "factId": "hand.suitLength.clubs",
+              "operator": "gte",
+              "value": 5,
+              "clauseId": "hand.suitLength.clubs:gte:5",
+              "description": "5+ clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
           },
           "sourceIntent": {
             "type": "NewSuitForcing",
@@ -2439,26 +2775,8 @@
               "operator": "gte",
               "value": 4,
               "clauseId": "hand.suitLength.$suit:gte:4",
-              "description": "4+ diamonds",
+              "description": "Real fit for the jump raise",
               "isPublic": true
-            },
-            {
-              "factId": "bridge.totalPointsForRaise",
-              "operator": "gte",
-              "value": 8,
-              "clauseId": "bridge.totalPointsForRaise:gte:8",
-              "description": "Enough offense to pressure to the 4-level",
-              "isPublic": true,
-              "rationale": "support-driven with some offense"
-            },
-            {
-              "factId": "bridge.totalPointsForRaise",
-              "operator": "lte",
-              "value": 16,
-              "clauseId": "bridge.totalPointsForRaise:lte:16",
-              "description": "Below Feature-ask game-try values",
-              "isPublic": true,
-              "rationale": "2NT handles explicit game tries"
             }
           ],
           "ranking": {
@@ -2475,7 +2793,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Further raise (4D)",
-            "summary": "Raise to 4D with 4+ trumps and enough offense to pressure higher without using 2NT"
+            "summary": "Jump to 4D with 4+ trumps either as a pressure bid or to place the game directly"
           },
           "surfaceBindings": {
             "suit": "diamonds"
@@ -2504,11 +2822,11 @@
             {
               "factId": "bridge.totalPointsForRaise",
               "operator": "lte",
-              "value": 7,
-              "clauseId": "bridge.totalPointsForRaise:lte:7",
-              "description": "No game interest opposite a weak two",
+              "value": 13,
+              "clauseId": "bridge.totalPointsForRaise:lte:13",
+              "description": "About 6-13 total points opposite the weak two",
               "isPublic": true,
-              "rationale": "support-driven further preempt"
+              "rationale": "simple raise with support and no clear direct-game placement"
             }
           ],
           "ranking": {
@@ -2525,7 +2843,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Support raise (3D)",
-            "summary": "Further the preempt with 3+ card support and no game drive"
+            "summary": "Raise to 3D with support when you want the simple obstructive raise"
           },
           "surfaceBindings": {
             "suit": "diamonds"
@@ -2785,14 +3103,6 @@
               "isPublic": true
             },
             {
-              "factId": "hand.isBalanced",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "hand.isBalanced:boolean:true",
-              "description": "Balanced hand with outside stopper",
-              "isPublic": true
-            },
-            {
               "factId": "module.weakTwo.trumpSolid.hearts",
               "operator": "boolean",
               "value": true,
@@ -2813,7 +3123,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Solid-suit 3NT",
-            "summary": "Rebid 3NT with a non-minimum balanced hand and a solid trump suit"
+            "summary": "Rebid 3NT with a non-minimum hand and a solid trump suit"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -3043,14 +3353,6 @@
               "isPublic": true
             },
             {
-              "factId": "hand.isBalanced",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "hand.isBalanced:boolean:true",
-              "description": "Balanced hand with outside stopper",
-              "isPublic": true
-            },
-            {
               "factId": "module.weakTwo.trumpSolid.spades",
               "operator": "boolean",
               "value": true,
@@ -3071,7 +3373,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Solid-suit 3NT",
-            "summary": "Rebid 3NT with a non-minimum balanced hand and a solid trump suit"
+            "summary": "Rebid 3NT with a non-minimum hand and a solid trump suit"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -3301,14 +3603,6 @@
               "isPublic": true
             },
             {
-              "factId": "hand.isBalanced",
-              "operator": "boolean",
-              "value": true,
-              "clauseId": "hand.isBalanced:boolean:true",
-              "description": "Balanced hand with outside stopper",
-              "isPublic": true
-            },
-            {
               "factId": "module.weakTwo.trumpSolid.diamonds",
               "operator": "boolean",
               "value": true,
@@ -3329,7 +3623,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Solid-suit 3NT",
-            "summary": "Rebid 3NT with a non-minimum balanced hand and a solid trump suit"
+            "summary": "Rebid 3NT with a non-minimum hand and a solid trump suit"
           },
           "surfaceBindings": {
             "suit": "diamonds"
@@ -3786,7 +4080,7 @@
               "clauseId": "bridge.totalPointsForRaise:gte:17",
               "description": "Enough combined strength to bid the trump game",
               "isPublic": true,
-              "rationale": "Rule of 17 style continuation"
+              "rationale": "Feature-ask continuation"
             }
           ],
           "ranking": {
@@ -3909,7 +4203,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass",
-            "summary": "Leave opener in 3NT when the balanced solid-suit description points there"
+            "summary": "Leave opener in 3NT when the solid-suit description points there"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -4546,7 +4840,7 @@
               "clauseId": "bridge.totalPointsForRaise:gte:17",
               "description": "Enough combined strength to bid the trump game",
               "isPublic": true,
-              "rationale": "Rule of 17 style continuation"
+              "rationale": "Feature-ask continuation"
             }
           ],
           "ranking": {
@@ -4669,7 +4963,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass",
-            "summary": "Leave opener in 3NT when the balanced solid-suit description points there"
+            "summary": "Leave opener in 3NT when the solid-suit description points there"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -5306,7 +5600,7 @@
               "clauseId": "bridge.totalPointsForRaise:gte:17",
               "description": "Enough combined strength to bid the trump game",
               "isPublic": true,
-              "rationale": "Rule of 17 style continuation"
+              "rationale": "Feature-ask continuation"
             }
           ],
           "ranking": {
@@ -5429,7 +5723,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "Pass",
-            "summary": "Leave opener in 3NT when the balanced solid-suit description points there"
+            "summary": "Leave opener in 3NT when the solid-suit description points there"
           },
           "surfaceBindings": {
             "suit": "diamonds"
@@ -6695,7 +6989,7 @@
               "level": 2,
               "strain": "NT"
             },
-            "rationale": "Responder has Rule-of-17 game interest and asks for a Feature reply."
+            "rationale": "Responder has invitational or stronger values and asks for a Feature reply."
           },
           {
             "seat": "N",
@@ -6786,7 +7080,7 @@
           "note": "Direct raises are obstructive, not invitational."
         },
         {
-          "recommendation": "With game interest but no clear contract, bid two notrump as the Feature ask.",
+          "recommendation": "With invitational or stronger values but no clear contract, bid two notrump as the Feature ask.",
           "note": "Responder is asking whether opener is minimum, has a side ace or king, or has a solid suit for three notrump."
         },
         {
@@ -6816,7 +7110,7 @@
     "supportsRoleSelection": true,
     "teaching": {
       "purpose": "Open light hands with a disciplined six-card suit at the 2-level, then let responder use support-driven raises or a Feature 2NT ask to judge game.",
-      "whenToUse": "Open 2D/2H/2S with exactly six cards in the suit and 5-11 HCP. As responder, make a direct support raise with trump support, or use 2NT as the Feature ask when the Rule of 17 suggests game interest.",
+      "whenToUse": "Open 2D/2H/2S with exactly six cards in the suit and 5-11 HCP. As responder, make a direct support raise with trump support, or use 2NT as the Feature ask with invitational or stronger values when the final strain is still unclear.",
       "whenNotToUse": [
         "2C is reserved for strong openings \u2014 never open 2C as a weak two",
         "With a hand too strong for a weak two (12+ HCP) \u2014 open at the 1-level instead",
