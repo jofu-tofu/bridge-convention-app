@@ -28,16 +28,16 @@
 </script>
 
 <svelte:head>
-  <title>Practice any bridge bidding convention — BridgeLab</title>
+  <title>Bid and play bridge with confidence — BridgeLab</title>
   <meta
     name="description"
-    content="The visual reference manual + practice app for Stayman, Jacoby, Bergen, and everything else."
+    content="A convention trainer, visual reference for bridge conventions, and real-time play analysis after the auction."
   />
   <link rel="canonical" href="https://bridgelab.net/" />
-  <meta property="og:title" content="Practice any bridge bidding convention — BridgeLab" />
+  <meta property="og:title" content="Bid and play bridge with confidence — BridgeLab" />
   <meta
     property="og:description"
-    content="The visual reference manual + practice app for Stayman, Jacoby, Bergen, and everything else."
+    content="A convention trainer, visual reference for bridge conventions, and real-time play analysis after the auction."
   />
   <meta property="og:url" content="https://bridgelab.net/" />
   <!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -50,9 +50,10 @@
 <ContentScreen>
 <main class="landing">
   <div class="inner">
-    <h1>Practice any bridge bidding convention.</h1>
+    <h1>Bid and play with confidence</h1>
     <p class="sub">
-      The visual reference manual + practice app for Stayman, Jacoby, Bergen, and everything else.
+      A convention trainer, visual reference for bridge conventions, and real-time play analysis
+      after the auction.
     </p>
     <div class="ctas">
       <button type="button" class="cta primary" onclick={() => authModal?.open()}>
