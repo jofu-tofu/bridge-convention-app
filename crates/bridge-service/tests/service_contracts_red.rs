@@ -413,3 +413,123 @@ fn viewport_getters_return_none_for_wrong_phase() {
         "Declarer prompt viewport should be None during Bidding phase",
     );
 }
+
+// ── Playing-viewport visibility ─────────────────────────────────────
+//
+// Regression: face_up_seats during play used `user_seat` instead of
+// `effective_user_seat`, so when the user accepted "Play as Declarer"
+// (DeclarerSwap), the declarer's hand was hidden. The viewport must always
+// expose both the seat the user is currently controlling and dummy.
+
+/// Drive a normal auction to the DeclarerPrompt phase and return the contract.
+fn drive_to_prompt(
+    service: &mut ServicePortImpl,
+    seed: u64,
+) -> (String, bridge_engine::types::Contract) {
+    let mut config = make_config("nt-bundle", seed);
+    config.play_preference = Some(bridge_session::types::PlayPreference::Prompt);
+    let handle = service
+        .create_drill_session(config)
+        .expect("create_drill_session should succeed");
+    service
+        .start_drill(&handle)
+        .expect("start_drill should succeed");
+    complete_auction(service, &handle);
+    let prompt = service
+        .get_declarer_prompt_viewport(&handle)
+        .expect("get_declarer_prompt_viewport should not error")
+        .expect("DeclarerPrompt viewport should exist after auction");
+    (handle, prompt.contract)
+}
+
+#[test]
+fn playing_viewport_shows_user_seat_and_dummy_when_no_swap() {
+    // No-swap path: enter_play with no seat override → effective_user_seat
+    // stays at user_seat (South). visible_hands must contain South + dummy.
+    let mut service = ServicePortImpl::new();
+    let (handle, contract) = drive_to_prompt(&mut service, 42);
+
+    service
+        .enter_play(&handle, None)
+        .expect("enter_play should succeed");
+
+    let vp = service
+        .get_playing_viewport(&handle)
+        .expect("get_playing_viewport should not error")
+        .expect("playing viewport should exist after enter_play");
+
+    let dummy = bridge_engine::constants::partner_seat(contract.declarer);
+    assert!(
+        vp.visible_hands.contains_key(&Seat::South),
+        "user seat (South) must be face-up in playing viewport",
+    );
+    assert!(
+        vp.visible_hands.contains_key(&dummy),
+        "dummy seat ({:?}) must be face-up in playing viewport",
+        dummy,
+    );
+    if Seat::South != dummy {
+        assert_eq!(
+            vp.visible_hands.len(),
+            2,
+            "exactly 2 hands face-up when user and dummy differ",
+        );
+    }
+}
+
+#[test]
+fn playing_viewport_shows_both_hands_on_declarer_swap() {
+    // DeclarerSwap path: find a deal where partner (North) declares,
+    // then call enter_play(handle, Some(North)) to take over. The viewport
+    // must expose both North (now controlled by user) and South (dummy =
+    // user's original seat).
+    let mut service = ServicePortImpl::new();
+    let mut found: Option<(String, bridge_engine::types::Contract)> = None;
+    for seed in 0..200u64 {
+        let mut svc = ServicePortImpl::new();
+        let (handle, contract) = drive_to_prompt(&mut svc, seed);
+        if contract.declarer == Seat::North {
+            // Reuse this svc by moving it into `service` slot.
+            service = svc;
+            found = Some((handle, contract));
+            break;
+        }
+    }
+    let (handle, contract) =
+        found.expect("expected to find a North-declared contract within 200 seeds");
+
+    service
+        .enter_play(&handle, Some(contract.declarer))
+        .expect("enter_play (DeclarerSwap) should succeed");
+
+    let vp = service
+        .get_playing_viewport(&handle)
+        .expect("get_playing_viewport should not error")
+        .expect("playing viewport should exist after enter_play");
+
+    assert!(
+        vp.visible_hands.contains_key(&Seat::North),
+        "declarer (North) must be face-up — user is now playing this hand",
+    );
+    assert!(
+        vp.visible_hands.contains_key(&Seat::South),
+        "dummy (South) must be face-up — user's original seat is now dummy",
+    );
+    assert_eq!(vp.visible_hands.len(), 2, "exactly 2 hands face-up");
+
+    assert!(
+        vp.user_controlled_seats.contains(&Seat::North),
+        "user must control declarer (North) on DeclarerSwap, got {:?}",
+        vp.user_controlled_seats,
+    );
+    assert!(
+        vp.user_controlled_seats.contains(&Seat::South),
+        "user must control dummy (South) on DeclarerSwap, got {:?}",
+        vp.user_controlled_seats,
+    );
+
+    assert!(
+        vp.rotated,
+        "table should be rotated 180° when effective_user_seat == North",
+    );
+}

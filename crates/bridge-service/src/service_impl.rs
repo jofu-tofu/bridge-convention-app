@@ -636,28 +636,29 @@ impl ServicePort for ServicePortImpl {
             return Ok(None);
         }
 
+        // Face-up seats: the seat the user is currently controlling + dummy.
+        // When the user takes over for partner via "Play as Declarer" (DeclarerSwap),
+        // effective_user_seat differs from user_seat — the user is now playing the
+        // declarer hand and must see it, not their original (now-dummy) hand.
         let face_up_seats = {
             let mut s = HashSet::new();
-            s.insert(session.state.user_seat);
-            // Dummy is also face-up during play
+            let active = session
+                .state
+                .effective_user_seat
+                .unwrap_or(session.state.user_seat);
+            s.insert(active);
             if let Some(dummy) = session.state.play.dummy_seat {
                 s.insert(dummy);
             }
             s
         };
 
-        // Build user-controlled seats list
-        let user_controlled = {
-            let mut seats = vec![session.state.user_seat];
-            if let Some(ref contract) = session.state.contract {
-                if let Some(effective) = session.state.effective_user_seat {
-                    if contract.declarer == effective {
-                        seats.push(partner_seat(contract.declarer));
-                    }
-                }
-            }
-            seats
-        };
+        // Build user-controlled seats list (effective seat + dummy when declarer)
+        let user_controlled: Vec<Seat> = SEATS
+            .iter()
+            .copied()
+            .filter(|seat| session.state.is_user_controlled_play(*seat))
+            .collect();
 
         // Build remaining cards map
         let mut remaining_cards = HashMap::new();
@@ -941,8 +942,13 @@ impl ServicePortImpl {
             remaining_cards.insert(seat, session.state.get_remaining_cards(seat));
         }
 
-        // Visible seats: user-controlled + dummy
-        let mut visible_seats = vec![session.state.user_seat];
+        // Visible seats: the seat currently controlled by the user + dummy.
+        // Mirrors the playing viewport's face-up logic for DeclarerSwap.
+        let active = session
+            .state
+            .effective_user_seat
+            .unwrap_or(session.state.user_seat);
+        let mut visible_seats = vec![active];
         if let Some(dummy) = session.state.play.dummy_seat {
             if !visible_seats.contains(&dummy) {
                 visible_seats.push(dummy);
