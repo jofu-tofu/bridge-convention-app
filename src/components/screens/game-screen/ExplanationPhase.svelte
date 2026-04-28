@@ -115,14 +115,14 @@
     if (index === null) {
       replayStep = 0;
     } else {
-      replayStep = stepAtPosition({ trickIndex: index, playIndex: -1 }, viewport.tricks);
+      replayStep = stepAtPosition({ trickIndex: index, playIndex: 0 }, viewport.tricks);
     }
     // Clear bid step when selecting a trick
     selectedBidStep = null;
   }
 
   function handleClickTrick(index: number) {
-    replayStep = stepAtPosition({ trickIndex: index, playIndex: -1 }, viewport.tricks);
+    replayStep = stepAtPosition({ trickIndex: index, playIndex: 0 }, viewport.tricks);
   }
 
   function handleNextDecision() {
