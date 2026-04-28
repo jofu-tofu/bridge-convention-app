@@ -66,7 +66,7 @@
     >
       <BridgeTable visibleHands={viewport.allHands} vulnerability={viewport.vulnerability}>
         <div class="flex flex-col items-center gap-2">
-          <div class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md">
+          <div class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md z-[var(--z-tooltip)]">
             <AuctionTable
               entries={steppedEntries}
               dealer={viewport.dealer}

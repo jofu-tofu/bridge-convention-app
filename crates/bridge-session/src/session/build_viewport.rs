@@ -21,7 +21,8 @@ use super::viewport_types::{
 
 // ── Format helpers ────────────────────────────────────────────────
 
-/// Format a Call for display: "1C", "1NT", "Pass", "Dbl", "Rdbl", "2H", etc.
+/// Format a Call for display: "1\u{2663}", "1NT", "Pass", "Dbl", "Rdbl", "2\u{2665}", etc.
+/// Uses Unicode suit symbols to match the TS `formatCall` output.
 pub fn format_call(call: &Call) -> String {
     match call {
         Call::Pass => "Pass".to_string(),
@@ -29,10 +30,10 @@ pub fn format_call(call: &Call) -> String {
         Call::Redouble => "Rdbl".to_string(),
         Call::Bid { level, strain } => {
             let suit_str = match strain {
-                BidSuit::Clubs => "C",
-                BidSuit::Diamonds => "D",
-                BidSuit::Hearts => "H",
-                BidSuit::Spades => "S",
+                BidSuit::Clubs => "\u{2663}",
+                BidSuit::Diamonds => "\u{2666}",
+                BidSuit::Hearts => "\u{2665}",
+                BidSuit::Spades => "\u{2660}",
                 BidSuit::NoTrump => "NT",
             };
             format!("{}{}", level, suit_str)
@@ -303,7 +304,7 @@ mod tests {
                 level: 1,
                 strain: BidSuit::Clubs
             }),
-            "1C"
+            "1\u{2663}"
         );
         assert_eq!(
             format_call(&Call::Bid {
@@ -317,21 +318,21 @@ mod tests {
                 level: 3,
                 strain: BidSuit::Hearts
             }),
-            "3H"
+            "3\u{2665}"
         );
         assert_eq!(
             format_call(&Call::Bid {
                 level: 7,
                 strain: BidSuit::Spades
             }),
-            "7S"
+            "7\u{2660}"
         );
         assert_eq!(
             format_call(&Call::Bid {
                 level: 2,
                 strain: BidSuit::Diamonds
             }),
-            "2D"
+            "2\u{2666}"
         );
     }
 

@@ -809,9 +809,9 @@ mod tests {
 
         assert_eq!(result.grade, BidGrade::Correct);
         assert_eq!(result.user_call, make_call_2c());
-        assert_eq!(result.user_call_display, "2C");
+        assert_eq!(result.user_call_display, "2\u{2663}");
         assert_eq!(result.correct_call, Some(make_call_2c()));
-        assert_eq!(result.correct_call_display, Some("2C".to_string()));
+        assert_eq!(result.correct_call_display, Some("2\u{2663}".to_string()));
         assert!(!result.requires_retry);
     }
 
@@ -889,7 +889,7 @@ mod tests {
         let near_misses = result.near_misses.unwrap();
         assert_eq!(near_misses.len(), 1);
         assert_eq!(near_misses[0].call, make_call_2h());
-        assert_eq!(near_misses[0].call_display, "2H");
+        assert_eq!(near_misses[0].call_display, "2\u{2665}");
         assert_eq!(near_misses[0].reason, "Transfer requires 5+ hearts");
     }
 

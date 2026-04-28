@@ -79,7 +79,7 @@ describe("BidBadge", () => {
     expect(badge).not.toBeNull();
   });
 
-  it("renders educational badge with i glyph", () => {
+  it("renders educational badge with svg icon", () => {
     const { container } = render(BidBadge, {
       props: {
         id: "test-4",
@@ -89,7 +89,7 @@ describe("BidBadge", () => {
       },
     });
     const button = container.querySelector("[data-bid-badge] button");
-    expect(button?.textContent?.trim()).toBe("i");
+    expect(button?.querySelector("svg")).not.toBeNull();
   });
 
   it("renders placeholder without border or badge", () => {

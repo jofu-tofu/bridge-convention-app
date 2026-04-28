@@ -118,17 +118,33 @@
           role="tooltip"
         >
           <div class="flex items-center gap-1.5 mb-1">
-            <span class="inline-flex w-3.5 h-3.5 items-center justify-center rounded-full font-sans font-bold leading-none text-[--text-annotation] bg-annotation-announce/20 text-annotation-announce underline shrink-0" aria-hidden="true">A</span>
-            <span class="text-annotation-announce">Announce</span>
-            <span class="text-text-muted">&mdash; stated aloud</span>
-          </div>
-          <div class="flex items-center gap-1.5 mb-1">
-            <span class="inline-flex w-3.5 h-3.5 items-center justify-center rounded-full font-sans font-bold leading-none text-[--text-annotation] bg-annotation-alert/20 text-annotation-alert shrink-0" aria-hidden="true">A</span>
+            <span class="inline-flex w-3.5 h-3.5 items-center justify-center rounded-full leading-none bg-annotation-alert/20 text-annotation-alert shrink-0" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+              </svg>
+            </span>
             <span class="text-annotation-alert">Alert</span>
             <span class="text-text-muted">&mdash; conventional bid</span>
           </div>
+          <div class="flex items-center gap-1.5 mb-1">
+            <span class="inline-flex w-3.5 h-3.5 items-center justify-center rounded-full leading-none bg-annotation-announce/20 text-annotation-announce shrink-0" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 11 18-5v12L3 14v-3z" />
+                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+              </svg>
+            </span>
+            <span class="text-annotation-announce">Announce</span>
+            <span class="text-text-muted">&mdash; stated aloud</span>
+          </div>
           <div class="flex items-center gap-1.5">
-            <span class="inline-flex w-3.5 h-3.5 items-center justify-center rounded-full font-sans font-bold leading-none text-[--text-annotation] bg-text-muted/20 text-text-muted shrink-0" aria-hidden="true">i</span>
+            <span class="inline-flex w-3.5 h-3.5 items-center justify-center rounded-full leading-none bg-text-muted/20 text-text-muted shrink-0" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4" />
+                <path d="M12 8h.01" />
+              </svg>
+            </span>
             <span class="text-text-muted">Educational</span>
             <span class="text-text-muted">&mdash; for learning</span>
           </div>
