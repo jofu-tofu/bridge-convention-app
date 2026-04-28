@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SvelteMap } from "svelte/reactivity";
   import { Seat, Suit, BidSuit, Vulnerability as Vul, partnerSeat, PracticeMode } from "../../../service";
-  import type { ExplanationViewport } from "../../../service";
+  import type { ExplanationViewport, Hand } from "../../../service";
   import type { ConventionInfo, ConventionContribution } from "../../../service";
   import { formatRuleName } from "../../../service";
   import { getLayoutConfig } from "../../../stores/context";
@@ -11,7 +11,6 @@
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
   import TrickOverlay from "../../game/TrickOverlay.svelte";
-  import HandFan from "../../game/HandFan.svelte";
   import ReplayControls from "../../game/ReplayControls.svelte";
   import ScaledTableArea from "./ScaledTableArea.svelte";
   import PlayHistoryPanel from "./PlayHistoryPanel.svelte";
@@ -23,6 +22,7 @@
   import TrickReviewPanel from "../../game/TrickReviewPanel.svelte";
   import Button from "../../shared/Button.svelte";
   import Spinner from "../../shared/Spinner.svelte";
+  import ToggleGroup from "../../shared/ToggleGroup.svelte";
   import { formatModuleRole, roleColorClasses } from "../../game/bid-feedback/BidFeedbackPanel";
   import { formatVulnerability, formatResult } from "./review-helpers";
   import {
@@ -33,7 +33,6 @@
     findNextDecision,
     remainingCardsAtPosition,
   } from "../../game/replay-state";
-  import { computeVisibleSeats } from "../../game/AuctionStepPanel";
 
   interface Props extends DDSAnalysisProps {
     viewport: ExplanationViewport;
@@ -67,7 +66,38 @@
     viewport.contract ? partnerSeat(viewport.contract.declarer) : undefined,
   );
 
-  let showAllCards = $state(false);
+  // Hand visibility — explicit, decoupled from auction stepping. The reviewer chooses
+  // what they want to see; stepping through bids never changes this.
+  type HandVisibility = "mine-dummy" | "all" | "mine-only";
+  let handVisibility = $state<HandVisibility>("mine-dummy");
+
+  const handVisibilityOptions = $derived(
+    dummySeat !== undefined
+      ? [
+          { id: "mine-dummy", label: "Mine + dummy" },
+          { id: "all", label: "All hands" },
+          { id: "mine-only", label: "Mine only" },
+        ]
+      : [
+          { id: "mine-only", label: "Mine only" },
+          { id: "all", label: "All hands" },
+        ],
+  );
+
+  function selectHandVisibility(id: string) {
+    handVisibility = id as HandVisibility;
+  }
+
+  const visibleHands = $derived.by<Partial<Record<Seat, Hand>>>(() => {
+    if (handVisibility === "all") return viewport.allHands;
+    const result: Partial<Record<Seat, Hand>> = {
+      [viewport.userSeat]: viewport.allHands[viewport.userSeat],
+    };
+    if (handVisibility === "mine-dummy" && dummySeat !== undefined) {
+      result[dummySeat] = viewport.allHands[dummySeat];
+    }
+    return result;
+  });
 
   // Auction step-through state
   let selectedBidStep = $state<number | null>(null);
@@ -79,16 +109,12 @@
     if (step !== null) replayStep = 0;
   }
 
-  // Derived: sliced auction entries for table display
+  // Derived: sliced auction entries for table display — auction view follows the step
+  // (so the reviewer sees the auction up to the focused bid). Hand visibility is independent.
   const steppedAuctionEntries = $derived(
     selectedBidStep === null
       ? viewport.auctionEntries
       : viewport.auctionEntries.slice(0, selectedBidStep),
-  );
-
-  // Derived: visible hands based on bid step
-  const steppedVisibleHands = $derived(
-    computeVisibleSeats(viewport.allHands, viewport.userSeat, viewport.bidHistory, selectedBidStep, dummySeat),
   );
 
   // Replay state — single source of truth for card-by-card stepping
@@ -157,11 +183,12 @@
     return undefined;
   });
 
-  // Reset replay and bid step on new deal
+  // Reset replay, bid step, and hand visibility on new deal
   $effect(() => {
     void dealNumber;
     replayStep = 0;
     selectedBidStep = null;
+    handVisibility = dummySeat !== undefined ? "mine-dummy" : "mine-only";
   });
 
   // Aggregate convention contributions across user bids that have teaching projections
@@ -213,55 +240,22 @@
   });
 </script>
 
-{#snippet showAllCardsPanel()}
-  <div class="flex min-w-0 flex-1 flex-col gap-3 overflow-auto p-4">
-    <div class="flex items-center justify-between">
-      <div
-        class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-2 shadow-md"
-      >
-        <AuctionTable
-          entries={viewport.auctionEntries}
-          dealer={viewport.dealer}
-          bidHistory={viewport.bidHistory}
-          showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
-          compact
-        />
-      </div>
-      <button
-        type="button"
-        class="text-text-primary hover:text-accent-primary border-border-subtle bg-bg-card/80 min-h-[--size-touch-target] shrink-0 rounded-[--radius-md] border px-3 py-2 text-[--text-detail] transition-colors"
-        onclick={() => (showAllCards = !showAllCards)}
-        aria-expanded={showAllCards}
-        aria-label="Toggle all hands visibility"
-      >
-        Hide Hands
-      </button>
-    </div>
-    <div class="grid grid-cols-2 gap-3">
-      {#each [Seat.North, Seat.East, Seat.South, Seat.West] as seat (seat)}
-        <section
-          class="bg-bg-card border-border-subtle rounded-[--radius-lg] overflow-hidden border p-3"
-          style="--card-overlap-h: calc((100% - 13 * var(--card-width)) / 12);"
-          aria-label="{seat} hand"
-        >
-          <div class="mb-2 flex items-center gap-2">
-            <span
-              class="rounded px-2 py-0.5 text-[--text-detail] font-bold tracking-wide {seat ===
-              viewport.userSeat
-                ? 'bg-accent-primary-subtle text-accent-primary'
-                : 'bg-bg-elevated text-text-primary'}"
-            >
-              {seat}
-            </span>
-          </div>
-          <HandFan cards={viewport.allHands[seat].cards} faceUp {trumpSuit} />
-        </section>
-      {/each}
-    </div>
-  </div>
-{/snippet}
-
 {#snippet biddingTab()}
+  <div
+    class="bg-bg-card border-border-subtle rounded-[--radius-md] border p-2"
+    aria-label="Hand visibility"
+  >
+    <p class="text-text-muted mb-1.5 text-[--text-label] font-medium">Show hands</p>
+    <ToggleGroup
+      items={handVisibilityOptions}
+      active={handVisibility}
+      onSelect={selectHandVisibility}
+      ariaLabel="Hand visibility"
+      compact
+      variant="filled"
+    />
+  </div>
+
   {#if viewport.contract}
     <div class="bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
       <div class="flex items-center justify-between mb-1">
@@ -446,89 +440,23 @@
       />
     </aside>
 
-    {#if showAllCards}
-      {@render showAllCardsPanel()}
-    {:else}
-      <div class="flex flex-col min-h-0 flex-1">
-        <ScaledTableArea
-          scale={layout.tableScale}
-          origin={layout.tableOrigin}
-          tableWidth={layout.tableBaseW}
-          tableHeight={layout.tableBaseH}
-        >
-          <BridgeTable visibleHands={steppedVisibleHands} vulnerability={viewport.vulnerability} {trumpSuit} remainingCards={replayRemainingCards}>
-            {#if selectedTrick && viewport.contract}
-              <TrickOverlay
-                trick={selectedTrick}
-                recommendation={selectedTrickRec}
-                visiblePlays={overlayVisiblePlays}
-              />
-            {:else}
-              <div class="flex flex-col items-center gap-2">
-                <div
-                  class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
-                >
-                  <AuctionTable
-                    entries={steppedAuctionEntries}
-                    dealer={viewport.dealer}
-                    bidHistory={viewport.bidHistory}
-                    showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
-                    compact
-                  />
-                </div>
-                <button
-                  type="button"
-                  class="text-text-primary hover:text-accent-primary border-border-subtle bg-bg-card/80 min-h-[--size-touch-target] rounded-[--radius-md] border px-3 py-2 text-[--text-detail] transition-colors"
-                  onclick={() => (showAllCards = !showAllCards)}
-                  aria-expanded={showAllCards}
-                  aria-label="Toggle all hands visibility"
-                >
-                  Show All Hands
-                </button>
-              </div>
-            {/if}
-          </BridgeTable>
-        </ScaledTableArea>
-
-        <!-- Replay controls below table (hidden when showing all cards) -->
-        <div class="shrink-0 px-3 pb-2 pt-1">
-          <ReplayControls
-            step={replayStep}
-            {maxSteps}
-            trickIndex={replayPos.trickIndex}
-            playIndex={replayPos.playIndex}
-            totalTricks={viewport.tricks.length}
-            {hasNextDecision}
-            onStepBack={() => { if (replayStep > 0) replayStep--; }}
-            onStepForward={() => { if (replayStep < maxSteps - 1) replayStep++; }}
-            onJumpStart={() => { replayStep = 0; }}
-            onJumpEnd={() => { replayStep = maxSteps - 1; }}
-            onNextDecision={handleNextDecision}
-          />
-        </div>
-      </div>
-    {/if}
-
-    <aside class={SIDE_PANEL_CLASS} style={PANEL_FONT_STYLE} aria-label="Review panel">
-      <ReviewSidePanel tabs={reviewTabs} actions={reviewActions} {dealNumber} />
-    </aside>
-  </div>
-{:else}
-  <!-- 2-column layout for passed-out hands (no play data) -->
-  <div class={PHASE_CONTAINER_CLASS}>
-    {#if showAllCards}
-      {@render showAllCardsPanel()}
-    {:else}
+    <div class="flex flex-col min-h-0 flex-1">
       <ScaledTableArea
         scale={layout.tableScale}
         origin={layout.tableOrigin}
         tableWidth={layout.tableBaseW}
         tableHeight={layout.tableBaseH}
       >
-        <BridgeTable visibleHands={steppedVisibleHands} vulnerability={viewport.vulnerability} {trumpSuit}>
-          <div class="flex flex-col items-center gap-2">
+        <BridgeTable {visibleHands} vulnerability={viewport.vulnerability} {trumpSuit} remainingCards={replayRemainingCards}>
+          {#if selectedTrick && viewport.contract}
+            <TrickOverlay
+              trick={selectedTrick}
+              recommendation={selectedTrickRec}
+              visiblePlays={overlayVisiblePlays}
+            />
+          {:else}
             <div
-              class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
+              class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md z-[var(--z-tooltip)]"
             >
               <AuctionTable
                 entries={steppedAuctionEntries}
@@ -538,19 +466,54 @@
                 compact
               />
             </div>
-            <button
-              type="button"
-              class="text-text-primary hover:text-accent-primary border-border-subtle bg-bg-card/80 min-h-[--size-touch-target] rounded-[--radius-md] border px-3 py-2 text-[--text-detail] transition-colors"
-              onclick={() => (showAllCards = !showAllCards)}
-              aria-expanded={showAllCards}
-              aria-label="Toggle all hands visibility"
-            >
-              Show All Hands
-            </button>
-          </div>
+          {/if}
         </BridgeTable>
       </ScaledTableArea>
-    {/if}
+
+      <div class="shrink-0 px-3 pb-2 pt-1">
+        <ReplayControls
+          step={replayStep}
+          {maxSteps}
+          trickIndex={replayPos.trickIndex}
+          playIndex={replayPos.playIndex}
+          totalTricks={viewport.tricks.length}
+          {hasNextDecision}
+          onStepBack={() => { if (replayStep > 0) replayStep--; }}
+          onStepForward={() => { if (replayStep < maxSteps - 1) replayStep++; }}
+          onJumpStart={() => { replayStep = 0; }}
+          onJumpEnd={() => { replayStep = maxSteps - 1; }}
+          onNextDecision={handleNextDecision}
+        />
+      </div>
+    </div>
+
+    <aside class={SIDE_PANEL_CLASS} style={PANEL_FONT_STYLE} aria-label="Review panel">
+      <ReviewSidePanel tabs={reviewTabs} actions={reviewActions} {dealNumber} />
+    </aside>
+  </div>
+{:else}
+  <!-- 2-column layout for passed-out hands (no play data) -->
+  <div class={PHASE_CONTAINER_CLASS}>
+    <ScaledTableArea
+      scale={layout.tableScale}
+      origin={layout.tableOrigin}
+      tableWidth={layout.tableBaseW}
+      tableHeight={layout.tableBaseH}
+    >
+      <BridgeTable {visibleHands} vulnerability={viewport.vulnerability} {trumpSuit}>
+        <div
+          class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
+        >
+          <AuctionTable
+            entries={steppedAuctionEntries}
+            dealer={viewport.dealer}
+            bidHistory={viewport.bidHistory}
+            showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
+            compact
+          />
+        </div>
+      </BridgeTable>
+    </ScaledTableArea>
 
     <aside class={SIDE_PANEL_CLASS} style={PANEL_FONT_STYLE} aria-label="Review panel">
       <ReviewSidePanel tabs={reviewTabs} actions={reviewActions} {dealNumber} />

@@ -53,7 +53,7 @@ components/
       context-banner.ts              Pure function: buildContextSummary() — plain-English auction context for Decision Drill pre-filled bids
       DeclarerPromptPhase.svelte     Declarer/defender prompt (pure — data via props)
       PlayingPhase.svelte            Play phase template (pure — data via props, legal plays from parent)
-      ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping, auction step-through. Defines tab content snippets (bidding/play/analysis) + action buttons passed to ReviewSidePanel.
+      ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping, auction step-through. Hand visibility is an explicit `ToggleGroup` (Mine + dummy / All hands / Mine only) at the top of the bidding tab — fully decoupled from auction stepping. Stepping only slices the AuctionTable in the table center. Defines tab content snippets (bidding/play/analysis) + action buttons passed to ReviewSidePanel.
       LearnPhase.svelte              Learn mode: step-through completed auction with all 4 hands visible. Uses ExplanationViewport data. BidAnnotationPopup shows meaning per bid. Keyboard nav (arrows/space/home/end).
       LearnSidePanel.svelte          Learn mode side panel: step indicator + prev/next/first/last nav buttons + New Deal + Back to Menu
       layout-props.ts                (moved to src/components/shared/layout-props.ts)
@@ -86,7 +86,6 @@ components/
       BidFeedbackIncorrect.svelte    Incorrect/near-miss bid feedback panel with variant coloring (red incorrect, amber near-miss)
     RoundBidList.svelte              Shared round-by-round bid list (configurable expand state, expected result, test IDs, dimming/highlighting/click for stepping). Renders a `BidAnnotationBadge` next to each annotated call, gated by the `showEducationalAnnotations` prop. Clickable rows use `role="button" tabindex="0"` (not a `<button>` wrapper) so the nested badge button remains valid HTML.
     AuctionStepPanel.svelte          Auction step-through panel: prev/next/show-all controls + RoundBidList with dim/highlight
-    AuctionStepPanel.ts              Companion: computeVisibleSeats pure function for progressive hand reveal
     MakeableContractsTable.svelte    5x4 DDS tricks grid (NT/S/H/D/C × N/E/S/W)
     AnalysisPanel.svelte             DDS analysis: makeable table + actual-vs-optimal + par score
     DecisionTree.svelte              Interactive expand/collapse tree with depth modes (compact/study/learn) for progressive teaching disclosure
@@ -164,7 +163,7 @@ components/
 - BiddingPhase receives `BiddingViewport` as prop — never accesses raw `Deal` or engine internals. Viewport builders live in `src/service/`.
 - DeclarerPromptPhase receives `DeclarerPromptViewport` as prop — never accesses raw `Deal`. Hands filtered through faceUpSeats.
 - PlayingPhase receives `PlayingViewport` as prop — never accesses raw `Deal`. Hands filtered through faceUpSeats.
-- ExplanationPhase receives `ExplanationViewport` as prop — all 4 hands via `allHands`, no raw `Deal`. Owns `replayStep` state; `PlayHistoryPanel`, `TrickOverlay`, and `TrickReviewPanel` are all controlled by derived values from this single state. Per-card stepping (not per-trick) surfaces individual decision points.
+- ExplanationPhase receives `ExplanationViewport` as prop — all 4 hands via `allHands`, no raw `Deal`. Owns `replayStep` state; `PlayHistoryPanel`, `TrickOverlay`, and `TrickReviewPanel` are all controlled by derived values from this single state. Per-card stepping (not per-trick) surfaces individual decision points. **Hand visibility is independent of auction stepping**: a `handVisibility` state ("mine-dummy" | "all" | "mine-only") drives `visibleHands` for `BridgeTable`. Stepping the auction only slices `steppedAuctionEntries` shown in the center AuctionTable — it never reveals or hides hands.
 - BridgeTable/TrickArea accept `rotated` prop — uses `viewSeat()` from `src/components/shared/seat-mapping.ts`, not CSS rotation.
 - `BidPanel` renders all 35 bids + 3 specials; unavailable bids disabled, not hidden. `data-testid="bid-{callKey}"` on all.
 - User seat hardcoded to `Seat.South` — future: configurable.
