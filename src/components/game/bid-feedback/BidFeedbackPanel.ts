@@ -77,14 +77,6 @@ export function variantClass(variant: FeedbackVariant, key: string): string {
   return VARIANT_TOKENS[variant][key] ?? "";
 }
 
-/** Human-readable ambiguity description. Returns null when score is 0 (clear-cut). */
-export function formatAmbiguity(score: number): string | null {
-  if (score === 0) return null;
-  if (score <= 0.3) return "Close call";
-  if (score <= 0.6) return "Other reasonable bids exist";
-  return "Several bids could work here";
-}
-
 /** Map elimination stage identifiers to readable labels for teaching context. */
 export function formatEliminationStage(stage: string): string {
   switch (stage) {

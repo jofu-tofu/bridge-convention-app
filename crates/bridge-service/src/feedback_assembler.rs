@@ -226,15 +226,6 @@ pub fn assemble_teaching_detail(
             .collect()
     });
 
-    // Ambiguity + grading type
-    let alt_count = pr.map(|pr| pr.truth_set.len()).unwrap_or(0);
-    let ambiguity_score = Some((alt_count as f64 * 0.3).clamp(0.0, 0.8));
-    let grading_type = Some(if alt_count == 0 {
-        "exact".to_string()
-    } else {
-        "primary_plus_acceptable".to_string()
-    });
-
     // Evaluation completeness
     let evaluation_exhaustive = tp.map(|tp| tp.evaluation_exhaustive);
     let fallback_reached = tp.map(|tp| tp.fallback_reached);
@@ -351,8 +342,6 @@ pub fn assemble_teaching_detail(
         primary_bid,
         acceptable_bids,
         near_miss_calls,
-        ambiguity_score,
-        grading_type,
         practical_score_breakdown: None,
         evaluation_exhaustive,
         fallback_reached,
@@ -379,8 +368,6 @@ fn default_teaching_detail() -> TeachingDetailDTO {
         primary_bid: None,
         acceptable_bids: None,
         near_miss_calls: None,
-        ambiguity_score: None,
-        grading_type: None,
         practical_score_breakdown: None,
         evaluation_exhaustive: None,
         fallback_reached: None,
@@ -1074,20 +1061,6 @@ mod tests {
     }
 
     #[test]
-    fn teaching_detail_has_ambiguity_and_grading_type() {
-        let feedback = make_feedback(BidGrade::Correct, make_call_2c(), Some(make_call_2c()));
-        let eval = make_eval_with_projection();
-        let result = assemble_teaching_detail(&feedback, Some(&eval)).unwrap();
-
-        // truth_set has 1 carrier → alt_count = 1 → ambiguity = 0.3
-        assert_eq!(result.ambiguity_score, Some(0.3));
-        assert_eq!(
-            result.grading_type,
-            Some("primary_plus_acceptable".to_string())
-        );
-    }
-
-    #[test]
     fn teaching_detail_has_evaluation_completeness() {
         let feedback = make_feedback(BidGrade::Correct, make_call_2c(), Some(make_call_2c()));
         let eval = make_eval_with_projection();
@@ -1143,27 +1116,4 @@ mod tests {
         assert_eq!(views[0].projection_kind, "single-rationale");
     }
 
-    #[test]
-    fn teaching_detail_with_truth_set_alternatives_has_nonzero_ambiguity() {
-        let feedback = make_feedback(BidGrade::Correct, make_call_2c(), Some(make_call_2c()));
-        let mut eval = make_eval_with_projection();
-
-        // Add an alternative carrier to the truth set
-        let alt_label = make_teaching_label("Transfer", "Shows 5+ hearts");
-        let alt_proposal = make_proposal("transfers", "transfers:hearts", alt_label);
-        let alt_carrier = make_carrier(make_call_2h(), alt_proposal);
-
-        if let Some(ref mut pr) = eval.pipeline_result {
-            pr.truth_set.push(alt_carrier);
-        }
-
-        let result = assemble_teaching_detail(&feedback, Some(&eval)).unwrap();
-
-        // 2 truth set entries => ambiguity_score = 0.3 * 2 = 0.6
-        assert_eq!(result.ambiguity_score, Some(0.6));
-        assert_eq!(
-            result.grading_type,
-            Some("primary_plus_acceptable".to_string())
-        );
-    }
 }

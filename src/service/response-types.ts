@@ -716,15 +716,6 @@ export interface TeachingDetail {
     readonly reason: string;
   }[];
 
-  // ── Decision metadata ─────────────────────────────────────────
-  /** How ambiguous the bid decision was (0 = clear-cut, 0.8 = highly ambiguous).
-   *  Derived from the number and tier of acceptable alternatives. */
-  readonly ambiguityScore?: number;
-  /** How the teaching grading was resolved.
-   *  "exact" = only one correct bid; "primary_plus_acceptable" = primary + alternatives;
-   *  "intent_based" = surface-group-aware grading. */
-  readonly gradingType?: "exact" | "primary_plus_acceptable" | "intent_based";
-
   // ── Practical score breakdown ─────────────────────────────────
   /** Component-level breakdown of the practical scorer's recommendation.
    *  Shows how fit, HCP, convention distance, and misunderstanding risk

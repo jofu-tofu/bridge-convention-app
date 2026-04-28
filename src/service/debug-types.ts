@@ -86,8 +86,6 @@ export interface BidFeedbackDTO {
   readonly expectedResult: { readonly call: Call } | null;
   readonly explanation: string;
   readonly teachingResolution: {
-    readonly gradingType?: string;
-    readonly ambiguityScore?: number;
     readonly acceptableBids: readonly { readonly call: Call; readonly meaning?: string; readonly tier?: string; readonly fullCredit?: boolean }[];
     readonly nearMissCalls: readonly { readonly call: Call; readonly reason?: string }[];
   } | null;

@@ -9,7 +9,6 @@
     whyNotGradeClasses,
     isArtificialEncoder,
     formatEncoderKind,
-    formatAmbiguity,
     enrichConditionText,
   } from "./BidFeedbackPanel";
   import type { FeedbackVariant } from "./BidFeedbackPanel";
@@ -115,12 +114,8 @@
       : null,
   );
 
-  // Decision metadata — ambiguity and grading type
-  const ambiguityNote = $derived(
-    teaching?.ambiguityScore !== null && teaching?.ambiguityScore !== undefined
-      ? formatAmbiguity(teaching.ambiguityScore)
-      : null,
-  );
+  // truth_set always contains the primary call; >1 means real alternatives exist.
+  const hasOtherAcceptableBids = $derived((teaching?.acceptableBids?.length ?? 0) > 1);
 
   // Practical score breakdown
   const scoreBreakdown = $derived(teaching?.practicalScoreBreakdown ?? null);
@@ -387,9 +382,9 @@
             No convention applies here — pass by default
           </p>
         {/if}
-        {#if ambiguityNote}
+        {#if hasOtherAcceptableBids}
           <p class="text-[--text-annotation] {vc('text/40')} mt-1 italic">
-            {ambiguityNote}
+            Other bids also work here
           </p>
         {/if}
         {#if passingConditions.length > 0}

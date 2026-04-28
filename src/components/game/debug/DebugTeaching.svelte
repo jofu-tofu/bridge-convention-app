@@ -27,10 +27,6 @@
 
     {#if feedback.teachingResolution}
       {@const tr = feedback.teachingResolution}
-      <div class="text-[10px]">
-        <span class="text-text-muted">type:</span> <span class="text-text-primary">{tr.gradingType}</span>
-        <span class="text-text-muted ml-2">ambiguity:</span> <span class="text-text-primary">{tr.ambiguityScore}</span>
-      </div>
       {#if tr.acceptableBids.length > 0}
         <DebugSection title="Also acceptable" count={tr.acceptableBids.length} nested>
           {#each tr.acceptableBids as ab, i (ab.call.type + (ab.call.type === 'bid' ? ab.call.level + ab.call.strain : '') + ':' + i)}

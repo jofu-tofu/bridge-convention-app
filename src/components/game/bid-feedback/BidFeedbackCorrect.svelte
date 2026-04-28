@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { BidFeedbackBaseProps } from "./types";
   import { formatCall, ViewportBidGrade } from "../../../service";
-  import { formatAmbiguity } from "./BidFeedbackPanel";
   import PracticalRecommendationNote from "./PracticalRecommendationNote.svelte";
   import BidFeedbackShell from "../../shared/BidFeedbackShell.svelte";
 
@@ -13,9 +12,8 @@
 
   const isAcceptable = $derived(feedback.grade === ViewportBidGrade.Acceptable);
 
-  const ambiguityNote = $derived(
-    teaching?.ambiguityScore != null ? formatAmbiguity(teaching.ambiguityScore) : null, // eslint-disable-line eqeqeq -- intentional nullish check
-  );
+  // truth_set always contains the primary call; >1 means real alternatives exist.
+  const hasOtherAcceptableBids = $derived((teaching?.acceptableBids?.length ?? 0) > 1);
 
   const passedConditions = $derived(
     (feedback.conditions ?? []).filter((c) => c.passed).slice(0, 2),
@@ -45,8 +43,8 @@
       {/each}
     </div>
   {/if}
-  {#if ambiguityNote && isAcceptable}
-    <p class="text-fb-correct-dim/50 text-[--text-annotation] mt-1 italic">{ambiguityNote}</p>
+  {#if hasOtherAcceptableBids && isAcceptable}
+    <p class="text-fb-correct-dim/50 text-[--text-annotation] mt-1 italic">Other bids also work here</p>
   {/if}
   {#if showPracticalNote && practicalRec}
     <PracticalRecommendationNote {practicalRec} />

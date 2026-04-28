@@ -404,10 +404,6 @@ pub struct TeachingDetailDTO {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub near_miss_calls: Option<Vec<NearMissCallDTO>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub ambiguity_score: Option<f64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub grading_type: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub practical_score_breakdown: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evaluation_exhaustive: Option<bool>,
