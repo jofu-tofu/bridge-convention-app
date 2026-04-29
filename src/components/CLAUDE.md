@@ -53,7 +53,7 @@ components/
       context-banner.ts              Pure function: buildContextSummary() — plain-English auction context for Decision Drill pre-filled bids
       DeclarerPromptPhase.svelte     Declarer/defender prompt (pure — data via props)
       PlayingPhase.svelte            Play phase template (pure — data via props, legal plays from parent)
-      ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping, auction step-through. Hand visibility is an explicit `ToggleGroup` (Mine + dummy / All hands / Mine only) at the top of the bidding tab — fully decoupled from auction stepping. Stepping only slices the AuctionTable in the table center. Defines tab content snippets (bidding/play/analysis) + action buttons passed to ReviewSidePanel.
+      ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping, auction step-through. Hand visibility is an explicit `ToggleGroup` (All hands / Mine only) at the top of the bidding tab — fully decoupled from auction stepping. Stepping only slices the AuctionTable in the table center. Defines tab content snippets (bidding/play/analysis) + action buttons passed to ReviewSidePanel.
       LearnPhase.svelte              Learn mode: step-through completed auction with all 4 hands visible. Uses ExplanationViewport data. BidAnnotationPopup shows meaning per bid. Keyboard nav (arrows/space/home/end).
       LearnSidePanel.svelte          Learn mode side panel: step indicator + prev/next/first/last nav buttons + New Deal + Back to Menu
       layout-props.ts                (moved to src/components/shared/layout-props.ts)

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SvelteMap } from "svelte/reactivity";
-  import { Seat, Suit, BidSuit, Vulnerability as Vul, partnerSeat, PracticeMode } from "../../../service";
+  import { Seat, Suit, BidSuit, Vulnerability as Vul, PracticeMode } from "../../../service";
   import type { ExplanationViewport, Hand } from "../../../service";
   import type { ConventionInfo, ConventionContribution } from "../../../service";
   import { formatRuleName } from "../../../service";
@@ -61,28 +61,15 @@
 
   const practiceMode = $derived(gameStore.practiceMode);
 
-  // Dummy seat: partner of declarer (undefined if passed out)
-  const dummySeat = $derived(
-    viewport.contract ? partnerSeat(viewport.contract.declarer) : undefined,
-  );
-
   // Hand visibility — explicit, decoupled from auction stepping. The reviewer chooses
   // what they want to see; stepping through bids never changes this.
-  type HandVisibility = "mine-dummy" | "all" | "mine-only";
-  let handVisibility = $state<HandVisibility>("mine-dummy");
+  type HandVisibility = "all" | "mine-only";
+  let handVisibility = $state<HandVisibility>("all");
 
-  const handVisibilityOptions = $derived(
-    dummySeat !== undefined
-      ? [
-          { id: "mine-dummy", label: "Mine + dummy" },
-          { id: "all", label: "All hands" },
-          { id: "mine-only", label: "Mine only" },
-        ]
-      : [
-          { id: "mine-only", label: "Mine only" },
-          { id: "all", label: "All hands" },
-        ],
-  );
+  const handVisibilityOptions: { id: string; label: string }[] = [
+    { id: "all", label: "All hands" },
+    { id: "mine-only", label: "Mine only" },
+  ];
 
   function selectHandVisibility(id: string) {
     handVisibility = id as HandVisibility;
@@ -90,13 +77,9 @@
 
   const visibleHands = $derived.by<Partial<Record<Seat, Hand>>>(() => {
     if (handVisibility === "all") return viewport.allHands;
-    const result: Partial<Record<Seat, Hand>> = {
+    return {
       [viewport.userSeat]: viewport.allHands[viewport.userSeat],
     };
-    if (handVisibility === "mine-dummy" && dummySeat !== undefined) {
-      result[dummySeat] = viewport.allHands[dummySeat];
-    }
-    return result;
   });
 
   // Auction step-through state
@@ -188,7 +171,7 @@
     void dealNumber;
     replayStep = 0;
     selectedBidStep = null;
-    handVisibility = dummySeat !== undefined ? "mine-dummy" : "mine-only";
+    handVisibility = "all";
   });
 
   // Aggregate convention contributions across user bids that have teaching projections
