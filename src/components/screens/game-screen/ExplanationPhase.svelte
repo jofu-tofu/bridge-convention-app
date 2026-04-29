@@ -16,7 +16,7 @@
   import PlayHistoryPanel from "./PlayHistoryPanel.svelte";
   import ReviewSidePanel from "./ReviewSidePanel.svelte";
   import ContractDisplay from "./ContractDisplay.svelte";
-  import AuctionStepPanel from "../../game/AuctionStepPanel.svelte";
+  import AuctionStepControls from "../../game/AuctionStepControls.svelte";
   import RoundBidList from "../../game/RoundBidList.svelte";
   import AnalysisPanel from "../../game/AnalysisPanel.svelte";
   import TrickReviewPanel from "../../game/TrickReviewPanel.svelte";
@@ -300,24 +300,17 @@
     </div>
   {/if}
 
-  {#if hasPlayData}
-    <AuctionStepPanel
+  <div class="flex flex-col gap-3">
+    <h3 class="text-[--text-value] font-semibold text-text-secondary">Bidding Review</h3>
+    <RoundBidList
       bidHistory={viewport.bidHistory}
-      {selectedBidStep}
-      onSelectBidStep={handleSelectBidStep}
-      {totalBids}
+      showExpectedResult
+      visibleUpTo={selectedBidStep}
+      highlightIndex={selectedBidStep !== null && selectedBidStep > 0 ? selectedBidStep - 1 : null}
+      onBidClick={(globalIndex) => handleSelectBidStep(globalIndex + 1)}
       showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
     />
-  {:else}
-    <div class="flex flex-col gap-3">
-      <h3 class="text-[--text-value] font-semibold text-text-secondary">Bidding Review</h3>
-      <RoundBidList
-        bidHistory={viewport.bidHistory}
-        showExpectedResult
-        showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
-      />
-    </div>
-  {/if}
+  </div>
 
   {#if showConventionSummary}
     <div class="mt-3 bg-bg-card rounded-[--radius-md] p-3 border border-border-subtle">
@@ -454,19 +447,27 @@
       </ScaledTableArea>
 
       <div class="shrink-0 px-3 pb-2 pt-1">
-        <ReplayControls
-          step={replayStep}
-          {maxSteps}
-          trickIndex={replayPos.trickIndex}
-          playIndex={replayPos.playIndex}
-          totalTricks={viewport.tricks.length}
-          {hasNextDecision}
-          onStepBack={() => { if (replayStep > 0) replayStep--; }}
-          onStepForward={() => { if (replayStep < maxSteps - 1) replayStep++; }}
-          onJumpStart={() => { replayStep = 0; }}
-          onJumpEnd={() => { replayStep = maxSteps - 1; }}
-          onNextDecision={handleNextDecision}
-        />
+        {#if selectedTrick && viewport.contract}
+          <ReplayControls
+            step={replayStep}
+            {maxSteps}
+            trickIndex={replayPos.trickIndex}
+            playIndex={replayPos.playIndex}
+            totalTricks={viewport.tricks.length}
+            {hasNextDecision}
+            onStepBack={() => { if (replayStep > 0) replayStep--; }}
+            onStepForward={() => { if (replayStep < maxSteps - 1) replayStep++; }}
+            onJumpStart={() => { replayStep = 0; }}
+            onJumpEnd={() => { replayStep = maxSteps - 1; }}
+            onNextDecision={handleNextDecision}
+          />
+        {:else if totalBids > 0}
+          <AuctionStepControls
+            {selectedBidStep}
+            {totalBids}
+            onSelectBidStep={handleSelectBidStep}
+          />
+        {/if}
       </div>
     </div>
 
@@ -477,26 +478,38 @@
 {:else}
   <!-- 2-column layout for passed-out hands (no play data) -->
   <div class={PHASE_CONTAINER_CLASS}>
-    <ScaledTableArea
-      scale={layout.tableScale}
-      origin={layout.tableOrigin}
-      tableWidth={layout.tableBaseW}
-      tableHeight={layout.tableBaseH}
-    >
-      <BridgeTable {visibleHands} vulnerability={viewport.vulnerability} {trumpSuit}>
-        <div
-          class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
-        >
-          <AuctionTable
-            entries={steppedAuctionEntries}
-            dealer={viewport.dealer}
-            bidHistory={viewport.bidHistory}
-            showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
-            compact
+    <div class="flex flex-col min-h-0 flex-1">
+      <ScaledTableArea
+        scale={layout.tableScale}
+        origin={layout.tableOrigin}
+        tableWidth={layout.tableBaseW}
+        tableHeight={layout.tableBaseH}
+      >
+        <BridgeTable {visibleHands} vulnerability={viewport.vulnerability} {trumpSuit}>
+          <div
+            class="relative bg-bg-card border-border-subtle rounded-[--radius-lg] border p-3 shadow-md"
+          >
+            <AuctionTable
+              entries={steppedAuctionEntries}
+              dealer={viewport.dealer}
+              bidHistory={viewport.bidHistory}
+              showEducationalAnnotations={appStore.displaySettings.showEducationalAnnotations}
+              compact
+            />
+          </div>
+        </BridgeTable>
+      </ScaledTableArea>
+
+      {#if totalBids > 0}
+        <div class="shrink-0 px-3 pb-2 pt-1">
+          <AuctionStepControls
+            {selectedBidStep}
+            {totalBids}
+            onSelectBidStep={handleSelectBidStep}
           />
         </div>
-      </BridgeTable>
-    </ScaledTableArea>
+      {/if}
+    </div>
 
     <aside class={SIDE_PANEL_CLASS} style={PANEL_FONT_STYLE} aria-label="Review panel">
       <ReviewSidePanel tabs={reviewTabs} actions={reviewActions} {dealNumber} />
