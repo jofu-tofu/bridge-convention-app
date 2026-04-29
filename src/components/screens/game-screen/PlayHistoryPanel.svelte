@@ -23,6 +23,7 @@
     onClickTrick,
     visibleTrickCount,
     partialTrickPlays,
+    autoScroll = true,
   }: Props = $props();
 
   const effectiveTricks = $derived(
@@ -34,7 +35,7 @@
   // Auto-scroll to bottom when new tricks are added
   $effect(() => {
     const _len = tricks.length;
-    if (scrollContainer) {
+    if (autoScroll && scrollContainer) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
   });

@@ -53,7 +53,7 @@ components/
       context-banner.ts              Pure function: buildContextSummary() — plain-English auction context for Decision Drill pre-filled bids
       DeclarerPromptPhase.svelte     Declarer/defender prompt (pure — data via props)
       PlayingPhase.svelte            Play phase template (pure — data via props, legal plays from parent)
-      ExplanationPhase.svelte        Review phase: 3-column replay layout (with play data) or 2-column (passed out), card-by-card stepping, auction step-through. Hand visibility is an explicit `ToggleGroup` (All hands / Mine only) at the top of the bidding tab — fully decoupled from auction stepping. Stepping only slices the AuctionTable in the table center. Defines tab content snippets (bidding/play/analysis) + action buttons passed to ReviewSidePanel.
+      ExplanationPhase.svelte        Review phase: 2-column replay layout (table + review panel), card-by-card stepping, auction step-through. Playthrough history lives inside the Cardplay tab instead of a separate desktop left rail. Hand visibility is an explicit `ToggleGroup` (All hands / Mine only) at the top of the bidding tab — fully decoupled from auction stepping. Stepping only slices the AuctionTable in the table center. Defines tab content snippets (bidding/play/analysis) + action buttons passed to ReviewSidePanel.
       LearnPhase.svelte              Learn mode: step-through completed auction with all 4 hands visible. Uses ExplanationViewport data. BidAnnotationPopup shows meaning per bid. Keyboard nav (arrows/space/home/end).
       LearnSidePanel.svelte          Learn mode side panel: step indicator + prev/next/first/last nav buttons + New Deal + Back to Menu
       layout-props.ts                (moved to src/components/shared/layout-props.ts)
@@ -163,7 +163,7 @@ components/
 - BiddingPhase receives `BiddingViewport` as prop — never accesses raw `Deal` or engine internals. Viewport builders live in `src/service/`.
 - DeclarerPromptPhase receives `DeclarerPromptViewport` as prop — never accesses raw `Deal`. Hands filtered through faceUpSeats.
 - PlayingPhase receives `PlayingViewport` as prop — never accesses raw `Deal`. Hands filtered through faceUpSeats.
-- ExplanationPhase receives `ExplanationViewport` as prop — all 4 hands via `allHands`, no raw `Deal`. Owns `replayStep` state; `PlayHistoryPanel`, `TrickOverlay`, and `TrickReviewPanel` are all controlled by derived values from this single state. Per-card stepping (not per-trick) surfaces individual decision points. **Hand visibility is independent of auction stepping**: a `handVisibility` state ("mine-dummy" | "all" | "mine-only") drives `visibleHands` for `BridgeTable`. Stepping the auction only slices `steppedAuctionEntries` shown in the center AuctionTable — it never reveals or hides hands.
+- ExplanationPhase receives `ExplanationViewport` as prop — all 4 hands via `allHands`, no raw `Deal`. Owns `replayStep` state; `TrickOverlay` and `TrickReviewPanel` are controlled by derived values from this single state, while the Cardplay tab's `PlayHistoryPanel` shows the full playthrough and uses the same selected-trick highlight. Per-card stepping (not per-trick) surfaces individual decision points. **Hand visibility is independent of auction stepping**: a `handVisibility` state ("mine-dummy" | "all" | "mine-only") drives `visibleHands` for `BridgeTable`. Stepping the auction only slices `steppedAuctionEntries` shown in the center AuctionTable — it never reveals or hides hands.
 - BridgeTable/TrickArea accept `rotated` prop — uses `viewSeat()` from `src/components/shared/seat-mapping.ts`, not CSS rotation.
 - `BidPanel` renders all 35 bids + 3 specials; unavailable bids disabled, not hidden. `data-testid="bid-{callKey}"` on all.
 - User seat hardcoded to `Seat.South` — future: configurable.
@@ -193,4 +193,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `AppReady.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-19 | version=28 | dir-commits-at-audit=319 | tree-sig=dirs:17,files:177,exts:svelte:108,ts:68,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-29 | version=29 | dir-commits-at-audit=319 | tree-sig=dirs:17,files:177,exts:svelte:108,ts:68,md:1 -->

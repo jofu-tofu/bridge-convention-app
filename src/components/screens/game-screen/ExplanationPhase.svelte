@@ -6,7 +6,7 @@
   import { formatRuleName } from "../../../service";
   import { getLayoutConfig } from "../../../stores/context";
   import { getAppStore, getGameStore } from "../../../stores/context";
-  import { PHASE_CONTAINER_CLASS, PANEL_FONT_STYLE, PLAYING_PHASE_CONTAINER_CLASS, SIDE_PANEL_CLASS } from "../../shared/layout-props";
+  import { PHASE_CONTAINER_CLASS, PANEL_FONT_STYLE, SIDE_PANEL_CLASS } from "../../shared/layout-props";
   import type { DDSAnalysisProps } from "./shared-props";
   import BridgeTable from "../../game/BridgeTable.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
@@ -29,7 +29,6 @@
     totalSteps,
     positionAtStep,
     stepAtPosition,
-    visibleTricksAtPosition,
     findNextDecision,
     remainingCardsAtPosition,
   } from "../../game/replay-state";
@@ -105,7 +104,6 @@
   const hasPlayData = $derived(viewport.tricks.length > 0 && viewport.contract !== null);
   const maxSteps = $derived(totalSteps(viewport.tricks));
   const replayPos = $derived(positionAtStep(replayStep, viewport.tricks));
-  const replayVis = $derived(visibleTricksAtPosition(replayPos));
   const hasNextDecision = $derived(
     findNextDecision(replayStep, viewport.tricks, viewport.playRecommendations, viewport.userSeat) !== null,
   );
@@ -331,14 +329,18 @@
 
 {#snippet playTab()}
   {#if hasPlayData && viewport.contract && viewport.userSeat}
-    <!-- Mobile-only condensed trick history (desktop has dedicated left panel) -->
-    <div class="lg:hidden mb-3 max-h-40 overflow-y-auto">
+    <div
+      class="mb-3 h-60 lg:h-72 min-h-0 overflow-hidden rounded-[--radius-md] border border-border-subtle bg-bg-card p-2"
+    >
       <PlayHistoryPanel
         tricks={viewport.tricks}
         declarerSeat={viewport.contract.declarer}
         auctionEntries={viewport.auctionEntries}
         dealer={viewport.dealer}
         bidHistory={viewport.bidHistory}
+        highlightTrickIndex={selectedTrickIndex}
+        onClickTrick={handleClickTrick}
+        autoScroll={false}
       />
     </div>
     <TrickReviewPanel
@@ -399,23 +401,7 @@
 {/snippet}
 
 {#if hasPlayData}
-  <!-- 3-column layout when play data exists -->
-  <div class={PLAYING_PHASE_CONTAINER_CLASS}>
-    <!-- Desktop: left panel with trick history -->
-    <aside class="hidden lg:flex lg:flex-col lg:h-full bg-bg-base p-3 min-h-0 overflow-hidden" style={PANEL_FONT_STYLE} aria-label="Play history">
-      <PlayHistoryPanel
-        tricks={viewport.tricks}
-        declarerSeat={viewport.contract?.declarer ?? null}
-        auctionEntries={viewport.auctionEntries}
-        dealer={viewport.dealer}
-        bidHistory={viewport.bidHistory}
-        highlightTrickIndex={selectedTrickIndex}
-        onClickTrick={handleClickTrick}
-        visibleTrickCount={replayVis.visibleTrickCount}
-        partialTrickPlays={replayVis.partialTrickPlays}
-      />
-    </aside>
-
+  <div class={PHASE_CONTAINER_CLASS}>
     <div class="flex flex-col min-h-0 flex-1">
       <ScaledTableArea
         scale={layout.tableScale}

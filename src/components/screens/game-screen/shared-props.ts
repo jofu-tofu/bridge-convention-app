@@ -38,4 +38,5 @@ export interface PlayHistoryReplayProps {
   onClickTrick?: (index: number) => void;
   visibleTrickCount?: number;
   partialTrickPlays?: number;
+  autoScroll?: boolean;
 }
