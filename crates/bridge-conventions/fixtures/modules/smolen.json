@@ -6,7 +6,7 @@
   "fixtureVersion": 1,
   "description": "Jump to 3H/3S after Stayman denial to show 5-4 in majors, game-forcing",
   "purpose": "Handle the 5-4 major hand with game values after Stayman gets a 2D denial — let opener choose the fit while keeping the strong hand as declarer",
-  "scopeNote": "Responder shows 5-4 majors, game-forcing, after `1NT-2C-2D` (and mirrored after 2NT and strong-NT overcalls) by jumping in the 4-card major to right-side the contract. The BridgeBum-backed 'slow' 3M acceptance branch and the responder 4M follow-ups are retained as discovery-pinned extensions, not authority mechanics. Whether 2NT / natural-NT-overcall applicability belongs in this module vs a separate module is deferred.",
+  "scopeNote": "Responder shows 5-4 majors, game-forcing, after `1NT-2C-2D` by jumping in the 4-card major to right-side the contract. Larry's authority also applies Smolen after a 2NT opening and after a strong NT overcall; those mirrored state variants are acknowledged but not yet authored in this fixture -- the `1NT-2C-2D` route is the only realized entry path. The BridgeBum-backed 'slow' 3M acceptance branch and the responder 4M follow-ups are retained as discovery-pinned extensions, not authority mechanics.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/smolen",

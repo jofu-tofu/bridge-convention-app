@@ -6,7 +6,7 @@
   "fixtureVersion": 1,
   "description": "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns. VARIANT: this fixture encodes the modern DONT variant where 2S is a natural single-suit spade overcall as a direct overcall, and module.dont.singleSuited explicitly excludes spades. The original Bergen version treats spades as a single-suit type revealed via takeout double (a reveal-spades-2S surface under wait-reveal). Verify runs that anchor on the original Bergen authority will flag a missing reveal-spades-2S surface — this is intentional. See fixtures/modules/dont.variant-notes.md for details.",
   "purpose": "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
-  "scopeNote": "Encodes the modern DONT variant used at Karen Walker's page: direct `2S` is a natural spade one-suiter, `module.dont.singleSuited` excludes spades, and there is no `reveal-spades-2S` surface under `wait-reveal`. The original Bergen DONT treats spades as a hidden one-suiter behind double-then-relay; that variant is intentionally excluded. Full monster-reveal (`2NT` relay) coverage and the spade-reveal branch after double-then-relay are out of scope; the `5+` natural-suit-thresholds are authored at `6+` as a house call rather than a literal authority quote.",
+  "scopeNote": "Encodes the modern DONT variant used at Karen Walker's page: direct `2S` is a natural spade one-suiter, `module.dont.singleSuited` excludes spades, and there is no `reveal-spades-2S` surface under `wait-reveal`. The natural `2S` branch authors advancer's mild `3S` raise and `2NT` game-invite ask over the known spade suit. The original Bergen DONT treats spades as a hidden one-suiter behind double-then-relay; that variant is intentionally excluded. Full monster-reveal (`2NT` relay) coverage and the spade-reveal branch after double-then-relay are out of scope; the `5+` natural-suit-thresholds are authored at `6+` as a house call rather than a literal authority quote.",
   "references": {
     "authority": {
       "url": "https://kwbridge.com/dont.htm",
@@ -683,6 +683,26 @@
       ]
     },
     {
+      "explanationId": "dont.adv.invite3sAfter2s",
+      "meaningId": "dont:invitational-raise-3s-after-2s",
+      "templateKey": "dont.adv.invite3sAfter2s.semantic",
+      "displayText": "3S: Mild game invitation over partner's natural spades",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "dont.adv.strongInvite2ntAfter2s",
+      "meaningId": "dont:strong-invite-2nt-after-2s",
+      "templateKey": "dont.adv.strongInvite2ntAfter2s.semantic",
+      "displayText": "2NT: Strong game invitation asking partner to bid game with extras",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
       "explanationId": "dont.adv.forcedRelay",
       "meaningId": "dont:forced-relay-2c",
       "templateKey": "dont.adv.forcedRelay.semantic",
@@ -1127,6 +1147,24 @@
         "to": "done",
         "on": {
           "act": "show"
+        }
+      },
+      {
+        "from": "after-2s",
+        "to": "done",
+        "on": {
+          "act": "raise",
+          "strain": "spades",
+          "strength": "invitational"
+        }
+      },
+      {
+        "from": "after-2s",
+        "to": "done",
+        "on": {
+          "act": "raise",
+          "strain": "notrump",
+          "strength": "invitational"
         }
       },
       {
@@ -2607,6 +2645,14 @@
               "clauseId": "module.dont.hasSpadeSupport:boolean:true",
               "description": "Spade support",
               "isPublic": true
+            },
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "system.responder.gameValues:boolean:false",
+              "description": "No game-invitational strength",
+              "rationale": "with game interest, raise to 3S or use the 2NT ask"
             }
           ],
           "ranking": {
@@ -2622,6 +2668,50 @@
           "teachingLabel": {
             "name": "Pass — accept spades",
             "summary": "Accept spades as trumps with 3+ card support for overcaller's suit"
+          }
+        },
+        {
+          "meaningId": "dont:strong-invite-2nt-after-2s",
+          "semanticClassId": "dont:strong-invite",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.hasSpadeSupport",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.dont.hasSpadeSupport:boolean:false",
+              "description": "No direct spade fit",
+              "rationale": "without 3-card support, use 2NT as the stronger game try"
+            },
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Strong invitation",
+              "rationale": "asks partner to push to game in spades with maximum values"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "DONTStrongInvite2NT",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "2NT — strong invite",
+            "summary": "Ask partner to bid game in spades with maximum values"
           }
         },
         {
@@ -2643,12 +2733,28 @@
               "clauseId": "module.dont.longClubs:boolean:true",
               "description": "Long clubs",
               "isPublic": true
+            },
+            {
+              "factId": "module.dont.hasSpadeSupport",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.dont.hasSpadeSupport:boolean:false",
+              "description": "No spade support",
+              "rationale": "prefer the known spade fit with 3+ support"
+            },
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "system.responder.gameValues:boolean:false",
+              "description": "No game-invitational strength",
+              "rationale": "with game interest and no fit, use 2NT"
             }
           ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 1
+            "declarationOrder": 2
           },
           "sourceIntent": {
             "type": "DONTEscape3CAfter2S",
@@ -2679,12 +2785,28 @@
               "clauseId": "module.dont.longDiamonds:boolean:true",
               "description": "Long diamonds",
               "isPublic": true
+            },
+            {
+              "factId": "module.dont.hasSpadeSupport",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.dont.hasSpadeSupport:boolean:false",
+              "description": "No spade support",
+              "rationale": "prefer the known spade fit with 3+ support"
+            },
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "system.responder.gameValues:boolean:false",
+              "description": "No game-invitational strength",
+              "rationale": "with game interest and no fit, use 2NT"
             }
           ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 2
+            "declarationOrder": 3
           },
           "sourceIntent": {
             "type": "DONTEscape3DAfter2S",
@@ -2715,12 +2837,28 @@
               "clauseId": "module.dont.longHearts:boolean:true",
               "description": "Long hearts",
               "isPublic": true
+            },
+            {
+              "factId": "module.dont.hasSpadeSupport",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.dont.hasSpadeSupport:boolean:false",
+              "description": "No spade support",
+              "rationale": "prefer the known spade fit with 3+ support"
+            },
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "system.responder.gameValues:boolean:false",
+              "description": "No game-invitational strength",
+              "rationale": "with game interest and no fit, use 2NT"
             }
           ],
           "ranking": {
             "recommendationBand": "should",
             "modulePrecedence": 0,
-            "declarationOrder": 3
+            "declarationOrder": 4
           },
           "sourceIntent": {
             "type": "DONTEscape3HAfter2S",
@@ -2733,6 +2871,52 @@
           }
         },
         {
+          "meaningId": "dont:invitational-raise-3s-after-2s",
+          "semanticClassId": "dont:invitational-raise",
+          "moduleId": "dont",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "module.dont.hasSpadeSupport",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.dont.hasSpadeSupport:boolean:true",
+              "description": "Spade support",
+              "isPublic": true
+            },
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.responder.gameValues:boolean:true",
+              "description": "Mild game invitation",
+              "rationale": "partner's 2S is natural; raise to 3S as a mild game try"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "RaiseInvite",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "3S — mild game invitation",
+            "summary": "Raise partner's natural spades to three as a mild game try"
+          }
+        },
+        {
           "meaningId": "dont:accept-spades-fallback",
           "semanticClassId": "dont:accept-suit",
           "moduleId": "dont",
@@ -2741,11 +2925,52 @@
               "type": "pass"
             }
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "module.dont.hasSpadeSupport",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.dont.hasSpadeSupport:boolean:false",
+              "description": "No spade support",
+              "rationale": "with support, pass or raise spades"
+            },
+            {
+              "factId": "module.dont.longClubs",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.dont.longClubs:boolean:false",
+              "description": "No long clubs",
+              "rationale": "otherwise escape to clubs"
+            },
+            {
+              "factId": "module.dont.longDiamonds",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.dont.longDiamonds:boolean:false",
+              "description": "No long diamonds",
+              "rationale": "otherwise escape to diamonds"
+            },
+            {
+              "factId": "module.dont.longHearts",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "module.dont.longHearts:boolean:false",
+              "description": "No long hearts",
+              "rationale": "otherwise escape to hearts"
+            },
+            {
+              "factId": "system.responder.gameValues",
+              "operator": "boolean",
+              "value": false,
+              "clauseId": "system.responder.gameValues:boolean:false",
+              "description": "No game-invitational strength",
+              "rationale": "with game interest and no fit, use 2NT"
+            }
+          ],
           "ranking": {
             "recommendationBand": "avoid",
             "modulePrecedence": 0,
-            "declarationOrder": 4
+            "declarationOrder": 6
           },
           "sourceIntent": {
             "type": "DONTAcceptSpadesFallback",

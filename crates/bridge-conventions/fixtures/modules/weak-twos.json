@@ -6,7 +6,7 @@
   "fixtureVersion": 1,
   "description": "Open 2D/2H/2S with exactly 6 cards and 5-11 HCP; responder uses support-driven raises and Feature 2NT",
   "purpose": "Preempt opponents with a disciplined six-card weak two while letting responder use support-based raises or a Feature 2NT ask to judge game",
-  "scopeNote": "Opener's weak-2 in D / H / S (5-11 HCP, 6-card suit) plus the Larry-standard Feature response to `2NT` and the LAW-driven raise ladder. Ogust asks are deliberately not supported — a separate variant would be required. New-suit responses are forcing (authored at `hand.hcp >= 14`; the Feature-ask floor is authored at `bridge.totalPointsForRaise >= 17`). Both numeric floors are repo-authored inferences rather than authority quotes. Opener rebids after a responder forcing new suit, responder follow-ups after Feature replies, and vulnerability-sensitive opening ranges are out of scope. Suit-quality is encoded as 'two of top three or three of top five'.",
+  "scopeNote": "Opener's weak-2 in D / H / S (5-11 HCP, 6-card suit) plus Larry-standard responder actions are in scope: Feature `2NT`, forcing new suits (authored at `hand.hcp >= 14` with opener rebids), support-driven raises, the narrow Hand-5 evaluation game raise with exactly 3-card major support, and responder continuations after Feature replies. The Feature ask is authored at `bridge.totalPointsForRaise >= 14`; 3-card supported invitational hands stay with 2NT below the direct-game threshold, while `bridge.totalPointsForRaise >= 16` places game by evaluation. Ogust asks and vulnerability-sensitive opening-range tuning are deliberately not supported - a separate variant would be required. Suit-quality is encoded as 'two of top three or three of top five'.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/responding-to-weak-2-bids",
@@ -236,6 +236,16 @@
       ]
     },
     {
+      "explanationId": "weakTwo.r2.evaluationGameRaise.hearts",
+      "meaningId": "weak-two:evaluation-game-raise-hearts",
+      "templateKey": "weakTwo.r2.evaluationGameRaise.hearts.semantic",
+      "displayText": "4H evaluation raise: with exactly three hearts and enough total points, bid game by evaluation rather than by the LAW",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
       "explanationId": "weakTwo.r2.weakPass.hearts",
       "meaningId": "weak-two:weak-pass-hearts",
       "templateKey": "weakTwo.r2.weakPass.hearts.semantic",
@@ -340,6 +350,16 @@
       "meaningId": "weak-two:further-raise-spades",
       "templateKey": "weakTwo.r2.furtherRaise.spades.semantic",
       "displayText": "4S raise: jump with 4+ trumps either to apply pressure or to place the game directly",
+      "preferredLevel": "semantic",
+      "roles": [
+        "pedagogical"
+      ]
+    },
+    {
+      "explanationId": "weakTwo.r2.evaluationGameRaise.spades",
+      "meaningId": "weak-two:evaluation-game-raise-spades",
+      "templateKey": "weakTwo.r2.evaluationGameRaise.spades.semantic",
+      "displayText": "4S evaluation raise: with exactly three spades and enough total points, bid game by evaluation rather than by the LAW",
       "preferredLevel": "semantic",
       "roles": [
         "pedagogical"
@@ -1808,6 +1828,15 @@
               "clauseId": "bridge.totalPointsForRaise:gte:14",
               "description": "Invitational or stronger values opposite the weak two",
               "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.$suit",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.$suit:lte:2",
+              "description": "No 3-card support for a direct raise",
+              "isPublic": true,
+              "rationale": "With 3-card support, use the support ladder or direct game-by-evaluation path"
             }
           ],
           "ranking": {
@@ -1825,6 +1854,64 @@
           "teachingLabel": {
             "name": "Feature ask (2NT)",
             "summary": "Ask opener to rebid the weak-two suit with a minimum, show a side feature with extras, or rebid 3NT with a solid trump suit"
+          },
+          "surfaceBindings": {
+            "suit": "hearts"
+          }
+        },
+        {
+          "meaningId": "weak-two:feature-ask-hearts",
+          "semanticClassId": "weak-two:feature-ask",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.$suit",
+              "operator": "eq",
+              "value": 3,
+              "clauseId": "hand.suitLength.$suit:eq:3",
+              "description": "Exactly 3-card hearts support",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.totalPointsForRaise",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "bridge.totalPointsForRaise:gte:14",
+              "description": "Invitational values opposite the weak two",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.totalPointsForRaise",
+              "operator": "lte",
+              "value": 15,
+              "clauseId": "bridge.totalPointsForRaise:lte:15",
+              "description": "Not enough to place game directly by evaluation",
+              "isPublic": true,
+              "rationale": "Larry's Hand 5 pattern starts at the direct-game threshold"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "OgustAsk",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Feature ask (2NT)",
+            "summary": "With only invitational values and 3-card support, ask opener whether the weak two has enough extras for game"
           },
           "surfaceBindings": {
             "suit": "hearts"
@@ -2067,6 +2154,56 @@
           }
         },
         {
+          "meaningId": "weak-two:evaluation-game-raise-hearts",
+          "semanticClassId": "weak-two:evaluation-game-raise",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.$suit",
+              "operator": "eq",
+              "value": 3,
+              "clauseId": "hand.suitLength.$suit:eq:3",
+              "description": "Exactly 3 hearts",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.totalPointsForRaise",
+              "operator": "gte",
+              "value": 16,
+              "clauseId": "bridge.totalPointsForRaise:gte:16",
+              "description": "Enough total strength to place game by evaluation",
+              "isPublic": true,
+              "rationale": "Larry's Hand 5 bids game directly even with only 3-card support"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "RaiseGame",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Evaluation game raise (4H)",
+            "summary": "Bid game by evaluation with exactly three hearts and enough total points; Larry's Hand 5 is the model, not the LAW"
+          },
+          "surfaceBindings": {
+            "suit": "hearts"
+          }
+        },
+        {
           "meaningId": "weak-two:support-raise-hearts",
           "semanticClassId": "weak-two:support-raise",
           "moduleId": "weak-twos",
@@ -2125,7 +2262,24 @@
               "type": "pass"
             }
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "hand.suitLength.$suit",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.$suit:lte:2",
+              "description": "No 3-card support for a direct raise",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.totalPointsForRaise",
+              "operator": "lte",
+              "value": 13,
+              "clauseId": "bridge.totalPointsForRaise:lte:13",
+              "description": "No invitational or game interest opposite the weak two",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "avoid",
             "modulePrecedence": 0,
@@ -2177,6 +2331,15 @@
               "clauseId": "bridge.totalPointsForRaise:gte:14",
               "description": "Invitational or stronger values opposite the weak two",
               "isPublic": true
+            },
+            {
+              "factId": "hand.suitLength.$suit",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.$suit:lte:2",
+              "description": "No 3-card support for a direct raise",
+              "isPublic": true,
+              "rationale": "With 3-card support, use the support ladder or direct game-by-evaluation path"
             }
           ],
           "ranking": {
@@ -2194,6 +2357,64 @@
           "teachingLabel": {
             "name": "Feature ask (2NT)",
             "summary": "Ask opener to rebid the weak-two suit with a minimum, show a side feature with extras, or rebid 3NT with a solid trump suit"
+          },
+          "surfaceBindings": {
+            "suit": "spades"
+          }
+        },
+        {
+          "meaningId": "weak-two:feature-ask-spades",
+          "semanticClassId": "weak-two:feature-ask",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.$suit",
+              "operator": "eq",
+              "value": 3,
+              "clauseId": "hand.suitLength.$suit:eq:3",
+              "description": "Exactly 3-card spades support",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.totalPointsForRaise",
+              "operator": "gte",
+              "value": 14,
+              "clauseId": "bridge.totalPointsForRaise:gte:14",
+              "description": "Invitational values opposite the weak two",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.totalPointsForRaise",
+              "operator": "lte",
+              "value": 15,
+              "clauseId": "bridge.totalPointsForRaise:lte:15",
+              "description": "Not enough to place game directly by evaluation",
+              "isPublic": true,
+              "rationale": "Larry's Hand 5 pattern starts at the direct-game threshold"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "OgustAsk",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "Feature ask (2NT)",
+            "summary": "With only invitational values and 3-card support, ask opener whether the weak two has enough extras for game"
           },
           "surfaceBindings": {
             "suit": "spades"
@@ -2436,6 +2657,56 @@
           }
         },
         {
+          "meaningId": "weak-two:evaluation-game-raise-spades",
+          "semanticClassId": "weak-two:evaluation-game-raise",
+          "moduleId": "weak-twos",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 4,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.suitLength.$suit",
+              "operator": "eq",
+              "value": 3,
+              "clauseId": "hand.suitLength.$suit:eq:3",
+              "description": "Exactly 3 spades",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.totalPointsForRaise",
+              "operator": "gte",
+              "value": 16,
+              "clauseId": "bridge.totalPointsForRaise:gte:16",
+              "description": "Enough total strength to place game by evaluation",
+              "isPublic": true,
+              "rationale": "Larry's Hand 5 bids game directly even with only 3-card support"
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "RaiseGame",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Evaluation game raise (4S)",
+            "summary": "Bid game by evaluation with exactly three spades and enough total points; Larry's Hand 5 is the model, not the LAW"
+          },
+          "surfaceBindings": {
+            "suit": "spades"
+          }
+        },
+        {
           "meaningId": "weak-two:support-raise-spades",
           "semanticClassId": "weak-two:support-raise",
           "moduleId": "weak-twos",
@@ -2494,7 +2765,24 @@
               "type": "pass"
             }
           },
-          "clauses": [],
+          "clauses": [
+            {
+              "factId": "hand.suitLength.$suit",
+              "operator": "lte",
+              "value": 2,
+              "clauseId": "hand.suitLength.$suit:lte:2",
+              "description": "No 3-card support for a direct raise",
+              "isPublic": true
+            },
+            {
+              "factId": "bridge.totalPointsForRaise",
+              "operator": "lte",
+              "value": 13,
+              "clauseId": "bridge.totalPointsForRaise:lte:13",
+              "description": "No invitational or game interest opposite the weak two",
+              "isPublic": true
+            }
+          ],
           "ranking": {
             "recommendationBand": "avoid",
             "modulePrecedence": 0,

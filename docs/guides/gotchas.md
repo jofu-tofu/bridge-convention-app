@@ -57,7 +57,7 @@ Modules whose target `StateEntry` authors a `kernel` `NegotiationExpr` (today: b
 `Forcing / Captain / Competition` kernel gates are not exercised by any current fixture but would work via the same chainer — `find_kernel_establishing_prefix` reuses `match_kernel` for termination so no redesign is needed when new gate types are authored.
 
 ### Convention-Specific Details
-- Bergen Raises uses Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
+- Bergen Raises uses Standard Bergen (3C=constructive 6-10, 3D=limit 11-12, 3M=preemptive 0-5, direct 3NT=13-15 flat 4-3-3-3, splinter with shortage 12+)
 - Only duplicate bridge scoring implemented (rubber bridge out of scope for V1)
 
 ## CLI

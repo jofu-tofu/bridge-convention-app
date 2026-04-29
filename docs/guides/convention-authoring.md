@@ -20,9 +20,9 @@ is in the same doc.
 ## Convention Quick Reference
 
 - **NT Bundle (1NT Responses):** Stayman (2C ask) + Jacoby Transfers (2D→H, 2H→S) + Smolen (3H/3S game-forcing after denial with 5-4 majors). 35 surfaces, 4 fact extensions.
-- **Bergen Bundle:** Standard Bergen (3C=constructive 7–10, 3D=limit 10–12, 3M=preemptive 0–6, splinter 12+). `$suit` binding for DRY heart/spade parameterization.
+- **Bergen Bundle:** Standard Bergen (3C=constructive 6–10, 3D=limit 11–12, 3M=preemptive 0–5, direct 3NT=13–15 flat 4-3-3-3, splinter 12+). `$suit` binding for DRY heart/spade parameterization.
 - **Weak Two Bundle:** Weak Two openings (2D/2H/2S) with Feature responses. `2NT` asks opener to rebid the weak-two suit with a minimum, show a side ace/king with extras, or bid `3NT` with a solid trump suit.
-- **DONT Bundle:** Competitive overcalls after opponent's 1NT. No `match.turn` — uses phase + route scoping. Modern variant with natural direct 2S, direct monster two-suiters, direct preempts, and relay continuations. 114 surfaces, 31 facts.
+- **DONT Bundle:** Competitive overcalls after opponent's 1NT. No `match.turn` — uses phase + route scoping. Modern variant with natural direct 2S, direct monster two-suiters, direct preempts, and relay continuations. 122 surfaces, 31 facts.
 
 Deal constraints are never listed per bundle here because they are auto-derived from surface preconditions at runtime — add a surface and the generator will find hands. See `docs/architecture/teaching-architecture.md` § Deal Generation.
 
@@ -517,7 +517,7 @@ Data shape on TS side doesn't match Rust expectations. BidGrade used SCREAMING_S
 
 ### Bergen Raises
 
-- Standard Bergen (3C=constructive 7-10, 3D=limit 10-12, 3M=preemptive 0-6, splinter with shortage 12+)
+- Standard Bergen (3C=constructive 6-10, 3D=limit 11-12, 3M=preemptive 0-5, direct 3NT=13-15 flat 4-3-3-3, splinter with shortage 12+)
 - Reverse Bergen variant not implemented
 - Passed hand: Bergen OFF
 - Splinter continuations: opener relays (3NT/3S), responder discloses shortage suit

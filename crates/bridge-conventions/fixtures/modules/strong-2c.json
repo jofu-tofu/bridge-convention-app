@@ -6,7 +6,7 @@
   "fixtureVersion": 1,
   "description": "Open 2C with a hand too strong for a one-level opening, then use waiting, positive-suit responses, and second-negative continuations to keep the auction organized.",
   "purpose": "Teach Larry-style strong 2C structure: responder waits with 2D unless holding 8+ HCP and a good 5+ suit, opener clarifies balanced versus natural shape, and the second-negative structure still lets the partnership stop below game when opener repeats the suit.",
-  "scopeNote": "Larry's 2C opening with `2D` waiting as the near-universal response, plus first-round forcing rebids and the cheapest-new-suit-at-3-level 'second negative'. Balanced `2NT` / `3NT` rebid split is authored as `22-24` vs `25-27` (not pinned by the authority). Unbalanced strong-2C qualifier uses a `9+` playing-trick heuristic as a best-effort proxy for Larry's judgement-based rule. Opener stop-short continuations after second negative, natural continuation that cancels the second negative, post-positive / post-2NT extended continuation trees, the 2NT-positive branch (removed in b7981331), and competitive methods are all out of scope. Gerber after 2C openings is not modeled here.",
+  "scopeNote": "Larry's 2C opening with `2D` waiting as the near-universal response, plus first-round forcing rebids and the cheapest-new-suit-at-3-level 'second negative'. Balanced `2NT` / `3NT` rebid split is authored as `22-24` vs `25-27` (not pinned by the authority), and the unbalanced strong-2C qualifier uses a `9+` playing-trick heuristic as a best-effort proxy for Larry's judgement-based rule. After a balanced `2NT` rebid, Stayman and Jacoby-transfer continuations are delegated to the `stayman` and `jacoby-transfers` modules (the `after-2nt-rebid-*` states are authored here as delegate stubs). Opener stop-short continuations after second negative, natural continuation that cancels the second negative, post-positive extended continuation trees, post-2NT slam-zone continuations beyond Stayman/transfers, the 2NT-positive branch (removed in b7981331), competitive methods, and Gerber after 2C openings are out of scope.",
   "references": {
     "authority": {
       "url": "https://www.larryco.com/bridge-articles/two-club-opening",
@@ -1494,6 +1494,22 @@
               "clauseId": "module.strong2c.hasHeartSupport:boolean:true",
               "description": "3+ hearts",
               "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "At least 8 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.strong2c.responderSlamValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.strong2c.responderSlamValues:boolean:true",
+              "description": "8+ HCP (slam interest)",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -1508,7 +1524,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3H — raise hearts",
-            "summary": "Single raise of opener's hearts: support with slam interest"
+            "summary": "Slower raise of opener's hearts: support with 8+ HCP and slam interest"
           }
         },
         {
@@ -1530,6 +1546,30 @@
               "clauseId": "module.strong2c.hasHeartSupport:boolean:true",
               "description": "3+ hearts",
               "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.hcp:gte:3",
+              "description": "At least 3 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 7,
+              "clauseId": "hand.hcp:lte:7",
+              "description": "At most 7 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.strong2c.responderGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.strong2c.responderGameValues:boolean:true",
+              "description": "3-7 HCP (game values)",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -1544,7 +1584,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "4H — weak fast arrival",
-            "summary": "Double raise of opener's hearts: weak signoff after the waiting start"
+            "summary": "Fast-arrival jump raise of opener's hearts: 3-7 HCP signoff after the waiting start"
           }
         },
         {
@@ -1692,6 +1732,22 @@
               "clauseId": "module.strong2c.hasSpadeSupport:boolean:true",
               "description": "3+ spades",
               "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 8,
+              "clauseId": "hand.hcp:gte:8",
+              "description": "At least 8 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.strong2c.responderSlamValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.strong2c.responderSlamValues:boolean:true",
+              "description": "8+ HCP (slam interest)",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -1706,7 +1762,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "3S — raise spades",
-            "summary": "Single raise of opener's spades: support with slam interest"
+            "summary": "Slower raise of opener's spades: support with 8+ HCP and slam interest"
           }
         },
         {
@@ -1728,6 +1784,30 @@
               "clauseId": "module.strong2c.hasSpadeSupport:boolean:true",
               "description": "3+ spades",
               "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 3,
+              "clauseId": "hand.hcp:gte:3",
+              "description": "At least 3 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "hand.hcp",
+              "operator": "lte",
+              "value": 7,
+              "clauseId": "hand.hcp:lte:7",
+              "description": "At most 7 HCP",
+              "isPublic": true
+            },
+            {
+              "factId": "module.strong2c.responderGameValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.strong2c.responderGameValues:boolean:true",
+              "description": "3-7 HCP (game values)",
+              "isPublic": true
             }
           ],
           "ranking": {
@@ -1742,7 +1822,7 @@
           "disclosure": "natural",
           "teachingLabel": {
             "name": "4S — weak fast arrival",
-            "summary": "Double raise of opener's spades: weak signoff after the waiting start"
+            "summary": "Fast-arrival jump raise of opener's spades: 3-7 HCP signoff after the waiting start"
           }
         },
         {
