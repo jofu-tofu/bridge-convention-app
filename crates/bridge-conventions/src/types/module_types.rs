@@ -18,11 +18,15 @@ use super::fact_types::{FactComposition, FactDefinitionSet};
 use super::rule_types::{LocalFsm, StateEntry};
 
 /// Deserialize a required `String` that must be non-empty (after trim).
-fn deserialize_non_empty_string<'de, D: serde::Deserializer<'de>>(d: D) -> Result<String, D::Error> {
+fn deserialize_non_empty_string<'de, D: serde::Deserializer<'de>>(
+    d: D,
+) -> Result<String, D::Error> {
     use serde::de::Error;
     let s = String::deserialize(d)?;
     if s.trim().is_empty() {
-        return Err(D::Error::custom("required field must be a non-empty string"));
+        return Err(D::Error::custom(
+            "required field must be a non-empty string",
+        ));
     }
     Ok(s)
 }

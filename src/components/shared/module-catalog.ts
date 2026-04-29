@@ -21,6 +21,7 @@ export const MODULE_CATEGORIES: Record<string, string> = {
   "michaels-unusual": "Competitive",
   "blackwood": "Slam",
   "negative-doubles": "Competitive",
+  "natural-competitive": "Competitive",
   "new-minor-forcing": "Responder Rebids",
 };
 

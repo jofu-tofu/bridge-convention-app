@@ -14,11 +14,12 @@ use std::collections::HashSet;
 use bridge_conventions::registry::module_registry::BASE_MODULE_IDS;
 use bridge_conventions::registry::{list_bundle_inputs, system_configs::get_system_config};
 use bridge_conventions::types::system_config::BaseSystemId;
-use bridge_engine::types::Seat;
+use bridge_engine::types::{BidSuit, Call, Seat};
 use bridge_service::error::ServiceError;
-use bridge_service::port::ServicePort;
+use bridge_service::port::{DevServicePort, ServicePort};
 use bridge_service::request_types::SessionConfig;
 use bridge_service::service_impl::ServicePortImpl;
+use bridge_session::types::PracticeRole;
 
 const SEED_RANGE: std::ops::RangeInclusive<u64> = 1..=10;
 
@@ -147,5 +148,70 @@ fn blackwood_bundle_drills_successfully() {
         "blackwood-bundle failed for {} seeds: {:?}",
         failures.len(),
         failures
+    );
+}
+
+/// Stayman drills with `PracticeRole::Both` may randomize to opener or
+/// responder, but any accepted startup auction must still preserve the
+/// partnership's 1NT entry point. Regresses the "served a non-Stayman auction"
+/// failure mode reported from production.
+#[test]
+fn stayman_both_role_never_serves_without_partner_1nt_prefix() {
+    let mut offenders: Vec<(u64, Seat, Vec<String>, Option<Call>)> = Vec::new();
+
+    for seed in 0..64u64 {
+        let mut service = ServicePortImpl::new();
+        let config = SessionConfig {
+            convention_id: "stayman-bundle".to_string(),
+            user_seat: Some(Seat::South),
+            seed: Some(seed),
+            system_config: get_system_config(BaseSystemId::Sayc),
+            base_module_ids: BASE_MODULE_IDS.iter().map(|s| s.to_string()).collect(),
+            practice_mode: None,
+            target_module_id: Some("stayman".to_string()),
+            practice_role: Some(PracticeRole::Both),
+            play_preference: None,
+            opponent_mode: None,
+            vulnerability: None,
+            play_profile_id: None,
+            vulnerability_distribution: None,
+        };
+
+        let handle = match service.create_drill_session(config) {
+            Ok(handle) => handle,
+            Err(ServiceError::DealGenerationExhausted { .. }) => continue,
+            Err(err) => panic!("seed={seed}: unexpected create_drill_session error: {err:?}"),
+        };
+
+        let start = service
+            .start_drill(&handle)
+            .unwrap_or_else(|err| panic!("seed={seed}: unexpected start_drill error: {err:?}"));
+
+        let has_partnership_1nt = start.viewport.auction_entries.iter().any(|entry| {
+            matches!(
+                entry.call,
+                Call::Bid {
+                    level: 1,
+                    strain: BidSuit::NoTrump
+                }
+            ) && matches!(entry.seat, Seat::North | Seat::South)
+        });
+
+        if !has_partnership_1nt {
+            let auction = start
+                .viewport
+                .auction_entries
+                .iter()
+                .map(|entry| format!("{:?}:{:?}", entry.seat, entry.call))
+                .collect::<Vec<_>>();
+            let expected_bid = service.get_expected_bid(&handle).unwrap_or(None);
+            offenders.push((seed, start.viewport.dealer, auction, expected_bid));
+        }
+    }
+
+    assert!(
+        offenders.is_empty(),
+        "stayman-bundle (PracticeRole::Both) served successful drills without a partnership 1NT prefix: {:?}",
+        offenders
     );
 }

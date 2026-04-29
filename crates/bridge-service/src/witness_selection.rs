@@ -27,37 +27,44 @@ pub(crate) struct WitnessSelection {
     pub projected_constraints: DealConstraints,
 }
 
-/// Reconstruct the auction prefix that should be in place when the user is
-/// next to act. Partnership witness calls are taken verbatim; any skipped
-/// seats between them are filled with Pass so startup and deal gating replay
-/// the same authored context.
+/// Reconstruct the full auction prefix that should be in place before the
+/// witness target fires. Partnership witness calls are taken verbatim; any
+/// skipped seats between them are filled with Pass so startup and deal gating
+/// replay the same authored context even when the user has already acted once
+/// earlier in the auction.
 pub(crate) fn initial_auction_from_witness(witness: &Witness) -> Option<Auction> {
     let mut entries: Vec<AuctionEntry> = Vec::new();
     let mut cursor = witness.dealer;
     let mut witness_idx = 0usize;
     let mut guard = 0u32;
 
-    while cursor != witness.user_seat && guard < 16 {
+    while witness_idx < witness.prefix.len() && guard < 16 {
         guard += 1;
-        if let Some(expected) = witness.prefix.get(witness_idx) {
-            if expected.seat == cursor {
-                entries.push(AuctionEntry {
-                    seat: cursor,
-                    call: expected.call.clone(),
-                });
-                witness_idx += 1;
-            } else {
-                entries.push(AuctionEntry {
-                    seat: cursor,
-                    call: Call::Pass,
-                });
-            }
+        let expected = witness
+            .prefix
+            .get(witness_idx)
+            .expect("checked by loop condition");
+        if expected.seat == cursor {
+            entries.push(AuctionEntry {
+                seat: cursor,
+                call: expected.call.clone(),
+            });
+            witness_idx += 1;
         } else {
             entries.push(AuctionEntry {
                 seat: cursor,
                 call: Call::Pass,
             });
         }
+        cursor = next_seat(cursor);
+    }
+
+    while cursor != witness.user_seat && guard < 16 {
+        guard += 1;
+        entries.push(AuctionEntry {
+            seat: cursor,
+            call: Call::Pass,
+        });
         cursor = next_seat(cursor);
     }
 
@@ -229,4 +236,85 @@ pub(crate) fn select_witness(
         "no witness found for any candidate surface (last tried: {:?})",
         last_failed
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bridge_conventions::fact_dsl::witness::WitnessCall;
+    use bridge_engine::types::BidSuit;
+
+    #[test]
+    fn initial_auction_from_witness_keeps_full_prefix_through_second_user_turn() {
+        let witness = Witness {
+            prefix: vec![
+                WitnessCall {
+                    seat: Seat::North,
+                    call: Call::Bid {
+                        level: 1,
+                        strain: BidSuit::NoTrump,
+                    },
+                },
+                WitnessCall {
+                    seat: Seat::South,
+                    call: Call::Bid {
+                        level: 2,
+                        strain: BidSuit::Clubs,
+                    },
+                },
+                WitnessCall {
+                    seat: Seat::North,
+                    call: Call::Bid {
+                        level: 2,
+                        strain: BidSuit::Diamonds,
+                    },
+                },
+            ],
+            target_surface_id: "stayman:nt-game-after-denial".to_string(),
+            target_module_id: "stayman".to_string(),
+            target_surface_module_id: "stayman".to_string(),
+            user_seat: Seat::South,
+            dealer: Seat::North,
+        };
+
+        let auction = initial_auction_from_witness(&witness).expect("auction");
+        assert_eq!(
+            auction.entries,
+            vec![
+                AuctionEntry {
+                    seat: Seat::North,
+                    call: Call::Bid {
+                        level: 1,
+                        strain: BidSuit::NoTrump,
+                    },
+                },
+                AuctionEntry {
+                    seat: Seat::East,
+                    call: Call::Pass,
+                },
+                AuctionEntry {
+                    seat: Seat::South,
+                    call: Call::Bid {
+                        level: 2,
+                        strain: BidSuit::Clubs,
+                    },
+                },
+                AuctionEntry {
+                    seat: Seat::West,
+                    call: Call::Pass,
+                },
+                AuctionEntry {
+                    seat: Seat::North,
+                    call: Call::Bid {
+                        level: 2,
+                        strain: BidSuit::Diamonds,
+                    },
+                },
+                AuctionEntry {
+                    seat: Seat::East,
+                    call: Call::Pass,
+                },
+            ]
+        );
+    }
 }

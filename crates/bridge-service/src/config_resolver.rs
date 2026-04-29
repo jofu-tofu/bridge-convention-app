@@ -8,11 +8,13 @@ use std::collections::HashMap;
 use bridge_conventions::types::system_config::SystemConfig;
 use bridge_engine::constants::{next_seat, partner_seat};
 use bridge_engine::types::Seat;
-use bridge_session::heuristics::play_profiles::PlayProfileId;
 use bridge_engine::types::Vulnerability;
+use bridge_session::heuristics::play_profiles::PlayProfileId;
 use bridge_session::session::start_drill::StartDrillOptions;
 use bridge_session::session::SeatStrategy;
-use bridge_session::types::{DrillTuning, OpponentMode, PracticeMode, PracticeRole, VulnerabilityDistribution};
+use bridge_session::types::{
+    DrillTuning, OpponentMode, PracticeMode, PracticeRole, VulnerabilityDistribution,
+};
 
 use crate::request_types::SessionConfig;
 
@@ -47,24 +49,57 @@ pub(crate) fn resolve_config(config: &SessionConfig) -> ResolvedConfig {
     let user_is_ns = matches!(user_seat, Seat::North | Seat::South);
     let tuning = if let Some(forced) = config.vulnerability {
         let dist = match forced {
-            Vulnerability::None => VulnerabilityDistribution { none: 1.0, ours: 0.0, theirs: 0.0, both: 0.0 },
-            Vulnerability::Both => VulnerabilityDistribution { none: 0.0, ours: 0.0, theirs: 0.0, both: 1.0 },
+            Vulnerability::None => VulnerabilityDistribution {
+                none: 1.0,
+                ours: 0.0,
+                theirs: 0.0,
+                both: 0.0,
+            },
+            Vulnerability::Both => VulnerabilityDistribution {
+                none: 0.0,
+                ours: 0.0,
+                theirs: 0.0,
+                both: 1.0,
+            },
             Vulnerability::NorthSouth => {
                 if user_is_ns {
-                    VulnerabilityDistribution { none: 0.0, ours: 1.0, theirs: 0.0, both: 0.0 }
+                    VulnerabilityDistribution {
+                        none: 0.0,
+                        ours: 1.0,
+                        theirs: 0.0,
+                        both: 0.0,
+                    }
                 } else {
-                    VulnerabilityDistribution { none: 0.0, ours: 0.0, theirs: 1.0, both: 0.0 }
+                    VulnerabilityDistribution {
+                        none: 0.0,
+                        ours: 0.0,
+                        theirs: 1.0,
+                        both: 0.0,
+                    }
                 }
             }
             Vulnerability::EastWest => {
                 if user_is_ns {
-                    VulnerabilityDistribution { none: 0.0, ours: 0.0, theirs: 1.0, both: 0.0 }
+                    VulnerabilityDistribution {
+                        none: 0.0,
+                        ours: 0.0,
+                        theirs: 1.0,
+                        both: 0.0,
+                    }
                 } else {
-                    VulnerabilityDistribution { none: 0.0, ours: 1.0, theirs: 0.0, both: 0.0 }
+                    VulnerabilityDistribution {
+                        none: 0.0,
+                        ours: 1.0,
+                        theirs: 0.0,
+                        both: 0.0,
+                    }
                 }
             }
         };
-        DrillTuning { vulnerability_distribution: dist, module_weights: None }
+        DrillTuning {
+            vulnerability_distribution: dist,
+            module_weights: None,
+        }
     } else {
         match config.vulnerability_distribution.clone() {
             Some(dist) => DrillTuning {

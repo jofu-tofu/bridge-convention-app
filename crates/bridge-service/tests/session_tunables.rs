@@ -8,10 +8,10 @@ use bridge_conventions::registry::module_registry::BASE_MODULE_IDS;
 use bridge_conventions::registry::system_configs::get_system_config;
 use bridge_conventions::types::system_config::BaseSystemId;
 use bridge_engine::types::Seat;
-use bridge_session::heuristics::play_profiles::PlayProfileId;
 use bridge_service::port::ServicePort;
 use bridge_service::request_types::{SessionConfig, VulnerabilityDistribution};
 use bridge_service::service_impl::ServicePortImpl;
+use bridge_session::heuristics::play_profiles::PlayProfileId;
 
 fn base_config(seed: u64) -> SessionConfig {
     SessionConfig {

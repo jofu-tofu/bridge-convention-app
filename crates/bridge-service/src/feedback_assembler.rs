@@ -1115,5 +1115,4 @@ mod tests {
         assert_eq!(views[0].status, "truth");
         assert_eq!(views[0].projection_kind, "single-rationale");
     }
-
 }

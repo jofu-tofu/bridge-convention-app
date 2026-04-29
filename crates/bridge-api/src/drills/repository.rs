@@ -59,13 +59,12 @@ pub async fn drill_exists_any_state(
     user_id: &str,
     drill_id: &str,
 ) -> Result<bool, sqlx::Error> {
-    let exists: Option<i64> = sqlx::query_scalar(
-        "SELECT 1 FROM user_drills WHERE user_id = ? AND id = ? LIMIT 1",
-    )
-    .bind(user_id)
-    .bind(drill_id)
-    .fetch_optional(pool)
-    .await?;
+    let exists: Option<i64> =
+        sqlx::query_scalar("SELECT 1 FROM user_drills WHERE user_id = ? AND id = ? LIMIT 1")
+            .bind(user_id)
+            .bind(drill_id)
+            .fetch_optional(pool)
+            .await?;
     Ok(exists.is_some())
 }
 
@@ -98,10 +97,7 @@ pub struct InsertDrill<'a> {
     pub module_ids: &'a [String],
 }
 
-pub async fn insert_drill(
-    pool: &SqlitePool,
-    drill: InsertDrill<'_>,
-) -> Result<(), sqlx::Error> {
+pub async fn insert_drill(pool: &SqlitePool, drill: InsertDrill<'_>) -> Result<(), sqlx::Error> {
     let mut tx = pool.begin().await?;
 
     sqlx::query(
@@ -120,7 +116,11 @@ pub async fn insert_drill(
     .bind(drill.opponent_mode)
     .bind(drill.play_profile_id)
     .bind(drill.vulnerability_distribution_json)
-    .bind(if drill.show_educational_annotations { 1_i64 } else { 0_i64 })
+    .bind(if drill.show_educational_annotations {
+        1_i64
+    } else {
+        0_i64
+    })
     .execute(&mut *tx)
     .await?;
 
@@ -153,10 +153,7 @@ pub struct UpdateDrill<'a> {
     pub module_ids: &'a [String],
 }
 
-pub async fn update_drill(
-    pool: &SqlitePool,
-    drill: UpdateDrill<'_>,
-) -> Result<(), sqlx::Error> {
+pub async fn update_drill(pool: &SqlitePool, drill: UpdateDrill<'_>) -> Result<(), sqlx::Error> {
     let mut tx = pool.begin().await?;
 
     sqlx::query(
@@ -173,7 +170,11 @@ pub async fn update_drill(
     .bind(drill.opponent_mode)
     .bind(drill.play_profile_id)
     .bind(drill.vulnerability_distribution_json)
-    .bind(if drill.show_educational_annotations { 1_i64 } else { 0_i64 })
+    .bind(if drill.show_educational_annotations {
+        1_i64
+    } else {
+        0_i64
+    })
     .bind(drill.id)
     .bind(drill.user_id)
     .execute(&mut *tx)

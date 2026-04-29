@@ -23,7 +23,11 @@ async fn list_drills_requires_session() {
 async fn create_drill_requires_session() {
     let harness = TestHarness::new().await;
     let response = harness
-        .send(post_json("/api/drills", None, &drill_request("New", &[FREE_MODULE])))
+        .send(post_json(
+            "/api/drills",
+            None,
+            &drill_request("New", &[FREE_MODULE]),
+        ))
         .await;
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
 }
@@ -80,8 +84,12 @@ async fn free_user_can_create_free_module_drill_round_trip() {
 #[tokio::test]
 async fn cross_user_isolation() {
     let harness = TestHarness::new().await;
-    let session_a = harness.insert_user_and_session(UserSeed::new("user-a")).await;
-    let session_b = harness.insert_user_and_session(UserSeed::new("user-b")).await;
+    let session_a = harness
+        .insert_user_and_session(UserSeed::new("user-a"))
+        .await;
+    let session_b = harness
+        .insert_user_and_session(UserSeed::new("user-b"))
+        .await;
 
     let create = harness
         .send(post_json(
@@ -91,7 +99,10 @@ async fn cross_user_isolation() {
         ))
         .await;
     assert_eq!(create.status(), StatusCode::CREATED);
-    let drill_id = body_json(create).await["drill"]["id"].as_str().unwrap().to_string();
+    let drill_id = body_json(create).await["drill"]["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
 
     // user B does not see user A's drill
     let listed = harness.send(get("/api/drills", Some(&session_b))).await;
@@ -110,7 +121,10 @@ async fn cross_user_isolation() {
 
     // user B DELETE on user A's drill ID returns 404
     let del = harness
-        .send(delete_req(&format!("/api/drills/{drill_id}"), Some(&session_b)))
+        .send(delete_req(
+            &format!("/api/drills/{drill_id}"),
+            Some(&session_b),
+        ))
         .await;
     assert_eq!(del.status(), StatusCode::NOT_FOUND);
 }
@@ -135,7 +149,10 @@ async fn rename_only_on_paid_drill_succeeds_for_free_user() {
             &drill_request("Bergen", &[PAID_MODULE]),
         ))
         .await;
-    let drill_id = body_json(create).await["drill"]["id"].as_str().unwrap().to_string();
+    let drill_id = body_json(create).await["drill"]["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
 
     // Re-login same user as free (downgrade simulated by status=null)
     sqlx::query("UPDATE users SET subscription_status = NULL WHERE id = ?")
@@ -171,7 +188,10 @@ async fn add_paid_module_to_existing_drill_returns_403_for_free_user() {
             &drill_request("free", &[FREE_MODULE]),
         ))
         .await;
-    let drill_id = body_json(create).await["drill"]["id"].as_str().unwrap().to_string();
+    let drill_id = body_json(create).await["drill"]["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
 
     let put = harness
         .send(put_json(
@@ -209,7 +229,10 @@ async fn remove_paid_module_succeeds_for_free_user() {
             &drill_request("mixed", &[FREE_MODULE, PAID_MODULE]),
         ))
         .await;
-    let drill_id = body_json(create).await["drill"]["id"].as_str().unwrap().to_string();
+    let drill_id = body_json(create).await["drill"]["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
 
     sqlx::query("UPDATE users SET subscription_status = NULL WHERE id = ?")
         .bind(PAID_USER)
@@ -252,7 +275,10 @@ async fn tuning_only_edit_on_paid_drill_succeeds_for_free_user() {
             &drill_request("paid", &[PAID_MODULE]),
         ))
         .await;
-    let drill_id = body_json(create).await["drill"]["id"].as_str().unwrap().to_string();
+    let drill_id = body_json(create).await["drill"]["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
 
     sqlx::query("UPDATE users SET subscription_status = NULL WHERE id = ?")
         .bind(PAID_USER)
@@ -288,15 +314,24 @@ async fn delete_is_idempotent_and_filters_out_of_list() {
             &drill_request("to-delete", &[FREE_MODULE]),
         ))
         .await;
-    let drill_id = body_json(create).await["drill"]["id"].as_str().unwrap().to_string();
+    let drill_id = body_json(create).await["drill"]["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
 
     let first = harness
-        .send(delete_req(&format!("/api/drills/{drill_id}"), Some(&session)))
+        .send(delete_req(
+            &format!("/api/drills/{drill_id}"),
+            Some(&session),
+        ))
         .await;
     assert_eq!(first.status(), StatusCode::NO_CONTENT);
 
     let second = harness
-        .send(delete_req(&format!("/api/drills/{drill_id}"), Some(&session)))
+        .send(delete_req(
+            &format!("/api/drills/{drill_id}"),
+            Some(&session),
+        ))
         .await;
     assert_eq!(second.status(), StatusCode::NO_CONTENT);
 
@@ -350,7 +385,10 @@ async fn launched_on_paid_drill_blocked_for_free_user() {
             &drill_request("paid", &[PAID_MODULE]),
         ))
         .await;
-    let drill_id = body_json(create).await["drill"]["id"].as_str().unwrap().to_string();
+    let drill_id = body_json(create).await["drill"]["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
 
     sqlx::query("UPDATE users SET subscription_status = NULL WHERE id = ?")
         .bind(PAID_USER)
@@ -424,9 +462,7 @@ fn post_json(uri: &str, session: Option<&str>, body: &Value) -> Request<Body> {
     if let Some(token) = session {
         builder = builder.header(header::COOKIE, session_cookie_header(token));
     }
-    builder
-        .body(Body::from(body.to_string()))
-        .expect("request")
+    builder.body(Body::from(body.to_string())).expect("request")
 }
 
 fn put_json(uri: &str, session: Option<&str>, body: &Value) -> Request<Body> {
@@ -437,9 +473,7 @@ fn put_json(uri: &str, session: Option<&str>, body: &Value) -> Request<Body> {
     if let Some(token) = session {
         builder = builder.header(header::COOKIE, session_cookie_header(token));
     }
-    builder
-        .body(Body::from(body.to_string()))
-        .expect("request")
+    builder.body(Body::from(body.to_string())).expect("request")
 }
 
 fn delete_req(uri: &str, session: Option<&str>) -> Request<Body> {

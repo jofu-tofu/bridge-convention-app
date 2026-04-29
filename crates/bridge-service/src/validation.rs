@@ -44,6 +44,40 @@ pub(crate) fn validate_system_config(config: &SystemConfig) -> Result<(), Servic
         )));
     }
 
+    let opener = &config.opener_rebid;
+    if opener.minimum_min_hcp > opener.minimum_max_hcp {
+        return Err(ServiceError::InvalidConfig(format!(
+            "Opener minimum range min_hcp ({}) > max_hcp ({})",
+            opener.minimum_min_hcp, opener.minimum_max_hcp
+        )));
+    }
+    if opener.medium_min_hcp > opener.medium_max_hcp {
+        return Err(ServiceError::InvalidConfig(format!(
+            "Opener medium range min_hcp ({}) > max_hcp ({})",
+            opener.medium_min_hcp, opener.medium_max_hcp
+        )));
+    }
+    if opener.maximum_min_hcp > opener.maximum_max_hcp {
+        return Err(ServiceError::InvalidConfig(format!(
+            "Opener maximum range min_hcp ({}) > max_hcp ({})",
+            opener.maximum_min_hcp, opener.maximum_max_hcp
+        )));
+    }
+
+    let competitive = &config.competitive;
+    if competitive.simple_overcall_min_hcp > competitive.simple_overcall_max_hcp {
+        return Err(ServiceError::InvalidConfig(format!(
+            "Simple overcall min_hcp ({}) > max_hcp ({})",
+            competitive.simple_overcall_min_hcp, competitive.simple_overcall_max_hcp
+        )));
+    }
+    if config.opening.weak_two.min_hcp > competitive.jump_overcall_max_hcp {
+        return Err(ServiceError::InvalidConfig(format!(
+            "Jump overcall max_hcp ({}) is below weak-two min_hcp ({})",
+            competitive.jump_overcall_max_hcp, config.opening.weak_two.min_hcp
+        )));
+    }
+
     let one_nt = &config.one_nt_response_after_major;
     if one_nt.min_hcp > one_nt.max_hcp {
         return Err(ServiceError::InvalidConfig(format!(
@@ -140,5 +174,23 @@ mod tests {
         config.dont_overcall.max_hcp = 8;
         let err = validate_system_config(&config).unwrap_err();
         assert!(err.to_string().contains("DONT"));
+    }
+
+    #[test]
+    fn opener_medium_min_greater_than_max_fails() {
+        let mut config = get_system_config(BaseSystemId::Sayc);
+        config.opener_rebid.medium_min_hcp = 19;
+        config.opener_rebid.medium_max_hcp = 18;
+        let err = validate_system_config(&config).unwrap_err();
+        assert!(err.to_string().contains("Opener medium range"));
+    }
+
+    #[test]
+    fn competitive_simple_overcall_min_greater_than_max_fails() {
+        let mut config = get_system_config(BaseSystemId::Sayc);
+        config.competitive.simple_overcall_min_hcp = 17;
+        config.competitive.simple_overcall_max_hcp = 16;
+        let err = validate_system_config(&config).unwrap_err();
+        assert!(err.to_string().contains("Simple overcall"));
     }
 }

@@ -52,7 +52,15 @@ pub fn classify_fact_id(fact_id: &str) -> (&'static str, &'static str) {
         | "system.responder.oneNtRange"
         | "system.dontOvercall.inRange"
         | "system.opening.weakTwoRange"
-        | "system.opening.strong2cRange" => ("hcp", "HCP"),
+        | "system.opening.strong2cRange"
+        | "system.opener.minimumValues"
+        | "system.opener.mediumValues"
+        | "system.opener.maximumValues"
+        | "system.opener.reverseValues"
+        | "system.opener.jumpShiftValues"
+        | "system.overcaller.simpleValues"
+        | "system.overcaller.jumpValues"
+        | "system.takeoutDoubler.values" => ("hcp", "HCP"),
 
         // Forcing-signal bucket.
         "system.suitResponseIsGameForcing" | "system.oneNtForcingAfterMajor" => {

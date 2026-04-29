@@ -86,6 +86,69 @@ static FACT_CATALOG: LazyLock<Vec<FactCatalogEntry>> = LazyLock::new(|| {
             rationale: "System-dependent HCP threshold for a strong artificial 2C opening.",
         },
         FactCatalogEntry {
+            id: FactId::new_unchecked("system.opener.minimumValues"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "Minimum opener values",
+            rationale: "System opener rebid band for minimum one-level openings.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.opener.mediumValues"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "Medium opener values",
+            rationale: "System opener rebid band for medium-strength continuations.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.opener.maximumValues"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "Maximum opener values",
+            rationale: "System opener rebid band for very strong non-2C one-level openings.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.opener.reverseValues"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "Reverse strength",
+            rationale: "System opener threshold high enough to reverse in a new suit.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.opener.jumpShiftValues"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "Jump-shift strength",
+            rationale: "System opener threshold high enough for a jump-shift rebid.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.overcaller.simpleValues"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "Simple overcall values",
+            rationale: "System HCP range for simple suit overcalls.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.overcaller.jumpValues"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "Jump overcall values",
+            rationale: "System weak preemptive strength for jump overcalls.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.overcaller.ntValues"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "1NT overcall values",
+            rationale: "System HCP range for a direct-seat 1NT overcall (balanced, with a stopper).",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.takeoutDoubler.values"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "Takeout-double values",
+            rationale: "System minimum strength for a takeout double over a partscore opening.",
+        },
+        FactCatalogEntry {
             id: FactId::new_unchecked("responder.majorShape"),
             kind: FactKind::Partition,
             partition: Some(PartitionSpec {
@@ -386,5 +449,77 @@ mod tests {
         let discriminants = partition_discriminants(&fact).unwrap();
         assert_eq!(discriminants.len(), 5);
         assert_eq!(discriminants[4].display_name, "4 aces");
+    }
+
+    #[test]
+    fn opener_minimum_values_is_threshold_fact() {
+        let fact = FactId::parse("system.opener.minimumValues").unwrap();
+        let entry = get_fact_catalog_entry(fact.as_str()).unwrap();
+        assert_eq!(entry.kind, FactKind::Threshold);
+        assert!(entry.partition.is_none());
+    }
+
+    #[test]
+    fn opener_medium_values_is_threshold_fact() {
+        let fact = FactId::parse("system.opener.mediumValues").unwrap();
+        let entry = get_fact_catalog_entry(fact.as_str()).unwrap();
+        assert_eq!(entry.kind, FactKind::Threshold);
+        assert!(entry.partition.is_none());
+    }
+
+    #[test]
+    fn opener_maximum_values_is_threshold_fact() {
+        let fact = FactId::parse("system.opener.maximumValues").unwrap();
+        let entry = get_fact_catalog_entry(fact.as_str()).unwrap();
+        assert_eq!(entry.kind, FactKind::Threshold);
+        assert!(entry.partition.is_none());
+    }
+
+    #[test]
+    fn opener_reverse_values_is_threshold_fact() {
+        let fact = FactId::parse("system.opener.reverseValues").unwrap();
+        let entry = get_fact_catalog_entry(fact.as_str()).unwrap();
+        assert_eq!(entry.kind, FactKind::Threshold);
+        assert!(entry.partition.is_none());
+    }
+
+    #[test]
+    fn opener_jump_shift_values_is_threshold_fact() {
+        let fact = FactId::parse("system.opener.jumpShiftValues").unwrap();
+        let entry = get_fact_catalog_entry(fact.as_str()).unwrap();
+        assert_eq!(entry.kind, FactKind::Threshold);
+        assert!(entry.partition.is_none());
+    }
+
+    #[test]
+    fn overcaller_simple_values_is_threshold_fact() {
+        let fact = FactId::parse("system.overcaller.simpleValues").unwrap();
+        let entry = get_fact_catalog_entry(fact.as_str()).unwrap();
+        assert_eq!(entry.kind, FactKind::Threshold);
+        assert!(entry.partition.is_none());
+    }
+
+    #[test]
+    fn overcaller_jump_values_is_threshold_fact() {
+        let fact = FactId::parse("system.overcaller.jumpValues").unwrap();
+        let entry = get_fact_catalog_entry(fact.as_str()).unwrap();
+        assert_eq!(entry.kind, FactKind::Threshold);
+        assert!(entry.partition.is_none());
+    }
+
+    #[test]
+    fn overcaller_nt_values_is_threshold_fact() {
+        let fact = FactId::parse("system.overcaller.ntValues").unwrap();
+        let entry = get_fact_catalog_entry(fact.as_str()).unwrap();
+        assert_eq!(entry.kind, FactKind::Threshold);
+        assert!(entry.partition.is_none());
+    }
+
+    #[test]
+    fn takeout_doubler_values_is_threshold_fact() {
+        let fact = FactId::parse("system.takeoutDoubler.values").unwrap();
+        let entry = get_fact_catalog_entry(fact.as_str()).unwrap();
+        assert_eq!(entry.kind, FactKind::Threshold);
+        assert!(entry.partition.is_none());
     }
 }

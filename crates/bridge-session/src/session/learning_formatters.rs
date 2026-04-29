@@ -248,6 +248,37 @@ fn describe_system_fact_hcp(fact_id: &str, sys: &SystemConfig) -> Option<String>
             sys.opening.weak_two.min_hcp, sys.opening.weak_two.max_hcp
         )),
         "system.opening.strong2cRange" => Some(format!("{}+ HCP", sys.opening.strong_2c_min)),
+        "system.opener.minimumValues" => Some(format!(
+            "{}\u{2013}{} HCP",
+            sys.opener_rebid.minimum_min_hcp, sys.opener_rebid.minimum_max_hcp
+        )),
+        "system.opener.mediumValues" => Some(format!(
+            "{}\u{2013}{} HCP",
+            sys.opener_rebid.medium_min_hcp, sys.opener_rebid.medium_max_hcp
+        )),
+        "system.opener.maximumValues" => Some(format!(
+            "{}\u{2013}{} HCP",
+            sys.opener_rebid.maximum_min_hcp, sys.opener_rebid.maximum_max_hcp
+        )),
+        "system.opener.reverseValues" => Some(format!("{}+ HCP", sys.opener_rebid.reverse_min_hcp)),
+        "system.opener.jumpShiftValues" => {
+            Some(format!("{}+ HCP", sys.opener_rebid.jump_shift_min_hcp))
+        }
+        "system.overcaller.simpleValues" => Some(format!(
+            "{}\u{2013}{} HCP",
+            sys.competitive.simple_overcall_min_hcp, sys.competitive.simple_overcall_max_hcp
+        )),
+        "system.overcaller.jumpValues" => Some(format!(
+            "{}\u{2013}{} HCP",
+            sys.opening.weak_two.min_hcp, sys.competitive.jump_overcall_max_hcp
+        )),
+        "system.overcaller.ntValues" => Some(format!(
+            "{}\u{2013}{} HCP",
+            sys.competitive.nt_overcall_min_hcp, sys.competitive.nt_overcall_max_hcp
+        )),
+        "system.takeoutDoubler.values" => {
+            Some(format!("{}+ HCP", sys.competitive.takeout_double_min_hcp))
+        }
         "system.opener.notMinimum" => Some(format!("{}+ HCP", sys.opener_rebid.not_minimum)),
         "system.responder.twoLevelNewSuit" => {
             Some(format!("{}+ HCP", sys.suit_response.two_level_min))
@@ -340,6 +371,15 @@ fn display_name(fact_id: &str) -> String {
         "system.responder.oneNtRange" => return "1NT response range".to_string(),
         "system.opening.weakTwoRange" => return "weak two opening range".to_string(),
         "system.opening.strong2cRange" => return "strong 2C opening range".to_string(),
+        "system.opener.minimumValues" => return "minimum opener values".to_string(),
+        "system.opener.mediumValues" => return "medium opener values".to_string(),
+        "system.opener.maximumValues" => return "maximum opener values".to_string(),
+        "system.opener.reverseValues" => return "reverse strength".to_string(),
+        "system.opener.jumpShiftValues" => return "jump-shift strength".to_string(),
+        "system.overcaller.simpleValues" => return "simple overcall values".to_string(),
+        "system.overcaller.jumpValues" => return "jump overcall values".to_string(),
+        "system.overcaller.ntValues" => return "1NT overcall values".to_string(),
+        "system.takeoutDoubler.values" => return "takeout-double values".to_string(),
         _ => {}
     }
 
@@ -642,6 +682,30 @@ mod tests {
         let sys = get_system_config(BaseSystemId::Sayc);
         let desc = describe_system_fact_value("system.opening.weakTwoRange", &sys).unwrap();
         assert_eq!(desc.hcp, "6\u{2013}11 HCP");
+        assert!(desc.trump_tp.is_none());
+    }
+
+    #[test]
+    fn describe_system_fact_value_opener_medium() {
+        let sys = get_system_config(BaseSystemId::Sayc);
+        let desc = describe_system_fact_value("system.opener.mediumValues", &sys).unwrap();
+        assert_eq!(desc.hcp, "16\u{2013}18 HCP");
+        assert!(desc.trump_tp.is_none());
+    }
+
+    #[test]
+    fn describe_system_fact_value_simple_overcall() {
+        let sys = get_system_config(BaseSystemId::Sayc);
+        let desc = describe_system_fact_value("system.overcaller.simpleValues", &sys).unwrap();
+        assert_eq!(desc.hcp, "8\u{2013}16 HCP");
+        assert!(desc.trump_tp.is_none());
+    }
+
+    #[test]
+    fn describe_system_fact_value_nt_overcall() {
+        let sys = get_system_config(BaseSystemId::Sayc);
+        let desc = describe_system_fact_value("system.overcaller.ntValues", &sys).unwrap();
+        assert_eq!(desc.hcp, "15\u{2013}18 HCP");
         assert!(desc.trump_tp.is_none());
     }
 

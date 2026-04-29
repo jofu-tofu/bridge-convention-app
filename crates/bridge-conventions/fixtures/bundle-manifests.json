@@ -39,7 +39,15 @@
           "notMinimum": 16,
           "notMinimumTp": {
             "trump": 16
-          }
+          },
+          "minimumMinHcp": 13,
+          "minimumMaxHcp": 15,
+          "mediumMinHcp": 16,
+          "mediumMaxHcp": 18,
+          "maximumMinHcp": 19,
+          "maximumMaxHcp": 22,
+          "reverseMinHcp": 16,
+          "jumpShiftMinHcp": 19
         },
         "interference": {
           "redoubleMin": 10
@@ -59,6 +67,12 @@
         "dontOvercall": {
           "minHcp": 8,
           "maxHcp": 15
+        },
+        "competitive": {
+          "simpleOvercallMinHcp": 8,
+          "simpleOvercallMaxHcp": 16,
+          "jumpOvercallMaxHcp": 11,
+          "takeoutDoubleMinHcp": 12
         }
       },
       "modules": [

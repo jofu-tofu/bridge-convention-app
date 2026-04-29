@@ -3288,7 +3288,7 @@
     "summaryCard": {
       "trigger": "Partner opens one major and responder already knows there is support.",
       "definingMeaningId": "bergen:constructive-raise-hearts",
-      "partnership": "Bergen pairs three clubs and three diamonds as peer entry points that both promise 4+ major support; the conventional act is choosing between them, with three clubs as the constructive raise and three diamonds as the limit raise.",
+      "partnership": "Bergen pairs three clubs and three diamonds as peer entry points that both promise four-card-or-better major support; the conventional act is choosing between them, with three clubs as the constructive raise and three diamonds as the limit raise.",
       "peers": [
         {
           "definingMeaningId": "bergen:constructive-raise-hearts",
@@ -3568,7 +3568,7 @@
         },
         {
           "recommendation": "Splinter with shortness.",
-          "note": "This fixture keeps the ambiguous splinter branch; flat 13-15 hands without 4+ major support use Larry's 3NT add-on."
+          "note": "This fixture keeps the ambiguous splinter branch; flat thirteen-to-fifteen hands without four-card-or-better major support use Larry's three-notrump add-on."
         }
       ]
     },

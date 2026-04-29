@@ -117,6 +117,57 @@ fn is_default_opening_config(config: &OpeningConfig) -> bool {
     *config == default_opening_config()
 }
 
+fn default_opener_minimum_min_hcp() -> u32 {
+    13
+}
+
+fn default_opener_minimum_max_hcp() -> u32 {
+    15
+}
+
+fn default_opener_medium_min_hcp() -> u32 {
+    16
+}
+
+fn default_opener_medium_max_hcp() -> u32 {
+    18
+}
+
+fn default_opener_maximum_min_hcp() -> u32 {
+    19
+}
+
+fn default_opener_maximum_max_hcp() -> u32 {
+    22
+}
+
+fn default_opener_reverse_min_hcp() -> u32 {
+    16
+}
+
+fn default_opener_jump_shift_min_hcp() -> u32 {
+    19
+}
+
+fn default_competitive_thresholds() -> CompetitiveThresholds {
+    CompetitiveThresholds {
+        simple_overcall_min_hcp: 8,
+        simple_overcall_max_hcp: 16,
+        jump_overcall_max_hcp: 11,
+        takeout_double_min_hcp: 12,
+        nt_overcall_min_hcp: default_nt_overcall_min_hcp(),
+        nt_overcall_max_hcp: default_nt_overcall_max_hcp(),
+    }
+}
+
+fn default_nt_overcall_min_hcp() -> u32 {
+    15
+}
+
+fn default_nt_overcall_max_hcp() -> u32 {
+    18
+}
+
 /// Base bidding system identifiers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BaseSystemId {
@@ -164,6 +215,22 @@ pub struct ResponderThresholds {
 pub struct OpenerRebidThresholds {
     pub not_minimum: u32,
     pub not_minimum_tp: TotalPointEquivalent,
+    #[serde(default = "default_opener_minimum_min_hcp")]
+    pub minimum_min_hcp: u32,
+    #[serde(default = "default_opener_minimum_max_hcp")]
+    pub minimum_max_hcp: u32,
+    #[serde(default = "default_opener_medium_min_hcp")]
+    pub medium_min_hcp: u32,
+    #[serde(default = "default_opener_medium_max_hcp")]
+    pub medium_max_hcp: u32,
+    #[serde(default = "default_opener_maximum_min_hcp")]
+    pub maximum_min_hcp: u32,
+    #[serde(default = "default_opener_maximum_max_hcp")]
+    pub maximum_max_hcp: u32,
+    #[serde(default = "default_opener_reverse_min_hcp")]
+    pub reverse_min_hcp: u32,
+    #[serde(default = "default_opener_jump_shift_min_hcp")]
+    pub jump_shift_min_hcp: u32,
 }
 
 /// Interference thresholds.
@@ -215,6 +282,34 @@ pub struct DontOvercallConfig {
     pub max_hcp: u32,
 }
 
+/// Competitive-auction strength thresholds.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CompetitiveThresholds {
+    pub simple_overcall_min_hcp: u32,
+    pub simple_overcall_max_hcp: u32,
+    pub jump_overcall_max_hcp: u32,
+    pub takeout_double_min_hcp: u32,
+    #[serde(
+        default = "default_nt_overcall_min_hcp",
+        skip_serializing_if = "is_default_nt_overcall_min_hcp"
+    )]
+    pub nt_overcall_min_hcp: u32,
+    #[serde(
+        default = "default_nt_overcall_max_hcp",
+        skip_serializing_if = "is_default_nt_overcall_max_hcp"
+    )]
+    pub nt_overcall_max_hcp: u32,
+}
+
+fn is_default_nt_overcall_min_hcp(value: &u32) -> bool {
+    *value == default_nt_overcall_min_hcp()
+}
+
+fn is_default_nt_overcall_max_hcp(value: &u32) -> bool {
+    *value == default_nt_overcall_max_hcp()
+}
+
 /// HCP range for a conventional opening.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -257,6 +352,8 @@ pub struct SystemConfig {
     )]
     pub opening: OpeningConfig,
     pub dont_overcall: DontOvercallConfig,
+    #[serde(default = "default_competitive_thresholds")]
+    pub competitive: CompetitiveThresholds,
     #[serde(
         default = "default_point_config",
         skip_serializing_if = "is_default_point_config"
@@ -334,6 +431,14 @@ mod tests {
             opener_rebid: OpenerRebidThresholds {
                 not_minimum: 16,
                 not_minimum_tp: TotalPointEquivalent { trump: 16 },
+                minimum_min_hcp: 13,
+                minimum_max_hcp: 15,
+                medium_min_hcp: 16,
+                medium_max_hcp: 18,
+                maximum_min_hcp: 19,
+                maximum_max_hcp: 22,
+                reverse_min_hcp: 16,
+                jump_shift_min_hcp: 19,
             },
             interference: InterferenceThresholds { redouble_min: 10 },
             suit_response: SuitResponseConfig {
@@ -358,6 +463,14 @@ mod tests {
             dont_overcall: DontOvercallConfig {
                 min_hcp: 8,
                 max_hcp: 15,
+            },
+            competitive: CompetitiveThresholds {
+                simple_overcall_min_hcp: 8,
+                simple_overcall_max_hcp: 16,
+                jump_overcall_max_hcp: 11,
+                takeout_double_min_hcp: 12,
+                nt_overcall_min_hcp: 15,
+                nt_overcall_max_hcp: 18,
             },
             point_config: PointConfig {
                 nt_formula: PointFormula {
@@ -437,6 +550,20 @@ mod tests {
                 include_length: false
             }
         );
+        assert_eq!(config.opener_rebid.minimum_min_hcp, 13);
+        assert_eq!(config.opener_rebid.minimum_max_hcp, 15);
+        assert_eq!(config.opener_rebid.medium_min_hcp, 16);
+        assert_eq!(config.opener_rebid.medium_max_hcp, 18);
+        assert_eq!(config.opener_rebid.maximum_min_hcp, 19);
+        assert_eq!(config.opener_rebid.maximum_max_hcp, 22);
+        assert_eq!(config.opener_rebid.reverse_min_hcp, 16);
+        assert_eq!(config.opener_rebid.jump_shift_min_hcp, 19);
+        assert_eq!(config.competitive.simple_overcall_min_hcp, 8);
+        assert_eq!(config.competitive.simple_overcall_max_hcp, 16);
+        assert_eq!(config.competitive.jump_overcall_max_hcp, 11);
+        assert_eq!(config.competitive.takeout_double_min_hcp, 12);
+        assert_eq!(config.competitive.nt_overcall_min_hcp, 15);
+        assert_eq!(config.competitive.nt_overcall_max_hcp, 18);
     }
 
     #[test]
@@ -458,5 +585,9 @@ mod tests {
                 include_length: false
             }
         );
+        assert_eq!(config.opener_rebid.minimum_min_hcp, 13);
+        assert_eq!(config.competitive.jump_overcall_max_hcp, 11);
+        assert_eq!(config.competitive.nt_overcall_min_hcp, 15);
+        assert_eq!(config.competitive.nt_overcall_max_hcp, 18);
     }
 }

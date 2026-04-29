@@ -50,10 +50,12 @@ use crate::types::{
 
 use super::inversion::{invert_composition, InvertedConstraint};
 use super::system_facts::{
-    SYSTEM_DONT_OVERCALL_IN_RANGE, SYSTEM_OPENER_NOT_MINIMUM, SYSTEM_OPENING_STRONG_2C_RANGE,
-    SYSTEM_OPENING_WEAK_TWO_RANGE, SYSTEM_RESPONDER_GAME_VALUES, SYSTEM_RESPONDER_INVITE_VALUES,
-    SYSTEM_RESPONDER_ONE_NT_RANGE, SYSTEM_RESPONDER_SLAM_VALUES,
-    SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT, SYSTEM_RESPONDER_WEAK_HAND,
+    SYSTEM_DONT_OVERCALL_IN_RANGE, SYSTEM_OPENER_JUMP_SHIFT_VALUES, SYSTEM_OPENER_MAXIMUM_VALUES,
+    SYSTEM_OPENER_MEDIUM_VALUES, SYSTEM_OPENER_MINIMUM_VALUES, SYSTEM_OPENER_NOT_MINIMUM,
+    SYSTEM_OPENER_REVERSE_VALUES, SYSTEM_OPENING_STRONG_2C_RANGE, SYSTEM_OPENING_WEAK_TWO_RANGE,
+    SYSTEM_OVERCALLER_JUMP_VALUES, SYSTEM_OVERCALLER_SIMPLE_VALUES, SYSTEM_RESPONDER_GAME_VALUES,
+    SYSTEM_RESPONDER_INVITE_VALUES, SYSTEM_RESPONDER_ONE_NT_RANGE, SYSTEM_RESPONDER_SLAM_VALUES,
+    SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT, SYSTEM_RESPONDER_WEAK_HAND, SYSTEM_TAKEOUT_DOUBLER_VALUES,
 };
 
 // =====================================================================
@@ -1356,9 +1358,9 @@ fn inverted_to_seat_constraint(seat: Seat, c: &InvertedConstraint) -> SeatConstr
 ///   we drop it rather than over-constrain)
 /// - `SystemConfig` is unavailable
 ///
-/// Supported facts: `weakHand`, `inviteValues`, `gameValues`, `slamValues`,
-/// `openerNotMinimum`, `responderTwoLevelNewSuit`, `responderOneNtRange`,
-/// `dontOvercallInRange`, `openingWeakTwoRange`, `openingStrong2cRange`.
+/// Supported facts: responder strength thresholds, opener rebid thresholds,
+/// responder/overcall range thresholds, competitive thresholds, and opening
+/// weak-two / strong-2C thresholds.
 fn expand_system_fact_to_hand_composition(
     fact_id: &str,
     boolean_value: bool,
@@ -1428,6 +1430,34 @@ fn expand_system_fact_to_hand_composition(
                 Some(hcp_max(cap))
             }
         }
+        id if id == SYSTEM_OPENER_MINIMUM_VALUES && boolean_value => Some(hcp_range(
+            system.opener_rebid.minimum_min_hcp,
+            system.opener_rebid.minimum_max_hcp,
+        )),
+        id if id == SYSTEM_OPENER_MEDIUM_VALUES && boolean_value => Some(hcp_range(
+            system.opener_rebid.medium_min_hcp,
+            system.opener_rebid.medium_max_hcp,
+        )),
+        id if id == SYSTEM_OPENER_MAXIMUM_VALUES && boolean_value => Some(hcp_range(
+            system.opener_rebid.maximum_min_hcp,
+            system.opener_rebid.maximum_max_hcp,
+        )),
+        id if id == SYSTEM_OPENER_REVERSE_VALUES => {
+            if boolean_value {
+                Some(hcp_min(system.opener_rebid.reverse_min_hcp))
+            } else {
+                let cap = system.opener_rebid.reverse_min_hcp.saturating_sub(1);
+                Some(hcp_max(cap))
+            }
+        }
+        id if id == SYSTEM_OPENER_JUMP_SHIFT_VALUES => {
+            if boolean_value {
+                Some(hcp_min(system.opener_rebid.jump_shift_min_hcp))
+            } else {
+                let cap = system.opener_rebid.jump_shift_min_hcp.saturating_sub(1);
+                Some(hcp_max(cap))
+            }
+        }
         id if id == SYSTEM_RESPONDER_TWO_LEVEL_NEW_SUIT => {
             if boolean_value {
                 Some(hcp_min(system.suit_response.two_level_min))
@@ -1444,6 +1474,22 @@ fn expand_system_fact_to_hand_composition(
             system.dont_overcall.min_hcp,
             system.dont_overcall.max_hcp,
         )),
+        id if id == SYSTEM_OVERCALLER_SIMPLE_VALUES && boolean_value => Some(hcp_range(
+            system.competitive.simple_overcall_min_hcp,
+            system.competitive.simple_overcall_max_hcp,
+        )),
+        id if id == SYSTEM_OVERCALLER_JUMP_VALUES && boolean_value => Some(hcp_range(
+            system.opening.weak_two.min_hcp,
+            system.competitive.jump_overcall_max_hcp,
+        )),
+        id if id == SYSTEM_TAKEOUT_DOUBLER_VALUES => {
+            if boolean_value {
+                Some(hcp_min(system.competitive.takeout_double_min_hcp))
+            } else {
+                let cap = system.competitive.takeout_double_min_hcp.saturating_sub(1);
+                Some(hcp_max(cap))
+            }
+        }
         id if id == SYSTEM_OPENING_WEAK_TWO_RANGE && boolean_value => Some(hcp_range(
             system.opening.weak_two.min_hcp,
             system.opening.weak_two.max_hcp,

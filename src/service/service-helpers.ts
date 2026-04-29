@@ -12,6 +12,7 @@ import type { BaseModuleInfo, ConventionInfo, ModuleCatalogEntry } from "./respo
 
 const BASE_MODULE_IDS: readonly string[] = [
   "natural-bids",
+  "natural-competitive",
   "stayman",
   "jacoby-transfers",
   "blackwood",

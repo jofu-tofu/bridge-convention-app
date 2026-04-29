@@ -460,8 +460,7 @@ fn modules_have_required_references() {
     let dir = PathBuf::from(MODULE_FIXTURE_DIR);
     let mut failures: Vec<String> = Vec::new();
 
-    let iso_date_re =
-        Regex::new(r"^\d{4}-\d{2}-\d{2}$").expect("static regex should compile");
+    let iso_date_re = Regex::new(r"^\d{4}-\d{2}-\d{2}$").expect("static regex should compile");
 
     for entry in std::fs::read_dir(&dir).expect("Failed to read module fixture directory") {
         let entry = entry.expect("Failed to read directory entry");
@@ -511,10 +510,8 @@ fn modules_have_required_references() {
                                 ));
                             }
                             Some(snapshot) => {
-                                let text = snapshot
-                                    .get("text")
-                                    .and_then(|v| v.as_str())
-                                    .unwrap_or("");
+                                let text =
+                                    snapshot.get("text").and_then(|v| v.as_str()).unwrap_or("");
                                 if text.trim().is_empty() {
                                     failures.push(format!(
                                         "  {filename}: `references.authority.snapshot.text` is empty"
@@ -975,6 +972,15 @@ fn reference_blocks_are_well_formed() {
         "system.dontOvercall.inRange",
         "system.opening.weakTwoRange",
         "system.opening.strong2cRange",
+        "system.opener.minimumValues",
+        "system.opener.mediumValues",
+        "system.opener.maximumValues",
+        "system.opener.reverseValues",
+        "system.opener.jumpShiftValues",
+        "system.overcaller.simpleValues",
+        "system.overcaller.jumpValues",
+        "system.overcaller.ntValues",
+        "system.takeoutDoubler.values",
     ];
 
     let all_modules = load_all_modules();

@@ -1232,9 +1232,9 @@ mod tests {
     use bridge_conventions::{BidActionType, LocalFsm, ObsPatternAct, PhaseTransition};
 
     #[test]
-    fn build_module_catalog_returns_14() {
+    fn build_module_catalog_returns_15() {
         let catalog = build_module_catalog(BaseSystemId::Sayc);
-        assert_eq!(catalog.len(), 14);
+        assert_eq!(catalog.len(), 15);
     }
 
     #[test]
@@ -1801,8 +1801,11 @@ mod tests {
     }
 
     #[test]
-    fn build_base_module_infos_returns_4() {
+    fn build_base_module_infos_returns_all_base_modules() {
         let infos = build_base_module_infos(BaseSystemId::Sayc);
-        assert_eq!(infos.len(), 4);
+        assert_eq!(
+            infos.len(),
+            bridge_conventions::registry::module_registry::BASE_MODULE_IDS.len()
+        );
     }
 }

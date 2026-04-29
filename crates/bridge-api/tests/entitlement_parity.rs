@@ -21,7 +21,8 @@ fn free_bundle_ids_match_ts_allowlist() {
     let rust: HashSet<String> = FREE_BUNDLE_IDS.iter().map(|s| (*s).to_string()).collect();
 
     assert_eq!(
-        ts, rust,
+        ts,
+        rust,
         "TS FREE_PRACTICE_BUNDLES differs from Rust FREE_BUNDLE_IDS\n\
          missing in Rust: {:?}\nmissing in TS:   {:?}",
         ts.difference(&rust).collect::<Vec<_>>(),

@@ -36,11 +36,18 @@ const MODULE_IDS: &[&str] = &[
     "strong-2c",
     "negative-doubles",
     "new-minor-forcing",
+    "natural-competitive",
 ];
 
 /// Base module IDs merged into every spec (strategy layer).
 /// Mirrors TS `DEFAULT_BASE_MODULE_IDS` in system-registry.ts.
-pub const BASE_MODULE_IDS: &[&str] = &["natural-bids", "stayman", "jacoby-transfers", "blackwood"];
+pub const BASE_MODULE_IDS: &[&str] = &[
+    "natural-bids",
+    "natural-competitive",
+    "stayman",
+    "jacoby-transfers",
+    "blackwood",
+];
 
 // Embedded module JSON fixtures (SAYC)
 const NATURAL_BIDS_JSON: &str = include_str!("../../fixtures/modules/natural-bids.json");
@@ -57,6 +64,7 @@ const JACOBY_4WAY_JSON: &str = include_str!("../../fixtures/modules/jacoby-4way.
 const STRONG_2C_JSON: &str = include_str!("../../fixtures/modules/strong-2c.json");
 const NEGATIVE_DOUBLES_JSON: &str = include_str!("../../fixtures/modules/negative-doubles.json");
 const NEW_MINOR_FORCING_JSON: &str = include_str!("../../fixtures/modules/new-minor-forcing.json");
+const NATURAL_COMPETITIVE_JSON: &str = include_str!("../../fixtures/modules/natural-competitive.json");
 
 fn json_for_module(id: &str) -> Option<&'static str> {
     match id {
@@ -74,6 +82,7 @@ fn json_for_module(id: &str) -> Option<&'static str> {
         "strong-2c" => Some(STRONG_2C_JSON),
         "negative-doubles" => Some(NEGATIVE_DOUBLES_JSON),
         "new-minor-forcing" => Some(NEW_MINOR_FORCING_JSON),
+        "natural-competitive" => Some(NATURAL_COMPETITIVE_JSON),
         _ => None,
     }
 }
@@ -820,9 +829,9 @@ mod tests {
     }
 
     #[test]
-    fn get_all_modules_returns_14() {
+    fn get_all_modules_returns_all_registered() {
         let modules = get_all_modules(BaseSystemId::Sayc);
-        assert_eq!(modules.len(), 14);
+        assert_eq!(modules.len(), MODULE_IDS.len());
     }
 
     #[test]
@@ -852,8 +861,9 @@ mod tests {
     #[test]
     fn base_module_ids() {
         let ids = get_base_module_ids(BaseSystemId::Sayc);
-        assert_eq!(ids.len(), 4);
+        assert_eq!(ids.len(), BASE_MODULE_IDS.len());
         assert!(ids.contains(&"natural-bids"));
+        assert!(ids.contains(&"natural-competitive"));
         assert!(ids.contains(&"stayman"));
         assert!(ids.contains(&"jacoby-transfers"));
         assert!(ids.contains(&"blackwood"));

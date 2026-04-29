@@ -145,8 +145,11 @@ crates/
                        deal iff the auto-played prefix matches the witness prefix (opponent seats must
                        pass) AND the user-turn pipeline selection's `module_id`/`meaning_id` equal the
                        witness target. Witness-selected drills now derive their startup auction directly
-                       from the witness prefix (inserting opponent passes up to the user turn) for both
-                       live session initialization and rejection-sampling replay; projected deal
+                       from the full witness prefix (including earlier user bids and inserted opponent
+                       passes all the way to the target turn) for both live session initialization and
+                       rejection-sampling replay. `drill_setup` must resolve the concrete practice role
+                       and witness dealer before calling `select_witness`; otherwise opener drills and
+                       repeated-user-turn continuations become unreachable. Projected deal
                        constraints remain the fallback only when no witness override exists. Injected as
                        `Arc<DealAcceptancePredicate>` into
                        `StartDrillOptions`; budget `NORMAL_DEAL_ATTEMPTS = 32`. On exhaustion,
@@ -267,4 +270,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-14 | version=17 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:42 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-28 | version=18 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:42 -->

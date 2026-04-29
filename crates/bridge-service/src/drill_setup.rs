@@ -7,10 +7,12 @@
 
 use std::collections::HashMap;
 
+use bridge_engine::constants::partner_seat;
 use bridge_engine::types::{DealConstraints, Seat};
 use bridge_session::inference::InferenceCoordinator;
 use bridge_session::session::start_drill::ConventionConfig;
 use bridge_session::session::{initialize_auction, start_drill, SeatStrategy, SessionState};
+use bridge_session::types::PracticeRole;
 
 use crate::bundle_resolver;
 use crate::config_resolver;
@@ -37,6 +39,30 @@ fn shift_seed(base: u64, attempt: u32) -> u64 {
         .wrapping_mul(0x9E37_79B9_7F4A_7C15)
         .wrapping_add(0xDEAD_BEEF_CAFE_BABE);
     base.wrapping_add(salt) ^ salt.rotate_left(17)
+}
+
+fn resolve_practice_role(
+    requested_role: PracticeRole,
+    rng: &mut rand_chacha::ChaCha8Rng,
+) -> PracticeRole {
+    match requested_role {
+        PracticeRole::Both => {
+            if rand::Rng::gen::<f64>(rng) < 0.5 {
+                PracticeRole::Opener
+            } else {
+                PracticeRole::Responder
+            }
+        }
+        other => other,
+    }
+}
+
+fn witness_dealer_for_role(user_seat: Seat, role: PracticeRole) -> Seat {
+    match role {
+        PracticeRole::Opener => user_seat,
+        PracticeRole::Responder => partner_seat(user_seat),
+        PracticeRole::Both => unreachable!("resolve_practice_role must run first"),
+    }
 }
 
 /// Fully resolved drill context ready for session creation.
@@ -109,6 +135,9 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
             } else {
                 shift_seed(base_seed, attempt)
             };
+            let mut attempt_rng = rand_chacha::ChaCha8Rng::seed_from_u64(attempt_seed);
+            let resolved_role = resolve_practice_role(options.practice_role, &mut attempt_rng);
+            let witness_dealer = witness_dealer_for_role(resolved.user_seat, resolved_role);
 
             let witness_selection: Option<WitnessSelection> = if is_negdbl {
                 None
@@ -118,9 +147,8 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
                     &resolved.base_module_ids,
                     system,
                     &resolved.system_config,
-                    options.practice_role,
-                    // Witness enumeration uses dealer = North.
-                    Seat::North,
+                    resolved_role,
+                    witness_dealer,
                     config.target_module_id.as_deref(),
                     attempt_seed,
                 ) {
@@ -147,7 +175,8 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
                 witness_selection.as_ref().map(|w| &w.projected_constraints),
             );
 
-            let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(attempt_seed);
+            options.practice_role = resolved_role;
+            let mut rng = attempt_rng;
             let mut rng_fn = move || -> f64 { rng.gen() };
 
             // 8. Wire the witness-verifying predicate (non-negdbl only).
@@ -156,7 +185,7 @@ pub(crate) fn build_drill_setup(config: &SessionConfig) -> Result<DrillSetupResu
                     &spec,
                     &surface_groups,
                     ws.witness.clone(),
-                    options.practice_role,
+                    resolved_role,
                     Some(convention_config.deal_constraints.clone()),
                     &config.convention_id,
                     resolved.opponent_mode,

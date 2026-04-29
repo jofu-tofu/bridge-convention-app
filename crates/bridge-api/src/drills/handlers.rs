@@ -70,15 +70,14 @@ struct DrillsResponse {
 
 impl From<(DrillRow, Vec<DrillModuleRow>)> for DrillPayload {
     fn from((row, modules): (DrillRow, Vec<DrillModuleRow>)) -> Self {
-        let vulnerability_distribution = serde_json::from_str::<VulnerabilityDistribution>(
-            &row.vulnerability_distribution,
-        )
-        .unwrap_or(VulnerabilityDistribution {
-            none: 1.0,
-            ours: 0.0,
-            theirs: 0.0,
-            both: 0.0,
-        });
+        let vulnerability_distribution =
+            serde_json::from_str::<VulnerabilityDistribution>(&row.vulnerability_distribution)
+                .unwrap_or(VulnerabilityDistribution {
+                    none: 1.0,
+                    ours: 0.0,
+                    theirs: 0.0,
+                    both: 0.0,
+                });
 
         let mut module_ids: Vec<String> = modules.into_iter().map(|m| m.module_id).collect();
         // already sorted by position in repository, but defend against drift
@@ -127,11 +126,10 @@ pub async fn create_drill(
         None => return Ok(unauthenticated_response()),
     };
 
-    let id = req
-        .id
-        .as_deref()
-        .map(str::to_string)
-        .unwrap_or_else(|| format!("drill:{}", &uuid::Uuid::new_v4().simple().to_string()[..8]));
+    let id =
+        req.id.as_deref().map(str::to_string).unwrap_or_else(|| {
+            format!("drill:{}", &uuid::Uuid::new_v4().simple().to_string()[..8])
+        });
 
     if let Err(resp) = validate_drill_id(&id) {
         return Ok(resp);
@@ -206,7 +204,8 @@ pub async fn update_drill(
         Some(existing) => existing,
         None => return Ok(not_found_response()),
     };
-    let stored_module_ids: HashSet<&str> = existing.1.iter().map(|m| m.module_id.as_str()).collect();
+    let stored_module_ids: HashSet<&str> =
+        existing.1.iter().map(|m| m.module_id.as_str()).collect();
 
     let unknown = unknown_modules(&req.module_ids);
     if !unknown.is_empty() {
@@ -346,10 +345,7 @@ fn validate_request(req: &DrillRequest) -> Result<(), Response> {
         return Err(validation_response("name", "name is required"));
     }
     if trimmed_name.chars().count() > DRILL_NAME_MAX {
-        return Err(validation_response(
-            "name",
-            "name exceeds maximum length",
-        ));
+        return Err(validation_response("name", "name exceeds maximum length"));
     }
     if req.module_ids.is_empty() {
         return Err(validation_response(
@@ -358,10 +354,7 @@ fn validate_request(req: &DrillRequest) -> Result<(), Response> {
         ));
     }
     if req.module_ids.len() > DRILL_MODULE_IDS_MAX {
-        return Err(validation_response(
-            "moduleIds",
-            "too many modules",
-        ));
+        return Err(validation_response("moduleIds", "too many modules"));
     }
     let mut seen = HashSet::with_capacity(req.module_ids.len());
     for id in &req.module_ids {
@@ -369,10 +362,7 @@ fn validate_request(req: &DrillRequest) -> Result<(), Response> {
             return Err(validation_response("moduleIds", "empty module id"));
         }
         if !seen.insert(id.as_str()) {
-            return Err(validation_response(
-                "moduleIds",
-                "duplicate module id",
-            ));
+            return Err(validation_response("moduleIds", "duplicate module id"));
         }
     }
     if !req.vulnerability_distribution.is_valid() {
@@ -421,11 +411,7 @@ fn convention_locked_response(blocked_module_ids: Vec<String>) -> Response {
 }
 
 fn not_found_response() -> Response {
-    (
-        StatusCode::NOT_FOUND,
-        Json(json!({ "error": "not_found" })),
-    )
-        .into_response()
+    (StatusCode::NOT_FOUND, Json(json!({ "error": "not_found" }))).into_response()
 }
 
 fn unauthenticated_response() -> Response {

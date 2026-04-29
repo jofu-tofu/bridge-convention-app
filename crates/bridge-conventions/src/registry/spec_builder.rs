@@ -64,9 +64,17 @@ pub fn spec_from_bundle(
             all_ids.push(effective_id);
         }
     }
-    // Merge natural-bids (observation vocabulary) and user-forked modules
+    // Merge natural-bids (observation vocabulary), natural-competitive
+    // (competitive opener-side surfaces over an opponent's one-of-a-suit
+    // opening so a partnership playing natural conventions still gets
+    // feedback when the opponents open), and user-forked modules. Other base
+    // modules (Stayman / Jacoby / Blackwood) deliberately stay out of the
+    // dominated set because their attachment context (1NT openings, slam
+    // sequences) does not arise in every bundle.
     for id in base_module_ids {
-        let dominated = id == "natural-bids" || id.starts_with("user:");
+        let dominated = id == "natural-bids"
+            || id == "natural-competitive"
+            || id.starts_with("user:");
         if dominated && seen.insert(id.as_str()) {
             all_ids.push(id.as_str());
         }
@@ -131,12 +139,14 @@ mod tests {
 
         let module_ids: Vec<&str> = s.modules.iter().map(|m| m.module_id.as_str()).collect();
 
-        // Bundle members + natural-bids (observation vocabulary)
+        // Bundle members + always-merged base modules (natural-bids,
+        // natural-competitive)
         assert!(module_ids.contains(&"stayman"));
         assert!(module_ids.contains(&"jacoby-transfers"));
         assert!(module_ids.contains(&"smolen"));
         assert!(module_ids.contains(&"natural-bids"));
-        assert_eq!(module_ids.len(), 4);
+        assert!(module_ids.contains(&"natural-competitive"));
+        assert_eq!(module_ids.len(), 5);
     }
 
     #[test]
@@ -148,8 +158,11 @@ mod tests {
         let s = spec.unwrap();
 
         let module_ids: Vec<&str> = s.modules.iter().map(|m| m.module_id.as_str()).collect();
-        // Bundle member + natural-bids only
-        assert_eq!(module_ids, vec!["bergen", "natural-bids"]);
+        // Bundle member + always-merged base modules
+        assert_eq!(
+            module_ids,
+            vec!["bergen", "natural-bids", "natural-competitive"]
+        );
     }
 
     #[test]
@@ -192,11 +205,12 @@ mod tests {
         let spec = spec_from_bundle("nt-bundle", &config, &base, &no_user_modules()).unwrap();
         let module_ids: Vec<&str> = spec.modules.iter().map(|m| m.module_id.as_str()).collect();
 
-        // Bundle members in order, then natural-bids
+        // Bundle members in order, then always-merged base modules
         assert_eq!(module_ids[0], "stayman");
         assert_eq!(module_ids[1], "jacoby-transfers");
         assert_eq!(module_ids[2], "smolen");
         assert_eq!(module_ids[3], "natural-bids");
+        assert_eq!(module_ids[4], "natural-competitive");
     }
 
     #[test]
@@ -206,7 +220,9 @@ mod tests {
         let spec = spec_from_bundle("bergen-bundle", &config, &base, &no_user_modules()).unwrap();
 
         let module_ids: Vec<&str> = spec.modules.iter().map(|m| m.module_id.as_str()).collect();
-        // Bundle member + natural-bids; blackwood NOT merged
+        // Bundle member + natural-bids; blackwood NOT merged.
+        // natural-competitive is NOT included because it isn't in the
+        // explicit `base` list passed in here.
         assert_eq!(module_ids, vec!["bergen", "natural-bids"]);
     }
 

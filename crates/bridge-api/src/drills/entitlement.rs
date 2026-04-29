@@ -25,6 +25,7 @@ const KNOWN_BUNDLE_IDS: &[&str] = &[
 /// names under `crates/bridge-conventions/fixtures/modules/`.
 const KNOWN_MODULE_IDS: &[&str] = &[
     "natural-bids",
+    "natural-competitive",
     "stayman",
     "stayman-garbage",
     "jacoby-transfers",
@@ -102,8 +103,7 @@ mod tests {
 
     #[test]
     fn blocked_modules_empty_for_paid() {
-        let result =
-            blocked_modules(SubscriptionTier::Paid, &["bergen-bundle".into()]);
+        let result = blocked_modules(SubscriptionTier::Paid, &["bergen-bundle".into()]);
         assert!(result.is_empty());
     }
 

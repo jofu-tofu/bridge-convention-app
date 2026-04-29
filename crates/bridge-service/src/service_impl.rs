@@ -1150,15 +1150,7 @@ mod tests {
     // ── Initial auction integration tests ────────────────────────
 
     use bridge_engine::types::{BidSuit, Call};
-
-    fn create_session_for_bundle(
-        service: &mut ServicePortImpl,
-        convention_id: &str,
-        seed: u64,
-    ) -> (DrillHandle, crate::response_types::DrillStartResult) {
-        try_create_session_for_bundle(service, convention_id, seed)
-            .expect("create_drill_session should succeed")
-    }
+    use bridge_session::types::PracticeRole;
 
     /// Phase-2 tolerant variant: returns `None` on `DealGenerationExhausted`
     /// (a legitimate outcome under witness-verifying rejection sampling for
@@ -1198,6 +1190,55 @@ mod tests {
             .start_drill(&handle)
             .expect("start_drill should succeed");
         Some((handle, result))
+    }
+
+    fn try_create_stayman_session_with_role(
+        service: &mut ServicePortImpl,
+        seed: u64,
+        practice_role: PracticeRole,
+    ) -> Option<DrillHandle> {
+        let config = SessionConfig {
+            convention_id: "stayman-bundle".to_string(),
+            seed: Some(seed),
+            user_seat: Some(Seat::South),
+            system_config: bridge_conventions::registry::system_configs::get_system_config(
+                bridge_conventions::types::system_config::BaseSystemId::Sayc,
+            ),
+            base_module_ids: bridge_conventions::registry::module_registry::BASE_MODULE_IDS
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+            practice_mode: None,
+            target_module_id: Some("stayman".to_string()),
+            practice_role: Some(practice_role),
+            play_preference: None,
+            opponent_mode: None,
+            vulnerability: None,
+            play_profile_id: None,
+            vulnerability_distribution: None,
+        };
+        let handle = match service.create_drill_session(config) {
+            Ok(h) => h,
+            Err(ServiceError::DealGenerationExhausted { .. }) => return None,
+            Err(e) => panic!("create_drill_session failed: {e:?}"),
+        };
+        service
+            .start_drill(&handle)
+            .expect("start_drill should succeed");
+        Some(handle)
+    }
+
+    fn live_selected_module_and_meaning(
+        service: &ServicePortImpl,
+        handle: &str,
+    ) -> Option<(String, String)> {
+        let session = service.manager.get(handle).expect("session");
+        let adapter = ServicePortImpl::get_convention_adapter(session)?;
+        let ctx = ServicePortImpl::build_user_bidding_context(session)?;
+        let (_bid, evaluation) = adapter.suggest_with_evaluation(&ctx, None);
+        let selected = evaluation.pipeline_result?.selected?;
+        let proposal = selected.proposal();
+        Some((proposal.module_id.clone(), proposal.meaning_id.clone()))
     }
 
     #[test]
@@ -1343,6 +1384,70 @@ mod tests {
         assert!(
             succeeded >= 1,
             "expected at least one bergen seed to produce a drill"
+        );
+    }
+
+    #[test]
+    fn stayman_responder_sessions_select_stayman_live() {
+        let mut service = ServicePortImpl::new();
+        let mut succeeded = 0;
+        let mut offenders = Vec::new();
+
+        for seed in 0..128u64 {
+            let Some(handle) =
+                try_create_stayman_session_with_role(&mut service, seed, PracticeRole::Responder)
+            else {
+                continue;
+            };
+            succeeded += 1;
+
+            match live_selected_module_and_meaning(&service, &handle) {
+                Some((module_id, meaning_id))
+                    if module_id == "stayman" && meaning_id.starts_with("stayman:") => {}
+                other => offenders.push((seed, other)),
+            }
+        }
+
+        assert!(
+            succeeded >= 1,
+            "expected at least one stayman responder drill"
+        );
+        assert!(
+            offenders.is_empty(),
+            "successful stayman responder drills selected outside stayman: {:?}",
+            offenders
+        );
+    }
+
+    #[test]
+    fn stayman_both_role_sessions_select_stayman_live() {
+        let mut service = ServicePortImpl::new();
+        let mut succeeded = 0;
+        let mut offenders = Vec::new();
+
+        for seed in 0..128u64 {
+            let Some(handle) =
+                try_create_stayman_session_with_role(&mut service, seed, PracticeRole::Both)
+            else {
+                continue;
+            };
+            succeeded += 1;
+
+            match live_selected_module_and_meaning(&service, &handle) {
+                Some((module_id, meaning_id))
+                    if module_id == "stayman" && meaning_id.starts_with("stayman:") => {}
+                other => offenders.push((seed, other)),
+            }
+        }
+
+        assert!(
+            succeeded >= 1,
+            "expected at least one stayman both-role drill"
+        );
+        assert!(
+            offenders.is_empty(),
+            "successful stayman both-role drills selected outside stayman: {:?}",
+            offenders
         );
     }
 }

@@ -52,7 +52,7 @@ export type SystemSelectionId = BaseSystemId | `custom:${string}`;
 
 /** Default base module IDs merged into every spec. */
 export const DEFAULT_BASE_MODULE_IDS: readonly string[] = [
-  "natural-bids", "stayman", "jacoby-transfers", "blackwood",
+  "natural-bids", "natural-competitive", "stayman", "jacoby-transfers", "blackwood",
 ] as const;
 
 /**

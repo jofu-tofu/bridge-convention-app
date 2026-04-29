@@ -1,6 +1,6 @@
 //! System fact evaluators — layers 3 and 6.
 //!
-//! Standard (layer 3): 10 facts from SystemConfig thresholds.
+//! Standard (layer 3): system facts from SystemConfig thresholds.
 //! Relational (layer 6): 6 overrides using fitAgreed + trump total points.
 
 use std::collections::HashMap;
@@ -24,6 +24,14 @@ pub const SYSTEM_RESPONDER_ONE_NT_RANGE: &str = "system.responder.oneNtRange";
 pub const SYSTEM_DONT_OVERCALL_IN_RANGE: &str = "system.dontOvercall.inRange";
 pub const SYSTEM_OPENING_WEAK_TWO_RANGE: &str = "system.opening.weakTwoRange";
 pub const SYSTEM_OPENING_STRONG_2C_RANGE: &str = "system.opening.strong2cRange";
+pub const SYSTEM_OPENER_MINIMUM_VALUES: &str = "system.opener.minimumValues";
+pub const SYSTEM_OPENER_MEDIUM_VALUES: &str = "system.opener.mediumValues";
+pub const SYSTEM_OPENER_MAXIMUM_VALUES: &str = "system.opener.maximumValues";
+pub const SYSTEM_OPENER_REVERSE_VALUES: &str = "system.opener.reverseValues";
+pub const SYSTEM_OPENER_JUMP_SHIFT_VALUES: &str = "system.opener.jumpShiftValues";
+pub const SYSTEM_OVERCALLER_SIMPLE_VALUES: &str = "system.overcaller.simpleValues";
+pub const SYSTEM_OVERCALLER_JUMP_VALUES: &str = "system.overcaller.jumpValues";
+pub const SYSTEM_TAKEOUT_DOUBLER_VALUES: &str = "system.takeoutDoubler.values";
 
 /// Evaluate standard system facts (layer 3) from HCP and SystemConfig.
 pub fn evaluate_system_facts(sys: &SystemConfig, facts: &mut HashMap<String, FactValue>) {
@@ -66,6 +74,44 @@ pub fn evaluate_system_facts(sys: &SystemConfig, facts: &mut HashMap<String, Fac
         fv_bool(
             SYSTEM_OPENER_NOT_MINIMUM,
             hcp >= sys.opener_rebid.not_minimum as f64,
+        ),
+    );
+    facts.insert(
+        SYSTEM_OPENER_MINIMUM_VALUES.to_string(),
+        fv_bool(
+            SYSTEM_OPENER_MINIMUM_VALUES,
+            hcp >= sys.opener_rebid.minimum_min_hcp as f64
+                && hcp <= sys.opener_rebid.minimum_max_hcp as f64,
+        ),
+    );
+    facts.insert(
+        SYSTEM_OPENER_MEDIUM_VALUES.to_string(),
+        fv_bool(
+            SYSTEM_OPENER_MEDIUM_VALUES,
+            hcp >= sys.opener_rebid.medium_min_hcp as f64
+                && hcp <= sys.opener_rebid.medium_max_hcp as f64,
+        ),
+    );
+    facts.insert(
+        SYSTEM_OPENER_MAXIMUM_VALUES.to_string(),
+        fv_bool(
+            SYSTEM_OPENER_MAXIMUM_VALUES,
+            hcp >= sys.opener_rebid.maximum_min_hcp as f64
+                && hcp <= sys.opener_rebid.maximum_max_hcp as f64,
+        ),
+    );
+    facts.insert(
+        SYSTEM_OPENER_REVERSE_VALUES.to_string(),
+        fv_bool(
+            SYSTEM_OPENER_REVERSE_VALUES,
+            hcp >= sys.opener_rebid.reverse_min_hcp as f64,
+        ),
+    );
+    facts.insert(
+        SYSTEM_OPENER_JUMP_SHIFT_VALUES.to_string(),
+        fv_bool(
+            SYSTEM_OPENER_JUMP_SHIFT_VALUES,
+            hcp >= sys.opener_rebid.jump_shift_min_hcp as f64,
         ),
     );
 
@@ -114,6 +160,29 @@ pub fn evaluate_system_facts(sys: &SystemConfig, facts: &mut HashMap<String, Fac
         fv_bool(
             SYSTEM_DONT_OVERCALL_IN_RANGE,
             hcp >= sys.dont_overcall.min_hcp as f64 && hcp <= sys.dont_overcall.max_hcp as f64,
+        ),
+    );
+    facts.insert(
+        SYSTEM_OVERCALLER_SIMPLE_VALUES.to_string(),
+        fv_bool(
+            SYSTEM_OVERCALLER_SIMPLE_VALUES,
+            hcp >= sys.competitive.simple_overcall_min_hcp as f64
+                && hcp <= sys.competitive.simple_overcall_max_hcp as f64,
+        ),
+    );
+    facts.insert(
+        SYSTEM_OVERCALLER_JUMP_VALUES.to_string(),
+        fv_bool(
+            SYSTEM_OVERCALLER_JUMP_VALUES,
+            hcp >= sys.opening.weak_two.min_hcp as f64
+                && hcp <= sys.competitive.jump_overcall_max_hcp as f64,
+        ),
+    );
+    facts.insert(
+        SYSTEM_TAKEOUT_DOUBLER_VALUES.to_string(),
+        fv_bool(
+            SYSTEM_TAKEOUT_DOUBLER_VALUES,
+            hcp >= sys.competitive.takeout_double_min_hcp as f64,
         ),
     );
 
@@ -200,4 +269,86 @@ fn detect_trump_suit(ctx: &RelationalFactContext) -> Option<String> {
             _ => None, // "notrump" → no trump suit
         }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use crate::fact_dsl::types::{fv_num, FactData, FactValue};
+    use crate::registry::system_configs::sayc_system_config;
+
+    use super::{
+        evaluate_system_facts, SYSTEM_OPENER_JUMP_SHIFT_VALUES, SYSTEM_OPENER_MAXIMUM_VALUES,
+        SYSTEM_OPENER_MEDIUM_VALUES, SYSTEM_OPENER_MINIMUM_VALUES, SYSTEM_OPENER_REVERSE_VALUES,
+        SYSTEM_OVERCALLER_JUMP_VALUES, SYSTEM_OVERCALLER_SIMPLE_VALUES,
+        SYSTEM_TAKEOUT_DOUBLER_VALUES,
+    };
+
+    fn hcp_facts(hcp: u32) -> HashMap<String, FactValue> {
+        let mut facts = HashMap::new();
+        facts.insert("hand.hcp".to_string(), fv_num("hand.hcp", hcp as f64));
+        facts
+    }
+
+    fn bool_value(facts: &HashMap<String, FactValue>, fact_id: &str) -> bool {
+        match facts.get(fact_id) {
+            Some(FactValue {
+                value: FactData::Boolean(value),
+                ..
+            }) => *value,
+            other => panic!("expected boolean fact for {fact_id}, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn sayc_system_fact_thresholds_match_booklet_defaults() {
+        let sys = sayc_system_config();
+        let mut facts = hcp_facts(16);
+        evaluate_system_facts(&sys, &mut facts);
+
+        assert!(!bool_value(&facts, SYSTEM_OPENER_MINIMUM_VALUES));
+        assert!(bool_value(&facts, SYSTEM_OPENER_MEDIUM_VALUES));
+        assert!(!bool_value(&facts, SYSTEM_OPENER_MAXIMUM_VALUES));
+        assert!(bool_value(&facts, SYSTEM_OPENER_REVERSE_VALUES));
+        assert!(!bool_value(&facts, SYSTEM_OPENER_JUMP_SHIFT_VALUES));
+        assert!(bool_value(&facts, SYSTEM_OVERCALLER_SIMPLE_VALUES));
+        assert!(!bool_value(&facts, SYSTEM_OVERCALLER_JUMP_VALUES));
+        assert!(bool_value(&facts, SYSTEM_TAKEOUT_DOUBLER_VALUES));
+    }
+
+    #[test]
+    fn system_fact_boundaries_are_evaluated_correctly() {
+        let sys = sayc_system_config();
+
+        let mut minimum = hcp_facts(15);
+        evaluate_system_facts(&sys, &mut minimum);
+        assert!(bool_value(&minimum, SYSTEM_OPENER_MINIMUM_VALUES));
+        assert!(!bool_value(&minimum, SYSTEM_OPENER_MEDIUM_VALUES));
+        assert!(bool_value(&minimum, SYSTEM_OVERCALLER_SIMPLE_VALUES));
+        assert!(!bool_value(&minimum, SYSTEM_OVERCALLER_JUMP_VALUES));
+
+        let mut medium = hcp_facts(18);
+        evaluate_system_facts(&sys, &mut medium);
+        assert!(!bool_value(&medium, SYSTEM_OPENER_MINIMUM_VALUES));
+        assert!(bool_value(&medium, SYSTEM_OPENER_MEDIUM_VALUES));
+        assert!(!bool_value(&medium, SYSTEM_OPENER_MAXIMUM_VALUES));
+        assert!(bool_value(&medium, SYSTEM_OPENER_REVERSE_VALUES));
+        assert!(!bool_value(&medium, SYSTEM_OPENER_JUMP_SHIFT_VALUES));
+
+        let mut maximum = hcp_facts(19);
+        evaluate_system_facts(&sys, &mut maximum);
+        assert!(!bool_value(&maximum, SYSTEM_OPENER_MEDIUM_VALUES));
+        assert!(bool_value(&maximum, SYSTEM_OPENER_MAXIMUM_VALUES));
+        assert!(bool_value(&maximum, SYSTEM_OPENER_JUMP_SHIFT_VALUES));
+
+        let mut jump_overcall = hcp_facts(11);
+        evaluate_system_facts(&sys, &mut jump_overcall);
+        assert!(bool_value(&jump_overcall, SYSTEM_OVERCALLER_JUMP_VALUES));
+        assert!(!bool_value(&jump_overcall, SYSTEM_TAKEOUT_DOUBLER_VALUES));
+
+        let mut takeout = hcp_facts(12);
+        evaluate_system_facts(&sys, &mut takeout);
+        assert!(bool_value(&takeout, SYSTEM_TAKEOUT_DOUBLER_VALUES));
+    }
 }

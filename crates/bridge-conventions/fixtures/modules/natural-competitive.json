@@ -1,0 +1,3173 @@
+{
+  "moduleId": "natural-competitive",
+  "displayName": "Natural Competitive",
+  "category": "competitive",
+  "defaultRole": "opener",
+  "fixtureVersion": 1,
+  "description": "Direct-seat competitive actions over an opponent's one-of-a-suit opening: simple suit overcalls, weak jump overcalls, and takeout doubles. This module owns the surfaces that natural-bids deliberately leaves out so a partnership playing only natural conventions still gets feedback when the opponents open and the user is next to call.",
+  "purpose": "Compete naturally and safely over an opponent's one-of-a-suit opening: overcall a rebiddable suit at the cheapest level, preempt with a long suit and limited high cards, or double for takeout with opening values and shortness in the opener's suit.",
+  "scopeNote": "Direct-seat competition over an opponent's one-of-a-suit opening only. Authors overcaller's choices: simple suit overcall, weak jump overcall, takeout double, the fifteen-to-eighteen one-notrump overcall, and pass. Advancer's actions over partner's overcall or takeout double, overcaller's rebid after the auction continues, and balancing-seat actions are intentionally deferred — the booklet's balancing prose only quotes 'lighter at the minimum end' for suit reopenings (a concrete range exists for reopening one-notrump but not for suit reopenings), so balancing-seat thresholds remain out of scope until the partnership pins down concrete tiers. Competitive auctions over a one-notrump opening (covered by DONT and other notrump-defense modules), Michaels and unusual-notrump two-suiter overcalls (own module), negative doubles after partner opens (own module), penalty doubles, lebensohl-style escapes, defenses to weak-twos or higher preempts (cuebid-as-Michaels lives in michaels-unusual; natural-overcall surfaces over weak-twos and three-level preempts are deferred to a later wave), and the cuebid-asks-overcall-quality forcing response are all intentionally deferred. Overcall suit length is encoded as five-plus cards as a partnership-standard interpretation; the booklet itself does not pin a length minimum. The one-notrump overcall stopper requirement is encoded as 'at least one of the top three honors in opener's suit with a length of two or more' — the booklet word 'preferably' means stoppers are typical but not mandated, so the authored stopper fact uses the conservative inclusive interpretation rather than a strict A/Kx/Qxx ladder.",
+  "references": {
+    "authority": {
+      "url": "https://web2.acbl.org/documentlibrary/play/SP3%20(bk)%20single%20pages.pdf",
+      "label": "ACBL — SAYC System Booklet (SP3, rev. Jan 2006)",
+      "snapshot": {
+        "text": "                                 DEFENSIVE BIDDING\nOvercalls show 8–16 points (double and bid the long suit with a stronger hand).\nThe only forcing response is a cuebid of opener’s suit, asking the overcaller about\nthe quality of his overcall:\n  (1) — 1 — (Pass) — 2\n  (Pass) — 2 = minimum overcall.\n\t\t       — other = extra strength (11 or 12 points minimum).\nA 1NT overcall shows 15–18 points and a balanced hand (preferably a stopper in\nopener’s suit). No conventional responses are used by the responder to the 1NT\novercall except 2, which is Stayman.\nA jump overcall of 2NT shows at least 5–5 in the lowest two unbid suits.\nJump overcalls are preemptive, showing the same value as an opening bid at the\nsame level:\n   (1) — 2 = a hand that would open a weak two-bid in spades.\n\t\t          — 3 = a hand that would open 3.\nA cuebid overcall when the opponents have bid two suits is natural in either suit.\nA cuebid overcall when the opponents have bid only one suit is a Michaels cuebid,\nshowing a 5–5 two-suiter (or more distributional). If the opening is in a minor suit,\nthe cuebid shows the majors; if the opening is in a major, the cuebid shows the\nother major and an unspecified minor.\n    (1) — 2 = at least 5–5 in the majors, 8 points or more.\n    (1) — 2 = at least 5–5 in hearts and a minor; 10 points or more.\n\nResponder may bid 2NT over a major suit cuebid to ask for partner’s minor.\n   (1) — 2 — (Pass) — 2NT (asks for the minor).\n   (Pass) — 3 = club suit.\n\t\t        — 3 = diamond suit.\nA reopening bid means much the same as a direct seat bid, though it can be lighter\nat the minimum end. A reopening 1NT after an opponent has opened shows 10–15\npoints. This is a wide range, but there will not usually be a game on for you.\nA double is for takeout over an opening partscore bid (4 or lower); penalty over\nopening game bids (4 or higher). A below-game jump response to a takeout\ndouble is invitational. To force, responder cuebids opener’s suit.\nVersus an opening preempt, an overcall in a suit or notrump is natural; a cuebid is\nMichaels.\n                              COMPETITIVE BIDDING\nThere is almost an endless variety of possible sequences, so it pays to have\nsimple guidelines to prevent bidding misunderstandings.\nBids mean the same things they meant without the intervening bid. Still, it is\nsometimes necessary to pick a bid that would normally have been a second choice\nwithout the overcall:\n    1 — (Pass) — 1 — (2)\n    2 with J 4 3 A 8 7 5 A Q J 4 J 3 (rebid 1NT if RHO has passed)\nCuebidding right-hand opponent’s suit shows values for game without clear\ndirection for the moment. This is often used to show a game-forcing raise:\n     1 — (2) — 3 = game force; usually a raise.\nThe negative double is used through 2, promising four cards (at least) in an unbid\nmajor. Bidding a major at the two level or higher shows 11 or more points and a five-\ncard or longer suit.\n    1 — (1) — Double = 4–4 or better in the majors.\n    1 — (1) — Double = exactly four spades (1 promises five).\n    1 — (1) — Double = four hearts and 6+ points or five hearts\n             and 5–10 points.\nIf RHO makes a takeout double:\n     1 — (Double) — 1, 1 = forcing, point count not limited.\n\t\t      — 2 = non-forcing (6–10 points, usually a six-card suit).\n\t\t      — 2NT = limit raise (at least 10 points) or better.\n\t\t      — Redouble = 10 points or more, but it is better to make a more \t\t\n           descriptive bid of 1, 1, or 2NT with the appropriate hand.\n\t\t      — 3 = preemptive, good trump support but fewer than 10 points.\nA responder’s jump shift after a double is to play:\n    1 — (Double) — 2, 2, 3 = six-plus card suit, like a weak two-bid or\n            preemptive three-bid.\nUnless otherwise noted elsewhere, any bid or double by an opponent cancels\na convention intended for non-competitive sequences.\n    Examples: 1 — 2 — 2NT = natural (12–14 HCP).\n\t\t            2 — Double — 2 = natural and positive.\nIf the opponents use a convention (such as Michaels or the unusual notrump), you\ncan double to show at least 10 points, or you can cuebid one of their shown suits\nto force to game.\n     1 — (2) — 3 = game force.\n\t\t              — Double = at least 10 points, probably balanced.\n",
+        "fetchedAt": "2026-04-28"
+      }
+    },
+    "discovery": {
+      "url": "https://www.bridgebum.com/overcalls.php"
+    }
+  },
+  "teaching": {
+    "tradeoff": "Overcalling a partscore opening commits the partnership to playing at the two-level or higher when partner cannot raise; the upside is making partner's life easier on lead and signalling the suit to compete in.",
+    "principle": "Compete with shape rather than just high-card points. Bid a long suit naturally to claim a fit; double for takeout when shape, not high-card concentration, is the reason to act.",
+    "commonMistakes": [
+      {
+        "text": "Do not overcall on a rag-quality four-card suit at the two-level when partner needs a real suit to lead.",
+        "reason": "The hand will rarely play well, partner expects a five-card suit, and the unmade overcall surrenders both partscore and discipline."
+      },
+      {
+        "text": "Do not double for takeout with high cards but no shortness in the opener's suit.",
+        "reason": "Takeout asks partner to pick an unbid strain; without shortness in the opener's suit and support for the unbid suits, the hand belongs in a notrump or pass."
+      },
+      {
+        "text": "Do not jump-overcall on a balanced fourteen-count.",
+        "reason": "The jump overcall is a preempt with a long suit and limited high cards; a strong balanced hand must start with a quieter call so partner does not raise on a misfit."
+      },
+      {
+        "text": "Do not pass automatically with opening values just because the opponents got there first.",
+        "reason": "Direct-seat takeout doubles and natural overcalls are the partnership's main tools for competing; passing on shape that fits the convention concedes the auction without a fight."
+      }
+    ]
+  },
+  "explanationEntries": [
+    {
+      "explanationId": "competitive.fiveCardClubs",
+      "factId": "module.competitive.fiveCardClubs",
+      "templateKey": "competitive.fiveCardClubs.supporting",
+      "displayText": "Five or more clubs",
+      "contrastiveTemplateKey": "competitive.fiveCardClubs.whyNot",
+      "contrastiveDisplayText": "Fewer than five clubs",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.fiveCardDiamonds",
+      "factId": "module.competitive.fiveCardDiamonds",
+      "templateKey": "competitive.fiveCardDiamonds.supporting",
+      "displayText": "Five or more diamonds",
+      "contrastiveTemplateKey": "competitive.fiveCardDiamonds.whyNot",
+      "contrastiveDisplayText": "Fewer than five diamonds",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.fiveCardHearts",
+      "factId": "module.competitive.fiveCardHearts",
+      "templateKey": "competitive.fiveCardHearts.supporting",
+      "displayText": "Five or more hearts",
+      "contrastiveTemplateKey": "competitive.fiveCardHearts.whyNot",
+      "contrastiveDisplayText": "Fewer than five hearts",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.fiveCardSpades",
+      "factId": "module.competitive.fiveCardSpades",
+      "templateKey": "competitive.fiveCardSpades.supporting",
+      "displayText": "Five or more spades",
+      "contrastiveTemplateKey": "competitive.fiveCardSpades.whyNot",
+      "contrastiveDisplayText": "Fewer than five spades",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.preemptiveClubs",
+      "factId": "module.competitive.preemptiveClubs",
+      "templateKey": "competitive.preemptiveClubs.supporting",
+      "displayText": "Six or more clubs",
+      "contrastiveTemplateKey": "competitive.preemptiveClubs.whyNot",
+      "contrastiveDisplayText": "Fewer than six clubs",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.preemptiveDiamonds",
+      "factId": "module.competitive.preemptiveDiamonds",
+      "templateKey": "competitive.preemptiveDiamonds.supporting",
+      "displayText": "Six or more diamonds",
+      "contrastiveTemplateKey": "competitive.preemptiveDiamonds.whyNot",
+      "contrastiveDisplayText": "Fewer than six diamonds",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.preemptiveHearts",
+      "factId": "module.competitive.preemptiveHearts",
+      "templateKey": "competitive.preemptiveHearts.supporting",
+      "displayText": "Six or more hearts",
+      "contrastiveTemplateKey": "competitive.preemptiveHearts.whyNot",
+      "contrastiveDisplayText": "Fewer than six hearts",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.preemptiveSpades",
+      "factId": "module.competitive.preemptiveSpades",
+      "templateKey": "competitive.preemptiveSpades.supporting",
+      "displayText": "Six or more spades",
+      "contrastiveTemplateKey": "competitive.preemptiveSpades.whyNot",
+      "contrastiveDisplayText": "Fewer than six spades",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.takeoutShapeOver1c",
+      "factId": "module.competitive.takeoutShapeOver1c",
+      "templateKey": "competitive.takeoutShapeOver1c.supporting",
+      "displayText": "Takeout shape after opener's clubs: short clubs and support for every other suit",
+      "contrastiveTemplateKey": "competitive.takeoutShapeOver1c.whyNot",
+      "contrastiveDisplayText": "Hand does not have takeout shape after opener's clubs",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.takeoutShapeOver1d",
+      "factId": "module.competitive.takeoutShapeOver1d",
+      "templateKey": "competitive.takeoutShapeOver1d.supporting",
+      "displayText": "Takeout shape after opener's diamonds: short diamonds and support for every other suit",
+      "contrastiveTemplateKey": "competitive.takeoutShapeOver1d.whyNot",
+      "contrastiveDisplayText": "Hand does not have takeout shape after opener's diamonds",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.takeoutShapeOver1h",
+      "factId": "module.competitive.takeoutShapeOver1h",
+      "templateKey": "competitive.takeoutShapeOver1h.supporting",
+      "displayText": "Takeout shape after opener's hearts: short hearts and support for every other suit",
+      "contrastiveTemplateKey": "competitive.takeoutShapeOver1h.whyNot",
+      "contrastiveDisplayText": "Hand does not have takeout shape after opener's hearts",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.takeoutShapeOver1s",
+      "factId": "module.competitive.takeoutShapeOver1s",
+      "templateKey": "competitive.takeoutShapeOver1s.supporting",
+      "displayText": "Takeout shape after opener's spades: short spades and support for every other suit",
+      "contrastiveTemplateKey": "competitive.takeoutShapeOver1s.whyNot",
+      "contrastiveDisplayText": "Hand does not have takeout shape after opener's spades",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.notrumpShape",
+      "factId": "module.competitive.notrumpShape",
+      "templateKey": "competitive.notrumpShape.supporting",
+      "displayText": "Balanced shape suitable for a one-notrump overcall",
+      "contrastiveTemplateKey": "competitive.notrumpShape.whyNot",
+      "contrastiveDisplayText": "Hand is not balanced enough for a one-notrump overcall",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.stopperOver1c",
+      "factId": "module.competitive.stopperOver1c",
+      "templateKey": "competitive.stopperOver1c.supporting",
+      "displayText": "Stopper in opener's clubs",
+      "contrastiveTemplateKey": "competitive.stopperOver1c.whyNot",
+      "contrastiveDisplayText": "No stopper in opener's clubs",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.stopperOver1d",
+      "factId": "module.competitive.stopperOver1d",
+      "templateKey": "competitive.stopperOver1d.supporting",
+      "displayText": "Stopper in opener's diamonds",
+      "contrastiveTemplateKey": "competitive.stopperOver1d.whyNot",
+      "contrastiveDisplayText": "No stopper in opener's diamonds",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.stopperOver1h",
+      "factId": "module.competitive.stopperOver1h",
+      "templateKey": "competitive.stopperOver1h.supporting",
+      "displayText": "Stopper in opener's hearts",
+      "contrastiveTemplateKey": "competitive.stopperOver1h.whyNot",
+      "contrastiveDisplayText": "No stopper in opener's hearts",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.stopperOver1s",
+      "factId": "module.competitive.stopperOver1s",
+      "templateKey": "competitive.stopperOver1s.supporting",
+      "displayText": "Stopper in opener's spades",
+      "contrastiveTemplateKey": "competitive.stopperOver1s.whyNot",
+      "contrastiveDisplayText": "No stopper in opener's spades",
+      "preferredLevel": "semantic",
+      "roles": [
+        "supporting",
+        "blocking"
+      ]
+    },
+    {
+      "explanationId": "competitive.stub.opponent1c",
+      "meaningId": "competitive:opponent-1c",
+      "templateKey": "competitive.stub.opponent1c.semantic",
+      "displayText": "internal",
+      "preferredLevel": "mechanical",
+      "roles": []
+    },
+    {
+      "explanationId": "competitive.stub.opponent1d",
+      "meaningId": "competitive:opponent-1d",
+      "templateKey": "competitive.stub.opponent1d.semantic",
+      "displayText": "internal",
+      "preferredLevel": "mechanical",
+      "roles": []
+    },
+    {
+      "explanationId": "competitive.stub.opponent1h",
+      "meaningId": "competitive:opponent-1h",
+      "templateKey": "competitive.stub.opponent1h.semantic",
+      "displayText": "internal",
+      "preferredLevel": "mechanical",
+      "roles": []
+    },
+    {
+      "explanationId": "competitive.stub.opponent1s",
+      "meaningId": "competitive:opponent-1s",
+      "templateKey": "competitive.stub.opponent1s.semantic",
+      "displayText": "internal",
+      "preferredLevel": "mechanical",
+      "roles": []
+    }
+  ],
+  "biddingContext": {
+    "openerBids": [
+      {
+        "type": "bid",
+        "level": 1,
+        "strain": "C"
+      },
+      {
+        "type": "bid",
+        "level": 1,
+        "strain": "D"
+      },
+      {
+        "type": "bid",
+        "level": 1,
+        "strain": "H"
+      },
+      {
+        "type": "bid",
+        "level": 1,
+        "strain": "S"
+      }
+    ],
+    "openerRole": "opponent",
+    "competitive": true
+  },
+  "attachments": [
+    {
+      "whenAuction": {
+        "kind": "sequence",
+        "calls": [
+          "1C"
+        ]
+      }
+    },
+    {
+      "whenAuction": {
+        "kind": "sequence",
+        "calls": [
+          "1D"
+        ]
+      }
+    },
+    {
+      "whenAuction": {
+        "kind": "sequence",
+        "calls": [
+          "1H"
+        ]
+      }
+    },
+    {
+      "whenAuction": {
+        "kind": "sequence",
+        "calls": [
+          "1S"
+        ]
+      }
+    }
+  ],
+  "local": {
+    "initial": "idle",
+    "transitions": [
+      {
+        "from": "idle",
+        "to": "r1-after-1c",
+        "on": {
+          "act": "open",
+          "strain": "clubs"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "r1-after-1d",
+        "on": {
+          "act": "open",
+          "strain": "diamonds"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "r1-after-1h",
+        "on": {
+          "act": "open",
+          "strain": "hearts"
+        }
+      },
+      {
+        "from": "idle",
+        "to": "r1-after-1s",
+        "on": {
+          "act": "open",
+          "strain": "spades"
+        }
+      },
+      {
+        "from": "r1-after-1c",
+        "to": "done",
+        "on": {
+          "act": "overcall"
+        }
+      },
+      {
+        "from": "r1-after-1c",
+        "to": "done",
+        "on": {
+          "act": "double"
+        }
+      },
+      {
+        "from": "r1-after-1c",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "r1-after-1d",
+        "to": "done",
+        "on": {
+          "act": "overcall"
+        }
+      },
+      {
+        "from": "r1-after-1d",
+        "to": "done",
+        "on": {
+          "act": "double"
+        }
+      },
+      {
+        "from": "r1-after-1d",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "r1-after-1h",
+        "to": "done",
+        "on": {
+          "act": "overcall"
+        }
+      },
+      {
+        "from": "r1-after-1h",
+        "to": "done",
+        "on": {
+          "act": "double"
+        }
+      },
+      {
+        "from": "r1-after-1h",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      },
+      {
+        "from": "r1-after-1s",
+        "to": "done",
+        "on": {
+          "act": "overcall"
+        }
+      },
+      {
+        "from": "r1-after-1s",
+        "to": "done",
+        "on": {
+          "act": "double"
+        }
+      },
+      {
+        "from": "r1-after-1s",
+        "to": "done",
+        "on": {
+          "act": "pass"
+        }
+      }
+    ]
+  },
+  "states": [
+    {
+      "phase": "idle",
+      "scope": {
+        "kind": "enumerated"
+      },
+      "surfaces": [
+        {
+          "meaningId": "competitive:opponent-1c",
+          "semanticClassId": "competitive:opponent-open",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "C"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SuitOpen",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent's clubs opening",
+            "summary": "Opponent opens one club, our side decides whether to compete"
+          }
+        },
+        {
+          "meaningId": "competitive:opponent-1d",
+          "semanticClassId": "competitive:opponent-open",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "D"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SuitOpen",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent's diamonds opening",
+            "summary": "Opponent opens one diamond, our side decides whether to compete"
+          }
+        },
+        {
+          "meaningId": "competitive:opponent-1h",
+          "semanticClassId": "competitive:opponent-open",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "SuitOpen",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent's hearts opening",
+            "summary": "Opponent opens one heart, our side decides whether to compete"
+          }
+        },
+        {
+          "meaningId": "competitive:opponent-1s",
+          "semanticClassId": "competitive:opponent-open",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "SuitOpen",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Opponent's spades opening",
+            "summary": "Opponent opens one spade, our side decides whether to compete"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "r1-after-1c",
+      "scope": {
+        "kind": "enumerated"
+      },
+      "surfaces": [
+        {
+          "meaningId": "competitive:overcall-1d-after-1c",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardDiamonds:boolean:true",
+              "description": "Five or more diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "One-diamond overcall",
+            "summary": "Simple overcall in diamonds with overcaller's strength and a rebiddable diamond suit"
+          }
+        },
+        {
+          "meaningId": "competitive:overcall-1h-after-1c",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardHearts:boolean:true",
+              "description": "Five or more hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "One-heart overcall",
+            "summary": "Simple overcall in hearts with overcaller's strength and a rebiddable heart suit"
+          }
+        },
+        {
+          "meaningId": "competitive:overcall-1s-after-1c",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardSpades:boolean:true",
+              "description": "Five or more spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "One-spade overcall",
+            "summary": "Simple overcall in spades with overcaller's strength and a rebiddable spade suit"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-2d-after-1c",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveDiamonds:boolean:true",
+              "description": "Six or more diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-diamond jump overcall",
+            "summary": "Preemptive jump overcall in diamonds with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-2h-after-1c",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveHearts:boolean:true",
+              "description": "Six or more hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-heart jump overcall",
+            "summary": "Preemptive jump overcall in hearts with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-2s-after-1c",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveSpades:boolean:true",
+              "description": "Six or more spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-spade jump overcall",
+            "summary": "Preemptive jump overcall in spades with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:takeout-double-after-1c",
+          "semanticClassId": "competitive:takeout-double",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.takeoutDoubler.values",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.takeoutDoubler.values:boolean:true",
+              "description": "Takeout-doubler strength",
+              "rationale": "Takeout-double strength per the booklet's takeout-doubler minimum",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.takeoutShapeOver1c",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.takeoutShapeOver1c:boolean:true",
+              "description": "Takeout shape over opener's clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "TakeoutDouble",
+            "params": {
+              "openedSuit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Takeout double",
+            "summary": "Takeout double of opener's clubs with takeout shape and opening values"
+          }
+        },
+        {
+          "meaningId": "competitive:nt-overcall-after-1c",
+          "semanticClassId": "competitive:nt-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.ntValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.ntValues:boolean:true",
+              "description": "1NT overcall strength",
+              "rationale": "1NT overcall strength per the booklet's 15–18 HCP balanced range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.notrumpShape",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.notrumpShape:boolean:true",
+              "description": "Balanced shape suitable for a notrump overcall",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.stopperOver1c",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.stopperOver1c:boolean:true",
+              "description": "Stopper in opener's clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "NotrumpOvercall",
+            "params": {
+              "openedSuit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "One-notrump overcall",
+            "summary": "Direct one-notrump overcall showing the booklet's notrump-overcall HCP range, a balanced hand, and a stopper in opener's clubs"
+          }
+        },
+        {
+          "meaningId": "competitive:pass-after-1c",
+          "semanticClassId": "competitive:overcaller-pass",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 8
+          },
+          "sourceIntent": {
+            "type": "CompetitivePass",
+            "params": {
+              "openedSuit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "Pass with no overcall or takeout-double action available"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "r1-after-1d",
+      "scope": {
+        "kind": "enumerated"
+      },
+      "surfaces": [
+        {
+          "meaningId": "competitive:overcall-1h-after-1d",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardHearts:boolean:true",
+              "description": "Five or more hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "One-heart overcall",
+            "summary": "Simple overcall in hearts with overcaller's strength and a rebiddable heart suit"
+          }
+        },
+        {
+          "meaningId": "competitive:overcall-1s-after-1d",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardSpades:boolean:true",
+              "description": "Five or more spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "One-spade overcall",
+            "summary": "Simple overcall in spades with overcaller's strength and a rebiddable spade suit"
+          }
+        },
+        {
+          "meaningId": "competitive:overcall-2c-after-1d",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardClubs:boolean:true",
+              "description": "Five or more clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-club overcall",
+            "summary": "Simple overcall in clubs with overcaller's strength and a rebiddable club suit"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-2h-after-1d",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveHearts:boolean:true",
+              "description": "Six or more hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-heart jump overcall",
+            "summary": "Preemptive jump overcall in hearts with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-2s-after-1d",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveSpades:boolean:true",
+              "description": "Six or more spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-spade jump overcall",
+            "summary": "Preemptive jump overcall in spades with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-3c-after-1d",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveClubs:boolean:true",
+              "description": "Six or more clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Three-club jump overcall",
+            "summary": "Preemptive jump overcall in clubs with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:takeout-double-after-1d",
+          "semanticClassId": "competitive:takeout-double",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.takeoutDoubler.values",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.takeoutDoubler.values:boolean:true",
+              "description": "Takeout-doubler strength",
+              "rationale": "Takeout-double strength per the booklet's takeout-doubler minimum",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.takeoutShapeOver1d",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.takeoutShapeOver1d:boolean:true",
+              "description": "Takeout shape over opener's diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "TakeoutDouble",
+            "params": {
+              "openedSuit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Takeout double",
+            "summary": "Takeout double of opener's diamonds with takeout shape and opening values"
+          }
+        },
+        {
+          "meaningId": "competitive:nt-overcall-after-1d",
+          "semanticClassId": "competitive:nt-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.ntValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.ntValues:boolean:true",
+              "description": "1NT overcall strength",
+              "rationale": "1NT overcall strength per the booklet's 15–18 HCP balanced range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.notrumpShape",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.notrumpShape:boolean:true",
+              "description": "Balanced shape suitable for a notrump overcall",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.stopperOver1d",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.stopperOver1d:boolean:true",
+              "description": "Stopper in opener's diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "NotrumpOvercall",
+            "params": {
+              "openedSuit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "One-notrump overcall",
+            "summary": "Direct one-notrump overcall showing the booklet's notrump-overcall HCP range, a balanced hand, and a stopper in opener's diamonds"
+          }
+        },
+        {
+          "meaningId": "competitive:pass-after-1d",
+          "semanticClassId": "competitive:overcaller-pass",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 8
+          },
+          "sourceIntent": {
+            "type": "CompetitivePass",
+            "params": {
+              "openedSuit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "Pass with no overcall or takeout-double action available"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "r1-after-1h",
+      "scope": {
+        "kind": "enumerated"
+      },
+      "surfaces": [
+        {
+          "meaningId": "competitive:overcall-1s-after-1h",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardSpades:boolean:true",
+              "description": "Five or more spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "One-spade overcall",
+            "summary": "Simple overcall in spades with overcaller's strength and a rebiddable spade suit"
+          }
+        },
+        {
+          "meaningId": "competitive:overcall-2c-after-1h",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardClubs:boolean:true",
+              "description": "Five or more clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-club overcall",
+            "summary": "Simple overcall in clubs with overcaller's strength and a rebiddable club suit"
+          }
+        },
+        {
+          "meaningId": "competitive:overcall-2d-after-1h",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardDiamonds:boolean:true",
+              "description": "Five or more diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-diamond overcall",
+            "summary": "Simple overcall in diamonds with overcaller's strength and a rebiddable diamond suit"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-2s-after-1h",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "S"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveSpades",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveSpades:boolean:true",
+              "description": "Six or more spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-spade jump overcall",
+            "summary": "Preemptive jump overcall in spades with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-3c-after-1h",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveClubs:boolean:true",
+              "description": "Six or more clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Three-club jump overcall",
+            "summary": "Preemptive jump overcall in clubs with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-3d-after-1h",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveDiamonds:boolean:true",
+              "description": "Six or more diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Three-diamond jump overcall",
+            "summary": "Preemptive jump overcall in diamonds with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:takeout-double-after-1h",
+          "semanticClassId": "competitive:takeout-double",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.takeoutDoubler.values",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.takeoutDoubler.values:boolean:true",
+              "description": "Takeout-doubler strength",
+              "rationale": "Takeout-double strength per the booklet's takeout-doubler minimum",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.takeoutShapeOver1h",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.takeoutShapeOver1h:boolean:true",
+              "description": "Takeout shape over opener's hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "TakeoutDouble",
+            "params": {
+              "openedSuit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Takeout double",
+            "summary": "Takeout double of opener's hearts with takeout shape and opening values"
+          }
+        },
+        {
+          "meaningId": "competitive:nt-overcall-after-1h",
+          "semanticClassId": "competitive:nt-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.ntValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.ntValues:boolean:true",
+              "description": "1NT overcall strength",
+              "rationale": "1NT overcall strength per the booklet's 15–18 HCP balanced range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.notrumpShape",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.notrumpShape:boolean:true",
+              "description": "Balanced shape suitable for a notrump overcall",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.stopperOver1h",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.stopperOver1h:boolean:true",
+              "description": "Stopper in opener's hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "NotrumpOvercall",
+            "params": {
+              "openedSuit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "One-notrump overcall",
+            "summary": "Direct one-notrump overcall showing the booklet's notrump-overcall HCP range, a balanced hand, and a stopper in opener's hearts"
+          }
+        },
+        {
+          "meaningId": "competitive:pass-after-1h",
+          "semanticClassId": "competitive:overcaller-pass",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 8
+          },
+          "sourceIntent": {
+            "type": "CompetitivePass",
+            "params": {
+              "openedSuit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "Pass with no overcall or takeout-double action available"
+          }
+        }
+      ]
+    },
+    {
+      "phase": "r1-after-1s",
+      "scope": {
+        "kind": "enumerated"
+      },
+      "surfaces": [
+        {
+          "meaningId": "competitive:overcall-2c-after-1s",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardClubs:boolean:true",
+              "description": "Five or more clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-club overcall",
+            "summary": "Simple overcall in clubs with overcaller's strength and a rebiddable club suit"
+          }
+        },
+        {
+          "meaningId": "competitive:overcall-2d-after-1s",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardDiamonds:boolean:true",
+              "description": "Five or more diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 1
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-diamond overcall",
+            "summary": "Simple overcall in diamonds with overcaller's strength and a rebiddable diamond suit"
+          }
+        },
+        {
+          "meaningId": "competitive:overcall-2h-after-1s",
+          "semanticClassId": "competitive:simple-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.simpleValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.simpleValues:boolean:true",
+              "description": "Simple-overcall strength",
+              "rationale": "Simple overcall strength per the booklet's overcaller range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.fiveCardHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.fiveCardHearts:boolean:true",
+              "description": "Five or more hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 2
+          },
+          "sourceIntent": {
+            "type": "SimpleOvercall",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Two-heart overcall",
+            "summary": "Simple overcall in hearts with overcaller's strength and a rebiddable heart suit"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-3c-after-1s",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "C"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveClubs",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveClubs:boolean:true",
+              "description": "Six or more clubs",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 3
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "clubs"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Three-club jump overcall",
+            "summary": "Preemptive jump overcall in clubs with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-3d-after-1s",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveDiamonds",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveDiamonds:boolean:true",
+              "description": "Six or more diamonds",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 4
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "diamonds"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Three-diamond jump overcall",
+            "summary": "Preemptive jump overcall in diamonds with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:jump-overcall-3h-after-1s",
+          "semanticClassId": "competitive:jump-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 3,
+              "strain": "H"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.jumpValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.jumpValues:boolean:true",
+              "description": "Weak jump-overcall strength",
+              "rationale": "Preemptive jump-overcall strength per the booklet's jump-overcall range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.preemptiveHearts",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.preemptiveHearts:boolean:true",
+              "description": "Six or more hearts",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 5
+          },
+          "sourceIntent": {
+            "type": "JumpOvercall",
+            "params": {
+              "suit": "hearts"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Three-heart jump overcall",
+            "summary": "Preemptive jump overcall in hearts with a long suit and limited high-card strength"
+          }
+        },
+        {
+          "meaningId": "competitive:takeout-double-after-1s",
+          "semanticClassId": "competitive:takeout-double",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "double"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.takeoutDoubler.values",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.takeoutDoubler.values:boolean:true",
+              "description": "Takeout-doubler strength",
+              "rationale": "Takeout-double strength per the booklet's takeout-doubler minimum",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.takeoutShapeOver1s",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.takeoutShapeOver1s:boolean:true",
+              "description": "Takeout shape over opener's spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 6
+          },
+          "sourceIntent": {
+            "type": "TakeoutDouble",
+            "params": {
+              "openedSuit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Takeout double",
+            "summary": "Takeout double of opener's spades with takeout shape and opening values"
+          }
+        },
+        {
+          "meaningId": "competitive:nt-overcall-after-1s",
+          "semanticClassId": "competitive:nt-overcall",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "system.overcaller.ntValues",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "system.overcaller.ntValues:boolean:true",
+              "description": "1NT overcall strength",
+              "rationale": "1NT overcall strength per the booklet's 15–18 HCP balanced range",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.notrumpShape",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.notrumpShape:boolean:true",
+              "description": "Balanced shape suitable for a notrump overcall",
+              "isPublic": true
+            },
+            {
+              "factId": "module.competitive.stopperOver1s",
+              "operator": "boolean",
+              "value": true,
+              "clauseId": "module.competitive.stopperOver1s:boolean:true",
+              "description": "Stopper in opener's spades",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "should",
+            "modulePrecedence": 0,
+            "declarationOrder": 7
+          },
+          "sourceIntent": {
+            "type": "NotrumpOvercall",
+            "params": {
+              "openedSuit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "One-notrump overcall",
+            "summary": "Direct one-notrump overcall showing the booklet's notrump-overcall HCP range, a balanced hand, and a stopper in opener's spades"
+          }
+        },
+        {
+          "meaningId": "competitive:pass-after-1s",
+          "semanticClassId": "competitive:overcaller-pass",
+          "moduleId": "natural-competitive",
+          "encoding": {
+            "defaultCall": {
+              "type": "pass"
+            }
+          },
+          "clauses": [],
+          "ranking": {
+            "recommendationBand": "may",
+            "modulePrecedence": 0,
+            "declarationOrder": 8
+          },
+          "sourceIntent": {
+            "type": "CompetitivePass",
+            "params": {
+              "openedSuit": "spades"
+            }
+          },
+          "disclosure": "natural",
+          "teachingLabel": {
+            "name": "Pass",
+            "summary": "Pass with no overcall or takeout-double action available"
+          }
+        }
+      ]
+    }
+  ],
+  "reference": {
+    "summaryCard": {
+      "trigger": "Opponent opens one of a suit and you are next to call",
+      "definingMeaningId": "competitive:overcall-1h-after-1d",
+      "partnership": "This module covers the direct-seat tools the partnership uses against an opponent's one-of-a-suit opening: a simple suit overcall with overcaller's strength and a rebiddable five-card or longer suit, a weak jump overcall with a long suit and preemptive values, a takeout double with opening strength, shortness in the opener's suit, and support for every other suit, or a one-notrump overcall showing fifteen-to-eighteen high-card points, a balanced hand, and a stopper in opener's suit. Reopening, balancing, advancer's responses, overcaller's later rebids, and the cuebid-asks-overcall-quality forcing response are intentionally outside the current wave."
+    },
+    "whenToUse": [
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.overcaller.simpleValues",
+                "expected": true
+              }
+            },
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 5
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gloss": "Make a simple suit overcall when the hand is in overcaller's strength and you have a rebiddable five-card or longer suit other than the suit the opponents opened."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.overcaller.jumpValues",
+                "expected": true
+              }
+            },
+            {
+              "kind": "or",
+              "operands": [
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.clubs",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.diamonds",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.hearts",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                },
+                {
+                  "kind": "primitive",
+                  "clause": {
+                    "factId": "hand.suitLength.spades",
+                    "operator": "gte",
+                    "value": 6
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gloss": "Jump-overcall preemptively with a long suit and limited high-card strength to take bidding space away from the opponents."
+      },
+      {
+        "predicate": {
+          "kind": "extended",
+          "clause": {
+            "clauseKind": "booleanFact",
+            "fact_id": "system.takeoutDoubler.values",
+            "expected": true
+          }
+        },
+        "gloss": "Double for takeout when the hand has opening values, shortness in the opener's suit, and support for the other three suits so partner can pick the strain."
+      },
+      {
+        "predicate": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "system.overcaller.ntValues",
+                "expected": true
+              }
+            },
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "booleanFact",
+                "fact_id": "hand.isBalanced",
+                "expected": true
+              }
+            }
+          ]
+        },
+        "gloss": "Overcall one-notrump with the booklet's notrump-overcall HCP range, balanced shape, and a stopper in the opener's suit so partner can pass with a flat minimum or move on with extra values."
+      }
+    ],
+    "workedAuctions": [
+      {
+        "kind": "positive",
+        "label": "Simple overcall in a rebiddable major",
+        "calls": [
+          {
+            "seat": "W",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "D"
+            },
+            "rationale": "RHO opens 1D in front of overcaller."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            },
+            "rationale": "Overcaller has overcaller's strength and a rebiddable five-card heart suit, so 1H names the suit at the cheapest level."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "Takeout double of a one-major opening",
+        "calls": [
+          {
+            "seat": "W",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "S"
+            },
+            "rationale": "RHO opens 1S, taking the spade suit out of the picture."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "double"
+            },
+            "rationale": "Doubler has opening strength, shortness in spades, and four cards or better in every other suit, so the takeout double asks partner to pick a strain."
+          }
+        ]
+      },
+      {
+        "kind": "negative",
+        "label": "Counter-example: pass on a balanced minimum without a real long suit",
+        "calls": [
+          {
+            "seat": "W",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "C"
+            },
+            "rationale": "RHO opens 1C."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "pass"
+            },
+            "rationale": "Without a five-card or longer suit and without takeout shape, the most disciplined action is to pass and let partner re-enter the auction in the balancing seat if interested."
+          }
+        ]
+      },
+      {
+        "kind": "positive",
+        "label": "One-notrump overcall over a one-of-a-suit opening",
+        "calls": [
+          {
+            "seat": "W",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "H"
+            },
+            "rationale": "RHO opens 1H, taking the heart suit out of the picture."
+          },
+          {
+            "seat": "N",
+            "call": {
+              "type": "bid",
+              "level": 1,
+              "strain": "NT"
+            },
+            "rationale": "Overcaller has the booklet's 1NT-overcall HCP range, a balanced hand, and a stopper in opener's hearts, so 1NT shows the strong-NT-style hand directly and lets partner play notrump methods over the call."
+          }
+        ]
+      }
+    ],
+    "interference": {
+      "status": "notApplicable",
+      "reason": "This module is itself the interference layer over an opponent's opening; downstream interactions such as redouble of a takeout double, opener's rebid after our intervention, and advancer's continuations are handled in separate competitive modules and later waves of this one."
+    },
+    "quickReference": {
+      "kind": "list",
+      "axis": {
+        "kind": "systemFactLadder",
+        "label": "Hand profile",
+        "facts": [
+          "system.overcaller.simpleValues",
+          "system.overcaller.jumpValues",
+          "system.overcaller.ntValues",
+          "system.takeoutDoubler.values"
+        ]
+      },
+      "items": [
+        {
+          "recommendation": "With overcaller's simple-overcall strength and a rebiddable five-card or longer suit, name the suit at the cheapest available level.",
+          "note": "When the only suit you can show forces a two-level call, partner expects a rebiddable suit rather than a token entry."
+        },
+        {
+          "recommendation": "With limited high cards and a long suit, jump in the suit at the cheapest preemptive level to consume opponent space.",
+          "note": "The jump overcall is a weak preempt; do not use it with a strong balanced hand."
+        },
+        {
+          "recommendation": "With the booklet's notrump-overcall range, a balanced hand, and a stopper in opener's suit, overcall one-notrump and let partner navigate with notrump methods.",
+          "note": "The booklet word 'preferably' before stopper means stoppers are typical but not mandated; the authored stopper fact uses the conservative inclusive interpretation rather than a strict ladder."
+        },
+        {
+          "recommendation": "With opening values, shortness in the opener's suit, and support for the other three suits, double for takeout and let partner choose the strain.",
+          "note": "The takeout double is the right tool for shape rather than for a single long suit; bid the suit naturally instead when you have one."
+        }
+      ]
+    },
+    "relatedLinks": [
+      {
+        "moduleId": "natural-bids",
+        "discriminator": "When no opponent has acted, natural-bids handles the opening and notrump structure; this module takes over once the opponents open and you are the one deciding whether to compete."
+      },
+      {
+        "moduleId": "negative-doubles",
+        "discriminator": "Negative doubles cover the case where partner opens and an opponent overcalls; this module covers the opposite case where the opponents open first and we are entering the auction."
+      },
+      {
+        "moduleId": "michaels-unusual",
+        "discriminator": "Michaels and unusual notrump replace the simple suit overcall with a two-suited promise; reach for this module instead when the hand has only one rebiddable suit."
+      },
+      {
+        "moduleId": "dont",
+        "discriminator": "DONT applies after a notrump opening rather than a suit opening; use that module when the opponents open one notrump and this one when they open one of a suit."
+      }
+    ]
+  },
+  "bundleMetadata": {
+    "declaredCapabilities": {
+      "competitive.natural": "active"
+    },
+    "supportsRoleSelection": false,
+    "teaching": {
+      "purpose": "Compete naturally and safely over an opponent's one-of-a-suit opening with simple overcalls, weak jump overcalls, takeout doubles, or a one-notrump overcall depending on shape and strength.",
+      "whenToUse": "Right-hand opponent opens one of a suit and the hand has a rebiddable five-card or longer suit in overcaller's strength range, a long suit with limited high cards for a preemptive jump, opening strength with shortness in the opener's suit and support for the other three suits, or a balanced hand with the 1NT-overcall HCP range and a stopper in opener's suit.",
+      "whenNotToUse": [
+        "On a flat or weak hand without a rebiddable five-card or longer suit and without takeout shape — pass and let partner act if appropriate",
+        "After partner's opening — that is the negative-doubles or natural-bids continuation problem instead",
+        "Against a one-notrump opening — use the dedicated notrump-defense modules"
+      ],
+      "tradeoff": "Bidding over an opening may push the partnership higher when no fit exists; the upside is finding fits, directing the lead, and keeping the opponents from coasting in their best strain.",
+      "principle": "Compete with shape rather than just high-card strength; pick the call that most accurately describes the hand to partner.",
+      "roles": "Overcaller describes shape and strength; advancer's continuations are handled in a later wave."
+    },
+    "attachments": [
+      {
+        "whenAuction": {
+          "kind": "sequence",
+          "calls": [
+            "1C"
+          ]
+        }
+      },
+      {
+        "whenAuction": {
+          "kind": "sequence",
+          "calls": [
+            "1D"
+          ]
+        }
+      },
+      {
+        "whenAuction": {
+          "kind": "sequence",
+          "calls": [
+            "1H"
+          ]
+        }
+      },
+      {
+        "whenAuction": {
+          "kind": "sequence",
+          "calls": [
+            "1S"
+          ]
+        }
+      }
+    ]
+  },
+  "facts": {
+    "definitions": [
+      {
+        "id": "module.competitive.fiveCardClubs",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Five or more clubs (rebiddable for an overcall)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.clubs"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.clubs",
+            "operator": "gte",
+            "value": 5
+          }
+        }
+      },
+      {
+        "id": "module.competitive.fiveCardDiamonds",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Five or more diamonds (rebiddable for an overcall)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.diamonds"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.diamonds",
+            "operator": "gte",
+            "value": 5
+          }
+        }
+      },
+      {
+        "id": "module.competitive.fiveCardHearts",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Five or more hearts (rebiddable for an overcall)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.hearts"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.hearts",
+            "operator": "gte",
+            "value": 5
+          }
+        }
+      },
+      {
+        "id": "module.competitive.fiveCardSpades",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Five or more spades (rebiddable for an overcall)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.spades",
+            "operator": "gte",
+            "value": 5
+          }
+        }
+      },
+      {
+        "id": "module.competitive.preemptiveClubs",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Six or more clubs (preemptive jump-overcall length)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.clubs"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.clubs",
+            "operator": "gte",
+            "value": 6
+          }
+        }
+      },
+      {
+        "id": "module.competitive.preemptiveDiamonds",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Six or more diamonds (preemptive jump-overcall length)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.diamonds"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.diamonds",
+            "operator": "gte",
+            "value": 6
+          }
+        }
+      },
+      {
+        "id": "module.competitive.preemptiveHearts",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Six or more hearts (preemptive jump-overcall length)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.hearts"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.hearts",
+            "operator": "gte",
+            "value": 6
+          }
+        }
+      },
+      {
+        "id": "module.competitive.preemptiveSpades",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Six or more spades (preemptive jump-overcall length)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "primitive",
+          "clause": {
+            "factId": "hand.suitLength.spades",
+            "operator": "gte",
+            "value": 6
+          }
+        }
+      },
+      {
+        "id": "module.competitive.takeoutShapeOver1c",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Takeout shape over a clubs opening: at most two clubs and at least three cards in every other suit",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.clubs",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.hearts",
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "lte",
+                "value": 2
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 3
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.competitive.takeoutShapeOver1d",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Takeout shape over a diamonds opening: at most two diamonds and at least three cards in every other suit",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.clubs",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.hearts",
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "lte",
+                "value": 2
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 3
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.competitive.takeoutShapeOver1h",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Takeout shape over a hearts opening: at most two hearts and at least three cards in every other suit",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.clubs",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.hearts",
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "lte",
+                "value": 2
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 3
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.competitive.takeoutShapeOver1s",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Takeout shape over a spades opening: at most two spades and at least three cards in every other suit",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.clubs",
+          "hand.suitLength.diamonds",
+          "hand.suitLength.hearts",
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitLength"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "lte",
+                "value": 2
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 3
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.competitive.notrumpShape",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Balanced hand suitable for a notrump overcall",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.isBalanced"
+        ],
+        "constrainsDimensions": [
+          "shapeClass"
+        ],
+        "composition": {
+          "kind": "extended",
+          "clause": {
+            "clauseKind": "booleanFact",
+            "fact_id": "hand.isBalanced",
+            "expected": true
+          }
+        }
+      },
+      {
+        "id": "module.competitive.stopperOver1c",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Stopper in opener's clubs: at least one of the top three honors with two or more clubs (the booklet's 'preferably' wording is encoded as the conservative inclusive interpretation rather than a strict A/Kx/Qxx ladder)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.clubs"
+        ],
+        "constrainsDimensions": [
+          "suitLength",
+          "suitQuality"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "topHonorCount",
+                "suit": "C",
+                "min": 1,
+                "topN": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.clubs",
+                "operator": "gte",
+                "value": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.competitive.stopperOver1d",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Stopper in opener's diamonds: at least one of the top three honors with two or more diamonds (the booklet's 'preferably' wording is encoded as the conservative inclusive interpretation rather than a strict A/Kx/Qxx ladder)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.diamonds"
+        ],
+        "constrainsDimensions": [
+          "suitLength",
+          "suitQuality"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "topHonorCount",
+                "suit": "D",
+                "min": 1,
+                "topN": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.diamonds",
+                "operator": "gte",
+                "value": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.competitive.stopperOver1h",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Stopper in opener's hearts: at least one of the top three honors with two or more hearts (the booklet's 'preferably' wording is encoded as the conservative inclusive interpretation rather than a strict A/Kx/Qxx ladder)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.hearts"
+        ],
+        "constrainsDimensions": [
+          "suitLength",
+          "suitQuality"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "topHonorCount",
+                "suit": "H",
+                "min": 1,
+                "topN": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.hearts",
+                "operator": "gte",
+                "value": 2
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "module.competitive.stopperOver1s",
+        "layer": "module-derived",
+        "world": "acting-hand",
+        "description": "Stopper in opener's spades: at least one of the top three honors with two or more spades (the booklet's 'preferably' wording is encoded as the conservative inclusive interpretation rather than a strict A/Kx/Qxx ladder)",
+        "valueType": "boolean",
+        "derivesFrom": [
+          "hand.suitLength.spades"
+        ],
+        "constrainsDimensions": [
+          "suitLength",
+          "suitQuality"
+        ],
+        "composition": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "extended",
+              "clause": {
+                "clauseKind": "topHonorCount",
+                "suit": "S",
+                "min": 1,
+                "topN": 3
+              }
+            },
+            {
+              "kind": "primitive",
+              "clause": {
+                "factId": "hand.suitLength.spades",
+                "operator": "gte",
+                "value": 2
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
