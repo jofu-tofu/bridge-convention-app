@@ -1,15 +1,31 @@
-import { describe, expect, it, vi } from "vitest";
-import { DevDataPort, SubscriptionTier } from "../auth";
-import type {
-  DataPortClient,
-  DrillCreatePayload,
-  DrillDto,
-  DrillUpdatePayload,
-} from "../auth";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { DevDataPort, DrillNotFoundError, SubscriptionTier } from "../auth";
+import type { DrillCreatePayload, DrillUpdatePayload } from "../auth";
 
-function makeDrill(overrides: Partial<DrillDto> = {}): DrillDto {
+const DEV_DRILLS_KEY = "bridge-app:dev-drills";
+
+function createStorage(): Storage {
+  let store: Record<string, string> = {};
   return {
-    id: "drill:abc12345",
+    getItem: (key) => store[key] ?? null,
+    setItem: (key, value) => {
+      store[key] = String(value);
+    },
+    removeItem: (key) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+    key: (index) => Object.keys(store)[index] ?? null,
+    get length() {
+      return Object.keys(store).length;
+    },
+  };
+}
+
+function makePayload(overrides: Partial<DrillCreatePayload> = {}): DrillCreatePayload {
+  return {
     name: "Stayman",
     moduleIds: ["stayman-bundle"],
     practiceMode: "decision-drill",
@@ -19,85 +35,93 @@ function makeDrill(overrides: Partial<DrillDto> = {}): DrillDto {
     playProfileId: "club-player",
     vulnerabilityDistribution: { none: 1, ours: 0, theirs: 0, both: 0 },
     showEducationalAnnotations: true,
-    createdAt: "2026-04-19T00:00:00.000Z",
-    updatedAt: "2026-04-19T00:00:00.000Z",
-    lastUsedAt: null,
     ...overrides,
   };
 }
 
-function makePayload(): DrillCreatePayload {
-  return {
-    name: "Stayman",
-    moduleIds: ["stayman-bundle"],
-    practiceMode: "decision-drill",
-    practiceRole: "auto",
-    systemSelectionId: "sayc",
-    opponentMode: "natural",
-    playProfileId: "club-player",
-    vulnerabilityDistribution: { none: 1, ours: 0, theirs: 0, both: 0 },
-    showEducationalAnnotations: true,
-  };
-}
+describe("DevDataPort drill methods (localStorage-backed)", () => {
+  let port: DevDataPort;
 
-function devPortWithSpies(): {
-  port: DevDataPort;
-  spies: Record<string, ReturnType<typeof vi.fn>>;
-} {
-  const port = new DevDataPort(SubscriptionTier.Free);
-  // Reach into the private inner client via cast — we explicitly want to verify
-  // delegation, so swap each method with a spy. (Behavior, not internals.)
-  const inner = (port as unknown as { inner: DataPortClient }).inner;
-  const drill = makeDrill();
-  const spies: Record<string, ReturnType<typeof vi.fn>> = {
-    listDrills: vi.fn().mockResolvedValue([drill]),
-    createDrill: vi.fn().mockResolvedValue(drill),
-    updateDrill: vi.fn().mockResolvedValue(drill),
-    deleteDrill: vi.fn().mockResolvedValue(undefined),
-    markDrillLaunched: vi.fn().mockResolvedValue(drill),
-  };
-  inner.listDrills = spies.listDrills as DataPortClient["listDrills"];
-  inner.createDrill = spies.createDrill as DataPortClient["createDrill"];
-  inner.updateDrill = spies.updateDrill as DataPortClient["updateDrill"];
-  inner.deleteDrill = spies.deleteDrill as DataPortClient["deleteDrill"];
-  inner.markDrillLaunched = spies.markDrillLaunched as DataPortClient["markDrillLaunched"];
-  return { port, spies };
-}
-
-describe("DevDataPort drill methods", () => {
-  it("listDrills delegates to inner client", async () => {
-    const { port, spies } = devPortWithSpies();
-    const result = await port.listDrills();
-    expect(spies.listDrills).toHaveBeenCalledTimes(1);
-    expect(result).toHaveLength(1);
-    expect(result[0]?.id).toBe("drill:abc12345");
+  beforeEach(() => {
+    vi.stubGlobal("localStorage", createStorage());
+    port = new DevDataPort(SubscriptionTier.Free);
   });
 
-  it("createDrill forwards payload to inner client", async () => {
-    const { port, spies } = devPortWithSpies();
-    const payload = makePayload();
-    const result = await port.createDrill(payload);
-    expect(spies.createDrill).toHaveBeenCalledWith(payload);
-    expect(result.id).toBe("drill:abc12345");
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
-  it("updateDrill forwards id and payload to inner client", async () => {
-    const { port, spies } = devPortWithSpies();
-    const payload: DrillUpdatePayload = makePayload();
-    await port.updateDrill("drill:xyz", payload);
-    expect(spies.updateDrill).toHaveBeenCalledWith("drill:xyz", payload);
+  it("listDrills returns [] when no drills stored", async () => {
+    expect(await port.listDrills()).toEqual([]);
   });
 
-  it("deleteDrill forwards id to inner client", async () => {
-    const { port, spies } = devPortWithSpies();
-    await port.deleteDrill("drill:xyz");
-    expect(spies.deleteDrill).toHaveBeenCalledWith("drill:xyz");
+  it("createDrill persists a new drill and returns the DTO", async () => {
+    const drill = await port.createDrill(makePayload());
+    expect(drill.id).toMatch(/^drill:/);
+    expect(drill.name).toBe("Stayman");
+    expect(drill.lastUsedAt).toBeNull();
+    const stored = JSON.parse(localStorage.getItem(DEV_DRILLS_KEY) ?? "{}") as {
+      drills: { id: string }[];
+    };
+    expect(stored.drills.map((d) => d.id)).toEqual([drill.id]);
   });
 
-  it("markDrillLaunched forwards id to inner client", async () => {
-    const { port, spies } = devPortWithSpies();
-    const result = await port.markDrillLaunched("drill:xyz");
-    expect(spies.markDrillLaunched).toHaveBeenCalledWith("drill:xyz");
-    expect(result.id).toBe("drill:abc12345");
+  it("createDrill respects a client-supplied id", async () => {
+    const drill = await port.createDrill(makePayload({ id: "drill:explicit" }));
+    expect(drill.id).toBe("drill:explicit");
+  });
+
+  it("listDrills round-trips multiple created drills", async () => {
+    await port.createDrill(makePayload({ name: "A" }));
+    await port.createDrill(makePayload({ name: "B" }));
+    const list = await port.listDrills();
+    expect(list.map((d) => d.name)).toEqual(["A", "B"]);
+  });
+
+  it("updateDrill rewrites fields and bumps updatedAt", async () => {
+    const created = await port.createDrill(makePayload());
+    const patch: DrillUpdatePayload = makePayload({ name: "Renamed" });
+    const updated = await port.updateDrill(created.id, patch);
+    expect(updated.id).toBe(created.id);
+    expect(updated.name).toBe("Renamed");
+    expect(updated.createdAt).toBe(created.createdAt);
+    expect(new Date(updated.updatedAt).getTime()).toBeGreaterThanOrEqual(
+      new Date(created.updatedAt).getTime(),
+    );
+  });
+
+  it("updateDrill rejects with DrillNotFoundError for unknown id", async () => {
+    await expect(port.updateDrill("drill:missing", makePayload())).rejects.toBeInstanceOf(
+      DrillNotFoundError,
+    );
+  });
+
+  it("deleteDrill removes the drill", async () => {
+    const created = await port.createDrill(makePayload());
+    await port.deleteDrill(created.id);
+    expect(await port.listDrills()).toEqual([]);
+  });
+
+  it("deleteDrill rejects with DrillNotFoundError for unknown id", async () => {
+    await expect(port.deleteDrill("drill:missing")).rejects.toBeInstanceOf(DrillNotFoundError);
+  });
+
+  it("markDrillLaunched stamps lastUsedAt", async () => {
+    const created = await port.createDrill(makePayload());
+    const launched = await port.markDrillLaunched(created.id);
+    expect(launched.lastUsedAt).not.toBeNull();
+    expect(new Date(launched.lastUsedAt ?? "").getTime()).toBeGreaterThan(0);
+  });
+
+  it("markDrillLaunched rejects with DrillNotFoundError for unknown id", async () => {
+    await expect(port.markDrillLaunched("drill:missing")).rejects.toBeInstanceOf(
+      DrillNotFoundError,
+    );
+  });
+
+  it("does not touch the anonymous drill key", async () => {
+    await port.createDrill(makePayload());
+    expect(localStorage.getItem("bridge-app:drills")).toBeNull();
+    expect(localStorage.getItem(DEV_DRILLS_KEY)).not.toBeNull();
   });
 });

@@ -283,11 +283,48 @@ function writeDevLoggedOut(value: boolean): void {
   }
 }
 
+const DEV_DRILLS_KEY = "bridge-app:dev-drills";
+
+function readDevDrills(): DrillDto[] {
+  try {
+    const raw = localStorage.getItem(DEV_DRILLS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as { drills?: unknown };
+    if (!parsed || !Array.isArray(parsed.drills)) return [];
+    return parsed.drills as DrillDto[];
+  } catch {
+    return [];
+  }
+}
+
+function writeDevDrills(drills: DrillDto[]): void {
+  try {
+    localStorage.setItem(DEV_DRILLS_KEY, JSON.stringify({ drills }));
+  } catch {
+    // ignore quota / unavailable storage
+  }
+}
+
+function generateDevDrillId(): string {
+  const suffix =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID().slice(0, 8)
+      : Math.random().toString(36).slice(2, 10);
+  return `drill:${suffix}`;
+}
+
 /**
- * **DevDataPort fakes client state only.** It does NOT mint a server session.
- * Tests that need real server behavior (entitlements, webhook effects, session
- * cookies) must call `POST /api/dev/login` on bridge-api (built with the
- * `dev-tools` cargo feature) instead. See `tests/e2e/helpers.ts:devLogin`.
+ * **DevDataPort fakes client state only.** Auth, billing, and drill storage
+ * are all faked in-browser so local dev runs without bridge-api. Drills
+ * persist to `localStorage` under `bridge-app:dev-drills`, isolated from the
+ * anonymous-mode key (`bridge-app:drills`) so logout doesn't merge data
+ * across modes.
+ *
+ * Tests that need real server behavior (entitlements, webhook effects,
+ * session cookies, server-persisted drills) must call `POST /api/dev/login`
+ * on bridge-api (built with the `dev-tools` cargo feature). See
+ * `tests/e2e/helpers.ts:devLogin`. The `?e2e=1` query param routes the
+ * client through `DataPortClient` instead of `DevDataPort` for those flows.
  */
 export class DevDataPort implements DataPort {
   private readonly inner = new DataPortClient();
@@ -340,22 +377,64 @@ export class DevDataPort implements DataPort {
   }
 
   listDrills(): Promise<DrillDto[]> {
-    return this.inner.listDrills();
+    return Promise.resolve(readDevDrills());
   }
 
   createDrill(payload: DrillCreatePayload): Promise<DrillDto> {
-    return this.inner.createDrill(payload);
+    const now = new Date().toISOString();
+    const drill: DrillDto = {
+      id: payload.id ?? generateDevDrillId(),
+      name: payload.name,
+      moduleIds: payload.moduleIds,
+      practiceMode: payload.practiceMode,
+      practiceRole: payload.practiceRole,
+      systemSelectionId: payload.systemSelectionId,
+      opponentMode: payload.opponentMode,
+      playProfileId: payload.playProfileId,
+      vulnerabilityDistribution: payload.vulnerabilityDistribution,
+      showEducationalAnnotations: payload.showEducationalAnnotations,
+      createdAt: now,
+      updatedAt: now,
+      lastUsedAt: null,
+    };
+    writeDevDrills([...readDevDrills(), drill]);
+    return Promise.resolve(drill);
   }
 
   updateDrill(id: string, payload: DrillUpdatePayload): Promise<DrillDto> {
-    return this.inner.updateDrill(id, payload);
+    const drills = readDevDrills();
+    const existing = drills.find((d) => d.id === id);
+    if (!existing) return Promise.reject(new DrillNotFoundError());
+    const updated: DrillDto = {
+      ...existing,
+      name: payload.name,
+      moduleIds: payload.moduleIds,
+      practiceMode: payload.practiceMode,
+      practiceRole: payload.practiceRole,
+      systemSelectionId: payload.systemSelectionId,
+      opponentMode: payload.opponentMode,
+      playProfileId: payload.playProfileId,
+      vulnerabilityDistribution: payload.vulnerabilityDistribution,
+      showEducationalAnnotations: payload.showEducationalAnnotations,
+      updatedAt: new Date().toISOString(),
+    };
+    writeDevDrills(drills.map((d) => (d.id === id ? updated : d)));
+    return Promise.resolve(updated);
   }
 
   deleteDrill(id: string): Promise<void> {
-    return this.inner.deleteDrill(id);
+    const drills = readDevDrills();
+    if (!drills.some((d) => d.id === id)) return Promise.reject(new DrillNotFoundError());
+    writeDevDrills(drills.filter((d) => d.id !== id));
+    return Promise.resolve();
   }
 
   markDrillLaunched(id: string): Promise<DrillDto> {
-    return this.inner.markDrillLaunched(id);
+    const drills = readDevDrills();
+    const existing = drills.find((d) => d.id === id);
+    if (!existing) return Promise.reject(new DrillNotFoundError());
+    const updated: DrillDto = { ...existing, lastUsedAt: new Date().toISOString() };
+    writeDevDrills(drills.map((d) => (d.id === id ? updated : d)));
+    return Promise.resolve(updated);
   }
 }
