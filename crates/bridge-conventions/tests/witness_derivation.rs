@@ -227,7 +227,7 @@ fn enumerate_witnesses_negative_doubles_via_route_expr_does_not_panic() {
                 se.turn,
                 Some(bridge_conventions::types::rule_types::TurnRole::Responder)
             ) {
-                for s in &se.surfaces {
+                if let Some(s) = se.surfaces.first() {
                     return Some(s.meaning_id.clone());
                 }
             }
