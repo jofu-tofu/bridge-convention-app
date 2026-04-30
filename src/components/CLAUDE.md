@@ -97,11 +97,9 @@ components/
       DebugAtAGlance.svelte          Always-visible summary card (state, expected bid, grade, pipeline stats)
       DebugDealInfo.svelte           Convention, seed, dealer, vulnerability, phase
       DebugAllHands.svelte           Compact single-line-per-seat hand display with HCP
-      DebugConventionMachine.svelte  Machine state registers + collapsible history/transitions/diagnostics
       DebugHandFacts.svelte          Evaluated facts table
       DebugProvenance.svelte         Decision provenance with collapsible sub-sections
       DebugPipeline.svelte           Arbitration results with collapsible matched/eliminated/why-not
-      DebugPosterior.svelte          Posterior summary with collapsible fact values
       DebugSuggestedBid.svelte       Selected bid with metadata
       DebugTeaching.svelte           Bid grading feedback with collapsible alternatives
       DebugPublicBeliefs.svelte      Per-seat belief ranges with collapsible annotations
@@ -196,4 +194,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `AppReady.svelte` exists in `src/`. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-29 | version=30 | dir-commits-at-audit=319 | tree-sig=dirs:17,files:177,exts:svelte:108,ts:68,md:1 -->
+<!-- context-layer: generated=2026-02-21 | last-audited=2026-04-30 | version=31 | dir-commits-at-audit=319 | tree-sig=dirs:17,files:175,exts:svelte:106,ts:68,md:1 -->

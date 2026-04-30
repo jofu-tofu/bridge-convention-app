@@ -16,11 +16,9 @@
   import DebugAtAGlance from "./debug/DebugAtAGlance.svelte";
   import DebugDealInfo from "./debug/DebugDealInfo.svelte";
   import DebugAllHands from "./debug/DebugAllHands.svelte";
-  import DebugConventionMachine from "./debug/DebugConventionMachine.svelte";
   import DebugHandFacts from "./debug/DebugHandFacts.svelte";
   import DebugProvenance from "./debug/DebugProvenance.svelte";
   import DebugPipeline from "./debug/DebugPipeline.svelte";
-  import DebugPosterior from "./debug/DebugPosterior.svelte";
   import DebugSuggestedBid from "./debug/DebugSuggestedBid.svelte";
   import DebugTeaching from "./debug/DebugTeaching.svelte";
   import DebugPublicBeliefs from "./debug/DebugPublicBeliefs.svelte";
@@ -151,10 +149,8 @@
         <div class="pt-1 flex flex-col gap-0.5">
           <DebugSuggestedBid expectedBid={debugSnap?.expectedBid ?? null} />
           <DebugPipeline pipelineResult={debugSnap?.pipelineResult ?? null} teachingProjection={debugSnap?.teachingProjection ?? null} />
-          <DebugConventionMachine machineSnapshot={debugSnap?.machineSnapshot ?? null} />
           <DebugHandFacts facts={debugSnap?.facts ?? null} />
           <DebugProvenance pipelineResult={debugSnap?.pipelineResult ?? null} />
-          <DebugPosterior posteriorSummary={debugSnap?.posteriorSummary ?? null} />
         </div>
       </details>
     {/if}

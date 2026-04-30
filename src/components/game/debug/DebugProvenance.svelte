@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { PipelineResult } from "../../../service/debug-types";
-  import { formatCall, truncate } from "./debug-helpers";
+  import { formatCall } from "./debug-helpers";
   import DebugSection from "./DebugSection.svelte";
 
   interface Props {
@@ -60,17 +60,6 @@
       </DebugSection>
     {/if}
 
-    <!-- Ranking -->
-    {#if pr.arbitration.length > 0}
-      <DebugSection title="Ranking" count={pr.arbitration.length} nested>
-        {#each pr.arbitration as at, i (at.candidateId + ':' + i)}
-          <div class="text-[10px] leading-tight">
-            <span class={at.truthSetMember ? "text-green-300" : "text-text-muted"}>{truncate(at.candidateId ?? "", 30)}</span>
-            <span class="text-text-muted ml-0.5">band:{at.rankingInputs?.recommendationBand ?? "—"} spec:{at.rankingInputs?.specificity ?? "—"} mod:{at.rankingInputs?.modulePrecedence ?? "—"}</span>
-          </div>
-        {/each}
-      </DebugSection>
-    {/if}
   {:else}
     <div class="text-text-muted italic text-[10px]">No provenance data</div>
   {/if}

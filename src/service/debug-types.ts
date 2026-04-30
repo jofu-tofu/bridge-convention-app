@@ -9,7 +9,7 @@
  */
 
 import type { Call, Seat } from "../engine/types";
-import type { BidResult, PosteriorSummary, TeachingProjection } from "./session-types";
+import type { BidResult, TeachingProjection } from "./session-types";
 
 // ── Debug-only backend types ────────────────────────────────────────
 //
@@ -49,28 +49,6 @@ export interface PipelineResult {
     readonly matchedCount?: number;
     readonly eliminatedCount?: number;
   };
-  readonly activation: readonly { readonly moduleId: string; readonly meaningId: string; readonly phase?: string }[];
-  readonly arbitration: readonly { readonly candidateId?: string; readonly meaningId?: string; readonly moduleId?: string; readonly truthSetMember?: boolean; readonly rankingInputs?: { readonly recommendationBand: string; readonly specificity: number; readonly modulePrecedence: number } }[];
-  readonly handoffs: readonly { readonly meaningId?: string; readonly fromModuleId?: string; readonly toModuleId?: string; readonly reason?: string }[];
-}
-
-/** Convention machine / FSM debug snapshot. */
-export interface MachineDebugSnapshot {
-  readonly currentStateId: string;
-  readonly activeSurfaceGroupIds: readonly string[];
-  readonly registers: {
-    readonly forcingState?: string;
-    readonly obligation?: { readonly kind?: string; readonly obligatedSide?: string };
-    readonly agreedStrain?: { readonly type?: string; readonly suit?: string; readonly confidence?: string };
-    readonly competitionMode?: string;
-    readonly captain?: string;
-    readonly systemCapabilities?: Record<string, unknown>;
-  };
-  readonly stateHistory: readonly string[];
-  readonly transitionHistory: readonly string[];
-  readonly submachineStack: readonly { readonly parentMachineId: string; readonly returnStateId: string }[];
-  readonly diagnostics: readonly { readonly level: string; readonly message: string; readonly moduleId?: string }[];
-  readonly handoffTraces: readonly { readonly fromModuleId: string; readonly toModuleId: string; readonly reason: string }[];
 }
 
 /** Evaluated hand/deal facts. */
@@ -96,11 +74,8 @@ export interface StrategyEvaluation {
   readonly practicalRecommendation?: { readonly call: Call; readonly reason: string; readonly confidence: number } | null;
   readonly surfaceGroups?: readonly { readonly id: string; readonly label: string; readonly members: readonly string[] }[] | null;
   readonly pipelineResult?: PipelineResult | null;
-  readonly posteriorSummary?: PosteriorSummary | null;
-  readonly explanationCatalog?: Record<string, unknown> | null;
   readonly teachingProjection?: TeachingProjection | null;
   readonly facts?: EvaluatedFacts | null;
-  readonly machineSnapshot?: MachineDebugSnapshot | null;
   readonly auctionContext?: Record<string, unknown> | null;
 }
 

@@ -150,5 +150,5 @@ export { AuthRequiredError, SubscriptionRequiredError } from "./billing";
 export type { BillingPlan, DataPortBilling } from "./billing";
 
 // ── Debug-only types — import from service/debug-types instead ──
-// StrategyEvaluation, BidFeedbackDTO, EvaluatedFacts, PipelineResult, MachineDebugSnapshot
-// are routed through debug-types.ts (not this barrel) to keep the production API surface clean.
+// StrategyEvaluation, BidFeedbackDTO, EvaluatedFacts, PipelineResult are routed
+// through debug-types.ts (not this barrel) to keep the production API surface clean.

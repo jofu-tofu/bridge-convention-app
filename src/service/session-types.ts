@@ -14,7 +14,6 @@ import type { Call, Card, DealConstraints, Deal, Auction, Hand, HandEvaluation }
 
 export enum ConventionCategory {
   Asking = "Asking",
-  Defensive = "Defensive",
   Constructive = "Constructive",
   Competitive = "Competitive",
 }

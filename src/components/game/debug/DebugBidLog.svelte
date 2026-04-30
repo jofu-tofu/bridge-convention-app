@@ -33,12 +33,6 @@
           {#if entry.snapshot?.expectedBid?.meaning}
             <div class="text-text-muted">meaning: <span class="text-yellow-300">{entry.snapshot.expectedBid.meaning}</span></div>
           {/if}
-          {#if entry.snapshot?.machineSnapshot}
-            <div class="text-text-muted">
-              state: <span class="text-cyan-300">{entry.snapshot.machineSnapshot.currentStateId}</span>
-              {#if entry.snapshot.machineSnapshot.registers}| forcing: <span class="text-text-primary">{entry.snapshot.machineSnapshot.registers.forcingState}</span>{/if}
-            </div>
-          {/if}
           {#if entry.feedback?.teachingResolution}
             {@const tr = entry.feedback.teachingResolution}
             {#if tr.acceptableBids.length > 0}

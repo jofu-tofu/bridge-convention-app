@@ -16,16 +16,9 @@
 </script>
 
 <div class="rounded border border-border-subtle/40 bg-bg-card/60 px-2.5 py-2 text-xs space-y-1.5">
-  <!-- Row 1: Phase + Machine State -->
+  <!-- Row 1: Phase -->
   <div class="flex items-center gap-2 flex-wrap">
     <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide bg-blue-900/50 text-blue-300">{phase}</span>
-    {#if snapshot?.machineSnapshot}
-      <span class="text-text-muted">state:</span>
-      <span class="text-cyan-300 font-mono font-bold">{snapshot.machineSnapshot.currentStateId}</span>
-      {#if snapshot.machineSnapshot.registers?.forcingState && snapshot.machineSnapshot.registers.forcingState !== "nonforcing"}
-        <span class="text-[10px] px-1 rounded {snapshot.machineSnapshot.registers.forcingState === 'game-forcing' ? 'bg-red-900/40 text-red-300' : 'bg-yellow-900/40 text-yellow-300'}">{snapshot.machineSnapshot.registers.forcingState}</span>
-      {/if}
-    {/if}
   </div>
 
   <!-- Row 2: Recommended Bid -->
@@ -51,9 +44,6 @@
       <span><span class="text-green-400 font-semibold">{pr.truthSet.length}</span> matched</span>
       <span><span class="text-text-secondary font-semibold">{pr.acceptableSet.length}</span> other</span>
       <span><span class="text-red-400/70 font-semibold">{pr.eliminated.length}</span> eliminated</span>
-      {#if snapshot.posteriorSummary}
-        <span><span class="text-text-secondary font-semibold">{snapshot.posteriorSummary.sampleCount}</span> samples</span>
-      {/if}
     </div>
   {/if}
 
