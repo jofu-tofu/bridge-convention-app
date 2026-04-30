@@ -22,9 +22,10 @@ Read the narrowest context that matches the task before editing:
 
 | Command                                          | Purpose                                                  |
 | ------------------------------------------------ | -------------------------------------------------------- |
-| `npm run dev`                                    | Build WASM (if needed) + start dev server (port 1420)    |
+| `npm run dev`                                    | Build WASM (if needed) + ensure learn data + start dev server (port 1420) |
 | `npm run build`                                  | Build WASM + SvelteKit production build (includes prerendered SEO pages) |
-| `npm run static:extract`                         | Build bridge-static binary + extract learn JSON to `.generated/learn-data.json` (run before vite build) |
+| `npm run static:extract`                         | Force-rebuild bridge-static binary + extract learn JSON to `.generated/learn-data.json` |
+| `npm run static:ensure`                          | Re-run extract only when fixtures or relevant Rust sources are newer than the cached JSON |
 | `npm run wasm:build`                             | Build WASM (release)                                     |
 | `npm run wasm:dev`                               | Build WASM (debug, faster)                               |
 | `npm run check`                                  | Svelte type-check                                        |
