@@ -26,13 +26,19 @@ export interface ReferenceSummaryCardPeer {
   readonly discriminatorLabel: string;
 }
 
+export interface ReferenceSummaryCardStyleVariant {
+  readonly name: string;
+  readonly description: string;
+}
+
 export interface ReferenceSummaryCard {
   readonly trigger: string;
   readonly bid: ReferenceBid;
   readonly promises: string;
   readonly denies: string;
   readonly guidingIdea: string;
-  readonly partnership: string;
+  readonly agreementNote: string;
+  readonly styleVariants: readonly ReferenceSummaryCardStyleVariant[];
   readonly peers: readonly ReferenceSummaryCardPeer[];
 }
 

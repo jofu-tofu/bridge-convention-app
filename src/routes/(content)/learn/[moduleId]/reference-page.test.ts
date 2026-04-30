@@ -17,7 +17,7 @@ describe("reference-page helpers", () => {
         promises: "At least one 4-card major.",
         denies: "A natural club suit.",
         guidingIdea: "Ask first, then place the contract.",
-        partnership: "Core agreement.",
+        agreementNote: "Core agreement.",
       },
       whenToUse: [],
       whenNotToUse: [],

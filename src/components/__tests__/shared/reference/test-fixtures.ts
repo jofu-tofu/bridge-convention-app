@@ -18,7 +18,8 @@ export const summaryCardFixture: ReferenceSummaryCard = {
   denies: "A hand that is better handled by a direct transfer.",
   guidingIdea:
     "Use Stayman to uncover a 4-4 major fit before settling in notrump.",
-  partnership: "Confirm variants before using over interference.",
+  agreementNote: "Confirm variants before using over interference.",
+  styleVariants: [],
   peers: [],
 };
 

@@ -86,6 +86,11 @@ interface RouteSummaryCardPeer {
   discriminatorLabel: string;
 }
 
+interface RouteSummaryCardStyleVariant {
+  name: string;
+  description: string;
+}
+
 interface RouteReferenceView {
   summaryCard: {
     trigger: string;
@@ -93,7 +98,8 @@ interface RouteReferenceView {
     promises: string;
     denies: string;
     guidingIdea: string;
-    partnership: string;
+    agreementNote: string;
+    styleVariants?: readonly RouteSummaryCardStyleVariant[];
     peers?: readonly RouteSummaryCardPeer[];
   };
   whenToUse: ReferenceView["whenToUse"];
@@ -132,6 +138,12 @@ export function normalizeReferenceView(
     summaryCard: {
       ...reference.summaryCard,
       bid: normalizeBid(reference.summaryCard.bid),
+      styleVariants: (reference.summaryCard.styleVariants ?? []).map(
+        (variant) => ({
+          name: variant.name,
+          description: variant.description,
+        }),
+      ),
       peers: (reference.summaryCard.peers ?? []).map((peer) => ({
         meaningId: peer.meaningId,
         call: normalizeBid(peer.call),

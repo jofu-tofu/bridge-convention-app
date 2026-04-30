@@ -4,7 +4,7 @@
   "category": "competitive",
   "defaultRole": "opener",
   "fixtureVersion": 1,
-  "description": "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns. VARIANT: this fixture encodes the modern DONT variant where 2S is a natural single-suit spade overcall as a direct overcall, and module.dont.singleSuited explicitly excludes spades. The original Bergen version treats spades as a single-suit type revealed via takeout double (a reveal-spades-2S surface under wait-reveal). Verify runs that anchor on the original Bergen authority will flag a missing reveal-spades-2S surface — this is intentional. See fixtures/modules/dont.variant-notes.md for details.",
+  "description": "Disturb Opponents' No Trump with 2-level overcalls showing specific suit patterns. Direct 2♠ is a natural one-suiter; double relays to 2♣ to start a one-suit show, and 2♣/2♦/2♥ each name the bid suit plus a higher one.",
   "purpose": "Compete against an opponent's 1NT opening by describing your distribution cheaply, letting partner judge fit and level",
   "scopeNote": "Encodes the modern DONT variant used at Karen Walker's page: direct `2S` is a natural spade one-suiter, `module.dont.singleSuited` excludes spades, and there is no `reveal-spades-2S` surface under `wait-reveal`. The natural `2S` branch authors advancer's mild `3S` raise and `2NT` game-invite ask over the known spade suit. The original Bergen DONT treats spades as a hidden one-suiter behind double-then-relay; that variant is intentionally excluded. Full monster-reveal (`2NT` relay) coverage and the spade-reveal branch after double-then-relay are out of scope; the `5+` natural-suit-thresholds are authored at `6+` as a house call rather than a literal authority quote.",
   "references": {

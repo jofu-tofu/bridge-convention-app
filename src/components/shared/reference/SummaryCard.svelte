@@ -6,6 +6,7 @@
     ReferenceBid,
     ReferenceSummaryCard,
     ReferenceSummaryCardPeer,
+    ReferenceSummaryCardStyleVariant,
   } from "./types";
 
   interface Props {
@@ -75,8 +76,12 @@
   const heroLines = $derived([
     { label: "Trigger", value: summaryCard.trigger },
     { label: "Guiding idea", value: summaryCard.guidingIdea },
-    { label: "Partnership", value: summaryCard.partnership },
+    { label: "Agreement note", value: summaryCard.agreementNote },
   ]);
+
+  const styleVariants = $derived<readonly ReferenceSummaryCardStyleVariant[]>(
+    summaryCard.styleVariants ?? [],
+  );
 </script>
 
 <section
@@ -106,6 +111,30 @@
       {/if}
     {/each}
   </dl>
+
+  {#if styleVariants.length > 0}
+    <section
+      class="style-variants mt-3 rounded-[--radius-md] border border-border-subtle bg-bg-card/40 p-3"
+      aria-label="Style variants"
+      data-testid="summary-style-variants"
+    >
+      <h3 class="mb-2 text-[--text-label] font-semibold uppercase tracking-[0.12em] text-text-muted">
+        Style variants
+      </h3>
+      <dl class="grid gap-2">
+        {#each styleVariants as variant (variant.name)}
+          <div class="grid gap-1">
+            <dt class="text-[--text-body] font-semibold text-text-primary">
+              {variant.name}
+            </dt>
+            <dd class="min-w-0 break-words text-[--text-body] leading-6 text-text-primary">
+              {variant.description}
+            </dd>
+          </div>
+        {/each}
+      </dl>
+    </section>
+  {/if}
 
   <div
     class="bids-grid mt-4 grid gap-3"

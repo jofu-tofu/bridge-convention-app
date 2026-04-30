@@ -167,14 +167,112 @@ pub struct ModuleBundleMetadata {
 /// discriminator label. The top-level `defining_meaning_id` must be one of the
 /// peers (canonical hero within the peer set). When absent, the reference page
 /// renders the traditional hero layout.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+///
+/// `agreement_note` is the canonical short partnership-agreement reminder
+/// (≤ 120 chars). `style_variants` is an optional list of named style
+/// alternatives (e.g. "Constructive" vs "Garbage") with brief descriptions —
+/// each name ≤ 40 chars, each description ≤ 200 chars.
+#[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ModuleReferenceSummaryCard {
     pub trigger: String,
     pub defining_meaning_id: String,
-    pub partnership: String,
+    pub agreement_note: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub style_variants: Vec<ModuleReferenceStyleVariant>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub peers: Vec<AuthoredSummaryCardPeer>,
+}
+
+impl<'de> Deserialize<'de> for ModuleReferenceSummaryCard {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Raw {
+            trigger: String,
+            defining_meaning_id: String,
+            agreement_note: String,
+            #[serde(default)]
+            style_variants: Vec<ModuleReferenceStyleVariant>,
+            #[serde(default)]
+            peers: Vec<AuthoredSummaryCardPeer>,
+        }
+
+        let raw = Raw::deserialize(d)?;
+
+        if raw.agreement_note.trim().is_empty() {
+            return Err(D::Error::custom(
+                "summaryCard.agreementNote must be non-empty",
+            ));
+        }
+        if raw.agreement_note.chars().count() > 120 {
+            return Err(D::Error::custom(format!(
+                "summaryCard.agreementNote must be ≤ 120 characters, got {}",
+                raw.agreement_note.chars().count()
+            )));
+        }
+
+        Ok(ModuleReferenceSummaryCard {
+            trigger: raw.trigger,
+            defining_meaning_id: raw.defining_meaning_id,
+            agreement_note: raw.agreement_note,
+            style_variants: raw.style_variants,
+            peers: raw.peers,
+        })
+    }
+}
+
+/// One named style variant of a convention's partnership agreement (e.g.
+/// "Constructive" vs "Garbage" Stayman). Authored only when a convention has
+/// distinct, named style choices the partnership must agree on.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModuleReferenceStyleVariant {
+    pub name: String,
+    pub description: String,
+}
+
+impl<'de> Deserialize<'de> for ModuleReferenceStyleVariant {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase", deny_unknown_fields)]
+        struct Raw {
+            name: String,
+            description: String,
+        }
+
+        let raw = Raw::deserialize(d)?;
+        if raw.name.trim().is_empty() {
+            return Err(D::Error::custom(
+                "summaryCard.styleVariants[].name must be non-empty",
+            ));
+        }
+        if raw.name.chars().count() > 40 {
+            return Err(D::Error::custom(format!(
+                "summaryCard.styleVariants[].name must be ≤ 40 characters, got {}",
+                raw.name.chars().count()
+            )));
+        }
+        if raw.description.trim().is_empty() {
+            return Err(D::Error::custom(
+                "summaryCard.styleVariants[].description must be non-empty",
+            ));
+        }
+        if raw.description.chars().count() > 200 {
+            return Err(D::Error::custom(format!(
+                "summaryCard.styleVariants[].description must be ≤ 200 characters, got {}",
+                raw.description.chars().count()
+            )));
+        }
+        Ok(ModuleReferenceStyleVariant {
+            name: raw.name,
+            description: raw.description,
+        })
+    }
 }
 
 /// One authored peer entry inside `ModuleReferenceSummaryCard.peers`.
@@ -190,20 +288,86 @@ pub struct AuthoredSummaryCardPeer {
 }
 
 /// Typed bullet for the authored positive-space usage list.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+///
+/// `gloss` is a short reader-facing bullet (non-empty, ≤ 140 chars).
+#[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PredicateBullet {
     pub predicate: FactComposition,
     pub gloss: String,
 }
 
+impl<'de> Deserialize<'de> for PredicateBullet {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Raw {
+            predicate: FactComposition,
+            gloss: String,
+        }
+
+        let raw = Raw::deserialize(d)?;
+        if raw.gloss.trim().is_empty() {
+            return Err(D::Error::custom(
+                "whenToUse[].gloss must be non-empty",
+            ));
+        }
+        if raw.gloss.chars().count() > 140 {
+            return Err(D::Error::custom(format!(
+                "whenToUse[].gloss must be ≤ 140 characters, got {}",
+                raw.gloss.chars().count()
+            )));
+        }
+        Ok(PredicateBullet {
+            predicate: raw.predicate,
+            gloss: raw.gloss,
+        })
+    }
+}
+
 /// One call inside an annotated worked auction.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+///
+/// `rationale` is a one-line reason (non-empty, ≤ 140 chars).
+#[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ModuleReferenceWorkedAuctionCall {
     pub seat: String,
     pub call: Call,
     pub rationale: String,
+}
+
+impl<'de> Deserialize<'de> for ModuleReferenceWorkedAuctionCall {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        use serde::de::Error;
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Raw {
+            seat: String,
+            call: Call,
+            rationale: String,
+        }
+
+        let raw = Raw::deserialize(d)?;
+        if raw.rationale.trim().is_empty() {
+            return Err(D::Error::custom(
+                "workedAuctions[].calls[].rationale must be non-empty",
+            ));
+        }
+        if raw.rationale.chars().count() > 140 {
+            return Err(D::Error::custom(format!(
+                "workedAuctions[].calls[].rationale must be ≤ 140 characters, got {}",
+                raw.rationale.chars().count()
+            )));
+        }
+        Ok(ModuleReferenceWorkedAuctionCall {
+            seat: raw.seat,
+            call: raw.call,
+            rationale: raw.rationale,
+        })
+    }
 }
 
 /// Worked-auction discriminator. Defaults to `positive` for existing fixtures.
@@ -800,7 +964,7 @@ mod tests {
             reference.summary_card.defining_meaning_id,
             "stayman:ask-major"
         );
-        assert!(!reference.summary_card.partnership.is_empty());
+        assert!(!reference.summary_card.agreement_note.is_empty());
 
         assert!(
             reference.when_to_use.len() >= 2,

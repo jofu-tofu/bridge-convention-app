@@ -1501,7 +1501,7 @@
               "clauseId": "system.opener.reverseValues:boolean:true",
               "description": "Reverse-strength opener values",
               "isPublic": true,
-              "rationale": "SAYC booklet: 'Reverse in a new suit, i.e., bid a new suit at the two level which is higher ranking than the opening suit; ... With a medium hand (16-18 points)'. The reverse threshold is system-driven via system.opener.reverseValues."
+              "rationale": "SAYC booklet: 'Reverse in a new suit, i.e., bid a new suit at the two level which is higher ranking than the opening suit; ... With a medium hand (16-18 points)'."
             },
             {
               "factId": "module.natural.reverseShapeClubsSpades",
@@ -1549,7 +1549,7 @@
               "clauseId": "system.opener.reverseValues:boolean:true",
               "description": "Reverse-strength opener values",
               "isPublic": true,
-              "rationale": "SAYC booklet: 'Reverse in a new suit, i.e., bid a new suit at the two level which is higher ranking than the opening suit; ... With a medium hand (16-18 points)'. The reverse threshold is system-driven via system.opener.reverseValues."
+              "rationale": "SAYC booklet: 'Reverse in a new suit, i.e., bid a new suit at the two level which is higher ranking than the opening suit; ... With a medium hand (16-18 points)'."
             },
             {
               "factId": "module.natural.reverseShapeDiamondsSpades",
@@ -1597,7 +1597,7 @@
               "clauseId": "system.opener.jumpShiftValues:boolean:true",
               "description": "Jump-shift-strength opener values",
               "isPublic": true,
-              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.' The jump-shift threshold is system-driven via system.opener.jumpShiftValues."
+              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.'"
             },
             {
               "factId": "hand.suitLength.clubs",
@@ -1645,7 +1645,7 @@
               "clauseId": "system.opener.jumpShiftValues:boolean:true",
               "description": "Jump-shift-strength opener values",
               "isPublic": true,
-              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.' The jump-shift threshold is system-driven via system.opener.jumpShiftValues."
+              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.'"
             },
             {
               "factId": "hand.suitLength.diamonds",
@@ -1693,7 +1693,7 @@
               "clauseId": "system.opener.jumpShiftValues:boolean:true",
               "description": "Jump-shift-strength opener values",
               "isPublic": true,
-              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.' The jump-shift threshold is system-driven via system.opener.jumpShiftValues."
+              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.'"
             },
             {
               "factId": "hand.suitLength.spades",
@@ -2198,7 +2198,7 @@
               "clauseId": "system.opener.reverseValues:boolean:true",
               "description": "Reverse-strength opener values",
               "isPublic": true,
-              "rationale": "SAYC booklet: 'Reverse in a new suit, i.e., bid a new suit at the two level which is higher ranking than the opening suit; ... With a medium hand (16-18 points)'. The reverse threshold is system-driven via system.opener.reverseValues."
+              "rationale": "SAYC booklet: 'Reverse in a new suit, i.e., bid a new suit at the two level which is higher ranking than the opening suit; ... With a medium hand (16-18 points)'."
             },
             {
               "factId": "module.natural.reverseShapeDiamondsHearts",
@@ -2246,7 +2246,7 @@
               "clauseId": "system.opener.jumpShiftValues:boolean:true",
               "description": "Jump-shift-strength opener values",
               "isPublic": true,
-              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.' The jump-shift threshold is system-driven via system.opener.jumpShiftValues."
+              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.'"
             },
             {
               "factId": "hand.suitLength.clubs",
@@ -2294,7 +2294,7 @@
               "clauseId": "system.opener.jumpShiftValues:boolean:true",
               "description": "Jump-shift-strength opener values",
               "isPublic": true,
-              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.' The jump-shift threshold is system-driven via system.opener.jumpShiftValues."
+              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.'"
             },
             {
               "factId": "hand.suitLength.diamonds",
@@ -2342,7 +2342,7 @@
               "clauseId": "system.opener.jumpShiftValues:boolean:true",
               "description": "Jump-shift-strength opener values",
               "isPublic": true,
-              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.' The jump-shift threshold is system-driven via system.opener.jumpShiftValues."
+              "rationale": "SAYC booklet: 'With a maximum hand (19-21 or 22 points) opener must make a very strong rebid: ... Jump shift in a new suit.'"
             },
             {
               "factId": "hand.suitLength.hearts",

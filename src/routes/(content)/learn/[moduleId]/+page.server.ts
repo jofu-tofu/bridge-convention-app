@@ -57,13 +57,19 @@ interface SummaryCardPeer {
   discriminatorLabel: string;
 }
 
+interface SummaryCardStyleVariant {
+  name: string;
+  description: string;
+}
+
 interface SummaryCard {
   trigger: string;
   bid: Call;
   promises: string;
   denies: string;
   guidingIdea: string;
-  partnership: string;
+  agreementNote: string;
+  styleVariants?: SummaryCardStyleVariant[];
   peers?: SummaryCardPeer[];
 }
 

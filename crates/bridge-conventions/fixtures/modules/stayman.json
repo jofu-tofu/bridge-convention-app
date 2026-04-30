@@ -2715,7 +2715,7 @@
     "summaryCard": {
       "trigger": "Partner opens one notrump, you respond",
       "definingMeaningId": "stayman:ask-major",
-      "partnership": "Common agreement."
+      "agreementNote": "Common agreement."
     },
     "whenToUse": [
       {
@@ -2835,7 +2835,7 @@
             }
           ]
         },
-        "gloss": "Use regular Stayman with invitational or better values when you need the follow-up structure and are not the flat four-three-three-three one-major exception."
+        "gloss": "Use regular Stayman with invitational or better values when you need the full follow-up structure."
       },
       {
         "predicate": {

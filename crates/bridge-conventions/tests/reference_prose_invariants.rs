@@ -15,10 +15,17 @@ fn digits_allowed(path: &str) -> bool {
 }
 
 fn machine_field(path: &str) -> bool {
+    // Whole authored predicate trees are machine-shaped — every nested
+    // description inside them may legitimately reference HCP / level numbers.
+    // We DO want to lint `reference.interference.reason` (free authored prose)
+    // even though it shares the `reason` key name, so this exemption only
+    // matches the FactComposition body NESTED under a `reason` key
+    // (`.reason.*`), not the top-level `reference.interference.reason` leaf.
+    let nested_reason_field = path.contains(".reason.") || path.ends_with(".reason[]");
     path == "reference.summaryCard.definingMeaningId"
         || (path.contains(".relatedLinks[") && path.ends_with("].moduleId"))
         || path.contains(".predicate")
-        || path.contains(".reason")
+        || nested_reason_field
         || path == "reference.quickReference.axis.fact"
         || path == "reference.quickReference.rowAxis.fact"
         || path == "reference.quickReference.colAxis.fact"
@@ -188,15 +195,17 @@ fn authored_reference_block_does_not_author_when_not_to_use() {
 }
 
 /// `reference.summaryCard` is authored as `{ trigger, definingMeaningId,
-/// partnership }` (+ optional `peers`, optional `guidingIdea` override). All
-/// other fields — `bid`, `promises`, `denies` — are derived from the defining
-/// meaning. Extra authored keys open a drift channel with the rule data.
+/// agreementNote }` (+ optional `styleVariants`, optional `peers`, optional
+/// `guidingIdea` override). All other fields — `bid`, `promises`, `denies` —
+/// are derived from the defining meaning. Extra authored keys open a drift
+/// channel with the rule data.
 #[test]
 fn authored_summary_card_only_contains_expected_keys() {
     const ALLOWED: &[&str] = &[
         "trigger",
         "definingMeaningId",
-        "partnership",
+        "agreementNote",
+        "styleVariants",
         "peers",
         "guidingIdea",
     ];

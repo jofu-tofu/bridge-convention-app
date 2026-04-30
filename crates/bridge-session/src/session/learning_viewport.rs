@@ -41,8 +41,8 @@ use super::learning_types::{
     ModuleLearningViewport, PhaseGroupView, ReferencePredicateBullet, ReferenceView, RelatedLink,
     RelevantMetric, ResolvedAxis, ResolvedCell, ResolvedCellKind, ResolvedInterference,
     ResolvedQuickReference, ResolvedQuickReferenceListItem, ServiceTeachingLabel, SummaryCard,
-    SummaryCardPeer, SurfaceDetailView, WhenNotItem, WorkedAuction, WorkedAuctionCall,
-    WorkedAuctionKind,
+    SummaryCardPeer, SummaryCardStyleVariant, SurfaceDetailView, WhenNotItem, WorkedAuction,
+    WorkedAuctionCall, WorkedAuctionKind,
 };
 use super::response_table::build_response_table;
 
@@ -245,7 +245,15 @@ fn build_reference_view(module: &ConventionModule, system: BaseSystemId) -> Refe
 fn build_summary_card(module: &ConventionModule, reference: &ModuleReference) -> SummaryCard {
     let sc = &reference.summary_card;
     let trigger = format_bid_references(&sc.trigger);
-    let partnership = format_bid_references(&sc.partnership);
+    let agreement_note = format_bid_references(&sc.agreement_note);
+    let style_variants: Vec<SummaryCardStyleVariant> = sc
+        .style_variants
+        .iter()
+        .map(|v| SummaryCardStyleVariant {
+            name: format_bid_references(&v.name),
+            description: format_bid_references(&v.description),
+        })
+        .collect();
     let guiding_idea = {
         let s = module.teaching.principle.as_str();
         if s.is_empty() {
@@ -300,7 +308,8 @@ fn build_summary_card(module: &ConventionModule, reference: &ModuleReference) ->
                 promises,
                 denies,
                 guiding_idea,
-                partnership,
+                agreement_note,
+                style_variants,
                 peers,
             }
         }
@@ -322,7 +331,8 @@ fn build_summary_card(module: &ConventionModule, reference: &ModuleReference) ->
                 promises: String::new(),
                 denies: String::new(),
                 guiding_idea,
-                partnership,
+                agreement_note,
+                style_variants,
                 peers,
             }
         }
@@ -1326,7 +1336,8 @@ mod tests {
                 summary_card: ModuleReferenceSummaryCard {
                     trigger: "t".to_string(),
                     defining_meaning_id: "absent:surface".to_string(),
-                    partnership: "p".to_string(),
+                    agreement_note: "p".to_string(),
+                    style_variants: Vec::new(),
                     peers: Vec::new(),
                 },
                 when_to_use: Vec::new(),
@@ -1440,7 +1451,8 @@ mod tests {
                 summary_card: ModuleReferenceSummaryCard {
                     trigger: "t".to_string(),
                     defining_meaning_id: "absent:surface".to_string(),
-                    partnership: "p".to_string(),
+                    agreement_note: "p".to_string(),
+                    style_variants: Vec::new(),
                     peers: Vec::new(),
                 },
                 when_to_use: Vec::new(),

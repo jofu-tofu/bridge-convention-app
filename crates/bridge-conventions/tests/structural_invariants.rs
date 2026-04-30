@@ -997,8 +997,10 @@ fn reference_blocks_are_well_formed() {
         if sc.trigger.is_empty() {
             failures.push(format!("  {filename}: summary_card.trigger is empty"));
         }
-        if sc.partnership.is_empty() {
-            failures.push(format!("  {filename}: summary_card.partnership is empty"));
+        if sc.agreement_note.is_empty() {
+            failures.push(format!(
+                "  {filename}: summary_card.agreement_note is empty"
+            ));
         }
         if sc.defining_meaning_id.is_empty() {
             failures.push(format!(

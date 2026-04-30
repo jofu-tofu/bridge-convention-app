@@ -58,11 +58,23 @@ pub struct SummaryCard {
     pub promises: String,
     pub denies: String,
     pub guiding_idea: String,
-    pub partnership: String,
+    /// Canonical short partnership-agreement reminder.
+    pub agreement_note: String,
+    /// Optional named style alternatives (e.g. "Constructive" vs "Garbage").
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub style_variants: Vec<SummaryCardStyleVariant>,
     /// Derived peer bids for peer-structured conventions. Empty for
     /// hierarchical conventions (Stayman, Puppet Stayman, Strong 2C).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub peers: Vec<SummaryCardPeer>,
+}
+
+/// Resolved-view shape of a single named style variant.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SummaryCardStyleVariant {
+    pub name: String,
+    pub description: String,
 }
 
 /// One derived peer entry on the summary-card viewport. Derived from the
