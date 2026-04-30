@@ -11,7 +11,7 @@
   let authModal = $state<ReturnType<typeof AuthModal>>();
 </script>
 
-<AppScreen width="form" title="Settings" subtitle="Account and subscription. Practice and drill defaults live on the /practice screen.">
+<AppScreen width="form" title="Settings" subtitle="Account and subscription. Practice and drill defaults live on the practice screen.">
   <div class="space-y-3">
     <CardSurface as="section" class="p-4" testId="account-section">
       <h2 class="text-sm font-semibold text-text-primary mb-3">Account</h2>

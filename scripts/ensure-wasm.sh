@@ -10,6 +10,9 @@ if [ ! -f "$PKG_DIR/bridge_wasm.js" ]; then
 elif ! grep -q "get_expected_bid" "$PKG_DIR/bridge_wasm.js"; then
   echo "[wasm] pkg/ missing dev-only bindings, rebuilding dev WASM..."
   needs_build=true
+elif [ -n "$(find crates -name target -prune -o -type f \( -name '*.rs' -o -name 'Cargo.toml' -o -name 'Cargo.lock' \) -newer "$PKG_DIR/bridge_wasm_bg.wasm" -print -quit)" ]; then
+  echo "[wasm] Rust sources newer than pkg/, rebuilding dev WASM..."
+  needs_build=true
 fi
 
 if [ "$needs_build" = true ]; then

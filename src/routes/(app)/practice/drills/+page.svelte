@@ -234,12 +234,9 @@
   {#if drills.length === 0 && !showLoadError}
     <div class="rounded-[--radius-xl] border border-dashed border-border-subtle px-6 py-16 text-center">
       <p class="text-base text-text-primary">No saved drills yet</p>
-      <a
-        href="/practice/drills/new"
-        class="mt-4 inline-flex items-center rounded-[--radius-md] border border-border-subtle px-3 py-1.5 text-sm font-medium text-text-primary no-underline hover:border-border-default"
-      >
-        Create new
-      </a>
+      <p class="mt-2 text-sm text-text-secondary">
+        Use <span class="font-medium text-text-primary">Create new</span> above to build a reusable practice setup — pick conventions, role, and system once, then launch it any time.
+      </p>
     </div>
   {:else}
     <div class="space-y-3">
