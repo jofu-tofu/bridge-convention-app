@@ -90,9 +90,10 @@ components/
     AnalysisPanel.svelte             DDS analysis: makeable table + actual-vs-optimal + par score
     DecisionTree.svelte              Interactive expand/collapse tree with depth modes (compact/study/learn) for progressive teaching disclosure
     DeclarerPrompt.svelte            Declarer/defender choice buttons (used by DeclarerPromptPhase)
-    DebugDrawer.svelte               Full-lifecycle debug overlay (dev only) — groups sections into Context / Decision Pipeline / Feedback & History
+    DebugDrawer.svelte               Full-lifecycle debug overlay (dev only) — groups sections into Dev Actions / Context / Decision Pipeline / Feedback & History. Accepts `onNewDeal` / `onBackToMenu` callbacks forwarded to `DebugDevActions`.
     debug/
       DebugSection.svelte            Reusable collapsible section with count badges, inline preview, nested support
+      DebugDevActions.svelte         Phase-aware shortcut buttons (dev only). Layout: one action per row — fixed-width button + plain-language summary; every button has a `title=` tooltip with the precise effect, and the panel-level "Show details" toggle expands each row to surface non-obvious behavior (auto-bid fallbacks, seat swaps, that auto-play uses first-legal-play not DDS, persistence of toggles). Routes: BIDDING → `gameStore.skipToPhase()` for finish/skip variants, single-bid actions go through `userBid`. DECLARER_PROMPT → `acceptPrompt`/`declinePrompt`. PLAYING → `autoPlayHand` (full play log, no animation), `restartPlay`, `skipToReview` (re-labeled "Abandon hand" since it drops mid-trick). EXPLANATION → forwarded `onNewDeal`/`onBackToMenu` callbacks plus `playThisHand`. Toggles row drives `appStore.autoplay` and `appStore.autoDismissFeedback` (both persist; on/off state shown in label). All actions disable while `gameStore.isProcessing`; a small "Busy — actions disabled…" hint renders during transitions.
       DebugAtAGlance.svelte          Always-visible summary card (state, expected bid, grade, pipeline stats)
       DebugDealInfo.svelte           Convention, seed, dealer, vulnerability, phase
       DebugAllHands.svelte           Compact single-line-per-seat hand display with HCP

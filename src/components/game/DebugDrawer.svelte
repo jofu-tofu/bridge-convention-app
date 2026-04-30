@@ -12,6 +12,7 @@
   import { getGameStore, getAppStore } from "../../stores/context";
   import type { DebugSnapshot, DebugBidFeedback } from "../../stores/game.svelte";
 
+  import DebugDevActions from "./debug/DebugDevActions.svelte";
   import DebugAtAGlance from "./debug/DebugAtAGlance.svelte";
   import DebugDealInfo from "./debug/DebugDealInfo.svelte";
   import DebugAllHands from "./debug/DebugAllHands.svelte";
@@ -27,9 +28,11 @@
   import DebugPlayLog from "./debug/DebugPlayLog.svelte";
   interface Props {
     open: boolean;
+    onNewDeal?: () => void;
+    onBackToMenu?: () => void;
   }
 
-  let { open }: Props = $props();
+  let { open, onNewDeal, onBackToMenu }: Props = $props();
 
   const gameStore = getGameStore();
   const appStore = getAppStore();
@@ -107,6 +110,9 @@
   </div>
 
   <div class="p-2 flex flex-col gap-2 min-w-[420px]">
+    <!-- Dev actions — phase-aware shortcut buttons for navigating without manual input -->
+    <DebugDevActions {onNewDeal} {onBackToMenu} />
+
     <!-- At-a-glance summary — always visible, always shows current position -->
     <DebugAtAGlance snapshot={currentSnap} {feedback} phase={gameStore.phase} />
 

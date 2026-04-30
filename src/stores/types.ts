@@ -122,6 +122,8 @@ export interface GameStore {
   startDrillFromHandle(handle: DrillHandle, service?: DevServicePort): Promise<void>;
   /** Instantly auto-complete bidding and advance to target phase. */
   skipToPhase(targetPhase: "review" | "playing" | "declarer"): Promise<boolean>;
+  /** Auto-play the current hand to completion (PLAYING phase) and land in EXPLANATION. */
+  autoPlayHand(): Promise<boolean>;
   userBid(call: Call): void;
   retryBid(): void;
   dismissFeedback(): void;

@@ -431,7 +431,11 @@
     </div>
 
     {#if DEV && debugReady}
-      <DebugDrawer open={appStore.debugPanelOpen} />
+      <DebugDrawer
+        open={appStore.debugPanelOpen}
+        onNewDeal={handleNextDeal}
+        onBackToMenu={handleBackToMenu}
+      />
     {/if}
 
     <ConventionCardPanel panelView={ccPanelView} acblPanelView={acblPanelView} open={ccPanelOpen} onclose={() => { ccPanelOpen = false; }} />

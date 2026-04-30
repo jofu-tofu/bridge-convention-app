@@ -516,6 +516,54 @@ export function createGameStore(
     declinePrompt: transitions.guarded(declinePrompt),
 
     /**
+     * Auto-play the rest of the current hand (PLAYING phase) using first-legal-play
+     * for user-controlled seats and the configured profile for opponents. No animation.
+     * Lands in EXPLANATION when the hand finishes. Returns true on success.
+     *
+     * Dev-panel shortcut: avoids replaying a finished auction by hand just to reach
+     * review with a completed play.
+     */
+    async autoPlayHand(): Promise<boolean> {
+      if (phase !== "PLAYING" || !activeHandle) return false;
+      const handle = activeHandle;
+      const svc = activeService;
+
+      while (phase === "PLAYING" && activeHandle === handle) {
+        const vp = vpCache.viewports.playing;
+        if (!vp || !vp.currentPlayer) return false;
+        if (!vp.userControlledSeats.includes(vp.currentPlayer)) return false;
+        if (vp.legalPlays.length === 0) return false;
+
+        const card = vp.legalPlays[0]!;
+        const seat = vp.currentPlayer;
+        const result = await svc.playCard(handle, card, seat);
+        if (activeHandle !== handle) return false;
+        if (!result.accepted) return false;
+
+        // Append the user's card and AI follow-ups to the play log so the debug
+        // panel and review screen see the full hand history.
+        playPhase.play.log = [
+          ...playPhase.play.log,
+          { seat, card, reason: "auto-play", trickIndex: vp.tricks.length },
+          ...result.aiPlays.map((p) => ({
+            seat: p.seat, card: p.card, reason: p.reason, trickIndex: vp.tricks.length,
+          })),
+        ];
+
+        if (result.playComplete) {
+          playPhase.play.score = result.score;
+          await transitions.executeTransition(handle, { type: "PLAY_COMPLETE" });
+          return (phase as GamePhase) === "EXPLANATION";
+        }
+
+        vpCache.viewports.playing = await svc.getPlayingViewport(handle);
+        if (activeHandle !== handle) return false;
+      }
+
+      return (phase as GamePhase) === "EXPLANATION";
+    },
+
+    /**
      * Instantly auto-complete bidding and advance to the target phase.
      * Used by ?phase= URL param to skip animation and reach review/playing/declarer.
      * Returns true if the target phase was reached.
