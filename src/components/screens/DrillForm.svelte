@@ -15,6 +15,7 @@
   import { canPractice } from "../../stores/entitlements";
   import { DRILL_NAME_MAX } from "../../stores/drills.svelte";
   import type { Drill, DrillPracticeRole } from "../../stores/drills.svelte";
+  import ConventionPicker from "../shared/ConventionPicker.svelte";
   import SectionHeader from "../shared/SectionHeader.svelte";
   import ToggleGroup from "../shared/ToggleGroup.svelte";
   import VulnerabilityPicker from "../shared/VulnerabilityPicker.svelte";
@@ -22,10 +23,9 @@
   interface Props {
     mode: "create" | "edit";
     drill?: Drill;
-    prefillConvention?: string;
   }
 
-  const { mode, drill, prefillConvention }: Props = $props();
+  const { mode, drill }: Props = $props();
 
   const appStore = getAppStore();
   const customSystems = getCustomSystemsStore();
@@ -46,9 +46,7 @@
   const initialModuleIds =
     mode === "edit"
       ? (drill?.moduleIds ?? []).filter((moduleId) => availableConventionIds.has(moduleId))
-      : prefillConvention && availableConventionIds.has(prefillConvention)
-        ? [prefillConvention]
-        : [];
+      : [];
 
   let selectedModuleIds = $state<string[]>(initialModuleIds);
   let name = $state(mode === "edit" ? drill?.name ?? "" : "");
@@ -80,6 +78,7 @@
   let vulnError = $state<string | null>(null);
   let entitlementError = $state<string[] | null>(null);
   let saving = $state(false);
+  let advancedOpen = $state(mode === "edit");
 
   const selectedConventions = $derived(
     selectedModuleIds
@@ -143,11 +142,23 @@
     lastSuggestedName = suggestedName;
   });
 
-  function toggleConvention(moduleId: string): void {
-    selectedModuleIds = selectedModuleIds.includes(moduleId)
-      ? selectedModuleIds.filter((id) => id !== moduleId)
-      : [...selectedModuleIds, moduleId];
+  let addAnotherOpen = $state(false);
+
+  function addConvention(moduleId: string): void {
+    if (selectedModuleIds.includes(moduleId)) return;
+    selectedModuleIds = [...selectedModuleIds, moduleId];
     selectionError = null;
+    const stillLocked = selectedModuleIds.filter(isLocked);
+    entitlementError = stillLocked.length > 0 ? stillLocked : null;
+    addAnotherOpen = false;
+  }
+
+  function removeConvention(moduleId: string): void {
+    selectedModuleIds = selectedModuleIds.filter((id) => id !== moduleId);
+    if (entitlementError) {
+      const stillLocked = entitlementError.filter((id) => selectedModuleIds.includes(id));
+      entitlementError = stillLocked.length > 0 ? stillLocked : null;
+    }
   }
 
   function validateForm(): boolean {
@@ -158,6 +169,9 @@
     vulnError = isValidVulnDistribution(vulnerabilityDistribution)
       ? null
       : "Pick at least one vulnerability state";
+    if (vulnError) {
+      advancedOpen = true;
+    }
     const lockedSelected = selectedModuleIds.filter(isLocked);
     if (lockedSelected.length > 0) {
       entitlementError = lockedSelected;
@@ -286,61 +300,63 @@
 
   <div class="space-y-3">
     <div class="space-y-1">
-      <SectionHeader level="h3">Conventions</SectionHeader>
-      <p class="text-xs text-text-muted">Pick one convention for a single drill or several for round-robin practice.</p>
+      <SectionHeader level="h3">Convention</SectionHeader>
+      <p class="text-xs text-text-muted">Pick one convention. You can add more for round-robin practice.</p>
     </div>
 
     {#if selectedConventions.length > 0}
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-2" data-testid="drill-form-convention-chips">
         {#each selectedConventions as convention (convention.id)}
-          <button
-            type="button"
-            class="inline-flex items-center gap-1.5 rounded-full border border-accent-primary/40 bg-accent-primary/10 px-3 py-1 text-xs font-medium text-accent-primary cursor-pointer"
-            onclick={() => toggleConvention(convention.id)}
+          <span
+            class="inline-flex items-center gap-1.5 rounded-full border border-accent-primary/40 bg-accent-primary/10 px-3 py-1 text-xs font-medium text-accent-primary"
+            data-testid="drill-form-convention-chip-{convention.id}"
           >
             {displayConventionName(convention.name)}
-            <span aria-hidden="true">×</span>
-          </button>
+            <button
+              type="button"
+              class="text-accent-primary hover:text-accent-primary-hover cursor-pointer"
+              aria-label="Remove {displayConventionName(convention.name)}"
+              onclick={() => removeConvention(convention.id)}
+              data-testid="drill-form-convention-chip-remove-{convention.id}"
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          </span>
         {/each}
       </div>
     {/if}
 
-    <div class="grid gap-2 sm:grid-cols-2">
-      {#each allConventions as convention (convention.id)}
-        {@const selected = selectedModuleIds.includes(convention.id)}
-        {@const locked = isLocked(convention.id)}
-        <button
-          type="button"
-          disabled={locked && !selected}
-          class="rounded-[--radius-md] border px-3 py-2 text-left transition-colors cursor-pointer
-            {locked && !selected
-              ? 'opacity-60 cursor-not-allowed border-border-subtle bg-bg-base text-text-muted'
-              : selected
-                ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
-                : 'border-border-subtle bg-bg-base text-text-primary hover:border-border-default'}"
-          onclick={() => { if (!locked || selected) toggleConvention(convention.id); }}
-          data-testid="drill-form-convention-{convention.id}"
-          aria-pressed={selected}
-        >
-          <span class="block text-sm font-medium">
-            {displayConventionName(convention.name)}
-            {#if locked}
-              <span class="ml-1 text-[10px] uppercase tracking-wide text-text-muted">Locked</span>
-            {/if}
-          </span>
-          <span class="mt-0.5 block text-xs text-text-muted">{convention.description}</span>
-          {#if locked}
-            <a
-              href="/billing/pricing"
-              class="mt-1 inline-block text-xs font-medium text-accent-primary underline hover:text-accent-primary-hover"
-              onclick={(event) => event.stopPropagation()}
-            >
-              Subscribe to unlock
-            </a>
-          {/if}
-        </button>
-      {/each}
-    </div>
+    {#if selectedConventions.length === 0}
+      <ConventionPicker
+        conventions={allConventions}
+        isLocked={isLocked}
+        onPick={(id) => addConvention(id)}
+        triggerLabel="Choose a convention"
+        testIdPrefix="drill-form-convention-picker"
+      />
+    {:else if addAnotherOpen}
+      <ConventionPicker
+        conventions={allConventions}
+        excludeIds={selectedModuleIds}
+        isLocked={isLocked}
+        onPick={(id) => addConvention(id)}
+        onCancel={() => { addAnotherOpen = false; }}
+        triggerLabel="Choose another convention"
+        testIdPrefix="drill-form-convention-picker"
+        variant="subtle"
+        openOnMount
+      />
+    {:else}
+      <button
+        type="button"
+        class="inline-flex items-center gap-1 rounded-[--radius-md] px-1 py-0.5 text-xs font-medium text-text-muted hover:text-text-primary cursor-pointer focus:outline-none focus:underline"
+        onclick={() => { addAnotherOpen = true; }}
+        data-testid="drill-form-convention-add-another"
+      >
+        <span aria-hidden="true">+</span>
+        Add another convention
+      </button>
+    {/if}
 
     {#if selectionError}
       <p class="text-xs text-red-400" role="alert">{selectionError}</p>
@@ -349,6 +365,12 @@
       <p class="text-xs text-red-400" role="alert">
         Subscribe to add: {entitlementError.map(conventionDisplay).join(", ")}
       </p>
+      <a
+        href="/billing/pricing"
+        class="text-xs font-medium text-accent-primary underline hover:text-accent-primary-hover"
+      >
+        Subscribe to unlock
+      </a>
     {/if}
   </div>
 
@@ -375,88 +397,111 @@
     <p class="text-xs text-text-muted">Auto uses the selected convention&apos;s default seat for each deal.</p>
   </div>
 
-  <div class="space-y-2">
-    <SectionHeader level="h3">System</SectionHeader>
-    <ToggleGroup
-      items={systemOptions}
-      active={systemSelectionId}
-      onSelect={(id) => { systemSelectionId = id as SystemSelectionId; }}
-      ariaLabel="Base bidding system"
-      compact
-    />
-    {#if customSystems.systems.length > 0}
-      <div class="space-y-1.5">
-        {#each customSystems.systems as system (system.id)}
-          <button
-            type="button"
-            class="w-full rounded-[--radius-md] border px-3 py-2 text-left text-sm transition-colors cursor-pointer
-              {systemSelectionId === system.id
-                ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
-                : 'border-border-subtle bg-bg-base text-text-primary hover:border-border-default'}"
-            onclick={() => { systemSelectionId = system.id; }}
-            data-testid="drill-form-system-{system.id}"
-          >
-            {system.name}
-          </button>
-        {/each}
+  <details
+    bind:open={advancedOpen}
+    class="group rounded-[--radius-md] border border-border-subtle bg-bg-card"
+    data-testid="drill-form-advanced"
+  >
+    <summary
+      class="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-sm text-text-primary list-none [&::-webkit-details-marker]:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
+    >
+      <span class="flex flex-col gap-0.5">
+        <span class="font-medium">Advanced</span>
+        <span class="text-xs text-text-muted">System, opponents, play skill, vulnerability, annotations</span>
+      </span>
+      <span
+        aria-hidden="true"
+        class="text-text-muted transition-transform group-open:rotate-90"
+      >
+        ›
+      </span>
+    </summary>
+
+    <div class="space-y-6 border-t border-border-subtle px-3 pb-4 pt-4">
+      <div class="space-y-2">
+        <SectionHeader level="h3">System</SectionHeader>
+        <ToggleGroup
+          items={systemOptions}
+          active={systemSelectionId}
+          onSelect={(id) => { systemSelectionId = id as SystemSelectionId; }}
+          ariaLabel="Base bidding system"
+          compact
+        />
+        {#if customSystems.systems.length > 0}
+          <div class="space-y-1.5">
+            {#each customSystems.systems as system (system.id)}
+              <button
+                type="button"
+                class="w-full rounded-[--radius-md] border px-3 py-2 text-left text-sm transition-colors cursor-pointer
+                  {systemSelectionId === system.id
+                    ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
+                    : 'border-border-subtle bg-bg-base text-text-primary hover:border-border-default'}"
+                onclick={() => { systemSelectionId = system.id; }}
+                data-testid="drill-form-system-{system.id}"
+              >
+                {system.name}
+              </button>
+            {/each}
+          </div>
+        {/if}
       </div>
-    {/if}
-  </div>
 
-  <div class="space-y-2">
-    <SectionHeader level="h3">Opponents</SectionHeader>
-    <ToggleGroup
-      items={opponentOptions}
-      active={opponentMode}
-      onSelect={(id) => { opponentMode = id as OpponentMode; }}
-      ariaLabel="Opponent mode"
-      compact
-    />
-    <p class="text-xs text-text-muted">Natural opponents compete. Silent opponents always pass.</p>
-  </div>
+      <div class="space-y-2">
+        <SectionHeader level="h3">Opponents</SectionHeader>
+        <ToggleGroup
+          items={opponentOptions}
+          active={opponentMode}
+          onSelect={(id) => { opponentMode = id as OpponentMode; }}
+          ariaLabel="Opponent mode"
+          compact
+        />
+        <p class="text-xs text-text-muted">Natural opponents compete. Silent opponents always pass.</p>
+      </div>
 
-  <div class="space-y-2">
-    <SectionHeader level="h3">Play Skill</SectionHeader>
-    <ToggleGroup
-      items={playProfileOptions}
-      active={playProfileId}
-      onSelect={(id) => { playProfileId = id as PlayProfileId; }}
-      ariaLabel="Opponent play skill"
-      compact
-    />
-    <p class="text-xs text-text-muted">{PLAY_PROFILES[playProfileId].description}</p>
-  </div>
+      <div class="space-y-2">
+        <SectionHeader level="h3">Play Skill</SectionHeader>
+        <ToggleGroup
+          items={playProfileOptions}
+          active={playProfileId}
+          onSelect={(id) => { playProfileId = id as PlayProfileId; }}
+          ariaLabel="Opponent play skill"
+          compact
+        />
+        <p class="text-xs text-text-muted">{PLAY_PROFILES[playProfileId].description}</p>
+      </div>
 
-  <div class="space-y-2">
-    <SectionHeader level="h3">Vulnerability</SectionHeader>
-    <VulnerabilityPicker
-      value={vulnerabilityDistribution}
-      onChange={(next) => {
-        vulnerabilityDistribution = next;
-        vulnError = isValidVulnDistribution(next) ? null : "Pick at least one vulnerability state";
-      }}
-      label="Distribution"
-      testIdPrefix="drill-form-vuln"
-    />
-    {#if vulnError}
-      <p class="text-xs text-red-400" role="alert">{vulnError}</p>
-    {/if}
-  </div>
+      <div class="space-y-2">
+        <SectionHeader level="h3">Vulnerability</SectionHeader>
+        <VulnerabilityPicker
+          value={vulnerabilityDistribution}
+          onChange={(next) => {
+            vulnerabilityDistribution = next;
+            vulnError = isValidVulnDistribution(next) ? null : "Pick at least one vulnerability state";
+          }}
+          label="Distribution"
+          testIdPrefix="drill-form-vuln"
+        />
+        {#if vulnError}
+          <p class="text-xs text-red-400" role="alert">{vulnError}</p>
+        {/if}
+      </div>
 
-  <div class="space-y-2">
-    <SectionHeader level="h3">Educational Annotations</SectionHeader>
-    <label class="flex items-center gap-3 rounded-[--radius-md] border border-border-subtle bg-bg-base px-3 py-2 cursor-pointer">
-      <input
-        type="checkbox"
-        class="h-4 w-4 rounded-[--radius-sm] accent-accent-primary"
-        checked={showEducationalAnnotations}
-        onchange={(event) => { showEducationalAnnotations = event.currentTarget.checked; }}
-        data-testid="drill-form-annotations"
-      />
-      <span class="text-sm text-text-primary">Show educational labels</span>
-    </label>
-    <p class="text-xs text-text-muted">Keeps teaching callouts visible during review and learn mode.</p>
-  </div>
+      <div class="space-y-2">
+        <SectionHeader level="h3">Educational Annotations</SectionHeader>
+        <label class="flex items-center gap-3 rounded-[--radius-md] border border-border-subtle bg-bg-base px-3 py-2 cursor-pointer">
+          <input
+            type="checkbox"
+            class="h-4 w-4 rounded-[--radius-sm] accent-accent-primary"
+            checked={showEducationalAnnotations}
+            onchange={(event) => { showEducationalAnnotations = event.currentTarget.checked; }}
+            data-testid="drill-form-annotations"
+          />
+          <span class="text-sm text-text-primary">Show educational labels</span>
+        </label>
+        <p class="text-xs text-text-muted">Keeps teaching callouts visible during review and learn mode.</p>
+      </div>
+    </div>
+  </details>
 
   <div class="flex flex-wrap justify-end gap-2 pt-2">
     <button
