@@ -72,11 +72,12 @@ fn make_js_solver(
         }
         let pbn = JsValue::from_str(&req.remain_cards_pbn);
 
-        let promise = js_fn
-            .call5(&this, &trump, &first, &trick_suit, &trick_rank, &pbn)
-            .expect("DDS solver call failed");
+        let call_result =
+            js_fn.call5(&this, &trump, &first, &trick_suit, &trick_rank, &pbn);
 
         Box::pin(async move {
+            let promise =
+                call_result.map_err(|e| DdsError::SolveFailed(format!("{:?}", e)))?;
             let js_result = wasm_bindgen_futures::JsFuture::from(js_sys::Promise::from(promise))
                 .await
                 .map_err(|e| DdsError::SolveFailed(format!("{:?}", e)))?;
