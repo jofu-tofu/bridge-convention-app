@@ -872,6 +872,11 @@ pub struct DdsPlayContext {
     pub visible_seats: Vec<Seat>,
     pub beliefs: HashMap<Seat, bridge_session::inference::types::DerivedRanges>,
     pub use_constraints: bool,
+    /// Deterministic per-decision seed: derived from `state.play_seed` plus a
+    /// (trick, seat) offset so seeded drill replay reproduces the same DDS
+    /// decision. Same scheme as the heuristic play loop in
+    /// `bridge-session::session::play_controller::select_ai_card`.
+    pub play_rng_seed: u64,
 }
 
 impl ServicePortImpl {
@@ -969,6 +974,19 @@ impl ServicePortImpl {
         let profile =
             bridge_session::heuristics::play_profiles::get_profile(session.state.play_profile_id);
 
+        // Match the (trick, seat) offset used by the heuristic play loop so
+        // MC+DDS replays land on the same RNG state for the same drill seed.
+        let seat_index: u64 = match current_player {
+            Seat::North => 0,
+            Seat::East => 1,
+            Seat::South => 2,
+            Seat::West => 3,
+        };
+        let play_rng_seed = session
+            .state
+            .play_seed
+            .wrapping_add((session.state.play.tricks.len() as u64) * 4 + seat_index);
+
         Ok(Some(DdsPlayContext {
             current_player,
             legal_plays,
@@ -978,6 +996,7 @@ impl ServicePortImpl {
             visible_seats,
             beliefs,
             use_constraints: profile.use_posterior,
+            play_rng_seed,
         }))
     }
 

@@ -1,7 +1,5 @@
 //! Top-level MC+DDS card suggestion entry point.
 
-use rand::thread_rng;
-
 use bridge_engine::constants::bid_suit_to_suit;
 
 use super::{
@@ -10,17 +8,20 @@ use super::{
 };
 
 /// Run MC+DDS suggestion for the current play state.
+///
+/// The caller owns the RNG so seeded replay is deterministic; thread the same
+/// session-derived `ChaCha8Rng` used by the heuristic play loop.
 pub async fn mc_dds_suggest(
     params: &McddParams,
     use_constraints: bool,
+    rng: &mut impl rand::Rng,
     solver: &mut DdsSolverFn,
 ) -> Option<McddResult> {
     let config = McddConfig::default();
-    let mut rng = thread_rng();
-    mc_dds_suggest_with_rng(params, &config, use_constraints, &mut rng, solver).await
+    mc_dds_suggest_inner(params, &config, use_constraints, rng, solver).await
 }
 
-async fn mc_dds_suggest_with_rng(
+async fn mc_dds_suggest_inner(
     params: &McddParams,
     config: &McddConfig,
     use_constraints: bool,
@@ -101,7 +102,7 @@ mod tests {
     use crate::dds::{DdsCardResult, McddParams, SolveBoardResponse};
     use crate::inference::types::{DerivedRanges, NumberRange};
 
-    use super::mc_dds_suggest_with_rng;
+    use super::{mc_dds_suggest, mc_dds_suggest_inner};
 
     fn nt_contract() -> Contract {
         Contract {
@@ -136,7 +137,7 @@ mod tests {
         let mut solver = mock_solver(HashMap::new());
         let mut rng = ChaCha8Rng::seed_from_u64(1);
 
-        let result = block_on(mc_dds_suggest_with_rng(
+        let result = block_on(mc_dds_suggest_inner(
             &params,
             &crate::dds::McddConfig::default(),
             false,
@@ -226,7 +227,7 @@ mod tests {
         let mut solver = mock_solver(responses);
         let mut rng = ChaCha8Rng::seed_from_u64(9);
 
-        let result = block_on(mc_dds_suggest_with_rng(
+        let result = block_on(mc_dds_suggest_inner(
             &params,
             &crate::dds::McddConfig::default(),
             true,
@@ -238,5 +239,110 @@ mod tests {
         assert_eq!(result.best_card, card(Suit::Spades, Rank::Ace));
         assert_eq!(result.reason, "mc-dds:early");
         assert_eq!(result.samples_used, 15);
+    }
+
+    #[test]
+    fn mc_dds_suggest_is_deterministic_for_same_seed() {
+        // Hidden opponents force non-trivial sampling, so the seeded RNG
+        // observably drives the result. Two replays with the same seed must
+        // produce the same suggestion + scores; that guarantees seeded drill
+        // replay reproduces the same DDS decisions.
+        let remaining_cards = HashMap::from([
+            (
+                Seat::North,
+                vec![card(Suit::Hearts, Rank::Ace), card(Suit::Hearts, Rank::King)],
+            ),
+            (
+                Seat::East,
+                vec![card(Suit::Spades, Rank::Queen), card(Suit::Clubs, Rank::Two)],
+            ),
+            (
+                Seat::South,
+                vec![card(Suit::Spades, Rank::Ace), card(Suit::Spades, Rank::King)],
+            ),
+            (
+                Seat::West,
+                vec![card(Suit::Diamonds, Rank::Ace), card(Suit::Clubs, Rank::Three)],
+            ),
+        ]);
+        let beliefs = HashMap::from([
+            (
+                Seat::East,
+                DerivedRanges {
+                    hcp: NumberRange { min: 0, max: 13 },
+                    suit_lengths: open_ranges(),
+                    is_balanced: None,
+                },
+            ),
+            (
+                Seat::West,
+                DerivedRanges {
+                    hcp: NumberRange { min: 0, max: 13 },
+                    suit_lengths: open_ranges(),
+                    is_balanced: None,
+                },
+            ),
+        ]);
+        let params = McddParams {
+            seat: Seat::South,
+            legal_plays: vec![
+                card(Suit::Spades, Rank::Ace),
+                card(Suit::Spades, Rank::King),
+            ],
+            contract: nt_contract(),
+            current_trick: Vec::new(),
+            remaining_cards,
+            visible_seats: vec![Seat::North, Seat::South],
+            beliefs,
+        };
+
+        // Permissive solver: returns the same canned ranking for any PBN
+        // sampling produces, so any difference in output is RNG-driven.
+        let canned = SolveBoardResponse {
+            cards: vec![
+                DdsCardResult {
+                    suit: Suit::Spades,
+                    rank: 14,
+                    score: 9,
+                },
+                DdsCardResult {
+                    suit: Suit::Spades,
+                    rank: 13,
+                    score: 8,
+                },
+            ],
+        };
+        let make_solver = || {
+            let canned = canned.clone();
+            move |_req: crate::dds::SolveBoardRequest| -> crate::dds::DdsFuture {
+                let resp = canned.clone();
+                Box::pin(async move { Ok(resp) })
+            }
+        };
+
+        let mut rng_a1 = ChaCha8Rng::seed_from_u64(42);
+        let mut solver_a1 = make_solver();
+        let result_a =
+            block_on(mc_dds_suggest(&params, true, &mut rng_a1, &mut solver_a1))
+                .expect("first run produces a suggestion");
+
+        let mut rng_a2 = ChaCha8Rng::seed_from_u64(42);
+        let mut solver_a2 = make_solver();
+        let result_b =
+            block_on(mc_dds_suggest(&params, true, &mut rng_a2, &mut solver_a2))
+                .expect("second run produces a suggestion");
+
+        assert_eq!(result_a.best_card, result_b.best_card);
+        assert_eq!(result_a.reason, result_b.reason);
+        assert_eq!(result_a.samples_used, result_b.samples_used);
+        assert_eq!(result_a.scores, result_b.scores);
+
+        // Different seed must still pick a legal play.
+        let mut rng_c = ChaCha8Rng::seed_from_u64(43);
+        let mut solver_c = make_solver();
+        let result_c =
+            block_on(mc_dds_suggest(&params, true, &mut rng_c, &mut solver_c))
+                .expect("third run produces a suggestion");
+        assert!(params.legal_plays.contains(&result_c.best_card));
     }
 }

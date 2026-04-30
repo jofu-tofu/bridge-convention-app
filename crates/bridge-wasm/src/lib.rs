@@ -244,9 +244,18 @@ impl WasmServicePort {
             };
 
             let mut solver = make_js_solver(js_fn.clone());
-            let mc_result =
-                bridge_session::dds::mc_dds_suggest(&params, ctx.use_constraints, &mut solver)
-                    .await;
+            // Seed from session-derived (play_seed, trick, seat) offset so
+            // seeded drill replay reproduces the same DDS decisions.
+            let mut rng = <rand_chacha::ChaCha8Rng as rand::SeedableRng>::seed_from_u64(
+                ctx.play_rng_seed,
+            );
+            let mc_result = bridge_session::dds::mc_dds_suggest(
+                &params,
+                ctx.use_constraints,
+                &mut rng,
+                &mut solver,
+            )
+            .await;
 
             let (ai_card, reason) = match mc_result {
                 Some(result) => (result.best_card, result.reason),
