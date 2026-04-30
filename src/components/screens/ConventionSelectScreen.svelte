@@ -222,7 +222,7 @@
                     {convention.description}
                   </p>
                   {@const locked = !canPractice(auth.user, convention.id)}
-                  <div class="flex items-center justify-end gap-1.5 mt-2">
+                  <div class="flex items-center justify-end mt-2">
                     <button
                       class="flex items-center gap-1.5 px-3 py-1.5 rounded-[--radius-md] text-xs font-medium
                         transition-all shadow-sm
@@ -240,17 +240,6 @@
                       {/if}
                       <span class="hidden sm:inline">{locked ? "Locked" : "Practice"}</span>
                     </button>
-                    <a
-                      class="flex items-center justify-center p-1.5 rounded-[--radius-md] text-xs font-medium
-                        text-text-secondary bg-bg-elevated hover:text-accent-primary hover:bg-accent-primary/10
-                        transition-all cursor-pointer border border-transparent hover:border-accent-primary/20
-                        min-w-[--size-touch-target] min-h-[--size-touch-target]"
-                      data-testid="configure-{convention.id}"
-                      aria-label="Configure and save drill for {displayName(convention.name)}"
-                      href={`/practice/drills/new?convention=${encodeURIComponent(convention.id)}`}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
-                    </a>
                   </div>
                 </ItemCard>
               {/each}

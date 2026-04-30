@@ -89,12 +89,12 @@ describe("ConventionSelectScreen", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders the convention default role badge and links the configure action to the drill form", () => {
+  it("renders the convention default role badge", () => {
     const appStore = createAppStore();
     const customSystemsStore = createCustomSystemsStore();
     const drillsStore = createDrillsStore({ defaultSystemId: "sayc", seedFromPrefs: TEST_DRILL_SEED });
 
-    const { getByTestId } = render(ConventionSelectScreenTestWrapper, {
+    const { getByTestId, queryByTestId } = render(ConventionSelectScreenTestWrapper, {
       props: {
         appStore,
         authStore: {
@@ -113,9 +113,7 @@ describe("ConventionSelectScreen", () => {
     });
 
     expect(within(getByTestId("convention-stayman-bundle")).getByText("Responder")).toBeTruthy();
-    expect(getByTestId("configure-stayman-bundle").getAttribute("href")).toBe(
-      "/practice/drills/new?convention=stayman-bundle",
-    );
+    expect(queryByTestId("configure-stayman-bundle")).toBeNull();
   });
 
   it("launches practice through applyDrillSession using the convention default role", async () => {

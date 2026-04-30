@@ -11,8 +11,10 @@ multi-convention drills.
    mode, play skill, and educational annotations. Those settings configure the
    next drill before launch.
 2. **Category-sectioned catalog.** Convention cards remain the primary entry
-   point. Each card offers one-click Practice plus a `⋯` link to
-   `/practice/drills/new?convention=<id>` for configure-and-save.
+   point. Each card offers one-click Practice that uses the Quick Practice
+   settings panel for mode/role/system/opponent/skill/annotations. Saving a
+   reusable drill happens on `/practice/drills/new` (linked from
+   `/practice/drills`).
 3. **Saved drills shelf.** Single-convention drills render as an MRU shelf above
    the catalog. Each chip launches in one tap and exposes rename/edit/delete
    actions from the overflow menu.

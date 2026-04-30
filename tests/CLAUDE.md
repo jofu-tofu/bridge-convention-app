@@ -26,7 +26,7 @@ Playwright end-to-end smoke tests for user-facing behavior.
 | File                                   | Role                                                               |
 | -------------------------------------- | ------------------------------------------------------------------ |
 | `e2e/smoke.spec.ts`                    | Core app smoke: home search/filter, picker, game-shell no-settings guard, blocking feedback, settings/home nav |
-| `e2e/drill-flow.spec.ts`              | `/practice` workflow smoke: settings rail present, configure-and-save from card overflow, saved-drill shelf relaunch |
+| `e2e/drill-flow.spec.ts`              | `/practice` workflow smoke: settings rail present, drill creation via `/practice/drills/new`, saved-drill shelf relaunch |
 | `e2e/helpers.ts`                      | Shared Playwright helpers for bid test IDs and "no in-game settings button" assertions |
 | `e2e/session-modes.spec.ts`           | Session-mode wiring smoke: default decision drill and full-auction label selection |
 | `e2e/representative-conventions.spec.ts` | Desktop-only representative bundle flows: seeded Jacoby Transfers full-auction opening and Bergen Raises recovery after blocked feedback |

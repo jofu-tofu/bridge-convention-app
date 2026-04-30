@@ -11,14 +11,13 @@
     drillsStore: ReturnType<typeof createDrillsStore>;
     mode: "create" | "edit";
     drill?: Drill;
-    prefillConvention?: string;
   }
 
-  const { appStore, customSystemsStore, drillsStore, mode, drill, prefillConvention }: Props = $props();
+  const { appStore, customSystemsStore, drillsStore, mode, drill }: Props = $props();
 
   setAppStore(appStore);
   setCustomSystemsStore(customSystemsStore);
   setDrillsStore(drillsStore);
 </script>
 
-<DrillForm {mode} {drill} {prefillConvention} />
+<DrillForm {mode} {drill} />

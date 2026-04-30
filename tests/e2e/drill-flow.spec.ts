@@ -27,10 +27,10 @@ test.describe("drill flow", () => {
     await expect(page.getByTestId("bid-P")).toBeEnabled({ timeout: 5_000 });
     await expectNoSettingsButtonInGameShell(page);
 
-    await page.goto("/practice");
-    await page.getByTestId("configure-stayman-bundle").click();
+    await page.goto("/practice/drills/new");
 
-    await expect(page).toHaveURL(/\/practice\/drills\/new\?convention=stayman-bundle$/);
+    await page.getByTestId("drill-form-convention-picker-trigger").click();
+    await page.getByTestId("drill-form-convention-picker-option-stayman-bundle").click();
 
     const drillName = "Stayman auto drill";
     await page.getByTestId("drill-form-name").fill(drillName);
