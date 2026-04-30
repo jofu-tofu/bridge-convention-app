@@ -231,7 +231,7 @@ fn build_context(strategy: &ConventionStrategy, canary: &Canary) -> AuctionConte
         );
 
         let public_actions = normalize_intent(&surface.source_intent);
-        let next_state = apply_negotiation_actions(&state, &public_actions, *actor);
+        let next_state = apply_negotiation_actions(&state, &public_actions, *actor, &call);
         let negotiation_delta = compute_kernel_delta(&state, &next_state);
         state = next_state.clone();
 

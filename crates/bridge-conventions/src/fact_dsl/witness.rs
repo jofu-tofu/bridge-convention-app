@@ -532,7 +532,7 @@ fn phase_ref_contains(phase_ref: &PhaseRef, phase: &str) -> bool {
 /// Short authored-fixture call notation, e.g. "1NT", "2D", "P", "X".
 /// Mirrors `bridge-session::session::learning_formatters::call_key` — kept
 /// inline to avoid a crate dependency. Used for attachment-pattern matching.
-fn call_to_short_label(call: &Call) -> String {
+pub(crate) fn call_to_short_label(call: &Call) -> String {
     match call {
         Call::Pass => "P".to_string(),
         Call::Double => "X".to_string(),
@@ -834,7 +834,12 @@ fn find_kernel_establishing_prefix(
                 {
                     continue;
                 }
-                let new_state = apply_negotiation_actions(&state, &step.actions, current_seat);
+                let new_state = apply_negotiation_actions(
+                    &state,
+                    &step.actions,
+                    current_seat,
+                    &step.default_call,
+                );
                 let committed = synth_committed_step(
                     current_seat,
                     step.default_call.clone(),
@@ -939,7 +944,7 @@ pub fn replay_kernel_from_prefix(
         // most-specific by invert-score; tie-break by (module_id, meaning_id).
         let chosen = pick_replay_surface(&candidates);
         let actions = normalize_intent(&chosen.source_intent);
-        state = apply_negotiation_actions(&state, &actions, entry.seat);
+        state = apply_negotiation_actions(&state, &actions, entry.seat, &entry.call);
     }
     state
 }

@@ -393,7 +393,7 @@ impl ConventionStrategyAdapter {
             .last()
             .map(|s| s.state_after.clone())
             .unwrap_or_else(initial_negotiation);
-        let state_after = apply_negotiation_actions(&prev_kernel, &public_actions, actor);
+        let state_after = apply_negotiation_actions(&prev_kernel, &public_actions, actor, call);
         let negotiation_delta = compute_kernel_delta(&prev_kernel, &state_after);
 
         CommittedStep {
@@ -459,7 +459,7 @@ impl ConventionStrategyAdapter {
             .last()
             .map(|s| s.state_after.clone())
             .unwrap_or_else(initial_negotiation);
-        let state_after = apply_negotiation_actions(&prev_kernel, &public_actions, actor);
+        let state_after = apply_negotiation_actions(&prev_kernel, &public_actions, actor, call);
         let negotiation_delta = compute_kernel_delta(&prev_kernel, &state_after);
 
         CommittedStep {

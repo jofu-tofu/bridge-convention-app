@@ -7,7 +7,7 @@
 //! `apply_negotiation_actions` advances NegotiationState by interpreting
 //! canonical BidActions (Open, Transfer, Accept, Raise, Force, etc.).
 
-use bridge_engine::types::Seat;
+use bridge_engine::types::{Call, Seat};
 
 use crate::types::bid_action::{BidAction, BidSuitName, HandStrength, ObsSuit};
 use crate::types::negotiation::*;
@@ -32,6 +32,7 @@ pub fn apply_negotiation_actions(
     prev: &NegotiationState,
     actions: &[BidAction],
     _actor: Seat,
+    call: &Call,
 ) -> NegotiationState {
     let mut state = prev.clone();
 
@@ -85,10 +86,18 @@ pub fn apply_negotiation_actions(
             BidAction::Overcall { suit, .. } => {
                 if let Some(obs) = suit {
                     let strain = obs_suit_to_bid_suit(obs);
+                    // Pull level from the containing Call::Bid so
+                    // `Overcalled { below }` predicates can evaluate properly;
+                    // BidAction::Overcall itself carries no level field, and
+                    // hardcoding 0 made `is_bid_below(0, …)` always true.
+                    let level = match call {
+                        Call::Bid { level, .. } => *level,
+                        _ => 0,
+                    };
                     state.competition = Competition::Overcalled(OvercalledData {
                         kind: OvercalledKind::Overcalled,
                         strain,
-                        level: 0, // Level not available from BidAction
+                        level,
                     });
                 }
             }
@@ -147,11 +156,17 @@ fn competition_equal(a: &Competition, b: &Competition) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bridge_engine::types::BidSuit;
 
     use crate::types::bid_action::{BidSuitName, HandFeature};
 
     fn initial() -> NegotiationState {
         crate::pipeline::observation::committed_step::initial_negotiation()
+    }
+
+    /// Convenience: most tests don't care about the originating call.
+    fn pass_call() -> Call {
+        Call::Pass
     }
 
     #[test]
@@ -196,7 +211,15 @@ mod tests {
             strain: BidSuitName::Notrump,
             strength: None,
         }];
-        let result = apply_negotiation_actions(&state, &actions, Seat::South);
+        let result = apply_negotiation_actions(
+            &state,
+            &actions,
+            Seat::South,
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump,
+            },
+        );
         assert_eq!(result.captain, Captain::Responder);
     }
 
@@ -206,7 +229,15 @@ mod tests {
         let actions = vec![BidAction::Transfer {
             target_suit: ObsSuit::Hearts,
         }];
-        let result = apply_negotiation_actions(&state, &actions, Seat::North);
+        let result = apply_negotiation_actions(
+            &state,
+            &actions,
+            Seat::North,
+            &Call::Bid {
+                level: 2,
+                strain: BidSuit::Diamonds,
+            },
+        );
         assert_eq!(
             result.fit_agreed,
             Some(FitAgreed {
@@ -224,7 +255,7 @@ mod tests {
             suit: Some(ObsSuit::Hearts),
             strength: None,
         }];
-        let result = apply_negotiation_actions(&state, &actions, Seat::South);
+        let result = apply_negotiation_actions(&state, &actions, Seat::South, &pass_call());
         assert_eq!(
             result.fit_agreed,
             Some(FitAgreed {
@@ -249,7 +280,7 @@ mod tests {
             suit: None,
             strength: None,
         }];
-        let result = apply_negotiation_actions(&state, &actions, Seat::South);
+        let result = apply_negotiation_actions(&state, &actions, Seat::South, &pass_call());
         assert_eq!(
             result.fit_agreed,
             Some(FitAgreed {
@@ -265,7 +296,7 @@ mod tests {
         let actions = vec![BidAction::Agree {
             strain: BidSuitName::Diamonds,
         }];
-        let result = apply_negotiation_actions(&state, &actions, Seat::South);
+        let result = apply_negotiation_actions(&state, &actions, Seat::South, &pass_call());
         assert_eq!(
             result.fit_agreed,
             Some(FitAgreed {
@@ -281,7 +312,7 @@ mod tests {
         let actions = vec![BidAction::Force {
             level: HandStrength::Game,
         }];
-        let result = apply_negotiation_actions(&state, &actions, Seat::South);
+        let result = apply_negotiation_actions(&state, &actions, Seat::South, &pass_call());
         assert_eq!(result.forcing, ForcingLevel::Game);
     }
 
@@ -292,7 +323,7 @@ mod tests {
             ..initial()
         };
         let actions = vec![BidAction::Signoff { strain: None }];
-        let result = apply_negotiation_actions(&state, &actions, Seat::South);
+        let result = apply_negotiation_actions(&state, &actions, Seat::South, &pass_call());
         assert_eq!(result.forcing, ForcingLevel::None);
     }
 
@@ -303,10 +334,46 @@ mod tests {
             feature: HandFeature::HeldSuit,
             suit: Some(ObsSuit::Spades),
         }];
-        let result = apply_negotiation_actions(&state, &actions, Seat::East);
+        let result = apply_negotiation_actions(
+            &state,
+            &actions,
+            Seat::East,
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Spades,
+            },
+        );
         match result.competition {
             Competition::Overcalled(ref data) => {
                 assert_eq!(data.strain, BidSuitName::Spades);
+            }
+            _ => panic!("Expected Overcalled competition"),
+        }
+    }
+
+    #[test]
+    fn apply_overcall_records_call_level() {
+        // Regression: previously hardcoded `level: 0`, which made the
+        // `Overcalled { below }` predicate `is_bid_below(0, …)` always true.
+        // The level must come from the originating Call::Bid.
+        let state = initial();
+        let actions = vec![BidAction::Overcall {
+            feature: HandFeature::HeldSuit,
+            suit: Some(ObsSuit::Hearts),
+        }];
+        let result = apply_negotiation_actions(
+            &state,
+            &actions,
+            Seat::East,
+            &Call::Bid {
+                level: 2,
+                strain: BidSuit::Hearts,
+            },
+        );
+        match result.competition {
+            Competition::Overcalled(ref data) => {
+                assert_eq!(data.level, 2, "overcall level must reflect Call::Bid");
+                assert_eq!(data.strain, BidSuitName::Hearts);
             }
             _ => panic!("Expected Overcalled competition"),
         }
@@ -318,7 +385,7 @@ mod tests {
         let actions = vec![BidAction::Double {
             feature: HandFeature::Strength,
         }];
-        let result = apply_negotiation_actions(&state, &actions, Seat::West);
+        let result = apply_negotiation_actions(&state, &actions, Seat::West, &Call::Double);
         assert_eq!(
             result.competition,
             Competition::Simple(CompetitionSimple::Doubled)
@@ -337,8 +404,47 @@ mod tests {
                 level: HandStrength::Game,
             },
         ];
-        let result = apply_negotiation_actions(&state, &actions, Seat::South);
+        let result = apply_negotiation_actions(
+            &state,
+            &actions,
+            Seat::South,
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump,
+            },
+        );
         assert_eq!(result.captain, Captain::Responder);
         assert_eq!(result.forcing, ForcingLevel::Game);
+    }
+
+    #[test]
+    fn normalize_then_apply_threads_overcall_level_from_call() {
+        // End-to-end regression: take a normalize_intent-derived Overcall
+        // and run it through apply_negotiation_actions with a 2H Call::Bid.
+        // The recorded OvercalledData.level must be 2 (not the previous
+        // hardcoded 0, which made `Overcalled { below }` predicates fire
+        // for any positive threshold).
+        use crate::pipeline::observation::normalize_intent::normalize_intent;
+        use crate::types::meaning::SourceIntent;
+        let intent = SourceIntent {
+            intent_type: "DONTPreemptHearts".to_string(),
+            params: std::collections::HashMap::new(),
+        };
+        let actions = normalize_intent(&intent);
+        assert!(matches!(actions.first(), Some(BidAction::Overcall { .. })));
+        let call = Call::Bid {
+            level: 2,
+            strain: BidSuit::Hearts,
+        };
+        let state = apply_negotiation_actions(&initial(), &actions, Seat::East, &call);
+        match state.competition {
+            Competition::Overcalled(ref data) => {
+                assert_eq!(
+                    data.level, 2,
+                    "Overcall level must equal Call::Bid level, not 0"
+                );
+            }
+            _ => panic!("Expected Overcalled competition"),
+        }
     }
 }

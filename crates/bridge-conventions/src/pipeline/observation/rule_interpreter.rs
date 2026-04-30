@@ -125,10 +125,18 @@ fn check_single_attachment(
 }
 
 /// Check an auction pattern against the log.
+///
+/// Fixture `AuctionPattern` strings use bridge notation ("1NT", "2C", "P"),
+/// so the log calls must be rendered with the same `call_to_short_label`
+/// helper the witness path uses (`fact_dsl::witness`). The previous
+/// implementation compared `format!("{:?}", call)` (e.g.
+/// `"Bid { level: 2, strain: Clubs }"`) to the fixture strings and silently
+/// always returned false.
 fn check_auction_pattern(
     pattern: &crate::types::agreement::AuctionPattern,
     context: &AuctionContext,
 ) -> bool {
+    use crate::fact_dsl::witness::call_to_short_label;
     use crate::types::agreement::AuctionPattern;
 
     match pattern {
@@ -137,7 +145,7 @@ fn check_auction_pattern(
             let log_calls: Vec<String> = context
                 .log
                 .iter()
-                .map(|step| format!("{:?}", step.call))
+                .map(|step| call_to_short_label(&step.call))
                 .collect();
             if log_calls.len() < calls.len() {
                 return false;
@@ -153,14 +161,14 @@ fn check_auction_pattern(
             context
                 .log
                 .iter()
-                .any(|step| format!("{:?}", step.call) == *call)
+                .any(|step| call_to_short_label(&step.call) == *call)
         }
         AuctionPattern::ByRole { role: _, last_call } => {
             // Check if the last call in the log matches
             context
                 .log
                 .last()
-                .map(|step| format!("{:?}", step.call) == *last_call)
+                .map(|step| call_to_short_label(&step.call) == *last_call)
                 .unwrap_or(false)
         }
     }
@@ -382,5 +390,64 @@ mod tests {
     #[test]
     fn derive_turn_role_no_log() {
         assert_eq!(derive_turn_role(Seat::South, &[]), TurnRole::Opener);
+    }
+
+    /// Build a CommittedStep wrapping a single Call. Test helper for
+    /// auction-pattern regression tests below.
+    fn step_for(actor: Seat, call: bridge_engine::types::Call) -> CommittedStep {
+        CommittedStep {
+            actor,
+            call,
+            resolved_claim: None,
+            public_actions: Vec::new(),
+            negotiation_delta: crate::types::negotiation::NegotiationDelta::default(),
+            state_after: initial_negotiation(),
+            status: CommittedStepStatus::Resolved,
+        }
+    }
+
+    #[test]
+    fn auction_pattern_sequence_matches_1nt_notation() {
+        // Regression: previously compared `format!("{:?}", call)` (e.g.
+        // "Bid { level: 1, strain: NoTrump }") to fixture string "1NT" and
+        // silently always rejected — modules with whenAuction filters were
+        // never attached.
+        use crate::types::agreement::AuctionPattern;
+        let context = AuctionContext {
+            log: vec![step_for(
+                Seat::South,
+                bridge_engine::types::Call::Bid {
+                    level: 1,
+                    strain: bridge_engine::types::BidSuit::NoTrump,
+                },
+            )],
+        };
+        let pattern = AuctionPattern::Sequence {
+            calls: vec!["1NT".to_string()],
+        };
+        assert!(check_auction_pattern(&pattern, &context));
+    }
+
+    #[test]
+    fn auction_pattern_sequence_2c_matches_only_2c() {
+        use crate::types::agreement::AuctionPattern;
+        let context = AuctionContext {
+            log: vec![step_for(
+                Seat::South,
+                bridge_engine::types::Call::Bid {
+                    level: 2,
+                    strain: bridge_engine::types::BidSuit::Clubs,
+                },
+            )],
+        };
+        let pattern_2c = AuctionPattern::Sequence {
+            calls: vec!["2C".to_string()],
+        };
+        assert!(check_auction_pattern(&pattern_2c, &context));
+
+        let pattern_3c = AuctionPattern::Sequence {
+            calls: vec!["3C".to_string()],
+        };
+        assert!(!check_auction_pattern(&pattern_3c, &context));
     }
 }
