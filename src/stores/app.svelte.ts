@@ -76,11 +76,18 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
         vulnerabilityDistribution: validVd ? vd : DEFAULT_DRILL_TUNING.vulnerabilityDistribution,
       },
     },
-    display: {
-      ...DEFAULT_DISPLAY_PREFERENCES,
-      ...(partial.display as Partial<DisplayPreferences> | undefined),
-    },
+    display: mergeDisplay(partial.display as Partial<DisplayPreferences> | undefined),
   };
+}
+
+const VALID_CARD_SIZES = new Set<DisplayPreferences["cardSize"]>(["small", "medium", "large"]);
+
+function mergeDisplay(partial: Partial<DisplayPreferences> | undefined): DisplayPreferences {
+  const merged = { ...DEFAULT_DISPLAY_PREFERENCES, ...(partial ?? {}) };
+  if (!VALID_CARD_SIZES.has(merged.cardSize)) {
+    return { ...merged, cardSize: DEFAULT_DISPLAY_PREFERENCES.cardSize };
+  }
+  return merged;
 }
 
 function savePreferences(prefs: PracticePreferences) {
@@ -374,6 +381,10 @@ export function createAppStore() {
 
     get displaySettings() {
       return prefs.display;
+    },
+
+    setCardSize(value: DisplayPreferences["cardSize"]) {
+      updateDisplay({ cardSize: value });
     },
 
     setShowEducationalAnnotations(show: boolean) {

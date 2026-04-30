@@ -147,10 +147,16 @@
 }
 
 :root {
-  --card-width: var(--spacing-card-width);
-  --card-height: var(--spacing-card-height);
-  --card-overlap-h: var(--spacing-card-overlap-h);
-  --card-overlap-v: var(--spacing-card-overlap-v);
+  /* Display-preference scale for visual cards. Default 1; the (app) layout
+     root overrides via inline style="--card-size-scale: 0.85|1|1.15" driven
+     by appStore.displaySettings.cardSize. The four card-* tokens below
+     multiply the underlying --spacing-card-* values by this scale via calc(),
+     so authored card-sized geometry tracks the user preference automatically. */
+  --card-size-scale: 1;
+  --card-width: calc(var(--spacing-card-width) * var(--card-size-scale, 1));
+  --card-height: calc(var(--spacing-card-height) * var(--card-size-scale, 1));
+  --card-overlap-h: calc(var(--spacing-card-overlap-h) * var(--card-size-scale, 1));
+  --card-overlap-v: calc(var(--spacing-card-overlap-v) * var(--card-size-scale, 1));
   --table-width: var(--spacing-table-width);
   --table-height: var(--spacing-table-height);
 

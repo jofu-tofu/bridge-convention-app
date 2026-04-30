@@ -39,8 +39,15 @@
   // Mobile-only: size the South fan to fit its container width.
   // Fan total width ≈ cardW + 12 * (cardW + overlap). With overlap = -0.4*cardW,
   // total ≈ 8.2 * cardW, so cardW ≈ containerW / 8.2.
+  // Apply the user's card-size preference BEFORE clamping so mobile keeps
+  // container-fit at the small/large extremes. The desktop branch reads the
+  // same scale via the layout-root --card-size-scale custom property.
+  const CARD_SIZE_SCALE_MAP = { small: 0.85, medium: 1, large: 1.15 } as const;
   let mobileFanContainerW = $state(360);
-  const mobileCardW = $derived(Math.max(32, Math.min(56, Math.floor(mobileFanContainerW / 8.2))));
+  const cardSizeScale = $derived(CARD_SIZE_SCALE_MAP[appStore.displaySettings.cardSize]);
+  const mobileCardW = $derived(
+    Math.max(32, Math.min(56, Math.floor((mobileFanContainerW / 8.2) * cardSizeScale))),
+  );
   const mobileCardH = $derived(Math.round(mobileCardW * (98 / 70)));
   const mobileCardOverlapH = $derived(-Math.round(mobileCardW * 0.4));
   const mobileFanStyle = $derived(

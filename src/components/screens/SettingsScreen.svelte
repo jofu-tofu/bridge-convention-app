@@ -1,18 +1,47 @@
 <script lang="ts">
   import { SubscriptionTier } from "../../service";
-  import { getAuthStore } from "../../stores/context";
+  import { getAppStore, getAuthStore } from "../../stores/context";
   import AuthModal from "../shared/AuthModal.svelte";
   import ManageSubscriptionButton from "../shared/ManageSubscriptionButton.svelte";
   import CardSurface from "../shared/CardSurface.svelte";
   import AppScreen from "../shared/AppScreen.svelte";
+  import SectionHeader from "../shared/SectionHeader.svelte";
+  import ToggleGroup from "../shared/ToggleGroup.svelte";
 
   const auth = getAuthStore();
+  const appStore = getAppStore();
 
   let authModal = $state<ReturnType<typeof AuthModal>>();
+
+  // Display section is the canonical scaffold Agents 2 and 3 will extend
+  // with Suit colors and Ten notation rows. Drop new rows inside the
+  // existing `<div class="space-y-3">` inside the Display CardSurface
+  // below. testId convention: `display-{control}-{option}`.
+  const cardSizeOptions = [
+    { id: "small" as const, label: "Small", testId: "display-card-size-small" },
+    { id: "medium" as const, label: "Medium", testId: "display-card-size-medium" },
+    { id: "large" as const, label: "Large", testId: "display-card-size-large" },
+  ];
 </script>
 
 <AppScreen width="form" title="Settings" subtitle="Account and subscription. Practice and drill defaults live on the practice screen.">
   <div class="space-y-3">
+    <CardSurface as="section" class="p-4" testId="display-section">
+      <h2 class="text-sm font-semibold text-text-primary mb-3">Display</h2>
+      <div class="space-y-3">
+        <!-- Card size row goes here. Agents 2 and 3 will add Suit colors and Ten notation rows here too. -->
+        <div class="space-y-1">
+          <SectionHeader level="h3">Card size</SectionHeader>
+          <ToggleGroup
+            items={cardSizeOptions}
+            active={appStore.displaySettings.cardSize}
+            onSelect={(id) => appStore.setCardSize(id as "small" | "medium" | "large")}
+            ariaLabel="Card size"
+          />
+        </div>
+      </div>
+    </CardSurface>
+
     <CardSurface as="section" class="p-4" testId="account-section">
       <h2 class="text-sm font-semibold text-text-primary mb-3">Account</h2>
       {#if auth.loading}

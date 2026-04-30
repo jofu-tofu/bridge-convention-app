@@ -102,6 +102,13 @@
     Loading engine...
   </div>
 {:else}
+  <!-- Card-size scale map: cardSize → --card-size-scale numeric value.
+       Pattern-setter for Agents 2 and 3: any new display preference whose
+       CSS effect is also a single inline custom property should use the
+       same `$derived` literal-map approach (e.g. `data-suit-scheme` /
+       `data-ten-notation` on the same root <div>, mirroring the
+       attribute-binding shorthand syntax used below). -->
+  {@const cardSizeScale = ({ small: 0.85, medium: 1, large: 1.15 } as const)[appStore.displaySettings.cardSize]}
   <AppReady
     service={resolvedService}
     gameStore={resolvedGameStore}
@@ -111,7 +118,17 @@
     {drillsStore}
     {authStore}
   >
-    <div class="bg-bg-deepest text-text-primary h-screen overflow-hidden font-sans">
+    <!--
+      Display preferences (data-card-size, data-suit-scheme, …) are bound
+      here, not on <html> or :root, so prerendered (content) routes are
+      unaffected. CSS overrides in src/app.css use bare attribute selectors
+      and rely on custom-property inheritance through the cascade.
+    -->
+    <div
+      class="bg-bg-deepest text-text-primary h-screen overflow-hidden font-sans"
+      data-card-size={appStore.displaySettings.cardSize}
+      style="--card-size-scale: {cardSizeScale}"
+    >
       <AppShell>
         {@render children()}
       </AppShell>

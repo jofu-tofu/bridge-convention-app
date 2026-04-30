@@ -569,10 +569,12 @@ export function resolveTransition(_currentPhase: GamePhase, event: PhaseEvent): 
 // ── Practice preferences ───────────────────────────────────────────
 
 export interface DisplayPreferences {
+  readonly cardSize: "small" | "medium" | "large";
   readonly showEducationalAnnotations: boolean;
 }
 
 export const DEFAULT_DISPLAY_PREFERENCES: DisplayPreferences = {
+  cardSize: "medium",
   showEducationalAnnotations: true,
 };
 
