@@ -8,7 +8,13 @@ interface GuideData {
   title: string;
   description: string;
   date: string;
+  readingMinutes: number;
   htmlContent: string;
+}
+
+function estimateReadingMinutes(body: string): number {
+  const words = body.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 220));
 }
 
 function parseFrontmatter(raw: string): { data: Record<string, string>; body: string } {
@@ -43,6 +49,7 @@ function loadAllGuides(): GuideData[] {
       title: data.title,
       description: data.description ?? "",
       date: data.date ?? "",
+      readingMinutes: estimateReadingMinutes(body),
       htmlContent: String(marked.parse(body, { async: false })),
     });
   }

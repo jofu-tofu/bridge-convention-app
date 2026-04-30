@@ -14,9 +14,19 @@ That happened enough times that I started looking for a way to practice. Like, a
 
 It doesn't exist. I looked everywhere.
 
-There's no shortage of ways to learn bridge online, and some of them are genuinely great. You can play thousands of hands on BBO, you can read articles on BridgeWinners, you can watch YouTube breakdowns. But none of that is convention *practice*. It's either full games where the right auction might not come up for hours, or it's reference material you read once and hope sticks. Education and practice are different things. You don't learn guitar by reading about chord shapes. At some point you have to put your hands on the strings and do it a hundred times.
+## Education isn't practice
 
-The other thing that bugged me was that every tool out there assumes you play one system. But I play SAYC at the Tuesday club game and 2/1 with my regular partner on weekends. We play Jacoby Transfers but not Smolen (well, now we do, see above). Our 1NT range is 15-17, not 16-18. Every partnership has little tweaks, and if you're practicing against a system that doesn't match your actual card, you might be building the wrong muscle memory. That's arguably worse than not practicing at all.
+There's no shortage of ways to learn bridge online, and some of them are genuinely great. You can play thousands of hands on BBO, you can read articles on BridgeWinners, you can watch YouTube breakdowns. But none of that is convention *practice*. It's either full games where the right auction might not come up for hours, or it's reference material you read once and hope sticks.
+
+<aside class="pullquote">Education and practice are different things. You don&rsquo;t learn guitar by reading about chord shapes.</aside>
+
+Education and practice are different things. You don't learn guitar by reading about chord shapes. At some point you have to put your hands on the strings and do it a hundred times.
+
+## Every partnership is a little different
+
+The other thing that bugged me was that every tool out there assumes you play one system. But I play SAYC at the Tuesday club game and 2/1 with my regular partner on weekends. We play Jacoby Transfers but not Smolen (well, now we do, see above). Our 1NT range is 15-17, not 16-18.
+
+Every partnership has little tweaks, and if you're practicing against a system that doesn't match your actual card, you might be building the wrong muscle memory. That's arguably worse than not practicing at all.
 
 So I built something.
 
@@ -30,9 +40,11 @@ You can practice as opener or responder. There's a mode where the auction is alr
 
 And because every partnership is a little different, you can build your own system. Start from a base, swap in the modules you actually play, adjust your ranges. Practice against your card, not someone else's.
 
-## Where it's going
+## What's free, what isn't
 
 The learning pages are free, and they'll stay free. Bridge conventions are public knowledge, and the explanations should be too. The practice side is where the product lives. That feedback loop, the hand generation, the bid evaluation, the ability to configure your system and drill specific weak spots, that's the thing I haven't found anywhere else, and that's the thing worth building well.
+
+## Who it's for
 
 I'm not trying to be the place where you learn bridge from scratch. There are better resources for that. I'm trying to be the place you come back to three times a week to stay sharp on the conventions you already play. The gap between "I've read about this" and "I can do this at the table without thinking" is just reps, and this is a reps machine.
 

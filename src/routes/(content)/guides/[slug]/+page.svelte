@@ -17,6 +17,8 @@
     <AppLink variant="back" href="/guides/">All Guides</AppLink>
   </div>
 
+  <p class="meta-line">{data.guide.readingMinutes} min read</p>
+
   <article class="guide-prose">
     <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted build-time markdown, not user input -->
     {@html data.guide.htmlContent}
@@ -41,48 +43,86 @@
 
 <style>
   .back-link-wrap {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .meta-line {
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+
+  .guide-prose {
+    max-width: 38rem;
+    color: var(--color-text-secondary);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    /* establish a block formatting context so floated pull-quotes
+       don't bleed into siblings outside .guide-prose */
+    display: flow-root;
   }
 
   .guide-prose :global(h2) {
     color: var(--color-text-primary);
-    font-size: 1.25rem;
+    font-size: 1.375rem;
     font-weight: 600;
-    margin-top: 2em;
-    margin-bottom: 0.5em;
+    line-height: 1.3;
+    margin-top: 2.5em;
+    margin-bottom: 0.6em;
+    padding-top: 0.4em;
+    border-top: 1px solid var(--color-border-subtle);
+    clear: right;
+  }
+
+  .guide-prose :global(h2:first-child) {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
   }
 
   .guide-prose :global(h3) {
     color: var(--color-text-primary);
-    font-size: 1.1rem;
+    font-size: 1.125rem;
     font-weight: 600;
-    margin-top: 1.5em;
+    margin-top: 1.75em;
     margin-bottom: 0.5em;
   }
 
   .guide-prose :global(p) {
-    margin-bottom: 1em;
-    font-size: 0.9375rem;
+    margin-bottom: 1.1em;
+  }
+
+  .guide-prose :global(p:first-of-type) {
+    font-size: 1.1875rem;
+    line-height: 1.55;
+    color: var(--color-text-primary);
+  }
+
+  .guide-prose :global(strong),
+  .guide-prose :global(em) {
+    color: var(--color-text-primary);
   }
 
   .guide-prose :global(strong) {
-    color: var(--color-text-primary);
     font-weight: 600;
   }
 
   .guide-prose :global(a) {
     color: var(--color-accent-primary);
     text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   .guide-prose :global(ul),
   .guide-prose :global(ol) {
-    margin-bottom: 1em;
+    margin-bottom: 1.1em;
     padding-left: 1.5em;
   }
 
   .guide-prose :global(li) {
-    margin-bottom: 0.25em;
+    margin-bottom: 0.35em;
   }
 
   .guide-prose :global(blockquote) {
@@ -90,7 +130,29 @@
     padding-left: 1em;
     color: var(--color-text-muted);
     font-style: italic;
-    margin-bottom: 1em;
+    margin-bottom: 1.1em;
+  }
+
+  .guide-prose :global(.pullquote) {
+    display: block;
+    margin: 1.75em 0;
+    padding: 0.25em 0 0.25em 1.25em;
+    border-left: 3px solid var(--color-accent-primary);
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    line-height: 1.4;
+    font-weight: 500;
+    font-style: italic;
+  }
+
+  @media (min-width: 900px) {
+    .guide-prose :global(.pullquote) {
+      float: right;
+      width: 17rem;
+      margin: 0.4em -2rem 1em 1.5em;
+      padding-left: 1.25em;
+      font-size: 1.3125rem;
+    }
   }
 
   .guide-prose :global(code) {
