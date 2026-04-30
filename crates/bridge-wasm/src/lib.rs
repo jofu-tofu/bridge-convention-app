@@ -459,11 +459,6 @@ impl WasmServicePort {
             .and_then(to_js)
     }
 
-    pub fn get_bundle_flow_tree(&self, bundle_id: &str) -> Result<JsValue, JsError> {
-        self.with_service(|service| Ok(service.get_bundle_flow_tree(bundle_id)))
-            .and_then(to_js)
-    }
-
     pub fn get_module_flow_tree(&self, module_id: &str) -> Result<JsValue, JsError> {
         self.with_service(|service| Ok(service.get_module_flow_tree(module_id)))
             .and_then(to_js)

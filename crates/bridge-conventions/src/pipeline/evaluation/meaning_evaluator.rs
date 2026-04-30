@@ -91,7 +91,6 @@ fn evaluate_bid_meaning_with_facts(
         teaching_label: surface.teaching_label.clone(),
         surface_bindings: surface.surface_bindings.clone(),
         encoding: surface.encoding.clone(),
-        evidence: None,
     }
 }
 

@@ -136,15 +136,6 @@ pub enum ExtendedClause {
     /// Boolean fact lookup — checks a previously evaluated boolean fact.
     #[serde(rename = "booleanFact")]
     BooleanFact { fact_id: String, expected: bool },
-    /// Numeric fact comparison — checks a previously evaluated numeric fact.
-    #[serde(rename = "numericFact")]
-    NumericFact {
-        fact_id: String,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        min: Option<f64>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        max: Option<f64>,
-    },
     /// Combined partnership ace count = own aces + partner's disclosed aces
     /// from a Blackwood ace response carrier in the observation log (0-8).
     ///

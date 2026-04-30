@@ -14,7 +14,6 @@ use rand_chacha::ChaCha8Rng;
 
 use crate::heuristics::play_profiles::{get_profile, suggest_play_with_profile};
 use crate::heuristics::play_types::{PlayBeliefs, PlayContext};
-use crate::inference::Posterior;
 use crate::phase_machine::is_valid_transition;
 use crate::types::GamePhase;
 
@@ -323,7 +322,7 @@ fn score_trick(state: &mut SessionState) {
     state.play.current_player = Some(winner);
 
     // Update posterior with revealed cards from the completed trick
-    if let Some(Posterior::MonteCarlo(ref mut engine)) = state.posterior {
+    if let Some(ref mut engine) = state.posterior {
         engine.update_with_played_cards(&state.play.tricks.last().unwrap().plays);
     }
 }
@@ -406,13 +405,13 @@ fn build_play_beliefs(state: &SessionState) -> Option<PlayBeliefs> {
         .collect();
 
     match &state.posterior {
-        Some(Posterior::MonteCarlo(engine)) => Some(PlayBeliefs {
+        Some(engine) => Some(PlayBeliefs {
             ranges,
             posterior_hcp: Some(engine.all_marginal_hcp()),
             posterior_suit_lengths: Some(engine.all_suit_lengths()),
             posterior_confidence: engine.confidence(),
         }),
-        _ => Some(PlayBeliefs {
+        None => Some(PlayBeliefs {
             ranges,
             posterior_hcp: None,
             posterior_suit_lengths: None,

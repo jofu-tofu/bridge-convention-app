@@ -9,6 +9,12 @@ path = "src/main.rs"
 
 [features]
 dev-tools = []
+# Exposes `bridge_api::test_support` (TestHarness, UserSeed, etc.) for use by
+# integration tests in `tests/`. Must NOT be enabled in release builds — the
+# module ships test-only INSERT SQL and a `LiveStripeOps::new("sk_test_unused")`
+# constructor. The crate's own `[dev-dependencies]` self-reference enables this
+# feature automatically when running `cargo test -p bridge-api`.
+test-support = []
 
 [dependencies]
 async-trait = "0.1"
@@ -34,3 +40,8 @@ urlencoding = "2"
 time = "0.3"
 dotenvy = "0.15"
 tower = { version = "0.5", features = ["util"] }
+
+[dev-dependencies]
+# Self-reference enables the `test-support` feature for integration tests
+# (separate compilation unit) without making it a default feature.
+bridge-api = { path = ".", features = ["test-support"] }

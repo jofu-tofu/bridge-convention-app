@@ -1,10 +1,8 @@
-//! Posterior inference engine — Monte Carlo rejection sampler + uniform fallback.
+//! Posterior inference engine — Monte Carlo rejection sampler.
 //!
-//! Two variants:
-//! - `UniformPosterior`: returns uninformative distributions (zero confidence)
-//! - `PosteriorEngine`: Monte Carlo rejection sampling against L1 DerivedRanges
-//!
-//! The `Posterior` enum dispatches between them based on the active PlayProfile.
+//! `PosteriorEngine` runs Monte Carlo rejection sampling against L1 DerivedRanges,
+//! conditioned on the observer's known cards. Used by play heuristics gated by
+//! the active PlayProfile's `use_posterior` flag.
 
 use std::collections::HashMap;
 
@@ -35,40 +33,6 @@ const FULL_CONFIDENCE_THRESHOLD: f64 = 50.0;
 #[derive(Debug, Clone)]
 struct SampledDeal {
     hands: HashMap<Seat, Vec<Card>>,
-}
-
-// ── Posterior enum (dispatch) ─────────────────────────────────────
-
-/// Dispatches between uniform stub and Monte Carlo engine.
-pub enum Posterior {
-    Uniform(UniformPosterior),
-    MonteCarlo(PosteriorEngine),
-}
-
-impl Posterior {
-    /// Expected HCP for a seat: (mean, confidence).
-    pub fn marginal_hcp(&self, seat: Seat) -> (f64, f64) {
-        match self {
-            Self::Uniform(u) => u.marginal_hcp(seat),
-            Self::MonteCarlo(mc) => mc.marginal_hcp(seat),
-        }
-    }
-
-    /// Expected suit length for a seat: (mean, confidence).
-    pub fn suit_length(&self, seat: Seat, suit: Suit) -> (f64, f64) {
-        match self {
-            Self::Uniform(u) => u.suit_length(seat, suit),
-            Self::MonteCarlo(mc) => mc.suit_length(seat, suit),
-        }
-    }
-
-    /// Confidence of posterior estimates (0.0–1.0).
-    pub fn confidence(&self) -> f64 {
-        match self {
-            Self::Uniform(u) => u.confidence(),
-            Self::MonteCarlo(mc) => mc.confidence(),
-        }
-    }
 }
 
 // ── PosteriorEngine ───────────────────────────────────────────────
@@ -309,100 +273,11 @@ fn suit_to_shape_index(suit: Suit) -> usize {
     }
 }
 
-// ── Uniform posterior stub ─────────────────────────────────────────
-
-/// Stub posterior that returns uniform (uninformative) distributions for all queries.
-/// Satisfies the posterior interface so downstream consumers can be wired up.
-pub struct UniformPosterior;
-
-impl UniformPosterior {
-    pub fn new() -> Self {
-        Self
-    }
-
-    /// Marginal HCP query — returns uniform expected value.
-    pub fn marginal_hcp(&self, _seat: Seat) -> (f64, f64) {
-        // (expected_value, confidence)
-        (10.0, 0.0)
-    }
-
-    /// Suit length query — returns uniform expected value.
-    pub fn suit_length(&self, _seat: Seat, _suit: Suit) -> (f64, f64) {
-        (3.25, 0.0)
-    }
-
-    /// Confidence — always zero for uniform posterior.
-    pub fn confidence(&self) -> f64 {
-        0.0
-    }
-}
-
-impl Default for UniformPosterior {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::super::types::NumberRange;
     use super::*;
     use bridge_engine::types::Rank;
-
-    // ── UniformPosterior tests ────────────────────────────────────────
-
-    #[test]
-    fn uniform_hcp_query() {
-        let posterior = UniformPosterior::new();
-        let (expected, confidence) = posterior.marginal_hcp(Seat::North);
-        assert_eq!(expected, 10.0);
-        assert_eq!(confidence, 0.0);
-    }
-
-    #[test]
-    fn uniform_suit_length_query() {
-        let posterior = UniformPosterior::new();
-        let (expected, confidence) = posterior.suit_length(Seat::North, Suit::Spades);
-        assert_eq!(expected, 3.25);
-        assert_eq!(confidence, 0.0);
-    }
-
-    #[test]
-    fn marginal_hcp_uniform() {
-        let (mean, confidence) = UniformPosterior::new().marginal_hcp(Seat::North);
-        assert_eq!(mean, 10.0);
-        assert_eq!(confidence, 0.0);
-    }
-
-    #[test]
-    fn suit_length_uniform() {
-        let (mean, confidence) = UniformPosterior::new().suit_length(Seat::North, Suit::Spades);
-        assert_eq!(mean, 3.25);
-        assert_eq!(confidence, 0.0);
-    }
-
-    #[test]
-    fn confidence_uniform() {
-        assert_eq!(UniformPosterior::new().confidence(), 0.0);
-    }
-
-    #[test]
-    fn default_constructor() {
-        let posterior = UniformPosterior::default();
-        let (expected, _) = posterior.marginal_hcp(Seat::South);
-        assert_eq!(expected, 10.0);
-    }
-
-    // ── Posterior enum dispatch tests ───────────────────────────────
-
-    #[test]
-    fn posterior_enum_uniform_dispatch() {
-        let p = Posterior::Uniform(UniformPosterior::new());
-        assert_eq!(p.confidence(), 0.0);
-        let (hcp, conf) = p.marginal_hcp(Seat::North);
-        assert_eq!(hcp, 10.0);
-        assert_eq!(conf, 0.0);
-    }
 
     // ── PosteriorEngine tests ──────────────────────────────────────
 

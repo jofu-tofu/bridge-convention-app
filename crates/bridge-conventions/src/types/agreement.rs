@@ -57,37 +57,6 @@ pub enum GuardOperator {
     Exists,
 }
 
-/// Deal constraint — typed enum per kind.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "kind")]
-pub enum DealConstraint {
-    #[serde(rename = "fit-check")]
-    FitCheck { params: FitCheckParams },
-    #[serde(rename = "combined-hcp")]
-    CombinedHcp { params: CombinedHcpParams },
-    #[serde(rename = "custom")]
-    Custom {
-        params: HashMap<String, serde_json::Value>,
-    },
-}
-
-/// Parameters for fit-check deal constraint.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct FitCheckParams {
-    pub suit: String,
-    pub seats: Vec<String>,
-    pub min_length: u8,
-}
-
-/// Parameters for combined-hcp deal constraint.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct CombinedHcpParams {
-    pub seats: Vec<String>,
-    pub min: u8,
-    pub max: u8,
-}
-
 /// Module classification.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ModuleKind {
@@ -95,12 +64,6 @@ pub enum ModuleKind {
     BaseSystem,
     #[serde(rename = "add-on")]
     AddOn,
-    #[serde(rename = "competitive-treatment")]
-    CompetitiveTreatment,
-    #[serde(rename = "slam-tool")]
-    SlamTool,
-    #[serde(rename = "defensive")]
-    Defensive,
 }
 
 /// Attachment contract for module activation.
@@ -178,28 +141,14 @@ mod tests {
     }
 
     #[test]
-    fn deal_constraint_fit_check_roundtrip() {
-        let dc = DealConstraint::FitCheck {
-            params: FitCheckParams {
-                suit: "S".to_string(),
-                seats: vec!["North".to_string(), "South".to_string()],
-                min_length: 8,
-            },
-        };
-        let json = serde_json::to_string(&dc).unwrap();
-        let back: DealConstraint = serde_json::from_str(&json).unwrap();
-        assert_eq!(back, dc);
-    }
-
-    #[test]
     fn module_kind_serde() {
         assert_eq!(
             serde_json::to_string(&ModuleKind::BaseSystem).unwrap(),
             "\"base-system\""
         );
         assert_eq!(
-            serde_json::to_string(&ModuleKind::CompetitiveTreatment).unwrap(),
-            "\"competitive-treatment\""
+            serde_json::to_string(&ModuleKind::AddOn).unwrap(),
+            "\"add-on\""
         );
     }
 

@@ -173,12 +173,6 @@ fn evaluate_extended_clause(
             is_vul == *vulnerable
         }
         ExtendedClause::BooleanFact { fact_id, expected } => get_bool(facts, fact_id) == *expected,
-        ExtendedClause::NumericFact { fact_id, min, max } => {
-            let val = get_num(facts, fact_id);
-            let above_min = min.map_or(true, |m| val >= m);
-            let below_max = max.map_or(true, |m| val <= m);
-            above_min && below_max
-        }
         ExtendedClause::CombinedAceCount { min, max } => {
             let own = count_rank(hand, Rank::Ace);
             let partner = partner_count_from_ctx(ctx, "module.partner.aceCount");

@@ -6,8 +6,7 @@ use bridge_engine::types::Call;
 use serde::{Deserialize, Serialize};
 
 use super::evaluation::provenance::{
-    ActivationTrace, ApplicabilityEvidence, ArbitrationTrace, EliminationTrace, EncodingTrace,
-    HandoffTrace, LegalityTrace,
+    ApplicabilityEvidence, EliminationTrace, EncodingTrace, LegalityTrace,
 };
 use super::evaluation::types::{MeaningProposal, RankingMetadata};
 use super::evidence_bundle::EvidenceBundle;
@@ -59,9 +58,6 @@ pub struct PipelineResult {
     pub recommended: Vec<PipelineCarrier>,
     pub eliminated: Vec<PipelineCarrier>,
     pub applicability: ApplicabilityEvidence,
-    pub activation: Vec<ActivationTrace>,
-    pub arbitration: Vec<ArbitrationTrace>,
-    pub handoffs: Vec<HandoffTrace>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evidence_bundle: Option<EvidenceBundle>,
 }
@@ -76,9 +72,6 @@ impl PipelineResult {
             recommended: Vec::new(),
             eliminated: Vec::new(),
             applicability: ApplicabilityEvidence::default(),
-            activation: Vec::new(),
-            arbitration: Vec::new(),
-            handoffs: Vec::new(),
             evidence_bundle: None,
         }
     }

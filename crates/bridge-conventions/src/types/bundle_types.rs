@@ -8,13 +8,12 @@ use serde::{Deserialize, Serialize};
 
 use super::agreement::SystemProfile;
 use super::module_types::ConventionModule;
-use super::teaching::SurfaceGroup;
+use crate::teaching::teaching_types::SurfaceGroup;
 
 /// Convention category for UI grouping.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ConventionCategory {
     Asking,
-    Defensive,
     Constructive,
     Competitive,
 }
@@ -105,8 +104,8 @@ mod tests {
             "\"Asking\""
         );
         assert_eq!(
-            serde_json::to_string(&ConventionCategory::Defensive).unwrap(),
-            "\"Defensive\""
+            serde_json::to_string(&ConventionCategory::Competitive).unwrap(),
+            "\"Competitive\""
         );
     }
 

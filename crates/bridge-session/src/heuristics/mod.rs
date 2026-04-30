@@ -15,7 +15,6 @@ pub mod opening_leads;
 pub mod play;
 pub mod play_profiles;
 pub mod play_types;
-pub mod random_play;
 
 pub use bridge_engine::strategy::{
     AttemptOutcome, BidResult, BiddingContext, BiddingStrategy, ChainTrace, Disclosure,
@@ -31,4 +30,3 @@ pub use strategy_chain::StrategyChain;
 
 pub use play_profiles::{get_profile, suggest_play_with_profile, PlayProfile, PlayProfileId};
 pub use play_types::{PlayContext, PlayHeuristic, PlayResult};
-pub use random_play::RandomPlayStrategy;

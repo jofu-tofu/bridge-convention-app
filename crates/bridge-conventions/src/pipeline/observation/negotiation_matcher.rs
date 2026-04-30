@@ -19,28 +19,9 @@ pub fn match_kernel(expr: &NegotiationExpr, kernel: &NegotiationState) -> bool {
 
         NegotiationExpr::NoFit => kernel.fit_agreed.is_none(),
 
-        NegotiationExpr::Forcing { level } => {
-            // Map NegotiationForcingLevel to ForcingLevel for comparison
-            use crate::types::negotiation::ForcingLevel;
-            use crate::types::rule_types::NegotiationForcingLevel;
-            let kernel_level = match kernel.forcing {
-                ForcingLevel::None => NegotiationForcingLevel::None,
-                ForcingLevel::OneRound => NegotiationForcingLevel::OneRound,
-                ForcingLevel::Game => NegotiationForcingLevel::Game,
-            };
-            kernel_level == *level
-        }
+        NegotiationExpr::Forcing { level } => kernel.forcing == *level,
 
-        NegotiationExpr::Captain { who } => {
-            use crate::types::negotiation::Captain;
-            use crate::types::rule_types::NegotiationCaptain;
-            let kernel_captain = match kernel.captain {
-                Captain::Opener => NegotiationCaptain::Opener,
-                Captain::Responder => NegotiationCaptain::Responder,
-                Captain::Undecided => NegotiationCaptain::Undecided,
-            };
-            kernel_captain == *who
-        }
+        NegotiationExpr::Captain { who } => kernel.captain == *who,
 
         NegotiationExpr::Uncontested => {
             kernel.competition == Competition::Simple(CompetitionSimple::Uncontested)

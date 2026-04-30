@@ -9,28 +9,6 @@ use crate::pipeline::observation::committed_step::AuctionContext;
 use crate::pipeline::types::PipelineResult;
 use crate::teaching::teaching_types::{SurfaceGroup, TeachingProjection};
 
-/// Lightweight DTO for convention machine state.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MachineDebugSnapshot {
-    /// Current state ID (populated from rules path).
-    pub current_state_id: String,
-    /// Active surface group IDs (populated from rules path).
-    pub active_surface_group_ids: Vec<String>,
-    /// Diagnostic messages (populated from rules path).
-    pub diagnostics: Vec<DiagnosticEntry>,
-}
-
-/// A diagnostic entry.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DiagnosticEntry {
-    pub level: String,
-    pub message: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub module_id: Option<String>,
-}
-
 /// Unified evaluation snapshot — all pipeline outputs from the most recent suggest() call.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -41,34 +19,12 @@ pub struct StrategyEvaluation {
     pub surface_groups: Option<Vec<SurfaceGroup>>,
     /// Full pipeline result. Null when not produced.
     pub pipeline_result: Option<PipelineResult>,
-    /// Posterior summary. Null when posterior engine not wired.
-    pub posterior_summary: Option<serde_json::Value>,
-    /// Explanation catalog — module-level explanation entries.
-    pub explanation_catalog: Option<ExplanationCatalog>,
     /// Teaching projection. Null when not produced.
     pub teaching_projection: Option<TeachingProjection>,
     /// Evaluated facts. Null before first evaluation.
     pub facts: Option<EvaluatedFacts>,
-    /// Machine/protocol state. Null when no machine is wired.
-    pub machine_snapshot: Option<MachineDebugSnapshot>,
     /// Auction context. Null when not produced.
     pub auction_context: Option<AuctionContext>,
-}
-
-/// Explanation catalog — typed collection of module-level explanation entries.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ExplanationCatalog {
-    pub entries: Vec<ExplanationCatalogEntry>,
-}
-
-/// A single explanation catalog entry.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ExplanationCatalogEntry {
-    pub module_id: String,
-    pub surface_count: usize,
-    pub explanation: String,
 }
 
 /// Practical recommendation — what an experienced player might prefer.

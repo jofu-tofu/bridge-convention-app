@@ -19,7 +19,7 @@ use crate::types::bundle_types::{
 use crate::types::module_types::{ConventionModule, ModuleCategory};
 use crate::types::rule_types::{PhaseRef, TurnRole};
 use crate::types::system_config::BaseSystemId;
-use crate::types::teaching::{SurfaceGroup, SurfaceGroupRelationship};
+use crate::teaching::teaching_types::{SurfaceGroup, SurfaceGroupRelationship};
 
 use super::module_registry::{get_all_modules, get_module};
 use super::system_configs::sayc_system_config;

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use super::bid_action::{BidActionType, BidSuitName, HandFeature, HandStrength, ObsSuit};
 use super::meaning::BidMeaning;
-use super::negotiation::NegotiationDelta;
+use super::negotiation::{Captain, ForcingLevel, NegotiationDelta};
 
 /// Role of a bidder relative to the opening bid.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -89,9 +89,9 @@ pub enum NegotiationExpr {
     #[serde(rename = "no-fit")]
     NoFit,
     #[serde(rename = "forcing")]
-    Forcing { level: NegotiationForcingLevel },
+    Forcing { level: ForcingLevel },
     #[serde(rename = "captain")]
-    Captain { who: NegotiationCaptain },
+    Captain { who: Captain },
     #[serde(rename = "uncontested")]
     Uncontested,
     #[serde(rename = "overcalled")]
@@ -109,30 +109,6 @@ pub enum NegotiationExpr {
     Or { exprs: Vec<NegotiationExpr> },
     #[serde(rename = "not")]
     Not { expr: Box<NegotiationExpr> },
-}
-
-/// Forcing level value for NegotiationExpr::Forcing.
-/// Matches NegotiationState["forcing"] values.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum NegotiationForcingLevel {
-    #[serde(rename = "none")]
-    None,
-    #[serde(rename = "one-round")]
-    OneRound,
-    #[serde(rename = "game")]
-    Game,
-}
-
-/// Captain value for NegotiationExpr::Captain.
-/// Matches NegotiationState["captain"] values.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum NegotiationCaptain {
-    #[serde(rename = "opener")]
-    Opener,
-    #[serde(rename = "responder")]
-    Responder,
-    #[serde(rename = "undecided")]
-    Undecided,
 }
 
 /// Below threshold for overcalled negotiation expression.

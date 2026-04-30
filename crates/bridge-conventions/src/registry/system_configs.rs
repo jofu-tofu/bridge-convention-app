@@ -87,7 +87,7 @@ pub fn sayc_system_config() -> SystemConfig {
 }
 
 /// 2/1 Game Forcing system configuration.
-pub fn two_over_one_system_config() -> SystemConfig {
+fn two_over_one_system_config() -> SystemConfig {
     SystemConfig {
         system_id: BaseSystemId::TwoOverOne,
         display_name: "2/1 Game Forcing".to_string(),
@@ -163,7 +163,7 @@ pub fn two_over_one_system_config() -> SystemConfig {
 }
 
 /// Acol (UK standard weak-NT) system configuration.
-pub fn acol_system_config() -> SystemConfig {
+fn acol_system_config() -> SystemConfig {
     SystemConfig {
         system_id: BaseSystemId::Acol,
         display_name: "Acol".to_string(),

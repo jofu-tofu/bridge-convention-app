@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 use bridge_conventions::registry::bundle_registry::resolve_bundle;
 use bridge_conventions::registry::spec_builder::spec_from_bundle;
-use bridge_conventions::teaching::teaching_types::{SurfaceGroup, SurfaceGroupRelationship};
+use bridge_conventions::teaching::teaching_types::SurfaceGroup;
 use bridge_conventions::types::system_config::BaseSystemId;
 use bridge_engine::hand_evaluator::evaluate_hand_hcp;
 use bridge_engine::types::{Auction, AuctionEntry, BidSuit, Call, Card, Hand, Seat, Suit};
@@ -60,29 +60,7 @@ fn build_adapter(bundle_id: &str) -> ConventionStrategyAdapter {
     let resolved = resolve_bundle(bundle_id, BaseSystemId::Sayc)
         .unwrap_or_else(|| panic!("resolve_bundle failed for {}", bundle_id));
 
-    // Convert types::teaching::SurfaceGroup → teaching::teaching_types::SurfaceGroup
-    let surface_groups: Vec<SurfaceGroup> = resolved
-        .derived_teaching
-        .surface_groups
-        .iter()
-        .map(|sg| SurfaceGroup {
-            id: sg.id.clone(),
-            label: sg.label.clone(),
-            members: sg.members.clone(),
-            relationship: match sg.relationship {
-                bridge_conventions::types::teaching::SurfaceGroupRelationship::MutuallyExclusive => {
-                    SurfaceGroupRelationship::MutuallyExclusive
-                }
-                bridge_conventions::types::teaching::SurfaceGroupRelationship::EquivalentEncoding => {
-                    SurfaceGroupRelationship::EquivalentEncoding
-                }
-                bridge_conventions::types::teaching::SurfaceGroupRelationship::PolicyAlternative => {
-                    SurfaceGroupRelationship::PolicyAlternative
-                }
-            },
-            description: sg.description.clone(),
-        })
-        .collect();
+    let surface_groups: Vec<SurfaceGroup> = resolved.derived_teaching.surface_groups.clone();
 
     ConventionStrategyAdapter::new(spec, surface_groups)
 }

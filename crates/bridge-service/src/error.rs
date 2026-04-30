@@ -17,20 +17,11 @@ pub enum ServiceError {
     #[error("Module not found: {0}")]
     ModuleNotFound(String),
 
-    #[error("Invalid atom ID: {0}")]
-    InvalidAtomId(String),
-
-    #[error("Invalid bid: {0}")]
-    InvalidBid(String),
-
     #[error("Session not in expected phase")]
     WrongPhase,
 
     #[error("DDS not available on this platform")]
     DdsNotAvailable,
-
-    #[error("Playthrough step {0} out of range")]
-    StepOutOfRange(usize),
 
     #[error("Invalid system config: {0}")]
     InvalidConfig(String),
@@ -42,11 +33,4 @@ pub enum ServiceError {
     /// witness within the budget. UI treats this as "retry with new seed".
     #[error("Deal generation exhausted: {witness_summary}")]
     DealGenerationExhausted { witness_summary: String },
-}
-
-impl ServiceError {
-    /// Convert a serde_json error to an internal service error.
-    pub fn from_json(e: serde_json::Error) -> Self {
-        ServiceError::Internal(format!("JSON error: {}", e))
-    }
 }

@@ -41,17 +41,6 @@ use crate::pipeline::observation::committed_step::CommittedStep;
 use crate::types::bid_action::{BidAction, BidSuitName};
 use crate::types::rule_types::{ObsPattern, ObsPatternAct, RouteExpr, TurnRole};
 
-/// Derive actor role from seat and opener seat.
-fn derive_actor_role(actor: Seat, opener_seat: Seat) -> TurnRole {
-    if actor == opener_seat {
-        return TurnRole::Opener;
-    }
-    if actor == partner_seat(opener_seat) {
-        return TurnRole::Responder;
-    }
-    TurnRole::Opponent
-}
-
 /// Match a single ObsPattern against a single BidAction.
 ///
 /// Note: this function evaluates obs-level fields only (act/feature/suit/
@@ -210,7 +199,15 @@ pub fn step_matches_obs(
     if !check_level_jump(pattern, step, prior_log) {
         return false;
     }
-    let actor_role = opener_seat.map(|os| derive_actor_role(step.actor, os));
+    let actor_role = opener_seat.map(|os| {
+        if step.actor == os {
+            TurnRole::Opener
+        } else if step.actor == partner_seat(os) {
+            TurnRole::Responder
+        } else {
+            TurnRole::Opponent
+        }
+    });
     step.public_actions
         .iter()
         .any(|obs| match_obs(pattern, obs, actor_role))

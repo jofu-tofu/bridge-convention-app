@@ -43,39 +43,6 @@ pub struct EliminationTrace {
     pub reason: String,
 }
 
-/// Trace of a surface's activation (which module + state entry matched).
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ActivationTrace {
-    pub module_id: String,
-    pub meaning_id: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub phase: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub state_entry_index: Option<usize>,
-}
-
-/// Trace of arbitration decision for a single surface.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ArbitrationTrace {
-    pub meaning_id: String,
-    pub module_id: String,
-    pub outcome: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub reason: Option<String>,
-}
-
-/// Trace of negotiation delta handoff.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct HandoffTrace {
-    pub meaning_id: String,
-    pub module_id: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub delta_fields: Option<Vec<String>>,
-}
-
 /// Evidence for how surfaces were found applicable.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]

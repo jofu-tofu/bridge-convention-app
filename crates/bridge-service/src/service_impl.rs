@@ -13,14 +13,13 @@ use bridge_engine::constants::{partner_seat, SEATS};
 use bridge_engine::strategy::BiddingStrategy;
 use bridge_engine::types::{Call, Card, Seat};
 use bridge_session::session::{
-    build_bidding_viewport, build_bundle_flow_tree, build_declarer_prompt_viewport,
-    build_explanation_viewport, build_module_catalog, build_module_flow_tree,
-    build_module_learning_viewport, build_playing_viewport, format_call, process_bid,
-    process_play_card, run_initial_ai_bids, run_initial_ai_plays, AiPlayEntry, BiddingViewport,
-    BuildBiddingViewportInput, BuildDeclarerPromptViewportInput, BuildExplanationViewportInput,
-    BuildPlayingViewportInput, BundleFlowTreeViewport, DeclarerPromptViewport, ExplanationViewport,
-    ModuleCatalogEntry, ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult,
-    PlayingViewport, SeatStrategy,
+    build_bidding_viewport, build_declarer_prompt_viewport, build_explanation_viewport,
+    build_module_catalog, build_module_flow_tree, build_module_learning_viewport,
+    build_playing_viewport, format_call, process_bid, process_play_card, run_initial_ai_bids,
+    run_initial_ai_plays, AiPlayEntry, BiddingViewport, BuildBiddingViewportInput,
+    BuildDeclarerPromptViewportInput, BuildExplanationViewportInput, BuildPlayingViewportInput,
+    DeclarerPromptViewport, ExplanationViewport, ModuleCatalogEntry, ModuleFlowTreeViewport,
+    ModuleLearningViewport, PlayCardResult, PlayingViewport, SeatStrategy,
 };
 use bridge_session::types::{GamePhase, PromptMode};
 
@@ -760,10 +759,6 @@ impl ServicePort for ServicePortImpl {
         build_module_learning_viewport(module_id, BaseSystemId::Sayc)
     }
 
-    fn get_bundle_flow_tree(&self, bundle_id: &str) -> Option<BundleFlowTreeViewport> {
-        build_bundle_flow_tree(bundle_id, BaseSystemId::Sayc)
-    }
-
     fn get_module_flow_tree(&self, module_id: &str) -> Option<ModuleFlowTreeViewport> {
         build_module_flow_tree(module_id, BaseSystemId::Sayc)
     }
@@ -1145,13 +1140,6 @@ mod tests {
         let service = ServicePortImpl::new();
         let vp = service.get_module_learning_viewport("nonexistent-module");
         assert!(vp.is_none());
-    }
-
-    #[test]
-    fn get_bundle_flow_tree_known() {
-        let service = ServicePortImpl::new();
-        let tree = service.get_bundle_flow_tree("nt-bundle");
-        assert!(tree.is_some(), "Expected nt-bundle flow tree");
     }
 
     #[test]

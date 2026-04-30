@@ -341,7 +341,6 @@ impl ConventionStrategyAdapter {
             &std::collections::HashMap::new(),
             Some(&ctx.hand),
             self.system_config.as_ref(),
-            None, // partner_context — populated by session layer when available
         )
     }
 

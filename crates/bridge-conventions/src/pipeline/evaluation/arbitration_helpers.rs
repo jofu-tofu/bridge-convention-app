@@ -202,7 +202,6 @@ mod tests {
                         default_call: call.clone(),
                         alternate_encodings: None,
                     },
-                    evidence: None,
                 },
                 call: call.clone(),
                 is_default_encoding: true,
@@ -416,9 +415,6 @@ mod tests {
             eliminated,
             applicability: crate::pipeline::evaluation::provenance::ApplicabilityEvidence::default(
             ),
-            activation: Vec::new(),
-            arbitration: Vec::new(),
-            handoffs: Vec::new(),
             evidence_bundle: None,
         }
     }

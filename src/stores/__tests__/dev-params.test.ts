@@ -25,10 +25,6 @@ class TestWasmServicePort {
     return null;
   }
 
-  get_bundle_flow_tree() {
-    return null;
-  }
-
   get_module_flow_tree() {
     return null;
   }

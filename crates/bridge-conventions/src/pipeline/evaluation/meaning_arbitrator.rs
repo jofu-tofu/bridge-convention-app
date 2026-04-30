@@ -8,9 +8,7 @@ use bridge_engine::types::Call;
 use serde::Serialize;
 
 use crate::pipeline::evaluation::arbitration_helpers::{classify_into_sets, evaluate_proposal};
-use crate::pipeline::evaluation::provenance::{
-    ApplicabilityEvidence, ArbitrationTrace, HandoffTrace,
-};
+use crate::pipeline::evaluation::provenance::ApplicabilityEvidence;
 use crate::pipeline::evaluation::types::{compare_ranking, MeaningClause, MeaningProposal};
 use crate::pipeline::evidence_bundle::{
     AlternativeEvidence, AlternativeRanking, ConditionEvidence, EvidenceBundle, MatchedEvidence,
@@ -64,31 +62,6 @@ pub fn arbitrate_meanings(
         .cloned()
         .collect();
 
-    // Build arbitration traces
-    let arbitration: Vec<ArbitrationTrace> = carriers
-        .iter()
-        .map(|c| {
-            let outcome = if selected.as_ref().map(|s| &s.encoded.proposal.meaning_id)
-                == Some(&c.encoded.proposal.meaning_id)
-            {
-                "selected"
-            } else if truth_ids.contains(c.encoded.proposal.meaning_id.as_str()) {
-                "truth-set"
-            } else {
-                "eliminated"
-            };
-            ArbitrationTrace {
-                meaning_id: c.encoded.proposal.meaning_id.clone(),
-                module_id: c.encoded.proposal.module_id.clone(),
-                outcome: outcome.into(),
-                reason: c.traces.elimination.as_ref().map(|e| e.reason.clone()),
-            }
-        })
-        .collect();
-
-    // Build handoff traces from selected carrier's negotiation delta
-    let handoffs: Vec<HandoffTrace> = Vec::new(); // Populated by adapter layer
-
     let matched_count = truth_set.len();
     let eliminated_count = eliminated.len();
 
@@ -106,9 +79,6 @@ pub fn arbitrate_meanings(
             matched_count,
             eliminated_count,
         },
-        activation: Vec::new(), // Populated by observation layer
-        arbitration,
-        handoffs,
         evidence_bundle: Some(evidence_bundle),
     }
 }
@@ -333,7 +303,6 @@ mod tests {
                         default_call: call.clone(),
                         alternate_encodings: None,
                     },
-                    evidence: None,
                 },
                 call: call.clone(),
                 is_default_encoding: true,

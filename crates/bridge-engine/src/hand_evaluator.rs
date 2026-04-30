@@ -1,7 +1,5 @@
 use crate::constants::hcp_value;
-use crate::types::{
-    DistributionPoints, Hand, HandEvaluation, HandEvaluationStrategy, Suit, SuitLength,
-};
+use crate::types::{DistributionPoints, Hand, HandEvaluation, Suit, SuitLength};
 
 /// Sum of high card points (A=4, K=3, Q=2, J=1) in the hand.
 pub fn calculate_hcp(hand: &Hand) -> u32 {
@@ -90,34 +88,16 @@ pub fn calculate_distribution_points(shape: &SuitLength) -> DistributionPoints {
     }
 }
 
-// --- HCP Strategy (V1 default) ---
-
-pub struct HcpStrategy;
-
-impl HandEvaluationStrategy for HcpStrategy {
-    fn name(&self) -> &str {
-        "HCP"
-    }
-
-    fn evaluate(&self, hand: &Hand) -> HandEvaluation {
-        let (hcp, shape) = calculate_hcp_and_shape(hand);
-        let distribution = calculate_distribution_points(&shape);
-        HandEvaluation {
-            hcp,
-            distribution,
-            shape,
-            strategy: "HCP".to_string(),
-        }
-    }
-}
-
-pub fn evaluate_hand(hand: &Hand, strategy: &dyn HandEvaluationStrategy) -> HandEvaluation {
-    strategy.evaluate(hand)
-}
-
-/// Convenience: evaluate with default HCP strategy.
+/// Evaluate a hand using HCP scoring.
 pub fn evaluate_hand_hcp(hand: &Hand) -> HandEvaluation {
-    evaluate_hand(hand, &HcpStrategy)
+    let (hcp, shape) = calculate_hcp_and_shape(hand);
+    let distribution = calculate_distribution_points(&shape);
+    HandEvaluation {
+        hcp,
+        distribution,
+        shape,
+        strategy: "HCP".to_string(),
+    }
 }
 
 #[cfg(test)]

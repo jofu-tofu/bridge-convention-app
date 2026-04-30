@@ -41,8 +41,6 @@ pub struct PlayProfile {
     pub skippable_heuristics: &'static [&'static str],
     /// Whether L1 inference-enhanced heuristics are active.
     pub use_inferences: bool,
-    /// Blur (0.0-0.5) on probability estimates for inference decisions.
-    pub inference_noise: f64,
     /// Whether L2 posterior queries are active.
     pub use_posterior: bool,
     /// Whether to track played cards for distribution updates.
@@ -62,7 +60,6 @@ pub const BEGINNER_PROFILE: PlayProfile = PlayProfile {
     heuristic_skip_rate: 0.15,
     skippable_heuristics: &["cover-honor-with-honor", "trump-management"],
     use_inferences: false,
-    inference_noise: 0.0,
     use_posterior: false,
     use_card_counting: false,
     use_dds: false,
@@ -75,7 +72,6 @@ pub const CLUB_PLAYER_PROFILE: PlayProfile = PlayProfile {
     heuristic_skip_rate: 0.0,
     skippable_heuristics: &[],
     use_inferences: true,
-    inference_noise: 0.25,
     use_posterior: false,
     use_card_counting: true,
     use_dds: false,
@@ -88,7 +84,6 @@ pub const EXPERT_PROFILE: PlayProfile = PlayProfile {
     heuristic_skip_rate: 0.0,
     skippable_heuristics: &[],
     use_inferences: true,
-    inference_noise: 0.0,
     use_posterior: false,
     use_card_counting: true,
     use_dds: true,
@@ -101,7 +96,6 @@ pub const WORLD_CLASS_PROFILE: PlayProfile = PlayProfile {
     heuristic_skip_rate: 0.0,
     skippable_heuristics: &[],
     use_inferences: true,
-    inference_noise: 0.0,
     use_posterior: true,
     use_card_counting: true,
     use_dds: true,

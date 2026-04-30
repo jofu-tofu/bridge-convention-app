@@ -2,9 +2,6 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum EngineError {
-    #[error("Hand must have exactly 13 cards, got {0}")]
-    InvalidHandSize(usize),
-
     #[error("Cannot add call to completed auction")]
     AuctionComplete,
 

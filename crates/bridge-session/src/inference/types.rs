@@ -153,30 +153,6 @@ pub struct InferenceExtractorInput {
     pub constraints: Vec<FactConstraint>,
 }
 
-/// Stable adapter for extracting `FactConstraint[]` from convention evaluation results.
-/// Decouples public belief layer from evaluator internals.
-pub trait InferenceExtractor: Send + Sync {
-    fn extract_constraints(
-        &self,
-        result: &InferenceExtractorInput,
-        seat: Seat,
-    ) -> Vec<FactConstraint>;
-}
-
-/// No-op extractor -- returns empty constraints. Real inference flows through
-/// the posterior engine.
-pub struct NoopExtractor;
-
-impl InferenceExtractor for NoopExtractor {
-    fn extract_constraints(
-        &self,
-        _result: &InferenceExtractorInput,
-        _seat: Seat,
-    ) -> Vec<FactConstraint> {
-        Vec::new()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

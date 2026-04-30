@@ -791,17 +791,6 @@ pub fn get_all_modules(_system: BaseSystemId) -> Vec<&'static ConventionModule> 
     MODULE_IDS.iter().filter_map(|&id| cache.get(id)).collect()
 }
 
-/// Get modules by a list of IDs. Returns None if any ID is not found.
-pub fn get_modules(
-    module_ids: &[&str],
-    system: BaseSystemId,
-) -> Option<Vec<&'static ConventionModule>> {
-    module_ids
-        .iter()
-        .map(|&id| get_module(id, system))
-        .collect()
-}
-
 /// Get base module IDs for a system.
 /// Currently all systems share the same base modules.
 pub fn get_base_module_ids(_system: BaseSystemId) -> &'static [&'static str] {
@@ -841,22 +830,6 @@ mod tests {
         assert_eq!(ids, MODULE_IDS);
     }
 
-    #[test]
-    fn get_modules_by_ids() {
-        let ids = &["stayman", "blackwood"];
-        let modules = get_modules(ids, BaseSystemId::Sayc);
-        assert!(modules.is_some());
-        let ms = modules.unwrap();
-        assert_eq!(ms.len(), 2);
-        assert_eq!(ms[0].module_id, "stayman");
-        assert_eq!(ms[1].module_id, "blackwood");
-    }
-
-    #[test]
-    fn get_modules_fails_on_unknown() {
-        let ids = &["stayman", "nonexistent"];
-        assert!(get_modules(ids, BaseSystemId::Sayc).is_none());
-    }
 
     #[test]
     fn base_module_ids() {

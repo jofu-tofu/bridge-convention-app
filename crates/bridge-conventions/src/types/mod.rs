@@ -10,7 +10,6 @@ pub mod negotiation;
 pub mod rule_types;
 pub mod spec_types;
 pub mod system_config;
-pub mod teaching;
 
 // Re-export all public types for convenience
 pub use agreement::*;
@@ -25,4 +24,3 @@ pub use negotiation::*;
 pub use rule_types::*;
 pub use spec_types::*;
 pub use system_config::*;
-pub use teaching::*;

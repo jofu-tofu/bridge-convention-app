@@ -625,7 +625,6 @@ mod tests {
                 default_call: make_call_2c(),
                 alternate_encodings: None,
             },
-            evidence: None,
         }
     }
 
@@ -681,9 +680,6 @@ mod tests {
                 matched_count: 1,
                 eliminated_count: 4,
             },
-            activation: vec![],
-            arbitration: vec![],
-            handoffs: vec![],
             evidence_bundle: None,
         }
     }
@@ -781,11 +777,8 @@ mod tests {
                 make_call_2c(),
                 make_teaching_label("Stayman", "Asks opener for a 4-card major"),
             )),
-            posterior_summary: None,
-            explanation_catalog: None,
             teaching_projection: Some(make_teaching_projection()),
             facts: None,
-            machine_snapshot: None,
             auction_context: None,
         }
     }

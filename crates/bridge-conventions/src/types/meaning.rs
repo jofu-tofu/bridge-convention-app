@@ -94,11 +94,6 @@ impl ConstraintValue {
     pub fn int(n: i64) -> Self {
         Self::Number(serde_json::Number::from(n))
     }
-
-    /// Create a numeric constraint value from a float.
-    pub fn float(n: f64) -> Self {
-        Self::Number(serde_json::Number::from_f64(n).unwrap())
-    }
 }
 
 /// A fact constraint (from agreement-module.ts).

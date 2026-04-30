@@ -8,7 +8,6 @@ pub mod bid_feedback_builder;
 pub mod bidding_controller;
 pub mod build_viewport;
 pub mod config_factory;
-pub mod drill_session;
 pub mod flow_tree;
 pub mod format_obs_label;
 pub mod learning_formatters;
@@ -29,8 +28,7 @@ pub use build_viewport::{
     build_auction_entries, build_bidding_viewport, build_declarer_prompt_viewport,
     build_explanation_viewport, build_playing_viewport, filter_visible_hands, format_call,
 };
-pub use config_factory::{create_drill_config, DrillConfig};
-pub use drill_session::get_next_bid;
+pub use config_factory::{DrillConfig, SeatAssignment};
 pub use flow_tree::{
     build_bundle_flow_tree, build_module_flow_tree, BundleFlowTreeViewport, FlowTreeNode,
     ModuleFlowTreeViewport,

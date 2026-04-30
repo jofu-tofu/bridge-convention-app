@@ -275,14 +275,6 @@ pub struct DealGeneratorResult {
     pub iterations: u32,
 }
 
-// --- Future extensibility traits ---
-
-/// Pluggable hand evaluation strategy (V1: HCP only, future: Bergen, Zar, LTC)
-pub trait HandEvaluationStrategy: Send + Sync {
-    fn name(&self) -> &str;
-    fn evaluate(&self, hand: &Hand) -> HandEvaluation;
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ParContract {

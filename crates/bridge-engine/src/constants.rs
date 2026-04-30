@@ -1,11 +1,11 @@
-use crate::types::{BidSuit, Card, Hand, Rank, Seat, Suit};
+use crate::types::{BidSuit, Card, Rank, Seat, Suit};
 
 const SUITS: [Suit; 4] = [Suit::Clubs, Suit::Diamonds, Suit::Hearts, Suit::Spades];
 
 /// Suit ordering matching SuitLength tuple: [Spades, Hearts, Diamonds, Clubs]
 pub const SUIT_ORDER: [Suit; 4] = [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs];
 
-pub const RANKS: [Rank; 13] = [
+pub(crate) const RANKS: [Rank; 13] = [
     Rank::Two,
     Rank::Three,
     Rank::Four,
@@ -23,7 +23,7 @@ pub const RANKS: [Rank; 13] = [
 
 pub const SEATS: [Seat; 4] = [Seat::North, Seat::East, Seat::South, Seat::West];
 
-pub fn seat_index(seat: Seat) -> usize {
+pub(crate) fn seat_index(seat: Seat) -> usize {
     match seat {
         Seat::North => 0,
         Seat::East => 1,
@@ -50,7 +50,7 @@ pub fn rank_index(rank: Rank) -> usize {
     }
 }
 
-pub fn hcp_value(rank: Rank) -> u32 {
+pub(crate) fn hcp_value(rank: Rank) -> u32 {
     match rank {
         Rank::Jack => 1,
         Rank::Queen => 2,
@@ -68,13 +68,6 @@ pub fn create_deck() -> Vec<Card> {
         }
     }
     cards
-}
-
-pub fn create_hand(cards: Vec<Card>) -> Result<Hand, crate::error::EngineError> {
-    if cards.len() != 13 {
-        return Err(crate::error::EngineError::InvalidHandSize(cards.len()));
-    }
-    Ok(Hand { cards })
 }
 
 /// Map BidSuit to Suit for trump. NoTrump returns None.
@@ -137,16 +130,6 @@ mod tests {
         assert_eq!(hcp_value(Rank::Queen), 2);
         assert_eq!(hcp_value(Rank::King), 3);
         assert_eq!(hcp_value(Rank::Ace), 4);
-    }
-
-    #[test]
-    fn create_hand_requires_13_cards() {
-        let deck = create_deck();
-        let result = create_hand(deck[0..12].to_vec());
-        assert!(result.is_err());
-
-        let result = create_hand(deck[0..13].to_vec());
-        assert!(result.is_ok());
     }
 
     #[test]

@@ -5,7 +5,6 @@
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
-use crate::pipeline::evidence_bundle::ConditionEvidence;
 use crate::types::meaning::{
     AuthoredRankingMetadata, ConstraintValue, Disclosure, FactOperator, RecommendationBand,
 };
@@ -92,14 +91,6 @@ pub fn compare_ranking(a: &RankingMetadata, b: &RankingMetadata) -> Ordering {
     a.declaration_order.cmp(&b.declaration_order)
 }
 
-/// Evidence from clause evaluation.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EvaluationEvidence {
-    pub satisfied_conditions: Vec<ConditionEvidence>,
-    pub failed_conditions: Vec<ConditionEvidence>,
-}
-
 /// A fully evaluated meaning proposal.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -116,16 +107,4 @@ pub struct MeaningProposal {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub surface_bindings: Option<std::collections::HashMap<String, String>>,
     pub encoding: crate::types::meaning::BidEncoding,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub evidence: Option<EvaluationEvidence>,
 }
-
-/// Bridge semantic classes — catalog of well-known semantic equivalence classes.
-pub const BRIDGE_SEMANTIC_CLASSES: &[&str] = &[
-    "bridge:natural-pass",
-    "bridge:nt-invite",
-    "bridge:nt-game",
-    "bridge:suit-raise-game",
-    "bridge:suit-raise-invite",
-    "bridge:slam-invite-nt",
-];

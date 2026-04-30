@@ -5,9 +5,8 @@
 
 use bridge_engine::types::{Call, Card, Seat};
 use bridge_session::session::{
-    BiddingViewport, BundleFlowTreeViewport, DeclarerPromptViewport, ExplanationViewport,
-    ModuleCatalogEntry, ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult,
-    PlayingViewport,
+    BiddingViewport, DeclarerPromptViewport, ExplanationViewport, ModuleCatalogEntry,
+    ModuleFlowTreeViewport, ModuleLearningViewport, PlayCardResult, PlayingViewport,
 };
 
 use crate::config_schema_types::{ModuleConfigSchemaView, ValidationResult};
@@ -99,7 +98,6 @@ pub trait ServicePort {
     // ── Learning ───────────────────────────────────────────────────
 
     fn get_module_learning_viewport(&self, module_id: &str) -> Option<ModuleLearningViewport>;
-    fn get_bundle_flow_tree(&self, bundle_id: &str) -> Option<BundleFlowTreeViewport>;
     fn get_module_flow_tree(&self, module_id: &str) -> Option<ModuleFlowTreeViewport>;
 
     // ── Workshop ──────────────────────────────────────────────────

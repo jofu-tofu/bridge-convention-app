@@ -4,23 +4,17 @@
 
 use std::collections::HashMap;
 
-use bridge_engine::types::{Call, Hand, Seat};
+use bridge_engine::types::{Call, Hand};
 
 use crate::types::system_config::SystemConfig;
 
-use crate::adapter::practical_scorer::{build_practical_recommendation, PartnerContext};
-use crate::adapter::strategy_evaluation::{
-    DiagnosticEntry, ExplanationCatalog, ExplanationCatalogEntry, MachineDebugSnapshot,
-    StrategyEvaluation,
-};
+use crate::adapter::practical_scorer::build_practical_recommendation;
+use crate::adapter::strategy_evaluation::StrategyEvaluation;
 use crate::adapter::tree_evaluation::ResolvedCandidateDTO;
 use crate::fact_dsl::types::EvaluatedFacts;
-use crate::pipeline::evaluation::provenance::ActivationTrace;
 use crate::pipeline::observation::committed_step::AuctionContext;
 use crate::pipeline::observation::public_commitments::derive_public_commitments;
-use crate::pipeline::observation::rule_interpreter::{
-    collect_matching_claims, flatten_surfaces, ModuleSurfaceResult,
-};
+use crate::pipeline::observation::rule_interpreter::ModuleSurfaceResult;
 use crate::pipeline::run_pipeline::{run_pipeline, PipelineInput};
 use crate::pipeline::types::PipelineResult;
 use crate::teaching::projection_builder::project_teaching;
@@ -50,33 +44,9 @@ impl ConventionStrategy {
         }
     }
 
-    /// Suggest a bid given the current auction context and evaluated facts.
-    ///
-    /// Returns (Option<BidResult>, StrategyEvaluation) — strategy stays &self (immutable).
-    pub fn suggest(
-        &self,
-        context: &AuctionContext,
-        next_seat: Option<Seat>,
-        facts: &EvaluatedFacts,
-        is_legal: &dyn Fn(&Call) -> bool,
-        inherited_dimensions: &HashMap<String, Vec<ConstraintDimension>>,
-        partner_context: Option<&PartnerContext>,
-    ) -> (Option<BidResult>, StrategyEvaluation) {
-        self.suggest_with_hand(
-            context,
-            next_seat,
-            facts,
-            is_legal,
-            inherited_dimensions,
-            None,
-            None,
-            partner_context,
-        )
-    }
-
-    /// Suggest using pre-collected surfaces. Skips the FSM replay that
-    /// `suggest`/`suggest_with_hand` perform — the caller provides surfaces
-    /// and the module-level surface results (for the machine snapshot).
+    /// Suggest using pre-collected surfaces. The caller provides surfaces
+    /// and the module-level surface results.
+    #[allow(clippy::too_many_arguments)]
     pub fn suggest_from_surfaces(
         &self,
         surfaces: &[BidMeaning],
@@ -87,7 +57,6 @@ impl ConventionStrategy {
         inherited_dimensions: &HashMap<String, Vec<ConstraintDimension>>,
         hand: Option<&Hand>,
         system_config: Option<&SystemConfig>,
-        partner_context: Option<&PartnerContext>,
     ) -> (Option<BidResult>, StrategyEvaluation) {
         let public_commitments = derive_public_commitments(&context.log);
         let public_commitments_ref: Option<&[_]> = if public_commitments.is_empty() {
@@ -105,55 +74,7 @@ impl ConventionStrategy {
             public_commitments: public_commitments_ref,
         });
 
-        self.build_evaluation(
-            context,
-            facts,
-            pipeline_result,
-            surface_results,
-            partner_context,
-        )
-    }
-
-    /// Suggest with an optional hand for per-surface relational fact evaluation.
-    pub fn suggest_with_hand(
-        &self,
-        context: &AuctionContext,
-        next_seat: Option<Seat>,
-        facts: &EvaluatedFacts,
-        is_legal: &dyn Fn(&Call) -> bool,
-        inherited_dimensions: &HashMap<String, Vec<ConstraintDimension>>,
-        hand: Option<&Hand>,
-        system_config: Option<&SystemConfig>,
-        partner_context: Option<&PartnerContext>,
-    ) -> (Option<BidResult>, StrategyEvaluation) {
-        // Step 1: Collect matching surfaces via observation layer
-        let surface_results = collect_matching_claims(&self.spec.modules, context, next_seat);
-        let surfaces = flatten_surfaces(&surface_results);
-
-        // Step 2: Run the pipeline
-        let public_commitments = derive_public_commitments(&context.log);
-        let public_commitments_ref: Option<&[_]> = if public_commitments.is_empty() {
-            None
-        } else {
-            Some(&public_commitments)
-        };
-        let pipeline_result = run_pipeline(PipelineInput {
-            surfaces: &surfaces,
-            facts,
-            inherited_dimensions,
-            is_legal,
-            hand,
-            system_config,
-            public_commitments: public_commitments_ref,
-        });
-
-        self.build_evaluation(
-            context,
-            facts,
-            pipeline_result,
-            &surface_results,
-            partner_context,
-        )
+        self.build_evaluation(context, facts, pipeline_result, surface_results)
     }
 
     /// Assemble bid result and evaluation from a pipeline result.
@@ -162,13 +83,8 @@ impl ConventionStrategy {
         context: &AuctionContext,
         facts: &EvaluatedFacts,
         pipeline_result: PipelineResult,
-        surface_results: &[ModuleSurfaceResult],
-        partner_context: Option<&PartnerContext>,
+        _surface_results: &[ModuleSurfaceResult],
     ) -> (Option<BidResult>, StrategyEvaluation) {
-        // Populate activation traces from surface results
-        let mut pipeline_result = pipeline_result;
-        pipeline_result.activation = build_activation_traces(surface_results);
-
         let mut teaching_projection =
             project_teaching(&pipeline_result, Some(&self.surface_groups));
         teaching_projection.parse_tree = Some(
@@ -181,9 +97,7 @@ impl ConventionStrategy {
             .map(|fv| fv.value.as_number())
             .unwrap_or(0.0);
         let practical_recommendation =
-            build_practical_recommendation(&pipeline_result.truth_set, hcp, partner_context);
-
-        let machine_snapshot = build_machine_snapshot(surface_results);
+            build_practical_recommendation(&pipeline_result.truth_set, hcp);
 
         let resolved_candidates = build_resolved_candidates(&pipeline_result);
 
@@ -192,55 +106,17 @@ impl ConventionStrategy {
             resolved_candidates,
         });
 
-        // Build explanation catalog from surface groups
-        let explanation_catalog = build_explanation_catalog(surface_results);
-
         let evaluation = StrategyEvaluation {
             practical_recommendation,
             surface_groups: Some(self.surface_groups.clone()),
             pipeline_result: Some(pipeline_result),
-            posterior_summary: None,
-            explanation_catalog: Some(explanation_catalog),
             teaching_projection: Some(teaching_projection),
             facts: Some(facts.clone()),
-            machine_snapshot: Some(machine_snapshot),
             auction_context: Some(context.clone()),
         };
 
         (bid_result, evaluation)
     }
-}
-
-/// Build activation traces from module surface results.
-///
-/// Records which module/phase matched which surfaces during collect_matching_claims().
-fn build_activation_traces(surface_results: &[ModuleSurfaceResult]) -> Vec<ActivationTrace> {
-    surface_results
-        .iter()
-        .flat_map(|r| {
-            r.resolved.iter().enumerate().map(move |(idx, surface)| {
-                ActivationTrace {
-                    module_id: r.module_id.clone(),
-                    meaning_id: surface.surface.meaning_id.clone(),
-                    phase: None, // Phase tracking not available in ModuleSurfaceResult
-                    state_entry_index: Some(idx),
-                }
-            })
-        })
-        .collect()
-}
-
-/// Build explanation catalog from module surface results.
-fn build_explanation_catalog(surface_results: &[ModuleSurfaceResult]) -> ExplanationCatalog {
-    let entries: Vec<ExplanationCatalogEntry> = surface_results
-        .iter()
-        .map(|r| ExplanationCatalogEntry {
-            module_id: r.module_id.clone(),
-            surface_count: r.resolved.len(),
-            explanation: format!("{} matched {} surfaces", r.module_id, r.resolved.len()),
-        })
-        .collect();
-    ExplanationCatalog { entries }
 }
 
 /// Build resolved candidates from the pipeline truth_set.
@@ -306,362 +182,5 @@ fn carrier_to_candidate(
         module_id: Some(p.module_id.clone()),
         semantic_class_id: Some(p.semantic_class_id.clone()),
         recommendation_band: Some(p.ranking.recommendation_band),
-    }
-}
-
-/// Build a MachineDebugSnapshot from surface results.
-fn build_machine_snapshot(surface_results: &[ModuleSurfaceResult]) -> MachineDebugSnapshot {
-    let active_surface_group_ids: Vec<String> = surface_results
-        .iter()
-        .map(|r| r.module_id.clone())
-        .collect();
-
-    let diagnostics: Vec<DiagnosticEntry> = surface_results
-        .iter()
-        .map(|r| DiagnosticEntry {
-            level: "info".into(),
-            message: format!("{}: {} surfaces matched", r.module_id, r.resolved.len()),
-            module_id: Some(r.module_id.clone()),
-        })
-        .collect();
-
-    MachineDebugSnapshot {
-        current_state_id: "rules-path".into(),
-        active_surface_group_ids,
-        diagnostics,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::collections::HashMap;
-
-    use bridge_engine::{evaluate_hand_hcp, BidSuit, Call, Card, Hand, Rank, Seat, Suit};
-
-    use crate::fact_dsl::evaluate_facts;
-    use crate::pipeline::observation::committed_step::{
-        initial_negotiation, AuctionContext, CommittedStep, CommittedStepStatus,
-    };
-    use crate::registry::module_registry::BASE_MODULE_IDS;
-    use crate::registry::{get_system_config, spec_from_bundle};
-    use crate::types::bid_action::{BidAction, BidSuitName, HandFeature, ObsSuit};
-    use crate::types::negotiation::NegotiationDelta;
-    use crate::types::system_config::BaseSystemId;
-
-    use super::ConventionStrategy;
-
-    fn nmf_strategy() -> ConventionStrategy {
-        let system_config = get_system_config(BaseSystemId::Sayc);
-        let base_module_ids: Vec<String> =
-            BASE_MODULE_IDS.iter().map(|id| id.to_string()).collect();
-        let spec = spec_from_bundle(
-            "nmf-bundle",
-            &system_config,
-            &base_module_ids,
-            &HashMap::new(),
-        )
-        .expect("nmf bundle spec should resolve");
-
-        ConventionStrategy::new(spec, vec![])
-    }
-
-    fn make_hand(specs: &[(&str, &str)]) -> Hand {
-        let cards: Vec<Card> = specs
-            .iter()
-            .map(|(suit, rank)| Card {
-                suit: match *suit {
-                    "S" => Suit::Spades,
-                    "H" => Suit::Hearts,
-                    "D" => Suit::Diamonds,
-                    "C" => Suit::Clubs,
-                    _ => panic!("unknown suit"),
-                },
-                rank: match *rank {
-                    "2" => Rank::Two,
-                    "3" => Rank::Three,
-                    "4" => Rank::Four,
-                    "5" => Rank::Five,
-                    "6" => Rank::Six,
-                    "7" => Rank::Seven,
-                    "8" => Rank::Eight,
-                    "9" => Rank::Nine,
-                    "T" => Rank::Ten,
-                    "J" => Rank::Jack,
-                    "Q" => Rank::Queen,
-                    "K" => Rank::King,
-                    "A" => Rank::Ace,
-                    _ => panic!("unknown rank"),
-                },
-            })
-            .collect();
-        Hand { cards }
-    }
-
-    fn facts_for(
-        strategy: &ConventionStrategy,
-        hand: &Hand,
-    ) -> crate::fact_dsl::types::EvaluatedFacts {
-        let definitions = strategy
-            .spec
-            .modules
-            .iter()
-            .flat_map(|module| module.facts.definitions.iter().cloned())
-            .collect::<Vec<_>>();
-        let evaluation = evaluate_hand_hcp(hand);
-        evaluate_facts(
-            hand,
-            &evaluation,
-            &definitions,
-            Some(&get_system_config(BaseSystemId::Sayc)),
-            None,
-            None,
-        )
-    }
-
-    fn empty_context() -> AuctionContext {
-        AuctionContext { log: vec![] }
-    }
-
-    fn make_step(actor: Seat, call: Call, public_actions: Vec<BidAction>) -> CommittedStep {
-        CommittedStep {
-            actor,
-            call,
-            resolved_claim: None,
-            public_actions,
-            negotiation_delta: NegotiationDelta::default(),
-            state_after: initial_negotiation(),
-            status: CommittedStepStatus::Resolved,
-        }
-    }
-
-    fn context_after_one_club_one_heart() -> AuctionContext {
-        AuctionContext {
-            log: vec![
-                make_step(
-                    Seat::South,
-                    Call::Bid {
-                        level: 1,
-                        strain: BidSuit::Clubs,
-                    },
-                    vec![BidAction::Open {
-                        strain: BidSuitName::Clubs,
-                        strength: None,
-                    }],
-                ),
-                make_step(
-                    Seat::North,
-                    Call::Bid {
-                        level: 1,
-                        strain: BidSuit::Hearts,
-                    },
-                    vec![BidAction::Show {
-                        feature: HandFeature::HeldSuit,
-                        suit: Some(ObsSuit::Hearts),
-                        quality: None,
-                        strength: None,
-                    }],
-                ),
-            ],
-        }
-    }
-
-    #[test]
-    fn nmf_bundle_opens_one_club_with_equal_three_card_minors() {
-        let strategy = nmf_strategy();
-        let hand = make_hand(&[
-            ("S", "A"),
-            ("S", "8"),
-            ("S", "4"),
-            ("H", "K"),
-            ("H", "7"),
-            ("H", "2"),
-            ("D", "Q"),
-            ("D", "4"),
-            ("D", "3"),
-            ("C", "Q"),
-            ("C", "J"),
-            ("C", "8"),
-            ("C", "2"),
-        ]);
-        let facts = facts_for(&strategy, &hand);
-
-        let (bid, _) = strategy.suggest_with_hand(
-            &empty_context(),
-            Some(Seat::South),
-            &facts,
-            &|_| true,
-            &HashMap::new(),
-            Some(&hand),
-            Some(&get_system_config(BaseSystemId::Sayc)),
-            None,
-        );
-
-        assert_eq!(
-            bid.expect("opening bid should exist").call,
-            Call::Bid {
-                level: 1,
-                strain: BidSuit::Clubs,
-            }
-        );
-    }
-
-    #[test]
-    fn nmf_bundle_opens_five_card_major_before_minor() {
-        let strategy = nmf_strategy();
-        let hand = make_hand(&[
-            ("S", "A"),
-            ("S", "T"),
-            ("S", "7"),
-            ("S", "5"),
-            ("S", "3"),
-            ("H", "7"),
-            ("H", "6"),
-            ("D", "K"),
-            ("D", "Q"),
-            ("D", "8"),
-            ("C", "Q"),
-            ("C", "J"),
-            ("C", "7"),
-        ]);
-        let facts = facts_for(&strategy, &hand);
-
-        let (bid, _) = strategy.suggest_with_hand(
-            &empty_context(),
-            Some(Seat::South),
-            &facts,
-            &|_| true,
-            &HashMap::new(),
-            Some(&hand),
-            Some(&get_system_config(BaseSystemId::Sayc)),
-            None,
-        );
-
-        assert_eq!(
-            bid.expect("opening bid should exist").call,
-            Call::Bid {
-                level: 1,
-                strain: BidSuit::Spades,
-            }
-        );
-    }
-
-    #[test]
-    fn nmf_bundle_prefers_one_diamond_with_equal_minors() {
-        let strategy = nmf_strategy();
-        let hand = make_hand(&[
-            ("S", "A"),
-            ("S", "5"),
-            ("H", "8"),
-            ("H", "4"),
-            ("H", "2"),
-            ("D", "K"),
-            ("D", "Q"),
-            ("D", "7"),
-            ("D", "2"),
-            ("C", "Q"),
-            ("C", "J"),
-            ("C", "9"),
-            ("C", "3"),
-        ]);
-        let facts = facts_for(&strategy, &hand);
-
-        let (bid, _) = strategy.suggest_with_hand(
-            &empty_context(),
-            Some(Seat::South),
-            &facts,
-            &|_| true,
-            &HashMap::new(),
-            Some(&hand),
-            Some(&get_system_config(BaseSystemId::Sayc)),
-            None,
-        );
-
-        assert_eq!(
-            bid.expect("opening bid should exist").call,
-            Call::Bid {
-                level: 1,
-                strain: BidSuit::Diamonds,
-            }
-        );
-    }
-
-    #[test]
-    fn nmf_bundle_rebids_one_spade_after_one_club_one_heart_with_four_spades() {
-        let strategy = nmf_strategy();
-        let hand = make_hand(&[
-            ("S", "A"),
-            ("S", "8"),
-            ("S", "7"),
-            ("S", "4"),
-            ("H", "K"),
-            ("H", "3"),
-            ("H", "2"),
-            ("D", "Q"),
-            ("D", "4"),
-            ("D", "3"),
-            ("C", "Q"),
-            ("C", "J"),
-            ("C", "2"),
-        ]);
-        let facts = facts_for(&strategy, &hand);
-
-        let (bid, _) = strategy.suggest_with_hand(
-            &context_after_one_club_one_heart(),
-            Some(Seat::South),
-            &facts,
-            &|_| true,
-            &HashMap::new(),
-            Some(&hand),
-            Some(&get_system_config(BaseSystemId::Sayc)),
-            None,
-        );
-
-        assert_eq!(
-            bid.expect("rebid should exist").call,
-            Call::Bid {
-                level: 1,
-                strain: BidSuit::Spades,
-            }
-        );
-    }
-
-    #[test]
-    fn nmf_bundle_rebids_one_notrump_when_no_other_major_exists() {
-        let strategy = nmf_strategy();
-        let hand = make_hand(&[
-            ("S", "A"),
-            ("S", "8"),
-            ("S", "4"),
-            ("H", "K"),
-            ("H", "7"),
-            ("H", "2"),
-            ("D", "Q"),
-            ("D", "4"),
-            ("D", "3"),
-            ("C", "Q"),
-            ("C", "J"),
-            ("C", "8"),
-            ("C", "2"),
-        ]);
-        let facts = facts_for(&strategy, &hand);
-
-        let (bid, _) = strategy.suggest_with_hand(
-            &context_after_one_club_one_heart(),
-            Some(Seat::South),
-            &facts,
-            &|_| true,
-            &HashMap::new(),
-            Some(&hand),
-            Some(&get_system_config(BaseSystemId::Sayc)),
-            None,
-        );
-
-        assert_eq!(
-            bid.expect("rebid should exist").call,
-            Call::Bid {
-                level: 1,
-                strain: BidSuit::NoTrump,
-            }
-        );
     }
 }

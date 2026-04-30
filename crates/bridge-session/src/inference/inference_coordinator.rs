@@ -11,8 +11,7 @@ use super::belief_accumulator::{apply_annotation, create_initial_belief_state};
 use super::inference_engine::InferenceEngine;
 use super::natural_inference::NaturalInferenceProvider;
 use super::types::{
-    InferenceExtractor, InferenceExtractorInput, InferenceSnapshot, NoopExtractor,
-    PublicBeliefState, PublicBeliefs,
+    InferenceExtractorInput, InferenceSnapshot, PublicBeliefState, PublicBeliefs,
 };
 
 /// Adapt a bid result DTO to `InferenceExtractorInput`.
@@ -39,11 +38,10 @@ pub struct InferenceCoordinator {
     ew_engine: Option<InferenceEngine>,
     belief_state: PublicBeliefState,
     natural_provider: NaturalInferenceProvider,
-    extractor: Box<dyn InferenceExtractor>,
 }
 
 impl InferenceCoordinator {
-    /// Create with a noop extractor and optional system config.
+    /// Create a coordinator with optional system config.
     pub fn new(system_config: Option<&SystemConfig>) -> Self {
         let natural_provider = match system_config {
             Some(config) => NaturalInferenceProvider::new(config),
@@ -54,25 +52,6 @@ impl InferenceCoordinator {
             ew_engine: None,
             belief_state: create_initial_belief_state(),
             natural_provider,
-            extractor: Box::new(NoopExtractor),
-        }
-    }
-
-    /// Create with a custom extractor.
-    pub fn with_extractor(
-        system_config: Option<&SystemConfig>,
-        extractor: Box<dyn InferenceExtractor>,
-    ) -> Self {
-        let natural_provider = match system_config {
-            Some(config) => NaturalInferenceProvider::new(config),
-            None => NaturalInferenceProvider::default_sayc(),
-        };
-        Self {
-            ns_engine: None,
-            ew_engine: None,
-            belief_state: create_initial_belief_state(),
-            natural_provider,
-            extractor,
         }
     }
 
@@ -121,7 +100,6 @@ impl InferenceCoordinator {
             entry,
             extractor_input.as_ref(),
             effective_convention_id,
-            self.extractor.as_ref(),
             &self.natural_provider,
             auction_before,
         );

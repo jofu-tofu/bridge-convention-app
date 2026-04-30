@@ -1,6 +1,6 @@
 //! Annotation production -- creates `BidAnnotation` from auction entry + rule result.
 //!
-//! Convention bids: constraints from the rule result + extractor.
+//! Convention bids: constraints from the rule result.
 //! Natural bids: constraints converted from the natural provider.
 //! Pass/double/redouble: no constraints.
 
@@ -8,18 +8,17 @@ use bridge_conventions::types::meaning::FactConstraint;
 use bridge_engine::types::{Auction, AuctionEntry, Call};
 
 use super::derive_beliefs::hand_inference_to_constraints;
-use super::types::{BidAnnotation, InferenceExtractor, InferenceExtractorInput, InferenceProvider};
+use super::types::{BidAnnotation, InferenceExtractorInput, InferenceProvider};
 
 /// Produce a `BidAnnotation` for a single auction entry.
 ///
-/// Convention bids: constraints from the rule result alert + extractor.
+/// Convention bids: constraints from the rule result.
 /// Natural bids: constraints converted from the natural provider.
 /// Pass/double/redouble: no constraints.
 pub fn produce_annotation(
     entry: &AuctionEntry,
     rule_result: Option<&InferenceExtractorInput>,
     convention_id: Option<&str>,
-    extractor: &dyn InferenceExtractor,
     natural_provider: &dyn InferenceProvider,
     auction_before: &Auction,
 ) -> BidAnnotation {
@@ -33,19 +32,6 @@ pub fn produce_annotation(
             .meaning
             .clone()
             .unwrap_or_else(|| result.explanation.clone());
-
-        let extracted = extractor.extract_constraints(result, seat);
-
-        // When the convention extractor produces constraints, use them.
-        if !extracted.is_empty() {
-            return BidAnnotation {
-                call,
-                seat,
-                convention_id: conv_id,
-                meaning,
-                constraints: extracted,
-            };
-        }
 
         // Use constraints directly -- no lossy conversion
         if !result.constraints.is_empty() {
@@ -122,7 +108,7 @@ mod tests {
     use bridge_engine::types::{BidSuit, Seat};
     use std::collections::HashMap;
 
-    use crate::inference::types::{HandInference, NoopExtractor};
+    use crate::inference::types::HandInference;
 
     /// A natural provider that returns a fixed inference for any bid.
     struct FixedNaturalProvider {
@@ -173,14 +159,12 @@ mod tests {
                 is_public: Some(true),
             }],
         };
-        let extractor = NoopExtractor;
         let provider = FixedNaturalProvider { inference: None };
 
         let ann = produce_annotation(
             &entry,
             Some(&rule_result),
             Some("stayman"),
-            &extractor,
             &provider,
             &empty_auction(),
         );
@@ -199,7 +183,6 @@ mod tests {
                 strain: BidSuit::Hearts,
             },
         };
-        let extractor = NoopExtractor;
         let provider = FixedNaturalProvider {
             inference: Some(HandInference {
                 seat: Seat::North,
@@ -211,7 +194,7 @@ mod tests {
             }),
         };
 
-        let ann = produce_annotation(&entry, None, None, &extractor, &provider, &empty_auction());
+        let ann = produce_annotation(&entry, None, None, &provider, &empty_auction());
 
         assert_eq!(ann.convention_id, None);
         assert!(ann.meaning.is_empty());
@@ -225,10 +208,9 @@ mod tests {
             seat: Seat::East,
             call: Call::Pass,
         };
-        let extractor = NoopExtractor;
         let provider = FixedNaturalProvider { inference: None };
 
-        let ann = produce_annotation(&entry, None, None, &extractor, &provider, &empty_auction());
+        let ann = produce_annotation(&entry, None, None, &provider, &empty_auction());
 
         assert!(ann.meaning.is_empty());
         assert!(ann.constraints.is_empty());
@@ -240,10 +222,9 @@ mod tests {
             seat: Seat::East,
             call: Call::Double,
         };
-        let extractor = NoopExtractor;
         let provider = FixedNaturalProvider { inference: None };
 
-        let ann = produce_annotation(&entry, None, None, &extractor, &provider, &empty_auction());
+        let ann = produce_annotation(&entry, None, None, &provider, &empty_auction());
 
         assert!(ann.meaning.is_empty());
         assert!(ann.constraints.is_empty());
@@ -255,10 +236,9 @@ mod tests {
             seat: Seat::East,
             call: Call::Redouble,
         };
-        let extractor = NoopExtractor;
         let provider = FixedNaturalProvider { inference: None };
 
-        let ann = produce_annotation(&entry, None, None, &extractor, &provider, &empty_auction());
+        let ann = produce_annotation(&entry, None, None, &provider, &empty_auction());
 
         assert!(ann.meaning.is_empty());
         assert!(ann.constraints.is_empty());

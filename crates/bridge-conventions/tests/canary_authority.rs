@@ -255,21 +255,28 @@ fn build_context(strategy: &ConventionStrategy, canary: &Canary) -> AuctionConte
 }
 
 fn run_canary(canary: &Canary) {
+    use bridge_conventions::pipeline::observation::rule_interpreter::{
+        collect_matching_claims, flatten_surfaces,
+    };
     let strategy = build_strategy(canary.target);
     let hand = parse_hand_pbn(canary.hand_pbn);
     let facts = evaluate_hand(&strategy, &hand);
     let context = build_context(&strategy, canary);
     let inherited_dimensions: HashMap<String, Vec<ConstraintDimension>> = HashMap::new();
 
-    let (bid, evaluation) = strategy.suggest_with_hand(
+    let surface_results =
+        collect_matching_claims(&strategy.spec.modules, &context, Some(canary.user_seat));
+    let surfaces = flatten_surfaces(&surface_results);
+
+    let (bid, evaluation) = strategy.suggest_from_surfaces(
+        &surfaces,
+        &surface_results,
         &context,
-        Some(canary.user_seat),
         &facts,
         &|_| true,
         &inherited_dimensions,
         Some(&hand),
         Some(&sayc_config()),
-        None,
     );
 
     let actual = bid

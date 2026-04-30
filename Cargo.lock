@@ -224,6 +224,7 @@ dependencies = [
  "async-trait",
  "axum",
  "axum-extra",
+ "bridge-api",
  "chrono",
  "dotenvy",
  "hex",

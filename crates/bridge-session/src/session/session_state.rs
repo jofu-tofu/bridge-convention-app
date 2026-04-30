@@ -14,7 +14,7 @@ use bridge_engine::types::{
 
 use crate::inference::types::{InferenceSnapshot, PublicBeliefState};
 use crate::inference::InferenceCoordinator;
-use crate::inference::{Posterior, PosteriorEngine, UniformPosterior};
+use crate::inference::PosteriorEngine;
 use bridge_engine::strategy::ChainTrace;
 use serde::{Deserialize, Serialize};
 
@@ -134,7 +134,7 @@ pub struct SessionState {
     pub play: PlayState,
 
     // Play configuration
-    pub posterior: Option<Posterior>,
+    pub posterior: Option<PosteriorEngine>,
     pub play_profile_id: PlayProfileId,
     pub play_seed: u64,
 }
@@ -370,14 +370,14 @@ impl SessionState {
                 .unwrap_or_default();
             let mut known_cards = HashMap::new();
             known_cards.insert(self.user_seat, observer_hand);
-            self.posterior = Some(Posterior::MonteCarlo(PosteriorEngine::new(
+            self.posterior = Some(PosteriorEngine::new(
                 self.user_seat,
                 known_cards,
                 ranges,
                 self.play_seed,
-            )));
+            ));
         } else {
-            self.posterior = Some(Posterior::Uniform(UniformPosterior::new()));
+            self.posterior = None;
         }
     }
 

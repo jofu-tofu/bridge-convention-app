@@ -389,7 +389,6 @@ mod tests {
                 default_call: make_call_2c(),
                 alternate_encodings: None,
             },
-            evidence: None,
         };
         let carrier = PipelineCarrier {
             encoded: EncodedProposal {
@@ -438,9 +437,6 @@ mod tests {
                 matched_count: 1,
                 eliminated_count: 0,
             },
-            activation: vec![],
-            arbitration: vec![],
-            handoffs: vec![],
             evidence_bundle: None,
         }
     }
@@ -502,7 +498,6 @@ mod tests {
                     default_call: call_3nt.clone(),
                     alternate_encodings: None,
                 },
-                evidence: None,
             };
             PipelineCarrier {
                 encoded: EncodedProposal {
@@ -568,9 +563,6 @@ mod tests {
                 matched_count: 1,
                 eliminated_count: 1,
             },
-            activation: vec![],
-            arbitration: vec![],
-            handoffs: vec![],
             evidence_bundle: None,
         };
 

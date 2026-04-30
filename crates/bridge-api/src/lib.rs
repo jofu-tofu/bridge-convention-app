@@ -7,6 +7,7 @@ pub mod db;
 pub mod dev;
 pub mod drills;
 pub mod error;
+#[cfg(any(test, feature = "test-support"))]
 pub mod test_support;
 pub mod user;
 

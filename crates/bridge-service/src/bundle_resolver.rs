@@ -6,9 +6,8 @@
 use std::collections::HashMap;
 
 use bridge_conventions::registry::bundle_registry::{list_bundle_inputs, resolve_bundle};
-use bridge_conventions::teaching::teaching_types::{SurfaceGroup, SurfaceGroupRelationship};
+use bridge_conventions::teaching::teaching_types::SurfaceGroup;
 use bridge_conventions::types::module_types::PracticeRole as ModulePracticeRole;
-use bridge_conventions::types::teaching::SurfaceGroupRelationship as BundleSGRelationship;
 use bridge_conventions::BaseSystemId;
 use bridge_conventions::BundleInput;
 use bridge_session::types::PracticeRole;
@@ -35,36 +34,13 @@ pub(crate) fn get_bundle_input(convention_id: &str) -> Result<BundleInput, Servi
 
 // ── Surface groups ───────────────────────────────────────────────
 
-/// Convert bundle-level SurfaceGroups into teaching SurfaceGroups.
+/// Resolve a bundle's derived surface groups.
 pub(crate) fn resolve_surface_groups(
     convention_id: &str,
     system: BaseSystemId,
 ) -> Vec<SurfaceGroup> {
-    let resolved = resolve_bundle(convention_id, system);
-    resolved
-        .map(|b| {
-            b.derived_teaching
-                .surface_groups
-                .iter()
-                .map(|sg| SurfaceGroup {
-                    id: sg.id.clone(),
-                    label: sg.label.clone(),
-                    members: sg.members.clone(),
-                    relationship: match sg.relationship {
-                        BundleSGRelationship::MutuallyExclusive => {
-                            SurfaceGroupRelationship::MutuallyExclusive
-                        }
-                        BundleSGRelationship::EquivalentEncoding => {
-                            SurfaceGroupRelationship::EquivalentEncoding
-                        }
-                        BundleSGRelationship::PolicyAlternative => {
-                            SurfaceGroupRelationship::PolicyAlternative
-                        }
-                    },
-                    description: sg.description.clone(),
-                })
-                .collect()
-        })
+    resolve_bundle(convention_id, system)
+        .map(|b| b.derived_teaching.surface_groups.clone())
         .unwrap_or_default()
 }
 
