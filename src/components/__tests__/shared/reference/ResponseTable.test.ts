@@ -12,7 +12,7 @@ describe("ResponseTable", () => {
       },
     });
 
-    expect(getByText("Response")).toBeTruthy();
+    expect(getByText("Bid")).toBeTruthy();
     expect(getByText("Meaning")).toBeTruthy();
     // Dynamic columns from the viewport
     expect(getByText("Shape")).toBeTruthy();

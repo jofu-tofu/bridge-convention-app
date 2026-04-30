@@ -32,10 +32,10 @@
       <thead>
         <tr>
           <th
-            class="w-px whitespace-nowrap border-b border-border-default px-4 py-3 text-[--text-label] uppercase tracking-[0.12em] text-text-muted"
+            class="w-px whitespace-nowrap border-b border-border-default px-2 py-3 text-[--text-label] uppercase tracking-[0.12em] text-text-muted"
             scope="col"
           >
-            Response
+            Bid
           </th>
           <th
             class="border-b border-border-default px-4 py-3 text-[--text-label] uppercase tracking-[0.12em] text-text-muted"
@@ -57,7 +57,7 @@
         {#each responseTable.rows as row (row.meaningId)}
           <tr id={slugifyMeaningId(moduleId, row.meaningId)} class="scroll-mt-24">
             <td
-              class="w-px whitespace-nowrap border-b border-border-subtle px-4 py-3 align-top text-[--text-body] text-text-primary"
+              class="w-px whitespace-nowrap border-b border-border-subtle px-2 py-3 align-top text-[--text-body] text-text-primary"
             >
               <BidCode value={row.response} />
             </td>

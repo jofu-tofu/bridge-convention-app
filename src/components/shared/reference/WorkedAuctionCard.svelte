@@ -40,15 +40,15 @@
         <thead>
           <tr>
             <th
-              class="border-border-default text-text-muted border-b px-4 py-3 tracking-[0.12em] text-[--text-label] uppercase"
+              class="border-border-default text-text-muted w-px whitespace-nowrap border-b px-4 py-3 tracking-[0.12em] text-[--text-label] uppercase"
               >Seat</th
             >
             <th
-              class="border-border-default text-text-muted border-b px-4 py-3 tracking-[0.12em] text-[--text-label] uppercase"
+              class="border-border-default text-text-muted w-px whitespace-nowrap border-b px-4 py-3 tracking-[0.12em] text-[--text-label] uppercase"
               >Call</th
             >
             <th
-              class="border-border-default text-text-muted border-b px-4 py-3 tracking-[0.12em] text-[--text-label] uppercase"
+              class="border-border-default text-text-muted w-full border-b px-4 py-3 tracking-[0.12em] text-[--text-label] uppercase"
               >Rationale</th
             >
           </tr>
@@ -61,7 +61,7 @@
                 : undefined}
             >
               <td
-                class="border-border-subtle text-text-primary border-b px-4 py-3 align-top text-[--text-body]"
+                class="border-border-subtle text-text-primary w-px whitespace-nowrap border-b px-4 py-3 align-top text-[--text-body]"
               >
                 <span
                   class="text-text-muted font-semibold tracking-[0.16em] text-[--text-annotation] uppercase"
@@ -71,12 +71,12 @@
                 </span>
               </td>
               <td
-                class="border-border-subtle text-text-primary border-b px-4 py-3 align-top text-[--text-body]"
+                class="border-border-subtle text-text-primary w-px whitespace-nowrap border-b px-4 py-3 align-top text-[--text-body]"
               >
                 <BidCode value={entry.call} />
               </td>
               <td
-                class="border-border-subtle text-text-secondary border-b px-4 py-3 align-top leading-6 text-[--text-body]"
+                class="border-border-subtle text-text-secondary w-full border-b px-4 py-3 align-top leading-6 text-[--text-body]"
               >
                 {entry.rationale}
               </td>

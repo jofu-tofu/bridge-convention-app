@@ -61,11 +61,12 @@
   }
 
   .col-action {
-    width: auto;
+    width: 1%;
+    white-space: nowrap;
   }
 
   .col-note {
-    width: 32%;
+    width: auto;
   }
 
   .interference-table thead th {

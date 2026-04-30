@@ -189,7 +189,7 @@
   .reference-stack > :not(.wide),
   .cta,
   .more-modules {
-    max-width: 960px;
+    max-width: 720px;
     margin-inline: auto;
   }
 
@@ -197,7 +197,7 @@
     display: none;
   }
 
-  @media (min-width: 1280px) {
+  @media (min-width: 1536px) {
     .page-wrap {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 240px;
@@ -208,14 +208,6 @@
     .screen-only {
       min-width: 0;
       width: 100%;
-    }
-    .screen-only .wide {
-      max-width: none;
-    }
-    .reference-stack > :not(.wide),
-    .cta,
-    .more-modules {
-      max-width: none;
     }
     .toc-col {
       display: block;

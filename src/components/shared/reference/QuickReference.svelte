@@ -104,9 +104,14 @@
   {:else}
     <div class="overflow-x-auto">
       <table
-        class="min-w-full border-separate border-spacing-0 text-left"
+        class="w-full table-fixed border-separate border-spacing-0 text-left"
         aria-label="Quick reference list"
       >
+        <colgroup>
+          <col style="width: 22%" />
+          <col style="width: 40%" />
+          <col style="width: 38%" />
+        </colgroup>
         <caption class="mb-2 text-left text-[--text-detail] leading-6 text-text-muted">
           {quickReference.axis.label}
         </caption>
