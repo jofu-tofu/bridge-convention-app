@@ -571,11 +571,13 @@ export function resolveTransition(_currentPhase: GamePhase, event: PhaseEvent): 
 export interface DisplayPreferences {
   readonly cardSize: "small" | "medium" | "large";
   readonly showEducationalAnnotations: boolean;
+  readonly suitColorScheme: "two-color" | "four-color";
 }
 
 export const DEFAULT_DISPLAY_PREFERENCES: DisplayPreferences = {
   cardSize: "medium",
   showEducationalAnnotations: true,
+  suitColorScheme: "two-color",
 };
 
 export interface PracticePreferences {

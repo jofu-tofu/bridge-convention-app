@@ -81,11 +81,15 @@ function mergePreferences(partial: Record<string, unknown>): PracticePreferences
 }
 
 const VALID_CARD_SIZES = new Set<DisplayPreferences["cardSize"]>(["small", "medium", "large"]);
+const VALID_SUIT_COLOR_SCHEMES = new Set<DisplayPreferences["suitColorScheme"]>(["two-color", "four-color"]);
 
 function mergeDisplay(partial: Partial<DisplayPreferences> | undefined): DisplayPreferences {
-  const merged = { ...DEFAULT_DISPLAY_PREFERENCES, ...(partial ?? {}) };
+  let merged = { ...DEFAULT_DISPLAY_PREFERENCES, ...(partial ?? {}) };
   if (!VALID_CARD_SIZES.has(merged.cardSize)) {
-    return { ...merged, cardSize: DEFAULT_DISPLAY_PREFERENCES.cardSize };
+    merged = { ...merged, cardSize: DEFAULT_DISPLAY_PREFERENCES.cardSize };
+  }
+  if (!VALID_SUIT_COLOR_SCHEMES.has(merged.suitColorScheme)) {
+    merged = { ...merged, suitColorScheme: DEFAULT_DISPLAY_PREFERENCES.suitColorScheme };
   }
   return merged;
 }
@@ -389,6 +393,10 @@ export function createAppStore() {
 
     setShowEducationalAnnotations(show: boolean) {
       updateDisplay({ showEducationalAnnotations: show });
+    },
+
+    setSuitColorScheme(value: DisplayPreferences["suitColorScheme"]) {
+      updateDisplay({ suitColorScheme: value });
     },
 
     get targetState() {

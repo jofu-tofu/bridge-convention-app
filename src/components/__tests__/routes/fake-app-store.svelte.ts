@@ -8,9 +8,14 @@
  */
 
 type CardSize = "small" | "medium" | "large";
+type SuitColorScheme = "two-color" | "four-color";
 
 export interface FakeAppStore {
-  readonly displaySettings: { cardSize: CardSize; showEducationalAnnotations: boolean };
+  readonly displaySettings: {
+    cardSize: CardSize;
+    showEducationalAnnotations: boolean;
+    suitColorScheme: SuitColorScheme;
+  };
   readonly activeLaunch: null;
   readonly baseSystemId: string;
   readonly drillSettings: {
@@ -20,16 +25,18 @@ export interface FakeAppStore {
   };
   setBaseSystemId(_id: string): void;
   setCardSize(value: CardSize): void;
+  setSuitColorScheme(value: SuitColorScheme): void;
 }
 
 let captured: FakeAppStore | null = null;
 
 export function createFakeAppStore(): FakeAppStore {
   let cardSize = $state<CardSize>("medium");
+  let suitColorScheme = $state<SuitColorScheme>("two-color");
 
   const store: FakeAppStore = {
     get displaySettings() {
-      return { cardSize, showEducationalAnnotations: true };
+      return { cardSize, showEducationalAnnotations: true, suitColorScheme };
     },
     get activeLaunch() {
       return null;
@@ -47,6 +54,9 @@ export function createFakeAppStore(): FakeAppStore {
     setBaseSystemId() {},
     setCardSize(value: CardSize) {
       cardSize = value;
+    },
+    setSuitColorScheme(value: SuitColorScheme) {
+      suitColorScheme = value;
     },
   };
 

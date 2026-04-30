@@ -149,7 +149,7 @@ components/
 
 **Practice settings are launch-time only.** `game-screen/*` components do not expose mode/role/system/opponent/play-profile settings controls. Those are chosen on `/practice` before launch and stay immutable for the active drill; the in-game preferences still read live are `displaySettings.showEducationalAnnotations` (annotation visibility) and `displaySettings.cardSize` (card-size scale, applied via the `(app)` layout root's inline `--card-size-scale` and consumed by `BiddingPhase.svelte`'s mobile fan sizing).
 
-**Design tokens:** Suit colors use 4-color scheme — card-face colors differ from on-dark-bg colors. See `src/components/shared/tokens.ts`.
+**Design tokens:** Suit colors are 2-color by default (♠♣ light, ♥♦ red); 4-color is opt-in via `data-suit-scheme="four-color"` on the root `<div>` of `src/routes/(app)/+layout.svelte`. CSS overrides in `src/app.css` use bare `[data-suit-scheme=…]` selectors and inherit through the cascade. Card-face colors (`--color-suit-card-*`) differ from on-dark-bg colors (`--color-suit-*`). See `src/components/shared/tokens.ts`.
 
 ## Gotchas
 

@@ -22,6 +22,11 @@
     { id: "medium" as const, label: "Medium", testId: "display-card-size-medium" },
     { id: "large" as const, label: "Large", testId: "display-card-size-large" },
   ];
+
+  const suitColorOptions = [
+    { id: "two-color" as const, label: "2-color", testId: "display-suit-colors-two-color" },
+    { id: "four-color" as const, label: "4-color", testId: "display-suit-colors-four-color" },
+  ];
 </script>
 
 <AppScreen width="form" title="Settings" subtitle="Account and subscription. Practice and drill defaults live on the practice screen.">
@@ -37,6 +42,15 @@
             active={appStore.displaySettings.cardSize}
             onSelect={(id) => appStore.setCardSize(id as "small" | "medium" | "large")}
             ariaLabel="Card size"
+          />
+        </div>
+        <div class="space-y-1">
+          <SectionHeader level="h3">Suit colors</SectionHeader>
+          <ToggleGroup
+            items={suitColorOptions}
+            active={appStore.displaySettings.suitColorScheme}
+            onSelect={(id) => appStore.setSuitColorScheme(id as "two-color" | "four-color")}
+            ariaLabel="Suit colors"
           />
         </div>
       </div>

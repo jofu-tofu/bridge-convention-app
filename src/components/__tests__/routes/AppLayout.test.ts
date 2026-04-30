@@ -129,4 +129,26 @@ describe("(app)/+layout — display settings on layout root", () => {
     });
     expect(root.style.getPropertyValue("--card-size-scale")).toBe("1.15");
   });
+
+  it("binds data-suit-scheme on the root div", async () => {
+    const { container } = render(AppLayoutTestWrapper, {
+      props: { dataPort: createStubDataPort() },
+    });
+
+    await waitFor(() => {
+      const root = container.querySelector<HTMLDivElement>("[data-suit-scheme]");
+      expect(root).not.toBeNull();
+    });
+
+    const root = container.querySelector<HTMLDivElement>("[data-suit-scheme]")!;
+    expect(root.getAttribute("data-suit-scheme")).toBe("two-color");
+
+    const appStore = getCapturedFakeAppStore();
+    expect(appStore).not.toBeNull();
+    appStore!.setSuitColorScheme("four-color");
+
+    await waitFor(() => {
+      expect(root.getAttribute("data-suit-scheme")).toBe("four-color");
+    });
+  });
 });

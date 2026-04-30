@@ -127,6 +127,7 @@
     <div
       class="bg-bg-deepest text-text-primary h-screen overflow-hidden font-sans"
       data-card-size={appStore.displaySettings.cardSize}
+      data-suit-scheme={appStore.displaySettings.suitColorScheme}
       style="--card-size-scale: {cardSizeScale}"
     >
       <AppShell>

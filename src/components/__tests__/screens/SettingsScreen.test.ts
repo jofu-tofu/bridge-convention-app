@@ -63,4 +63,19 @@ describe("SettingsScreen — Display section", () => {
 
     expect(appStore.displaySettings.cardSize).toBe("large");
   });
+
+  it("updates app store suitColorScheme when the Four-color toggle is clicked", async () => {
+    const appStore = createAppStore();
+    const authStore = createAuthStore(createStubDataPort());
+
+    expect(appStore.displaySettings.suitColorScheme).toBe("two-color");
+
+    const { getByTestId } = render(SettingsScreenTestWrapper, {
+      props: { appStore, authStore },
+    });
+
+    await fireEvent.click(getByTestId("display-suit-colors-four-color"));
+
+    expect(appStore.displaySettings.suitColorScheme).toBe("four-color");
+  });
 });

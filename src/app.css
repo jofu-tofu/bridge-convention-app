@@ -196,6 +196,20 @@
   --screen-subtitle-color: var(--color-text-muted);
 }
 
+/* 4-color suit scheme — opt-in via Settings → Display.
+   Activated by `data-suit-scheme="four-color"` on the (app) layout root <div>
+   (see src/routes/(app)/+layout.svelte). Spades and hearts retain the default
+   2-color values; only diamonds (orange) and clubs (green) shift. Two
+   variants per suit: `--color-suit-*` for marks rendered on the deep app
+   background, and `--color-suit-card-*` for marks on the white card face. */
+[data-suit-scheme="four-color"] {
+  --color-suit-diamonds: #fb923c; /* orange-400 — on dark bg */
+  --color-suit-clubs: #4ade80; /* green-400 — on dark bg */
+
+  --color-suit-card-diamonds: #ea580c; /* orange-600 — on white card face */
+  --color-suit-card-clubs: #16a34a; /* green-600 — on white card face */
+}
+
 html {
   font-size: clamp(16px, 1.5vw, 28px);
 }
