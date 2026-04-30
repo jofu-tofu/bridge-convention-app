@@ -876,11 +876,13 @@ pub struct DdsPlayContext {
 
 impl ServicePortImpl {
     /// Check if the current profile requires DDS-based play.
+    // `use_posterior` gates random vs belief-filtered MC sampling; DDS itself
+    // runs whenever the profile says so (Expert + WorldClass).
     pub fn needs_dds_play(&self, handle: &str) -> Result<bool, ServiceError> {
         let session = self.manager.get(handle)?;
         let profile =
             bridge_session::heuristics::play_profiles::get_profile(session.state.play_profile_id);
-        Ok(profile.use_posterior)
+        Ok(profile.use_dds)
     }
 
     /// Play a single card without running the AI loop. For WASM DDS orchestration.

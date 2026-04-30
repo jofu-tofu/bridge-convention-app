@@ -47,6 +47,10 @@ pub struct PlayProfile {
     pub use_posterior: bool,
     /// Whether to track played cards for distribution updates.
     pub use_card_counting: bool,
+    /// Whether MC+DDS card play is active. `use_posterior` controls *how*
+    /// DDS is sampled (random vs belief-filtered); this flag controls
+    /// *whether* DDS runs at all.
+    pub use_dds: bool,
 }
 
 // ── Profile constants ───────────────────────────────────────────────
@@ -61,6 +65,7 @@ pub const BEGINNER_PROFILE: PlayProfile = PlayProfile {
     inference_noise: 0.0,
     use_posterior: false,
     use_card_counting: false,
+    use_dds: false,
 };
 
 pub const CLUB_PLAYER_PROFILE: PlayProfile = PlayProfile {
@@ -73,6 +78,7 @@ pub const CLUB_PLAYER_PROFILE: PlayProfile = PlayProfile {
     inference_noise: 0.25,
     use_posterior: false,
     use_card_counting: true,
+    use_dds: false,
 };
 
 pub const EXPERT_PROFILE: PlayProfile = PlayProfile {
@@ -85,6 +91,7 @@ pub const EXPERT_PROFILE: PlayProfile = PlayProfile {
     inference_noise: 0.0,
     use_posterior: false,
     use_card_counting: true,
+    use_dds: true,
 };
 
 pub const WORLD_CLASS_PROFILE: PlayProfile = PlayProfile {
@@ -97,6 +104,7 @@ pub const WORLD_CLASS_PROFILE: PlayProfile = PlayProfile {
     inference_noise: 0.0,
     use_posterior: true,
     use_card_counting: true,
+    use_dds: true,
 };
 
 /// Look up a profile by ID.

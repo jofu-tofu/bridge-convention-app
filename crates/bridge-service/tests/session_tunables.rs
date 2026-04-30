@@ -48,34 +48,33 @@ where
 
 #[test]
 fn play_profile_id_propagates_to_needs_dds_play() {
-    let mut service = ServicePortImpl::new();
-    let mut cfg = base_config(0);
-    cfg.play_profile_id = Some(PlayProfileId::WorldClass);
-    let handle = create_with_retry(&mut service, |seed| {
-        let mut c = cfg.clone();
-        c.seed = Some(seed);
-        c
-    });
+    // Contract: DDS runs for Expert and WorldClass; heuristics-only for
+    // Beginner and ClubPlayer. `use_posterior` decides random vs
+    // belief-filtered MC sampling — not whether DDS runs at all.
+    let cases: &[(PlayProfileId, bool, &str)] = &[
+        (PlayProfileId::Expert, true, "expert"),
+        (PlayProfileId::WorldClass, true, "world-class"),
+        (PlayProfileId::ClubPlayer, false, "club-player"),
+        (PlayProfileId::Beginner, false, "beginner"),
+    ];
 
-    // World-class uses posterior — DDS play required.
-    assert!(
-        service.needs_dds_play(&handle).expect("needs_dds_play"),
-        "world-class profile must require DDS play"
-    );
-
-    // Beginner does not.
-    let mut service2 = ServicePortImpl::new();
-    let mut cfg2 = base_config(0);
-    cfg2.play_profile_id = Some(PlayProfileId::Beginner);
-    let handle2 = create_with_retry(&mut service2, |seed| {
-        let mut c = cfg2.clone();
-        c.seed = Some(seed);
-        c
-    });
-    assert!(
-        !service2.needs_dds_play(&handle2).expect("needs_dds_play"),
-        "beginner profile must not require DDS play"
-    );
+    for (profile_id, expected, label) in cases {
+        let mut service = ServicePortImpl::new();
+        let mut cfg = base_config(0);
+        cfg.play_profile_id = Some(*profile_id);
+        let handle = create_with_retry(&mut service, |seed| {
+            let mut c = cfg.clone();
+            c.seed = Some(seed);
+            c
+        });
+        assert_eq!(
+            service.needs_dds_play(&handle).expect("needs_dds_play"),
+            *expected,
+            "{} profile: needs_dds_play should be {}",
+            label,
+            expected,
+        );
+    }
 }
 
 #[test]
