@@ -183,8 +183,14 @@
 
 <style>
   .page-wrap {
-    max-width: 960px;
     margin: 0 auto;
+  }
+
+  .reference-stack > :not(.wide),
+  .cta,
+  .more-modules {
+    max-width: 960px;
+    margin-inline: auto;
   }
 
   .toc-col {
@@ -196,7 +202,6 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) 240px;
       gap: 2rem;
-      max-width: none;
       margin: 0;
       align-items: start;
     }
@@ -205,6 +210,11 @@
       width: 100%;
     }
     .screen-only .wide {
+      max-width: none;
+    }
+    .reference-stack > :not(.wide),
+    .cta,
+    .more-modules {
       max-width: none;
     }
     .toc-col {
