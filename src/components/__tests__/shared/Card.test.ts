@@ -1,7 +1,29 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/svelte";
 import Card from "../../shared/Card.svelte";
+import CardTestWrapper from "./CardTestWrapper.svelte";
 import { Suit, Rank } from "../../../service";
+import { createAppStore } from "../../../stores/app.svelte";
+
+function createStorage(): Storage {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => {
+      store[key] = String(value);
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+    key: (i: number) => Object.keys(store)[i] ?? null,
+    get length() {
+      return Object.keys(store).length;
+    },
+  };
+}
 
 describe("Card", () => {
   it("renders rank and suit symbol when face up", () => {
@@ -99,5 +121,40 @@ describe("Card", () => {
     const cardEl = container.querySelector("[data-testid='card']")!;
     await fireEvent.click(cardEl);
     expect(onclick).not.toHaveBeenCalled();
+  });
+
+  describe("ten notation preference", () => {
+    beforeEach(() => {
+      vi.stubGlobal("localStorage", createStorage());
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("renders the ten as '10' by default", () => {
+      const appStore = createAppStore();
+      const { container } = render(CardTestWrapper, {
+        props: {
+          appStore,
+          card: { suit: Suit.Spades, rank: Rank.Ten },
+        },
+      });
+      expect(container.textContent).toContain("10");
+      expect(container.textContent).not.toMatch(/(^|[^1])T(?!en)/);
+    });
+
+    it("renders the ten as 'T' when tenNotation is 't'", () => {
+      const appStore = createAppStore();
+      appStore.setTenNotation("t");
+      const { container } = render(CardTestWrapper, {
+        props: {
+          appStore,
+          card: { suit: Suit.Spades, rank: Rank.Ten },
+        },
+      });
+      expect(container.textContent).toContain("T");
+      expect(container.textContent).not.toContain("10");
+    });
   });
 });

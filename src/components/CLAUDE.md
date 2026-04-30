@@ -137,7 +137,7 @@ components/
   __tests__/
     ButtonTestWrapper.svelte         Snippet wrapper for Button tests
     BridgeTableTestWrapper.svelte    Snippet wrapper for BridgeTable tests
-    shared/                          Shared component tests
+    shared/                          Shared component tests, including `CardTestWrapper.svelte` for context-backed `<Card>` rendering (used by the ten-notation preference tests)
       reference/                     Behavior tests for the reference-page components (schema, anchor ids, null/print contracts)
     game/                            Game component tests
     screens/                         Screen component tests, including context-backed wrappers such as `QuickPracticeSettingsPanelTestWrapper.svelte`, `DrillFormTestWrapper.svelte`, `SettingsScreenTestWrapper.svelte`, and `ConventionSelectScreenTestWrapper.svelte` for store/router-backed screen pieces
@@ -148,7 +148,7 @@ components/
 
 **Props pattern:** Game/shared components receive data as props. Screen components read stores from context.
 
-**Practice settings are launch-time only.** `game-screen/*` components do not expose mode/role/system/opponent/play-profile settings controls. Those are chosen on `/practice` before launch and stay immutable for the active drill; the in-game preferences still read live are `displaySettings.showEducationalAnnotations` (annotation visibility) and `displaySettings.cardSize` (card-size scale, applied via the `(app)` layout root's inline `--card-size-scale` and consumed by `BiddingPhase.svelte`'s mobile fan sizing).
+**Practice settings are launch-time only.** `game-screen/*` components do not expose mode/role/system/opponent/play-profile settings controls. Those are chosen on `/practice` before launch and stay immutable for the active drill; the in-game preferences still read live are `displaySettings.showEducationalAnnotations` (annotation visibility), `displaySettings.cardSize` (card-size scale, applied via the `(app)` layout root's inline `--card-size-scale` and consumed by `BiddingPhase.svelte`'s mobile fan sizing), `displaySettings.suitColorScheme` (2-color vs 4-color, threaded through `data-suit-scheme` on the `(app)` layout root), and `displaySettings.tenNotation` (`"ten"` default vs `"t"`, read at the `Card` / `TrickReviewPanel` / `PlayHistoryPanel` render sites and passed to `displayRank()` — not propagated through CSS, so reference-page hand diagrams are intentionally unaffected).
 
 **Design tokens:** Suit colors are 2-color by default (♠♣ light, ♥♦ red); 4-color is opt-in via `data-suit-scheme="four-color"` on the root `<div>` of `src/routes/(app)/+layout.svelte`. CSS overrides in `src/app.css` use bare `[data-suit-scheme=…]` selectors and inherit through the cascade. Card-face colors (`--color-suit-card-*`) differ from on-dark-bg colors (`--color-suit-*`). See `src/components/shared/tokens.ts`.
 

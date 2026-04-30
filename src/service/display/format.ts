@@ -57,9 +57,10 @@ export function formatRuleName(name: string): string {
     .join(" ");
 }
 
-/** Display a card rank for the UI. Converts "T" to "10" for user-facing display. */
-export function displayRank(rank: Rank): string {
-  return rank === Rank.Ten ? "10" : rank;
+/** Display a card rank for the UI. Default ten notation is "10"; pass "t" to render the ten as "T". */
+export function displayRank(rank: Rank, notation: "ten" | "t" = "ten"): string {
+  if (rank === Rank.Ten) return notation === "t" ? "T" : "10";
+  return rank;
 }
 
 /** Full suit name for accessibility labels. */

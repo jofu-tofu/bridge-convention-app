@@ -10,6 +10,9 @@
   import type { PlayHistoryBaseProps, PlayHistoryReplayProps } from "./shared-props";
   import SectionHeader from "../../shared/SectionHeader.svelte";
   import AuctionTable from "../../game/AuctionTable.svelte";
+  import { getAppStore } from "../../../stores/context";
+
+  const appStore = getAppStore();
 
   interface Props extends PlayHistoryBaseProps, PlayHistoryReplayProps {}
 
@@ -94,7 +97,7 @@
               <span class="inline-flex items-center gap-0.5 text-[--text-detail] {play.seat === trick.winner ? 'font-bold' : 'opacity-70'}">
                 <span class="text-text-muted">{play.seat}</span>
                 <span class={SUIT_COLOR_CLASS[play.card.suit]}>
-                  {displayRank(play.card.rank)}{SUIT_SYMBOLS[play.card.suit]}
+                  {displayRank(play.card.rank, appStore.displaySettings.tenNotation)}{SUIT_SYMBOLS[play.card.suit]}
                 </span>
               </span>
             {/each}
@@ -118,9 +121,9 @@
                 {#each group.cards as card (card.rank)}
                   <div
                     class="mini-card bg-bg-elevated rounded-[--radius-sm] shadow-sm border border-border-subtle flex items-center justify-center {SUIT_COLOR_CLASS[card.suit]}"
-                    aria-label="{displayRank(card.rank)} of {card.suit}"
+                    aria-label="{displayRank(card.rank, appStore.displaySettings.tenNotation)} of {card.suit}"
                   >
-                    <span class="font-bold leading-none">{displayRank(card.rank)}</span>
+                    <span class="font-bold leading-none">{displayRank(card.rank, appStore.displaySettings.tenNotation)}</span>
                   </div>
                 {/each}
               </div>

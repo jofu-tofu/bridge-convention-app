@@ -572,12 +572,14 @@ export interface DisplayPreferences {
   readonly cardSize: "small" | "medium" | "large";
   readonly showEducationalAnnotations: boolean;
   readonly suitColorScheme: "two-color" | "four-color";
+  readonly tenNotation: "ten" | "t";
 }
 
 export const DEFAULT_DISPLAY_PREFERENCES: DisplayPreferences = {
   cardSize: "medium",
   showEducationalAnnotations: true,
   suitColorScheme: "two-color",
+  tenNotation: "ten",
 };
 
 export interface PracticePreferences {

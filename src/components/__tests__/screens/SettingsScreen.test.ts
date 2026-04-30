@@ -78,4 +78,19 @@ describe("SettingsScreen — Display section", () => {
 
     expect(appStore.displaySettings.suitColorScheme).toBe("four-color");
   });
+
+  it("updates app store tenNotation when the T toggle is clicked", async () => {
+    const appStore = createAppStore();
+    const authStore = createAuthStore(createStubDataPort());
+
+    expect(appStore.displaySettings.tenNotation).toBe("ten");
+
+    const { getByTestId } = render(SettingsScreenTestWrapper, {
+      props: { appStore, authStore },
+    });
+
+    await fireEvent.click(getByTestId("display-ten-notation-t"));
+
+    expect(appStore.displaySettings.tenNotation).toBe("t");
+  });
 });

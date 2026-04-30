@@ -13,10 +13,7 @@
 
   let authModal = $state<ReturnType<typeof AuthModal>>();
 
-  // Display section is the canonical scaffold Agents 2 and 3 will extend
-  // with Suit colors and Ten notation rows. Drop new rows inside the
-  // existing `<div class="space-y-3">` inside the Display CardSurface
-  // below. testId convention: `display-{control}-{option}`.
+  // Display section toggles. testId convention: `display-{control}-{option}`.
   const cardSizeOptions = [
     { id: "small" as const, label: "Small", testId: "display-card-size-small" },
     { id: "medium" as const, label: "Medium", testId: "display-card-size-medium" },
@@ -26,6 +23,11 @@
   const suitColorOptions = [
     { id: "two-color" as const, label: "2-color", testId: "display-suit-colors-two-color" },
     { id: "four-color" as const, label: "4-color", testId: "display-suit-colors-four-color" },
+  ];
+
+  const tenNotationOptions = [
+    { id: "ten" as const, label: "10", testId: "display-ten-notation-ten" },
+    { id: "t" as const, label: "T", testId: "display-ten-notation-t" },
   ];
 </script>
 
@@ -51,6 +53,15 @@
             active={appStore.displaySettings.suitColorScheme}
             onSelect={(id) => appStore.setSuitColorScheme(id as "two-color" | "four-color")}
             ariaLabel="Suit colors"
+          />
+        </div>
+        <div class="space-y-1">
+          <SectionHeader level="h3">Ten notation</SectionHeader>
+          <ToggleGroup
+            items={tenNotationOptions}
+            active={appStore.displaySettings.tenNotation}
+            onSelect={(id) => appStore.setTenNotation(id as "ten" | "t")}
+            ariaLabel="Ten notation"
           />
         </div>
       </div>

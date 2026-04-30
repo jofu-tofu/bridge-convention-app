@@ -2,6 +2,7 @@
   import type { Card as CardType } from "../../service";
   import { SUIT_CARD_COLOR_CLASS } from "./tokens";
   import { SUIT_SYMBOLS, displayRank, formatCardLabel } from "../../service";
+  import { getAppStoreOptional } from "../../stores/context";
 
   interface Props {
     card: CardType;
@@ -20,9 +21,15 @@
     mirrored = false,
   }: Props = $props();
 
+  // Card is rendered only from `(app)` route consumers (HandFan, TrickArea, TrickOverlay)
+  // where the app store is always provided via context. We read it through the optional
+  // accessor so component-level unit tests that render <Card> without setting context
+  // still see the default "ten" notation.
+  const appStore = getAppStoreOptional();
+
   const colorClass = $derived(SUIT_CARD_COLOR_CLASS[card.suit]);
   const symbol = $derived(SUIT_SYMBOLS[card.suit]);
-  const rank = $derived(displayRank(card.rank));
+  const rank = $derived(displayRank(card.rank, appStore?.displaySettings.tenNotation ?? "ten"));
   const cardLabel = $derived(formatCardLabel(card.rank, card.suit));
   const cardStyle = "width: var(--card-width); height: var(--card-height);";
   const hoverClass = $derived(

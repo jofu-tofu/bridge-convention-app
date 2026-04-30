@@ -2,6 +2,9 @@
   import type { Trick, Contract, PlayRecommendation } from "../../service";
   import { Seat, SUIT_SYMBOLS, displayRank } from "../../service";
   import { SUIT_COLOR_CLASS } from "../shared/tokens";
+  import { getAppStore } from "../../stores/context";
+
+  const appStore = getAppStore();
 
   interface Props {
     tricks: readonly Trick[];
@@ -106,7 +109,7 @@
           {play.seat}
         </span>
         <span class="text-[--text-value] {SUIT_COLOR_CLASS[play.card.suit]}">
-          {SUIT_SYMBOLS[play.card.suit]}{displayRank(play.card.rank)}
+          {SUIT_SYMBOLS[play.card.suit]}{displayRank(play.card.rank, appStore.displaySettings.tenNotation)}
         </span>
         {#if rec}
           {#if rec.isOptimal}
@@ -114,7 +117,7 @@
           {:else}
             <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent-warning/20 text-accent-warning text-[--text-annotation]">
               <span class="{SUIT_COLOR_CLASS[rec.recommendedCard.suit]}">
-                {SUIT_SYMBOLS[rec.recommendedCard.suit]}{displayRank(rec.recommendedCard.rank)}
+                {SUIT_SYMBOLS[rec.recommendedCard.suit]}{displayRank(rec.recommendedCard.rank, appStore.displaySettings.tenNotation)}
               </span>
               <span class="text-text-secondary">{rec.reason}</span>
             </span>
