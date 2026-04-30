@@ -280,10 +280,10 @@ fn describe_system_fact_hcp(fact_id: &str, sys: &SystemConfig) -> Option<String>
             Some(format!("{}+ HCP", sys.competitive.takeout_double_min_hcp))
         }
         "system.opener.notMinimum" => Some(format!("{}+ HCP", sys.opener_rebid.not_minimum)),
-        "system.responder.twoLevelNewSuit" => {
+        "system.responderTwoLevelNewSuit" => {
             Some(format!("{}+ HCP", sys.suit_response.two_level_min))
         }
-        "system.suitResponse.isGameForcing" => {
+        "system.suitResponseIsGameForcing" => {
             Some(match sys.suit_response.two_level_forcing_duration {
                 bridge_conventions::SuitResponseForcingDuration::Game => "Game-forcing".to_string(),
                 bridge_conventions::SuitResponseForcingDuration::OneRound => {
@@ -291,7 +291,7 @@ fn describe_system_fact_hcp(fact_id: &str, sys: &SystemConfig) -> Option<String>
                 }
             })
         }
-        "system.oneNtResponseAfterMajor.forcing" => Some(format!(
+        "system.oneNtForcingAfterMajor" => Some(format!(
             "1NT is {}",
             match sys.one_nt_response_after_major.forcing {
                 bridge_conventions::OneNtForcingStatus::NonForcing => "non-forcing",
@@ -719,5 +719,31 @@ mod tests {
         let label =
             describe_fact_value(&fact, &FactValue::Partition("two".to_string()), &sys).unwrap();
         assert_eq!(label.en, "2 aces");
+    }
+
+    /// Three describe-arms previously matched non-canonical fact ids
+    /// (`system.responder.twoLevelNewSuit`, `system.suitResponse.isGameForcing`,
+    /// `system.oneNtResponseAfterMajor.forcing`) that no producer emits, so
+    /// they were dead. The arms are now keyed to the canonical ids emitted by
+    /// `evaluate_system_facts`.
+    #[test]
+    fn describe_system_fact_value_handles_canonical_forcing_ids() {
+        let sys = get_system_config(BaseSystemId::Sayc);
+
+        let two_level = describe_system_fact_value("system.responderTwoLevelNewSuit", &sys)
+            .expect("twoLevelNewSuit arm should fire on canonical id");
+        assert!(two_level.hcp.contains("HCP"));
+
+        let game_forcing = describe_system_fact_value("system.suitResponseIsGameForcing", &sys)
+            .expect("suitResponseIsGameForcing arm should fire on canonical id");
+        assert!(
+            game_forcing.hcp == "Game-forcing" || game_forcing.hcp == "One-round forcing",
+            "unexpected forcing description: {}",
+            game_forcing.hcp
+        );
+
+        let one_nt = describe_system_fact_value("system.oneNtForcingAfterMajor", &sys)
+            .expect("oneNtForcingAfterMajor arm should fire on canonical id");
+        assert!(one_nt.hcp.starts_with("1NT is "));
     }
 }

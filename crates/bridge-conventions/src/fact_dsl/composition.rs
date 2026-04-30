@@ -15,6 +15,17 @@ use crate::types::{
 use super::primitives::{suit_name_to_index, SUIT_LENGTH_FACT_IDS};
 use super::types::{get_bool, get_num, FactData, FactValue, RelationalFactContext};
 
+/// Compare an `Eq`-encoded boolean clause (value is 1 for true, 0 for false)
+/// against a boolean fact value.
+fn boolean_eq_clause_matches(clause: &PrimitiveClause, fv: &FactValue) -> bool {
+    let expected = clause_value_as_f64(&clause.value);
+    if fv.value.as_bool() {
+        expected == 1.0
+    } else {
+        expected == 0.0
+    }
+}
+
 /// Evaluate a composition tree, returning the computed value.
 ///
 /// Boolean nodes (Primitive/Extended/And/Or/Not) return `FactData::Boolean`.
@@ -66,27 +77,22 @@ pub fn evaluate_composition(
 
 /// Evaluate a JSON-serializable primitive clause against the fact map.
 fn evaluate_primitive_clause(clause: &PrimitiveClause, facts: &HashMap<String, FactValue>) -> bool {
-    let fact_value = match facts.get(&clause.fact_id) {
-        Some(fv) => fv.value.as_number(),
-        None => {
-            // Boolean fact lookup: check if fact_id points to a boolean
-            if let Some(fv) = facts.get(&clause.fact_id) {
-                return match &clause.operator {
-                    PrimitiveClauseOperator::Eq => {
-                        let expected = clause_value_as_f64(&clause.value);
-                        if fv.value.as_bool() {
-                            expected == 1.0
-                        } else {
-                            expected == 0.0
-                        }
-                    }
-                    _ => fv.value.as_bool(),
-                };
-            }
-            return false;
-        }
+    let Some(fv) = facts.get(&clause.fact_id) else {
+        return false;
     };
 
+    // Boolean fact: `clause_to_primitive` encodes Boolean clauses as `Eq` with
+    // value 1 (true) or 0 (false). Comparing `as_number()` (which returns 0.0
+    // for booleans) against the encoded value would mis-match, so dispatch on
+    // the fact's value type up front.
+    if matches!(fv.value, FactData::Boolean(_)) {
+        return match &clause.operator {
+            PrimitiveClauseOperator::Eq => boolean_eq_clause_matches(clause, fv),
+            _ => fv.value.as_bool(),
+        };
+    }
+
+    let fact_value = fv.value.as_number();
     match &clause.operator {
         PrimitiveClauseOperator::Gte => fact_value >= clause_value_as_f64(&clause.value),
         PrimitiveClauseOperator::Lte => fact_value <= clause_value_as_f64(&clause.value),
@@ -833,5 +839,34 @@ mod tests {
             &HashMap::new(),
             None
         ));
+    }
+
+    /// Boolean facts encoded as `Eq 1`/`Eq 0` (per `clause_to_primitive`)
+    /// must dispatch to the boolean branch instead of being coerced through
+    /// `as_number()` (which returns 0.0 for booleans, mismatching `Eq 1`).
+    #[test]
+    fn primitive_eq_handles_boolean_fact_value() {
+        let mut facts: HashMap<String, FactValue> = HashMap::new();
+        facts.insert(
+            "system.suitResponseIsGameForcing".to_string(),
+            FactValue {
+                fact_id: "system.suitResponseIsGameForcing".to_string(),
+                value: FactData::Boolean(true),
+            },
+        );
+
+        let clause_true = PrimitiveClause {
+            fact_id: "system.suitResponseIsGameForcing".to_string(),
+            operator: PrimitiveClauseOperator::Eq,
+            value: PrimitiveClauseValue::Single(serde_json::Number::from(1)),
+        };
+        assert!(evaluate_primitive_clause(&clause_true, &facts));
+
+        let clause_false = PrimitiveClause {
+            fact_id: "system.suitResponseIsGameForcing".to_string(),
+            operator: PrimitiveClauseOperator::Eq,
+            value: PrimitiveClauseValue::Single(serde_json::Number::from(0)),
+        };
+        assert!(!evaluate_primitive_clause(&clause_false, &facts));
     }
 }

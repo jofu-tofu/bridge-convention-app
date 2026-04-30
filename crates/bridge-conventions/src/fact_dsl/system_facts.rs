@@ -31,6 +31,7 @@ pub const SYSTEM_OPENER_REVERSE_VALUES: &str = "system.opener.reverseValues";
 pub const SYSTEM_OPENER_JUMP_SHIFT_VALUES: &str = "system.opener.jumpShiftValues";
 pub const SYSTEM_OVERCALLER_SIMPLE_VALUES: &str = "system.overcaller.simpleValues";
 pub const SYSTEM_OVERCALLER_JUMP_VALUES: &str = "system.overcaller.jumpValues";
+pub const SYSTEM_OVERCALLER_NT_VALUES: &str = "system.overcaller.ntValues";
 pub const SYSTEM_TAKEOUT_DOUBLER_VALUES: &str = "system.takeoutDoubler.values";
 
 /// Evaluate standard system facts (layer 3) from HCP and SystemConfig.
@@ -179,6 +180,14 @@ pub fn evaluate_system_facts(sys: &SystemConfig, facts: &mut HashMap<String, Fac
         ),
     );
     facts.insert(
+        SYSTEM_OVERCALLER_NT_VALUES.to_string(),
+        fv_bool(
+            SYSTEM_OVERCALLER_NT_VALUES,
+            hcp >= sys.competitive.nt_overcall_min_hcp as f64
+                && hcp <= sys.competitive.nt_overcall_max_hcp as f64,
+        ),
+    );
+    facts.insert(
         SYSTEM_TAKEOUT_DOUBLER_VALUES.to_string(),
         fv_bool(
             SYSTEM_TAKEOUT_DOUBLER_VALUES,
@@ -281,7 +290,7 @@ mod tests {
     use super::{
         evaluate_system_facts, SYSTEM_OPENER_JUMP_SHIFT_VALUES, SYSTEM_OPENER_MAXIMUM_VALUES,
         SYSTEM_OPENER_MEDIUM_VALUES, SYSTEM_OPENER_MINIMUM_VALUES, SYSTEM_OPENER_REVERSE_VALUES,
-        SYSTEM_OVERCALLER_JUMP_VALUES, SYSTEM_OVERCALLER_SIMPLE_VALUES,
+        SYSTEM_OVERCALLER_JUMP_VALUES, SYSTEM_OVERCALLER_NT_VALUES, SYSTEM_OVERCALLER_SIMPLE_VALUES,
         SYSTEM_TAKEOUT_DOUBLER_VALUES,
     };
 
@@ -350,5 +359,27 @@ mod tests {
         let mut takeout = hcp_facts(12);
         evaluate_system_facts(&sys, &mut takeout);
         assert!(bool_value(&takeout, SYSTEM_TAKEOUT_DOUBLER_VALUES));
+    }
+
+    #[test]
+    fn nt_overcall_range_is_emitted_for_sayc() {
+        let sys = sayc_system_config();
+
+        // SAYC defaults: NT overcall = 15-18 HCP
+        let mut below = hcp_facts(14);
+        evaluate_system_facts(&sys, &mut below);
+        assert!(!bool_value(&below, SYSTEM_OVERCALLER_NT_VALUES));
+
+        let mut at_min = hcp_facts(15);
+        evaluate_system_facts(&sys, &mut at_min);
+        assert!(bool_value(&at_min, SYSTEM_OVERCALLER_NT_VALUES));
+
+        let mut at_max = hcp_facts(18);
+        evaluate_system_facts(&sys, &mut at_max);
+        assert!(bool_value(&at_max, SYSTEM_OVERCALLER_NT_VALUES));
+
+        let mut above = hcp_facts(19);
+        evaluate_system_facts(&sys, &mut above);
+        assert!(!bool_value(&above, SYSTEM_OVERCALLER_NT_VALUES));
     }
 }

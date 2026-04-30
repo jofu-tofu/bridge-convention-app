@@ -86,6 +86,13 @@ static FACT_CATALOG: LazyLock<Vec<FactCatalogEntry>> = LazyLock::new(|| {
             rationale: "System-dependent HCP threshold for a strong artificial 2C opening.",
         },
         FactCatalogEntry {
+            id: FactId::new_unchecked("system.opener.notMinimum"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "Not-minimum opener strength",
+            rationale: "System opener threshold above the minimum-rebid floor.",
+        },
+        FactCatalogEntry {
             id: FactId::new_unchecked("system.opener.minimumValues"),
             kind: FactKind::Threshold,
             partition: None,
@@ -147,6 +154,41 @@ static FACT_CATALOG: LazyLock<Vec<FactCatalogEntry>> = LazyLock::new(|| {
             partition: None,
             display_name: "Takeout-double values",
             rationale: "System minimum strength for a takeout double over a partscore opening.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.responderTwoLevelNewSuit"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "Two-level new-suit response strength",
+            rationale: "System responder threshold for a new-suit response at the 2 level.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.suitResponseIsGameForcing"),
+            kind: FactKind::Predicate,
+            partition: None,
+            display_name: "Two-level new-suit forcing duration",
+            rationale: "System constant: whether a 2-level new-suit response is game-forcing.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.oneNtForcingAfterMajor"),
+            kind: FactKind::Predicate,
+            partition: None,
+            display_name: "1NT response forcing status",
+            rationale: "System constant: whether a 1NT response to a 1-major opening is forcing, semi-forcing, or non-forcing.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.responder.oneNtRange"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "1NT response range",
+            rationale: "System HCP range for a 1NT response to a 1-major opening.",
+        },
+        FactCatalogEntry {
+            id: FactId::new_unchecked("system.dontOvercall.inRange"),
+            kind: FactKind::Threshold,
+            partition: None,
+            display_name: "DONT overcall range",
+            rationale: "System HCP range for a DONT-style overcall against 1NT.",
         },
         FactCatalogEntry {
             id: FactId::new_unchecked("responder.majorShape"),
@@ -521,5 +563,42 @@ mod tests {
         let entry = get_fact_catalog_entry(fact.as_str()).unwrap();
         assert_eq!(entry.kind, FactKind::Threshold);
         assert!(entry.partition.is_none());
+    }
+
+    #[test]
+    fn every_emitted_system_fact_has_a_catalog_entry() {
+        // The fact catalog must cover every system.* fact id emitted by
+        // `evaluate_system_facts`. If this test fails, an evaluator was added
+        // without a corresponding catalog entry — restoring the closed-catalog
+        // invariant requires either adding the entry or removing the producer.
+        let emitted_ids = [
+            "system.responder.weakHand",
+            "system.responder.inviteValues",
+            "system.responder.gameValues",
+            "system.responder.slamValues",
+            "system.opener.notMinimum",
+            "system.responderTwoLevelNewSuit",
+            "system.suitResponseIsGameForcing",
+            "system.oneNtForcingAfterMajor",
+            "system.responder.oneNtRange",
+            "system.dontOvercall.inRange",
+            "system.opening.weakTwoRange",
+            "system.opening.strong2cRange",
+            "system.opener.minimumValues",
+            "system.opener.mediumValues",
+            "system.opener.maximumValues",
+            "system.opener.reverseValues",
+            "system.opener.jumpShiftValues",
+            "system.overcaller.simpleValues",
+            "system.overcaller.jumpValues",
+            "system.overcaller.ntValues",
+            "system.takeoutDoubler.values",
+        ];
+        for id in emitted_ids {
+            assert!(
+                get_fact_catalog_entry(id).is_some(),
+                "system fact id '{id}' is emitted by evaluate_system_facts but missing from FACT_CATALOG"
+            );
+        }
     }
 }
