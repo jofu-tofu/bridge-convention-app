@@ -7185,7 +7185,7 @@
     "summaryCard": {
       "trigger": "You open a weak two, partner responds",
       "definingMeaningId": "weak-two:open-2d",
-      "partnership": "This module teaches Larry Cohen's standard Feature treatment: direct raises are support-driven and two notrump is the game-interest ask."
+      "agreementNote": "Standard Feature treatment: direct raises are support-driven and two notrump is the game-interest ask."
     },
     "whenToUse": [
       {
@@ -7342,7 +7342,7 @@
         {
           "opponentAction": "Double of the opening",
           "ourAction": "Keep the weak-two meaning and compete naturally according to your partnership's agreements.",
-          "note": "Larry's standard notes that fancy redouble gadgets are outside the core treatment."
+          "note": "Fancy redouble gadgets are outside the core feature treatment."
         },
         {
           "opponentAction": "Natural overcall",

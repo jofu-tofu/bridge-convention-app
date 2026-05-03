@@ -1762,7 +1762,17 @@
     "summaryCard": {
       "trigger": "A trump fit is agreed and you are exploring slam",
       "definingMeaningId": "blackwood:ask-aces",
-      "partnership": "Confirm whether you play classic Blackwood before using the ask. Most modern tournament partnerships play Roman Keycard Blackwood (RKC) rather than classic Blackwood; RKC counts the trump king as a fifth keycard. The ask still presumes a solid trump suit, because missing top trump honors can defeat slam even when every ace is accounted for."
+      "agreementNote": "Confirm which ace-asking style you play before using the ask; a solid trump suit is presumed.",
+      "styleVariants": [
+        {
+          "name": "Classic Blackwood",
+          "description": "Original ace-asking convention; replies show only how many aces responder holds, ignoring the trump king."
+        },
+        {
+          "name": "Roman Keycard Blackwood",
+          "description": "Counts the trump king as an extra keycard alongside the aces, so replies cover both ace count and the trump king."
+        }
+      ]
     },
     "whenToUse": [
       {
@@ -1975,7 +1985,7 @@
               "level": 6,
               "strain": "S"
             },
-            "rationale": "Opener commits to slam trusting the ace count. Slam fails because partner's club ace faces the void and wins no extra trick, while a heart loser plus a diamond loser cash out. Cue-bidding would have exposed the duplicated control and steered the partnership to a safer contract."
+            "rationale": "Opener commits to slam trusting the ace count, but partner's club ace faces the void; cue-bidding would have exposed the duplicated control."
           }
         ]
       },
@@ -2006,7 +2016,7 @@
             "call": {
               "type": "pass"
             },
-            "rationale": "The partnership never gets the ace-count answer it wanted, because the auction never established the conditions that make Blackwood meaningful."
+            "rationale": "The partnership never gets an ace-count answer because the auction never established the conditions that make the ask meaningful."
           }
         ]
       }

@@ -263,9 +263,10 @@ fn negdbl_route_expr(open: &str, overcall: &str) -> RouteExpr {
                 feature: None,
                 suit: None,
                 strain: Some(bid_suit_name(open)),
+                suit_class: None,
                 strength: None,
-                actor: None,
-                level: None,
+                actor: Some(TurnRole::Opener),
+                level: Some(1),
                 jump: None,
             },
             ObsPattern {
@@ -273,8 +274,12 @@ fn negdbl_route_expr(open: &str, overcall: &str) -> RouteExpr {
                 feature: None,
                 suit: Some(obs_suit(overcall)),
                 strain: None,
+                suit_class: None,
                 strength: None,
-                actor: None,
+                // Phase 3: explicit opponent step so witness derivation
+                // assigns it to LHO and installs ScriptedOpponentStrategy
+                // for that seat in the rejection-sampling predicate.
+                actor: Some(TurnRole::Opponent),
                 level: None,
                 jump: None,
             },
@@ -283,8 +288,9 @@ fn negdbl_route_expr(open: &str, overcall: &str) -> RouteExpr {
                 feature: None,
                 suit: None,
                 strain: None,
+                suit_class: None,
                 strength: None,
-                actor: None,
+                actor: Some(TurnRole::Responder),
                 level: None,
                 jump: None,
             },
@@ -738,10 +744,78 @@ fn build_negative_doubles_after_negdbl_states() -> Vec<StateEntry> {
         .collect()
 }
 
+/// Map an `after-oc-1<X>` phase string to the opening strain symbol and
+/// `BidSuitName`. Returns `None` for any phase that does not encode an
+/// opening suit (e.g. `idle`, `after-neg-dbl`, `done`).
+fn opening_suit_from_phase(phase: &str) -> Option<&'static str> {
+    match phase {
+        "after-oc-1c" => Some("clubs"),
+        "after-oc-1d" => Some("diamonds"),
+        "after-oc-1h" => Some("hearts"),
+        "after-oc-1s" => Some("spades"),
+        _ => None,
+    }
+}
+
+/// Wrap an existing responder-state `route` (currently `Last { overcall ... }`)
+/// in a `Subseq` that explicitly includes both the partnership opening and
+/// the opponent overcall as ObsPatterns. Required by Phase 3 witness
+/// derivation: `enumerate_witnesses` reads route Subseq steps directly to
+/// build the witness prefix, so opponent-interference steps must appear in
+/// the route. Marks the overcall step with `actor: Opponent` so the witness
+/// layer assigns it to the opponent seat.
+fn responder_route_with_opening(open: &str, existing: &RouteExpr) -> RouteExpr {
+    let overcall_pattern = match existing {
+        RouteExpr::Last { pattern } => pattern.clone(),
+        // Already a Subseq or other shape — leave it alone.
+        _ => return existing.clone(),
+    };
+    let mut overcall = overcall_pattern.clone();
+    if overcall.actor.is_none() {
+        overcall.actor = Some(TurnRole::Opponent);
+    }
+    RouteExpr::Subseq {
+        steps: vec![
+            ObsPattern {
+                act: ObsPatternAct::Specific(BidActionType::Open),
+                feature: None,
+                suit: None,
+                strain: Some(bid_suit_name(open)),
+                suit_class: None,
+                strength: None,
+                actor: Some(TurnRole::Opener),
+                level: Some(1),
+                jump: None,
+            },
+            overcall,
+        ],
+    }
+}
+
 fn patch_negative_doubles_module(module: &mut ConventionModule) {
     let Some(states) = module.states.as_mut() else {
         return;
     };
+
+    // Phase 3: responder state entries author `Last { overcall ... }` routes.
+    // Wrap each in a Subseq that adds the opening step (derived from the
+    // phase string) so witness derivation has a complete prefix to materialize.
+    for state in states.iter_mut() {
+        if state.turn != Some(TurnRole::Responder) {
+            continue;
+        }
+        let phase_label = match &state.phase {
+            PhaseRef::Single(p) => p.clone(),
+            PhaseRef::Multiple(_) => continue,
+        };
+        let Some(open_suit) = opening_suit_from_phase(&phase_label) else {
+            continue;
+        };
+        if let Some(route) = state.route.as_ref() {
+            let updated = responder_route_with_opening(open_suit, route);
+            state.route = Some(updated);
+        }
+    }
 
     states.retain(|state| {
         !matches!(

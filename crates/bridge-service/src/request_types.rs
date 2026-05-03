@@ -1,5 +1,6 @@
 //! Service request types — shapes the client provides to the service.
 
+use bridge_conventions::types::rule_types::TargetSelector;
 use bridge_conventions::types::system_config::SystemConfig;
 use bridge_engine::types::{Seat, Vulnerability};
 use serde::{Deserialize, Serialize};
@@ -38,9 +39,10 @@ pub struct SessionConfig {
     /// Practice mode — controls auction entry point and play coupling.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub practice_mode: Option<PracticeMode>,
-    /// Target module for practice focus derivation.
+    /// Drill target — selects which module / surface this drill is focused on.
+    /// `None` is equivalent to `TargetSelector::Any` (no filter).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub target_module_id: Option<String>,
+    pub target: Option<TargetSelector>,
     /// Practice role — opener, responder, or both (random per deal).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub practice_role: Option<PracticeRole>,

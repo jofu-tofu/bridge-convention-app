@@ -58,7 +58,7 @@ Sets vulnerability. Default: `none`.
 Controls opponent (E/W) bidding behavior. Default: `natural`.
 
 ### `--module=<id>`
-Target module focus (play command only). Threads through SessionConfig.targetModuleId.
+Target module focus (play command only). Threads through `SessionConfig.target` as `{ kind: "module", moduleId }`.
 
 ### `--mode=<decision-drill|full-auction>`
 Practice mode (play command only).

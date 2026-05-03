@@ -5770,7 +5770,7 @@
     "summaryCard": {
       "trigger": "No specialized agreement applies and the auction stays natural",
       "definingMeaningId": "bridge:1nt-opening",
-      "partnership": "This module is intentionally an umbrella baseline, not a full continuation encyclopedia. Use it as the natural layer underneath the more specific response and opening modules."
+      "agreementNote": "Foundation module — no partnership agreement required."
     },
     "whenToUse": [
       {
@@ -5827,7 +5827,7 @@
             }
           ]
         },
-        "gloss": "Use the natural notrump raises here when responder has the right invite-or-game strength opposite one notrump and no major-suit route is better."
+        "gloss": "Use natural notrump raises when responder has invite-or-game strength opposite one notrump and no major-suit route is better."
       }
     ],
     "workedAuctions": [],

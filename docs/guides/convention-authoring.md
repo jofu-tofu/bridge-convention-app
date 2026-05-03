@@ -413,6 +413,97 @@ The fixture's top-level `displayName` is also authoritative for the learn-page H
 - [ ] No ASCII digits in authored `reference.*` prose outside worked-auction rationales, raw worked-auction call fields, and hand-sample strings.
 - [ ] No system names (SAYC / 2-1 / Acol / Precision) in authored prose.
 
+## Pattern-Routed Witnesses (suit_class)
+
+When a witness needs to describe a *class* of partnership auctions rather than a
+single concrete sequence — e.g. NMF's "opener bids any minor at level 1, responder
+bids any major at level 1, opener rebids 1NT" — author the route as a `Subseq` whose
+steps use the new `suit_class` qualifier on `ObsPattern`. Each step still carries
+`act` + `level`; `suit_class` complements `strain` and accepts:
+
+- `"minor"` — clubs or diamonds
+- `"major"` — hearts or spades
+- `"suit"` — any of the four suits, not NT
+
+When both `strain` and `suit_class` are set, `strain` wins. Suit-class qualifiers
+are purely physical (no deal/role context); patterns that also set `actor`,
+`feature`, `strength`, or `suit` are *not* witness-tractable and route reification
+falls back to FSM BFS.
+
+### Example (NMF entry-point)
+
+```json
+{
+  "phase": "after-1nt-rebid",
+  "turn": "responder",
+  "scope": { "kind": "enumerated" },
+  "route": {
+    "kind": "subseq",
+    "steps": [
+      { "act": "open",  "level": 1, "suitClass": "minor" },
+      { "act": "show",  "level": 1, "suitClass": "major" },
+      { "act": "open",  "level": 1, "strain": "notrump" }
+    ]
+  },
+  "surfaces": [ /* the user's response surfaces */ ]
+}
+```
+
+Subseq steps describe a *partnership-only* sequence — opener, responder, opener,
+... — with opponent passes implied between them. The witness layer assigns seat
+`step_seat(dealer, 2*i)` to step `i` so the seats round-robin partnership
+turns. Per-step `actor` overrides this default.
+
+### How patterns interact with witness materialization
+
+When witness selection picks a pattern-routed surface, the projected witness
+prefix carries `WitnessCallSpec::Pattern(...)` for each pattern step.
+`bridge_service::witness_selection::initial_auction_from_witness` materializes
+the auction by invoking the seat's live `BiddingStrategy` at each pattern step
+and verifying the strategy's call satisfies the pattern (otherwise the deal is
+rejected). The same materializer runs inside the rejection-sampling predicate
+in `deal_gating::build_witness_acceptance_predicate`, so authoring a pattern
+witness simultaneously gates deal generation and configures the live drill.
+
+The fixture pattern only constrains acceptance — the *content* of materialized
+calls comes from the strategy adapter (which evaluates hand facts against
+authored surfaces). Authors do not need to duplicate hand constraints onto the
+pattern; the surfaces already speak for themselves.
+
+### Authoring opponent steps in routes
+
+Phase 3 lets routes mix partnership and opponent steps in a single Subseq.
+Mark an opponent step with `actor: "opponent"` so the witness materializer
+assigns it to the LHO/RHO seat instead of treating it as another partnership
+turn:
+
+```json
+{
+  "act": "overcall",
+  "actor": "opponent",
+  "suit": "diamonds",
+  "level": 1
+}
+```
+
+When the witness layer sees this step, it stamps the resulting `WitnessCall`
+with `role: WitnessRole::Opponent`. The rejection-sampling predicate's
+`build_predicate_seat_strategies` then installs a
+`ScriptedOpponentStrategy` for any opponent seat that the witness scripts.
+That strategy replays the authored call deterministically during predicate
+prefix replay; the live opponent strategy
+(`Pragmatic`/`NaturalFallback`/`Pass`) only takes over after the prefix is
+fully consumed (or for `Pattern` opponent steps, where the live AI's call
+is verified by `expected.spec.matches(&call)` before acceptance).
+
+This is how negative-doubles drives both responder routes
+(`Subseq { open(opener), overcall(opponent) }`) and opener-rebid routes
+(`Subseq { open(opener), overcall(opponent), double(responder) }`)
+through the unified witness pipeline. The `actor: opener|responder`
+qualifier on partnership steps is recommended for clarity but optional;
+when omitted, the witness layer uses a partnership-only cursor that
+advances by 2 per step.
+
 ## Common Pitfalls
 
 1. **Surface clause `factId` not in catalog.** Missing facts cause clauses to fail closed.

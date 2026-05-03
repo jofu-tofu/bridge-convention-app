@@ -75,3 +75,16 @@ Persistent toggles (`Autoplay`, `Auto-dismiss`) sit at the bottom — equivalent
 - Bid buttons: `data-testid="bid-{callKey}"` such as `bid-1C`, `bid-7NT`, `bid-P`, `bid-X`, `bid-XX`
 - Bid containers: `level-bids`, `special-bids`
 - Dev-action buttons: `data-testid="dev-{action}"` such as `dev-finish-auction`, `dev-skip-to-review`, `dev-autoplay-hand`, `dev-abandon-hand`, `dev-toggle-autoplay`, `dev-toggle-details`
+- Drill-error modal: `drill-error-modal` (root), `drill-error-modal-retry`, `drill-error-modal-dismiss`, `drill-error-modal-close`
+
+## Drill-creation errors
+
+`DealGenerationExhausted` is a typed error at the WASM boundary. Catch it
+in TS via `isDealGenerationExhausted(err)` from `src/service/index.ts`
+(re-exported from `service/service-errors.ts`). The wire shape is
+`{ kind: "dealGenerationExhausted", witnessSummary }` serialized as JSON
+on `JsError.message`. The game store performs one automatic retry with a
+fresh seed before surfacing the failure as `gameStore.drillError`, which
+`GameScreen.svelte` renders as `DrillErrorModal`. Other `ServiceError`
+variants keep the plain `Display` message — they are not catchable by
+discriminant.

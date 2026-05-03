@@ -4434,7 +4434,7 @@
     "summaryCard": {
       "trigger": "You open strong two clubs, partner responds",
       "definingMeaningId": "strong-2c:open-2c",
-      "partnership": "Agree that two diamonds is the default waiting reply, that positive suit responses need real suit quality, and that after a second negative opener repeats the suit so responder may pass or later show that suit naturally. After opener rebids two notrump, Stayman and Jacoby Transfers come from the sibling no-trump modules rather than this fixture."
+      "agreementNote": "Two diamonds is the default waiting reply; positive suit responses need real suit quality."
     },
     "whenToUse": [
       {
@@ -4619,7 +4619,7 @@
         {
           "opponentAction": "Double or overcall of the two clubs opening",
           "ourAction": "Treat the competitive auction as outside this fixture's teaching scope.",
-          "note": "Larry gives methods for these auctions, but this module stays narrower and teaches only the uncontested structure."
+          "note": "These auctions need a partnership agreement; this module stays narrower and teaches the uncontested structure."
         }
       ]
     },

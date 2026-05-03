@@ -129,6 +129,14 @@ export { slugifyMeaningId } from "./display/util/slugify-meaning-id";
 // ── 7. Cross-cutting ────────────────────────────────────────────────
 export { delay } from "./util/delay";
 
+// ── Typed service errors (WASM boundary) ────────────────────────────
+export {
+  DealGenerationExhaustedError,
+  isDealGenerationExhausted,
+  liftServiceError,
+} from "./service-errors";
+export type { DealGenerationExhaustedShape } from "./service-errors";
+
 // ── 8. Auth & Billing (DataPort) ───────────────────────────────────
 export {
   DataPortClient,

@@ -3235,7 +3235,21 @@
     "summaryCard": {
       "trigger": "Opponent opens a suit and you make a conventional two-suited overcall",
       "definingMeaningId": "michaels:cue-bid-1c-2c",
-      "partnership": "Strength is partnership-dependent. Common styles are weak or preemptive only, roughly six to eleven HCP; weak-or-strong mini-maxi methods where intermediate hands overcall naturally; or strong-only treatments. Confirm the agreement and vulnerability discipline before bidding. Over a minor opening, Michaels shows both majors and Unusual two notrump shows the two lower unbid suits (one clubs = diamonds and hearts, one diamonds = clubs and hearts). Over a major opening, Michaels shows the other major plus an undisclosed minor and Unusual two notrump shows both minors."
+      "agreementNote": "Confirm strength range and vulnerability discipline before bidding.",
+      "styleVariants": [
+        {
+          "name": "Weak or preemptive only",
+          "description": "Roughly preempt-strength values. Intermediate hands must overcall naturally instead."
+        },
+        {
+          "name": "Mini-maxi",
+          "description": "Either preempt-strength or strong; intermediate hands overcall naturally."
+        },
+        {
+          "name": "Strong only",
+          "description": "Reserved for hands with extra values; weak two-suiters compete naturally instead."
+        }
+      ]
     },
     "whenToUse": [
       {
@@ -3336,7 +3350,7 @@
             }
           ]
         },
-        "gloss": "Against a major opening, use the cue-bid to show the other major plus a minor so partner can choose between the known major and the hidden minor."
+        "gloss": "Against a major opening, cue-bid to show the other major plus an undisclosed minor so partner can choose the strain."
       },
       {
         "predicate": {
@@ -3407,7 +3421,7 @@
             }
           ]
         },
-        "gloss": "Use unusual two notrump with the two lower unbid suits: over one clubs it shows diamonds and hearts, over one diamonds clubs and hearts, and over a major both minors."
+        "gloss": "Use unusual two notrump to promise the two lower unbid suits: both minors over a major opening, or a minor plus hearts otherwise."
       }
     ],
     "workedAuctions": [

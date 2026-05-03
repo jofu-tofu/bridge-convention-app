@@ -16,22 +16,116 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use bridge_conventions::adapter::strategy_evaluation::StrategyEvaluation;
-use bridge_conventions::fact_dsl::witness::Witness;
+use bridge_conventions::fact_dsl::witness::{Witness, WitnessCallSpec, WitnessRole};
 use bridge_conventions::teaching::teaching_types::SurfaceGroup;
 use bridge_conventions::types::spec_types::ConventionSpec;
 use bridge_engine::constants::{next_seat, partner_seat};
 use bridge_engine::hand_evaluator::evaluate_hand_hcp;
 use bridge_engine::types::{Auction, AuctionEntry, Call, Deal, Seat};
+use bridge_engine::strategy::BidResult;
 use bridge_session::heuristics::{
     BiddingContext, BiddingStrategy, NaturalFallbackStrategy, PassStrategy, PragmaticStrategy,
     StrategyChain,
 };
 use bridge_session::session::practice_focus::derive_initial_auction;
-use bridge_session::session::start_drill::{nmf_initial_auction, DealAcceptancePredicate};
+use bridge_session::session::start_drill::DealAcceptancePredicate;
 use bridge_session::types::{OpponentMode, PracticeRole};
 
 use crate::convention_adapter::ConventionStrategyAdapter;
 use crate::witness_selection::initial_auction_from_witness;
+
+/// Stateless strategy that replays Opponent-tagged witness steps for an
+/// opponent seat. Phase 3 swaps this in for opponents whose seat appears as
+/// an `Opponent` step in the witness prefix; when the predicate's auto-play
+/// loop reaches one of those positions, the strategy returns the authored
+/// call so rejection sampling proceeds deterministically instead of
+/// consulting the live `Natural`/`Pass` chain.
+///
+/// Outside the witness scope (before the prefix has begun, after it has
+/// fully played, or at a seat with no `Opponent` step) the strategy returns
+/// `None`, letting the chain fall through to the live opponent strategy.
+/// Concrete witness steps are returned verbatim; `Pattern` steps are also
+/// punted to the live strategy — the predicate's `expected.spec.matches()`
+/// gate later validates that the live call satisfies the pattern.
+struct ScriptedOpponentStrategy {
+    witness: Witness,
+}
+
+impl ScriptedOpponentStrategy {
+    fn id_str() -> &'static str {
+        "scripted-opponent"
+    }
+}
+
+impl BiddingStrategy for ScriptedOpponentStrategy {
+    fn id(&self) -> &str {
+        Self::id_str()
+    }
+
+    fn name(&self) -> &str {
+        "Scripted Opponent (witness replay)"
+    }
+
+    fn suggest_bid(&self, context: &BiddingContext) -> Option<BidResult> {
+        // Reconstruct the expected auction up to the current position. The
+        // witness prefix encodes only the seats that authored a call; every
+        // other seat in turn order is implicitly Pass. If the entry that
+        // would land at index `context.auction.entries.len()` is an Opponent
+        // witness step at this seat, return its concrete call.
+        let target_idx = context.auction.entries.len();
+        let mut cursor = self.witness.dealer;
+        let mut idx = 0usize;
+        let mut witness_idx = 0usize;
+        // Bound the loop defensively — same 16-step ceiling used by
+        // `initial_auction_from_witness`.
+        let mut guard = 0u32;
+        while guard < 32 {
+            guard += 1;
+            if idx == target_idx {
+                // We've reached the position the live caller is asking about.
+                // If a witness step lands here AND it's an opponent step
+                // at THIS seat, replay its concrete call. Patterns punt to
+                // the live chain.
+                if let Some(expected) = self.witness.prefix.get(witness_idx) {
+                    if expected.seat == cursor
+                        && expected.seat == context.seat
+                        && matches!(expected.role, WitnessRole::Opponent)
+                    {
+                        if let WitnessCallSpec::Concrete(call) = &expected.spec {
+                            return Some(BidResult {
+                                call: call.clone(),
+                                rule_name: Some("scripted-opponent".to_string()),
+                                explanation: "Scripted opponent witness step".to_string(),
+                                ..Default::default()
+                            });
+                        }
+                    }
+                }
+                return None;
+            }
+            // Advance cursor: if the next witness step's seat is `cursor`,
+            // consume that step; otherwise advance with an implicit Pass.
+            match self.witness.prefix.get(witness_idx) {
+                Some(expected) if expected.seat == cursor => {
+                    witness_idx += 1;
+                }
+                _ => {}
+            }
+            idx += 1;
+            cursor = next_seat(cursor);
+            // If we've consumed the entire witness prefix and walked past
+            // it, we're outside the scripted region.
+            if witness_idx >= self.witness.prefix.len() && idx > target_idx {
+                return None;
+            }
+        }
+        None
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
 
 /// Extract (module_id, meaning_id) from a `StrategyEvaluation`'s selected carrier.
 fn matched_module_and_surface(evaluation: &StrategyEvaluation) -> Option<(String, String)> {
@@ -46,15 +140,30 @@ fn matched_module_and_surface(evaluation: &StrategyEvaluation) -> Option<(String
     Some((mid, sid))
 }
 
+/// True iff the witness prefix authored an `Opponent` step at this seat.
+fn witness_has_opponent_step_at(witness: &Witness, seat: Seat) -> bool {
+    witness.prefix.iter().any(|w| {
+        w.seat == seat && matches!(w.role, WitnessRole::Opponent)
+    })
+}
+
 /// Build a seat→strategy map mirroring `config_resolver::build_seat_strategies`,
 /// but producing `Arc<dyn BiddingStrategy>` so it can be cloned into the `Fn`
 /// closure used for rejection sampling. Kept in lockstep with
 /// `build_seat_strategies` so the predicate replays the same AI behavior the
 /// live session will.
+///
+/// Phase 3: when the witness has authored opponent steps at an opponent
+/// seat, prefix that seat's chain with a `ScriptedOpponentStrategy` so the
+/// authored call is replayed deterministically during rejection sampling.
+/// The live opponent strategy still backstops positions where the witness
+/// is silent (before the prefix, after it, or for seats with no `Opponent`
+/// step).
 fn build_predicate_seat_strategies(
     user_seat: Seat,
     opponent_mode: OpponentMode,
     adapter: &Arc<ConventionStrategyAdapter>,
+    witness: &Witness,
 ) -> HashMap<Seat, Arc<dyn BiddingStrategy>> {
     let mut m: HashMap<Seat, Arc<dyn BiddingStrategy>> = HashMap::new();
     // User + partner use the convention adapter. The predicate shares ONE
@@ -70,13 +179,24 @@ fn build_predicate_seat_strategies(
 
     let opp_seats = [next_seat(user_seat), next_seat(partner_seat(user_seat))];
     for &opp in &opp_seats {
-        let strategy: Arc<dyn BiddingStrategy> = match opponent_mode {
-            OpponentMode::Natural => Arc::new(StrategyChain::new(vec![
+        let needs_script = witness_has_opponent_step_at(witness, opp);
+        let strategy: Arc<dyn BiddingStrategy> = match (opponent_mode, needs_script) {
+            (OpponentMode::Natural, true) => Arc::new(StrategyChain::new(vec![
+                Box::new(ScriptedOpponentStrategy { witness: witness.clone() }),
                 Box::new(PragmaticStrategy),
                 Box::new(NaturalFallbackStrategy),
                 Box::new(PassStrategy),
             ])),
-            OpponentMode::None => Arc::new(PassStrategy),
+            (OpponentMode::Natural, false) => Arc::new(StrategyChain::new(vec![
+                Box::new(PragmaticStrategy),
+                Box::new(NaturalFallbackStrategy),
+                Box::new(PassStrategy),
+            ])),
+            (OpponentMode::None, true) => Arc::new(StrategyChain::new(vec![
+                Box::new(ScriptedOpponentStrategy { witness: witness.clone() }),
+                Box::new(PassStrategy),
+            ])),
+            (OpponentMode::None, false) => Arc::new(PassStrategy),
         };
         m.insert(opp, strategy);
     }
@@ -101,10 +221,9 @@ pub(crate) fn build_witness_acceptance_predicate(
     witness: Witness,
     resolved_role: PracticeRole,
     bundle_deal_constraints: Option<bridge_engine::types::DealConstraints>,
-    convention_id: &str,
+    _convention_id: &str,
     opponent_mode: OpponentMode,
 ) -> Option<Arc<DealAcceptancePredicate>> {
-    let convention_id = convention_id.to_string();
     let spec = spec.as_ref()?.clone();
     let surface_groups = surface_groups.to_vec();
 
@@ -116,7 +235,7 @@ pub(crate) fn build_witness_acceptance_predicate(
         target_surface = %witness.target_surface_id,
         user_seat = ?witness.user_seat,
         prefix_len = witness.prefix.len(),
-        prefix_calls = ?witness.prefix.iter().map(|e| format!("{:?}:{:?}", e.seat, e.call)).collect::<Vec<_>>(),
+        prefix_calls = ?witness.prefix.iter().map(|e| format!("{:?}:{:?}", e.seat, e.spec)).collect::<Vec<_>>(),
         "building witness predicate"
     );
     if let Some(ref dc) = bundle_deal_constraints {
@@ -149,18 +268,16 @@ pub(crate) fn build_witness_acceptance_predicate(
         // has interior-mutable `last_evaluation`; reusing across attempts
         // would leak stashed state. Construction is cheap (wraps a shared
         // Arc to the adapter; opponent chains are stateless structs).
-        let seat_strategies = build_predicate_seat_strategies(user_seat, opponent_mode, &adapter);
+        // Phase 3: also installs `ScriptedOpponentStrategy` for any opponent
+        // seat the witness authored a step at.
+        let seat_strategies =
+            build_predicate_seat_strategies(user_seat, opponent_mode, &adapter, &witness);
 
-        // Same prefix seeding as v1: either NMF, initial-auction derivation, or empty.
-        let witness_prefix = initial_auction_from_witness(&witness);
-        let nmf_prefix =
-            if convention_id == "nmf-bundle" && resolved_role == PracticeRole::Responder {
-                nmf_initial_auction(deal, deal.dealer)
-            } else {
-                None
-            };
+        // Witness-derived auction (concrete or pattern-materialized via the
+        // seat strategies we just built) takes precedence; fall back to the
+        // bundle-specific derive_initial_auction.
+        let witness_prefix = initial_auction_from_witness(&witness, deal, &seat_strategies);
         let mut auction = witness_prefix
-            .or(nmf_prefix)
             .or_else(|| {
                 derive_initial_auction(
                     resolved_role,
@@ -184,10 +301,14 @@ pub(crate) fn build_witness_acceptance_predicate(
         // live drill lands directly on the user's turn; consume witness-prefix
         // partnership bids in order and tolerate extra seeded passes from seats
         // that are not the next witness actor.
+        let mut built_auction_so_far: Vec<(Seat, Call)> = Vec::new();
         for entry in auction.entries.iter() {
             if let Some(expected) = witness.prefix.get(witness_idx) {
-                if entry.seat == expected.seat && entry.call == expected.call {
+                if entry.seat == expected.seat
+                    && expected.spec.matches(&entry.call, &built_auction_so_far)
+                {
                     witness_idx += 1;
+                    built_auction_so_far.push((entry.seat, entry.call.clone()));
                     continue;
                 }
             }
@@ -199,6 +320,7 @@ pub(crate) fn build_witness_acceptance_predicate(
                 );
                 return false;
             }
+            built_auction_so_far.push((entry.seat, entry.call.clone()));
         }
 
         let mut cursor = if auction.entries.is_empty() {
@@ -244,10 +366,10 @@ pub(crate) fn build_witness_acceptance_predicate(
 
             if is_witness_step {
                 let expected = next_expected.expect("checked above");
-                if call != expected.call {
+                if !expected.spec.matches(&call, &built_auction_so_far) {
                     tracing::debug!(
                         "reject: witness step {:?} expected {:?} but adapter produced {:?} (seat {:?}, hcp={})",
-                        witness_idx, expected.call, call, cursor,
+                        witness_idx, expected.spec, call, cursor,
                         evaluate_hand_hcp(&deal.hands[&cursor]).hcp
                     );
                     return false;
@@ -264,6 +386,7 @@ pub(crate) fn build_witness_acceptance_predicate(
                 return false;
             }
 
+            built_auction_so_far.push((cursor, call.clone()));
             auction.entries.push(AuctionEntry { seat: cursor, call });
             cursor = next_seat(cursor);
         }
@@ -334,7 +457,7 @@ pub(crate) fn build_witness_acceptance_predicate(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_conventions::fact_dsl::witness::WitnessCall;
+    use bridge_conventions::fact_dsl::witness::{WitnessCall, WitnessCallSpec, WitnessRole};
     use bridge_conventions::registry::module_registry::BASE_MODULE_IDS;
     use bridge_conventions::registry::spec_builder::spec_from_bundle;
     use bridge_conventions::registry::system_configs::get_system_config;
@@ -355,7 +478,9 @@ mod tests {
             system_config: get_system_config(BaseSystemId::Sayc),
             base_module_ids: BASE_MODULE_IDS.iter().map(|s| s.to_string()).collect(),
             practice_mode: Some(PracticeMode::DecisionDrill),
-            target_module_id: Some("stayman".to_string()),
+            target: Some(bridge_conventions::types::rule_types::TargetSelector::Module {
+                module_id: "stayman".to_string(),
+            }),
             practice_role: Some(PracticeRole::Responder),
             play_preference: Some(PlayPreference::Skip),
             opponent_mode: None,
@@ -402,7 +527,9 @@ mod tests {
                 system_config: get_system_config(BaseSystemId::Sayc),
                 base_module_ids: BASE_MODULE_IDS.iter().map(|s| s.to_string()).collect(),
                 practice_mode: Some(PracticeMode::DecisionDrill),
-                target_module_id: Some("jacoby-transfers".to_string()),
+                target: Some(bridge_conventions::types::rule_types::TargetSelector::Module {
+                    module_id: "jacoby-transfers".to_string(),
+                }),
                 practice_role: Some(PracticeRole::Responder),
                 play_preference: Some(PlayPreference::Skip),
                 opponent_mode: None,
@@ -444,10 +571,11 @@ mod tests {
         let witness = Witness {
             prefix: vec![WitnessCall {
                 seat: Seat::North,
-                call: Call::Bid {
+                spec: WitnessCallSpec::Concrete(Call::Bid {
                     level: 7,
                     strain: BidSuit::NoTrump,
-                },
+                }),
+                role: WitnessRole::Partnership,
             }],
             target_surface_id: "stayman:ask-major".to_string(),
             target_module_id: "stayman".to_string(),
@@ -526,10 +654,11 @@ mod tests {
         let witness = Witness {
             prefix: vec![WitnessCall {
                 seat: Seat::North,
-                call: Call::Bid {
+                spec: WitnessCallSpec::Concrete(Call::Bid {
                     level: 7,
                     strain: BidSuit::NoTrump,
-                },
+                }),
+                role: WitnessRole::Partnership,
             }],
             target_surface_id: "stayman:ask-major".to_string(),
             target_module_id: "stayman".to_string(),
@@ -570,6 +699,265 @@ mod tests {
         assert!(
             !pred(&deal, Seat::South),
             "mismatched witness prefix should reject"
+        );
+    }
+
+    /// Phase 3: WitnessRole round-trips through serde with both variants.
+    #[test]
+    fn witness_role_round_trips_through_serde() {
+        for variant in [WitnessRole::Partnership, WitnessRole::Opponent] {
+            let json = serde_json::to_string(&variant).expect("serialize");
+            let back: WitnessRole = serde_json::from_str(&json).expect("deserialize");
+            assert_eq!(back, variant);
+        }
+        // Default deserialization (omitted role field) yields Partnership.
+        // Use a WitnessCall whose JSON omits `role` to verify the default.
+        let json = r#"{"seat":"N","spec":{"kind":"concrete","type":"pass"}}"#;
+        let parsed: bridge_conventions::fact_dsl::witness::WitnessCall =
+            serde_json::from_str(json).expect("deserialize default role");
+        assert_eq!(parsed.role, WitnessRole::Partnership);
+    }
+
+    /// ScriptedOpponentStrategy returns the witness's concrete call when
+    /// invoked at an Opponent witness step at the matching seat.
+    #[test]
+    fn scripted_opponent_strategy_returns_witness_call_when_at_opponent_step() {
+        use bridge_engine::types::{Auction, Hand, HandEvaluation, DistributionPoints};
+        let witness = Witness {
+            prefix: vec![
+                WitnessCall {
+                    seat: Seat::North,
+                    spec: WitnessCallSpec::Concrete(Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Clubs,
+                    }),
+                    role: WitnessRole::Partnership,
+                },
+                WitnessCall {
+                    seat: Seat::East,
+                    spec: WitnessCallSpec::Concrete(Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Diamonds,
+                    }),
+                    role: WitnessRole::Opponent,
+                },
+            ],
+            target_surface_id: "negdbl:double-after-1c-1d".to_string(),
+            target_module_id: "negative-doubles".to_string(),
+            target_surface_module_id: "negative-doubles".to_string(),
+            user_seat: Seat::South,
+            dealer: Seat::North,
+        };
+        let strategy = ScriptedOpponentStrategy { witness };
+        // After N's opening, at index=1 with seat=East: returns the witness's 1D.
+        let ctx = BiddingContext {
+            hand: Hand { cards: vec![] },
+            auction: Auction {
+                entries: vec![bridge_engine::types::AuctionEntry {
+                    seat: Seat::North,
+                    call: Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Clubs,
+                    },
+                }],
+                is_complete: false,
+            },
+            seat: Seat::East,
+            evaluation: HandEvaluation {
+                hcp: 12,
+                distribution: DistributionPoints {
+                    shortness: 0,
+                    length: 0,
+                    total: 0,
+                },
+                shape: [4, 3, 3, 3],
+                strategy: "HCP".to_string(),
+            },
+            vulnerability: None,
+            dealer: Some(Seat::North),
+        };
+        let result = strategy.suggest_bid(&ctx).expect("should produce a bid");
+        assert_eq!(
+            result.call,
+            Call::Bid {
+                level: 1,
+                strain: BidSuit::Diamonds
+            }
+        );
+    }
+
+    /// ScriptedOpponentStrategy returns None outside the witness scope so the
+    /// chain falls through to the live opponent strategy (or PassStrategy).
+    #[test]
+    fn scripted_opponent_strategy_returns_none_outside_witness_scope() {
+        use bridge_engine::types::{Auction, Hand, HandEvaluation, DistributionPoints};
+        let witness = Witness {
+            prefix: vec![WitnessCall {
+                seat: Seat::East,
+                spec: WitnessCallSpec::Concrete(Call::Bid {
+                    level: 1,
+                    strain: BidSuit::Diamonds,
+                }),
+                role: WitnessRole::Opponent,
+            }],
+            target_surface_id: "ignored".to_string(),
+            target_module_id: "ignored".to_string(),
+            target_surface_module_id: "ignored".to_string(),
+            user_seat: Seat::South,
+            dealer: Seat::North,
+        };
+        let strategy = ScriptedOpponentStrategy { witness };
+        // Position 0 (dealer N) — strategy is at East, witness step is at E
+        // at position 1. Asking for ctx.seat=East at position 0 should return
+        // None (the witness step lands later).
+        let ctx_pos0 = BiddingContext {
+            hand: Hand { cards: vec![] },
+            auction: Auction {
+                entries: vec![],
+                is_complete: false,
+            },
+            seat: Seat::East,
+            evaluation: HandEvaluation {
+                hcp: 0,
+                distribution: DistributionPoints {
+                    shortness: 0,
+                    length: 0,
+                    total: 0,
+                },
+                shape: [4, 3, 3, 3],
+                strategy: "HCP".to_string(),
+            },
+            vulnerability: None,
+            dealer: Some(Seat::North),
+        };
+        assert!(strategy.suggest_bid(&ctx_pos0).is_none());
+
+        // After consuming the witness, query again for any position past it
+        // (auction len > prefix len). Should return None.
+        let ctx_past = BiddingContext {
+            hand: Hand { cards: vec![] },
+            auction: Auction {
+                entries: vec![
+                    bridge_engine::types::AuctionEntry {
+                        seat: Seat::North,
+                        call: Call::Pass,
+                    },
+                    bridge_engine::types::AuctionEntry {
+                        seat: Seat::East,
+                        call: Call::Bid {
+                            level: 1,
+                            strain: BidSuit::Diamonds,
+                        },
+                    },
+                    bridge_engine::types::AuctionEntry {
+                        seat: Seat::South,
+                        call: Call::Pass,
+                    },
+                    bridge_engine::types::AuctionEntry {
+                        seat: Seat::West,
+                        call: Call::Pass,
+                    },
+                ],
+                is_complete: false,
+            },
+            seat: Seat::East,
+            evaluation: HandEvaluation {
+                hcp: 0,
+                distribution: DistributionPoints {
+                    shortness: 0,
+                    length: 0,
+                    total: 0,
+                },
+                shape: [4, 3, 3, 3],
+                strategy: "HCP".to_string(),
+            },
+            vulnerability: None,
+            dealer: Some(Seat::North),
+        };
+        assert!(strategy.suggest_bid(&ctx_past).is_none());
+    }
+
+    /// When the witness has a Pattern opponent step that the live opponent
+    /// can't satisfy on a given deal, the predicate must reject. The
+    /// `predicate_rejects_when_prefix_mismatch` test covers concrete-step
+    /// divergence; this case extends it to opponent-pattern divergence by
+    /// pinning a specific overcall strain that won't match a randomly
+    /// generated deal.
+    #[test]
+    fn predicate_rejects_when_live_opponent_diverges_from_witness() {
+        use bridge_conventions::types::bid_action::{BidActionType, ObsSuit};
+        use bridge_conventions::types::rule_types::{ObsPattern, ObsPatternAct};
+        // Witness: N opens 1C, E overcalls a SPECIFIC level/strain (3NT) that
+        // no Natural opponent will play here. The predicate's
+        // ScriptedOpponentStrategy returns None for the Pattern step (since
+        // 3NT-overcall has level=3 strain=NT — but we keep `act: Overcall`
+        // so the matcher only accepts Overcall calls). Live opponent will
+        // overwhelmingly play Pass or some sane overcall, never matching.
+        let witness = Witness {
+            prefix: vec![
+                WitnessCall {
+                    seat: Seat::North,
+                    spec: WitnessCallSpec::Concrete(Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Clubs,
+                    }),
+                    role: WitnessRole::Partnership,
+                },
+                WitnessCall {
+                    seat: Seat::East,
+                    spec: WitnessCallSpec::Pattern(ObsPattern {
+                        act: ObsPatternAct::Specific(BidActionType::Overcall),
+                        feature: None,
+                        suit: Some(ObsSuit::Diamonds),
+                        strain: None,
+                        suit_class: None,
+                        strength: None,
+                        actor: None,
+                        level: Some(7),
+                        jump: None,
+                    }),
+                    role: WitnessRole::Opponent,
+                },
+            ],
+            target_surface_id: "negdbl:double-after-1c-1d".to_string(),
+            target_module_id: "negative-doubles".to_string(),
+            target_surface_module_id: "negative-doubles".to_string(),
+            user_seat: Seat::South,
+            dealer: Seat::North,
+        };
+
+        let base = BASE_MODULE_IDS
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<Vec<_>>();
+        let sys = get_system_config(BaseSystemId::Sayc);
+        let spec = spec_from_bundle("negative-doubles-bundle", &sys, &base, &HashMap::new());
+        let groups: Vec<SurfaceGroup> = Vec::new();
+        let pred = build_witness_acceptance_predicate(
+            &spec,
+            &groups,
+            witness,
+            PracticeRole::Responder,
+            None,
+            "negative-doubles-bundle",
+            OpponentMode::Natural,
+        )
+        .expect("predicate builds");
+
+        let constraints = DealConstraints {
+            seats: Vec::new(),
+            dealer: Some(Seat::North),
+            vulnerability: None,
+            max_attempts: Some(1_000),
+            seed: Some(42),
+        };
+        let deal = generate_deal(&constraints).expect("deal").deal;
+        // Live opponent will not bid 7D over 1C, and the witness step has no
+        // Concrete spec for ScriptedOpponentStrategy to return — predicate
+        // must reject.
+        assert!(
+            !pred(&deal, Seat::South),
+            "predicate must reject when live opponent diverges from witness pattern"
         );
     }
 }

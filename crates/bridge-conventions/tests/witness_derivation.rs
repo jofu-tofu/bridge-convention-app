@@ -35,13 +35,15 @@ fn enumerate_witnesses_nt_stayman_finds_1nt_path() {
     let has_1nt_by_north = witnesses.iter().any(|w: &Witness| {
         w.prefix.iter().any(|entry: &WitnessCall| {
             entry.seat == Seat::North
-                && matches!(
-                    entry.call,
-                    Call::Bid {
-                        level: 1,
-                        strain: BidSuit::NoTrump
-                    }
-                )
+                && entry.concrete_call().is_some_and(|c| {
+                    matches!(
+                        c,
+                        Call::Bid {
+                            level: 1,
+                            strain: BidSuit::NoTrump
+                        }
+                    )
+                })
         })
     });
     assert!(
@@ -53,13 +55,15 @@ fn enumerate_witnesses_nt_stayman_finds_1nt_path() {
     // Confirm no witness contains a 1C opener — v1's misleading context.
     let has_1c = witnesses.iter().any(|w| {
         w.prefix.iter().any(|entry| {
-            matches!(
-                entry.call,
-                Call::Bid {
-                    level: 1,
-                    strain: BidSuit::Clubs
-                }
-            )
+            entry.concrete_call().is_some_and(|c| {
+                matches!(
+                    c,
+                    Call::Bid {
+                        level: 1,
+                        strain: BidSuit::Clubs
+                    }
+                )
+            })
         })
     });
     assert!(
@@ -107,13 +111,15 @@ fn enumerate_witnesses_jacoby_transfers_finds_1nt_path() {
     let has_1nt_by_north = witnesses.iter().any(|w| {
         w.prefix.iter().any(|entry| {
             entry.seat == Seat::North
-                && matches!(
-                    entry.call,
-                    Call::Bid {
-                        level: 1,
-                        strain: BidSuit::NoTrump
-                    }
-                )
+                && entry.concrete_call().is_some_and(|c| {
+                    matches!(
+                        c,
+                        Call::Bid {
+                            level: 1,
+                            strain: BidSuit::NoTrump
+                        }
+                    )
+                })
         })
     });
     assert!(
@@ -207,6 +213,53 @@ fn enumerate_witnesses_missing_target_returns_empty() {
         64,
     );
     assert!(witnesses_missing_module.is_empty());
+}
+
+#[test]
+fn enumerate_witnesses_negative_doubles_opener_rebid_has_three_step_prefix() {
+    // Phase 3: opener-rebid surfaces synthesize a Subseq route
+    // [open(opener), overcall(opponent), double(responder)]. Verify the
+    // witness derivation produces the expected 3-step prefix with seats
+    // S→W→N for dealer=S, plus the right roles.
+    use bridge_conventions::fact_dsl::witness::{WitnessCallSpec, WitnessRole};
+    use bridge_engine::types::{BidSuit, Call};
+    let neg = match get_module("negative-doubles", BaseSystemId::Sayc) {
+        Some(m) => m,
+        None => return,
+    };
+    let mut modules = loaded_modules();
+    modules.push(neg);
+    let witnesses = enumerate_witnesses(
+        "negative-doubles",
+        "negdbl:opener-simple-hearts-after-1S-1C",
+        &modules,
+        Seat::South,
+        Seat::South,
+        64,
+    );
+    assert!(
+        !witnesses.is_empty(),
+        "expected witness for negdbl opener-rebid surface"
+    );
+    let w = &witnesses[0];
+    assert_eq!(w.prefix.len(), 3, "expected 3-step prefix");
+    assert_eq!(w.prefix[0].seat, Seat::South);
+    assert_eq!(w.prefix[0].role, WitnessRole::Partnership);
+    assert!(matches!(
+        w.prefix[0].spec,
+        WitnessCallSpec::Concrete(Call::Bid {
+            level: 1,
+            strain: BidSuit::Spades
+        })
+    ));
+    assert_eq!(w.prefix[1].seat, Seat::West);
+    assert_eq!(w.prefix[1].role, WitnessRole::Opponent);
+    assert_eq!(w.prefix[2].seat, Seat::North);
+    assert_eq!(w.prefix[2].role, WitnessRole::Partnership);
+    assert!(matches!(
+        w.prefix[2].spec,
+        WitnessCallSpec::Concrete(Call::Double)
+    ));
 }
 
 #[test]
@@ -357,7 +410,7 @@ fn find_kernel_establishing_prefix_respects_specific_strain() {
         let bid_strains: Vec<BidSuitName> = w
             .prefix
             .iter()
-            .filter_map(|e| match &e.call {
+            .filter_map(|e| match e.concrete_call()? {
                 Call::Bid {
                     strain: BidSuit::Hearts,
                     ..
@@ -465,13 +518,15 @@ fn project_witness_nt_stayman_constrains_opponents() {
     .find(|w| {
         w.prefix.iter().any(|entry| {
             entry.seat == Seat::North
-                && matches!(
-                    entry.call,
-                    Call::Bid {
-                        level: 1,
-                        strain: BidSuit::NoTrump
-                    }
-                )
+                && entry.concrete_call().is_some_and(|c| {
+                    matches!(
+                        c,
+                        Call::Bid {
+                            level: 1,
+                            strain: BidSuit::NoTrump
+                        }
+                    )
+                })
         })
     })
     .expect("need a stayman witness with a 1NT opener");

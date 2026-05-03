@@ -111,7 +111,16 @@ export interface GameStore {
   readonly debugLog: DebugLogEntry[];
   readonly playLog: PlayLogEntry[];
 
+  /**
+   * Last drill-creation failure surfaced to the UI. `null` on the happy
+   * path. The GameScreen subscribes to this and shows a modal when set;
+   * `dismissDrillError` clears it (e.g. when the user picks a different
+   * convention or hits "New Deal" with a different seed).
+   */
+  readonly drillError: { kind: "dealGenerationExhausted" } | null;
+
   // Methods
+  dismissDrillError(): void;
   userPlayCard(card: Card, seat: Seat): void;
   skipToReview(): void;
   restartPlay(): void;

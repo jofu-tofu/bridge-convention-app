@@ -802,7 +802,7 @@
     "summaryCard": {
       "trigger": "Partner opens one notrump and responder needs a weak escape",
       "definingMeaningId": "stayman:ask-major",
-      "partnership": "Requires an explicit garbage or crawling agreement: the club ask is weak and non-constructive, and the crawl to hearts is pass-or-correct."
+      "agreementNote": "Explicit weak-escape agreement; the club ask is non-constructive and the crawl to hearts is pass-or-correct."
     },
     "whenToUse": [
       {
@@ -825,7 +825,7 @@
             "expected": true
           }
         },
-        "gloss": "Start with a published weak escape shape: either short clubs with a safe diamond landing spot or short diamonds with both majors for the crawl."
+        "gloss": "Start with a known weak-escape shape: short clubs with a safe diamond landing, or short diamonds with both majors for the crawl."
       },
       {
         "predicate": {
@@ -1048,7 +1048,7 @@
               "level": 2,
               "strain": "C"
             },
-            "rationale": "Responder misuses Garbage Stayman with a 4-4-2-3 hand that fits neither approved branch: clubs are not short enough for garbage and diamonds are not short enough for the crawl."
+            "rationale": "Garbage Stayman misused with a 4-4-2-3 hand that fits neither branch — clubs not short for garbage, diamonds not short for the crawl."
           },
           {
             "seat": "N",

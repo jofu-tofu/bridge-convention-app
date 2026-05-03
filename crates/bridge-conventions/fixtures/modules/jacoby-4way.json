@@ -1507,7 +1507,7 @@
     "summaryCard": {
       "trigger": "Partner opens one notrump and you need the minor-suit half of four-way transfers",
       "definingMeaningId": "transfer:to-clubs-2s",
-      "partnership": "This fixture is the minor-suit extension layered on top of jacoby-transfers. Major-suit transfer continuations are delegated there, while invitational six-card minor continuations and strong follow-ups remain partnership-defined unless Larry gives a specific table."
+      "agreementNote": "Common agreement layered on the major-suit transfer module; minor continuations need partnership discussion."
     },
     "whenToUse": [
       {
@@ -1588,7 +1588,7 @@
             }
           ]
         },
-        "gloss": "With an invitational six-card club suit and no four-card major, Larry still wants the two-spade transfer start even though the continuation agreements are left to partnership discussion."
+        "gloss": "With an invitational six-card club suit and no four-card major, start with the two-spade transfer; continuation agreements vary."
       },
       {
         "predicate": {
@@ -1620,7 +1620,7 @@
             }
           ]
         },
-        "gloss": "With an invitational six-card diamond suit and no four-card major, Larry still wants the two-notrump transfer start even though the continuation agreements are left to partnership discussion."
+        "gloss": "With an invitational six-card diamond suit and no four-card major, start with the two-notrump transfer; continuations vary."
       }
     ],
     "workedAuctions": [

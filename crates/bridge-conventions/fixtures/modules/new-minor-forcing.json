@@ -5440,13 +5440,71 @@
       "scope": {
         "kind": "enumerated"
       }
+    },
+    {
+      "phase": "after-1nt-rebid",
+      "turn": "responder",
+      "route": {
+        "kind": "subseq",
+        "steps": [
+          { "act": "open", "level": 1, "suitClass": "minor" },
+          { "act": "show", "level": 1, "suitClass": "major" },
+          { "act": "open", "level": 1, "strain": "notrump" }
+        ]
+      },
+      "surfaces": [
+        {
+          "meaningId": "nmf:ask-after-1c",
+          "semanticClassId": "nmf:nmf-ask",
+          "moduleId": "new-minor-forcing",
+          "encoding": {
+            "defaultCall": {
+              "type": "bid",
+              "level": 2,
+              "strain": "D"
+            }
+          },
+          "clauses": [
+            {
+              "factId": "hand.hcp",
+              "operator": "gte",
+              "value": 10,
+              "clauseId": "hand.hcp:gte:10",
+              "description": "10+ HCP (invitational+)",
+              "isPublic": true
+            }
+          ],
+          "ranking": {
+            "recommendationBand": "must",
+            "modulePrecedence": 0,
+            "declarationOrder": 0
+          },
+          "sourceIntent": {
+            "type": "NMFAsk",
+            "params": {}
+          },
+          "disclosure": "alert",
+          "teachingLabel": {
+            "name": "New Minor Forcing 2D",
+            "summary": "Artificial checkback — asks opener to further describe their hand"
+          }
+        }
+      ],
+      "scope": {
+        "kind": "enumerated"
+      }
     }
   ],
   "reference": {
     "summaryCard": {
       "trigger": "After opener rebids one notrump, responder checks back with the unbid minor to clarify major fits or strength.",
       "definingMeaningId": "nmf:ask-after-1c",
-      "partnership": "The new minor is whichever minor responder has not bid. This fixture covers the standard minor-opening structure and a common one-heart extension. Some partnerships treat it as invitational-or-better by default; others play strictly game-forcing or a two-way style that splits invitational and game-forcing across the two minors — confirm the agreement. The summary card shows the one-club branch."
+      "agreementNote": "The new minor is whichever minor responder has not bid; confirm the partnership strength agreement first.",
+      "styleVariants": [
+        { "name": "Invitational-or-better", "description": "Default treatment: the new-minor ask shows at least invitational values and asks opener to clarify three-card support and shape." },
+        { "name": "Strictly game-forcing", "description": "Reserved for hands with game values; opener may stretch to show extras knowing responder has already committed to game." },
+        { "name": "Two-way style", "description": "Splits invitational and game-forcing intent across the two unbid minors so opener knows the strength immediately." }
+      ]
     },
     "whenToUse": [
       {
@@ -5755,7 +5813,7 @@
     ],
     "interference": {
       "status": "notApplicable",
-      "reason": "Opponent interference over 2♣/2♦ checkback is a partnership agreement — systems-on or penalty double; not covered here."
+      "reason": "Opponent interference over the new-minor checkback is a partnership agreement — systems-on or penalty double; not covered here."
     },
     "quickReference": {
       "kind": "list",

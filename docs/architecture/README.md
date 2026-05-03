@@ -12,6 +12,7 @@ Use this folder for repo-owned architectural context. It should answer two quest
 - `teaching-architecture.md` — current meaning-pipeline, teaching, grading, and practice-model architecture
 - `authority-and-module-composition.md` — authority-source policy (tier table, Category A vs B) and module composition rules (`variantOf`, `delegate_to`, planned `requires` field)
 - `authored-input/` — design specs for the authored-input substrate (what authors write into fixtures, what must be inferred). Start with `authored-input/README.md`.
+- `drill-targeting-and-pattern-witnesses.md` — multi-phase drill-targeting refactor. Phase 1 introduces `TargetSelector` (replaces `targetModuleId`); later phases migrate NMF / negative-doubles prefix synthesis to authored fixtures via patternized witness call specs.
 
 ## Historical Reference
 

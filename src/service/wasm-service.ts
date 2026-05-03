@@ -37,6 +37,7 @@ import type {
 import type { ServiceDebugLogEntry } from "./debug-types";
 import type { PlayProfileId, UserModuleContent } from "./session-types";
 import { setWasmModule } from "./service-helpers";
+import { liftServiceError } from "./service-errors";
 import { initDDS, isDDSAvailable, solveBoardWasm, solveDealFromPBN } from "../engine/dds-client";
 
 // The WASM module exposes WasmServicePort as a class.
@@ -172,11 +173,21 @@ export class BridgeService implements DevServicePort {
 
   // ── Session lifecycle ───────────────────────────────────────────
   async createDrillSession(config: SessionConfig): Promise<DrillHandle> {
-    return getPort().create_drill_session(config);
+    try {
+      return getPort().create_drill_session(config);
+    } catch (err) {
+      // Lift typed Rust errors (e.g. DealGenerationExhausted) to typed
+      // TS classes so callers can branch via `isDealGenerationExhausted`.
+      throw liftServiceError(err);
+    }
   }
 
   async startDrill(handle: DrillHandle): Promise<DrillStartResult> {
-    return getPort().start_drill(handle);
+    try {
+      return getPort().start_drill(handle);
+    } catch (err) {
+      throw liftServiceError(err);
+    }
   }
 
   // ── Bidding ─────────────────────────────────────────────────────

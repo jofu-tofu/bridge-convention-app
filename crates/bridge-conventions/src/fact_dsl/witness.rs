@@ -28,6 +28,7 @@ use bridge_engine::{
     is_auction_complete, is_legal_call, next_seat, partner_seat,
     types::{Auction, AuctionEntry, BidSuit, Call, DealConstraints, Seat, SeatConstraint, Suit},
 };
+use serde::{Deserialize, Serialize};
 
 use crate::pipeline::evaluation::binding_resolver::resolve_clause;
 use crate::pipeline::observation::committed_step::{
@@ -190,15 +191,194 @@ fn reify_obs_pattern_with_surface_hint(
 // Witness + projection types
 // =====================================================================
 
-/// One concrete entry on a witness prefix (absolute seat + call).
+/// One step on a witness prefix: either a concrete call (which the predicate
+/// matches by exact equality) or a pattern (which matches any call satisfying
+/// the pattern). Patterns let authored fixtures express "any minor opening"
+/// or "any major response" without enumerating every concrete possibility.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+pub enum WitnessCallSpec {
+    Concrete(Call),
+    Pattern(ObsPattern),
+}
+
+impl WitnessCallSpec {
+    /// Does this spec match a concrete call in the auction context?
+    /// `auction_so_far` lets the matcher resolve `jump` predicates by
+    /// computing the minimum legal level for the call's strain.
+    pub fn matches(&self, call: &Call, auction_so_far: &[(Seat, Call)]) -> bool {
+        match self {
+            WitnessCallSpec::Concrete(expected) => expected == call,
+            WitnessCallSpec::Pattern(pat) => pattern_matches_call(pat, call, auction_so_far),
+        }
+    }
+}
+
+/// Whether a witness step represents a partnership (opener/responder/our
+/// partner) bid or an opponent's authored interference.
 ///
-/// Mirrors `bridge_engine::types::AuctionEntry` structurally; we keep our
-/// own type so witness enumeration stays in-crate even if AuctionEntry
-/// gains fields.
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// Phase 3 introduced `Opponent`: previously witnesses only encoded
+/// partnership steps and the predicate replayed opponents from the live
+/// strategy chain (with an implicit "must Pass" guard). Negative-doubles
+/// authored prefixes contain LHO overcalls, so the witness layer now
+/// carries opponent steps explicitly. Default deserializes to `Partnership`
+/// so pre-Phase-3 serialized witnesses keep their meaning.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum WitnessRole {
+    Partnership,
+    Opponent,
+}
+
+impl Default for WitnessRole {
+    fn default() -> Self {
+        WitnessRole::Partnership
+    }
+}
+
+/// One concrete entry on a witness prefix (absolute seat + call spec).
+///
+/// Witnesses now carry a `WitnessCallSpec` rather than a bare `Call` so a
+/// single witness can describe a class of auctions (e.g. NMF: opener bids
+/// any minor at level 1). Concrete specs are the common case; patterns are
+/// reserved for fixtures whose authored route uses suit-class qualifiers.
+///
+/// `role` distinguishes partnership steps (verified by the convention
+/// adapter) from opponent steps (replayed via `ScriptedOpponentStrategy` in
+/// the rejection-sampling predicate). Default `Partnership` keeps existing
+/// witnesses behaving identically.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct WitnessCall {
     pub seat: Seat,
-    pub call: Call,
+    pub spec: WitnessCallSpec,
+    #[serde(default)]
+    pub role: WitnessRole,
+}
+
+impl WitnessCall {
+    /// Convenience: the underlying `Call` when the spec is `Concrete`. Returns
+    /// `None` for `Pattern` specs. Many internal helpers were written before
+    /// patterns existed and only run when the witness is concrete-only; they
+    /// can call this and unwrap.
+    pub fn concrete_call(&self) -> Option<&Call> {
+        match &self.spec {
+            WitnessCallSpec::Concrete(c) => Some(c),
+            WitnessCallSpec::Pattern(_) => None,
+        }
+    }
+}
+
+/// Match an `ObsPattern` against a concrete `Call` outside the BidAction
+/// pipeline. Used by `WitnessCallSpec::Pattern` to test whether a candidate
+/// auction step matches the authored pattern.
+///
+/// This is a deliberately narrow matcher: only `act` (BidActionType vs Call
+/// kind), `level`, `strain`, `suit_class`, and `jump` are inspected. The
+/// `actor`/`feature`/`strength`/`suit` fields require deal/role context that
+/// isn't available at this layer; patterns using them are rejected with
+/// `false` rather than partially honored, which forces authors to keep
+/// witness patterns to physical-call qualifiers.
+fn pattern_matches_call(
+    pattern: &ObsPattern,
+    call: &Call,
+    auction_so_far: &[(Seat, Call)],
+) -> bool {
+    // act check: map BidActionType to Call kind. Pass/Double/Redouble are
+    // direct; semantic acts (Open/Show/Overcall/...) fall through to Call::Bid.
+    match pattern.act {
+        ObsPatternAct::Any => {}
+        ObsPatternAct::Specific(act) => match (act, call) {
+            (BidActionType::Pass, Call::Pass)
+            | (BidActionType::Double, Call::Double)
+            | (BidActionType::Redouble, Call::Redouble) => {}
+            (BidActionType::Pass, _)
+            | (BidActionType::Double, _)
+            | (BidActionType::Redouble, _) => return false,
+            // Semantic acts like Open/Show/Rebid (n.b. Rebid is not a real
+            // BidActionType variant; the relevant flavor in fixtures is Show
+            // or Open). All map to Call::Bid for physical matching.
+            (_, Call::Bid { .. }) => {}
+            (_, _) => return false,
+        },
+    }
+
+    // For non-Bid calls, level/strain/suit_class/jump constraints all reject.
+    let (call_level, call_strain) = match call {
+        Call::Bid { level, strain } => (*level, *strain),
+        _ => {
+            return pattern.level.is_none()
+                && pattern.strain.is_none()
+                && pattern.suit_class.is_none()
+                && pattern.jump.is_none();
+        }
+    };
+
+    if let Some(expected_level) = pattern.level {
+        if call_level != expected_level {
+            return false;
+        }
+    }
+
+    let strain_name = match call_strain {
+        BidSuit::Clubs => BidSuitName::Clubs,
+        BidSuit::Diamonds => BidSuitName::Diamonds,
+        BidSuit::Hearts => BidSuitName::Hearts,
+        BidSuit::Spades => BidSuitName::Spades,
+        BidSuit::NoTrump => BidSuitName::Notrump,
+    };
+    if let Some(ref expected_strain) = pattern.strain {
+        if &strain_name != expected_strain {
+            return false;
+        }
+    } else if let Some(class) = pattern.suit_class {
+        if !class.matches_strain(&strain_name) {
+            return false;
+        }
+    }
+
+    // Fields requiring deal/role context — reject patterns that try to use
+    // them at this layer. Forces authors to keep witness patterns physical.
+    if pattern.actor.is_some()
+        || pattern.feature.is_some()
+        || pattern.strength.is_some()
+        || pattern.suit.is_some()
+    {
+        return false;
+    }
+
+    if let Some(expected_jump) = pattern.jump {
+        let mut min_level = 1u8;
+        let target_rank = bid_suit_rank(call_strain);
+        for (_, prior) in auction_so_far {
+            if let Call::Bid {
+                level: pl,
+                strain: ps,
+            } = prior
+            {
+                let p_rank = bid_suit_rank(*ps);
+                let candidate = if target_rank > p_rank { *pl } else { *pl + 1 };
+                if candidate > min_level {
+                    min_level = candidate;
+                }
+            }
+        }
+        let is_jump = call_level > min_level;
+        if is_jump != expected_jump {
+            return false;
+        }
+    }
+    true
+}
+
+fn bid_suit_rank(s: BidSuit) -> u8 {
+    match s {
+        BidSuit::Clubs => 0,
+        BidSuit::Diamonds => 1,
+        BidSuit::Hearts => 2,
+        BidSuit::Spades => 3,
+        BidSuit::NoTrump => 4,
+    }
 }
 
 /// A symbolic auction prefix ending at a chosen target surface.
@@ -329,8 +509,16 @@ fn shortest_reifiable_path(
                     step_seat(start_seat, path.len())
                 }
             };
+            let role = match t.on.actor {
+                Some(TurnRole::Opponent) => WitnessRole::Opponent,
+                _ => WitnessRole::Partnership,
+            };
             let mut new_path = path.clone();
-            new_path.push(WitnessCall { seat, call });
+            new_path.push(WitnessCall {
+                seat,
+                spec: WitnessCallSpec::Concrete(call),
+                role,
+            });
 
             if target_phases.contains(t.to.as_str()) {
                 return Some(new_path);
@@ -374,6 +562,97 @@ pub fn extract_required_prefix_from_route(route: &RouteExpr) -> Option<Vec<Call>
             Some(out)
         }
         RouteExpr::Last { pattern } => Some(vec![reify_obs_pattern(pattern)?]),
+        _ => None,
+    }
+}
+
+/// Reify an `ObsPattern` into a `WitnessCallSpec` when the pattern is
+/// witness-tractable. Returns:
+/// - `Some(Concrete(Call))` when the pattern fully reifies to a concrete call.
+/// - `Some(Pattern(pat))` when the pattern carries a `suit_class` qualifier
+///   (or otherwise stays in the "physical-call" subset honored by
+///   `pattern_matches_call`).
+/// - `None` for patterns whose semantic fields (`actor`, `feature`, `strength`,
+///   `suit`) require deal/role context that the witness layer doesn't have —
+///   callers fall back to FSM BFS just as they did before patterns existed.
+///
+/// Used by `extract_required_prefix_specs_from_route` to support pattern-routed
+/// witnesses (e.g. NMF's `1m – 1M – 1NT` opener step where `1m` = any minor).
+pub fn reify_obs_pattern_to_spec(pat: &ObsPattern) -> Option<WitnessCallSpec> {
+    // Concrete reification first — honors the authored shape without losing
+    // information. If level + strain (or pass/double/redouble) are set
+    // unambiguously, we get a concrete call.
+    if let Some(call) = reify_obs_pattern(pat) {
+        return Some(WitnessCallSpec::Concrete(call));
+    }
+    // Patterns we accept as `Pattern`: physical-call qualifiers only.
+    // Anything with actor/feature/strength/suit is a semantic predicate; we
+    // punt so the caller can fall back to FSM BFS just as before patterns
+    // existed.
+    if pat.actor.is_some()
+        || pat.feature.is_some()
+        || pat.strength.is_some()
+        || pat.suit.is_some()
+    {
+        return None;
+    }
+    // Accept patterns with suit_class, level, and/or jump set. They will
+    // physically match concrete calls via `pattern_matches_call`.
+    Some(WitnessCallSpec::Pattern(pat.clone()))
+}
+
+/// Borrow the ordered `ObsPattern`s of a `Subseq` route. Returns `None` for
+/// any other route shape. Phase 3 needs the raw patterns (with `actor` info
+/// preserved) to assign opponent vs partnership roles per witness step;
+/// `extract_required_prefix_specs_from_route` strips that field.
+pub fn collect_subseq_steps(route: &RouteExpr) -> Option<&[ObsPattern]> {
+    match route {
+        RouteExpr::Subseq { steps } => Some(steps.as_slice()),
+        _ => None,
+    }
+}
+
+/// Witness-friendly variant of `reify_obs_pattern_to_spec` that strips
+/// `actor` (handled separately by seat assignment) and converts `suit` to
+/// `strain` for action types whose `suit` field IS the bid's strain
+/// (Overcall, Show, Raise, etc). Used by the route-driven witness path so
+/// authored opponent overcalls can carry both `actor: Opponent` and a
+/// `suit` qualifier without `pattern_matches_call` rejecting them.
+fn reify_route_step_to_spec(pat: &ObsPattern) -> Option<WitnessCallSpec> {
+    let mut adjusted = pat.clone();
+    // Seat assignment honors `actor` upstream; the runtime spec.matches()
+    // doesn't have role info, so drop it here.
+    adjusted.actor = None;
+    // For overcall steps the authored `suit` IS the bid strain. Promote it
+    // to `strain` so the physical-call matcher can compare against the call.
+    if adjusted.strain.is_none() {
+        if let Some(s) = adjusted.suit.take() {
+            adjusted.strain = Some(BidSuitName::from(s));
+        }
+    } else {
+        adjusted.suit = None;
+    }
+    reify_obs_pattern_to_spec(&adjusted)
+}
+
+/// Pattern-aware variant of `extract_required_prefix_from_route`: every step
+/// produces a `WitnessCallSpec` so authors can use suit-class qualifiers and
+/// other physical-but-imprecise predicates inside `Subseq`/`Last` routes.
+/// Returns `None` for combinators that cannot be linearized (`Or`, `Not`,
+/// `Contains`, `And`) OR when any step contains semantic fields not honored
+/// by `pattern_matches_call` — callers fall back to FSM BFS in either case.
+pub fn extract_required_prefix_specs_from_route(
+    route: &RouteExpr,
+) -> Option<Vec<WitnessCallSpec>> {
+    match route {
+        RouteExpr::Subseq { steps } => {
+            let mut out = Vec::with_capacity(steps.len());
+            for s in steps {
+                out.push(reify_obs_pattern_to_spec(s)?);
+            }
+            Some(out)
+        }
+        RouteExpr::Last { pattern } => Some(vec![reify_obs_pattern_to_spec(pattern)?]),
         _ => None,
     }
 }
@@ -561,10 +840,15 @@ fn auction_pattern_matches(
     prefix: &[WitnessCall],
 ) -> bool {
     use crate::types::agreement::AuctionPattern;
+    // Walks of `auction_pattern_matches` only fire on internal BFS-built
+    // prefixes (always Concrete). Patterns are skipped defensively rather
+    // than panicking — they would treat as non-Pass labels and break the
+    // sequence match (correct behavior when authoring uses suit_class).
     let labels: Vec<String> = prefix
         .iter()
-        .filter(|c| !matches!(c.call, Call::Pass))
-        .map(|c| call_to_short_label(&c.call))
+        .filter_map(|c| c.concrete_call())
+        .filter(|c| !matches!(c, Call::Pass))
+        .map(call_to_short_label)
         .collect();
     match pattern {
         AuctionPattern::Sequence { calls } => {
@@ -675,13 +959,19 @@ fn actions_set_fit(actions: &[BidAction]) -> bool {
 
 /// Build an `Auction` from a prefix, computing `is_complete` correctly so
 /// `is_legal_call` respects auction-closure semantics during BFS expansion.
+///
+/// Pattern witnesses don't reach this helper — kernel BFS builds its prefix
+/// from concrete fit-relevant surfaces, so each step has a Concrete spec.
 fn auction_from_prefix(prefix: &[WitnessCall]) -> Auction {
     let mut a = Auction {
         entries: prefix
             .iter()
             .map(|e| AuctionEntry {
                 seat: e.seat,
-                call: e.call.clone(),
+                call: e
+                    .concrete_call()
+                    .expect("auction_from_prefix only sees concrete witness steps")
+                    .clone(),
             })
             .collect(),
         is_complete: false,
@@ -763,7 +1053,15 @@ fn find_kernel_establishing_prefix(
         let phases_json = serde_json::to_string(&phases).unwrap_or_default();
         let prefix_labels: String = prefix
             .iter()
-            .map(|c| format!("{:?}:{}", c.seat, call_to_short_label(&c.call)))
+            .map(|c| {
+                format!(
+                    "{:?}:{}",
+                    c.seat,
+                    c.concrete_call()
+                        .map(call_to_short_label)
+                        .unwrap_or_else(|| "<pat>".to_string())
+                )
+            })
             .collect::<Vec<_>>()
             .join(",");
         let key = format!(
@@ -850,7 +1148,8 @@ fn find_kernel_establishing_prefix(
                 let mut new_prefix = prefix.clone();
                 new_prefix.push(WitnessCall {
                     seat: current_seat,
-                    call: step.default_call.clone(),
+                    spec: WitnessCallSpec::Concrete(step.default_call.clone()),
+                    role: WitnessRole::Partnership,
                 });
                 let mut new_log = steps_log.clone();
                 new_log.push(committed);
@@ -867,7 +1166,8 @@ fn find_kernel_establishing_prefix(
                 let mut pass_prefix = prefix.clone();
                 pass_prefix.push(WitnessCall {
                     seat: current_seat,
-                    call: Call::Pass,
+                    spec: WitnessCallSpec::Concrete(Call::Pass),
+                    role: WitnessRole::Partnership,
                 });
                 let mut new_log = steps_log.clone();
                 new_log.push(pass_step);
@@ -880,7 +1180,8 @@ fn find_kernel_establishing_prefix(
             let mut new_prefix = prefix.clone();
             new_prefix.push(WitnessCall {
                 seat: current_seat,
-                call: Call::Pass,
+                spec: WitnessCallSpec::Concrete(Call::Pass),
+                role: WitnessRole::Opponent,
             });
             let mut new_log = steps_log.clone();
             new_log.push(pass_step);
@@ -933,10 +1234,16 @@ pub fn replay_kernel_from_prefix(
 ) -> NegotiationState {
     let mut state = initial_negotiation();
     for entry in prefix {
-        if matches!(entry.call, Call::Pass | Call::Double | Call::Redouble) {
+        // Pattern witnesses can't be replayed without a deal; skip them. In
+        // practice this function only fires for kernel-gated targets whose
+        // prefixes are concrete (synthesized by find_kernel_establishing_prefix).
+        let Some(entry_call) = entry.concrete_call() else {
+            continue;
+        };
+        if matches!(entry_call, Call::Pass | Call::Double | Call::Redouble) {
             continue;
         }
-        let candidates = surfaces_emitting_call(modules, &entry.call, entry.seat, dealer);
+        let candidates = surfaces_emitting_call(modules, entry_call, entry.seat, dealer);
         if candidates.is_empty() {
             continue;
         }
@@ -944,7 +1251,7 @@ pub fn replay_kernel_from_prefix(
         // most-specific by invert-score; tie-break by (module_id, meaning_id).
         let chosen = pick_replay_surface(&candidates);
         let actions = normalize_intent(&chosen.source_intent);
-        state = apply_negotiation_actions(&state, &actions, entry.seat, &entry.call);
+        state = apply_negotiation_actions(&state, &actions, entry.seat, entry_call);
     }
     state
 }
@@ -1073,16 +1380,75 @@ pub fn enumerate_witnesses(
 
     let mut witnesses: Vec<Witness> = Vec::new();
     for se in &target_states {
-        // Approach C first.
+        // Approach C first. Pattern-aware: route steps may carry suit-class
+        // qualifiers (e.g. NMF's "1m" = any minor opening) and yield
+        // `WitnessCallSpec::Pattern` rather than concrete calls.
+        //
+        // Seat assignment: route Subseq steps describe a *partnership-only*
+        // sequence — opener, responder, opener, ... — with opponent passes
+        // implied between them. Use `step_seat(dealer, 2*i)` so step i goes
+        // to the i-th partnership turn (N, S, N, S, ... when dealer=N).
+        // Per-step `actor` overrides this default.
         let mut prefix_opt: Option<Vec<WitnessCall>> = None;
         if let Some(route) = se.route.as_ref() {
-            if let Some(calls) = extract_required_prefix_from_route(route) {
-                let mut prefix = Vec::with_capacity(calls.len());
-                for (i, call) in calls.into_iter().enumerate() {
-                    prefix.push(WitnessCall {
-                        seat: step_seat(dealer, i),
-                        call,
-                    });
+            // Inspect the route's Subseq steps directly so we can carry each
+            // step's authored `actor` through to seat + role assignment.
+            // `extract_required_prefix_specs_from_route` discards that info
+            // by reducing each step to a `WitnessCallSpec`.
+            if let Some(steps) = collect_subseq_steps(route) {
+                let mut tractable = true;
+                let mut prefix: Vec<WitnessCall> = Vec::with_capacity(steps.len());
+                // Partnership-step counter — backstops steps that omit
+                // `actor`. With Phase 3, routes for negdbl + similar
+                // bundles intersperse opponent steps, so the legacy
+                // `step_seat(dealer, 2*i)` formula no longer aligns.
+                // When `actor` is set we trust it; otherwise we assume
+                // partnership and advance the partnership turn counter.
+                let mut partnership_idx = 0usize;
+                for pat in steps {
+                    let Some(spec) = reify_route_step_to_spec(pat) else {
+                        tractable = false;
+                        break;
+                    };
+                    let role = match pat.actor {
+                        Some(TurnRole::Opponent) => WitnessRole::Opponent,
+                        _ => WitnessRole::Partnership,
+                    };
+                    let seat = match pat.actor {
+                        Some(actor) => seat_for_turn(actor, dealer),
+                        None => {
+                            let s = step_seat(dealer, 2 * partnership_idx);
+                            partnership_idx += 1;
+                            s
+                        }
+                    };
+                    prefix.push(WitnessCall { seat, spec, role });
+                }
+                if tractable {
+                    prefix_opt = Some(prefix);
+                }
+            } else if let Some(specs) = extract_required_prefix_specs_from_route(route) {
+                // Non-Subseq tractable route (e.g. Last). Fall back to the
+                // legacy partnership-cursor path.
+                let mut prefix = Vec::with_capacity(specs.len());
+                for (i, spec) in specs.into_iter().enumerate() {
+                    let (seat, role) = match &spec {
+                        WitnessCallSpec::Pattern(pat) => {
+                            let role = match pat.actor {
+                                Some(TurnRole::Opponent) => WitnessRole::Opponent,
+                                _ => WitnessRole::Partnership,
+                            };
+                            let seat = match pat.actor {
+                                Some(actor) => seat_for_turn(actor, dealer),
+                                None => step_seat(dealer, 2 * i),
+                            };
+                            (seat, role)
+                        }
+                        WitnessCallSpec::Concrete(_) => {
+                            (step_seat(dealer, 2 * i), WitnessRole::Partnership)
+                        }
+                    };
+                    prefix.push(WitnessCall { seat, spec, role });
                 }
                 prefix_opt = Some(prefix);
             }
@@ -1222,14 +1588,20 @@ fn surfaces_emitting_call_with_phase_gate<'m>(
     let mut phases = initial_module_phases(loaded_modules);
     let mut steps_log: Vec<CommittedStep> = Vec::new();
     for entry in prior_prefix {
-        let actions = if matches!(entry.call, Call::Pass) {
+        // Pattern witnesses are skipped here: project_witness only operates on
+        // materialized concrete prefixes (live deal-gating already replays the
+        // adapter to produce concrete calls before this is called).
+        let Some(entry_call) = entry.concrete_call() else {
+            continue;
+        };
+        let actions = if matches!(entry_call, Call::Pass) {
             vec![BidAction::Pass]
         } else {
             // Look up candidate surfaces for this historical call (loose
             // match; used only as a hint for FSM advance). Prefer
             // fit-setting surfaces to match BFS pick-logic.
             let candidates =
-                surfaces_emitting_call(loaded_modules, &entry.call, entry.seat, dealer);
+                surfaces_emitting_call(loaded_modules, entry_call, entry.seat, dealer);
             if candidates.is_empty() {
                 Vec::new()
             } else {
@@ -1239,7 +1611,7 @@ fn surfaces_emitting_call_with_phase_gate<'m>(
                 normalize_intent(&chosen.source_intent)
             }
         };
-        let step = synth_committed_step(entry.seat, entry.call.clone(), actions);
+        let step = synth_committed_step(entry.seat, entry_call.clone(), actions);
         phases = advance_all_module_phases(loaded_modules, &phases, &step, &steps_log);
         steps_log.push(step);
     }
@@ -1720,12 +2092,17 @@ fn is_opponent_seat(seat: Seat, dealer: Seat) -> bool {
 }
 
 fn auction_from_position(position: &[WitnessCall]) -> Auction {
+    // Used by no-interference projection. Pattern witnesses don't reach this
+    // path (project_witness fast-paths concrete-only); skip Pattern entries
+    // defensively rather than panic.
     Auction {
         entries: position
             .iter()
-            .map(|entry| AuctionEntry {
-                seat: entry.seat,
-                call: entry.call.clone(),
+            .filter_map(|entry| {
+                entry.concrete_call().map(|c| AuctionEntry {
+                    seat: entry.seat,
+                    call: c.clone(),
+                })
             })
             .collect(),
         is_complete: false,
@@ -1951,12 +2328,27 @@ pub fn project_witness(
             }
             position.push(WitnessCall {
                 seat: cursor,
-                call: Call::Pass,
+                spec: WitnessCallSpec::Concrete(Call::Pass),
+                role: WitnessRole::Opponent,
             });
             cursor = step_seat(cursor, 1);
         }
 
-        if entry.call == Call::Pass && is_opponent_seat(entry.seat, witness.dealer) {
+        // Pattern witness step: we cannot project per-seat clauses without
+        // knowing the concrete call. Skip the per-call surface lookup; the
+        // resulting projection will be looser, which is acceptable because
+        // pattern witnesses are routed through deal-gating before they ever
+        // serve as a deal-generation constraint.
+        let entry_call = match entry.concrete_call() {
+            Some(c) => c,
+            None => {
+                position.push(entry.clone());
+                cursor = step_seat(entry.seat, 1);
+                continue;
+            }
+        };
+
+        if entry_call == &Call::Pass && is_opponent_seat(entry.seat, witness.dealer) {
             let synthesized = synthesize_no_interference_constraint(
                 entry.seat,
                 &position,
@@ -1971,7 +2363,7 @@ pub fn project_witness(
 
         let matches = surfaces_emitting_call_with_phase_gate(
             loaded_modules,
-            &entry.call,
+            entry_call,
             entry.seat,
             witness.dealer,
             &position,
@@ -2005,7 +2397,8 @@ pub fn project_witness(
         }
         position.push(WitnessCall {
             seat: cursor,
-            call: Call::Pass,
+            spec: WitnessCallSpec::Concrete(Call::Pass),
+            role: WitnessRole::Opponent,
         });
         cursor = step_seat(cursor, 1);
     }
@@ -2093,6 +2486,7 @@ mod tests {
             feature: None,
             suit: None,
             strain: Some(BidSuitName::Notrump),
+            suit_class: None,
             strength: None,
             actor: None,
             level: Some(1),
@@ -2115,6 +2509,7 @@ mod tests {
             feature: None,
             suit: None,
             strain: Some(BidSuitName::Notrump),
+            suit_class: None,
             strength: None,
             actor: None,
             level: None,
@@ -2131,6 +2526,7 @@ mod tests {
             feature: Some(HandFeature::MajorSuit),
             suit: None,
             strain: None,
+            suit_class: None,
             strength: None,
             actor: None,
             level: None,
@@ -2146,6 +2542,7 @@ mod tests {
             feature: None,
             suit: None,
             strain: None,
+            suit_class: None,
             strength: None,
             actor: None,
             level: None,
@@ -2158,11 +2555,148 @@ mod tests {
             feature: None,
             suit: None,
             strain: None,
+            suit_class: None,
             strength: None,
             actor: None,
             level: None,
             jump: None,
         };
         assert_eq!(reify_obs_pattern(&dbl), Some(Call::Double));
+    }
+
+    #[test]
+    fn pattern_matches_call_minor_open_at_level_1() {
+        use crate::types::rule_types::SuitClass;
+        let pat = ObsPattern {
+            act: ObsPatternAct::Specific(BidActionType::Open),
+            feature: None,
+            suit: None,
+            strain: None,
+            suit_class: Some(SuitClass::Minor),
+            strength: None,
+            actor: None,
+            level: Some(1),
+            jump: None,
+        };
+        assert!(pattern_matches_call(
+            &pat,
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs
+            },
+            &[]
+        ));
+        assert!(pattern_matches_call(
+            &pat,
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Diamonds
+            },
+            &[]
+        ));
+        assert!(!pattern_matches_call(
+            &pat,
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Hearts
+            },
+            &[]
+        ));
+        assert!(!pattern_matches_call(
+            &pat,
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::NoTrump
+            },
+            &[]
+        ));
+        // Level 2 minor doesn't match level: 1.
+        assert!(!pattern_matches_call(
+            &pat,
+            &Call::Bid {
+                level: 2,
+                strain: BidSuit::Clubs
+            },
+            &[]
+        ));
+    }
+
+    #[test]
+    fn witness_call_spec_concrete_serde_roundtrip() {
+        let spec = WitnessCallSpec::Concrete(Call::Bid {
+            level: 1,
+            strain: BidSuit::NoTrump,
+        });
+        let json = serde_json::to_string(&spec).unwrap();
+        let back: WitnessCallSpec = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, spec);
+    }
+
+    #[test]
+    fn witness_call_spec_pattern_serde_roundtrip() {
+        use crate::types::rule_types::SuitClass;
+        let spec = WitnessCallSpec::Pattern(ObsPattern {
+            act: ObsPatternAct::Specific(BidActionType::Open),
+            feature: None,
+            suit: None,
+            strain: None,
+            suit_class: Some(SuitClass::Minor),
+            strength: None,
+            actor: None,
+            level: Some(1),
+            jump: None,
+        });
+        let json = serde_json::to_string(&spec).unwrap();
+        let back: WitnessCallSpec = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, spec);
+    }
+
+    #[test]
+    fn witness_call_spec_matches_dispatches_concrete_and_pattern() {
+        use crate::types::rule_types::SuitClass;
+        let concrete = WitnessCallSpec::Concrete(Call::Bid {
+            level: 1,
+            strain: BidSuit::Clubs,
+        });
+        assert!(concrete.matches(
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs
+            },
+            &[]
+        ));
+        assert!(!concrete.matches(
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Diamonds
+            },
+            &[]
+        ));
+
+        let pattern = WitnessCallSpec::Pattern(ObsPattern {
+            act: ObsPatternAct::Specific(BidActionType::Open),
+            feature: None,
+            suit: None,
+            strain: None,
+            suit_class: Some(SuitClass::Minor),
+            strength: None,
+            actor: None,
+            level: Some(1),
+            jump: None,
+        });
+        assert!(pattern.matches(
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Clubs
+            },
+            &[]
+        ));
+        assert!(pattern.matches(
+            &Call::Bid {
+                level: 1,
+                strain: BidSuit::Diamonds
+            },
+            &[]
+        ));
     }
 }

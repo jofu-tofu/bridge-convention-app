@@ -60,7 +60,10 @@ describe("game store lifecycle (RED tests)", () => {
     const activeLaunch = { moduleIds: ["stayman-bundle", "jacoby-transfers-bundle"] };
 
     vi.mocked(mockService.createDrillSession).mockImplementation(async (config) => {
-      observedModuleIds.push(config.targetModuleId ?? config.conventionId);
+      const targetModuleId = config.target?.kind === "module" || config.target?.kind === "surface"
+        ? config.target.moduleId
+        : undefined;
+      observedModuleIds.push(targetModuleId ?? config.conventionId);
       return `session-${observedModuleIds.length}`;
     });
 

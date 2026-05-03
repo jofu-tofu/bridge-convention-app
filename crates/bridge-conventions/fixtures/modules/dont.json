@@ -6033,7 +6033,17 @@
     "summaryCard": {
       "trigger": "Opponent opens one notrump and you interfere",
       "definingMeaningId": "dont:single-suited-double",
-      "partnership": "This fixture treats DONT as a defense to a strong one notrump and uses the natural two-spades treatment, where two spades shows a six-card or longer spade suit. It also includes Walker's direct monster two-suiter calls and preemptive direct three-level jumps. Some partnerships prefer Marty Bergen's original two-suited style where two spades shows spades plus an unspecified minor, so confirm that agreement before playing."
+      "agreementNote": "Confirm which two-spades treatment your partnership uses before defending notrump openings.",
+      "styleVariants": [
+        {
+          "name": "Natural two-spades",
+          "description": "Two-spade overcall shows a long spade suit; doubles handle the one-suiter ask, and direct higher jumps stay preemptive."
+        },
+        {
+          "name": "Original two-suited",
+          "description": "Two-spade overcall shows spades plus an unspecified minor in the original treatment, so partner must be ready to relay."
+        }
+      ]
     },
     "whenToUse": [
       {
@@ -6150,7 +6160,7 @@
             }
           ]
         },
-        "gloss": "Use the artificial two-level overcalls to show clubs-plus-higher or diamonds-plus-a-major when describing two suits cheaply matters more than bidding one naturally."
+        "gloss": "Use the artificial two-level overcalls to show clubs-plus-higher or diamonds-plus-a-major when describing two suits cheaply matters."
       },
       {
         "predicate": {

@@ -6,6 +6,7 @@ use bridge_engine::types::{Call, Card, Seat};
 use bridge_service::DevServicePort;
 use bridge_service::{ServicePort, ServicePortImpl, SessionConfig};
 use bridge_session::dds::{DdsError, McddParams, SolveBoardRequest, SolveBoardResponse};
+use serde::Serialize;
 
 // ── Tracing setup ───────────────────────────────────────────────
 
@@ -42,8 +43,36 @@ fn from_js<T: serde::de::DeserializeOwned>(val: JsValue) -> Result<T, JsError> {
     serde_wasm_bindgen::from_value(val).map_err(|e| JsError::new(&e.to_string()))
 }
 
+/// Typed sidecar shape for `ServiceError::DealGenerationExhausted`.
+///
+/// Serialized as the `JsError` message (JSON string) so TS can parse it
+/// to a `DealGenerationExhaustedError` instance via
+/// `isDealGenerationExhausted()`. Other `ServiceError` variants keep the
+/// plain `Display` message — they are not catchable by discriminant.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ServiceErrorPayload<'a> {
+    kind: &'a str,
+    witness_summary: &'a str,
+}
+
 fn service_error(err: bridge_service::ServiceError) -> JsError {
-    JsError::new(&err.to_string())
+    match &err {
+        bridge_service::ServiceError::DealGenerationExhausted { witness_summary } => {
+            let payload = ServiceErrorPayload {
+                kind: "dealGenerationExhausted",
+                witness_summary,
+            };
+            // Round-trippable JSON; the TS layer parses on `Error.message`.
+            // Falling back to plain Display on an impossible serialize failure
+            // keeps the path infallible without an extra error variant.
+            match serde_json::to_string(&payload) {
+                Ok(json) => JsError::new(&json),
+                Err(_) => JsError::new(&err.to_string()),
+            }
+        }
+        _ => JsError::new(&err.to_string()),
+    }
 }
 
 // ── JS DDS solver wrapper ────────────────────────────────────────
@@ -525,5 +554,30 @@ impl WasmServicePort {
     pub fn get_convention_name(&self, handle: &str) -> Result<JsValue, JsError> {
         self.with_service(|service| service.get_convention_name(handle))
             .and_then(to_js)
+    }
+}
+
+// ── Serde wire-shape tests ────────────────────────────────────────
+//
+// Lock down the `ServiceErrorPayload` JSON shape that crosses to TS via
+// `JsError.message`. The TS-side `isDealGenerationExhausted()` parser
+// depends on `kind` (camelCase value `"dealGenerationExhausted"`) and
+// `witnessSummary` keys.
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::Value;
+
+    #[test]
+    fn deal_generation_exhausted_payload_round_trips() {
+        let payload = ServiceErrorPayload {
+            kind: "dealGenerationExhausted",
+            witness_summary: "stayman/stayman:invite",
+        };
+        let json = serde_json::to_string(&payload).expect("serialize");
+        let v: Value = serde_json::from_str(&json).expect("parse");
+        assert_eq!(v["kind"], "dealGenerationExhausted");
+        assert_eq!(v["witnessSummary"], "stayman/stayman:invite");
     }
 }

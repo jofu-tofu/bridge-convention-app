@@ -27,7 +27,7 @@ import type { ViewportBidGrade } from "../service";
 import { PracticeMode, PlayPreference, PromptMode } from "../service";
 import type { BidFeedbackDTO } from "../service/debug-types";
 import type { GamePhase } from "../service";
-import { delay } from "../service";
+import { delay, isDealGenerationExhausted } from "../service";
 import { computeFaceUpSeats } from "./prompt-logic";
 import { AI_BID_DELAY, animateIncremental } from "./animate";
 import { createBiddingPhase } from "./bidding-phase.svelte";
@@ -122,6 +122,12 @@ export function createGameStore(
   // supersedes any in-progress drill via activeHandle comparison. This flag
   // provides UI-disabling behavior that guarded() would have provided.
   let isStarting = $state(false);
+
+  // Surface of the last drill-creation failure shown to the user. Cleared
+  // whenever a new drill starts. Currently the only kind we surface is
+  // `dealGenerationExhausted`, raised after one automatic retry; if more
+  // typed errors are added, widen this discriminated union.
+  let drillError = $state<{ kind: "dealGenerationExhausted" } | null>(null);
 
   // ── Sub-modules ─────────────────────────────────────────────
 
@@ -230,7 +236,7 @@ export function createGameStore(
     return {
       ...config,
       conventionId: moduleId,
-      targetModuleId: moduleId,
+      target: { kind: "module", moduleId },
     };
   }
 
@@ -378,15 +384,45 @@ export function createGameStore(
   // works via activeHandle comparison in startDrillFromHandleImpl — when a new
   // drill starts, the old handle no longer matches and all async operations bail.
   // Do NOT reintroduce guarded() here.
+  //
+  // On `DealGenerationExhausted`, retry once with a fresh seed before
+  // surfacing the failure. The Rust side already burns 8 seed-shifted retries
+  // internally, so a second exhaustion almost certainly means the
+  // (convention, target) pair is genuinely infeasible — at that point we set
+  // `drillError` for the UI to render an actionable modal.
   async function startNewDrillImpl(config: SessionConfig) {
     isStarting = true;
+    drillError = null;
     try {
       syncLaunchDealIndex();
-      const handle = await service.createDrillSession(resolveSessionConfig(config));
-      await startDrillFromHandleImpl(handle);
+      const resolved = resolveSessionConfig(config);
+      try {
+        const handle = await service.createDrillSession(resolved);
+        await startDrillFromHandleImpl(handle);
+        return;
+      } catch (err) {
+        if (!isDealGenerationExhausted(err)) throw err;
+        // One automatic retry with a fresh seed (omit `seed` so the Rust
+        // service generates one). Keeps the retry transparent on the happy
+        // path — most exhaustions are seed-bucket bad luck.
+        const { seed: _seed, ...rest } = resolved;
+        const retryConfig: SessionConfig = rest;
+        try {
+          const handle = await service.createDrillSession(retryConfig);
+          await startDrillFromHandleImpl(handle);
+          return;
+        } catch (retryErr) {
+          if (!isDealGenerationExhausted(retryErr)) throw retryErr;
+          drillError = { kind: "dealGenerationExhausted" };
+        }
+      }
     } finally {
       isStarting = false;
     }
+  }
+
+  function dismissDrillError(): void {
+    drillError = null;
   }
 
   // ── Return ────────────────────────────────────────────────────
@@ -511,6 +547,12 @@ export function createGameStore(
     playThisHand: transitions.guarded(playThisHandAction),
     startDrillFromHandle: startDrillFromHandleImpl,
     startNewDrill: startNewDrillImpl,
+
+    // Drill-creation error surface. `null` on the happy path. When set,
+    // the GameScreen renders `DrillErrorModal`. Currently only fires on
+    // `DealGenerationExhausted` after one automatic retry.
+    get drillError() { return drillError; },
+    dismissDrillError,
 
     acceptPrompt: transitions.guarded(acceptPrompt),
     declinePrompt: transitions.guarded(declinePrompt),

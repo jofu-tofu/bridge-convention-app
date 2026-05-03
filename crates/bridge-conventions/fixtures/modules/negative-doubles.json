@@ -5615,7 +5615,7 @@
     "summaryCard": {
       "trigger": "Partner opens one of a suit, right-hand opponent overcalls, and you double conventionally",
       "definingMeaningId": "negdbl:double-after-1c-1d",
-      "partnership": "This module follows Cohen's all-level negative-double treatment. The exact suit promise still changes with the opening, overcall, and level."
+      "agreementNote": "Negative doubles apply at every level; the suit promise depends on the opening, overcall, and level."
     },
     "whenToUse": [
       {
@@ -5735,7 +5735,7 @@
             }
           ]
         },
-        "gloss": "Over especially space-eating overcalls such as two spades after a minor opening, treat the negative double as a stronger action rather than an automatic reflex."
+        "gloss": "Over space-eating overcalls such as two spades after a minor opening, treat the negative double as a stronger action than usual."
       }
     ],
     "workedAuctions": [

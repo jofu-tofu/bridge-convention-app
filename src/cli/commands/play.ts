@@ -67,7 +67,7 @@ export async function runPlay(service: DevServicePort, flags: Flags): Promise<vo
     vulnerability: vuln,
     opponentMode: opponents,
     practiceMode: mode,
-    targetModuleId: moduleId,
+    ...(moduleId ? { target: { kind: "module" as const, moduleId } } : {}),
     practiceRole: role,
     playPreference: PlayPreference.Skip, // always skip to review after bidding
   };

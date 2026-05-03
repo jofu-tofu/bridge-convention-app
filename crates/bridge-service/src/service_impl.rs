@@ -1182,7 +1182,7 @@ mod tests {
                 .map(|s| s.to_string())
                 .collect(),
             practice_mode: None,
-            target_module_id: None,
+            target: None,
             practice_role: None,
             play_preference: None,
             opponent_mode: None,
@@ -1218,7 +1218,9 @@ mod tests {
                 .map(|s| s.to_string())
                 .collect(),
             practice_mode: None,
-            target_module_id: Some("stayman".to_string()),
+            target: Some(bridge_conventions::types::rule_types::TargetSelector::Module {
+                module_id: "stayman".to_string(),
+            }),
             practice_role: Some(practice_role),
             play_preference: None,
             opponent_mode: None,

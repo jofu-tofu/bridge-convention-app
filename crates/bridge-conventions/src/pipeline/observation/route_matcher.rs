@@ -97,6 +97,17 @@ pub fn match_obs(pattern: &ObsPattern, obs: &BidAction, actor_role: Option<TurnR
                 _ => return false,
             },
         }
+    } else if let Some(class) = pattern.suit_class {
+        // suit_class only applies when strain is unset (strain wins). For an
+        // observation, strain wins also when target_suit (transfer) is present.
+        let strain_match = obs
+            .strain()
+            .map(|s| class.matches_strain(s))
+            .or_else(|| obs.target_suit().map(|ts| class.matches_strain(&BidSuitName::from(*ts))))
+            .unwrap_or(false);
+        if !strain_match {
+            return false;
+        }
     }
 
     // Strength check
@@ -269,6 +280,7 @@ mod tests {
             feature: None,
             suit: None,
             strain: Some(BidSuitName::Notrump),
+            suit_class: None,
             strength: None,
             actor: None,
             level: None,
@@ -288,6 +300,7 @@ mod tests {
             feature: None,
             suit: None,
             strain: None,
+            suit_class: None,
             strength: None,
             actor: None,
             level: None,
@@ -321,6 +334,7 @@ mod tests {
                 feature: Some(HandFeature::MajorSuit),
                 suit: None,
                 strain: None,
+                suit_class: None,
                 strength: None,
                 actor: None,
                 level: None,
@@ -356,6 +370,7 @@ mod tests {
                     feature: None,
                     suit: None,
                     strain: Some(BidSuitName::Notrump),
+                    suit_class: None,
                     strength: None,
                     actor: None,
                     level: None,
@@ -366,6 +381,7 @@ mod tests {
                     feature: Some(HandFeature::MajorSuit),
                     suit: None,
                     strain: None,
+                    suit_class: None,
                     strength: None,
                     actor: None,
                     level: None,
@@ -401,6 +417,7 @@ mod tests {
             feature: None,
             suit: Some(ObsSuit::Hearts),
             strain: None,
+            suit_class: None,
             strength: None,
             actor: None,
             level,
@@ -572,6 +589,7 @@ mod tests {
                 feature: None,
                 suit: None,
                 strain: None,
+                suit_class: None,
                 strength: None,
                 actor: None,
                 level: Some(1),
@@ -630,6 +648,7 @@ mod tests {
                 feature: None,
                 suit: Some(ObsSuit::Diamonds),
                 strain: None,
+                suit_class: None,
                 strength: None,
                 actor: None,
                 level: Some(1),
@@ -642,6 +661,7 @@ mod tests {
                 feature: None,
                 suit: Some(ObsSuit::Hearts),
                 strain: None,
+                suit_class: None,
                 strength: None,
                 actor: None,
                 level: Some(1),
@@ -654,6 +674,7 @@ mod tests {
                 feature: None,
                 suit: Some(ObsSuit::Spades),
                 strain: None,
+                suit_class: None,
                 strength: None,
                 actor: None,
                 level: Some(1),

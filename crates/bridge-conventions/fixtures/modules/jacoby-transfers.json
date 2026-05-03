@@ -3929,7 +3929,7 @@
     "summaryCard": {
       "trigger": "Partner opens one notrump and you hold a five-card major.",
       "definingMeaningId": "transfer:to-hearts",
-      "partnership": "Two diamonds transfers partner to hearts and two hearts transfers partner to spades as peer major-suit transfers; the conventional act is picking the rank below the intended major so the strong hand declares.",
+      "agreementNote": "Common agreement before responding to a notrump opening.",
       "peers": [
         {
           "definingMeaningId": "transfer:to-hearts",

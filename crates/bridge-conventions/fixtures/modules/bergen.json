@@ -3288,7 +3288,7 @@
     "summaryCard": {
       "trigger": "Partner opens one major and responder already knows there is support.",
       "definingMeaningId": "bergen:constructive-raise-hearts",
-      "partnership": "Bergen pairs three clubs and three diamonds as peer entry points that both promise four-card-or-better major support; the conventional act is choosing between them, with three clubs as the constructive raise and three diamonds as the limit raise.",
+      "agreementNote": "Common partnership agreement before raising partner's major opening.",
       "peers": [
         {
           "definingMeaningId": "bergen:constructive-raise-hearts",

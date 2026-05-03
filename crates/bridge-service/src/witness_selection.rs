@@ -6,12 +6,22 @@
 //!   1. Derive projected `DealConstraints` via `project_witness`.
 //!   2. Drive the witness-verifying deal-acceptance predicate.
 
-use bridge_conventions::fact_dsl::witness::{enumerate_witnesses, project_witness, Witness};
+use std::collections::HashMap;
+use std::sync::Arc;
+
+use bridge_conventions::fact_dsl::witness::{
+    enumerate_witnesses, project_witness, Witness, WitnessCallSpec,
+};
 use bridge_conventions::registry::module_registry::get_module;
 use bridge_conventions::types::system_config::{BaseSystemId, SystemConfig};
-use bridge_conventions::types::{rule_types::TurnRole, ConventionModule};
+use bridge_conventions::types::{
+    rule_types::{TargetSelector, TurnRole},
+    ConventionModule,
+};
 use bridge_engine::constants::next_seat;
-use bridge_engine::types::{Auction, AuctionEntry, Call, DealConstraints, Seat};
+use bridge_engine::hand_evaluator::evaluate_hand_hcp;
+use bridge_engine::types::{Auction, AuctionEntry, Call, Deal, DealConstraints, Seat};
+use bridge_session::heuristics::{BiddingContext, BiddingStrategy};
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
@@ -28,11 +38,21 @@ pub(crate) struct WitnessSelection {
 }
 
 /// Reconstruct the full auction prefix that should be in place before the
-/// witness target fires. Partnership witness calls are taken verbatim; any
-/// skipped seats between them are filled with Pass so startup and deal gating
-/// replay the same authored context even when the user has already acted once
-/// earlier in the auction.
-pub(crate) fn initial_auction_from_witness(witness: &Witness) -> Option<Auction> {
+/// witness target fires.
+///
+/// Concrete witness calls are taken verbatim; any skipped seats between them
+/// are filled with Pass so startup and deal gating replay the same authored
+/// context even when the user has already acted once earlier in the auction.
+///
+/// Pattern witness calls are materialized by invoking `seat_strategies[seat]`
+/// against the deal at the point the pattern step would fire; the returned
+/// call is verified to satisfy the pattern (otherwise `None` is returned —
+/// in practice the predicate should reject this deal before reaching here).
+pub(crate) fn initial_auction_from_witness(
+    witness: &Witness,
+    deal: &Deal,
+    seat_strategies: &HashMap<Seat, Arc<dyn BiddingStrategy>>,
+) -> Option<Auction> {
     let mut entries: Vec<AuctionEntry> = Vec::new();
     let mut cursor = witness.dealer;
     let mut witness_idx = 0usize;
@@ -45,9 +65,43 @@ pub(crate) fn initial_auction_from_witness(witness: &Witness) -> Option<Auction>
             .get(witness_idx)
             .expect("checked by loop condition");
         if expected.seat == cursor {
+            let resolved_call: Call = match &expected.spec {
+                WitnessCallSpec::Concrete(c) => c.clone(),
+                WitnessCallSpec::Pattern(_) => {
+                    // Materialize via the seat's live bidding strategy. The
+                    // adapter must produce a call that satisfies the pattern;
+                    // if it doesn't, this witness/deal combination is
+                    // inconsistent — return None so the caller (build_drill_setup)
+                    // discards this deal and tries another seed.
+                    let hand = deal.hands.get(&cursor)?.clone();
+                    let evaluation = evaluate_hand_hcp(&hand);
+                    let auction_so_far = Auction {
+                        entries: entries.clone(),
+                        is_complete: false,
+                    };
+                    let auction_pairs: Vec<(Seat, Call)> = entries
+                        .iter()
+                        .map(|e| (e.seat, e.call.clone()))
+                        .collect();
+                    let ctx = BiddingContext {
+                        hand,
+                        auction: auction_so_far,
+                        seat: cursor,
+                        evaluation,
+                        vulnerability: Some(deal.vulnerability),
+                        dealer: Some(deal.dealer),
+                    };
+                    let strategy = seat_strategies.get(&cursor)?;
+                    let suggested = strategy.suggest_bid(&ctx)?;
+                    if !expected.spec.matches(&suggested.call, &auction_pairs) {
+                        return None;
+                    }
+                    suggested.call
+                }
+            };
             entries.push(AuctionEntry {
                 seat: cursor,
-                call: expected.call.clone(),
+                call: resolved_call,
             });
             witness_idx += 1;
         } else {
@@ -76,6 +130,15 @@ pub(crate) fn initial_auction_from_witness(witness: &Witness) -> Option<Auction>
         entries,
         is_complete: false,
     })
+}
+
+/// Helper: true iff every step in the witness has a `Concrete` spec. Used by
+/// drill setup to fast-path concrete-only witnesses (no deal/strategies needed).
+pub(crate) fn witness_is_concrete_only(witness: &Witness) -> bool {
+    witness
+        .prefix
+        .iter()
+        .all(|w| matches!(w.spec, WitnessCallSpec::Concrete(_)))
 }
 
 /// Map the user's `PracticeRole` to the `TurnRole` that makes a surface
@@ -119,26 +182,61 @@ fn loaded_modules_for(
     out
 }
 
+/// Resolve a target's module-ID component to the canonical bundle module ID,
+/// honoring the bundle-shorthand aliases used by some test configs (e.g. the
+/// drill-setup characterization test passes `"nmf"` for the new-minor-forcing
+/// module). When the alias doesn't apply, returns the input unchanged.
+fn canonical_module_id(raw: &str) -> &str {
+    match raw {
+        "nmf" => "new-minor-forcing",
+        _ => raw,
+    }
+}
+
+/// Some target-module aliases additionally pin a canonical entry-point surface.
+/// This lets a `Module { module_id: "nmf" }` target behave as if it had been
+/// authored as `Surface { module_id: "new-minor-forcing", surface_id: "..." }`
+/// without the test config or UI having to know the exact surface id. Returns
+/// `None` when the alias doesn't pin a specific surface.
+fn alias_pinned_surface(raw: &str) -> Option<&'static str> {
+    match raw {
+        // NMF's canonical entry point is the responder's NMF ask after the
+        // `1m – 1M – 1NT` opener-rebid. Pin to the Subseq-routed state entry
+        // so witness selection lands on the authored 6-call prefix shape.
+        "nmf" => Some("nmf:ask-after-1c"),
+        _ => None,
+    }
+}
+
 /// Enumerate candidate `(module_id, surface_id)` pairs across the bundle's
 /// modules, filtered to surfaces hosted on a state entry whose `turn` matches
 /// the user's role.
 ///
-/// If `target_module_override` is `Some`, restricts to that module only.
+/// `target` constrains which (module, surface) pairs are eligible:
+/// - `Any` — no module/surface filter.
+/// - `Module { module_id }` — restrict to that module only.
+/// - `Surface { module_id, surface_id }` — restrict to a single
+///   `(module, surface)` pair, matched by surface `meaning_id`.
 fn candidate_surfaces(
     loaded_modules: &[&ConventionModule],
     bundle_member_ids: &[String],
     role: PracticeRole,
-    target_module_override: Option<&str>,
+    target: &TargetSelector,
 ) -> Vec<(String, String)> {
     let want_turn = role_to_turn(role);
+    // Module aliases may also pin a canonical surface (e.g. `nmf` →
+    // `nmf:ask-after-1c`). Treat the alias-implied surface filter the same
+    // way as an explicit `Surface` selector.
+    let alias_surface = target.module_id().and_then(alias_pinned_surface);
+    let explicit_surface = target.surface_id();
     let mut out = Vec::new();
     for module in loaded_modules {
         // Only draw targets from bundle members (not base modules).
         if !bundle_member_ids.iter().any(|mid| mid == &module.module_id) {
             continue;
         }
-        if let Some(override_id) = target_module_override {
-            if module.module_id != override_id {
+        if let Some(override_id) = target.module_id() {
+            if module.module_id != canonical_module_id(override_id) {
                 continue;
             }
         }
@@ -150,11 +248,15 @@ fn candidate_surfaces(
                 continue;
             }
             for surface in &se.surfaces {
+                if let Some(want_surface) = explicit_surface.or(alias_surface) {
+                    if surface.meaning_id != want_surface {
+                        continue;
+                    }
+                }
                 out.push((module.module_id.clone(), surface.meaning_id.clone()));
             }
         }
     }
-    // Deterministic order before the RNG pick.
     out.sort();
     out.dedup();
     out
@@ -178,7 +280,7 @@ pub(crate) fn select_witness(
     system_config: &SystemConfig,
     role: PracticeRole,
     dealer: Seat,
-    target_module_override: Option<&str>,
+    target: &TargetSelector,
     seed: u64,
 ) -> Result<Option<WitnessSelection>, String> {
     let loaded = loaded_modules_for(bundle_member_ids, base_module_ids, system);
@@ -186,7 +288,7 @@ pub(crate) fn select_witness(
         return Ok(None);
     }
 
-    let candidates = candidate_surfaces(&loaded, bundle_member_ids, role, target_module_override);
+    let candidates = candidate_surfaces(&loaded, bundle_member_ids, role, target);
     if candidates.is_empty() {
         return Ok(None);
     }
@@ -241,8 +343,71 @@ pub(crate) fn select_witness(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bridge_conventions::fact_dsl::witness::WitnessCall;
+    use bridge_conventions::fact_dsl::witness::{WitnessCall, WitnessCallSpec, WitnessRole};
     use bridge_engine::types::BidSuit;
+
+    fn stayman_bundle_member_ids() -> Vec<String> {
+        vec![
+            "stayman".to_string(),
+            "jacoby-transfers".to_string(),
+            "smolen".to_string(),
+        ]
+    }
+
+    fn base_module_ids() -> Vec<String> {
+        bridge_conventions::registry::module_registry::BASE_MODULE_IDS
+            .iter()
+            .map(|s| s.to_string())
+            .collect()
+    }
+
+    #[test]
+    fn select_witness_with_surface_selector_returns_matching_surface_id() {
+        let system = BaseSystemId::Sayc;
+        let system_config = bridge_conventions::registry::system_configs::get_system_config(system);
+        let target = TargetSelector::Surface {
+            module_id: "stayman".to_string(),
+            surface_id: "stayman:ask-major".to_string(),
+        };
+        let selection = select_witness(
+            &stayman_bundle_member_ids(),
+            &base_module_ids(),
+            system,
+            &system_config,
+            PracticeRole::Responder,
+            Seat::North,
+            &target,
+            42,
+        )
+        .expect("witness selection should not error");
+        let selection = selection.expect("expected a witness selection for ask-major surface");
+        assert_eq!(selection.target_module_id, "stayman");
+        assert_eq!(selection.target_surface_id, "stayman:ask-major");
+    }
+
+    #[test]
+    fn select_witness_with_any_selector_picks_some_bundle_member_surface() {
+        let system = BaseSystemId::Sayc;
+        let system_config = bridge_conventions::registry::system_configs::get_system_config(system);
+        let members = stayman_bundle_member_ids();
+        let selection = select_witness(
+            &members,
+            &base_module_ids(),
+            system,
+            &system_config,
+            PracticeRole::Responder,
+            Seat::North,
+            &TargetSelector::Any,
+            7,
+        )
+        .expect("witness selection should not error");
+        let selection = selection.expect("expected a witness selection for Any");
+        assert!(
+            members.iter().any(|m| m == &selection.target_module_id),
+            "selected target module {} should be a bundle member",
+            selection.target_module_id
+        );
+    }
 
     #[test]
     fn initial_auction_from_witness_keeps_full_prefix_through_second_user_turn() {
@@ -250,24 +415,27 @@ mod tests {
             prefix: vec![
                 WitnessCall {
                     seat: Seat::North,
-                    call: Call::Bid {
+                    spec: WitnessCallSpec::Concrete(Call::Bid {
                         level: 1,
                         strain: BidSuit::NoTrump,
-                    },
+                    }),
+                    role: WitnessRole::Partnership,
                 },
                 WitnessCall {
                     seat: Seat::South,
-                    call: Call::Bid {
+                    spec: WitnessCallSpec::Concrete(Call::Bid {
                         level: 2,
                         strain: BidSuit::Clubs,
-                    },
+                    }),
+                    role: WitnessRole::Partnership,
                 },
                 WitnessCall {
                     seat: Seat::North,
-                    call: Call::Bid {
+                    spec: WitnessCallSpec::Concrete(Call::Bid {
                         level: 2,
                         strain: BidSuit::Diamonds,
-                    },
+                    }),
+                    role: WitnessRole::Partnership,
                 },
             ],
             target_surface_id: "stayman:nt-game-after-denial".to_string(),
@@ -277,7 +445,22 @@ mod tests {
             dealer: Seat::North,
         };
 
-        let auction = initial_auction_from_witness(&witness).expect("auction");
+        // Concrete-only witness: pass a stub deal and empty seat_strategies map;
+        // the function fast-paths through Concrete cases without consulting them.
+        let stub_deal = bridge_engine::deal_generator::generate_deal(
+            &bridge_engine::types::DealConstraints {
+                seats: Vec::new(),
+                dealer: Some(Seat::North),
+                vulnerability: None,
+                max_attempts: Some(1),
+                seed: Some(0),
+            },
+        )
+        .expect("stub deal")
+        .deal;
+        let strategies: HashMap<Seat, Arc<dyn BiddingStrategy>> = HashMap::new();
+        let auction =
+            initial_auction_from_witness(&witness, &stub_deal, &strategies).expect("auction");
         assert_eq!(
             auction.entries,
             vec![

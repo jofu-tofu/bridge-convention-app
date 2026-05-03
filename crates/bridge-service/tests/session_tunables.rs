@@ -21,7 +21,7 @@ fn base_config(seed: u64) -> SessionConfig {
         system_config: get_system_config(BaseSystemId::Sayc),
         base_module_ids: BASE_MODULE_IDS.iter().map(|s| s.to_string()).collect(),
         practice_mode: None,
-        target_module_id: None,
+        target: None,
         practice_role: None,
         play_preference: None,
         opponent_mode: None,

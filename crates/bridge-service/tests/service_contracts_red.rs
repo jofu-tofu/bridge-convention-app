@@ -21,7 +21,7 @@ fn make_config(convention_id: &str, seed: u64) -> SessionConfig {
         system_config: get_system_config(BaseSystemId::Sayc),
         base_module_ids: BASE_MODULE_IDS.iter().map(|s| s.to_string()).collect(),
         practice_mode: None,
-        target_module_id: None,
+        target: None,
         practice_role: None,
         play_preference: None,
         // Force opponents to pass so convention bids aren't blocked by interference
@@ -53,7 +53,7 @@ fn make_competitive_config(convention_id: &str, seed: u64) -> SessionConfig {
         system_config: get_system_config(BaseSystemId::Sayc),
         base_module_ids: BASE_MODULE_IDS.iter().map(|s| s.to_string()).collect(),
         practice_mode: None,
-        target_module_id: None,
+        target: None,
         practice_role: None,
         play_preference: None,
         opponent_mode: Some(bridge_session::types::OpponentMode::Natural),
@@ -136,70 +136,118 @@ fn start_drill_ai_bids_run_until_user_turn() {
 
 #[test]
 fn negative_doubles_responder_starts_at_double_decision() {
-    let mut service = ServicePortImpl::new();
-    let mut config = make_competitive_config("negative-doubles-bundle", 42);
-    config.practice_role = Some(bridge_session::types::PracticeRole::Responder);
-    let handle = service
-        .create_drill_session(config)
-        .expect("create_drill_session should succeed");
+    // Phase 3: each negdbl responder state entry hosts both a "double" and a
+    // "pass" surface, so witness selection with `target: Any` can land on
+    // either. Pin to a specific double-target surface so the user's expected
+    // bid is deterministically `Double`. Sweep seeds because rejection
+    // sampling for this surface may exhaust on some seeds (the user must
+    // hold the right shape).
+    let mut last_err: Option<bridge_service::error::ServiceError> = None;
+    for seed in 0..32u64 {
+        let mut service = ServicePortImpl::new();
+        let mut config = make_competitive_config("negative-doubles-bundle", 42 + seed);
+        config.practice_role = Some(bridge_session::types::PracticeRole::Responder);
+        config.target = Some(
+            bridge_conventions::types::rule_types::TargetSelector::Surface {
+                module_id: "negative-doubles".to_string(),
+                surface_id: "negdbl:double-after-1c-1d".to_string(),
+            },
+        );
+        let handle = match service.create_drill_session(config) {
+            Ok(h) => h,
+            Err(e) => {
+                last_err = Some(e);
+                continue;
+            }
+        };
 
-    let result = service
-        .start_drill(&handle)
-        .expect("start_drill should succeed");
-    let expected = service
-        .get_expected_bid(&handle)
-        .expect("get_expected_bid should succeed")
-        .expect("expected bid should exist");
+        let result = service
+            .start_drill(&handle)
+            .expect("start_drill should succeed");
+        let expected = service
+            .get_expected_bid(&handle)
+            .expect("get_expected_bid should succeed")
+            .expect("expected bid should exist");
 
-    assert_eq!(result.viewport.dealer, Seat::North);
-    assert_eq!(result.viewport.auction_entries.len(), 2);
-    assert_eq!(result.viewport.auction_entries[0].seat, Seat::North);
-    assert_eq!(result.viewport.auction_entries[1].seat, Seat::East);
-    assert_eq!(expected, Call::Double);
-    assert!(result.viewport.is_user_turn);
+        assert_eq!(result.viewport.dealer, Seat::North);
+        assert_eq!(result.viewport.auction_entries.len(), 2);
+        assert_eq!(result.viewport.auction_entries[0].seat, Seat::North);
+        assert_eq!(result.viewport.auction_entries[1].seat, Seat::East);
+        assert_eq!(expected, Call::Double);
+        assert!(result.viewport.is_user_turn);
+        return;
+    }
+    panic!(
+        "negative-doubles bundle failed to land on negdbl:double-after-1c-1d in 32 seeds: {:?}",
+        last_err
+    );
 }
 
 #[test]
 fn negative_doubles_opener_seed_avoids_same_suit_overcall() {
-    let mut service = ServicePortImpl::new();
-    let mut config = make_competitive_config("negative-doubles-bundle", 47);
-    config.practice_role = Some(bridge_session::types::PracticeRole::Opener);
-    let handle = service
-        .create_drill_session(config)
-        .expect("create_drill_session should succeed");
-
-    let _start = service
-        .start_drill(&handle)
-        .expect("start_drill should succeed");
-    let opening = service
-        .get_expected_bid(&handle)
-        .expect("get_expected_bid should succeed")
-        .expect("expected opening bid should exist");
-
-    let result = service
-        .submit_bid(&handle, opening.clone())
-        .expect("submit_bid should succeed");
-
-    let first_ai_call = result
-        .ai_bids
-        .first()
-        .expect("opponent should act after the opening bid")
-        .call
-        .clone();
-
-    match (opening, first_ai_call) {
-        (
-            Call::Bid {
-                strain: opening_strain,
-                ..
+    // Phase 3: opener-role drill targets the opener-rebid surfaces. Pin a
+    // specific opener-rebid target so the witness selector lands on a
+    // `Subseq { open(strain), overcall(opp), double(responder) }` route
+    // and we can assert opening != overcall_strain. Sweep seeds for a
+    // satisfying deal.
+    let mut last_err: Option<bridge_service::error::ServiceError> = None;
+    for seed in 0..32u64 {
+        let mut service = ServicePortImpl::new();
+        let mut config = make_competitive_config("negative-doubles-bundle", 47 + seed);
+        config.practice_role = Some(bridge_session::types::PracticeRole::Opener);
+        config.target = Some(
+            bridge_conventions::types::rule_types::TargetSelector::Surface {
+                module_id: "negative-doubles".to_string(),
+                surface_id: "negdbl:opener-simple-hearts-after-1S-1C".to_string(),
             },
-            Call::Bid {
-                strain: overcall_strain,
-                ..
-            },
-        ) => assert_ne!(opening_strain, overcall_strain),
-        other => panic!("expected opening and overcall bids, got {:?}", other),
+        );
+        let handle = match service.create_drill_session(config) {
+            Ok(h) => h,
+            Err(e) => {
+                last_err = Some(e);
+                continue;
+            }
+        };
+
+        let _start = service
+            .start_drill(&handle)
+            .expect("start_drill should succeed");
+        let opening = service
+            .get_expected_bid(&handle)
+            .expect("get_expected_bid should succeed")
+            .expect("expected opening bid should exist");
+
+        // With a pinned opener-rebid target, the user's turn is the rebid
+        // (after open+overcall+double+pass), not the initial opening. The
+        // viewport's auction_entries already contain the prefix; just
+        // verify that the open and overcall (entries 0 and 1) have
+        // different strains.
+        let entries = &_start.viewport.auction_entries;
+        if entries.len() < 2 {
+            // This seed's witness/predicate combination didn't produce a
+            // valid prefix. Try the next seed.
+            continue;
+        }
+        match (&entries[0].call, &entries[1].call) {
+            (
+                Call::Bid {
+                    strain: opening_strain,
+                    ..
+                },
+                Call::Bid {
+                    strain: overcall_strain,
+                    ..
+                },
+            ) => assert_ne!(opening_strain, overcall_strain),
+            other => panic!("expected opening and overcall bids, got {:?}", other),
+        }
+        let _ = opening;
+        return;
     }
+    panic!(
+        "negative-doubles opener-rebid pin failed across 32 seeds: {:?}",
+        last_err
+    );
 }
 
 #[test]

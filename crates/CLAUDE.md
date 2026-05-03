@@ -41,6 +41,12 @@ crates/
                        `registry/module_registry.rs` replaces the coarse `after-neg-dbl` opener states
                        with route-specific states keyed to the exact opening + overcall sequence. Edit
                        that synthesis table when changing opener rebid behavior or legal rebid levels.
+                       Phase 3 also patches the responder route at load time: each `Last { overcall }`
+                       route is wrapped in a `Subseq { [open(actor: opener), overcall(actor: opponent)] }`
+                       (with the opening derived from the `after-oc-1<X>` phase string) so witness
+                       derivation has the full opener+overcall prefix to materialize. Both opener and
+                       responder routes mark their overcall step with `actor: opponent`; the witness
+                       layer assigns it the LHO seat with `WitnessRole::Opponent`.
                        **Module fixtures require `scopeNote` and a frozen authority snapshot:** every
                        `fixtures/modules/*.json` must carry a top-level `scopeNote` (non-empty free
                        text naming intentional out-of-scope behavior) plus
@@ -140,17 +146,34 @@ crates/
                        Thin hexagonal port between UI/WASM/CLI and game logic. Depends on
                        bridge-engine, bridge-conventions, bridge-session.
                        `witness_selection::select_witness` picks a target `(module, surface)` and
-                       chosen witness at drill creation. `deal_gating::build_witness_acceptance_predicate`
+                       chosen witness at drill creation. It accepts a
+                       `&TargetSelector` (from `bridge_conventions::types::rule_types`) that gates
+                       which `(module, surface)` pairs are eligible: `Any` means no filter,
+                       `Module { module_id }` restricts to one module, `Surface { module_id, surface_id }`
+                       further pins a specific `meaning_id`. `SessionConfig.target` carries the
+                       same shape end-to-end (TS → Rust); the legacy `target_module_id: Option<String>`
+                       field was removed in the Phase 1 drill-targeting refactor.
+                       `deal_gating::build_witness_acceptance_predicate`
                        builds the rejection-sampling predicate that replays the adapter and accepts a
                        deal iff the auto-played prefix matches the witness prefix (opponent seats must
                        pass) AND the user-turn pipeline selection's `module_id`/`meaning_id` equal the
-                       witness target. Witness-selected drills now derive their startup auction directly
-                       from the full witness prefix (including earlier user bids and inserted opponent
-                       passes all the way to the target turn) for both live session initialization and
-                       rejection-sampling replay. `drill_setup` must resolve the concrete practice role
-                       and witness dealer before calling `select_witness`; otherwise opener drills and
-                       repeated-user-turn continuations become unreachable. Projected deal
-                       constraints remain the fallback only when no witness override exists. Injected as
+                       witness target. **`WitnessCall` carries a `WitnessCallSpec` (Concrete | Pattern)
+                       so a witness can describe a class of auctions** (e.g. NMF: "opener bids any
+                       minor at level 1") instead of a specific concrete sequence. Patterns honor
+                       `ObsPattern`'s new `suit_class` field (`minor | major | suit`) for matching;
+                       call sites use `expected.spec.matches(&call, &built_auction_so_far)` instead
+                       of equality.
+                       **`witness_selection::initial_auction_from_witness` now takes
+                       `(&Witness, &Deal, &HashMap<Seat, Arc<dyn BiddingStrategy>>)`**. Concrete
+                       specs reproduce the v1 verbatim path; pattern specs invoke the seat's live
+                       strategy to materialize a concrete call and verify it satisfies the pattern.
+                       Pre-flight in `drill_setup`, only concrete-only witnesses are pre-applied as
+                       `initial_auction_override`; pattern witnesses materialize post-flight in
+                       `build_drill_setup` once the drill's deal + Arc seat strategies are
+                       available. The same materializer runs inside the rejection-sampling
+                       predicate so the projected auction stays consistent across replay and
+                       startup. Projected deal constraints remain the fallback only when no
+                       witness override exists. Injected as
                        `Arc<DealAcceptancePredicate>` into
                        `StartDrillOptions`; budget `NORMAL_DEAL_ATTEMPTS = 32`. On exhaustion,
                        `start_drill` returns `Err`; `drill_setup::build_drill_setup` catches it and
@@ -158,9 +181,45 @@ crates/
                        seed (splitmix-style XOR/rotate via `shift_seed`) each attempt to diversify
                        both witness selection and deal sampling. Only if all 8 attempts exhaust
                        does it return `ServiceError::DealGenerationExhausted { witness_summary }`
-                       — that path now indicates a genuine bug, not routine UI churn. The
-                       negative-doubles bundle retains its own custom predicate + budget and skips
-                       witness selection entirely.
+                       — that path now indicates a genuine bug, not routine UI churn.
+                       At the WASM boundary (`bridge-wasm::service_error`) this variant is
+                       serialized as a typed JSON sidecar `{ kind: "dealGenerationExhausted",
+                       witnessSummary }` carried on `JsError.message`; TS catches it via
+                       `isDealGenerationExhausted()` from `src/service/service-errors.ts`.
+                       The inner `start_drill` error string `"deal generation exhausted: ..."`
+                       remains the contract that `drill_setup.rs` pattern-matches on; do not
+                       reflow it without updating the matcher and the Phase 0 characterization
+                       test (`drill_setup_characterization::start_drill_returns_exhaustion_err_when_predicate_always_rejects`).
+                       Outer-loop exhaustion (all 8 retries failed) emits a structured
+                       `tracing::warn!` event with `counter.drill_generation_exhausted = 1`
+                       carrying `convention_id`, `target_kind`, `target_module_id`,
+                       `target_surface_id`, and `attempts_used` for telemetry grouping.
+                       **NMF is now authored as a fixture state entry**, not synthesized in
+                       `start_drill`: `new-minor-forcing.json` carries a Subseq-routed responder
+                       state entry whose three pattern steps (`1m – 1M – 1NT`) materialize via the
+                       live adapter at drill setup. The imperative
+                       `nmf_initial_auction` / `is_nmf_bundle` / `NMF_BUNDLE_ID` constants and
+                       arms in `start_drill.rs` and `deal_gating.rs` were deleted in Phase 2.
+                       `witness_selection::candidate_surfaces` honors a small alias-pinned-surface
+                       table (`nmf` → `nmf:ask-after-1c`) so test/UI shorthand selectors map to
+                       the new fixture entry point.
+                       **Phase 3: negative-doubles is on the witness path.** No bypass remains in
+                       `drill_setup` or `start_drill`. Opponent overcalls are encoded as `WitnessCall`
+                       entries with `role: WitnessRole::Opponent`; the predicate's seat-strategy map
+                       prefixes any opponent seat that the witness scripts with a
+                       `ScriptedOpponentStrategy`, which returns the witness's concrete call at the
+                       authored position and `None` (falling through to the live `Pragmatic`/
+                       `NaturalFallback`/`Pass` chain) outside that scope. Pattern opponent steps
+                       fall through to the live chain, with the predicate's
+                       `expected.spec.matches(&call)` gate verifying the live call satisfies the
+                       authored pattern. `build_predicate_seat_strategies` takes `&Witness` so it
+                       can install or skip the scripted layer per opponent seat.
+                       **Adaptive deal-attempt budget.** `StartDrillOptions.deal_attempts: Option<u64>`
+                       lets the service scale rejection-sampling budget per witness. `drill_setup`
+                       sets it via `deal_attempt_budget(prefix_len)` =
+                       `NORMAL_DEAL_ATTEMPTS * (1 + min(prefix_len/2, 4))` so longer witness
+                       prefixes (e.g. negdbl-opener with 3 partnership/opponent steps) get more
+                       attempts before exhaustion. `None` falls back to `NORMAL_DEAL_ATTEMPTS = 32`.
                        **Per-drill gameplay tunables:** `SessionConfig` carries `play_profile_id`
                        (selects the MC+DDS / heuristic play profile) and `vulnerability_distribution`
                        (probability weights `{none, ours, theirs, both}`) alongside the existing
@@ -270,4 +329,4 @@ work or break an assumption tracked elsewhere. If so, create a task or update tr
 **Staleness anchor:** This file assumes `crates/bridge-engine/src/lib.rs` exists. If it doesn't, this file
 is stale — update or regenerate before relying on it.
 
-<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-28 | version=18 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:42 -->
+<!-- context-layer: generated=2026-02-22 | last-audited=2026-04-30 | version=22 | dir-commits-at-audit=12 | tree-sig=dirs:12,files:42 -->

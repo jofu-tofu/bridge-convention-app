@@ -19,6 +19,20 @@ pub enum TurnRole {
     Opponent,
 }
 
+/// Suit-class qualifier for `ObsPattern.suit_class`. Complements `strain`
+/// when authors want to match a class of strains rather than a specific one
+/// (e.g. "any minor" for NMF's `1m – 1M – 1NT` opener step).
+///
+/// `Suit` means "any of the four suits, not NT" — included for completeness
+/// even when no current fixture uses it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum SuitClass {
+    Minor,
+    Major,
+    Suit,
+}
+
 /// Predicate over a single canonical observation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ObsPattern {
@@ -29,6 +43,11 @@ pub struct ObsPattern {
     pub suit: Option<ObsSuit>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub strain: Option<BidSuitName>,
+    /// Suit-class qualifier complementing `strain`. When `Some(class)`, the
+    /// matched bid's strain must belong to the class. When both `strain` and
+    /// `suit_class` are `Some`, the strain check wins (strain is more specific).
+    #[serde(rename = "suitClass", skip_serializing_if = "Option::is_none", default)]
+    pub suit_class: Option<SuitClass>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub strength: Option<HandStrength>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -44,6 +63,18 @@ pub struct ObsPattern {
     /// legal level). Non-bid calls never match when `Some`.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub jump: Option<bool>,
+}
+
+impl SuitClass {
+    /// True iff `strain` belongs to this suit class. NoTrump is never a member
+    /// of any class.
+    pub fn matches_strain(&self, strain: &BidSuitName) -> bool {
+        match self {
+            SuitClass::Minor => matches!(strain, BidSuitName::Clubs | BidSuitName::Diamonds),
+            SuitClass::Major => matches!(strain, BidSuitName::Hearts | BidSuitName::Spades),
+            SuitClass::Suit => !matches!(strain, BidSuitName::Notrump),
+        }
+    }
 }
 
 /// Act field of an ObsPattern — either a specific action type or "any".
@@ -167,6 +198,52 @@ pub fn default_scope() -> StateScope {
     StateScope::Enumerated
 }
 
+/// Drill target selector — picks which module / surface a drill is targeting.
+///
+/// `Any` means no module/surface filter: any bundle-member surface is fair
+/// game. `Module` restricts to a single module's surfaces. `Surface` further
+/// pins down a specific `meaning_id` within that module. Phase 1 of the
+/// drill-targeting refactor: each existing call site that passed
+/// `Some(module_id)` now wraps that as `Module { module_id }`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+pub enum TargetSelector {
+    Any,
+    #[serde(rename_all = "camelCase")]
+    Module { module_id: String },
+    #[serde(rename_all = "camelCase")]
+    Surface {
+        module_id: String,
+        surface_id: String,
+    },
+}
+
+impl TargetSelector {
+    /// Module ID component (`None` for `Any`). Used by code paths that today
+    /// take an `Option<&str>` target module override.
+    pub fn module_id(&self) -> Option<&str> {
+        match self {
+            TargetSelector::Any => None,
+            TargetSelector::Module { module_id }
+            | TargetSelector::Surface { module_id, .. } => Some(module_id.as_str()),
+        }
+    }
+
+    /// Surface ID component (only present for `Surface` variant).
+    pub fn surface_id(&self) -> Option<&str> {
+        match self {
+            TargetSelector::Surface { surface_id, .. } => Some(surface_id.as_str()),
+            _ => None,
+        }
+    }
+}
+
+impl Default for TargetSelector {
+    fn default() -> Self {
+        TargetSelector::Any
+    }
+}
+
 /// One resolved surface from a matched state entry.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -218,6 +295,7 @@ mod tests {
                 feature: Some(HandFeature::MajorSuit),
                 suit: None,
                 strain: None,
+                suit_class: None,
                 strength: None,
                 actor: None,
                 level: None,
@@ -266,6 +344,7 @@ mod tests {
                     feature: None,
                     suit: None,
                     strain: Some(BidSuitName::Notrump),
+                    suit_class: None,
                     strength: None,
                     actor: None,
                     level: None,
@@ -303,5 +382,106 @@ mod tests {
         let p = PhaseRef::Multiple(vec!["a".to_string(), "b".to_string()]);
         let json = serde_json::to_string(&p).unwrap();
         assert_eq!(json, "[\"a\",\"b\"]");
+    }
+
+    #[test]
+    fn target_selector_serde_roundtrip() {
+        let any = TargetSelector::Any;
+        let any_json = serde_json::to_string(&any).unwrap();
+        assert_eq!(any_json, r#"{"kind":"any"}"#);
+        assert_eq!(serde_json::from_str::<TargetSelector>(&any_json).unwrap(), any);
+
+        let module = TargetSelector::Module {
+            module_id: "stayman".to_string(),
+        };
+        let module_json = serde_json::to_string(&module).unwrap();
+        assert_eq!(module_json, r#"{"kind":"module","moduleId":"stayman"}"#);
+        assert_eq!(
+            serde_json::from_str::<TargetSelector>(&module_json).unwrap(),
+            module
+        );
+
+        let surface = TargetSelector::Surface {
+            module_id: "stayman".to_string(),
+            surface_id: "stayman:nt-game-after-denial".to_string(),
+        };
+        let surface_json = serde_json::to_string(&surface).unwrap();
+        assert_eq!(
+            surface_json,
+            r#"{"kind":"surface","moduleId":"stayman","surfaceId":"stayman:nt-game-after-denial"}"#
+        );
+        assert_eq!(
+            serde_json::from_str::<TargetSelector>(&surface_json).unwrap(),
+            surface
+        );
+    }
+
+    #[test]
+    fn target_selector_helpers() {
+        assert_eq!(TargetSelector::Any.module_id(), None);
+        assert_eq!(TargetSelector::Any.surface_id(), None);
+
+        let m = TargetSelector::Module {
+            module_id: "stayman".to_string(),
+        };
+        assert_eq!(m.module_id(), Some("stayman"));
+        assert_eq!(m.surface_id(), None);
+
+        let s = TargetSelector::Surface {
+            module_id: "stayman".to_string(),
+            surface_id: "stayman:nt-game-after-denial".to_string(),
+        };
+        assert_eq!(s.module_id(), Some("stayman"));
+        assert_eq!(s.surface_id(), Some("stayman:nt-game-after-denial"));
+    }
+
+    #[test]
+    fn target_selector_default_is_any() {
+        assert_eq!(TargetSelector::default(), TargetSelector::Any);
+    }
+
+    #[test]
+    fn suit_class_matches_strain_minor_major_suit() {
+        assert!(SuitClass::Minor.matches_strain(&BidSuitName::Clubs));
+        assert!(SuitClass::Minor.matches_strain(&BidSuitName::Diamonds));
+        assert!(!SuitClass::Minor.matches_strain(&BidSuitName::Hearts));
+        assert!(!SuitClass::Minor.matches_strain(&BidSuitName::Spades));
+        assert!(!SuitClass::Minor.matches_strain(&BidSuitName::Notrump));
+
+        assert!(SuitClass::Major.matches_strain(&BidSuitName::Hearts));
+        assert!(SuitClass::Major.matches_strain(&BidSuitName::Spades));
+        assert!(!SuitClass::Major.matches_strain(&BidSuitName::Clubs));
+        assert!(!SuitClass::Major.matches_strain(&BidSuitName::Notrump));
+
+        assert!(SuitClass::Suit.matches_strain(&BidSuitName::Clubs));
+        assert!(SuitClass::Suit.matches_strain(&BidSuitName::Spades));
+        assert!(!SuitClass::Suit.matches_strain(&BidSuitName::Notrump));
+    }
+
+    #[test]
+    fn suit_class_serde_roundtrip() {
+        let class = SuitClass::Minor;
+        let json = serde_json::to_string(&class).unwrap();
+        assert_eq!(json, "\"minor\"");
+        let back: SuitClass = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, class);
+    }
+
+    #[test]
+    fn obs_pattern_with_suit_class_serde_roundtrip() {
+        let pat = ObsPattern {
+            act: ObsPatternAct::Specific(BidActionType::Open),
+            feature: None,
+            suit: None,
+            strain: None,
+            suit_class: Some(SuitClass::Minor),
+            strength: None,
+            actor: None,
+            level: Some(1),
+            jump: None,
+        };
+        let json = serde_json::to_string(&pat).unwrap();
+        let back: ObsPattern = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, pat);
     }
 }

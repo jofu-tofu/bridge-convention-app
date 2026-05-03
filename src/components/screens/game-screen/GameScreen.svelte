@@ -19,6 +19,7 @@
   import LearnPhase from "./LearnPhase.svelte";
   import ConventionCardPanel from "../../game/ConventionCardPanel.svelte";
   import DebugDrawer from "../../game/DebugDrawer.svelte";
+  import DrillErrorModal from "../../shared/DrillErrorModal.svelte";
 
   const DEV = import.meta.env.DEV;
 
@@ -127,7 +128,7 @@
       seed: devSeed,
       systemConfig,
       baseModuleIds,
-      targetModuleId: currentConvention.id,
+      target: { kind: "module", moduleId: currentConvention.id },
       opponentMode: drill.opponentMode,
       vulnerabilityDistribution: drill.tuning.vulnerabilityDistribution,
       ...(drill.playProfileId ? { playProfileId: drill.playProfileId } : {}),
@@ -447,6 +448,13 @@
       <p class="text-text-secondary text-[--text-detail] font-medium tracking-wide">Dealing cards&hellip;</p>
     </div>
   </div>
+{/if}
+
+{#if gameStore.drillError}
+  <DrillErrorModal
+    onDismiss={() => { gameStore.dismissDrillError(); handleBackToMenu(); }}
+    onTryAgain={() => { gameStore.dismissDrillError(); startNewDrill(); }}
+  />
 {/if}
 </div>
 

@@ -14,6 +14,22 @@ import type { OpponentMode, PlayPreference, PlayProfileId, PracticeMode, Practic
 /** Opaque drill session identifier. */
 export type DrillHandle = string;
 
+// ── Target Selector ────────────────────────────────────────────────
+
+/**
+ * Drill target selector — picks which module / surface a drill is
+ * focused on. `any` means no filter (any bundle-member surface is
+ * eligible). `module` restricts to a single module. `surface` further
+ * pins down a specific meaning id within that module.
+ *
+ * Discriminated union; mirrors Rust `TargetSelector` (`#[serde(tag =
+ * "kind")]`).
+ */
+export type TargetSelector =
+  | { kind: "any" }
+  | { kind: "module"; moduleId: string }
+  | { kind: "surface"; moduleId: string; surfaceId: string };
+
 // ── Session Config ──────────────────────────────────────────────────
 
 /**
@@ -33,8 +49,8 @@ export interface SessionConfig {
   readonly baseModuleIds: string[];
   /** Practice mode — controls auction entry point and play coupling. */
   readonly practiceMode?: PracticeMode;
-  /** Target module for practice focus derivation (which module is being drilled). */
-  readonly targetModuleId?: string;
+  /** Drill target — selects which module / surface this drill is focused on. Absent === { kind: "any" }. */
+  readonly target?: TargetSelector;
   /** Practice role — opener, responder, or both (random per deal). */
   readonly practiceRole?: PracticeRole;
   /** Play preference — whether to skip, prompt, or always play after bidding. */

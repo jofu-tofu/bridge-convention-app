@@ -2276,7 +2276,7 @@
     "summaryCard": {
       "trigger": "Opponent opens one of a suit and you are next to call",
       "definingMeaningId": "competitive:overcall-1h-after-1d",
-      "partnership": "This module covers the direct-seat tools the partnership uses against an opponent's one-of-a-suit opening: a simple suit overcall with overcaller's strength and a rebiddable five-card or longer suit, a weak jump overcall with a long suit and preemptive values, a takeout double with opening strength, shortness in the opener's suit, and support for every other suit, or a one-notrump overcall showing fifteen-to-eighteen high-card points, a balanced hand, and a stopper in opener's suit. Reopening, balancing, advancer's responses, overcaller's later rebids, and the cuebid-asks-overcall-quality forcing response are intentionally outside the current wave."
+      "agreementNote": "Direct-seat overcall, weak jump, takeout double, or notrump overcall after an opponent's opening."
     },
     "whenToUse": [
       {
@@ -2330,7 +2330,7 @@
             }
           ]
         },
-        "gloss": "Make a simple suit overcall when the hand is in overcaller's strength and you have a rebiddable five-card or longer suit other than the suit the opponents opened."
+        "gloss": "Make a simple suit overcall with overcaller's strength and a rebiddable five-card or longer suit different from the opening."
       },
       {
         "predicate": {
@@ -2394,7 +2394,7 @@
             "expected": true
           }
         },
-        "gloss": "Double for takeout when the hand has opening values, shortness in the opener's suit, and support for the other three suits so partner can pick the strain."
+        "gloss": "Double for takeout with opening values, shortness in the opener's suit, and support for the other three suits."
       },
       {
         "predicate": {
@@ -2418,7 +2418,7 @@
             }
           ]
         },
-        "gloss": "Overcall one-notrump with the booklet's notrump-overcall HCP range, balanced shape, and a stopper in the opener's suit so partner can pass with a flat minimum or move on with extra values."
+        "gloss": "Overcall one-notrump with notrump-range values, balanced shape, and a stopper in the opener's suit."
       }
     ],
     "workedAuctions": [
@@ -2464,7 +2464,7 @@
             "call": {
               "type": "double"
             },
-            "rationale": "Doubler has opening strength, shortness in spades, and four cards or better in every other suit, so the takeout double asks partner to pick a strain."
+            "rationale": "Opening strength, shortness in spades, and four-plus cards in every other suit; the takeout double asks partner to pick a strain."
           }
         ]
       },
@@ -2486,7 +2486,7 @@
             "call": {
               "type": "pass"
             },
-            "rationale": "Without a five-card or longer suit and without takeout shape, the most disciplined action is to pass and let partner re-enter the auction in the balancing seat if interested."
+            "rationale": "Without a five-card-plus suit or takeout shape, pass and let partner re-enter in the balancing seat if interested."
           }
         ]
       },
@@ -2510,7 +2510,7 @@
               "level": 1,
               "strain": "NT"
             },
-            "rationale": "Overcaller has the booklet's 1NT-overcall HCP range, a balanced hand, and a stopper in opener's hearts, so 1NT shows the strong-NT-style hand directly and lets partner play notrump methods over the call."
+            "rationale": "Notrump-range values, balanced hand, and a stopper in opener's hearts; the one-notrump overcall keeps notrump methods on."
           }
         ]
       }
